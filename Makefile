@@ -48,8 +48,29 @@ clean:
 	if [ -d dist ]; then /bin/rm -fR dist; fi
 	if [ -f $(PROJECT_NAME)-$(VERSION)-release.zip ]; then /bin/rm $(PROJECT_NAME)-$(VERSION)-release.zip; fi
 
-release:
-	./mk-release.bash
+dist/linux-amd64:
+	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
+
+dist/windows-amd64:
+	env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset cmds/dataset/dataset.go
+
+dist/macosx-amd64:
+	env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dataset cmds/dataset/dataset.go
+
+dist/raspbian-arm7:
+	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
+
+dist/raspbian-arm6:
+	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -o dist/raspbian-arm6/dataset cmds/dataset/dataset.go
+
+
+release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7 dist/raspbian-arm6
+	mkdir -p dist
+	cp -v README.md dist/
+	cp -v LICENSE dist/
+	cp -v INSTALL.md dist/
+	zip -r $(PROJECT)-$(VERSION)-release.zip dist/*
+
 
 status:
 	git status
