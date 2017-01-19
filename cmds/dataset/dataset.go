@@ -51,7 +51,7 @@ a record called "littlefreda.json" and reading it back.
    export DATASET_COLLECTION=testdata/friends
    %s create littlefreda.json '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(%s keys); do
-   	 %s read KY
+   	 %s read $KY
    done   
 `
 

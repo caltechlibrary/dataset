@@ -20,7 +20,7 @@ bin/dataset: dataset.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
 install: $(PROJECT_LIST)
-	go install cmds/dataset/dataset.go
+	env GOBIN=$(GOPATH)/bin go install cmds/dataset/dataset.go
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	./mk-website.bash
