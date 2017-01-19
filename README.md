@@ -4,7 +4,7 @@
 A go package for managing JSON documents stored on disc. *dataset* is also a
 command line tool. It stores one of more collections of JSON documents. Typically
 you'd have a directory that holds collections, each collection holds buckets and 
-each bucket holds some JSON document. Both the package and command line tool 
+each bucket holds some JSON documents. Both the package and command line tool 
 allow you to interact with that logical structure on disc.
 
 ## layout
