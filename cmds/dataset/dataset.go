@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	// CaltechLibrary Packages
-	"github.com/github.com/caltechlibrary/cli"
-	"github.com/github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/cli"
+	"github.com/caltechlibrary/dataset"
 )
 
 var (
@@ -62,141 +63,187 @@ a record called "littlefreda.json" and reading it back.
 	collectionName string
 
 	// Vocabulary
-	voc = map[string]string{
-		"init": func(name string) error {
-			if len(name) == 0 {
-				return "", fmt.Errorf("missing a collection name")
-			}
-			collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
-			if err != nil {
-				return "", err
-			}
-			defer collection.Close()
-			return "OK", nil
-		},
-		"create": func(name, src string) error {
-			if len(collectionName) == 0 {
-				return "", fmt.Errorf("missing a collection name")
-			}
-			if len(name) == 0 {
-				return "", fmt.Errorf("missing document name")
-			}
-			if len(data) == 0 {
-				return "", fmt.Errorf("missing JSON data")
-			}
-			collection, err := dataset.Open(collectionName)
-			if err != nil {
-				return "", err
-			}
-			defer collection.Close()
-
-			m := map[string]interface{}{}
-			if err := json.Unmarshal([]byte(src), m); err != nil {
-				return fmt.Errorf("json formatting error, %s", err)
-			}
-			if err := collection.Create(name, m); err != nil {
-				return "", err
-			}
-			return "OK", nil
-		},
-		"read": func(name) (string, error) {
-			if len(collectionName) == 0 {
-				return "", fmt.Errorf("missing a collection name")
-			}
-			if len(name) == 0 {
-				return "", fmt.Errorf("missing document name")
-			}
-			collection, err := dataset.Open(collectionName)
-			if err != nil {
-				return "", err
-			}
-			defer collection.Close()
-
-			m := map[string]interface{}{}
-			if err := collection.Read(name, m); err != nil {
-				return nil, err
-			}
-			src, err := json.Marshal(m)
-			if err != nil {
-				return "", err
-			}
-			return string(src), nil
-		},
-		"update": func(name, src string) (string, error) {
-			if len(collectionName) == 0 {
-				return "", fmt.Errorf("missing a collection name")
-			}
-			if len(name) == 0 {
-				return "", fmt.Errorf("missing document name")
-			}
-			if len(data) == 0 {
-				return "", fmt.Errorf("missing JSON data")
-			}
-			collection, err := dataset.Open(collectionName)
-			if err != nil {
-				return "", err
-			}
-			defer collection.Close()
-
-			m := map[string]interface{}{}
-			if err := json.Unmarshal([]byte(src), m); err != nil {
-				return "", fmt.Errorf("json formatting error, %s", err)
-			}
-			if err := collection.Update(name, m); err != nil {
-				return "", err
-			}
-			return "OK", nil
-		},
-		"delete": func(name string) (string, error) {
-			if len(collectionName) == 0 {
-				return "", fmt.Errorf("missing a collection name")
-			}
-			if len(name) == 0 {
-				return "", fmt.Errorf("missing document name")
-			}
-			collection, err := dataset.Open(collectionName)
-			if err != nil {
-				return "", err
-			}
-			defer collection.Close()
-
-			if err := collection.Delete(name); err != nil {
-				return "", err
-			}
-			return "OK", nil
-		},
-		"keys": func() (string, error) {
-			if len(collectionName) == 0 {
-				return nil, fmt.Errorf("missing a collection name")
-			}
-			if len(name) == 0 {
-				return nil, fmt.Errorf("missing document name")
-			}
-			collection, err := dataset.Open(collectionName)
-			if err != nil {
-				return nil, err
-			}
-			defer collection.Close()
-			return strings.Join(collection.Keys, "\n"), nil
-		},
+	voc = map[string]func(...string) (string, error){
+		"init":   collectionInit,
+		"create": createJSONDoc,
+		"read":   readJSONDoc,
+		"update": updateJSONDoc,
+		"delete": deleteJSONDoc,
+		"keys":   collectionKeys,
 	}
+
+	// alphabet to use for buckets
+	alphabet = `abcdefghijklmnopqrstuvwxyz`
 )
+
+//
+// These are verbs used in the command line utility
+//
+
+// collectionInit takes a name (e.g. directory path dataset/mycollection) and
+// creates a new collection structure on disc
+func collectionInit(args ...string) (string, error) {
+	if len(args) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	name := args[0]
+	if len(name) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	c, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+	return fmt.Sprintf("export DATASET_COLLECTION=%q", path.Join(c.Dataset, c.Name)), nil
+}
+
+// createJSONDoc adds a new JSON document to the collection
+func createJSONDoc(args ...string) (string, error) {
+	if len(args) != 2 {
+		return "", fmt.Errorf("Expected a doc name and JSON blob")
+	}
+	name, src := args[0], args[1]
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	if len(name) == 0 {
+		return "", fmt.Errorf("missing document name")
+	}
+	if strings.HasSuffix(name, ".json") == false {
+		name = name + ".json"
+	}
+	if len(src) == 0 {
+		return "", fmt.Errorf("missing JSON source")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if err := collection.CreateAsJSON(name, []byte(src)); err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+// readJSONDoc returns the JSON from a document in the collection
+func readJSONDoc(args ...string) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("Missing document name")
+	}
+	name := args[0]
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	if len(name) == 0 {
+		return "", fmt.Errorf("missing document name")
+	}
+	if strings.HasSuffix(name, ".json") == false {
+		name = name + ".json"
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	src, err := collection.ReadAsJSON(name)
+	if err != nil {
+		return "", err
+	}
+	return string(src), nil
+}
+
+// updateJSONDoc replaces a JSON document in the collection
+func updateJSONDoc(args ...string) (string, error) {
+	if len(args) != 2 {
+		return "", fmt.Errorf("Expected document name and JSON blob")
+	}
+	name, src := args[0], args[1]
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	if len(name) == 0 {
+		return "", fmt.Errorf("missing document name")
+	}
+	if len(src) == 0 {
+		return "", fmt.Errorf("missing JSON source")
+	}
+	if strings.HasSuffix(name, ".json") == false {
+		name = name + ".json"
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if err := collection.UpdateAsJSON(name, []byte(src)); err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+// deleteJSONDoc removes a JSON document from the collection
+func deleteJSONDoc(args ...string) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("Missing document name")
+	}
+	name := args[0]
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	if len(name) == 0 {
+		return "", fmt.Errorf("missing document name")
+	}
+	if strings.HasSuffix(name, ".json") == false {
+		name = name + ".json"
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if err := collection.Delete(name); err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+// collectionKeys returns the keys in a collection
+func collectionKeys(args ...string) (string, error) {
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	return strings.Join(collection.Keys(), "\n"), nil
+}
 
 func init() {
 	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "display help")
 	flag.BoolVar(&showLicense, "l", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
+
+	// Application Options
+	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 }
 
 func main() {
 	appName := path.Base(os.Args[0])
 	flag.Parse()
 
-	cfg := cli.New(appName, appName, fmt.Sprintf(license, appName, dataset.Version), dataset.Version)
+	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = fmt.Sprintf(description, appName)
-	cfg.ExampleText = fmt.Sprintf(examples, appName)
+	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName, appName)
 
 	if showHelp == true {
 		fmt.Println(cfg.Usage())
@@ -211,21 +258,25 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Merge environment
+	collectionName = cfg.MergeEnv("collection", collectionName)
+
 	args := flag.Args()
 	if len(args) == 0 {
 		fmt.Println(cfg.Usage())
+		os.Exit(1)
 	}
 	action, params := args[0], args[1:]
 
 	if fn, ok := voc[action]; ok == true {
 		output, err := fn(params...)
 		if err != nil {
-			fmt.Printf("Error %s", err)
+			fmt.Printf("Error %s\n", err)
 			os.Exit(1)
 		}
 		fmt.Println(output)
 	} else {
-		fmt.Printf("Don't understand %s", action)
+		fmt.Printf("Don't understand %s\n", action)
 		os.Exit(1)
 	}
 }

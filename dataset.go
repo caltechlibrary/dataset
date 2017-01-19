@@ -53,6 +53,27 @@ import (
 	"path"
 )
 
+const (
+	Version = "v0.0.0"
+
+	License = `
+%s %s
+
+Copyright (c) 2017, Caltech
+All rights not granted herein are expressly reserved by Caltech.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+`
+)
+
 // countToBucketID turns a count assigns it to a letter sequence (e.g. 0-999 is aa, 1000 - 1999 is ab, etc)
 func countToBucketID(i int, bucketNames []string) string {
 	bucketsize := len(bucketNames)
@@ -115,22 +136,29 @@ func GenerateBucketNames(alphabet string, length int) []string {
 	return l
 }
 
+// Collection is the container holding buckets which in turn hold JSON docs
 type Collection struct {
-	Dataset string            `json:"dataset"`
-	Buckets []string          `json:"buckets"`
-	Name    string            `json:"name"`
-	Keys    map[string]string `json:"keys"`
-	dirty   bool
+	// Version of collection being stored
+	Version string `json:"verison"`
+	// Name of collection
+	Name string `json:"name"`
+	// Dataset is a directory name that holds collections
+	Dataset string `json:"dataset"`
+	// Buckets is a list of bucket names used by collection
+	Buckets []string `json:"buckets"`
+	// KeyMap holds the document name to bucket map for the collection
+	KeyMap map[string]string `json:"keymap"`
 }
 
 // CreateCollection - create a new collection structure on disc
 // name should be filesystem friendly
 func Create(name string, bucketNames []string) (*Collection, error) {
 	c := new(Collection)
+	c.Version = Version
 	c.Name = path.Base(name)
 	c.Dataset = path.Dir(name)
 	c.Buckets = bucketNames
-	c.Keys = map[string]string{}
+	c.KeyMap = map[string]string{}
 	// Make the collection directory
 	if err := os.MkdirAll(path.Join(c.Dataset, c.Name), 0770); err != nil {
 		return nil, err
@@ -169,30 +197,39 @@ func Delete(name string) error {
 	return nil
 }
 
+// saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
+func (c *Collection) saveMetadata() error {
+	src, err := json.Marshal(c)
+	if err != nil {
+		return fmt.Errorf("Can't save metadata, %s", err)
+	}
+	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "collection.json"), src, 0664); err != nil {
+		return err
+	}
+	src, err = json.Marshal(c.Keys())
+	if err != nil {
+		return fmt.Errorf("Can't save key list, %s", err)
+	}
+	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "keys.json"), src, 0664); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Close closes a collection, writing the updated keys to disc
 func (c *Collection) Close() error {
-	if c.dirty == true {
-		src, err := json.Marshal(c)
-		if err != nil {
-			return fmt.Errorf("Can't marshal %s, %s", c.Name, err)
-		}
-		if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "collection.json"), src, 0664); err != nil {
-			return err
-		}
-	}
 	// Cleanup c so it can't accidentally get reused
 	c.Dataset = ""
 	c.Buckets = []string{}
 	c.Name = ""
-	c.Keys = map[string]string{}
-	c.dirty = false
+	c.KeyMap = map[string]string{}
 	return nil
 }
 
-// Create adds a JSON blob to a collection, if problem return an error
-// name must be unique
-func (c *Collection) Create(name string, data interface{}) error {
-	_, keyExists := c.Keys[name]
+// CreateAsJSON adds a JSON doc to a collection, if problem returns an error
+// name must be unique (treated like a key in a key/value store)
+func (c *Collection) CreateAsJSON(name string, src []byte) error {
+	_, keyExists := c.KeyMap[name]
 	if keyExists == true {
 		return fmt.Errorf("%q already exists", name)
 	}
@@ -205,24 +242,40 @@ func (c *Collection) Create(name string, data interface{}) error {
 	if err != nil {
 		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
 	}
-	src, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("WriteJSON() JSON encode %s/%s, %s", p, name, err)
-	}
 	// We've almost made it, save the key's bucket name and write the blob to bucket
-	c.Keys[name] = path.Join(bucketName)
+	c.KeyMap[name] = path.Join(bucketName)
+	c.saveMetadata()
 	return ioutil.WriteFile(path.Join(p, name), src, 0664)
 }
 
-// Read finds the record in a collection, updates data and returns error if a problem is encountered
-// name must exist or an error is returned
-func (c *Collection) Read(name string, data interface{}) error {
-	bucketName, ok := c.Keys[name]
+// Create a JSON doc from an interface{} and adds it  to a collection, if problem returns an error
+// name must be unique
+func (c *Collection) Create(name string, data interface{}) error {
+	src, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("WriteJSON() JSON encode %s, %s", name, err)
+	}
+	return c.CreateAsJSON(name, src)
+}
+
+// ReadAsJSON finds a the record in the collection and returns the JSON source
+func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
+	bucketName, ok := c.KeyMap[name]
 	if ok != true {
-		return fmt.Errorf("%q does not exist", name)
+		return nil, fmt.Errorf("%q does not exist", name)
 	}
 	p := path.Join(c.Dataset, c.Name, bucketName)
 	src, err := ioutil.ReadFile(path.Join(p, name))
+	if err != nil {
+		return nil, err
+	}
+	return src, nil
+}
+
+// Read finds the record in a collection, updates the data interface provide and if problem returns an error
+// name must exist or an error is returned
+func (c *Collection) Read(name string, data interface{}) error {
+	src, err := c.ReadAsJSON(name)
 	if err != nil {
 		return err
 	}
@@ -233,9 +286,9 @@ func (c *Collection) Read(name string, data interface{}) error {
 	return nil
 }
 
-// Update a JSON blob in a collection (note: Record must exist or returns an error )
-func (c *Collection) Update(name string, data interface{}) error {
-	bucketName, ok := c.Keys[name]
+// UpdateAsJSON takes a JSON doc and writes it to a collection (note: Record must exist or returns an error)
+func (c *Collection) UpdateAsJSON(name string, src []byte) error {
+	bucketName, ok := c.KeyMap[name]
 	if ok != true {
 		return fmt.Errorf("%q does not exist", name)
 	}
@@ -244,16 +297,21 @@ func (c *Collection) Update(name string, data interface{}) error {
 	if err != nil {
 		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
 	}
-	src, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("WriteJSON() JSON encode %s/%s, %s", p, name, err)
-	}
 	return ioutil.WriteFile(path.Join(p, name), src, 0664)
 }
 
-// Delete removes a JSON blob from a collection
+// Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
+func (c *Collection) Update(name string, data interface{}) error {
+	src, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("WriteJSON() JSON encode %s, %s", name, err)
+	}
+	return c.UpdateAsJSON(name, src)
+}
+
+// Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	bucketName, ok := c.Keys[name]
+	bucketName, ok := c.KeyMap[name]
 	if ok != true {
 		return fmt.Errorf("%q key not found", name)
 	}
@@ -261,5 +319,16 @@ func (c *Collection) Delete(name string) error {
 	if err := os.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
+	delete(c.KeyMap, name)
+	c.saveMetadata()
 	return nil
+}
+
+// Keys returns a list of keys in a collection
+func (c *Collection) Keys() []string {
+	keys := []string{}
+	for k, _ := range c.KeyMap {
+		keys = append(keys, k)
+	}
+	return keys
 }

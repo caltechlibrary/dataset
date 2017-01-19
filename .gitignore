@@ -33,3 +33,4 @@ dist/*
 dataset/*
 testdata/*
 bin/*
+demo*
