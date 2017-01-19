@@ -26,17 +26,17 @@ as well as minimal metadata about the collection.
 COMMANDS
 
 + init - initialize a new collection, requires a path to collection
-	+ once collection is created, set the environment variable %s_COLLECTION
-	  to collection name
+  + once collection is created, set the environment variable %s_COLLECTION
+    to collection name
 + create - creates a new JSON doc in collection
-	+ requires JSON doc name followed by JSON blob or JSON blob read from stdin
+  + requires JSON doc name followed by JSON blob or JSON blob read from stdin
 + read - displays a JSON doc to stdout
-	+ requires JSON doc name
+  + requires JSON doc name
 + update - updates a JSON doc in collection
-	+ requires JSON doc name, followed by replacement JSON blob or 
-	  JSON blob read from stdin
+  + requires JSON doc name, followed by replacement JSON blob or 
+    JSON blob read from stdin
 + delete - removes a JSON doc from collection
-	+ requires JSON doc name
+  + requires JSON doc name
 + keys - returns the keys to stdout, one key per line
 + path - given a document name return the full path to document
 `
@@ -51,7 +51,8 @@ a record called "littlefreda.json" and reading it back.
    export DATASET_COLLECTION=testdata/friends
    %s create littlefreda.json '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(%s keys); do
-   	 %s read $KY
+      echo "Path: $(dataset path $KY) 
+      echo "Doc: $(%s read $KY)
    done   
 `
 
