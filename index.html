@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="./">dataset</a></li>
+<li><a href="./install.html">INSTALL</a></li>
+<li><a href="./license.html">LICENSE</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>dataset</h1>
+
+<p>A go package for managing JSON documents stored on disc. A dataset stores
+one of more collections, collections store the a buckted distribution of documents
+as well as minimal metadata about the collection.</p>
+
+<h2>disc layout</h2>
+
+<ul>
+<li>dataset
+
+<ul>
+<li>collection
+
+<ul>
+<li>collection.json - metadata about collection
+
+<ul>
+<li>maps the filename of the JSON blob stored to a bucket in the collection</li>
+<li>e.g. file &ldquo;mydocs.jons&rdquo; stored in bucket &ldquo;aa&rdquo; would have a map of {&ldquo;mydocs.json&rdquo;: &ldquo;aa&rdquo;}</li>
+</ul></li>
+<li>BUCKETS - a sequence of alphabet names for buckets holding JSON documents
+
+<ul>
+<li>Buckets let supporting common commands like ls, tree, etc. when the doc count is high</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+
+<p>BUCKETS are names without meaning normally using Alphabetic characters. A dataset defined with four buckets
+might looks like aa, ab, ba, bb.</p>
+
+<h2>operations</h2>
+
+<ul>
+<li>Collection level
+
+<ul>
+<li>Create (collection) - sets up a new disc scripture and creates $DATASET/$COLLECTION_NAME/collection.json</li>
+<li>Open (collection) - opens an existing collections and reads collection.json into memory</li>
+<li>Close (collection) - writes changes to collection.json to disc if dirty</li>
+<li>Delete (collection) - removes a collection from disc</li>
+</ul></li>
+<li>Record level
+
+<ul>
+<li>Create (record) - saves a new JSON blob to disc with given blob name (sets dirty flag on collection)</li>
+<li>Read (record) - finds the bucket the record is in and returns the JSON blob</li>
+<li>Update (record) - updates an existing blob on disc (sets dirty flag on collection)</li>
+<li>Delete (record) - removes a JSON blob from its disc (sets the dirty flag on collection)</li>
+</ul></li>
+</ul>
+
+<h2>Example</h2>
+
+<p>Common operations shown in Golang</p>
+
+<ul>
+<li>create collection</li>
+<li>create a JSON document to collection</li>
+<li>read a JSON document</li>
+<li>update a JSON document</li>
+<li>delete a JSON document</li>
+</ul>
+
+<pre><code class="language-go">    // Create a collection &quot;mystuff&quot; inside the directory called dataset
+    collection, err := dataset.Create(&quot;dataset/mystuff&quot;, dataset.GenerateBucketNames(&quot;ab&quot;, 2))
+    if err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+    defer collection.Close()
+    // Create a JSON document 
+    docName := &quot;freda.json&quot;
+    document := map[string]string{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@inverness.example.org&quot;}
+    if err := collection.Create(docName, document); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+    // Read a JSON document
+    if err := collection.Read(docName, document); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+    // Update a JSON document
+    document[&quot;email&quot;] = &quot;freda@zbs.example.org&quot;
+    if err := collection.Update(docName, document); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+    // Delete a JSON document
+    if err := collection.Delete(docName); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2015 - 2016 <a href="http://library.caltech.edu/CLS_Copyright.htm">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
