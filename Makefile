@@ -45,7 +45,7 @@ clean:
 	if [ -f index.html ]; then /bin/rm *.html; fi
 	if [ -d bin ]; then /bin/rm -fR bin; fi
 	if [ -d dist ]; then /bin/rm -fR dist; fi
-	if [ -f $(PROJECT_NAME)-$(VERSION)-release.zip ]; then /bin/rm $(PROJECT_NAME)-$(VERSION)-release.zip; fi
+	if [ -f $(PROJECT)-$(VERSION)-release.zip ]; then /bin/rm $(PROJECT)-$(VERSION)-release.zip; fi
 
 dist/linux-amd64:
 	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
