@@ -38,6 +38,7 @@ COMMANDS
 + delete - removes a JSON doc from collection
 	+ requires JSON doc name
 + keys - returns the keys to stdout, one key per line
++ path - given a document name return the full path to document
 `
 
 	examples = `
@@ -70,6 +71,7 @@ a record called "littlefreda.json" and reading it back.
 		"update": updateJSONDoc,
 		"delete": deleteJSONDoc,
 		"keys":   collectionKeys,
+		"path":   docPath,
 	}
 
 	// alphabet to use for buckets
@@ -90,12 +92,12 @@ func collectionInit(args ...string) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	c, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
+	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
 	if err != nil {
 		return "", err
 	}
-	defer c.Close()
-	return fmt.Sprintf("export DATASET_COLLECTION=%q", path.Join(c.Dataset, c.Name)), nil
+	defer collection.Close()
+	return fmt.Sprintf("export DATASET_COLLECTION=%q", path.Join(collection.Dataset, collection.Name)), nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
@@ -224,6 +226,30 @@ func collectionKeys(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	return strings.Join(collection.Keys(), "\n"), nil
+}
+
+// docPath returns the path to a JSON document or an error
+func docPath(args ...string) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("Missing document name")
+	}
+	name := args[0]
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if strings.HasSuffix(name, ".json") == false {
+		name = name + ".json"
+	}
+	bucketName, ok := collection.KeyMap[name]
+	if ok != true {
+		return "", fmt.Errorf("Could not find %q", name)
+	}
+	return path.Join(collection.Dataset, collection.Name, bucketName, name), nil
 }
 
 func init() {

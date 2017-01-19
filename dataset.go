@@ -54,7 +54,7 @@ import (
 )
 
 const (
-	Version = "v0.0.0"
+	Version = "v0.0.1-alpha"
 
 	License = `
 %s %s
