@@ -19,13 +19,9 @@ body {
      width: 100%;
      height: 100%;
      color: black;
-     background-color: #AAA99F; /* #76777B;*/
-     /*
-     color: #FF6E1E;
      background-color: white;
-     */
      font-family: Open Sans, Helvetica, Sans-Serif;
-     font-size: 16px;
+     font-size: calc(1em+1vm);
 }
 
 header {
@@ -141,7 +137,7 @@ section {
      position: relative;
      display: inline-block;
      width: 100%;
-     min-height: 84%;
+     height: 100%;
      color: black;
      background-color: white;
      margin: 0;
@@ -168,7 +164,7 @@ section h3 {
 section ul {
     display: block;
     list-style: inside;
-    list-style-type: square;
+    list-style-type: '- ';
     margin: 0;
     padding-left: 1.24em;
 }
@@ -208,7 +204,7 @@ aside ul > ul {
 }
 
 footer {
-     position: relative;
+     position: fixed;
      bottom: 0;
      display: block;
      width: 100%;
