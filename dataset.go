@@ -199,6 +199,9 @@ func Delete(name string) error {
 
 // saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
 func (c *Collection) saveMetadata() error {
+	if err := os.MkdirAll(path.Join(c.Dataset, c.Name), 0775); err != nil {
+		return err
+	}
 	src, err := json.Marshal(c)
 	if err != nil {
 		return fmt.Errorf("Can't save metadata, %s", err)
