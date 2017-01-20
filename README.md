@@ -48,6 +48,7 @@ might looks like aa, ab, ba, bb.
     + Last (select list) - returns the value of the last key in the select list (non-distructively)
     + Rest (select list) - returns values of all keys in the select list except the first (non-destructively)
     + List (select list) - returns values of all keys in the select list (non-destructively)
+    + Length (select list) - returns the number of keys in a select list
     + Push (select list) - appends one or more keys to an existing select list
     + Pop (select list) - returns the last key in select list and removes it
     + Unshift (select list) - inserts one or more new keys at the beginning of the select list

@@ -74,9 +74,9 @@ might looks like aa, ab, ba, bb.</p>
 <li>Close (collection) - writes changes to collection.json to disc if dirty</li>
 <li>Delete (collection) - removes a collection from disc</li>
 <li>Keys (collection) - list of keys in the collection</li>
-<li>Select (collection) - returns the request select list, will create the list and append keys if not exist</li>
+<li>Select (collection) - returns the request select list, will create the list if not exist, append keys if provided</li>
 <li>Clear (collection) - Removes a select list from a collection and disc</li>
-<li>List (collection) - returns the names of the available select lists</li>
+<li>Lists (collection) - returns the names of the available select lists</li>
 </ul></li>
 <li>JSON document level
 
@@ -90,13 +90,17 @@ might looks like aa, ab, ba, bb.</p>
 <li>Select list level
 
 <ul>
-<li>Push (select list) - appends one or more keys to an existing select list</li>
+<li>First (select list) - returns the value of the first key in the select list (non-distructively)</li>
 <li>Last (select list) - returns the value of the last key in the select list (non-distructively)</li>
+<li>Rest (select list) - returns values of all keys in the select list except the first (non-destructively)</li>
+<li>List (select list) - returns values of all keys in the select list (non-destructively)</li>
+<li>Length (select list) - returns the number of keys in a select list</li>
+<li>Push (select list) - appends one or more keys to an existing select list</li>
 <li>Pop (select list) - returns the last key in select list and removes it</li>
 <li>Unshift (select list) - inserts one or more new keys at the beginning of the select list</li>
-<li>First (select list) - returns the value of the first key in the select list (non-distructively)</li>
 <li>Shift (select list) - returns the first key in a select list and removes it</li>
-<li>Rest (select list) - returns values of all keys in the select list except the first</li>
+<li>Sort (select list) - orders the select lists&rsquo; keys in ascending or descending alphabetical order</li>
+<li>Reverse (select list) - flips the order of the keys in the select list</li>
 </ul></li>
 </ul>
 

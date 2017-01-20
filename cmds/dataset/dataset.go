@@ -13,15 +13,16 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] COMMAND [COLLECTION PATH| FILENAME | JSON DATA]`
+	usage = `USAGE: %s [OPTIONS] COMMAND_AND_PARAMETERS`
 
 	description = `
 SYNOPSIS
 
-%s is a command line tool demonstrating %s package for managing 
+%s is a command line tool demonstrating dataset package for managing 
 JSON documents stored on disc. A dataset stores one of more collections, 
-collections store the a buckted distribution of documents
-as well as minimal metadata about the collection.
+collections store the a bucketted distribution of JSON documents
+as well as metadata about the collection (e.g. collection info,
+select lists).
 
 COMMANDS
 
@@ -45,33 +46,33 @@ Collection and JSON Documant related--
 Select list related--
 
 + select - is the command for working with lists of collection keys
-	+ "dataset select mylist k1 k2 k3" would create/update a select list 
+	+ "%s select mylist k1 k2 k3" would create/update a select list 
 	  mylist adding keys k1, k2, k3
 + lists - returns the select list names associated with a collection
-	+ "dataset lists"
+	+ "%s lists"
 + clear - removes a select list from the collection
-	+ "dataset clear mylist"
+	+ "%s clear mylist"
 + first - writes the first key to stdout
-	+ "dataset first mylist"
+	+ "%s first mylist"
 + last would display the last key in the list
-	+ "dataset last mylist"
+	+ "%s last mylist"
 + rest displays all but the first key in the list
-	+ "dataset rest mylist"
+	+ "%s rest mylist"
 + list displays a list of keys from the select list to stdout
 	+ "dataet list mylist" 
 + shift writes the first key to stdout and remove it from list
-	+ "dataset shift mylist" 
+	+ "%s shift mylist" 
 + unshift would insert at the beginning 
-	+ "dataset unshift mylist k4"
+	+ "%s unshift mylist k4"
 + push would append the list
-	+ "dataset push mylist k4"
+	+ "%s push mylist k4"
 + pop removes last key form list and displays it
-	+ "dataset pop mylist" 
+	+ "%s pop mylist" 
 + sort orders the keys alphabetically in the list
-	+ "dataset sort mylist asc" - sorts in ascending order
-	+ "dataset sort mylist desc" - sorts in descending order
+	+ "%s sort mylist asc" - sorts in ascending order
+	+ "%s sort mylist desc" - sorts in descending order
 + reverse flips the order of the list
-	+ "dataset reverse mylists"
+	+ "%s reverse mylists"
 `
 
 	examples = `
@@ -86,8 +87,7 @@ a record called "littlefreda.json" and reading it back.
    for KY in $(%s keys); do
       echo "Path: $(dataset path $KY) 
       echo "Doc: $(%s read $KY)
-   done   
-`
+   done`
 
 	// Standard Options
 	showHelp    bool
@@ -559,8 +559,12 @@ func main() {
 
 	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = fmt.Sprintf(description, appName)
-	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName, appName)
+	cfg.DescriptionText = fmt.Sprintf(description,
+		appName, appName, appName, appName, appName,
+		appName, appName, appName, appName, appName,
+		appName, appName, appName, appName, appName)
+	cfg.ExampleText = fmt.Sprintf(examples,
+		appName, appName, appName, appName)
 
 	if showHelp == true {
 		fmt.Println(cfg.Usage())
