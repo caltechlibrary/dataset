@@ -55,8 +55,10 @@ import (
 )
 
 const (
+	// Version of the dataset package
 	Version = "v0.0.1-alpha"
 
+	// License for dataset package
 	License = `
 %s %s
 
@@ -159,7 +161,7 @@ type SelectList struct {
 	Keys  []string `json:"keys"`
 }
 
-// CreateCollection - create a new collection structure on disc
+// Create - create a new collection structure on disc
 // name should be filesystem friendly
 func Create(name string, bucketNames []string) (*Collection, error) {
 	c := new(Collection)
@@ -253,12 +255,11 @@ func (c *Collection) CreateAsJSON(name string, src []byte) error {
 	p := path.Join(c.Dataset, c.Name, bucketName)
 	err := os.MkdirAll(p, 0770)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
+		return fmt.Errorf("mkdir %s %s", p, err)
 	}
 	// We've almost made it, save the key's bucket name and write the blob to bucket
 	c.KeyMap[keyName] = path.Join(bucketName)
-	c.saveMetadata()
-	return ioutil.WriteFile(path.Join(p, name), src, 0664)
+	return c.saveMetadata()
 }
 
 // Create a JSON doc from an interface{} and adds it  to a collection, if problem returns an error
@@ -266,7 +267,7 @@ func (c *Collection) CreateAsJSON(name string, src []byte) error {
 func (c *Collection) Create(name string, data interface{}) error {
 	src, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() JSON encode %s, %s", name, err)
+		return fmt.Errorf("%s, %s", name, err)
 	}
 	return c.CreateAsJSON(name, src)
 }
@@ -353,14 +354,13 @@ func (c *Collection) Delete(name string) error {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
 	delete(c.KeyMap, keyName)
-	c.saveMetadata()
-	return nil
+	return c.saveMetadata()
 }
 
 // Keys returns a list of keys in a collection
 func (c *Collection) Keys() []string {
 	keys := []string{}
-	for k, _ := range c.KeyMap {
+	for k := range c.KeyMap {
 		keys = append(keys, k)
 	}
 	return keys
@@ -387,7 +387,7 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 
 	_, name = keyAndName(name)
 
-	src, err := ioutil.ReadFile(path.Join(c.Dataset, name))
+	src, err := ioutil.ReadFile(path.Join(c.Dataset, c.Name, name))
 	if err != nil {
 		return nil, err
 	}
@@ -396,14 +396,15 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 		return nil, err
 	}
 	sl := &SelectList{
-		FName: path.Join(c.Dataset, name),
+		FName: path.Join(c.Dataset, c.Name, name),
 		Keys:  data,
 	}
 
 	return sl, nil
 }
 
-// Select creates, appends a select list with zero or more keys or returns an updated list or error
+// Select returns a select assocaited with a collection, it will be created if neccessary and
+// any keys included will be added before returning the updated list
 func (c *Collection) Select(params ...string) (*SelectList, error) {
 	var (
 		name     string

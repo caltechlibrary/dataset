@@ -268,7 +268,24 @@ func docPath(args ...string) (string, error) {
 }
 
 func selectList(params ...string) (string, error) {
-	return "", fmt.Errorf("selectList() not implemented.")
+	if len(params) == 0 {
+		params = []string{"keys"}
+	}
+	if params[0] == "collection" {
+		return "", fmt.Errorf("collection is not a valid list name")
+	}
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	l, err := collection.Select(params...)
+	if err != nil {
+		return "", err
+	}
+	return strings.Join(l.Keys, "\n"), nil
 }
 
 func init() {
