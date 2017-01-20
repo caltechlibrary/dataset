@@ -34,9 +34,9 @@ might looks like aa, ab, ba, bb.
     + Close (collection) - writes changes to collection.json to disc if dirty
     + Delete (collection) - removes a collection from disc
     + Keys (collection) - list of keys in the collection
-    + Select (collection) - returns the request select list, will create the list and append keys if not exist
+    + Select (collection) - returns the request select list, will create the list if not exist, append keys if provided
     + Clear (collection) - Removes a select list from a collection and disc
-    + List (collection) - returns the names of the available select lists
+    + Lists (collection) - returns the names of the available select lists
 + JSON document level
     + Create (JSON document) - saves a new JSON blob to disc with given blob name (sets dirty flag on collection)
     + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
@@ -44,13 +44,16 @@ might looks like aa, ab, ba, bb.
     + Delete (JSON document) - removes a JSON blob from its disc (sets the dirty flag on collection)
     + Path (JSON document) - returns the path to the JSON document
 + Select list level
-    + Push (select list) - appends one or more keys to an existing select list
+    + First (select list) - returns the value of the first key in the select list (non-distructively)
     + Last (select list) - returns the value of the last key in the select list (non-distructively)
+    + Rest (select list) - returns values of all keys in the select list except the first (non-destructively)
+    + List (select list) - returns values of all keys in the select list (non-destructively)
+    + Push (select list) - appends one or more keys to an existing select list
     + Pop (select list) - returns the last key in select list and removes it
     + Unshift (select list) - inserts one or more new keys at the beginning of the select list
-    + First (select list) - returns the value of the first key in the select list (non-distructively)
     + Shift (select list) - returns the first key in a select list and removes it
-    + Rest (select list) - returns values of all keys in the select list except the first
+    + Sort (select list) - orders the select lists' keys in ascending or descending alphabetical order
+    + Reverse (select list) - flips the order of the keys in the select list
 
 ## Example
 
