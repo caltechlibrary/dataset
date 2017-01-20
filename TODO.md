@@ -1,7 +1,9 @@
 
 # Next
 
++ sort doesn't work if key names are numeric...
 + add tests for bucket distrubution of documents
+
 
 # Someday, Maybe
 
