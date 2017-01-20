@@ -148,6 +148,19 @@ type Collection struct {
 	Buckets []string `json:"buckets"`
 	// KeyMap holds the document name to bucket map for the collection
 	KeyMap map[string]string `json:"keymap"`
+	// Indexes names of available indexes
+	Indexes []string `json:"indexes"`
+	// SelectList holds the names of available select lists
+	SelectList []string `json:"select_lists"`
+}
+
+// Index holds a map from term to list of keys from a collection
+type Index map[string][]string
+
+// SelectList holds an ordered list of keys from a collection
+type SelectList struct {
+	// An ordered list of keys into a collection
+	Keys []string `json:"keys"`
 }
 
 // CreateCollection - create a new collection structure on disc
@@ -159,6 +172,7 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 	c.Dataset = path.Dir(name)
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
+	c.Index = &[]Index{}
 	// Make the collection directory
 	if err := os.MkdirAll(path.Join(c.Dataset, c.Name), 0770); err != nil {
 		return nil, err
@@ -213,6 +227,8 @@ func (c *Collection) saveMetadata() error {
 	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "keys.json"), src, 0664); err != nil {
 		return err
 	}
+	//FIXME: Need to save indexes
+	//FIXME: Need to save select lists
 	return nil
 }
 
@@ -223,7 +239,19 @@ func (c *Collection) Close() error {
 	c.Buckets = []string{}
 	c.Name = ""
 	c.KeyMap = map[string]string{}
+	c.SelectList = map[string][]string{}
+	c.Indexes = map[string]*Index{}
 	return nil
+}
+
+// SelectList takes a name and an ordered list of keys
+func (c *Collection) SelectList(name string, keys []string) error {
+	return fmt.Errorf("SelectList() not implemented")
+}
+
+// Index takes a name and list of map of terms to list of JSON doc names
+func (c *Collection) Index(name string, idx *Index) error {
+	return fmt.Errorf("Index() not implemented")
 }
 
 // CreateAsJSON adds a JSON doc to a collection, if problem returns an error

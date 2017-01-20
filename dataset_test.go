@@ -150,3 +150,7 @@ func TestCollection(t *testing.T) {
 			}
 	*/
 }
+
+func TestIndexing(t *testing.T) {
+	t.Errorf("TestIndexing not implemented.")
+}
