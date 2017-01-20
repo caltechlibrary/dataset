@@ -133,24 +133,18 @@ func TestCollection(t *testing.T) {
 	//FIXME: keys.json should hold one key
 	//FIXME: collection.json's keymap should hold one key
 
-	/*
-		err = collection.Delete("freda.json")
-		if err != nil {
-			t.Errorf("Should be able to delete %s, %s", "freda.json", err)
-			t.FailNow()
-		}
-		err = collection.Read("freda.json", &rec2)
-		if err == nil {
-			t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
-		}
+	err = collection.Delete("freda.json")
+	if err != nil {
+		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
+		t.FailNow()
+	}
+	err = collection.Read("freda.json", &rec2)
+	if err == nil {
+		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
+	}
 
-			err = Delete(colName)
-			if err != nil {
-				t.Errorf("Couldn't remove collection %s, %s", colName, err)
-			}
-	*/
-}
-
-func TestIndexing(t *testing.T) {
-	t.Errorf("TestIndexing not implemented.")
+	err = Delete(colName)
+	if err != nil {
+		t.Errorf("Couldn't remove collection %s, %s", colName, err)
+	}
 }

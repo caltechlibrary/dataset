@@ -148,19 +148,14 @@ type Collection struct {
 	Buckets []string `json:"buckets"`
 	// KeyMap holds the document name to bucket map for the collection
 	KeyMap map[string]string `json:"keymap"`
-	// Indexes names of available indexes
-	Indexes []string `json:"indexes"`
-	// SelectList holds the names of available select lists
-	SelectList []string `json:"select_lists"`
+	// SelectLists holds the names of available select lists
+	SelectLists []string `json:"select_lists"`
 }
 
-// Index holds a map from term to list of keys from a collection
-type Index map[string][]string
-
-// SelectList holds an ordered list of keys from a collection
+// SelectList is an ordered set of keys
 type SelectList struct {
-	// An ordered list of keys into a collection
-	Keys []string `json:"keys"`
+	FName string   `json:"name"`
+	Keys  []string `json:"keys"`
 }
 
 // CreateCollection - create a new collection structure on disc
@@ -172,20 +167,10 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 	c.Dataset = path.Dir(name)
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
-	c.Index = &[]Index{}
-	// Make the collection directory
-	if err := os.MkdirAll(path.Join(c.Dataset, c.Name), 0770); err != nil {
-		return nil, err
-	}
-	// Add the JSON metadata for collection
-	src, err := json.Marshal(c)
-	if err != nil {
-		return nil, err
-	}
-	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "collection.json"), src, 0664); err != nil {
-		return nil, err
-	}
-	return c, nil
+	c.SelectList = []string{"keys"}
+	// Save the metadata for collection
+	err := c.saveMetadata()
+	return c, err
 }
 
 // Open reads in a collection's metadata and returns and new collection structure and err
@@ -227,8 +212,6 @@ func (c *Collection) saveMetadata() error {
 	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "keys.json"), src, 0664); err != nil {
 		return err
 	}
-	//FIXME: Need to save indexes
-	//FIXME: Need to save select lists
 	return nil
 }
 
@@ -239,25 +222,23 @@ func (c *Collection) Close() error {
 	c.Buckets = []string{}
 	c.Name = ""
 	c.KeyMap = map[string]string{}
-	c.SelectList = map[string][]string{}
-	c.Indexes = map[string]*Index{}
+	c.SelectList = []string{}
 	return nil
-}
-
-// SelectList takes a name and an ordered list of keys
-func (c *Collection) SelectList(name string, keys []string) error {
-	return fmt.Errorf("SelectList() not implemented")
-}
-
-// Index takes a name and list of map of terms to list of JSON doc names
-func (c *Collection) Index(name string, idx *Index) error {
-	return fmt.Errorf("Index() not implemented")
 }
 
 // CreateAsJSON adds a JSON doc to a collection, if problem returns an error
 // name must be unique (treated like a key in a key/value store)
 func (c *Collection) CreateAsJSON(name string, src []byte) error {
-	_, keyExists := c.KeyMap[name]
+	var keyName string
+
+	if strings.HasSuffix(name, ".json") == true {
+		keyName = strings.TrimSuffix(name, ".json")
+	} else {
+		keyName = name
+		name = name + ".json"
+	}
+
+	_, keyExists := c.KeyMap[keyName]
 	if keyExists == true {
 		return fmt.Errorf("%q already exists", name)
 	}
@@ -271,7 +252,7 @@ func (c *Collection) CreateAsJSON(name string, src []byte) error {
 		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
 	}
 	// We've almost made it, save the key's bucket name and write the blob to bucket
-	c.KeyMap[name] = path.Join(bucketName)
+	c.KeyMap[keyName] = path.Join(bucketName)
 	c.saveMetadata()
 	return ioutil.WriteFile(path.Join(p, name), src, 0664)
 }
@@ -286,9 +267,21 @@ func (c *Collection) Create(name string, data interface{}) error {
 	return c.CreateAsJSON(name, src)
 }
 
+func keyAndName(name string) (string, string) {
+	var keyName string
+	if strings.HasSuffix(name, ".json") == true {
+		keyName = strings.TrimSuffix(name, ".json")
+		return keyName, name
+	}
+	return name, name + ".json"
+}
+
 // ReadAsJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
-	bucketName, ok := c.KeyMap[name]
+	var keyName string
+
+	keyName, name = keyAndName(name)
+	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist", name)
 	}
@@ -316,7 +309,11 @@ func (c *Collection) Read(name string, data interface{}) error {
 
 // UpdateAsJSON takes a JSON doc and writes it to a collection (note: Record must exist or returns an error)
 func (c *Collection) UpdateAsJSON(name string, src []byte) error {
-	bucketName, ok := c.KeyMap[name]
+	var keyName string
+
+	keyName, name = keyAndName(name)
+
+	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
 		return fmt.Errorf("%q does not exist", name)
 	}
@@ -339,7 +336,11 @@ func (c *Collection) Update(name string, data interface{}) error {
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	bucketName, ok := c.KeyMap[name]
+	var keyName string
+
+	keyName, name = keyAndName(name)
+
+	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
 		return fmt.Errorf("%q key not found", name)
 	}
@@ -347,7 +348,7 @@ func (c *Collection) Delete(name string) error {
 	if err := os.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
-	delete(c.KeyMap, name)
+	delete(c.KeyMap, keyName)
 	c.saveMetadata()
 	return nil
 }
@@ -359,4 +360,192 @@ func (c *Collection) Keys() []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+//
+// Note: Select Lists are an array of keys (JSON document names without .json)
+// they are associated with a collections but they are just JSON document
+// which is an array of keys.
+//
+
+func (c *Collection) hasList(name string) bool {
+	keyName, _ := keyAndName(name)
+	for _, k := range a {
+		if strings.Compare(k, keyName) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Collection) getList(name string) (SelectList, error) {
+	var (
+		data []string
+	)
+
+	_, name = keyAndName(name)
+
+	src, err := ioutil.ReadFile(path.Join(c.Dataset, name))
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		return nil, err
+	}
+	sl := &SelectList{
+		FName: path.Join(c.Dataset, name),
+		Keys:  data,
+	}
+
+	return sl, nil
+}
+
+// Select creates a select list with zero or more keys or returns an existing list
+func (c *Collection) Select(name string, keys ...string) (SelectList, error) {
+	var listName string
+
+	listName, name = keyAndName(name)
+
+	if strings.Compare(name, "keys.json") == 0 {
+		return c.getList("keys")
+	}
+
+	if c.hasList(listName) == true {
+		return c.getList(listName)
+	}
+
+	src, err := json.Marshal(keys)
+	if err != nil {
+		return nil, err
+	}
+
+	err := ioutil.WriteFile(path.Join(c.Dataset, name), src, 0664)
+	if err != nil {
+		return nil, err
+	}
+	c.SelectList = append(c.SelectList, listName)
+	err := c.saveMetadata()
+	if err != nil {
+		return nil, err
+	}
+	return keys, nil
+}
+
+// Clear removes a select list from disc and the collection
+func (c *Collection) Clear(name string) error {
+	var (
+		listName string
+		err      error
+	)
+
+	listName, name = keyAndName(name)
+
+	if strings.Compare(name, "keys.json") == 0 {
+		return fmt.Errorf("cannot clear default select list")
+	}
+
+	removeItem := func(s []string, r string) ([]string, error) {
+		for i, v := range s {
+			if v == r {
+				return append(s[:i], s[i+1:]...), nil
+			}
+		}
+		return s, fmt.Error("%s not found")
+	}
+
+	c.SelectList, err = removeItem(c.SelectList, listName)
+	if err != nil {
+		return err
+	}
+	err := os.Remove(path.Join(c.Dataset, name))
+	if err != nil {
+		return err
+	}
+	return c.saveMetatdata()
+}
+
+// Lists returns a list of available select lists, should always contain the default keys list
+func (c *Collection) Lists() []string {
+	return c.SelectList
+}
+
+//
+// Select list operations and functions (operating on type SelectList)
+//
+
+// Length returns the number of items in the select list
+func (s *SelectList) Length() int {
+	return len(s.Keys)
+}
+
+// First select list returns the first item in the list (non-destructively)
+func (s SelectList) First() string {
+	if len(s.Keys) > 0 {
+		return s.Keys[0]
+	}
+	return ""
+}
+
+// Last select list returns the list item from the list (non-destructively)
+func (s *SelectList) Last(n int) []string {
+	l := len(s)
+	if n > 1 && n < l {
+		return s[l-n : l-1]
+	}
+	return []string{s[l-1]}
+}
+
+// Rest select list returns all but the first n items of the list (non-destructively)
+func (s *SelectList) Rest() []string {
+	l = len(s)
+	if l > 0 {
+		return s[1:]
+	}
+	return []string{}
+}
+
+// saveList writes the .Keys to a JSON document named .FName
+func (s *SelectList) saveList() error {
+	src, err := json.Marshal(s.Keys)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(s.FName, src, 0664)
+}
+
+// Pop select list removes from the end of an array returning the element removed
+func (s *SelectList) Pop() string {
+	l = len(s.Keys)
+	if l == 0 {
+		return ""
+	}
+	r := s.Keys[l-1]
+	s.Keys = s.Keys[0 : l-1]
+	s.saveList()
+	return r
+}
+
+// Push select list appends an element to the end of an array
+func (s *SelectList) Push(val string) {
+	s.Keys = append(s.Keys, val)
+	s.saveList()
+}
+
+// Shift select list removes from the beginning of and array returning the element removed
+func (s *SelectList) Shift() string {
+	l = len(s.Keys)
+	if l > 0 {
+		r := s.Keys[0]
+		s.Keys = s.Keys[1:]
+		s.saveList()
+		return r
+	}
+	return ""
+}
+
+// Unshift select list inserts an element at the start of an array
+func (s *SelectList) Unshift(val string) {
+	s.Keys = append([]string{val}, s.Keys[:]...)
+	s.saveList()
 }
