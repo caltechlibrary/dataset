@@ -86,9 +86,18 @@ func TestCollection(t *testing.T) {
 		"name":  "freda",
 		"email": "freda@inverness.example.org",
 	}
-	err = collection.Create("freda.json", rec1)
+	err = collection.Create("freda", rec1)
 	if err != nil {
 		t.Errorf("collection.Create(), %s", err)
+		t.FailNow()
+	}
+	p, err := collection.DocPath("freda")
+	if err != nil {
+		t.Errorf("Should have docpath for %s, %s", "freda", err)
+		t.FailNow()
+	}
+	if _, err := os.Stat(p); os.IsNotExist(err) == true {
+		t.Errorf("Should have saved %s to disc at %s", "freda", p)
 		t.FailNow()
 	}
 	if len(collection.KeyMap) != 1 {
@@ -102,8 +111,8 @@ func TestCollection(t *testing.T) {
 	}
 
 	// Clear record, then read it again
-	rec2 := map[string]string{}
-	err = collection.Read("freda.json", &rec2)
+	var rec2 map[string]string
+	err = collection.Read("freda", &rec2)
 	if err != nil {
 		t.Errorf("Read(), %s", err)
 	}
@@ -113,7 +122,7 @@ func TestCollection(t *testing.T) {
 				t.Errorf("expected %s in record, got, %s", expected, val)
 			}
 		} else {
-			t.Errorf("Read() missing %s in %+v", k, rec2)
+			t.Errorf("Read() missing %s in %+v, %+v", k, rec1, rec2)
 			t.FailNow()
 		}
 	}
@@ -132,15 +141,20 @@ func TestCollection(t *testing.T) {
 
 	// Select collection level sellect lists
 	keys1 := collection.Keys()
-	selectLists := collection.List()
+	selectLists := collection.Lists()
 	if len(selectLists) != 1 {
 		t.Errorf("Have unexpected select lists, %+v", selectLists)
 	}
-	if strings.Compare(selectLists[0], "keys") == 0 {
-		t.Errorf("Should find keys")
+	if strings.Compare(selectLists[0], "keys") != 0 {
+		t.Errorf("Should find keys in %+v", selectLists)
 		t.FailNow()
 	}
-	keys2 := collection.Select("keys")
+	sl, err := collection.Select("keys")
+	if err != nil {
+		t.Errorf("select failed, %s", err)
+		t.FailNow()
+	}
+	keys2 := sl.Keys[:]
 	if len(keys2) != 1 {
 		t.Errorf("Should only have one key in collection, %+v", keys2)
 	}

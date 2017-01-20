@@ -129,9 +129,6 @@ func createJSONDoc(args ...string) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
 	}
-	if strings.HasSuffix(name, ".json") == false {
-		name = name + ".json"
-	}
 	if len(src) == 0 {
 		return "", fmt.Errorf("missing JSON source")
 	}
@@ -158,9 +155,6 @@ func readJSONDoc(args ...string) (string, error) {
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
-	}
-	if strings.HasSuffix(name, ".json") == false {
-		name = name + ".json"
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -190,9 +184,6 @@ func updateJSONDoc(args ...string) (string, error) {
 	if len(src) == 0 {
 		return "", fmt.Errorf("missing JSON source")
 	}
-	if strings.HasSuffix(name, ".json") == false {
-		name = name + ".json"
-	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -216,9 +207,6 @@ func deleteJSONDoc(args ...string) (string, error) {
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
-	}
-	if strings.HasSuffix(name, ".json") == false {
-		name = name + ".json"
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -259,14 +247,7 @@ func docPath(args ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if strings.HasSuffix(name, ".json") == false {
-		name = name + ".json"
-	}
-	bucketName, ok := collection.KeyMap[name]
-	if ok != true {
-		return "", fmt.Errorf("Could not find %q", name)
-	}
-	return path.Join(collection.Dataset, collection.Name, bucketName, name), nil
+	return collection.DocPath(name)
 }
 
 func selectList(params ...string) (string, error) {

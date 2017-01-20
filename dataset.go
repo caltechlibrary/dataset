@@ -221,6 +221,15 @@ func (c *Collection) saveMetadata() error {
 	return nil
 }
 
+// DocPath returns a full path to a key or an error if not found
+func (c *Collection) DocPath(name string) (string, error) {
+	keyName, name := keyAndFName(name)
+	if bucketName, ok := c.KeyMap[keyName]; ok == true {
+		return path.Join(c.Dataset, c.Name, bucketName, name), nil
+	}
+	return "", fmt.Errorf("Can't find %q", name)
+}
+
 // Close closes a collection, writing the updated keys to disc
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
@@ -235,14 +244,7 @@ func (c *Collection) Close() error {
 // CreateAsJSON adds a JSON doc to a collection, if problem returns an error
 // name must be unique (treated like a key in a key/value store)
 func (c *Collection) CreateAsJSON(name string, src []byte) error {
-	var keyName string
-
-	if strings.HasSuffix(name, ".json") == true {
-		keyName = strings.TrimSuffix(name, ".json")
-	} else {
-		keyName = name
-		name = name + ".json"
-	}
+	keyName, name := keyAndFName(name)
 
 	_, keyExists := c.KeyMap[keyName]
 	if keyExists == true {
@@ -259,6 +261,10 @@ func (c *Collection) CreateAsJSON(name string, src []byte) error {
 	}
 	// We've almost made it, save the key's bucket name and write the blob to bucket
 	c.KeyMap[keyName] = path.Join(bucketName)
+	err = ioutil.WriteFile(path.Join(p, name), src, 0664)
+	if err != nil {
+		return err
+	}
 	return c.saveMetadata()
 }
 
@@ -272,7 +278,7 @@ func (c *Collection) Create(name string, data interface{}) error {
 	return c.CreateAsJSON(name, src)
 }
 
-func keyAndName(name string) (string, string) {
+func keyAndFName(name string) (string, string) {
 	var keyName string
 	if strings.HasSuffix(name, ".json") == true {
 		keyName = strings.TrimSuffix(name, ".json")
@@ -285,7 +291,7 @@ func keyAndName(name string) (string, string) {
 func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 	var keyName string
 
-	keyName, name = keyAndName(name)
+	keyName, name = keyAndFName(name)
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist", name)
@@ -316,7 +322,7 @@ func (c *Collection) Read(name string, data interface{}) error {
 func (c *Collection) UpdateAsJSON(name string, src []byte) error {
 	var keyName string
 
-	keyName, name = keyAndName(name)
+	keyName, name = keyAndFName(name)
 
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
@@ -343,7 +349,7 @@ func (c *Collection) Update(name string, data interface{}) error {
 func (c *Collection) Delete(name string) error {
 	var keyName string
 
-	keyName, name = keyAndName(name)
+	keyName, name = keyAndFName(name)
 
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
@@ -371,7 +377,7 @@ func (c *Collection) Keys() []string {
 //
 
 func (c *Collection) hasList(name string) bool {
-	keyName, _ := keyAndName(name)
+	keyName, _ := keyAndFName(name)
 	for _, k := range c.SelectLists {
 		if strings.Compare(k, keyName) == 0 {
 			return true
@@ -385,7 +391,7 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 		data []string
 	)
 
-	_, name = keyAndName(name)
+	_, name = keyAndFName(name)
 
 	src, err := ioutil.ReadFile(path.Join(c.Dataset, c.Name, name))
 	if err != nil {
@@ -421,7 +427,7 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 		}
 	}
 
-	listName, name = keyAndName(name)
+	listName, name = keyAndFName(name)
 
 	if strings.Compare(name, "keys.json") == 0 {
 		return c.getList("keys")
@@ -462,7 +468,7 @@ func (c *Collection) Clear(name string) error {
 		err      error
 	)
 
-	listName, name = keyAndName(name)
+	listName, name = keyAndFName(name)
 
 	if strings.Compare(name, "keys.json") == 0 {
 		return fmt.Errorf("cannot clear default select list")

@@ -25,6 +25,9 @@ install: $(PROJECT_LIST)
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	./mk-website.bash
 
+test:
+	go test
+
 format:
 	goimports -w dataset.go
 	goimports -w dataset_test.go
@@ -37,9 +40,6 @@ lint:
 	golint dataset.go
 	golint dataset_test.go
 	golint cmds/dataset/dataset.go
-
-test:
-	go test
 
 clean:
 	if [ -f index.html ]; then /bin/rm *.html; fi
