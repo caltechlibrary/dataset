@@ -25,6 +25,8 @@ as well as minimal metadata about the collection.
 
 COMMANDS
 
+Collection and JSON Documant related--
+
 + init - initialize a new collection, requires a path to collection
   + once collection is created, set the environment variable %s_COLLECTION
     to collection name
@@ -39,19 +41,37 @@ COMMANDS
   + requires JSON doc name
 + keys - returns the keys to stdout, one key per line
 + path - given a document name return the full path to document
+
+Select list related--
+
 + select - is the command for working with lists of collection keys
-	+ "select mylist k1 k2 k3" would create/update the select list 
-	  mylist with keys k1, k2, k3
-    + "select mylist first" would write the first key to stdout
-	+ "select mylist shift" would write the first key to stdout 
-	   and remove it from list
-	+ "select mylist unshift k4" would insert at the beginning the key k4
-	+ "select mylist last" would display the last key in the list
-	+ "select mylist pop" would display the last key in the list and
-	   remove it from the list
-    + "select mylist push k4" would append the list with key k4
-	+ "select mylist list" would display a list of keys to stdout
-    + "select mylist rest" would display all but the first key in the list
+	+ "dataset select mylist k1 k2 k3" would create/update a select list 
+	  mylist adding keys k1, k2, k3
++ lists - returns the select list names associated with a collection
+	+ "dataset lists"
++ clear - removes a select list from the collection
+	+ "dataset clear mylist"
++ first - writes the first key to stdout
+	+ "dataset first mylist"
++ last would display the last key in the list
+	+ "dataset last mylist"
++ rest displays all but the first key in the list
+	+ "dataset rest mylist"
++ list displays a list of keys from the select list to stdout
+	+ "dataet list mylist" 
++ shift writes the first key to stdout and remove it from list
+	+ "dataset shift mylist" 
++ unshift would insert at the beginning 
+	+ "dataset unshift mylist k4"
++ push would append the list
+	+ "dataset push mylist k4"
++ pop removes last key form list and displays it
+	+ "dataset pop mylist" 
++ sort orders the keys alphabetically in the list
+	+ "dataset sort mylist asc" - sorts in ascending order
+	+ "dataset sort mylist desc" - sorts in descending order
++ reverse flips the order of the list
+	+ "dataset reverse mylists"
 `
 
 	examples = `
@@ -79,16 +99,27 @@ a record called "littlefreda.json" and reading it back.
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
-		"init":   collectionInit,
-		"create": createJSONDoc,
-		"read":   readJSONDoc,
-		"update": updateJSONDoc,
-		"delete": deleteJSONDoc,
-		"keys":   collectionKeys,
-		"path":   docPath,
-		"select": selectList,
-		"lists":  selectLists,
-		"clear":  clearList,
+		"init":    collectionInit,
+		"create":  createJSONDoc,
+		"read":    readJSONDoc,
+		"update":  updateJSONDoc,
+		"delete":  deleteJSONDoc,
+		"keys":    collectionKeys,
+		"path":    docPath,
+		"select":  selectList,
+		"lists":   lists,
+		"clear":   clear,
+		"first":   first,
+		"last":    last,
+		"rest":    rest,
+		"list":    list,
+		"push":    push,
+		"pop":     pop,
+		"shift":   shift,
+		"unshift": unshift,
+		"length":  length,
+		"sort":    sort,
+		"reverse": reverse,
 	}
 
 	// alphabet to use for buckets
@@ -271,7 +302,7 @@ func selectList(params ...string) (string, error) {
 	return strings.Join(l.Keys, "\n"), nil
 }
 
-func selectLists(params ...string) (string, error) {
+func lists(params ...string) (string, error) {
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -280,7 +311,7 @@ func selectLists(params ...string) (string, error) {
 	return strings.Join(collection.Lists(), "\n"), nil
 }
 
-func clearList(params ...string) (string, error) {
+func clear(params ...string) (string, error) {
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -301,6 +332,215 @@ func clearList(params ...string) (string, error) {
 	}
 	return "OK", nil
 
+}
+
+func first(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return sl.First(), nil
+}
+
+func last(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return sl.Last(), nil
+}
+
+func rest(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return strings.Join(sl.Rest(), "\n"), nil
+}
+
+func list(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return strings.Join(sl.List(), "\n"), nil
+}
+
+func length(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d", sl.Length()), nil
+}
+
+func push(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) < 2 {
+		return "", fmt.Errorf("requires list name and one or more keys")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	for _, param := range params[1:] {
+		l := sl.Length() + 1
+		sl.Push(param)
+		if l != sl.Length() {
+			return "", fmt.Errorf("%s not added to %s", param, params[0])
+		}
+	}
+	return "OK", nil
+}
+
+func pop(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return sl.Pop(), nil
+}
+
+func shift(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	return sl.Shift(), nil
+}
+
+func unshift(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) < 2 {
+		return "", fmt.Errorf("requires list name and one or more keys")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	for _, param := range params[1:] {
+		l := sl.Length() + 1
+		sl.Unshift(param)
+		if l != sl.Length() {
+			return "", fmt.Errorf("%s not added to %s", param, params[0])
+		}
+	}
+	return "OK", nil
+}
+
+func sort(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) < 2 {
+		return "", fmt.Errorf("requires list name and direction (e.g. asc or desc)")
+	}
+	d := dataset.ASC
+	direction := strings.ToLower(strings.TrimSpace(params[1]))
+	switch {
+	case strings.HasPrefix(direction, "asc"):
+		d = dataset.ASC
+	case strings.HasPrefix(direction, "desc"):
+		d = dataset.DESC
+	default:
+		d = dataset.ASC
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	sl.Sort(d)
+	return "OK", nil
+}
+
+func reverse(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) != 1 {
+		return "", fmt.Errorf("requires a single list name")
+	}
+	sl, err := collection.Select(params[0])
+	if err != nil {
+		return "", err
+	}
+	sl.Reverse()
+	return "OK", nil
 }
 
 func init() {

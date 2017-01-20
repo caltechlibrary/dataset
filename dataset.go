@@ -57,7 +57,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-alpha2"
+	Version = "v0.0.1-beta1"
 
 	// License for dataset package
 	License = `
@@ -552,6 +552,11 @@ func (s *SelectList) Rest() []string {
 		return s.Keys[1:]
 	}
 	return []string{}
+}
+
+// List returns all the keys in the select list (non-destructively)
+func (s *SelectList) List() []string {
+	return s.Keys[:]
 }
 
 //
