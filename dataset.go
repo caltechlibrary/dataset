@@ -51,6 +51,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 )
 
 const (
@@ -167,7 +168,7 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 	c.Dataset = path.Dir(name)
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
-	c.SelectList = []string{"keys"}
+	c.SelectLists = []string{"keys"}
 	// Save the metadata for collection
 	err := c.saveMetadata()
 	return c, err
@@ -222,7 +223,7 @@ func (c *Collection) Close() error {
 	c.Buckets = []string{}
 	c.Name = ""
 	c.KeyMap = map[string]string{}
-	c.SelectList = []string{}
+	c.SelectLists = []string{}
 	return nil
 }
 
@@ -370,7 +371,7 @@ func (c *Collection) Keys() []string {
 
 func (c *Collection) hasList(name string) bool {
 	keyName, _ := keyAndName(name)
-	for _, k := range a {
+	for _, k := range c.SelectLists {
 		if strings.Compare(k, keyName) == 0 {
 			return true
 		}
@@ -378,7 +379,7 @@ func (c *Collection) hasList(name string) bool {
 	return false
 }
 
-func (c *Collection) getList(name string) (SelectList, error) {
+func (c *Collection) getList(name string) (*SelectList, error) {
 	var (
 		data []string
 	)
@@ -401,8 +402,8 @@ func (c *Collection) getList(name string) (SelectList, error) {
 	return sl, nil
 }
 
-// Select creates a select list with zero or more keys or returns an existing list
-func (c *Collection) Select(name string, keys ...string) (SelectList, error) {
+// Select creates, appends a select list with zero or more keys or returns an updated list or error
+func (c *Collection) Select(name string, keys ...string) (*SelectList, error) {
 	var listName string
 
 	listName, name = keyAndName(name)
@@ -412,24 +413,31 @@ func (c *Collection) Select(name string, keys ...string) (SelectList, error) {
 	}
 
 	if c.hasList(listName) == true {
-		return c.getList(listName)
+		sl, err := c.getList(listName)
+		if err != nil {
+			return nil, err
+		}
+		if len(keys) > 0 {
+			sl.Keys = append(sl.Keys, keys[:]...)
+			err = sl.SaveList()
+		}
+		return sl, err
 	}
 
-	src, err := json.Marshal(keys)
+	sl := new(SelectList)
+	sl.FName = path.Join(c.Dataset, c.Name, name)
+	sl.Keys = keys[:]
+	err := sl.SaveList()
 	if err != nil {
 		return nil, err
 	}
 
-	err := ioutil.WriteFile(path.Join(c.Dataset, name), src, 0664)
+	c.SelectLists = append(c.SelectLists, listName)
+	err = c.saveMetadata()
 	if err != nil {
 		return nil, err
 	}
-	c.SelectList = append(c.SelectList, listName)
-	err := c.saveMetadata()
-	if err != nil {
-		return nil, err
-	}
-	return keys, nil
+	return sl, nil
 }
 
 // Clear removes a select list from disc and the collection
@@ -451,28 +459,38 @@ func (c *Collection) Clear(name string) error {
 				return append(s[:i], s[i+1:]...), nil
 			}
 		}
-		return s, fmt.Error("%s not found")
+		return s, fmt.Errorf("%s not found", r)
 	}
 
-	c.SelectList, err = removeItem(c.SelectList, listName)
+	c.SelectLists, err = removeItem(c.SelectLists, listName)
 	if err != nil {
 		return err
 	}
-	err := os.Remove(path.Join(c.Dataset, name))
+
+	err = os.Remove(path.Join(c.Dataset, c.Name, name))
 	if err != nil {
 		return err
 	}
-	return c.saveMetatdata()
+	return c.saveMetadata()
 }
 
 // Lists returns a list of available select lists, should always contain the default keys list
 func (c *Collection) Lists() []string {
-	return c.SelectList
+	return c.SelectLists
 }
 
 //
 // Select list operations and functions (operating on type SelectList)
 //
+
+// SaveList writes the .Keys to a JSON document named .FName
+func (s *SelectList) SaveList() error {
+	src, err := json.Marshal(s.Keys)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(s.FName, src, 0664)
+}
 
 // Length returns the number of items in the select list
 func (s *SelectList) Length() int {
@@ -488,57 +506,56 @@ func (s SelectList) First() string {
 }
 
 // Last select list returns the list item from the list (non-destructively)
-func (s *SelectList) Last(n int) []string {
-	l := len(s)
-	if n > 1 && n < l {
-		return s[l-n : l-1]
+func (s *SelectList) Last() string {
+	l := len(s.Keys)
+	if l > 0 {
+		return s.Keys[l-1]
 	}
-	return []string{s[l-1]}
+	return ""
 }
 
 // Rest select list returns all but the first n items of the list (non-destructively)
 func (s *SelectList) Rest() []string {
-	l = len(s)
-	if l > 0 {
-		return s[1:]
+	l := len(s.Keys)
+	if l > 1 {
+		return s.Keys[1:]
 	}
 	return []string{}
 }
 
-// saveList writes the .Keys to a JSON document named .FName
-func (s *SelectList) saveList() error {
-	src, err := json.Marshal(s.Keys)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(s.FName, src, 0664)
-}
-
 // Pop select list removes from the end of an array returning the element removed
 func (s *SelectList) Pop() string {
-	l = len(s.Keys)
-	if l == 0 {
+	pos := len(s.Keys) - 1
+	if pos < 0 {
 		return ""
 	}
-	r := s.Keys[l-1]
-	s.Keys = s.Keys[0 : l-1]
-	s.saveList()
+	r := s.Keys[pos]
+	if (pos - 1) > 0 {
+		s.Keys = s.Keys[0 : pos-1]
+	} else {
+		s.Keys = []string{}
+	}
+	s.SaveList()
 	return r
 }
 
 // Push select list appends an element to the end of an array
 func (s *SelectList) Push(val string) {
 	s.Keys = append(s.Keys, val)
-	s.saveList()
+	s.SaveList()
 }
 
 // Shift select list removes from the beginning of and array returning the element removed
 func (s *SelectList) Shift() string {
-	l = len(s.Keys)
+	l := len(s.Keys)
 	if l > 0 {
 		r := s.Keys[0]
-		s.Keys = s.Keys[1:]
-		s.saveList()
+		if l > 1 {
+			s.Keys = s.Keys[1:]
+		} else {
+			s.Keys = []string{}
+		}
+		s.SaveList()
 		return r
 	}
 	return ""
@@ -547,5 +564,5 @@ func (s *SelectList) Shift() string {
 // Unshift select list inserts an element at the start of an array
 func (s *SelectList) Unshift(val string) {
 	s.Keys = append([]string{val}, s.Keys[:]...)
-	s.saveList()
+	s.SaveList()
 }

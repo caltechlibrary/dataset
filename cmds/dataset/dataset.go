@@ -73,7 +73,7 @@ a record called "littlefreda.json" and reading it back.
 		"delete": deleteJSONDoc,
 		"keys":   collectionKeys,
 		"path":   docPath,
-		"index":  index,
+		"select": selectList,
 	}
 
 	// alphabet to use for buckets
@@ -100,25 +100,6 @@ func collectionInit(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	return fmt.Sprintf("export DATASET_COLLECTION=%q", path.Join(collection.Dataset, collection.Name)), nil
-}
-
-// index takes one or more dot paths and creates an index JSON files and adds it to the collection
-func index(args ...string) (string, error) {
-	if len(args) < 2 {
-		return "", fmt.Errorf("Missing index name or dot paths to index")
-	}
-	name, dotPaths := args[0], args[1:]
-
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	err := dataset.Index(name, dotPaths)
-	if err != nil {
-		return "", err
-	}
-	return "OK", nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
@@ -271,6 +252,10 @@ func docPath(args ...string) (string, error) {
 		return "", fmt.Errorf("Could not find %q", name)
 	}
 	return path.Join(collection.Dataset, collection.Name, bucketName, name), nil
+}
+
+func selectList(params ...string) (string, error) {
+	return "", fmt.Errorf("selectList() not implemented.")
 }
 
 func init() {
