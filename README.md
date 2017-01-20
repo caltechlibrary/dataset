@@ -9,17 +9,22 @@ allow you to interact with that logical structure on disc.
 
 ## layout
 
-+ dataset
-    + collection
++ dataset (directory on file system)
+    + collection (directory on file system)
         + collection.json - metadata about collection
             + maps the filename of the JSON blob stored to a bucket in the collection
             + e.g. file "mydocs.jons" stored in bucket "aa" would have a map of {"mydocs.json": "aa"}
-        + keys.json - a list of keys in the collection
+        + keys.json - a list of keys in the collection (it is the default select list)
         + BUCKETS - a sequence of alphabet names for buckets holding JSON documents
             + Buckets let supporting common commands like ls, tree, etc. when the doc count is high
+        + SELECT_LIST.json - a JSON document holding an array of keys
+            + the default select list is "keys", it is not mutable by Push, Pop, Shift and Unshift
+            + select lists cannot be named "keys" or "collection"
 
 BUCKETS are names without meaning normally using Alphabetic characters. A dataset defined with four buckets
 might looks like aa, ab, ba, bb.
+
+
 
 ## operations
 
@@ -29,12 +34,23 @@ might looks like aa, ab, ba, bb.
     + Close (collection) - writes changes to collection.json to disc if dirty
     + Delete (collection) - removes a collection from disc
     + Keys (collection) - list of keys in the collection
-+ Record level
-    + Create (record) - saves a new JSON blob to disc with given blob name (sets dirty flag on collection)
-    + Read (record) - finds the bucket the record is in and returns the JSON blob
-    + Update (record) - updates an existing blob on disc (sets dirty flag on collection)
-    + Delete (record) - removes a JSON blob from its disc (sets the dirty flag on collection)
-    + Path (record) - returns the path to the JSON document
+    + Select (collection) - returns the request select list, will create the list and append keys if not exist
+    + Clear (collection) - Removes a select list from a collection and disc
+    + List (collection) - returns the names of the available select lists
++ JSON document level
+    + Create (JSON document) - saves a new JSON blob to disc with given blob name (sets dirty flag on collection)
+    + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
+    + Update (JSON document) - updates an existing blob on disc (sets dirty flag on collection)
+    + Delete (JSON document) - removes a JSON blob from its disc (sets the dirty flag on collection)
+    + Path (JSON document) - returns the path to the JSON document
++ Select list level
+    + Push (select list) - appends one or more keys to an existing select list
+    + Last (select list) - returns the value of the last key in the select list (non-distructively)
+    + Pop (select list) - returns the last key in select list and removes it
+    + Unshift (select list) - inserts one or more new keys at the beginning of the select list
+    + First (select list) - returns the value of the first key in the select list (non-distructively)
+    + Shift (select list) - returns the first key in a select list and removes it
+    + Rest (select list) - returns values of all keys in the select list except the first
 
 ## Example
 

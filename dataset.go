@@ -367,9 +367,7 @@ func (c *Collection) Keys() []string {
 }
 
 //
-// Note: Select Lists are an array of keys (JSON document names without .json)
-// they are associated with a collections but they are just JSON document
-// which is an array of keys.
+// Note: Select Lists are an array of keys (JSON documents in the collection but not in buckets)
 //
 
 func (c *Collection) hasList(name string) bool {
@@ -406,8 +404,21 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 }
 
 // Select creates, appends a select list with zero or more keys or returns an updated list or error
-func (c *Collection) Select(name string, keys ...string) (*SelectList, error) {
-	var listName string
+func (c *Collection) Select(params ...string) (*SelectList, error) {
+	var (
+		name     string
+		listName string
+		keys     []string
+	)
+
+	if len(params) == 0 {
+		name = "keys"
+	} else {
+		name = params[0]
+		if len(params) > 1 {
+			keys = params[1:]
+		}
+	}
 
 	listName, name = keyAndName(name)
 

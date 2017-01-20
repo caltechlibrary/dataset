@@ -119,26 +119,49 @@ func TestCollection(t *testing.T) {
 	}
 	rec2["email"] = "freda@zbs.example.org"
 	// Should fail if we try to create a duplicate record
-	err = collection.Create("freda.json", rec2)
+	err = collection.Create("freda", rec2)
 	if err == nil {
 		t.Errorf("Should not beable to create a duplicate %+v", rec2)
 		t.FailNow()
 	}
-	err = collection.Update("freda.json", rec2)
+	err = collection.Update("freda", rec2)
 	if err != nil {
-		t.Errorf("Could not update %s, %s", "freda.json", err)
+		t.Errorf("Could not update %s, %s", "freda", err)
 		t.FailNow()
+	}
+
+	// Select collection level sellect lists
+	keys1 := collection.Keys()
+	selectLists := collection.List()
+	if len(selectLists) != 1 {
+		t.Errorf("Have unexpected select lists, %+v", selectLists)
+	}
+	if strings.Compare(selectLists[0], "keys") == 0 {
+		t.Errorf("Should find keys")
+		t.FailNow()
+	}
+	keys2 := collection.Select("keys")
+	if len(keys2) != 1 {
+		t.Errorf("Should only have one key in collection, %+v", keys2)
+	}
+	if len(keys1) != len(keys2) {
+		t.Errorf("select list does match collection keys")
+	}
+	for i, k := range keys1 {
+		if strings.Compare(k, keys2[i]) != 0 {
+			t.Errorf("Select list does not match key at %d, %q != %q", i, k, keys2[i])
+		}
 	}
 
 	//FIXME: keys.json should hold one key
 	//FIXME: collection.json's keymap should hold one key
 
-	err = collection.Delete("freda.json")
+	err = collection.Delete("freda")
 	if err != nil {
 		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
 		t.FailNow()
 	}
-	err = collection.Read("freda.json", &rec2)
+	err = collection.Read("freda", &rec2)
 	if err == nil {
 		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
 	}
