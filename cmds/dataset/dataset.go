@@ -87,6 +87,8 @@ a record called "littlefreda.json" and reading it back.
 		"keys":   collectionKeys,
 		"path":   docPath,
 		"select": selectList,
+		"lists":  selectLists,
+		"clear":  clearList,
 	}
 
 	// alphabet to use for buckets
@@ -286,6 +288,38 @@ func selectList(params ...string) (string, error) {
 		return "", err
 	}
 	return strings.Join(l.Keys, "\n"), nil
+}
+
+func selectLists(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	return strings.Join(collection.Lists(), "\n"), nil
+}
+
+func clearList(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("you can only clear one select list at a time")
+	}
+	if strings.Compare(params[0], "keys") == 0 {
+		return "", fmt.Errorf("select list %s cannot be cleared", params[0])
+	}
+	if strings.Compare(params[0], "collection") == 0 {
+		return "", fmt.Errorf("collection is not a valid select list name")
+	}
+	err = collection.Clear(params[0])
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+
 }
 
 func init() {
