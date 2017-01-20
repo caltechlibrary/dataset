@@ -51,6 +51,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 	"strings"
 )
 
@@ -75,6 +76,9 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `
+
+	ASC  = iota
+	DESC = iota
 )
 
 // countToBucketID turns a count assigns it to a letter sequence (e.g. 0-999 is aa, 1000 - 1999 is ab, etc)
@@ -504,6 +508,12 @@ func (c *Collection) Lists() []string {
 // Select list operations and functions (operating on type SelectList)
 //
 
+// String returns the Keys portion of the select list as a string
+// delimited with new lines
+func (s *SelectList) String() string {
+	return strings.Join(s.Keys, "\n")
+}
+
 // SaveList writes the .Keys to a JSON document named .FName
 func (s *SelectList) SaveList() error {
 	src, err := json.Marshal(s.Keys)
@@ -544,6 +554,11 @@ func (s *SelectList) Rest() []string {
 	return []string{}
 }
 
+//
+// Mutable select list operations include
+// Pop, Push, Shift, Unshift, Sort, Reverse
+//
+
 // Pop select list removes from the end of an array returning the element removed
 func (s *SelectList) Pop() string {
 	pos := len(s.Keys) - 1
@@ -551,10 +566,10 @@ func (s *SelectList) Pop() string {
 		return ""
 	}
 	r := s.Keys[pos]
-	if (pos - 1) > 0 {
-		s.Keys = s.Keys[0 : pos-1]
-	} else {
+	if pos <= 0 {
 		s.Keys = []string{}
+	} else {
+		s.Keys = s.Keys[0:pos]
 	}
 	s.SaveList()
 	return r
@@ -586,4 +601,23 @@ func (s *SelectList) Shift() string {
 func (s *SelectList) Unshift(val string) {
 	s.Keys = append([]string{val}, s.Keys[:]...)
 	s.SaveList()
+}
+
+// Sort sorts the keys in in ascending order alphabetically
+func (s *SelectList) Sort(direction int) {
+	if direction == DESC {
+		sort.Sort(sort.Reverse(sort.StringSlice(s.Keys)))
+		return
+	}
+	sort.Strings(s.Keys)
+}
+
+// Reverse flips the order of a select list
+func (s *SelectList) Reverse() {
+	last := len(s.Keys) - 1
+	n := []string{}
+	for i := last; i >= 0; i-- {
+		n = append(n, s.Keys[i])
+	}
+	s.Keys = n
 }
