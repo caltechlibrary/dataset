@@ -39,6 +39,19 @@ COMMANDS
   + requires JSON doc name
 + keys - returns the keys to stdout, one key per line
 + path - given a document name return the full path to document
++ select - is the command for working with lists of collection keys
+	+ "select mylist k1 k2 k3" would create/update the select list 
+	  mylist with keys k1, k2, k3
+    + "select mylist first" would write the first key to stdout
+	+ "select mylist shift" would write the first key to stdout 
+	   and remove it from list
+	+ "select mylist unshift k4" would insert at the beginning the key k4
+	+ "select mylist last" would display the last key in the list
+	+ "select mylist pop" would display the last key in the list and
+	   remove it from the list
+    + "select mylist push k4" would append the list with key k4
+	+ "select mylist list" would display a list of keys to stdout
+    + "select mylist rest" would display all but the first key in the list
 `
 
 	examples = `
