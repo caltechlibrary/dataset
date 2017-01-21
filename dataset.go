@@ -615,6 +615,7 @@ func (s *SelectList) Sort(direction int) {
 		return
 	}
 	sort.Strings(s.Keys)
+	s.SaveList()
 }
 
 // Reverse flips the order of a select list
@@ -625,4 +626,5 @@ func (s *SelectList) Reverse() {
 		n = append(n, s.Keys[i])
 	}
 	s.Keys = n
+	s.SaveList()
 }
