@@ -612,6 +612,7 @@ func (s *SelectList) Unshift(val string) {
 func (s *SelectList) Sort(direction int) {
 	if direction == DESC {
 		sort.Sort(sort.Reverse(sort.StringSlice(s.Keys)))
+		s.SaveList()
 		return
 	}
 	sort.Strings(s.Keys)
