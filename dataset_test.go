@@ -34,14 +34,17 @@ func TestGenerateBucketNames(t *testing.T) {
 	}
 }
 
-func TestIntToBucketName(t *testing.T) {
+func TestPickBucketName(t *testing.T) {
 	alphabet := "ab"
 	buckets := GenerateBucketNames(alphabet, 2)
+	expected := []string{"aa", "ab", "ba", "bb"}
 
-	for i, expected := range []string{"aa", "ab", "ba", "bb"} {
-		result := intToBucketName(i, buckets)
-		if strings.Compare(result, expected) != 0 {
-			t.Errorf("%d expected %s, got %s", i, expected, result)
+	for i, expect := range expected {
+		// simulate document count of doc added
+		docNo := i
+		result := pickBucket(buckets, docNo)
+		if strings.Compare(result, expect) != 0 {
+			t.Errorf("docNo %d expect %s, got %s", docNo, expect, result)
 		}
 	}
 }
