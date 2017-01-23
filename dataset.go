@@ -126,10 +126,11 @@ func addLetter(c chan string, combo string, alphabet string, length int) {
 	}
 }
 
-// intToBucketName converts an integer to a bucket (using round robin pick via modulo)
-func intToBucketName(val int, buckets []string) string {
-	size := len(buckets)
-	return buckets[(val % size)]
+// pickBucket converts takes the number of picks and the
+// count of JSON docs and returns a bucket name.
+func pickBucket(buckets []string, docNo int) string {
+	bucketCount := len(buckets)
+	return buckets[(docNo % bucketCount)]
 }
 
 // GenerateBucketNames provides a list of permutations of requested length to use as bucket names
@@ -257,7 +258,7 @@ func (c *Collection) CreateAsJSON(name string, src []byte) error {
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection is not valid, zero buckets")
 	}
-	bucketName := intToBucketName(len(c.Buckets), c.Buckets)
+	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
 	p := path.Join(c.Dataset, c.Name, bucketName)
 	err := os.MkdirAll(p, 0770)
 	if err != nil {
@@ -612,9 +613,11 @@ func (s *SelectList) Unshift(val string) {
 func (s *SelectList) Sort(direction int) {
 	if direction == DESC {
 		sort.Sort(sort.Reverse(sort.StringSlice(s.Keys)))
+		s.SaveList()
 		return
 	}
 	sort.Strings(s.Keys)
+	s.SaveList()
 }
 
 // Reverse flips the order of a select list
@@ -625,4 +628,5 @@ func (s *SelectList) Reverse() {
 		n = append(n, s.Keys[i])
 	}
 	s.Keys = n
+	s.SaveList()
 }
