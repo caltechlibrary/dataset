@@ -164,12 +164,30 @@ type Collection struct {
 
 // SelectList is an ordered set of keys
 type SelectList struct {
-	FName string   `json:"name"`
-	Keys  []string `json:"keys"`
-	// The following are where you add custom sort function for complex key select list
-	Len  func() int
-	Swap func(int, int)
-	Less func(int, int) bool
+	FName      string   `json:"name"`
+	Keys       []string `json:"keys"`
+	CustomLess func([]string, int, int) bool
+}
+
+// Len returns the number of keys in the select list
+func (s *SelectList) Len() int {
+	return len(s.Keys)
+}
+
+// Swap updates the position of two compared keys
+func (s *SelectList) Swap(i, j int) {
+	s.Keys[i], s.Keys[j] = s.Keys[j], s.Keys[i]
+}
+
+// Less compare two elements returning true if first is less than second, false otherwise
+func (s *SelectList) Less(i, j int) bool {
+	if s.CustomLess != nil {
+		return s.CustomLess(s.Keys, i, j)
+	}
+	if s.Keys[i] < s.Keys[j] {
+		return true
+	}
+	return false
 }
 
 // Create - create a new collection structure on disc
@@ -418,7 +436,6 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 		FName: path.Join(c.Dataset, c.Name, name),
 		Keys:  data,
 	}
-
 	return sl, nil
 }
 
@@ -619,15 +636,12 @@ func (s *SelectList) Unshift(val string) {
 
 // Sort sorts the keys in in ascending order alphabetically
 func (s *SelectList) Sort(direction int) {
-	//FIXME: Need to allow for alternative sorts...
-	if s.Swap == nil || s.Len == nil || s.Less == nil {
-		if direction == DESC {
-			sort.Sort(sort.Reverse(sort.StringSlice(s.Keys)))
-			s.SaveList()
-			return
-		}
-		sort.Strings(s.Keys)
+	if direction == DESC {
+		sort.Sort(sort.Reverse(s))
+		s.SaveList()
+		return
 	}
+	sort.Sort(s)
 	s.SaveList()
 }
 

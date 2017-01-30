@@ -20,6 +20,7 @@ package dataset
 
 import (
 	"os"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -142,7 +143,6 @@ func TestCollection(t *testing.T) {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
-	//t.Errorf("DEBUG rec3 should be populated: %+v", rec3)
 	for k2, v2 := range rec2 {
 		if v3, ok := rec3[k2]; ok == true {
 			if strings.Compare(v2, v3) != 0 {
@@ -358,7 +358,6 @@ func TestComplexKeys(t *testing.T) {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
 	}
-	//t.Errorf("DEBUG Collection is now %+v", collection)
 	testRecords := map[string]interface{}{
 		"agent:person:1": map[string]interface{}{
 			"name": "George",
@@ -398,6 +397,78 @@ func TestComplexKeys(t *testing.T) {
 	}
 }
 
-func TestComplexSort(t *testing.T) {
-	t.Errorf("TestComplexSort() not implemented.")
+func TestSelectListSort(t *testing.T) {
+	colName := "testdata/complex-sorting"
+	buckets := GenerateBucketNames("ab", 2)
+	if len(buckets) != 4 {
+		t.Errorf("Should have four buckets %+v", buckets)
+		t.FailNow()
+	}
+
+	// Create a new collection
+	collection, err := Create(colName, buckets)
+	if err != nil {
+		t.Errorf("error Create() a collection %q", err)
+		t.FailNow()
+	}
+
+	testKeyList := []string{
+		"A|2017-01-01|0",
+		"B|2016-01-01|1",
+		"C|2017-01-01|2",
+		"D|2016-01-01|3",
+		"A|2014-01-01|4",
+		"A|2020-01-01|5",
+		"B|1918-01-01|6",
+		"B|1920-01-01|7",
+		"C|2021-06-08|8",
+	}
+	collection.Clear("sorttests")
+	sl, err := collection.Select(append([]string{"sorttests"}, testKeyList[:]...)...)
+	if err != nil {
+		t.Errorf("Cannot create select list simple: %s", err)
+		t.FailNow()
+	}
+
+	// Setup simple sort expected results
+	expectedSimpleSort := testKeyList[:]
+	sort.Sort(sort.StringSlice(expectedSimpleSort))
+	// Run simple sort of select list
+	sl.Sort(ASC)
+
+	// Compare results
+	result := ""
+	for i, expected := range expectedSimpleSort {
+		result = sl.Keys[i]
+		if strings.Compare(expected, result) != 0 {
+			t.Errorf("for ith: %d, expected %s, got %s", i, expected, result)
+		}
+	}
+	sl.CustomLess = func(s []string, i, j int) bool {
+		k1, k2 := strings.Split(s[i], "|"), strings.Split(s[j], "|")
+		// Compare each element of each key and sort zero-th element ascending, and first element descending
+		if k1[0] <= k2[0] && k1[1] >= k2[1] {
+			return true
+		}
+		return false
+	}
+	sl.Sort(ASC)
+	expectedComplexSort := []string{
+		"A|2020-01-01|5",
+		"A|2017-01-01|0",
+		"A|2014-01-01|4",
+		"B|2016-01-01|1",
+		"B|1920-01-01|7",
+		"B|1918-01-01|6",
+		"C|2021-06-08|8",
+		"C|2017-01-01|2",
+		"D|2016-01-01|3",
+	}
+	result = ""
+	for i, expected := range expectedComplexSort {
+		result = sl.Keys[i]
+		if expected != result {
+			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)
+		}
+	}
 }
