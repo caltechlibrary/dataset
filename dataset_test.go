@@ -43,7 +43,7 @@ func TestPickBucketName(t *testing.T) {
 		// simulate document count of doc added
 		docNo := i
 		result := pickBucket(buckets, docNo)
-		if strings.Compare(result, expect) != 0 {
+		if result != expect {
 			t.Errorf("docNo %d expect %s, got %s", docNo, expect, result)
 		}
 	}
@@ -122,7 +122,7 @@ func TestCollection(t *testing.T) {
 	}
 	for k, expected := range rec1 {
 		if val, ok := rec2[k]; ok == true {
-			if strings.Compare(expected, val) != 0 {
+			if expected != val {
 				t.Errorf("expected %s in record, got, %s", expected, val)
 				t.FailNow()
 			}
@@ -145,7 +145,7 @@ func TestCollection(t *testing.T) {
 	}
 	for k2, v2 := range rec2 {
 		if v3, ok := rec3[k2]; ok == true {
-			if strings.Compare(v2, v3) != 0 {
+			if v2 != v3 {
 				t.Errorf("Expected v2 %+v, got v3 %+v", v2, v3)
 			}
 		} else {
@@ -167,7 +167,7 @@ func TestCollection(t *testing.T) {
 	}
 	for k2, v2 := range rec2 {
 		if v4, ok := rec4[k2]; ok == true {
-			if strings.Compare(v2, v4) != 0 {
+			if v2 != v4 {
 				t.Errorf("Expected v2 %+v, got v4 %+v", v2, v4)
 			}
 		} else {
@@ -204,7 +204,7 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 		t.Errorf("Have unexpected select lists, %+v", selectLists)
 		return false
 	}
-	if strings.Compare(selectLists[0], "keys") != 0 {
+	if selectLists[0] != "keys" {
 		t.Errorf("Should find keys in %+v", selectLists)
 		return false
 	}
@@ -223,7 +223,7 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 		return false
 	}
 	for i, k := range keys1 {
-		if strings.Compare(k, keys2[i]) != 0 {
+		if k != keys2[i] {
 			t.Errorf("Select list does not match key at %d, %q != %q", i, k, keys2[i])
 			return false
 		}
@@ -266,11 +266,11 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 	mojo := jackAndMojo.Last()
 	restOfList := jackAndMojo.Rest()
 
-	if strings.Compare("captainjack", jack) != 0 {
+	if "captainjack" != jack {
 		t.Errorf("First() should have returned captainjack, %s", jack)
 		return false
 	}
-	if strings.Compare("mojosam", mojo) != 0 {
+	if "mojosam" != mojo {
 		t.Errorf("Last() should have returned mojosam, %s", mojo)
 		return false
 	}
@@ -299,18 +299,18 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 	jackAndMojo.Reverse()
 	mojo = jackAndMojo.First()
 	jack = jackAndMojo.Last()
-	if strings.Compare("captainjack", jack) != 0 {
+	if "captainjack" != jack {
 		t.Errorf("Last() should have returned captainjack, %s <- %+v", jack, jackAndMojo)
 		return false
 	}
-	if strings.Compare("mojo", mojo) != 0 {
+	if "mojo" != mojo {
 		t.Errorf("First() should have returned mojo, %s <- %+v", mojo, jackAndMojo)
 		return false
 	}
 	jackAndMojo.Sort(ASC)
 	for _, expected := range []string{"captainjack", "jack", "mojo", "mojosam"} {
 		val := jackAndMojo.Shift()
-		if strings.Compare(expected, val) != 0 {
+		if expected != val {
 			t.Errorf("Sort() failed, %+v\n", jackAndMojo)
 			return false
 		}
@@ -323,18 +323,18 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 	jackAndMojo.Sort(DESC)
 	for _, expected := range []string{"captainjack", "jack", "mojo", "mojosam"} {
 		val := jackAndMojo.Pop()
-		if strings.Compare(expected, val) != 0 {
+		if expected != val {
 			t.Errorf("Sort() failed %q != %q, %+v\n", expected, val, jackAndMojo)
 			return false
 		}
 	}
 	jackAndMojo.Unshift("littlefreda")
-	if strings.Compare("littlefreda", jackAndMojo.First()) != 0 {
+	if "littlefreda" != jackAndMojo.First() {
 		t.Errorf("Unshift failed, %+v", jackAndMojo)
 		return false
 	}
 	jackAndMojo.Push("littlefreda")
-	if strings.Compare("littlefreda", jackAndMojo.Last()) != 0 {
+	if "littlefreda" != jackAndMojo.Last() {
 		t.Errorf("Push failed, %+v", jackAndMojo)
 		return false
 	}
@@ -440,11 +440,11 @@ func TestSelectListSort(t *testing.T) {
 	result := ""
 	for i, expected := range expectedSimpleSort {
 		result = sl.Keys[i]
-		if strings.Compare(expected, result) != 0 {
+		if expected != result {
 			t.Errorf("for ith: %d, expected %s, got %s", i, expected, result)
 		}
 	}
-	sl.CustomLess = func(s []string, i, j int) bool {
+	sl.CustomLessFn = func(s []string, i, j int) bool {
 		k1, k2 := strings.Split(s[i], "|"), strings.Split(s[j], "|")
 		// Compare each element of each key and sort zero-th element ascending, and first element descending
 		if k1[0] <= k2[0] && k1[1] >= k2[1] {
@@ -466,6 +466,16 @@ func TestSelectListSort(t *testing.T) {
 	}
 	result = ""
 	for i, expected := range expectedComplexSort {
+		result = sl.Keys[i]
+		if expected != result {
+			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)
+		}
+	}
+
+	sl.CustomLessFn = nil
+	sl.Sort(ASC)
+	result = ""
+	for i, expected := range expectedSimpleSort {
 		result = sl.Keys[i]
 		if expected != result {
 			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)

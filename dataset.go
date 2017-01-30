@@ -164,9 +164,9 @@ type Collection struct {
 
 // SelectList is an ordered set of keys
 type SelectList struct {
-	FName      string   `json:"name"`
-	Keys       []string `json:"keys"`
-	CustomLess func([]string, int, int) bool
+	FName        string   `json:"name"`
+	Keys         []string `json:"keys"`
+	CustomLessFn func([]string, int, int) bool
 }
 
 // Len returns the number of keys in the select list
@@ -181,8 +181,8 @@ func (s *SelectList) Swap(i, j int) {
 
 // Less compare two elements returning true if first is less than second, false otherwise
 func (s *SelectList) Less(i, j int) bool {
-	if s.CustomLess != nil {
-		return s.CustomLess(s.Keys, i, j)
+	if s.CustomLessFn != nil {
+		return s.CustomLessFn(s.Keys, i, j)
 	}
 	if s.Keys[i] < s.Keys[j] {
 		return true
@@ -410,7 +410,7 @@ func (c *Collection) Keys() []string {
 func (c *Collection) hasList(name string) bool {
 	keyName, _ := keyAndFName(name)
 	for _, k := range c.SelectLists {
-		if strings.Compare(k, keyName) == 0 {
+		if k == keyName {
 			return true
 		}
 	}
@@ -459,7 +459,7 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 
 	listName, name = keyAndFName(name)
 
-	if strings.Compare(name, "keys.json") == 0 {
+	if name == "keys.json" {
 		return c.getList("keys")
 	}
 
@@ -500,7 +500,7 @@ func (c *Collection) Clear(name string) error {
 
 	listName, name = keyAndFName(name)
 
-	if strings.Compare(name, "keys.json") == 0 {
+	if name == "keys.json" {
 		return fmt.Errorf("cannot clear default select list")
 	}
 
