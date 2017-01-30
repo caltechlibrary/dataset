@@ -29,7 +29,7 @@ might looks like aa, ab, ba, bb.
 ## operations
 
 + Collection level 
-    + Create (collection) - sets up a new disc scripture and creates $DATASET/$COLLECTION_NAME/collection.json
+    + Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
     + Open (collection) - opens an existing collections and reads collection.json into memory
     + Close (collection) - writes changes to collection.json to disc if dirty
     + Delete (collection) - removes a collection from disc
@@ -38,10 +38,10 @@ might looks like aa, ab, ba, bb.
     + Clear (collection) - Removes a select list from a collection and disc
     + Lists (collection) - returns the names of the available select lists
 + JSON document level
-    + Create (JSON document) - saves a new JSON blob to disc with given blob name (sets dirty flag on collection)
+    + Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed
     + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
-    + Update (JSON document) - updates an existing blob on disc (sets dirty flag on collection)
-    + Delete (JSON document) - removes a JSON blob from its disc (sets the dirty flag on collection)
+    + Update (JSON document) - updates an existing blob on disc (record must already exist)
+    + Delete (JSON document) - removes a JSON blob from its disc
     + Path (JSON document) - returns the path to the JSON document
 + Select list level
     + First (select list) - returns the value of the first key in the select list (non-distructively)

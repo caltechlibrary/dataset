@@ -57,7 +57,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-beta2"
+	Version = "v0.0.1-beta3"
 
 	// License for dataset package
 	License = `
@@ -166,11 +166,18 @@ type Collection struct {
 type SelectList struct {
 	FName string   `json:"name"`
 	Keys  []string `json:"keys"`
+	// The following are where you add custom sort function for complex key select list
+	Len  func() int
+	Swap func(int, int)
+	Less func(int, int) bool
 }
 
 // Create - create a new collection structure on disc
 // name should be filesystem friendly
 func Create(name string, bucketNames []string) (*Collection, error) {
+	if _, err := os.Stat(name); err == nil {
+		return Open(name)
+	}
 	c := new(Collection)
 	c.Version = Version
 	c.Name = path.Base(name)
@@ -248,14 +255,13 @@ func (c *Collection) Close() error {
 	return nil
 }
 
-// CreateAsJSON adds a JSON doc to a collection, if problem returns an error
+// CreateAsJSON adds or replaces a JSON doc to a collection, if problem returns an error
 // name must be unique (treated like a key in a key/value store)
 func (c *Collection) CreateAsJSON(name string, src []byte) error {
 	keyName, name := keyAndFName(name)
 
-	_, keyExists := c.KeyMap[keyName]
-	if keyExists == true {
-		return fmt.Errorf("%q already exists", name)
+	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
+		return c.UpdateAsJSON(name, src)
 	}
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection is not valid, zero buckets")
@@ -613,12 +619,15 @@ func (s *SelectList) Unshift(val string) {
 
 // Sort sorts the keys in in ascending order alphabetically
 func (s *SelectList) Sort(direction int) {
-	if direction == DESC {
-		sort.Sort(sort.Reverse(sort.StringSlice(s.Keys)))
-		s.SaveList()
-		return
+	//FIXME: Need to allow for alternative sorts...
+	if s.Swap == nil || s.Len == nil || s.Less == nil {
+		if direction == DESC {
+			sort.Sort(sort.Reverse(sort.StringSlice(s.Keys)))
+			s.SaveList()
+			return
+		}
+		sort.Strings(s.Keys)
 	}
-	sort.Strings(s.Keys)
 	s.SaveList()
 }
 

@@ -28,16 +28,17 @@ COMMANDS
 
 Collection and JSON Documant related--
 
-+ init - initialize a new collection, requires a path to collection
++ init - initialize a new collection if none exists, requires a path to collection
   + once collection is created, set the environment variable %s_COLLECTION
     to collection name
-+ create - creates a new JSON doc in collection
++ create - creates a new JSON doc or replace an existing one in collection
   + requires JSON doc name followed by JSON blob or JSON blob read from stdin
 + read - displays a JSON doc to stdout
   + requires JSON doc name
 + update - updates a JSON doc in collection
   + requires JSON doc name, followed by replacement JSON blob or 
     JSON blob read from stdin
+  + JSON document must already exist
 + delete - removes a JSON doc from collection
   + requires JSON doc name
 + keys - returns the keys to stdout, one key per line

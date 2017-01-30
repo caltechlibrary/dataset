@@ -25,8 +25,7 @@ import (
 )
 
 func TestGenerateBucketNames(t *testing.T) {
-	alphabet := "abc"
-	buckets := GenerateBucketNames(alphabet, 3)
+	buckets := GenerateBucketNames(DefaultAlphabet, 3)
 	for _, val := range buckets {
 		if len(val) != 3 {
 			t.Errorf("Should have a name of length 3. %q", val)
@@ -131,17 +130,49 @@ func TestCollection(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	rec2["email"] = "freda@zbs.example.org"
-	// Should fail if we try to create a duplicate record
+	// Should trigger update if a duplicate record
 	err = collection.Create("freda", rec2)
-	if err == nil {
-		t.Errorf("Should not beable to create a duplicate %+v", rec2)
+	if err != nil {
+		t.Errorf("Create on an existing record should just update it %+v", rec2)
 		t.FailNow()
 	}
+
+	rec3 := map[string]string{}
+	if err := collection.Read("freda", &rec3); err != nil {
+		t.Errorf("Should have found freda in collection, %s", err)
+		t.FailNow()
+	}
+	//t.Errorf("DEBUG rec3 should be populated: %+v", rec3)
+	for k2, v2 := range rec2 {
+		if v3, ok := rec3[k2]; ok == true {
+			if strings.Compare(v2, v3) != 0 {
+				t.Errorf("Expected v2 %+v, got v3 %+v", v2, v3)
+			}
+		} else {
+			t.Errorf("missing key %s r3 in %+v <- r2: %+v \n", k2, rec3, rec2)
+		}
+	}
+
+	rec2["email"] = "freda@zbs.example.org"
 	err = collection.Update("freda", rec2)
 	if err != nil {
 		t.Errorf("Could not update %s, %s", "freda", err)
 		t.FailNow()
+	}
+
+	rec4 := map[string]string{}
+	if err := collection.Read("freda", &rec4); err != nil {
+		t.Errorf("Should have found freda in collection, %s", err)
+		t.FailNow()
+	}
+	for k2, v2 := range rec2 {
+		if v4, ok := rec4[k2]; ok == true {
+			if strings.Compare(v2, v4) != 0 {
+				t.Errorf("Expected v2 %+v, got v4 %+v", v2, v4)
+			}
+		} else {
+			t.Errorf("missing key %s rec4 in %+v <- rec2: %+v \n", k2, rec4, rec2)
+		}
 	}
 
 	// Run subtests of select list behavior
@@ -311,4 +342,62 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 	// Make sure you cannot create a "collections" select list
 	// Make sure you can not change the default "keys" select list
 	return true
+}
+
+func TestComplexKeys(t *testing.T) {
+	colName := "testdata/col2"
+	buckets := GenerateBucketNames("ab", 2)
+	if len(buckets) != 4 {
+		t.Errorf("Should have four buckets %+v", buckets)
+		t.FailNow()
+	}
+
+	// Create a new collection
+	collection, err := Create(colName, buckets)
+	if err != nil {
+		t.Errorf("error Create() a collection %q", err)
+		t.FailNow()
+	}
+	//t.Errorf("DEBUG Collection is now %+v", collection)
+	testRecords := map[string]interface{}{
+		"agent:person:1": map[string]interface{}{
+			"name": "George",
+			"id":   25,
+		},
+		"agent:person:2": map[string]interface{}{
+			"name": "Carl",
+			"id":   2523,
+		},
+		"agent:person:3333": map[string]interface{}{
+			"name": "Mac",
+			"id":   2,
+		},
+		"agent:person:29994": map[string]interface{}{
+			"name": "Fred",
+			"id":   9925,
+		},
+		"agent:person:29": map[string]interface{}{
+			"name": "Mike",
+			"id":   81,
+		},
+		"agent:person:100": map[string]interface{}{
+			"name": "Tim",
+			"id":   8,
+		},
+		"agent:person:101": map[string]interface{}{
+			"name": "Kim",
+			"id":   101,
+		},
+	}
+
+	for k, v := range testRecords {
+		err := collection.Create(k, v)
+		if err != nil {
+			t.Errorf("Can't create %s <-- %s", k, v)
+		}
+	}
+}
+
+func TestComplexSort(t *testing.T) {
+	t.Errorf("TestComplexSort() not implemented.")
 }
