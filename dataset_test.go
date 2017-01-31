@@ -256,8 +256,8 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 		t.Errorf("create jack-and-mojo select list %s", err)
 		return false
 	}
-	if jackAndMojo.Length() != 2 {
-		t.Errorf("Expected 2, got length of %d", jackAndMojo.Length())
+	if jackAndMojo.Len() != 2 {
+		t.Errorf("Expected 2, got length of %d", jackAndMojo.Len())
 		return false
 	}
 
@@ -285,8 +285,8 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 		t.Errorf("updating jack-and-mojo list with two more elements - jack and mojo, %+v", err)
 		return false
 	}
-	if jackAndMojo.Length() != 4 {
-		t.Errorf("Expected length of 4, got %d for %+v", jackAndMojo.Length(), jackAndMojo)
+	if jackAndMojo.Len() != 4 {
+		t.Errorf("Expected length of 4, got %d for %+v", jackAndMojo.Len(), jackAndMojo)
 		return false
 	}
 	restOfList = jackAndMojo.Rest()
@@ -315,7 +315,7 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 			return false
 		}
 	}
-	if jackAndMojo.Length() != 0 {
+	if jackAndMojo.Len() != 0 {
 		t.Errorf("Shift didn't work, %+v", jackAndMojo)
 		return false
 	}
@@ -476,6 +476,41 @@ func TestSelectListSort(t *testing.T) {
 	sl.Sort(ASC)
 	result = ""
 	for i, expected := range expectedSimpleSort {
+		result = sl.Keys[i]
+		if expected != result {
+			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)
+		}
+	}
+
+	test3PartKeys := []string{
+		"0000-0001-5245-0538|2017-01-19|73753",
+		"0000-0001-5245-0538|2017-01-18|73721",
+		"0000-0001-5245-0538|2000-07-15|73689",
+		"0000-0001-5245-0538|2000-05-01|73688",
+		"0000-0001-5245-0538|2000-02-15|73679",
+		"0000-0001-5245-0538|2004-09-01|73677",
+	}
+	expected3PartKeys := []string{
+		"0000-0001-5245-0538|2017-01-19|73753",
+		"0000-0001-5245-0538|2017-01-18|73721",
+		"0000-0001-5245-0538|2004-09-01|73677",
+		"0000-0001-5245-0538|2000-07-15|73689",
+		"0000-0001-5245-0538|2000-05-01|73688",
+		"0000-0001-5245-0538|2000-02-15|73679",
+	}
+	sl.Reset()
+	sl.Keys = test3PartKeys[:]
+	sl.SaveList()
+	sl.CustomLessFn = func(s []string, i, j int) bool {
+		k1, k2 := strings.Split(s[i], "|"), strings.Split(s[j], "|")
+		if k1[0] <= k2[0] && k1[1] > k2[1] {
+			return true
+		}
+		return false
+	}
+	sl.Sort(ASC)
+	result = ""
+	for i, expected := range expected3PartKeys {
 		result = sl.Keys[i]
 		if expected != result {
 			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)

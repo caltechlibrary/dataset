@@ -413,7 +413,7 @@ func length(params ...string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%d", sl.Length()), nil
+	return fmt.Sprintf("%d", sl.Len()), nil
 }
 
 func push(params ...string) (string, error) {
@@ -431,9 +431,9 @@ func push(params ...string) (string, error) {
 		return "", err
 	}
 	for _, param := range params[1:] {
-		l := sl.Length() + 1
+		l := sl.Len() + 1
 		sl.Push(param)
-		if l != sl.Length() {
+		if l != sl.Len() {
 			return "", fmt.Errorf("%s not added to %s", param, params[0])
 		}
 	}
@@ -489,9 +489,9 @@ func unshift(params ...string) (string, error) {
 		return "", err
 	}
 	for _, param := range params[1:] {
-		l := sl.Length() + 1
+		l := sl.Len() + 1
 		sl.Unshift(param)
-		if l != sl.Length() {
+		if l != sl.Len() {
 			return "", fmt.Errorf("%s not added to %s", param, params[0])
 		}
 	}

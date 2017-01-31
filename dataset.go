@@ -458,6 +458,9 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 	}
 
 	listName, name = keyAndFName(name)
+	if name == "collection.json" {
+		return nil, fmt.Errorf("%s is not a valid select list", listName)
+	}
 
 	if name == "keys.json" {
 		return c.getList("keys")
@@ -500,6 +503,9 @@ func (c *Collection) Clear(name string) error {
 
 	listName, name = keyAndFName(name)
 
+	if name == "collection.json" {
+		return fmt.Errorf("%s is not a select list", listName)
+	}
 	if name == "keys.json" {
 		return fmt.Errorf("cannot clear default select list")
 	}
@@ -542,16 +548,14 @@ func (s *SelectList) String() string {
 
 // SaveList writes the .Keys to a JSON document named .FName
 func (s *SelectList) SaveList() error {
+	if len(s.Keys) == 0 {
+		return ioutil.WriteFile(s.FName, []byte("[]"), 0664)
+	}
 	src, err := json.Marshal(s.Keys)
 	if err != nil {
 		return err
 	}
 	return ioutil.WriteFile(s.FName, src, 0664)
-}
-
-// Length returns the number of items in the select list
-func (s *SelectList) Length() int {
-	return len(s.Keys)
 }
 
 // First select list returns the first item in the list (non-destructively)
@@ -653,5 +657,11 @@ func (s *SelectList) Reverse() {
 		n = append(n, s.Keys[i])
 	}
 	s.Keys = n
+	s.SaveList()
+}
+
+// Reset a select list to an empty state (file still exists on disc)
+func (s *SelectList) Reset() {
+	s.Keys = []string{}
 	s.SaveList()
 }
