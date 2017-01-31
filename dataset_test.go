@@ -516,4 +516,131 @@ func TestSelectListSort(t *testing.T) {
 			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)
 		}
 	}
+
+	test3PartKeys = []string{
+		"Walter Burke Institute for Theoretical Physics|2016-05-03|72966",
+		"GALCIT|2016-01-08|73002",
+		"GALCIT|2016-01-01|72982",
+		"GALCIT|2015-12-01|73161",
+		"GALCIT|2015-08-18|73057",
+		"GALCIT|2015-05-01|73047",
+		"GALCIT|2015-02-05|73085",
+		"GALCIT|2015-02-01|73052",
+		"GALCIT|2014-12-01|72980",
+		"GALCIT|2014-11-01|73104",
+		"Resnick Sustainability Institute|2014-12-01|73641",
+		"GALCIT|2014-10-01|73333",
+		"GALCIT|2014-09-01|73158",
+		"GALCIT|2013-11-01|73100",
+		"GALCIT|2011-08-01|73162",
+		"JCAP|2014-06-01|73644",
+		"GALCIT|2013-02-01|73120",
+		"GALCIT|2012-09-01|73080",
+		"GALCIT|2012-08-01|73150",
+		"GALCIT|2011-08-01|73160",
+		"Resnick Sustainability Institute|2014-08-01|73649",
+		"GALCIT|2013-10-01|73121",
+		"GALCIT|2011-08-01|73154",
+		"GALCIT|2011-06-01|72999",
+		"GALCIT|2011-03-01|73098",
+		"GALCIT|2010-08-01|73009",
+		"GALCIT|2010-08-01|73159",
+		"GALCIT|2010-08-01|73056",
+		"GALCIT|2010-08-01|73011",
+		"Thirty Meter Telescope|2009-10-01|73665",
+		"GALCIT|2009-04-01|73045",
+		"GALCIT|2008-10-01|73055",
+		"GALCIT|2008-08-01|73079",
+		"GALCIT|2008-08-01|73072",
+		"GALCIT|2008-06-01|73053",
+		"GALCIT|2007-08-23|73061",
+		"GALCIT|2007-08-01|73059",
+		"GALCIT|2007-04-01|73106",
+		"GALCIT|2002-08-01|72981",
+		"LIGO|2005-03-01|72947",
+		"Library System Papers and Publications|1994-10-01|73745",
+		"Synchrotron Laboratory|1961-03-29|73605",
+		"Synchrotron Laboratory|1961-03-28|73332",
+		"Synchrotron Laboratory|1961-03-21|73330",
+		"Synchrotron Laboratory|1961-03-14|73328",
+		"Synchrotron Laboratory|1961-02-07|73042",
+		"Synchrotron Laboratory|1961-02-01|73326",
+		"Synchrotron Laboratory|1961-01-01|73041",
+	}
+
+	expected3PartKeys = []string{
+		"GALCIT|2016-01-08|73002",
+		"GALCIT|2016-01-01|72982",
+		"GALCIT|2015-12-01|73161",
+		"GALCIT|2015-08-18|73057",
+		"GALCIT|2015-05-01|73047",
+		"GALCIT|2015-02-05|73085",
+		"GALCIT|2015-02-01|73052",
+		"GALCIT|2014-12-01|72980",
+		"GALCIT|2014-11-01|73104",
+		"GALCIT|2014-10-01|73333",
+		"GALCIT|2014-09-01|73158",
+		"GALCIT|2013-11-01|73100",
+		"GALCIT|2013-10-01|73121",
+		"GALCIT|2013-02-01|73120",
+		"GALCIT|2012-09-01|73080",
+		"GALCIT|2012-08-01|73150",
+		"GALCIT|2011-08-01|73154",
+		"GALCIT|2011-08-01|73160",
+		"GALCIT|2011-08-01|73162",
+		"GALCIT|2011-06-01|72999",
+		"GALCIT|2011-03-01|73098",
+		"GALCIT|2010-08-01|73009",
+		"GALCIT|2010-08-01|73011",
+		"GALCIT|2010-08-01|73056",
+		"GALCIT|2010-08-01|73159",
+		"GALCIT|2009-04-01|73045",
+		"GALCIT|2008-10-01|73055",
+		"GALCIT|2008-08-01|73072",
+		"GALCIT|2008-08-01|73079",
+		"GALCIT|2008-06-01|73053",
+		"GALCIT|2007-08-23|73061",
+		"GALCIT|2007-08-01|73059",
+		"GALCIT|2007-04-01|73106",
+		"GALCIT|2002-08-01|72981",
+		"JCAP|2014-06-01|73644",
+		"LIGO|2005-03-01|72947",
+		"Library System Papers and Publications|1994-10-01|73745",
+		"Resnick Sustainability Institute|2014-12-01|73641",
+		"Resnick Sustainability Institute|2014-08-01|73649",
+		"Synchrotron Laboratory|1961-03-29|73605",
+		"Synchrotron Laboratory|1961-03-28|73332",
+		"Synchrotron Laboratory|1961-03-21|73330",
+		"Synchrotron Laboratory|1961-03-14|73328",
+		"Synchrotron Laboratory|1961-02-07|73042",
+		"Synchrotron Laboratory|1961-02-01|73326",
+		"Synchrotron Laboratory|1961-01-01|73041",
+		"Thirty Meter Telescope|2009-10-01|73665",
+		"Walter Burke Institute for Theoretical Physics|2016-05-03|72966",
+	}
+
+	sl.Reset()
+	sl.Keys = test3PartKeys[:]
+	sl.SaveList()
+	sl.CustomLessFn = func(s []string, i, j int) bool {
+		a, b := strings.Split(s[i], "|"), strings.Split(s[j], "|")
+		switch {
+		case a[0] == b[0] && a[1] == b[1] && a[2] < b[2]:
+			return true
+		case a[0] == b[0] && a[1] > b[1]:
+			return true
+		case a[0] < b[0]:
+			return true
+		default:
+			return false
+		}
+	}
+	sl.Sort(ASC)
+	result = ""
+	for i, expected := range expected3PartKeys {
+		result = sl.Keys[i]
+		if expected != result {
+			t.Errorf("for ith: %d, expected %q, got %q\n", i, expected, result)
+		}
+	}
 }
