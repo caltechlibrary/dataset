@@ -28,3 +28,8 @@ echo "Generating website"
 mkPage nav.md README.md index.html
 mkPage nav.md INSTALL.md install.html
 mkPage nav.md "markdown:$(cat LICENSE)" license.html
+
+# Build utility docs pages
+for FNAME in dataset; do
+    mkPage nav.md $FNAME.md $FNAME.html
+done
