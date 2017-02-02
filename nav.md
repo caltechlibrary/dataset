@@ -1,6 +1,6 @@
 
 + [Home](/)
-+ [Project](./)
++ [README](./)
 + [INSTALL](./install.html)
 + [LICENSE](./license.html)
 + [dataset](dataset.html)
