@@ -1,8 +1,8 @@
 
 + [Home](/)
 + [README](./)
-+ [INSTALL](./install.html)
-+ [LICENSE](./license.html)
++ [LICENSE](license.html)
++ [INSTALL](install.html)
 + [dataset](dataset.html)
 + [Github](https://github.com/caltechlibrary/dataset)
 
