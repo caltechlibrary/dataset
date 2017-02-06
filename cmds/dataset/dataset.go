@@ -84,16 +84,36 @@ a record called "littlefreda.json" and reading it back.
 
    %s init testdata/friends
    export DATASET_COLLECTION=testdata/friends
-   %s create littlefreda.json '{"name":"Freda","email":"little.freda@inverness.example.org"}'
+   %s create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(%s keys); do
       echo "Path: $(dataset path $KY) 
       echo "Doc: $(%s read $KY)
-   done`
+   done
+
+You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends
+
+   %s -i mojosam.json create mojosam
+   for KY in $(%s keys); do
+      echo "Path: $(dataset path $KY) 
+      echo "Doc: $(%s read $KY)
+   done
+
+Or similarly using a Unix pipe to create a "capt-jack" JSON record.
+
+   cat capt-jack.json | %s create capt-jack
+   for KY in $(%s keys); do
+      echo "Path: $(dataset path $KY) 
+      echo "Doc: $(%s read $KY)
+   done
+`
 
 	// Standard Options
 	showHelp    bool
 	showLicense bool
 	showVersion bool
+	inputFName  string
 
 	// App Specific Options
 	collectionName string
@@ -549,6 +569,8 @@ func init() {
 	flag.BoolVar(&showHelp, "h", false, "display help")
 	flag.BoolVar(&showLicense, "l", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
+	flag.StringVar(&inputFName, "i", "", "input filename")
+	flag.StringVar(&inputFName, "input", "", "input filename")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -565,7 +587,9 @@ func main() {
 		appName, appName, appName, appName, appName,
 		appName, appName, appName, appName, appName)
 	cfg.ExampleText = fmt.Sprintf(examples,
-		appName, appName, appName, appName)
+		appName, appName, appName, appName,
+		appName, appName, appName,
+		appName, appName, appName)
 
 	if showHelp == true {
 		fmt.Println(cfg.Usage())
@@ -591,6 +615,22 @@ func main() {
 	action, params := args[0], args[1:]
 
 	if fn, ok := voc[action]; ok == true {
+		// Handle case of piping in or reading JSON from a file.
+		if action == "create" && len(params) <= 1 {
+			in, err := cli.Open(inputFName, os.Stdin)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				os.Exit(1)
+			}
+			defer cli.CloseFile(inputFName, in)
+			lines, err := cli.ReadLines(in)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				os.Exit(1)
+			}
+			params = append(params, strings.Join(lines, "\n"))
+		}
+
 		output, err := fn(params...)
 		if err != nil {
 			fmt.Printf("Error %s\n", err)
