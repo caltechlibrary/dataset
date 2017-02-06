@@ -150,6 +150,7 @@ mylist adding keys k1, k2, k3</li>
 	-h	display help
 	-l	display license
 	-v	display version
+    -i  input filename for JSON content
 </code></pre>
 
 <h2>EXAMPLE</h2>
@@ -159,11 +160,31 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 
 <pre><code>   dataset init testdata/friends
    export DATASET_COLLECTION=testdata/friends
-   dataset create littlefreda.json '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
+   dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
    for KY in $(dataset keys); do
-      echo &quot;Path: $(dataset path $KY) 
-      echo &quot;Doc: $(dataset read $KY)
+       echo &quot;Path: $(dataset path $KY)
+       echo &quot;Doc: $(dataset read $KY)
    done
+</code></pre>
+
+<p>You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends</p>
+
+<pre><code>    dataset -i mojosam.json create mojosam
+    for KY in $(dataset keys); do
+        echo &quot;Path: $(dataset path $KY)
+        echo &quot;Doc: $(dataset read $KY)
+    done
+</code></pre>
+
+<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
+
+<pre><code>    cat capt-jack.json | dataset create capt-jack
+    for KY in $(dataset keys); do
+        echo &quot;Path: $(dataset path $KY)
+        echo &quot;Doc: $(dataset read $KY)
+    done
 </code></pre>
 
 </section>

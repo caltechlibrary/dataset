@@ -71,6 +71,7 @@ Select list related--
 	-h	display help
 	-l	display license
 	-v	display version
+    -i  input filename for JSON content
 ```
 
 ## EXAMPLE
@@ -81,10 +82,36 @@ a record called "littlefreda.json" and reading it back.
 ```
    dataset init testdata/friends
    export DATASET_COLLECTION=testdata/friends
-   dataset create littlefreda.json '{"name":"Freda","email":"little.freda@inverness.example.org"}'
+   dataset create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(dataset keys); do
-      echo "Path: $(dataset path $KY) 
-      echo "Doc: $(dataset read $KY)
+       echo "Path: $(dataset path $KY)
+       echo "Doc: $(dataset read $KY)
    done
 ```
+
+You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends
+
+```
+    dataset -i mojosam.json create mojosam
+    for KY in $(dataset keys); do
+        echo "Path: $(dataset path $KY)
+        echo "Doc: $(dataset read $KY)
+    done
+```
+
+Or similarly using a Unix pipe to create a "capt-jack" JSON record.
+
+```
+    cat capt-jack.json | dataset create capt-jack
+    for KY in $(dataset keys); do
+        echo "Path: $(dataset path $KY)
+        echo "Doc: $(dataset read $KY)
+    done
+```
+
+
+
+
 
