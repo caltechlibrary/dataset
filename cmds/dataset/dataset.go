@@ -619,7 +619,7 @@ func main() {
 	action, params := args[0], args[1:]
 	if fn, ok := voc[action]; ok == true {
 		// Handle case of piping in or reading JSON from a file.
-		if action == "create" && len(params) <= 1 {
+		if (action == "create" || action == "update") && len(params) <= 1 {
 			in, err := cli.Open(inputFName, os.Stdin)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err)
