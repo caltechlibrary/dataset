@@ -176,13 +176,13 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+		return "", fmt.Errorf("missing a collection name, set DATASET_COLLECTION in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
 	}
 	if len(src) == 0 {
-		return "", fmt.Errorf("missing JSON source")
+		return "", fmt.Errorf("Can't create, no JSON source found in %s\n", name)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -228,13 +228,13 @@ func updateJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+		return "", fmt.Errorf("missing a collection name, set DATASET_COLLECTION in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
 	}
 	if len(src) == 0 {
-		return "", fmt.Errorf("missing JSON source")
+		return "", fmt.Errorf("Can't update, no JSON source found in %s", name)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -567,13 +567,17 @@ func reverse(params ...string) (string, error) {
 func init() {
 	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "display help")
+	flag.BoolVar(&showHelp, "help", false, "display help")
 	flag.BoolVar(&showLicense, "l", false, "display license")
+	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
+	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.StringVar(&inputFName, "i", "", "input filename")
 	flag.StringVar(&inputFName, "input", "", "input filename")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
+	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 }
 
 func main() {
@@ -613,7 +617,6 @@ func main() {
 		os.Exit(1)
 	}
 	action, params := args[0], args[1:]
-
 	if fn, ok := voc[action]; ok == true {
 		// Handle case of piping in or reading JSON from a file.
 		if action == "create" && len(params) <= 1 {

@@ -57,7 +57,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-beta5"
+	Version = "v0.0.1-beta6"
 
 	// License for dataset package
 	License = `
