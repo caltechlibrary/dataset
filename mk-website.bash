@@ -20,6 +20,7 @@ function mkPage () {
         "nav=$nav" \
         "content=$content" \
         page.tmpl > $html
+    git add $html
 }
 
 echo "Checking software..."

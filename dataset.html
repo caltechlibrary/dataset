@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="./">README</a></li>
+<li><a href="license.html">LICENSE</a></li>
+<li><a href="install.html">INSTALL</a></li>
+<li><a href="dataset.html">dataset</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>USAGE</h1>
+
+<pre><code>    dataset [OPTIONS] COMMAND_AND_PARAMETERS
+</code></pre>
+
+<h2>SYNOPSIS</h2>
+
+<p>dataset is a command line tool demonstrating dataset package for managing
+JSON documents stored on disc. A dataset stores one of more collections,
+collections store the a bucketted distribution of JSON documents
+as well as metadata about the collection (e.g. collection info,
+select lists).</p>
+
+<h2>COMMANDS</h2>
+
+<p>Collection and JSON Documant related&ndash;</p>
+
+<ul>
+<li>init - initialize a new collection if none exists, requires a path to collection
+
+<ul>
+<li>once collection is created, set the environment variable dataset_COLLECTION
+to collection name</li>
+</ul></li>
+<li>create - creates a new JSON doc or replace an existing one in collection
+
+<ul>
+<li>requires JSON doc name followed by JSON blob or JSON blob read from stdin</li>
+</ul></li>
+<li>read - displays a JSON doc to stdout
+
+<ul>
+<li>requires JSON doc name</li>
+</ul></li>
+<li>update - updates a JSON doc in collection
+
+<ul>
+<li>requires JSON doc name, followed by replacement JSON blob or
+JSON blob read from stdin</li>
+<li>JSON document must already exist</li>
+</ul></li>
+<li>delete - removes a JSON doc from collection
+
+<ul>
+<li>requires JSON doc name</li>
+</ul></li>
+<li>keys - returns the keys to stdout, one key per line</li>
+<li>path - given a document name return the full path to document</li>
+</ul>
+
+<p>Select list related&ndash;</p>
+
+<ul>
+<li>select - is the command for working with lists of collection keys
+
+<ul>
+<li>&ldquo;dataset select mylist k1 k2 k3&rdquo; would create/update a select list
+mylist adding keys k1, k2, k3</li>
+</ul></li>
+<li>lists - returns the select list names associated with a collection
+
+<ul>
+<li>&ldquo;dataset lists&rdquo;</li>
+</ul></li>
+<li>clear - removes a select list from the collection
+
+<ul>
+<li>&ldquo;dataset clear mylist&rdquo;</li>
+</ul></li>
+<li>first - writes the first key to stdout
+
+<ul>
+<li>&ldquo;dataset first mylist&rdquo;</li>
+</ul></li>
+<li>last would display the last key in the list
+
+<ul>
+<li>&ldquo;dataset last mylist&rdquo;</li>
+</ul></li>
+<li>rest displays all but the first key in the list
+
+<ul>
+<li>&ldquo;dataset rest mylist&rdquo;</li>
+</ul></li>
+<li>list displays a list of keys from the select list to stdout
+
+<ul>
+<li>&ldquo;dataet list mylist&rdquo;</li>
+</ul></li>
+<li>shift writes the first key to stdout and remove it from list
+
+<ul>
+<li>&ldquo;dataset shift mylist&rdquo;</li>
+</ul></li>
+<li>unshift would insert at the beginning
+
+<ul>
+<li>&ldquo;dataset unshift mylist k4&rdquo;</li>
+</ul></li>
+<li>push would append the list
+
+<ul>
+<li>&ldquo;dataset push mylist k4&rdquo;</li>
+</ul></li>
+<li>pop removes last key form list and displays it
+
+<ul>
+<li>&ldquo;dataset pop mylist&rdquo;</li>
+</ul></li>
+<li>sort orders the keys alphabetically in the list
+
+<ul>
+<li>&ldquo;dataset sort mylist asc&rdquo; - sorts in ascending order</li>
+<li>&ldquo;dataset sort mylist desc&rdquo; - sorts in descending order</li>
+</ul></li>
+<li>reverse flips the order of the list
+
+<ul>
+<li>&ldquo;dataset reverse mylists&rdquo;</li>
+</ul></li>
+</ul>
+
+<h2>OPTIONS</h2>
+
+<pre><code>	-c	sets the collection to be used
+	-h	display help
+	-l	display license
+	-v	display version
+    -i  input filename for JSON content
+</code></pre>
+
+<h2>EXAMPLE</h2>
+
+<p>This is an example of creating a dataset called testdata/friends, saving
+a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
+
+<pre><code>   dataset init testdata/friends
+   export DATASET_COLLECTION=testdata/friends
+   dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
+   for KY in $(dataset keys); do
+       echo &quot;Path: $(dataset path $KY)
+       echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends</p>
+
+<pre><code>    dataset -i mojosam.json create mojosam
+    for KY in $(dataset keys); do
+        echo &quot;Path: $(dataset path $KY)
+        echo &quot;Doc: $(dataset read $KY)
+    done
+</code></pre>
+
+<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
+
+<pre><code>    cat capt-jack.json | dataset create capt-jack
+    for KY in $(dataset keys); do
+        echo &quot;Path: $(dataset path $KY)
+        echo &quot;Doc: $(dataset read $KY)
+    done
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2015 - 2016 <a href="http://library.caltech.edu/CLS_Copyright.htm">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
