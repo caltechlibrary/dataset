@@ -24,7 +24,7 @@
 <section>
 <h1>USAGE</h1>
 
-<pre><code>    dataset [OPTIONS] COMMAND_AND_PARAMETERS
+<pre><code>dataset [OPTIONS] COMMAND_AND_PARAMETERS
 </code></pre>
 
 <h2>SYNOPSIS</h2>
@@ -146,11 +146,16 @@ mylist adding keys k1, k2, k3</li>
 
 <h2>OPTIONS</h2>
 
-<pre><code>	-c	sets the collection to be used
-	-h	display help
-	-l	display license
-	-v	display version
-    -i  input filename for JSON content
+<pre><code>    -c          sets the collection to be used
+    -collection sets the collection to be used
+    -h          display help
+    -help       display help
+    -i          input filename
+    -input      input filename
+    -l          display license
+    -license    display license
+    -v          display version
+    -version    display version
 </code></pre>
 
 <h2>EXAMPLE</h2>
@@ -162,8 +167,8 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
    export DATASET_COLLECTION=testdata/friends
    dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
    for KY in $(dataset keys); do
-       echo &quot;Path: $(dataset path $KY)
-       echo &quot;Doc: $(dataset read $KY)
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
    done
 </code></pre>
 
@@ -171,20 +176,20 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 In this example we are creating a mojosam record and reading back the contents
 of testdata/friends</p>
 
-<pre><code>    dataset -i mojosam.json create mojosam
-    for KY in $(dataset keys); do
-        echo &quot;Path: $(dataset path $KY)
-        echo &quot;Doc: $(dataset read $KY)
-    done
+<pre><code>   dataset -i mojosam.json create mojosam
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
 </code></pre>
 
 <p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
 
-<pre><code>    cat capt-jack.json | dataset create capt-jack
-    for KY in $(dataset keys); do
-        echo &quot;Path: $(dataset path $KY)
-        echo &quot;Doc: $(dataset read $KY)
-    done
+<pre><code>   cat capt-jack.json | dataset create capt-jack
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
 </code></pre>
 
 </section>
