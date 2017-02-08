@@ -457,6 +457,9 @@ func push(params ...string) (string, error) {
 			return "", fmt.Errorf("%s not added to %s", param, params[0])
 		}
 	}
+	if err := sl.SaveList(); err != nil {
+		return "", err
+	}
 	return "OK", nil
 }
 
@@ -474,7 +477,11 @@ func pop(params ...string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return sl.Pop(), nil
+	r := sl.Pop()
+	if err := sl.SaveList(); err != nil {
+		return r, err
+	}
+	return r, nil
 }
 
 func shift(params ...string) (string, error) {
@@ -491,7 +498,11 @@ func shift(params ...string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return sl.Shift(), nil
+	r := sl.Shift()
+	if err := sl.SaveList(); err != nil {
+		return r, err
+	}
+	return r, nil
 }
 
 func unshift(params ...string) (string, error) {
@@ -514,6 +525,9 @@ func unshift(params ...string) (string, error) {
 		if l != sl.Len() {
 			return "", fmt.Errorf("%s not added to %s", param, params[0])
 		}
+	}
+	if err := sl.SaveList(); err != nil {
+		return "", err
 	}
 	return "OK", nil
 }
@@ -543,6 +557,9 @@ func sort(params ...string) (string, error) {
 		return "", err
 	}
 	sl.Sort(d)
+	if err := sl.SaveList(); err != nil {
+		return "", err
+	}
 	return "OK", nil
 }
 
@@ -561,6 +578,9 @@ func reverse(params ...string) (string, error) {
 		return "", err
 	}
 	sl.Reverse()
+	if err := sl.SaveList(); err != nil {
+		return "", err
+	}
 	return "OK", nil
 }
 

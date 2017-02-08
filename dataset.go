@@ -57,7 +57,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-beta6"
+	Version = "v0.0.1-beta7"
 
 	// License for dataset package
 	License = `
@@ -184,10 +184,7 @@ func (s *SelectList) Less(i, j int) bool {
 	if s.CustomLessFn != nil {
 		return s.CustomLessFn(s.Keys, i, j)
 	}
-	if s.Keys[i] < s.Keys[j] {
-		return true
-	}
-	return false
+	return s.Keys[i] < s.Keys[j]
 }
 
 // Create - create a new collection structure on disc
@@ -606,14 +603,12 @@ func (s *SelectList) Pop() string {
 	} else {
 		s.Keys = s.Keys[0:pos]
 	}
-	s.SaveList()
 	return r
 }
 
 // Push select list appends an element to the end of an array
 func (s *SelectList) Push(val string) {
 	s.Keys = append(s.Keys, val)
-	s.SaveList()
 }
 
 // Shift select list removes from the beginning of and array returning the element removed
@@ -626,7 +621,6 @@ func (s *SelectList) Shift() string {
 		} else {
 			s.Keys = []string{}
 		}
-		s.SaveList()
 		return r
 	}
 	return ""
@@ -635,18 +629,15 @@ func (s *SelectList) Shift() string {
 // Unshift select list inserts an element at the start of an array
 func (s *SelectList) Unshift(val string) {
 	s.Keys = append([]string{val}, s.Keys[:]...)
-	s.SaveList()
 }
 
 // Sort sorts the keys in in ascending order alphabetically
 func (s *SelectList) Sort(direction int) {
 	if direction == DESC {
 		sort.Sort(sort.Reverse(s))
-		s.SaveList()
 		return
 	}
 	sort.Sort(s)
-	s.SaveList()
 }
 
 // Reverse flips the order of a select list
@@ -657,11 +648,9 @@ func (s *SelectList) Reverse() {
 		n = append(n, s.Keys[i])
 	}
 	s.Keys = n
-	s.SaveList()
 }
 
 // Reset a select list to an empty state (file still exists on disc)
 func (s *SelectList) Reset() {
 	s.Keys = []string{}
-	s.SaveList()
 }

@@ -319,12 +319,18 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 		t.Errorf("Shift didn't work, %+v", jackAndMojo)
 		return false
 	}
-	jackAndMojo, _ = c.Select("jack-and-mojo", "captainjack", "jack", "mojo", "mojosam")
+	jackAndMojo.Reset()
+	jackAndMojo.SaveList()
+	if len(jackAndMojo.Keys) != 0 {
+		t.Errorf("Should have empty list not %+v\n", jackAndMojo)
+		return false
+	}
+	jackAndMojo, _ = c.Select("jack-and-mojo", "mojo", "jack", "captainjack", "mojosam")
 	jackAndMojo.Sort(DESC)
 	for _, expected := range []string{"captainjack", "jack", "mojo", "mojosam"} {
 		val := jackAndMojo.Pop()
 		if expected != val {
-			t.Errorf("Sort() failed %q != %q, %+v\n", expected, val, jackAndMojo)
+			t.Errorf("Sort() failed %q != %q in %+v\n", expected, val, jackAndMojo)
 			return false
 		}
 	}
