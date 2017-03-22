@@ -4,12 +4,12 @@
 ## Next
 
 + [ ] support "attaching" non-JSON files to JSON record
-    + [ ] `dataset attach KEY FILENAME_LIST` would tar up FILENAME_LIST and place it next to the JSON record
-    + [ ] `dataset attachments KEY` returns a list of the tarballs content
-    + [ ] `dataset detach KEY` would remove the tarball from JSON record
+    + [x] `dataset attach KEY FILENAME_LIST` would tar up FILENAME_LIST and place it next to the JSON record
+    + [x] `dataset attachments KEY` returns a list of the tarballs content
+    + [x] `dataset detach KEY` would remove the tarball from JSON record
     + [ ] `dataset detach KEY FILENAME_LIST` would remove the selected file from tarball
-    + [ ] `dataset get KEY` get returns all the files in tarbal
-    + [ ] `dataset get KEY FILENAME_LIST` would return specific files from tarball
+    + [x] `dataset get KEY` get returns all the files in tarbal
+    + [x] `dataset get KEY FILENAME_LIST` would return specific files from tarball
 
 ## Someday, Maybe
 
