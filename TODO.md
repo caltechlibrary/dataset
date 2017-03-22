@@ -5,6 +5,7 @@
 
 ## Someday, Maybe
 
++ integrate support for storing dataset collections in AWS S3
 + support "attaching" non-JSON files to JSON record
     + e.g. `dataset attach KEY FILENAME_LIST` would tar up FILENAME_LIST and place it next to the JSON record
     + e.g. `dataset attachments KEY` returns a list of the tarballs content
@@ -21,3 +22,5 @@
     + default search would return IDS
     + detailed search would return values based on a list of dotpaths
 + add a JavaScript/Python/Shell integration for defining functions and custom sorts
+
+
