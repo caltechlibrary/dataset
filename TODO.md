@@ -17,10 +17,8 @@
 + take KeyMap out of collection.json so collection.json is smaller
 + implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
     + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
-+ add a repl
 + add Bleve search support to *dataset* cli
     + default search would return IDS
     + detailed search would return values based on a list of dotpaths
-+ add a JavaScript/Python/Shell integration for defining functions and custom sorts
 
 
