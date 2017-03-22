@@ -722,6 +722,7 @@ func main() {
 		appName, appName, appName, appName, appName)
 	cfg.ExampleText = fmt.Sprintf(examples,
 		appName, appName, appName, appName,
+		appName, appName, appName, appName,
 		appName, appName, appName,
 		appName, appName, appName)
 
