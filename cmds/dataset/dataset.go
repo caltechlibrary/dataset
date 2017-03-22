@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -43,6 +44,11 @@ Collection and JSON Documant related--
   + requires JSON doc name
 + keys - returns the keys to stdout, one key per line
 + path - given a document name return the full path to document
++ attach - attaches a non-JSON content to a JSON record 
+           (stores content in a related tar file)
++ attachments - lists any attached content for JSON document
++ attached - returns all attachments for a JSON document 
++ detach - remove all attachments of non-JSON content to a JSON record
 
 Select list related--
 
@@ -73,11 +79,10 @@ Select list related--
 	+ "%s sort mylist asc" - sorts in ascending order
 	+ "%s sort mylist desc" - sorts in descending order
 + reverse flips the order of the list
-	+ "%s reverse mylists"
-`
+	+ "%s reverse mylists"`
 
 	examples = `
-EXAMPLE
+EXAMPLES
 
 This is an example of creating a dataset called testdata/friends, saving
 a record called "littlefreda.json" and reading it back.
@@ -107,7 +112,23 @@ Or similarly using a Unix pipe to create a "capt-jack" JSON record.
       echo "Path: $(dataset path $KY) 
       echo "Doc: $(%s read $KY)
    done
-`
+
+Adding high-capt-jack.txt as an attachment to "capt-jack"
+
+   echo "Hi Capt. Jack, Hello World!" > high-capt-jack.txt
+   %s attach capt-jack high-capt-jack.txt
+
+List attachments for "capt-jack"
+
+   %s attachments capt-jack
+
+Get the attachments for "capt-jack" (this will untar in your current directory)
+
+   %s attached capt-jack
+
+Remove attachments from "capt-jack"
+
+   %s detach capt-jack`
 
 	// Standard Options
 	showHelp    bool
@@ -120,27 +141,31 @@ Or similarly using a Unix pipe to create a "capt-jack" JSON record.
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
-		"init":    collectionInit,
-		"create":  createJSONDoc,
-		"read":    readJSONDoc,
-		"update":  updateJSONDoc,
-		"delete":  deleteJSONDoc,
-		"keys":    collectionKeys,
-		"path":    docPath,
-		"select":  selectList,
-		"lists":   lists,
-		"clear":   clear,
-		"first":   first,
-		"last":    last,
-		"rest":    rest,
-		"list":    list,
-		"push":    push,
-		"pop":     pop,
-		"shift":   shift,
-		"unshift": unshift,
-		"length":  length,
-		"sort":    sort,
-		"reverse": reverse,
+		"init":        collectionInit,
+		"create":      createJSONDoc,
+		"read":        readJSONDoc,
+		"update":      updateJSONDoc,
+		"delete":      deleteJSONDoc,
+		"keys":        collectionKeys,
+		"path":        docPath,
+		"select":      selectList,
+		"lists":       lists,
+		"clear":       clear,
+		"first":       first,
+		"last":        last,
+		"rest":        rest,
+		"list":        list,
+		"push":        push,
+		"pop":         pop,
+		"shift":       shift,
+		"unshift":     unshift,
+		"length":      length,
+		"sort":        sort,
+		"reverse":     reverse,
+		"attach":      addAttachments,
+		"attachments": listAttachments,
+		"attached":    getAttachments,
+		"detach":      removeAttachments,
 	}
 
 	// alphabet to use for buckets
@@ -584,6 +609,91 @@ func reverse(params ...string) (string, error) {
 	return "OK", nil
 }
 
+func addAttachments(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
+	}
+	key := params[0]
+	for _, fname := range params[1:] {
+		if buf, err := ioutil.ReadFile(fname); err != nil {
+			return "", err
+		} else {
+			if err := collection.Attach(key, &dataset.Attachment{
+				Name: fname,
+				Body: buf,
+			}); err != nil {
+				return "", err
+			}
+		}
+	}
+	return "OK", nil
+}
+
+func listAttachments(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("syntax: %s attachments KEY", os.Args[0])
+	}
+	key := params[0]
+	results, err := collection.Attachments(key)
+	if err != nil {
+		return "", err
+	}
+	return strings.Join(results, "\n"), nil
+}
+
+func getAttachments(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
+	}
+	key := params[0]
+	attachments, err := collection.GetAttached(key, params[1:]...)
+	if err != nil {
+		return "", err
+	}
+	names := []string{}
+	for _, item := range attachments {
+		// Write out Body and
+		names = append(names, item.Name)
+		err := ioutil.WriteFile(item.Name, item.Body, 0664)
+		if err != nil {
+			return strings.Join(names, "\n"), err
+		}
+	}
+	return strings.Join(names, "\n"), err
+}
+
+func removeAttachments(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) != 1 {
+		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
+	}
+	err = collection.Detach(params[0])
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
 func init() {
 	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "display help")
@@ -611,6 +721,7 @@ func main() {
 		appName, appName, appName, appName, appName,
 		appName, appName, appName, appName, appName)
 	cfg.ExampleText = fmt.Sprintf(examples,
+		appName, appName, appName, appName,
 		appName, appName, appName, appName,
 		appName, appName, appName,
 		appName, appName, appName)

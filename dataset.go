@@ -19,7 +19,7 @@
 // Examples:
 //
 //   // Create a collection
-//   collection, err := dataset.Create("mystuff", "dataset", GenerateBucketNames("abc", 3))
+//   collection, err := dataset.Create("dataset/mystuff", GenerateBucketNames("abc", 3))
 //   if err != nil {
 //       log.Fatalf("%s", err)
 //	 }
@@ -27,6 +27,12 @@
 //   // Add a record
 //   record := map[string]string{"name":"freda","email":"freda@inverness.example.org"}
 //   if err := collection.Create("freda", record); err != nil {
+//       log.Fatalf("%s", err)
+//   }
+//   // Attach an image file
+//   if buf, err := ioutil.ReadAll("images/freda.png"); err != nil {
+//       collection.Attach("freda", "images/freda.png", buf)
+//   } else {
 //       log.Fatalf("%s", err)
 //   }
 //   // Read a record
