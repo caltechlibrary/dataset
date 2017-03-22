@@ -134,10 +134,8 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	/*
-		if err := collection.Detach("freda"); err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-	*/
+	if err := collection.Detach("freda"); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
 }

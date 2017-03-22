@@ -72,11 +72,18 @@ func (c *Collection) Attach(name string, attachments ...*Attachment) error {
 	docPath = tarballName(docPath)
 	if _, err := os.Stat(docPath); os.IsNotExist(err) == true {
 		fp, err = os.Create(docPath)
+		if err != nil {
+			return err
+		}
 	} else {
-		fp, err = os.OpenFile(docPath, os.O_APPEND|os.O_WRONLY, 0666)
-	}
-	if err != nil {
-		return err
+		fp, err = os.OpenFile(docPath, os.O_RDWR, 0664)
+		if err != nil {
+			return err
+		}
+		// Move to just before the trailer in the tarball
+		if _, err = fp.Seek(-2<<9, os.SEEK_END); err != nil {
+			return err
+		}
 	}
 	defer fp.Close()
 	tw := tar.NewWriter(fp)
@@ -85,7 +92,7 @@ func (c *Collection) Attach(name string, attachments ...*Attachment) error {
 	for _, attachment := range attachments {
 		hdr := &tar.Header{
 			Name: attachment.Name,
-			Mode: 0600,
+			Mode: 0664,
 			Size: int64(len(attachment.Body)),
 		}
 		if err := tw.WriteHeader(hdr); err != nil {
