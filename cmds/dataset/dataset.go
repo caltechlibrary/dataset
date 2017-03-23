@@ -205,7 +205,7 @@ func collectionInit(args ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	return fmt.Sprintf("export DATASET_COLLECTION=%q", path.Join(collection.Dataset, collection.Name)), nil
+	return fmt.Sprintf("export DATASET_COLLECTION=%s", path.Join(collection.Dataset, collection.Name)), nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
