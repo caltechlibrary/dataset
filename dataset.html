@@ -70,6 +70,11 @@ JSON blob read from stdin</li>
 </ul></li>
 <li>keys - returns the keys to stdout, one key per line</li>
 <li>path - given a document name return the full path to document</li>
+<li>attach - attaches a non-JSON content to a JSON record
+       (stores content in a related tar file)</li>
+<li>attachments - lists any attached content for JSON document</li>
+<li>attached - returns all attachments for a JSON document</li>
+<li>detach - remove all attachments of non-JSON content to a JSON record</li>
 </ul>
 
 <p>Select list related&ndash;</p>
@@ -146,24 +151,24 @@ mylist adding keys k1, k2, k3</li>
 
 <h2>OPTIONS</h2>
 
-<pre><code>    -c          sets the collection to be used
-    -collection sets the collection to be used
-    -h          display help
-    -help       display help
-    -i          input filename
-    -input      input filename
-    -l          display license
-    -license    display license
-    -v          display version
-    -version    display version
+<pre><code>	-c	sets the collection to be used
+	-collection	sets the collection to be used
+	-h	display help
+	-help	display help
+	-i	input filename
+	-input	input filename
+	-l	display license
+	-license	display license
+	-v	display version
+	-version	display version
 </code></pre>
 
-<h2>EXAMPLE</h2>
+<h2>EXAMPLES</h2>
 
 <p>This is an example of creating a dataset called testdata/friends, saving
 a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 
-<pre><code>   dataset init testdata/friends
+<pre><code class="language-shell">   dataset init testdata/friends
    export DATASET_COLLECTION=testdata/friends
    dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
    for KY in $(dataset keys); do
@@ -176,7 +181,7 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 In this example we are creating a mojosam record and reading back the contents
 of testdata/friends</p>
 
-<pre><code>   dataset -i mojosam.json create mojosam
+<pre><code class="language-shell">   dataset -i mojosam.json create mojosam
    for KY in $(dataset keys); do
       echo &quot;Path: $(dataset path $KY) 
       echo &quot;Doc: $(dataset read $KY)
@@ -185,11 +190,32 @@ of testdata/friends</p>
 
 <p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
 
-<pre><code>   cat capt-jack.json | dataset create capt-jack
+<pre><code class="language-shell">   cat capt-jack.json | dataset create capt-jack
    for KY in $(dataset keys); do
       echo &quot;Path: $(dataset path $KY) 
       echo &quot;Doc: $(dataset read $KY)
    done
+</code></pre>
+
+<p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
+   dataset attach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>List attachments for &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset attachments capt-jack
+</code></pre>
+
+<p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
+
+<pre><code class="language-shell">   dataset attached capt-jack
+</code></pre>
+
+<p>Remove all attachments from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset detach capt-jack
 </code></pre>
 
 </section>
