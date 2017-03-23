@@ -24,16 +24,19 @@
 <section>
 <h1>dataset</h1>
 
-<p>A go package for managing JSON documents stored on disc. <em>dataset</em> is also a
-command line tool. It stores one of more collections of JSON documents. Typically
+<p>A go package for managing JSON documents stored on disc with any related documents.
+<em>dataset</em> is also a command line tool implementing the features of the <em>dataset</em> package.
+<em>dataset</em> is used to store one of more collections of JSON and related documents. Typically
 you&rsquo;d have a directory that holds collections, each collection holds buckets and
-each bucket holds some JSON documents. Both the package and command line tool
-allow you to interact with that logical structure on disc.</p>
+each bucket holds some JSON documents and their attachments.  Attachments are stored as
+tar files and JSON documents are stored as text.  A project goal of <em>dataset</em> is to
+&ldquo;play nice&rdquo; with shell scripts and other Unix tools (e.g. it respects standard in, out
+and error with minimal side effects).</p>
 
-<h2>layout</h2>
+<h2>File system layout</h2>
 
 <ul>
-<li>dataset (directory on file system)
+<li>/dataset (directory on file system)
 
 <ul>
 <li>collection (directory on file system)
@@ -46,7 +49,7 @@ allow you to interact with that logical structure on disc.</p>
 <li>e.g. file &ldquo;mydocs.jons&rdquo; stored in bucket &ldquo;aa&rdquo; would have a map of {&ldquo;mydocs.json&rdquo;: &ldquo;aa&rdquo;}</li>
 </ul></li>
 <li>keys.json - a list of keys in the collection (it is the default select list)</li>
-<li>BUCKETS - a sequence of alphabet names for buckets holding JSON documents
+<li>BUCKETS - a sequence of alphabet names for buckets holding JSON documents and their attachments
 
 <ul>
 <li>Buckets let supporting common commands like ls, tree, etc. when the doc count is high</li>
@@ -62,9 +65,10 @@ allow you to interact with that logical structure on disc.</p>
 </ul>
 
 <p>BUCKETS are names without meaning normally using Alphabetic characters. A dataset defined with four buckets
-might looks like aa, ab, ba, bb.</p>
+might looks like aa, ab, ba, bb. These directories will contains JSON documents and a tar file if the document
+has attachments.</p>
 
-<h2>operations</h2>
+<h2>Operations</h2>
 
 <ul>
 <li>Collection level
