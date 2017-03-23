@@ -29,11 +29,12 @@
 
 <h2>SYNOPSIS</h2>
 
-<p>dataset is a command line tool demonstrating dataset package for managing
-JSON documents stored on disc. A dataset stores one of more collections,
-collections store the a bucketted distribution of JSON documents
-as well as metadata about the collection (e.g. collection info,
-select lists).</p>
+<p><em>dataset</em> is a command line tool demonstrating dataset package for managing
+JSON documents stored on disc. A dataset is organized around collections,
+collections contain buckets holding specific JSON documents and related content.
+In addition to the JSON documents <em>dataset</em> maintains metadata for management
+of the documents, their attachments as well as a ability to generate select lists
+based JSON document keys (aka JSON document names).</p>
 
 <h2>COMMANDS</h2>
 
@@ -43,38 +44,56 @@ select lists).</p>
 <li>init - initialize a new collection if none exists, requires a path to collection
 
 <ul>
-<li>once collection is created, set the environment variable dataset_COLLECTION
+<li>once collection is created, set the environment variable DATASET_COLLECTION
 to collection name</li>
 </ul></li>
-<li>create - creates a new JSON doc or replace an existing one in collection
+<li>create - creates a new JSON document or replace an existing one in collection
 
 <ul>
-<li>requires JSON doc name followed by JSON blob or JSON blob read from stdin</li>
+<li>requires JSON document name followed by JSON blob or JSON blob read from stdin</li>
 </ul></li>
-<li>read - displays a JSON doc to stdout
+<li>read - displays a JSON document to stdout
 
 <ul>
-<li>requires JSON doc name</li>
+<li>requires JSON document name</li>
 </ul></li>
-<li>update - updates a JSON doc in collection
+<li>update - updates a JSON document in collection
 
 <ul>
-<li>requires JSON doc name, followed by replacement JSON blob or
-JSON blob read from stdin</li>
+<li>requires JSON document name, followed by replacement JSON document name or
+JSON document read from stdin</li>
 <li>JSON document must already exist</li>
 </ul></li>
-<li>delete - removes a JSON doc from collection
+<li>delete - removes a JSON document from collection
 
 <ul>
-<li>requires JSON doc name</li>
+<li>requires JSON document name</li>
 </ul></li>
 <li>keys - returns the keys to stdout, one key per line</li>
 <li>path - given a document name return the full path to document</li>
 <li>attach - attaches a non-JSON content to a JSON record
-       (stores content in a related tar file)</li>
-<li>attachments - lists any attached content for JSON document</li>
-<li>attached - returns all attachments for a JSON document</li>
-<li>detach - remove all attachments of non-JSON content to a JSON record</li>
+
+<ul>
+<li>&ldquo;dataset attach k1 stats.xlsx&rdquo; would attach the stats.xlsx file to JSON document named <em>k1</em></li>
+<li>(stores content in a related tar file)</li>
+</ul></li>
+<li>attachments - lists any attached content for JSON document
+
+<ul>
+<li>&ldquo;dataset attachments k1&rdquo; would list all the attachments for <em>k1</em></li>
+</ul></li>
+<li>attached - returns attachments for a JSON document
+
+<ul>
+<li>&ldquo;dataset attached k1&rdquo; would write out all the attached files for <em>k1</em></li>
+<li>&ldquo;dataset attached k1 stats.xlsx&rdquo; would write out only the stats.xlsx file attached to <em>k1</em></li>
+</ul></li>
+<li>detach - remove attachments to a JSON document
+
+<ul>
+<li>&ldquo;dataset detach k1 stats.xlsx&rdquo; would rewrite the attachments tar file without including stats.xlsx</li>
+<li>&ldquo;dataset detach k1&rdquo; would remove ALL attachments to <em>k1</em></li>
+</ul></li>
 </ul>
 
 <p>Select list related&ndash;</p>
@@ -211,6 +230,11 @@ of testdata/friends</p>
 <p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
 
 <pre><code class="language-shell">   dataset attached capt-jack
+</code></pre>
+
+<p>Remove <em>high-capt-jack.txt</em> from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">    dataset detach capt-jack high-capt-jack.txt
 </code></pre>
 
 <p>Remove all attachments from &ldquo;capt-jack&rdquo;</p>
