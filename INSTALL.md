@@ -38,13 +38,12 @@ VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
 ### Raspberry Pi
 
-If you are using a Raspberry Pi 2 or later use the ARM7 VERSION_NUMBER, ARM6 is only for the first generaiton Raspberry Pi.
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
 
 1. Download **dataset-VERSION_NUMBER-release.zip** from [https://github.com/caltechlibrary/dataset/releases/latest](https://github.com/caltechlibrary/dataset/releases/latest)
 2. Find and unzip **dataset-VERSION_NUMBER-release.zip**
 3. In the unziped directory and find the files in *dist/rasbian-arm7/*
 4. Copy *dataset* to a "bin" directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/rasbian-arm7/dataset ~/bin/)
-    + if you are using an original Raspberry Pi you should copy the ARM6 version instead (i.e. dist/raspbian-arm6)
 5. From the shell prompt run `dataset -h` to confirm you were successful
 
 

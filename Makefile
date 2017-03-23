@@ -59,11 +59,8 @@ dist/macosx-amd64:
 dist/raspbian-arm7:
 	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
 
-dist/raspbian-arm6:
-	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -o dist/raspbian-arm6/dataset cmds/dataset/dataset.go
 
-
-release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7 dist/raspbian-arm6
+release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 	mkdir -p dist
 	cp -v README.md dist/
 	cp -v LICENSE dist/
