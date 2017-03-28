@@ -10,6 +10,10 @@ tar files and JSON documents are stored as text.  A project goal of _dataset_ is
 "play nice" with shell scripts and other Unix tools (e.g. it respects standard in, out
 and error with minimal side effects). 
 
+Compiled versions are provided for Linux (amd64), Mac OS X (amd64), Windows 10 (amd64) and Raspbian (ARM7). 
+See https://github.com/caltechlibrary/dataset/releases.
+
+
 ## File system layout
 
 + /dataset (directory on file system)
