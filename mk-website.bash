@@ -10,7 +10,7 @@ function softwareCheck() {
 	done
 }
 
-function mkPage() {
+function MakePage() {
 	nav="$1"
 	content="$2"
 	html="$3"
@@ -26,12 +26,18 @@ function mkPage() {
 echo "Checking software..."
 softwareCheck mkpage
 echo "Generating website"
-mkPage nav.md README.md index.html
-mkPage nav.md INSTALL.md install.html
-mkPage nav.md "markdown:$(cat LICENSE)" license.html
+MakePage nav.md README.md index.html
+MakePage nav.md INSTALL.md install.html
+MakePage nav.md "markdown:$(cat LICENSE)" license.html
 
 # Build utility docs pages
-#for FNAME in dataset; do
-FNAME=dataset
-mkPage nav.md "${FNAME}.md" "${FNAME}.html"
-#done
+GDD=$(which godocdown)
+if [ "$GDD" != "" ]; then
+    read -p "Overwrite docs/package.md from source code? Y/N " Y_OR_N
+    if [ "$Y_OR_N" = "Y" ] || [ "$Y_OR_N" = "y" ]; then
+        godocdown . > docs/package.md
+    fi
+fi
+for FNAME in index package dataset; do
+	MakePage "docs/nav.md" "docs/${FNAME}.md" "docs/${FNAME}.html"
+done

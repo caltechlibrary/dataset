@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="dataset.html">dataset</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>dataset</h1>
+
+<p>&ndash;
+    import &ldquo;github.com/caltechlibrary/dataset&rdquo;</p>
+
+<p>Package dataset is a go package for managing JSON documents stored on disc</p>
+
+<p>@author R. S. Doiel, <a href="mailto:rsdoiel@caltech.edu">rsdoiel@caltech.edu</a></p>
+
+<p>Copyright &copy; 2017, Caltech All rights not granted herein are expressly reserved
+by Caltech.</p>
+
+<p>Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:</p>
+
+<ol>
+<li><p>Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.</p></li>
+
+<li><p>Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.</p></li>
+
+<li><p>Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.</p></li>
+</ol>
+
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &ldquo;AS IS&rdquo; AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED</p>
+
+<h3>WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</h3>
+
+<p>DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+
+<p>Package dataset is a go package for managing JSON documents stored on disc</p>
+
+<p>@author R. S. Doiel, <a href="mailto:rsdoiel@caltech.edu">rsdoiel@caltech.edu</a></p>
+
+<p>Copyright &copy; 2017, Caltech All rights not granted herein are expressly reserved
+by Caltech.</p>
+
+<p>Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:</p>
+
+<ol>
+<li><p>Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.</p></li>
+
+<li><p>Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.</p></li>
+
+<li><p>Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.</p></li>
+</ol>
+
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &ldquo;AS IS&rdquo; AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED</p>
+
+<h3>WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</h3>
+
+<p>DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+
+<p>Package dataset provides a common approach of storing JSON documents and related
+attachments systematically and predictably on the file systems. The driving
+usecase behind dataset is creating a unified approach to harvesting metadata
+from various hetrogenious systems using in Caltech Library (e.g. EPrints,
+ArchivesSpace, Islandora and outside API like ORCID, CrossRef, OCLC). This
+suggests that dataset as a go package and command line tool may have more
+general applications where a database sytems might be more than you need and
+ad-hoc collections on disc maybe inconvient to evolve as your data explortion
+takes you in different directions in analysis. The dataset command line tool is
+in intended to be easy to script both in Bash as well as more featureful
+languages like Python.</p>
+
+<p>Dataset is not a good choice if you need a fast key/value store or actual
+database features. It doesn&rsquo;t support multiple users, record locking or a query
+language interface. It is targetting the sweet spot between ad-hoc JSON document
+storage on disc and needing a more complete system like Couch, Solr, or Fedora4
+for managing JSON docs.</p>
+
+<p>Use case</p>
+
+<p>Caltech Library has many repository, catelog and record management systems (e.g.
+EPrints, Invenion, ArchivesSpace, Islandora, Invenio). It is common practice to
+harvest data from these systems for analysis or processing. Harvested records
+typically come in XML or JSON format. JSON has proven a flexibly way for working
+with the data and in our more modern tools the common format we use to move data
+around. We needed a way to standardize how we stored these JSON records for
+intermediate processing to allow us to use the growing ecosystem of JSON related
+tooling available under Posix/Unix compatible systems.</p>
+
+<p>Aproach to file system layout</p>
+
+<ul>
+<li><p>/dataset (directory on file system)</p>
+
+<ul>
+<li>collection (directory on file system)
+
+<ul>
+<li>collection.json - metadata about collection
+
+<ul>
+<li>maps the filename of the JSON blob stored to a bucket in the collection</li>
+<li>e.g. file &ldquo;mydocs.jons&rdquo; stored in bucket &ldquo;aa&rdquo; would have a map of {&ldquo;mydocs.json&rdquo;: &ldquo;aa&rdquo;}</li>
+</ul></li>
+<li>keys.json - a list of keys in the collection (it is the default select list)</li>
+<li>BUCKETS - a sequence of alphabet names for buckets holding JSON documents and their attachments
+
+<ul>
+<li>Buckets let supporting common commands like ls, tree, etc. when the doc count is high</li>
+</ul></li>
+<li>SELECT_LIST.json - a JSON document holding an array of keys
+
+<ul>
+<li>the default select list is &ldquo;keys&rdquo;, it is not mutable by Push, Pop, Shift and Unshift</li>
+<li>select lists cannot be named &ldquo;keys&rdquo; or &ldquo;collection&rdquo;</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+
+<p>BUCKETS are names without meaning normally using Alphabetic characters. A
+dataset defined with four buckets might looks like aa, ab, ba, bb. These
+directories will contains JSON documents and a tar file if the document has
+attachments.</p>
+
+<h3>Operations</h3>
+
+<ul>
+<li><p>Collection level</p>
+
+<ul>
+<li>Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new</li>
+<li>Open (collection) - opens an existing collections and reads collection.json into memory</li>
+<li>Close (collection) - writes changes to collection.json to disc if dirty</li>
+<li>Delete (collection) - removes a collection from disc</li>
+<li>Keys (collection) - list of keys in the collection</li>
+<li>Select (collection) - returns the request select list, will create the list if not exist, append keys if provided</li>
+<li>Clear (collection) - Removes a select list from a collection and disc</li>
+<li>Lists (collection) - returns the names of the available select lists</li>
+</ul></li>
+
+<li><p>JSON document level</p>
+
+<ul>
+<li>Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed</li>
+<li>Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents</li>
+<li>Update (JSON document) - updates an existing blob on disc (record must already exist)</li>
+<li>Delete (JSON document) - removes a JSON blob from its disc</li>
+<li>Path (JSON document) - returns the path to the JSON document</li>
+</ul></li>
+
+<li><p>Select list level</p>
+
+<ul>
+<li>First (select list) - returns the value of the first key in the select list (non-distructively)</li>
+<li>Last (select list) - returns the value of the last key in the select list (non-distructively)</li>
+<li>Rest (select list) - returns values of all keys in the select list except the first (non-destructively)</li>
+<li>List (select list) - returns values of all keys in the select list (non-destructively)</li>
+<li>Length (select list) - returns the number of keys in a select list</li>
+<li>Push (select list) - appends one or more keys to an existing select list</li>
+<li>Pop (select list) - returns the last key in select list and removes it</li>
+<li>Unshift (select list) - inserts one or more new keys at the beginning of the select list</li>
+<li>Shift (select list) - returns the first key in a select list and removes it</li>
+<li>Sort (select list) - orders the select lists&rsquo; keys in ascending or descending alphabetical order</li>
+<li>Reverse (select list) - flips the order of the keys in the select list</li>
+</ul></li>
+</ul>
+
+<h3>Example</h3>
+
+<p>Common operations using the <em>dataset</em> command line tool</p>
+
+<ul>
+<li>create collection + create a JSON document to collection + read a JSON
+document + update a JSON document + delete a JSON document</li>
+</ul>
+
+<p>Example Bash script usage</p>
+
+<pre><code># Create a collection &quot;mystuff&quot; inside the directory called demo
+dataset init demo/mystuff
+# if successful an expression to export the collection name is show
+export DATASET_COLLECTION=demo/mystuff
+
+# Create a JSON document
+dataset create freda.json '{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@inverness.example.org&quot;}'
+# If successful then you should see an OK or an error message
+
+# Read a JSON document
+dataset read freda.json
+
+# Path to JSON document
+dataset path freda.json
+
+# Update a JSON document
+dataset update freda.json '{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@zbs.example.org&quot;}'
+# If successful then you should see an OK or an error message
+
+# List the keys in the collection
+dataset keys
+
+# Delete a JSON document
+dataset delete freda.json
+
+# To remove the collection just use the Unix shell command
+# /bin/rm -fR demo/mystuff
+</code></pre>
+
+<p>Common operations shown in Golang</p>
+
+<ul>
+<li>create collection + create a JSON document to collection + read a JSON
+document + update a JSON document + delete a JSON document</li>
+</ul>
+
+<p>Example Go code</p>
+
+<pre><code>// Create a collection &quot;mystuff&quot; inside the directory called demo
+collection, err := dataset.Create(&quot;demo/mystuff&quot;, dataset.GenerateBucketNames(&quot;ab&quot;, 2))
+if err != nil {
+    log.Fatalf(&quot;%s&quot;, err)
+}
+defer collection.Close()
+// Create a JSON document
+docName := &quot;freda.json&quot;
+document := map[string]string{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@inverness.example.org&quot;}
+if err := collection.Create(docName, document); err != nil {
+    log.Fatalf(&quot;%s&quot;, err)
+}
+// Attach an image file to freda.json in the collection
+if buf, err := ioutil.ReadAll(&quot;images/freda.png&quot;); err != nil {
+   collection.Attach(&quot;freda&quot;, &quot;images/freda.png&quot;, buf)
+} else {
+   log.Fatalf(&quot;%s&quot;, err)
+}
+// Read a JSON document
+if err := collection.Read(docName, document); err != nil {
+    log.Fatalf(&quot;%s&quot;, err)
+}
+// Update a JSON document
+document[&quot;email&quot;] = &quot;freda@zbs.example.org&quot;
+if err := collection.Update(docName, document); err != nil {
+    log.Fatalf(&quot;%s&quot;, err)
+}
+// Delete a JSON document
+if err := collection.Delete(docName); err != nil {
+    log.Fatalf(&quot;%s&quot;, err)
+}
+</code></pre>
+
+<p>Working with attachments in Go</p>
+
+<pre><code>    collection, err := dataset.Open(&quot;dataset/mystuff&quot;)
+    if err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+    defer collection.Close()
+
+    // Add a helloworld.txt file to freda.json record as an attachment.
+    if err := collection.Attach(&quot;freda&quot;, &quot;docs/helloworld.txt&quot;, []byte(&quot;Hello World!!!!&quot;)); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+
+    // Attached files aditional files from the filesystem by their relative file path
+    if err := collection.AttachFiles(&quot;freda&quot;, &quot;docs/presentation-article.pdf&quot;, &quot;docs/charts-and-figures.zip&quot;, &quot;docs/transcript.fdx&quot;) {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+
+    // List the attached files for freda.json
+    if filenames, err := collection.Attachments(&quot;freda&quot;); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    } else {
+        fmt.Printf(&quot;%s\n&quot;, strings.Join(filenames, &quot;\n&quot;))
+    }
+
+    // Get an array of attachments (reads in content into memory as an array of Attachment Structs)
+    allAttachments, err := collection.GetAttached(&quot;freda&quot;)
+    if err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+    fmt.Printf(&quot;all attachments: %+v\n&quot;, allAttachments)
+
+    // Get two attachments docs/transcript.fdx, docs/helloworld.txt
+    twoAttachments, _ := collection.GetAttached(&quot;fred&quot;, &quot;docs/transcript.fdx&quot;, &quot;docs/helloworld.txt&quot;)
+    fmt.Printf(&quot;two attachments: %+v\n&quot;, twoAttachments)
+
+    // Get attached files writing them out to disc relative to your working directory
+    if err := collection.GetAttachedFiles(&quot;freda&quot;); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+
+    // Get two selection attached files writing them out to disc relative to your working directory
+    if err := collection.GetAttached(&quot;fred&quot;, &quot;docs/transcript.fdx&quot;, &quot;docs/helloworld.txt&quot;); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+
+    // Remove docs/transcript.fdx and docs/helloworld.txt from freda.json attachments
+    if err := collection.Detach(&quot;fred&quot;, &quot;docs/transcript.fdx&quot;, &quot;docs/helloworld.txt&quot;); err != nil {
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+
+    // Remove all attached files from freda.json
+    if err := collection.Detach(&quot;fred&quot;)
+        log.Fatalf(&quot;%s&quot;, err)
+    }
+</code></pre>
+
+<h2>Usage</h2>
+
+<pre><code class="language-go">const (
+	// Version of the dataset package
+	Version = &quot;v0.0.1-beta9&quot;
+
+	// License is a formatted from for dataset package based command line tools
+	License = `
+%s %s
+
+Copyright (c) 2017, Caltech
+All rights not granted herein are expressly reserved by Caltech.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+`
+
+	DefaultAlphabet = `abcdefghijklmnopqrstuvwxyz`
+
+	ASC  = iota
+	DESC = iota
+)
+</code></pre>
+
+<h4>func  Delete</h4>
+
+<pre><code class="language-go">func Delete(name string) error
+</code></pre>
+
+<p>Delete an entire collection</p>
+
+<h4>func  GenerateBucketNames</h4>
+
+<pre><code class="language-go">func GenerateBucketNames(alphabet string, length int) []string
+</code></pre>
+
+<p>GenerateBucketNames provides a list of permutations of requested length to use
+as bucket names</p>
+
+<h4>type Attachment</h4>
+
+<pre><code class="language-go">type Attachment struct {
+	// Name is the filename and path to be used inside the generated tar file
+	Name string
+	// Body is a byte array for storing the content associated with Name
+	Body []byte
+}
+</code></pre>
+
+<p>Attachment is a structure for holding non-JSON content you wish to store
+alongside a JSON document in a collection</p>
+
+<h4>type Collection</h4>
+
+<pre><code class="language-go">type Collection struct {
+	// Version of collection being stored
+	Version string `json:&quot;verison&quot;`
+	// Name of collection
+	Name string `json:&quot;name&quot;`
+	// Dataset is a directory name that holds collections
+	Dataset string `json:&quot;dataset&quot;`
+	// Buckets is a list of bucket names used by collection
+	Buckets []string `json:&quot;buckets&quot;`
+	// KeyMap holds the document name to bucket map for the collection
+	KeyMap map[string]string `json:&quot;keymap&quot;`
+	// SelectLists holds the names of available select lists
+	SelectLists []string `json:&quot;select_lists&quot;`
+}
+</code></pre>
+
+<p>Collection is the container holding buckets which in turn hold JSON docs</p>
+
+<h4>func  Create</h4>
+
+<pre><code class="language-go">func Create(name string, bucketNames []string) (*Collection, error)
+</code></pre>
+
+<p>Create - create a new collection structure on disc name should be filesystem
+friendly</p>
+
+<h4>func  Open</h4>
+
+<pre><code class="language-go">func Open(name string) (*Collection, error)
+</code></pre>
+
+<p>Open reads in a collection&rsquo;s metadata and returns and new collection structure
+and err</p>
+
+<h4>func (*Collection) Attach</h4>
+
+<pre><code class="language-go">func (c *Collection) Attach(name string, attachments ...*Attachment) error
+</code></pre>
+
+<p>Attach a non-JSON document to a JSON document in the collection. Attachments are
+stored in a tar file, if tar file exits then attachment(s) are appended to tar
+file.</p>
+
+<h4>func (*Collection) AttachFiles</h4>
+
+<pre><code class="language-go">func (c *Collection) AttachFiles(name string, fileNames ...string) error
+</code></pre>
+
+<p>AttachFiles a non-JSON documents to a JSON document in the collection.
+Attachments are stored in a tar file, if tar file exits then attachment(s) are
+appended to tar file.</p>
+
+<h4>func (*Collection) Attachments</h4>
+
+<pre><code class="language-go">func (c *Collection) Attachments(name string) ([]string, error)
+</code></pre>
+
+<p>Attachments returns a list of files in the attached tarball for a given name in
+the collection</p>
+
+<h4>func (*Collection) Clear</h4>
+
+<pre><code class="language-go">func (c *Collection) Clear(name string) error
+</code></pre>
+
+<p>Clear removes a select list from disc and the collection</p>
+
+<h4>func (*Collection) Close</h4>
+
+<pre><code class="language-go">func (c *Collection) Close() error
+</code></pre>
+
+<p>Close closes a collection, writing the updated keys to disc</p>
+
+<h4>func (*Collection) Create</h4>
+
+<pre><code class="language-go">func (c *Collection) Create(name string, data interface{}) error
+</code></pre>
+
+<p>Create a JSON doc from an interface{} and adds it to a collection, if problem
+returns an error name must be unique</p>
+
+<h4>func (*Collection) CreateAsJSON</h4>
+
+<pre><code class="language-go">func (c *Collection) CreateAsJSON(name string, src []byte) error
+</code></pre>
+
+<p>CreateAsJSON adds or replaces a JSON doc to a collection, if problem returns an
+error name must be unique (treated like a key in a key/value store)</p>
+
+<h4>func (*Collection) Delete</h4>
+
+<pre><code class="language-go">func (c *Collection) Delete(name string) error
+</code></pre>
+
+<p>Delete removes a JSON doc from a collection</p>
+
+<h4>func (*Collection) Detach</h4>
+
+<pre><code class="language-go">func (c *Collection) Detach(name string, filterNames ...string) error
+</code></pre>
+
+<p>Detach a non-JSON document from a JSON document in the collection. FIXME: Need
+to add detaching specific filenames</p>
+
+<h4>func (*Collection) DocPath</h4>
+
+<pre><code class="language-go">func (c *Collection) DocPath(name string) (string, error)
+</code></pre>
+
+<p>DocPath returns a full path to a key or an error if not found</p>
+
+<h4>func (*Collection) GetAttached</h4>
+
+<pre><code class="language-go">func (c *Collection) GetAttached(name string, filterNames ...string) ([]Attachment, error)
+</code></pre>
+
+<p>GetAttached returns an Attachment array or error If no filterNames provided then
+return all attachments or error</p>
+
+<h4>func (*Collection) GetAttachedFiles</h4>
+
+<pre><code class="language-go">func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error
+</code></pre>
+
+<p>GetAttachedFiles returns an error if encountered, side effect is to write file
+to destination directory If no filterNames provided then return all attachments
+or error</p>
+
+<h4>func (*Collection) Keys</h4>
+
+<pre><code class="language-go">func (c *Collection) Keys() []string
+</code></pre>
+
+<p>Keys returns a list of keys in a collection</p>
+
+<h4>func (*Collection) Lists</h4>
+
+<pre><code class="language-go">func (c *Collection) Lists() []string
+</code></pre>
+
+<p>Lists returns a list of available select lists, should always contain the
+default keys list</p>
+
+<h4>func (*Collection) Read</h4>
+
+<pre><code class="language-go">func (c *Collection) Read(name string, data interface{}) error
+</code></pre>
+
+<p>Read finds the record in a collection, updates the data interface provide and if
+problem returns an error name must exist or an error is returned</p>
+
+<h4>func (*Collection) ReadAsJSON</h4>
+
+<pre><code class="language-go">func (c *Collection) ReadAsJSON(name string) ([]byte, error)
+</code></pre>
+
+<p>ReadAsJSON finds a the record in the collection and returns the JSON source</p>
+
+<h4>func (*Collection) Select</h4>
+
+<pre><code class="language-go">func (c *Collection) Select(params ...string) (*SelectList, error)
+</code></pre>
+
+<p>Select returns a select assocaited with a collection, it will be created if
+neccessary and any keys included will be added before returning the updated list</p>
+
+<h4>func (*Collection) Update</h4>
+
+<pre><code class="language-go">func (c *Collection) Update(name string, data interface{}) error
+</code></pre>
+
+<p>Update JSON doc in a collection from the provided data interface (note: JSON doc
+must exist or returns an error )</p>
+
+<h4>func (*Collection) UpdateAsJSON</h4>
+
+<pre><code class="language-go">func (c *Collection) UpdateAsJSON(name string, src []byte) error
+</code></pre>
+
+<p>UpdateAsJSON takes a JSON doc and writes it to a collection (note: Record must
+exist or returns an error)</p>
+
+<h4>type SelectList</h4>
+
+<pre><code class="language-go">type SelectList struct {
+	FName        string   `json:&quot;name&quot;`
+	Keys         []string `json:&quot;keys&quot;`
+	CustomLessFn func([]string, int, int) bool
+}
+</code></pre>
+
+<p>SelectList is an ordered set of keys</p>
+
+<h4>func (SelectList) First</h4>
+
+<pre><code class="language-go">func (s SelectList) First() string
+</code></pre>
+
+<p>First select list returns the first item in the list (non-destructively)</p>
+
+<h4>func (*SelectList) Last</h4>
+
+<pre><code class="language-go">func (s *SelectList) Last() string
+</code></pre>
+
+<p>Last select list returns the list item from the list (non-destructively)</p>
+
+<h4>func (*SelectList) Len</h4>
+
+<pre><code class="language-go">func (s *SelectList) Len() int
+</code></pre>
+
+<p>Len returns the number of keys in the select list</p>
+
+<h4>func (*SelectList) Less</h4>
+
+<pre><code class="language-go">func (s *SelectList) Less(i, j int) bool
+</code></pre>
+
+<p>Less compare two elements returning true if first is less than second, false
+otherwise</p>
+
+<h4>func (*SelectList) List</h4>
+
+<pre><code class="language-go">func (s *SelectList) List() []string
+</code></pre>
+
+<p>List returns all the keys in the select list (non-destructively)</p>
+
+<h4>func (*SelectList) Pop</h4>
+
+<pre><code class="language-go">func (s *SelectList) Pop() string
+</code></pre>
+
+<p>Pop select list removes from the end of an array returning the element removed</p>
+
+<h4>func (*SelectList) Push</h4>
+
+<pre><code class="language-go">func (s *SelectList) Push(val string)
+</code></pre>
+
+<p>Push select list appends an element to the end of an array</p>
+
+<h4>func (*SelectList) Reset</h4>
+
+<pre><code class="language-go">func (s *SelectList) Reset()
+</code></pre>
+
+<p>Reset a select list to an empty state (file still exists on disc)</p>
+
+<h4>func (*SelectList) Rest</h4>
+
+<pre><code class="language-go">func (s *SelectList) Rest() []string
+</code></pre>
+
+<p>Rest select list returns all but the first n items of the list
+(non-destructively)</p>
+
+<h4>func (*SelectList) Reverse</h4>
+
+<pre><code class="language-go">func (s *SelectList) Reverse()
+</code></pre>
+
+<p>Reverse flips the order of a select list</p>
+
+<h4>func (*SelectList) SaveList</h4>
+
+<pre><code class="language-go">func (s *SelectList) SaveList() error
+</code></pre>
+
+<p>SaveList writes the .Keys to a JSON document named .FName</p>
+
+<h4>func (*SelectList) Shift</h4>
+
+<pre><code class="language-go">func (s *SelectList) Shift() string
+</code></pre>
+
+<p>Shift select list removes from the beginning of and array returning the element
+removed</p>
+
+<h4>func (*SelectList) Sort</h4>
+
+<pre><code class="language-go">func (s *SelectList) Sort(direction int)
+</code></pre>
+
+<p>Sort sorts the keys in in ascending order alphabetically</p>
+
+<h4>func (*SelectList) String</h4>
+
+<pre><code class="language-go">func (s *SelectList) String() string
+</code></pre>
+
+<p>String returns the Keys portion of the select list as a string delimited with
+new lines</p>
+
+<h4>func (*SelectList) Swap</h4>
+
+<pre><code class="language-go">func (s *SelectList) Swap(i, j int)
+</code></pre>
+
+<p>Swap updates the position of two compared keys</p>
+
+<h4>func (*SelectList) Unshift</h4>
+
+<pre><code class="language-go">func (s *SelectList) Unshift(val string)
+</code></pre>
+
+<p>Unshift select list inserts an element at the start of an array</p>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
