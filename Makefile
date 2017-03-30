@@ -77,6 +77,6 @@ save:
 	git push origin $(BRANCH)
 
 publish:
-	./mk-website.bash
+	./mk-website.bash NO
 	./publish.bash
 

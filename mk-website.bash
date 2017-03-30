@@ -33,7 +33,11 @@ MakePage nav.md "markdown:$(cat LICENSE)" license.html
 # Build utility docs pages
 GDD=$(which godocdown)
 if [ "$GDD" != "" ]; then
-    read -p "Overwrite docs/package.md from source code? Y/N " Y_OR_N
+    if [ "$1" != "" ]; then
+        Y_OR_N="$1"
+    else
+        read -p "Overwrite docs/package.md from source code? Y/N " Y_OR_N
+    fi
     if [ "$Y_OR_N" = "Y" ] || [ "$Y_OR_N" = "y" ]; then
         godocdown . > docs/package.md
     fi
