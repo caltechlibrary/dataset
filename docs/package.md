@@ -55,6 +55,7 @@ attachments.
 
 ### Operations
 
+
 + Collection level
     + Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
     + Open (collection) - opens an existing collections and reads collection.json into memory
@@ -64,14 +65,12 @@ attachments.
     + Select (collection) - returns the request select list, will create the list if not exist, append keys if provided
     + Clear (collection) - Removes a select list from a collection and disc
     + Lists (collection) - returns the names of the available select lists
-
 + JSON document level
     + Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed
     + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
     + Update (JSON document) - updates an existing blob on disc (record must already exist)
     + Delete (JSON document) - removes a JSON blob from its disc
     + Path (JSON document) - returns the path to the JSON document
-
 + Select list level
     + First (select list) - returns the value of the first key in the select list (non-distructively)
     + Last (select list) - returns the value of the last key in the select list (non-distructively)
@@ -228,7 +227,7 @@ Working with attachments in Go
 	}
 ```
 
-## Code 
+## Code Reference
 
 ```go
     const (
