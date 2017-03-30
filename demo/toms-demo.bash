@@ -2,10 +2,11 @@
 
 # Initialize the collection and set the DATASET_COLLECTION environment variable
 echo "Initializing collection testdataset/noaaweather"
-$(dataset init testdataset/noaaweather)
+E=$(dataset init testdataset/noaaweather)
+$E
 if [ "$DATASET_COLLECTION" = "" ]; then
-    echo "Something went wrong DATASET_COLLECTION not set."
-    exit 1
+	echo "Something went wrong DATASET_COLLECTION not set."
+	exit 1
 fi
 echo "Using $DATASET_COLLECTION"
 
@@ -21,7 +22,7 @@ echo "Attaching other data files: pasadena-ca-weather-codes.html pasadena-ca-for
 dataset attach pasadena-ca pasadena-ca-weather-codes.html pasadena-ca-forecast.xml
 
 echo "Removing downloaded files"
-/bin/rm pasadena-ca-weather-codes.html pasadena-ca-forecast.json pasadena-ca-forecast.xml 
+/bin/rm pasadena-ca-weather-codes.html pasadena-ca-forecast.json pasadena-ca-forecast.xml
 
 echo "Reading back new record"
 dataset read pasadena-ca

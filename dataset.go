@@ -1,7 +1,7 @@
 //
 // Package dataset is a go package for managing JSON documents stored on disc
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
 // Copyright (c) 2017, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
@@ -15,39 +15,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Examples:
-//
-//   // Create a collection
-//   collection, err := dataset.Create("dataset/mystuff", GenerateBucketNames("abc", 3))
-//   if err != nil {
-//       log.Fatalf("%s", err)
-//	 }
-//   defer collection.Close()
-//   // Add a record
-//   record := map[string]string{"name":"freda","email":"freda@inverness.example.org"}
-//   if err := collection.Create("freda", record); err != nil {
-//       log.Fatalf("%s", err)
-//   }
-//   // Attach an image file
-//   if buf, err := ioutil.ReadAll("images/freda.png"); err != nil {
-//       collection.Attach("freda", "images/freda.png", buf)
-//   } else {
-//       log.Fatalf("%s", err)
-//   }
-//   // Read a record
-//   if err := collection.Read("freda", record); err != nil {
-//       log.Fatalf("%s", err)
-//   }
-//   // Update a record
-//   record["email"] = "freda@zbs.example.org"
-//   if err := collection.Update("freda", record); err != nil {
-//       log.Fatalf("%s", err)
-//   }
-//   // Delete a record
-//   if err := collection.Delete("freda"); err != nil {
-//       log.Fatalf("%s", err)
-//   }
 //
 package dataset
 
@@ -63,9 +30,9 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-beta8"
+	Version = "v0.0.1-beta9"
 
-	// License for dataset package
+	// License is a formatted from for dataset package based command line tools
 	License = `
 %s %s
 
