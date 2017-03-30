@@ -31,17 +31,6 @@ MakePage nav.md INSTALL.md install.html
 MakePage nav.md "markdown:$(cat LICENSE)" license.html
 
 # Build utility docs pages
-GDD=$(which godocdown)
-if [ "$GDD" != "" ]; then
-    if [ "$1" != "" ]; then
-        Y_OR_N="$1"
-    else
-        read -p "Overwrite docs/package.md from source code? Y/N " Y_OR_N
-    fi
-    if [ "$Y_OR_N" = "Y" ] || [ "$Y_OR_N" = "y" ]; then
-        godocdown . > docs/package.md
-    fi
-fi
 for FNAME in index package dataset; do
 	MakePage "docs/nav.md" "docs/${FNAME}.md" "docs/${FNAME}.html"
 done

@@ -1,71 +1,6 @@
 # dataset
---
+
     import "github.com/caltechlibrary/dataset"
-
-Package dataset is a go package for managing JSON documents stored on disc
-
-@author R. S. Doiel, <rsdoiel@caltech.edu>
-
-Copyright (c) 2017, Caltech All rights not granted herein are expressly reserved
-by Caltech.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation and/or
-other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors
-may be used to endorse or promote products derived from this software without
-specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-### WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-Package dataset is a go package for managing JSON documents stored on disc
-
-@author R. S. Doiel, <rsdoiel@caltech.edu>
-
-Copyright (c) 2017, Caltech All rights not granted herein are expressly reserved
-by Caltech.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation and/or
-other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors
-may be used to endorse or promote products derived from this software without
-specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-### WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Package dataset provides a common approach of storing JSON documents and related
 attachments systematically and predictably on the file systems. The driving
@@ -86,7 +21,7 @@ storage on disc and needing a more complete system like Couch, Solr, or Fedora4
 for managing JSON docs.
 
 
-Use case
+## Use case
 
 Caltech Library has many repository, catelog and record management systems (e.g.
 EPrints, Invenion, ArchivesSpace, Islandora, Invenio). It is common practice to
@@ -98,10 +33,9 @@ intermediate processing to allow us to use the growing ecosystem of JSON related
 tooling available under Posix/Unix compatible systems.
 
 
-Aproach to file system layout
+### Aproach to file system layout
 
 + /dataset (directory on file system)
-
     + collection (directory on file system)
         + collection.json - metadata about collection
             + maps the filename of the JSON blob stored to a bucket in the collection
@@ -122,7 +56,6 @@ attachments.
 ### Operations
 
 + Collection level
-
     + Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
     + Open (collection) - opens an existing collections and reads collection.json into memory
     + Close (collection) - writes changes to collection.json to disc if dirty
@@ -133,7 +66,6 @@ attachments.
     + Lists (collection) - returns the names of the available select lists
 
 + JSON document level
-
     + Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed
     + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
     + Update (JSON document) - updates an existing blob on disc (record must already exist)
@@ -141,7 +73,6 @@ attachments.
     + Path (JSON document) - returns the path to the JSON document
 
 + Select list level
-
     + First (select list) - returns the value of the first key in the select list (non-distructively)
     + Last (select list) - returns the value of the last key in the select list (non-distructively)
     + Rest (select list) - returns values of all keys in the select list except the first (non-destructively)
@@ -164,6 +95,7 @@ document + update a JSON document + delete a JSON document
 
 Example Bash script usage
 
+```shell
     # Create a collection "mystuff" inside the directory called demo
     dataset init demo/mystuff
     # if successful an expression to export the collection name is show
@@ -191,15 +123,20 @@ Example Bash script usage
 
     # To remove the collection just use the Unix shell command
     # /bin/rm -fR demo/mystuff
+```
 
 
 Common operations shown in Golang
 
-+ create collection + create a JSON document to collection + read a JSON
-document + update a JSON document + delete a JSON document
++ create collection 
++ create a JSON document to collection 
++ read a JSON document 
++ update a JSON document 
++ delete a JSON document
 
 Example Go code
 
+```go
     // Create a collection "mystuff" inside the directory called demo
     collection, err := dataset.Create("demo/mystuff", dataset.GenerateBucketNames("ab", 2))
     if err != nil {
@@ -231,9 +168,11 @@ Example Go code
     if err := collection.Delete(docName); err != nil {
         log.Fatalf("%s", err)
     }
+```
 
 Working with attachments in Go
 
+```go
         collection, err := dataset.Open("dataset/mystuff")
         if err != nil {
             log.Fatalf("%s", err)
@@ -287,6 +226,7 @@ Working with attachments in Go
     	if err := collection.Detach("fred")
             log.Fatalf("%s", err)
     	}
+``
 
 ## Usage
 
