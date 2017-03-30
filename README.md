@@ -1,32 +1,35 @@
 
 # dataset
 
-A go package for managing JSON documents stored on disc. *dataset* is also a
-command line tool. It stores one of more collections of JSON documents. Typically
+A go package for managing JSON documents stored on disc with any related documents. 
+*dataset* is also a command line tool implementing the features of the *dataset* package.
+*dataset* is used to store one of more collections of JSON and related documents. Typically
 you'd have a directory that holds collections, each collection holds buckets and 
-each bucket holds some JSON documents. Both the package and command line tool 
-allow you to interact with that logical structure on disc.
+each bucket holds some JSON documents and their attachments.  Attachments are stored as 
+tar files and JSON documents are stored as text.  A project goal of _dataset_ is to 
+"play nice" with shell scripts and other Unix tools (e.g. it respects standard in, out
+and error with minimal side effects). 
 
-## layout
+## File system layout
 
-+ dataset (directory on file system)
++ /dataset (directory on file system)
     + collection (directory on file system)
         + collection.json - metadata about collection
             + maps the filename of the JSON blob stored to a bucket in the collection
             + e.g. file "mydocs.jons" stored in bucket "aa" would have a map of {"mydocs.json": "aa"}
         + keys.json - a list of keys in the collection (it is the default select list)
-        + BUCKETS - a sequence of alphabet names for buckets holding JSON documents
+        + BUCKETS - a sequence of alphabet names for buckets holding JSON documents and their attachments
             + Buckets let supporting common commands like ls, tree, etc. when the doc count is high
         + SELECT_LIST.json - a JSON document holding an array of keys
             + the default select list is "keys", it is not mutable by Push, Pop, Shift and Unshift
             + select lists cannot be named "keys" or "collection"
 
 BUCKETS are names without meaning normally using Alphabetic characters. A dataset defined with four buckets
-might looks like aa, ab, ba, bb.
+might looks like aa, ab, ba, bb. These directories will contains JSON documents and a tar file if the document
+has attachments.
 
 
-
-## operations
+## Operations
 
 + Collection level 
     + Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
@@ -131,6 +134,4 @@ Common operations shown in Golang
         log.Fatalf("%s", err)
     }
 ```
-
-
 

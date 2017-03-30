@@ -32,8 +32,10 @@ import (
 	"archive/tar"
 	"bytes"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 )
 
 // Attachment is a structure for holding non-JSON content you wish to store alongside a JSON document in a collection
@@ -47,7 +49,7 @@ type Attachment struct {
 // tarballName trims any .json from the record name.
 func tarballName(docPath string) string {
 	if path.Ext(docPath) == ".json" {
-		return docPath[0:len(docPath)-5] + ".tar"
+		return strings.TrimSuffix(docPath, ".json") + ".tar"
 	}
 	return docPath + ".tar"
 }
@@ -99,6 +101,63 @@ func (c *Collection) Attach(name string, attachments ...*Attachment) error {
 			return err
 		}
 		if _, err := tw.Write(attachment.Body); err != nil {
+			return err
+		}
+	}
+	return tw.Close()
+}
+
+// AttachFiles a non-JSON documents to a JSON document in the collection.
+// Attachments are stored in a tar file, if tar file exits then attachment(s)
+// are appended to tar file.
+func (c *Collection) AttachFiles(name string, fileNames ...string) error {
+	var (
+		fp  *os.File
+		err error
+	)
+
+	// NOTE: we normalize the name to omit a .json file extension,
+	// make sure we have an associated JSON record, then generate a new tarball
+	// from attachments.
+	docPath, err := c.DocPath(name)
+	if err != nil {
+		return err
+	}
+
+	docPath = tarballName(docPath)
+	if _, err := os.Stat(docPath); os.IsNotExist(err) == true {
+		fp, err = os.Create(docPath)
+		if err != nil {
+			return err
+		}
+	} else {
+		fp, err = os.OpenFile(docPath, os.O_RDWR, 0664)
+		if err != nil {
+			return err
+		}
+		// Move to just before the trailer in the tarball
+		if _, err = fp.Seek(-2<<9, os.SEEK_END); err != nil {
+			return err
+		}
+	}
+	defer fp.Close()
+	tw := tar.NewWriter(fp)
+
+	hdr := &tar.Header{}
+	hdr.Mode = 0664
+
+	// For each attachtment add to the tar ball
+	for _, name := range fileNames {
+		data, err := ioutil.ReadFile(name)
+		if err != nil {
+			return err
+		}
+		hdr.Name = name
+		hdr.Size = int64(len(data))
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+		if _, err := tw.Write(data); err != nil {
 			return err
 		}
 	}
@@ -176,11 +235,11 @@ func (c *Collection) GetAttached(name string, filterNames ...string) ([]Attachme
 			// error reading tarball
 			return attachments, err
 		}
-		buf := bytes.NewBuffer([]byte{})
-		if _, err := io.Copy(buf, tr); err != nil {
-			return attachments, err
-		}
 		if filterNameFound(filterNames, hdr.Name) == true {
+			buf := bytes.NewBuffer([]byte{})
+			if _, err := io.Copy(buf, tr); err != nil {
+				return attachments, err
+			}
 			attachments = append(attachments, Attachment{
 				Name: hdr.Name,
 				Body: buf.Bytes(),
@@ -190,8 +249,9 @@ func (c *Collection) GetAttached(name string, filterNames ...string) ([]Attachme
 	return attachments, nil
 }
 
-// Detach a non-JSON document from a JSON document in the collection.
-func (c *Collection) Detach(name string) error {
+// GetAttachedFiles returns an error if encountered, side effect is to write file to destination directory
+// If no filterNames provided then return all attachments or error
+func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error {
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then remove any tarball
 	docPath, err := c.DocPath(name)
@@ -199,5 +259,91 @@ func (c *Collection) Detach(name string) error {
 		return err
 	}
 	docPath = tarballName(docPath)
-	return os.Remove(docPath)
+
+	fp, err := os.Open(docPath)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	tr := tar.NewReader(fp)
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			// end of tarball
+			break
+		}
+		if err != nil {
+			// error reading tarball
+			return err
+		}
+		if filterNameFound(filterNames, hdr.Name) == true {
+			// NOTE: write file to disc, not using defer because we want fp to close after each loop
+			fp, err := os.Create(hdr.Name)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(fp, tr); err != nil {
+				fp.Close()
+				return err
+			}
+			fp.Close()
+		}
+	}
+	return nil
+}
+
+// Detach a non-JSON document from a JSON document in the collection.
+//FIXME: Need to add detaching specific filenames
+func (c *Collection) Detach(name string, filterNames ...string) error {
+	// NOTE: we normalize the name to omit a .json file extension,
+	// make sure we have an associated JSON record, then remove any tarball
+	docPath, err := c.DocPath(name)
+	if err != nil {
+		return err
+	}
+	docPath = tarballName(docPath)
+	if len(filterNames) == 0 {
+		return os.Remove(docPath)
+	}
+	// Rename old tar file to backup
+	if err := os.Rename(docPath, docPath+".bak"); err != nil {
+		return err
+	}
+	// Create a new temp tarball
+	newFp, err := os.Create(docPath)
+	if err != nil {
+		return err
+	}
+	defer newFp.Close()
+	oldFp, err := os.Open(docPath + ".bak")
+	if err != nil {
+		return err
+	}
+	// Note: defer is FILO so Remove needs to be before Close
+	defer os.Remove(docPath + ".bak")
+	defer oldFp.Close()
+
+	// Read in old tarball and only write out files that match filterNames
+	tw := tar.NewWriter(newFp)
+	tr := tar.NewReader(oldFp)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			// end of tar archive
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if filterNameFound(filterNames, hdr.Name) == false {
+			if err := tw.WriteHeader(hdr); err != nil {
+				return err
+			}
+			if _, err := io.Copy(tw, tr); err != nil {
+				return err
+			}
+		}
+	}
+	return tw.Close()
 }

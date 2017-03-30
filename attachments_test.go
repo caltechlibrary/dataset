@@ -21,6 +21,7 @@ package dataset
 import (
 	"bytes"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -134,8 +135,28 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
+	if err := collection.Detach("freda", "what/she/smokes.txt"); err != nil {
+		t.Errorf("Delete one file, %s", err)
+	}
+	tarDocPath, err := collection.DocPath("freda")
+	if err != nil {
+		t.Errorf("Should have gotten docpath for freda, %s", err)
+		t.FailNow()
+	}
+	tarDocPath = strings.TrimSuffix(tarDocPath, ".json") + ".tar"
+
+	if _, err := os.Stat(tarDocPath); err != nil {
+		t.Errorf("Shouldn't have deleted %s, %s", tarDocPath, err)
+		t.FailNow()
+	}
+
 	if err := collection.Detach("freda"); err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("Delete whole tarball, %s", err)
+		t.FailNow()
+	}
+
+	if _, err := os.Stat(tarDocPath); os.IsNotExist(err) == false {
+		t.Errorf("Should have deleted %s, %s", tarDocPath, err)
 		t.FailNow()
 	}
 }
