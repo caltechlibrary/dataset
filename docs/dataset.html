@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="dataset.html">dataset</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>USAGE</h1>
+
+<pre><code>dataset [OPTIONS] COMMAND_AND_PARAMETERS
+</code></pre>
+
+<h2>SYNOPSIS</h2>
+
+<p><em>dataset</em> is a command line tool demonstrating dataset package for managing
+JSON documents stored on disc. A dataset is organized around collections,
+collections contain buckets holding specific JSON documents and related content.
+In addition to the JSON documents <em>dataset</em> maintains metadata for management
+of the documents, their attachments as well as a ability to generate select lists
+based JSON document keys (aka JSON document names).</p>
+
+<h2>COMMANDS</h2>
+
+<p>Collection and JSON Documant related&ndash;</p>
+
+<ul>
+<li>init - initialize a new collection if none exists, requires a path to collection
+
+<ul>
+<li>once collection is created, set the environment variable DATASET_COLLECTION
+to collection name</li>
+</ul></li>
+<li>create - creates a new JSON document or replace an existing one in collection
+
+<ul>
+<li>requires JSON document name followed by JSON blob or JSON blob read from stdin</li>
+</ul></li>
+<li>read - displays a JSON document to stdout
+
+<ul>
+<li>requires JSON document name</li>
+</ul></li>
+<li>update - updates a JSON document in collection
+
+<ul>
+<li>requires JSON document name, followed by replacement JSON document name or
+JSON document read from stdin</li>
+<li>JSON document must already exist</li>
+</ul></li>
+<li>delete - removes a JSON document from collection
+
+<ul>
+<li>requires JSON document name</li>
+</ul></li>
+<li>keys - returns the keys to stdout, one key per line</li>
+<li>path - given a document name return the full path to document</li>
+<li>attach - attaches a non-JSON content to a JSON record
+
+<ul>
+<li>&ldquo;dataset attach k1 stats.xlsx&rdquo; would attach the stats.xlsx file to JSON document named <em>k1</em></li>
+<li>(stores content in a related tar file)</li>
+</ul></li>
+<li>attachments - lists any attached content for JSON document
+
+<ul>
+<li>&ldquo;dataset attachments k1&rdquo; would list all the attachments for <em>k1</em></li>
+</ul></li>
+<li>attached - returns attachments for a JSON document
+
+<ul>
+<li>&ldquo;dataset attached k1&rdquo; would write out all the attached files for <em>k1</em></li>
+<li>&ldquo;dataset attached k1 stats.xlsx&rdquo; would write out only the stats.xlsx file attached to <em>k1</em></li>
+</ul></li>
+<li>detach - remove attachments to a JSON document
+
+<ul>
+<li>&ldquo;dataset detach k1 stats.xlsx&rdquo; would rewrite the attachments tar file without including stats.xlsx</li>
+<li>&ldquo;dataset detach k1&rdquo; would remove ALL attachments to <em>k1</em></li>
+</ul></li>
+</ul>
+
+<p>Select list related&ndash;</p>
+
+<ul>
+<li>select - is the command for working with lists of collection keys
+
+<ul>
+<li>&ldquo;dataset select mylist k1 k2 k3&rdquo; would create/update a select list
+mylist adding keys k1, k2, k3</li>
+</ul></li>
+<li>lists - returns the select list names associated with a collection
+
+<ul>
+<li>&ldquo;dataset lists&rdquo;</li>
+</ul></li>
+<li>clear - removes a select list from the collection
+
+<ul>
+<li>&ldquo;dataset clear mylist&rdquo;</li>
+</ul></li>
+<li>first - writes the first key to stdout
+
+<ul>
+<li>&ldquo;dataset first mylist&rdquo;</li>
+</ul></li>
+<li>last would display the last key in the list
+
+<ul>
+<li>&ldquo;dataset last mylist&rdquo;</li>
+</ul></li>
+<li>rest displays all but the first key in the list
+
+<ul>
+<li>&ldquo;dataset rest mylist&rdquo;</li>
+</ul></li>
+<li>list displays a list of keys from the select list to stdout
+
+<ul>
+<li>&ldquo;dataet list mylist&rdquo;</li>
+</ul></li>
+<li>shift writes the first key to stdout and remove it from list
+
+<ul>
+<li>&ldquo;dataset shift mylist&rdquo;</li>
+</ul></li>
+<li>unshift would insert at the beginning
+
+<ul>
+<li>&ldquo;dataset unshift mylist k4&rdquo;</li>
+</ul></li>
+<li>push would append the list
+
+<ul>
+<li>&ldquo;dataset push mylist k4&rdquo;</li>
+</ul></li>
+<li>pop removes last key form list and displays it
+
+<ul>
+<li>&ldquo;dataset pop mylist&rdquo;</li>
+</ul></li>
+<li>sort orders the keys alphabetically in the list
+
+<ul>
+<li>&ldquo;dataset sort mylist asc&rdquo; - sorts in ascending order</li>
+<li>&ldquo;dataset sort mylist desc&rdquo; - sorts in descending order</li>
+</ul></li>
+<li>reverse flips the order of the list
+
+<ul>
+<li>&ldquo;dataset reverse mylists&rdquo;</li>
+</ul></li>
+</ul>
+
+<h2>OPTIONS</h2>
+
+<pre><code>	-c	sets the collection to be used
+	-collection	sets the collection to be used
+	-h	display help
+	-help	display help
+	-i	input filename
+	-input	input filename
+	-l	display license
+	-license	display license
+	-v	display version
+	-version	display version
+</code></pre>
+
+<h2>EXAMPLES</h2>
+
+<p>This is an example of creating a dataset called testdata/friends, saving
+a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
+
+<pre><code class="language-shell">   dataset init testdata/friends
+   export DATASET_COLLECTION=testdata/friends
+   dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends</p>
+
+<pre><code class="language-shell">   dataset -i mojosam.json create mojosam
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
+
+<pre><code class="language-shell">   cat capt-jack.json | dataset create capt-jack
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
+   dataset attach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>List attachments for &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset attachments capt-jack
+</code></pre>
+
+<p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
+
+<pre><code class="language-shell">   dataset attached capt-jack
+</code></pre>
+
+<p>Remove <em>high-capt-jack.txt</em> from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">    dataset detach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>Remove all attachments from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset detach capt-jack
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

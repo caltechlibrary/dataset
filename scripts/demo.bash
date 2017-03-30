@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$DATASET_COLLECTION" != "" ]; then
-    OLD_COLLECTION=$DATASET_COLLECTION
+	OLD_COLLECTION=$DATASET_COLLECTION
 fi
 
 # Create a collection "mystuff" inside the directory called demo
@@ -33,7 +33,7 @@ dataset delete freda.json
 # /bin/rm -fR demo/mystuff
 
 if [ "$OLD_COLLECTION" != "" ]; then
-    export DATASET_COLLECTION=$OLD_COLLECTION
+	export DATASET_COLLECTION=$OLD_COLLECTION
 else
-    unset DATASET_COLLECTION
+	unset DATASET_COLLECTION
 fi
