@@ -3,9 +3,9 @@
 
 ## Next
 
++ [ ] integrate support for storing dataset collections in AWS S3
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
     + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
-+ [ ] integrate support for storing dataset collections in AWS S3
 
 ## Someday, Maybe
 
