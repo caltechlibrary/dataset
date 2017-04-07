@@ -11,6 +11,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/storage"
 )
 
 var (
@@ -189,6 +190,14 @@ Remove all attachments from "capt-jack"
 //
 // These are verbs used in the command line utility
 //
+func getStore() *storage.Store {
+	store, err := storage.Init(storage.FS, nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't initialize storage, %s", err)
+		os.Exit(1)
+	}
+	return store
+}
 
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc
@@ -200,7 +209,7 @@ func collectionInit(args ...string) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
+	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2), getStore())
 	if err != nil {
 		return "", err
 	}
@@ -223,7 +232,7 @@ func createJSONDoc(args ...string) (string, error) {
 	if len(src) == 0 {
 		return "", fmt.Errorf("Can't create, no JSON source found in %s\n", name)
 	}
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -247,7 +256,7 @@ func readJSONDoc(args ...string) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
 	}
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -275,7 +284,7 @@ func updateJSONDoc(args ...string) (string, error) {
 	if len(src) == 0 {
 		return "", fmt.Errorf("Can't update, no JSON source found in %s", name)
 	}
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -299,7 +308,7 @@ func deleteJSONDoc(args ...string) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
 	}
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -316,7 +325,7 @@ func collectionKeys(args ...string) (string, error) {
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -333,7 +342,7 @@ func docPath(args ...string) (string, error) {
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -349,7 +358,7 @@ func selectList(params ...string) (string, error) {
 		return "", fmt.Errorf("collection is not a valid list name")
 	}
 
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -363,7 +372,7 @@ func selectList(params ...string) (string, error) {
 }
 
 func lists(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -372,7 +381,7 @@ func lists(params ...string) (string, error) {
 }
 
 func clear(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -395,7 +404,7 @@ func clear(params ...string) (string, error) {
 }
 
 func first(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -411,7 +420,7 @@ func first(params ...string) (string, error) {
 }
 
 func last(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -427,7 +436,7 @@ func last(params ...string) (string, error) {
 }
 
 func rest(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -444,7 +453,7 @@ func rest(params ...string) (string, error) {
 }
 
 func list(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -460,7 +469,7 @@ func list(params ...string) (string, error) {
 }
 
 func length(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -476,7 +485,7 @@ func length(params ...string) (string, error) {
 }
 
 func push(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -503,7 +512,7 @@ func push(params ...string) (string, error) {
 }
 
 func pop(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -524,7 +533,7 @@ func pop(params ...string) (string, error) {
 }
 
 func shift(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -545,7 +554,7 @@ func shift(params ...string) (string, error) {
 }
 
 func unshift(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -572,7 +581,7 @@ func unshift(params ...string) (string, error) {
 }
 
 func sort(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -603,7 +612,7 @@ func sort(params ...string) (string, error) {
 }
 
 func reverse(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -624,7 +633,7 @@ func reverse(params ...string) (string, error) {
 }
 
 func addAttachments(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -650,7 +659,7 @@ func addAttachments(params ...string) (string, error) {
 }
 
 func listAttachments(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -667,7 +676,7 @@ func listAttachments(params ...string) (string, error) {
 }
 
 func getAttachments(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}
@@ -693,7 +702,7 @@ func getAttachments(params ...string) (string, error) {
 }
 
 func removeAttachments(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
+	collection, err := dataset.Open(collectionName, getStore())
 	if err != nil {
 		return "", err
 	}

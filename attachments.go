@@ -21,11 +21,15 @@ package dataset
 import (
 	"archive/tar"
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/storage"
 )
 
 // Attachment is a structure for holding non-JSON content you wish to store alongside a JSON document in a collection
@@ -48,6 +52,9 @@ func tarballName(docPath string) string {
 // Attachments are stored in a tar file, if tar file exits then attachment(s)
 // are appended to tar file.
 func (c *Collection) Attach(name string, attachments ...*Attachment) error {
+	if c.Store.Type == storage.S3 {
+		return fmt.Errorf("S3 storage doesn't suppot attachments")
+	}
 	var (
 		fp  *os.File
 		err error
@@ -101,6 +108,9 @@ func (c *Collection) Attach(name string, attachments ...*Attachment) error {
 // Attachments are stored in a tar file, if tar file exits then attachment(s)
 // are appended to tar file.
 func (c *Collection) AttachFiles(name string, fileNames ...string) error {
+	if c.Store.Type == storage.S3 {
+		return fmt.Errorf("S3 storage doesn't suppot attachments")
+	}
 	var (
 		fp  *os.File
 		err error
@@ -156,6 +166,9 @@ func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 
 // Attachments returns a list of files in the attached tarball for a given name in the collection
 func (c *Collection) Attachments(name string) ([]string, error) {
+	if c.Store.Type == storage.S3 {
+		return nil, fmt.Errorf("S3 storage doesn't suppot attachments")
+	}
 	fileNames := []string{}
 	docPath, err := c.DocPath(name)
 	if err != nil {
@@ -198,6 +211,9 @@ func filterNameFound(a []string, target string) bool {
 // GetAttached returns an Attachment array or error
 // If no filterNames provided then return all attachments or error
 func (c *Collection) GetAttached(name string, filterNames ...string) ([]Attachment, error) {
+	if c.Store.Type == storage.S3 {
+		return nil, fmt.Errorf("S3 storage doesn't suppot attachments")
+	}
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then remove any tarball
 	docPath, err := c.DocPath(name)
@@ -242,6 +258,9 @@ func (c *Collection) GetAttached(name string, filterNames ...string) ([]Attachme
 // GetAttachedFiles returns an error if encountered, side effect is to write file to destination directory
 // If no filterNames provided then return all attachments or error
 func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error {
+	if c.Store.Type == storage.S3 {
+		return fmt.Errorf("S3 storage doesn't suppot attachments")
+	}
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then remove any tarball
 	docPath, err := c.DocPath(name)
@@ -286,6 +305,9 @@ func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error 
 // Detach a non-JSON document from a JSON document in the collection.
 //FIXME: Need to add detaching specific filenames
 func (c *Collection) Detach(name string, filterNames ...string) error {
+	if c.Store.Type == storage.S3 {
+		return fmt.Errorf("S3 storage doesn't suppot attachments")
+	}
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then remove any tarball
 	docPath, err := c.DocPath(name)
