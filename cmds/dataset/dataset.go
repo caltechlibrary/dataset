@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/storage"
 )
 
 var (
@@ -34,6 +34,8 @@ Collection and JSON Documant related--
 + init - initialize a new collection if none exists, requires a path to collection
   + once collection is created, set the environment variable DATASET_COLLECTION
     to collection name
+  + if you're using S3 for storing your dataset prefix your path with 's3://'
+    'dataset init s3://mybucket/mydataset-collections'
 + create - creates a new JSON document or replace an existing one in collection
   + requires JSON document name followed by JSON blob or JSON blob read from stdin
 + read - displays a JSON document to stdout
@@ -197,14 +199,14 @@ func collectionInit(args ...string) (string, error) {
 		return "", fmt.Errorf("missing a collection name")
 	}
 	name := args[0]
-	if len(name) == 0 {
-		return "", fmt.Errorf("missing a collection name")
-	}
 	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
 	if err != nil {
 		return "", err
 	}
 	defer collection.Close()
+	if collection.Store.Type == storage.S3 {
+		return fmt.Sprintf("export DATASET_COLLECTION=s3://%s/%s", collection.Store.Config["AwsBucket"], path.Join(collection.Dataset, collection.Name)), nil
+	}
 	return fmt.Sprintf("export DATASET_COLLECTION=%s", path.Join(collection.Dataset, collection.Name)), nil
 }
 
@@ -634,17 +636,9 @@ func addAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
 	}
 	key := params[0]
-	for _, fname := range params[1:] {
-		if buf, err := ioutil.ReadFile(fname); err != nil {
-			return "", err
-		} else {
-			if err := collection.Attach(key, &dataset.Attachment{
-				Name: fname,
-				Body: buf,
-			}); err != nil {
-				return "", err
-			}
-		}
+	err = collection.AttachFiles(key, params[1:]...)
+	if err != nil {
+		return "", err
 	}
 	return "OK", nil
 }
@@ -676,20 +670,11 @@ func getAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
 	}
 	key := params[0]
-	attachments, err := collection.GetAttached(key, params[1:]...)
+	err = collection.GetAttachedFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
 	}
-	names := []string{}
-	for _, item := range attachments {
-		// Write out Body and
-		names = append(names, item.Name)
-		err := ioutil.WriteFile(item.Name, item.Body, 0664)
-		if err != nil {
-			return strings.Join(names, "\n"), err
-		}
-	}
-	return strings.Join(names, "\n"), err
+	return "OK", nil
 }
 
 func removeAttachments(params ...string) (string, error) {
@@ -698,10 +683,10 @@ func removeAttachments(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) != 1 {
+	if len(params) < 1 {
 		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
 	}
-	err = collection.Detach(params[0])
+	err = collection.Detach(params[0], params[1:]...)
 	if err != nil {
 		return "", err
 	}

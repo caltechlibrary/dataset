@@ -109,8 +109,8 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("Attachments after append, %+v %s", files, err)
 		t.FailNow()
 	} else {
-		if len(files) != 2 {
-			t.Errorf("Should have two files after appending an attachment")
+		if len(files) != 1 {
+			t.Errorf("Should have one file after appending an attachment (each call to attach should generate a fresh tarball)")
 		}
 		for _, s := range files {
 			if s != "impressed.txt" && s != "what/she/smokes.txt" {
