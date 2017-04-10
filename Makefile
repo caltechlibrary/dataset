@@ -13,7 +13,7 @@ build: $(PROJECT_LIST)
 
 dataset: bin/dataset
 
-bin/dataset: dataset.go cmds/dataset/dataset.go
+bin/dataset: dataset.go attachments.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
 install: $(PROJECT_LIST)
@@ -28,14 +28,20 @@ test:
 format:
 	goimports -w dataset.go
 	goimports -w dataset_test.go
+	goimports -w attachments.go
+	goimports -w attachments_test.go
 	goimports -w cmds/dataset/dataset.go
 	gofmt -w dataset.go
 	gofmt -w dataset_test.go
+	gofmt -w attachments.go
+	gofmt -w attachments_test.go
 	gofmt -w cmds/dataset/dataset.go
 
 lint:
 	golint dataset.go
 	golint dataset_test.go
+	golint attachments.go
+	golint attachments_test.go
 	golint cmds/dataset/dataset.go
 
 clean:
