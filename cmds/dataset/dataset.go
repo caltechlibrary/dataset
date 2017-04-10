@@ -199,17 +199,15 @@ func collectionInit(args ...string) (string, error) {
 	if len(args) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	var (
-		store *storage.Store
-		err   error
-	)
-
 	name := args[0]
-	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2), store)
+	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
 	if err != nil {
 		return "", err
 	}
 	defer collection.Close()
+	if collection.Store.Type == storage.S3 {
+		return fmt.Sprintf("export DATASET_COLLECTION=s3://%s/%s", collection.Store.Config["AwsBucket"], path.Join(collection.Dataset, collection.Name)), nil
+	}
 	return fmt.Sprintf("export DATASET_COLLECTION=%s", path.Join(collection.Dataset, collection.Name)), nil
 }
 

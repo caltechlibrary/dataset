@@ -171,7 +171,7 @@ func (s *SelectList) Less(i, j int) bool {
 	return s.Keys[i] < s.Keys[j]
 }
 
-// getStore takes a name and returns a storage.Store, datasetName and collectionName
+// getStore returns a store object, datasetName and collectionName from name
 func getStore(name string) (*storage.Store, string, string, error) {
 	var (
 		datasetName    string
@@ -180,7 +180,7 @@ func getStore(name string) (*storage.Store, string, string, error) {
 		err            error
 	)
 	// Pick storage based on name
-	if strings.HasPrefix(name, "s3://") {
+	if strings.HasPrefix(name, "s3://") == true {
 		u, err := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
@@ -188,19 +188,19 @@ func getStore(name string) (*storage.Store, string, string, error) {
 		if err != nil {
 			return nil, "", "", err
 		}
-		p := path.Dir(u.Path)
+		p := u.Path
 		if strings.HasPrefix(p, "/") {
 			p = p[1:]
 		}
-		datasetName = path.Base(p)
 		collectionName = path.Base(p)
+		datasetName = strings.TrimSuffix(p, "/"+collectionName)
 	} else {
 		store, err = storage.Init(storage.FS, map[string]interface{}{})
 		if err != nil {
 			return nil, "", "", err
 		}
-		datasetName = path.Dir(name)
 		collectionName = path.Base(name)
+		datasetName = strings.TrimSuffix(name, "/"+collectionName)
 	}
 	return store, datasetName, collectionName, nil
 }
