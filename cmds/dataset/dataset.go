@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -637,17 +636,9 @@ func addAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
 	}
 	key := params[0]
-	for _, fname := range params[1:] {
-		if buf, err := ioutil.ReadFile(fname); err != nil {
-			return "", err
-		} else {
-			if err := collection.Attach(key, &dataset.Attachment{
-				Name: fname,
-				Body: buf,
-			}); err != nil {
-				return "", err
-			}
-		}
+	err = collection.AttachFiles(key, params[1:]...)
+	if err != nil {
+		return "", err
 	}
 	return "OK", nil
 }
@@ -679,20 +670,11 @@ func getAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
 	}
 	key := params[0]
-	attachments, err := collection.GetAttached(key, params[1:]...)
+	err = collection.GetAttachedFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
 	}
-	names := []string{}
-	for _, item := range attachments {
-		// Write out Body and
-		names = append(names, item.Name)
-		err := ioutil.WriteFile(item.Name, item.Body, 0664)
-		if err != nil {
-			return strings.Join(names, "\n"), err
-		}
-	}
-	return strings.Join(names, "\n"), err
+	return "OK", nil
 }
 
 func removeAttachments(params ...string) (string, error) {
@@ -701,10 +683,10 @@ func removeAttachments(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) != 1 {
+	if len(params) < 1 {
 		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
 	}
-	err = collection.Detach(params[0])
+	err = collection.Detach(params[0], params[1:]...)
 	if err != nil {
 		return "", err
 	}
