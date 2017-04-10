@@ -23,21 +23,16 @@ import (
 	"os"
 	"strings"
 	"testing"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/storage"
 )
 
 func TestAttachments(t *testing.T) {
-	store := storage.GetDefaultStore()
-
 	colName := "testdata/col3"
 	alphabet := "ab"
 	buckets := GenerateBucketNames(alphabet, 2)
 
 	os.RemoveAll(colName)
 
-	collection, err := Create(colName, buckets, store)
+	collection, err := Create(colName, buckets)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

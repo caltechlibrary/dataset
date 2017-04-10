@@ -21,6 +21,8 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -169,30 +171,74 @@ func (s *SelectList) Less(i, j int) bool {
 	return s.Keys[i] < s.Keys[j]
 }
 
+// getStore takes a name and returns a storage.Store, datasetName and collectionName
+func getStore(name string) (*storage.Store, string, string, error) {
+	var (
+		datasetName    string
+		collectionName string
+		store          *storage.Store
+		err            error
+	)
+	// Pick storage based on name
+	if strings.HasPrefix(name, "s3://") {
+		u, err := url.Parse(name)
+		opts := storage.EnvToOptions(os.Environ())
+		opts["AwsBucket"] = u.Host
+		store, err = storage.Init(storage.S3, opts)
+		if err != nil {
+			return nil, "", "", err
+		}
+		p := path.Dir(u.Path)
+		if strings.HasPrefix(p, "/") {
+			p = p[1:]
+		}
+		datasetName = path.Base(p)
+		collectionName = path.Base(p)
+	} else {
+		store, err = storage.Init(storage.FS, map[string]interface{}{})
+		if err != nil {
+			return nil, "", "", err
+		}
+		datasetName = path.Dir(name)
+		collectionName = path.Base(name)
+	}
+	return store, datasetName, collectionName, nil
+}
+
 // Create - create a new collection structure on disc
 // name should be filesystem friendly
-func Create(name string, bucketNames []string, store *storage.Store) (*Collection, error) {
-	if _, err := store.Stat(name); err == nil {
-		return Open(name, store)
+func Create(name string, bucketNames []string) (*Collection, error) {
+	if len(name) == 0 {
+		return nil, fmt.Errorf("missing a collection name")
+	}
+	store, datasetName, collectionName, err := getStore(name)
+	if err != nil {
+		return nil, err
+	}
+	// See if we need an open or continue with create
+	if _, err := store.Stat(path.Join(datasetName, collectionName)); err == nil {
+		return Open(name)
 	}
 	c := new(Collection)
 	c.Version = Version
-	c.Name = path.Base(name)
-	c.Dataset = path.Dir(name)
+	c.Name = collectionName
+	c.Dataset = datasetName
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
 	c.SelectLists = []string{"keys"}
 	c.Store = store
 	// Save the metadata for collection
-	err := c.saveMetadata()
+	err = c.saveMetadata()
 	return c, err
 }
 
 // Open reads in a collection's metadata and returns and new collection structure and err
-func Open(name string, store *storage.Store) (*Collection, error) {
-	dataPath := path.Dir(name)
-	fname := path.Base(name)
-	src, err := store.ReadFile(path.Join(dataPath, fname, "collection.json"))
+func Open(name string) (*Collection, error) {
+	store, datasetName, collectionName, err := getStore(name)
+	if err != nil {
+		return nil, err
+	}
+	src, err := store.ReadFile(path.Join(datasetName, collectionName, "collection.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -206,8 +252,12 @@ func Open(name string, store *storage.Store) (*Collection, error) {
 }
 
 // Delete an entire collection
-func Delete(name string, store *storage.Store) error {
-	if err := store.RemoveAll(name); err != nil {
+func Delete(name string) error {
+	store, datasetName, collectionName, err := getStore(name)
+	if err != nil {
+		return err
+	}
+	if err := store.RemoveAll(path.Join(datasetName, collectionName)); err != nil {
 		return err
 	}
 	return nil

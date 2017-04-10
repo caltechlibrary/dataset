@@ -23,9 +23,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/storage"
 )
 
 func TestGenerateBucketNames(t *testing.T) {
@@ -53,8 +50,6 @@ func TestPickBucketName(t *testing.T) {
 }
 
 func TestCollection(t *testing.T) {
-	store := storage.GetDefaultStore()
-
 	colName := "testdata/col1"
 	alphabet := "ab"
 	buckets := GenerateBucketNames(alphabet, 2)
@@ -67,7 +62,7 @@ func TestCollection(t *testing.T) {
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	collection, err := Create(colName, buckets, store)
+	collection, err := Create(colName, buckets)
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
@@ -81,7 +76,7 @@ func TestCollection(t *testing.T) {
 		t.Errorf("error Close() a collection %q", err)
 		t.FailNow()
 	}
-	collection, err = Open(colName, store)
+	collection, err = Open(colName)
 	if err != nil {
 		t.Errorf("error Open() a collection %q", err)
 		t.FailNow()
@@ -195,7 +190,7 @@ func TestCollection(t *testing.T) {
 		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
 	}
 
-	err = Delete(colName, store)
+	err = Delete(colName)
 	if err != nil {
 		t.Errorf("Couldn't remove collection %s, %s", colName, err)
 	}
@@ -356,7 +351,6 @@ func selectListBehavior(t *testing.T, c *Collection) bool {
 }
 
 func TestComplexKeys(t *testing.T) {
-	store := storage.GetDefaultStore()
 	colName := "testdata/col2"
 	buckets := GenerateBucketNames("ab", 2)
 	if len(buckets) != 4 {
@@ -365,7 +359,7 @@ func TestComplexKeys(t *testing.T) {
 	}
 
 	// Create a new collection
-	collection, err := Create(colName, buckets, store)
+	collection, err := Create(colName, buckets)
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
@@ -410,7 +404,6 @@ func TestComplexKeys(t *testing.T) {
 }
 
 func TestSelectListSort(t *testing.T) {
-	store := storage.GetDefaultStore()
 	colName := "testdata/complex-sorting"
 	buckets := GenerateBucketNames("ab", 2)
 	if len(buckets) != 4 {
@@ -419,7 +412,7 @@ func TestSelectListSort(t *testing.T) {
 	}
 
 	// Create a new collection
-	collection, err := Create(colName, buckets, store)
+	collection, err := Create(colName, buckets)
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
