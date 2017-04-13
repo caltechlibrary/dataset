@@ -4,7 +4,14 @@
 ## Next
 
 + [ ] integrate support for storing dataset collections in AWS S3
-    +  [ ] figure out how to handle attachments with AWS S3 (e.g. download tar to temp file then work with it?)
+    + [x] figure out how to handle attachments with AWS S3 (e.g. download tar to temp file then work with it?)
+    + [ ] dataset init s3://.... is not showing the correct export value
+    + [ ] confirm I can perform all CRUD options on JSON blobs and attachments
+    + [ ] confirm I can get a list of attachments back
+    + [ ] confirm I can update attachments
+    + [ ] confirm I can delete individual attachments
+    + [ ] confirm I can delete all attachments
+    + [ ] update docs, examples and how to for using AWS S3
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
     + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
 
