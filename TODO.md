@@ -12,16 +12,19 @@
     + [ ] confirm I can delete individual attachments
     + [ ] confirm I can delete all attachments
     + [ ] update docs, examples and how to for using AWS S3
-+ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
-    + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
 
 ## Someday, Maybe
 
++ [ ] add a _import_ verb to dataset where a single file can be rendered as many dataset records (e.g. spreadsheet rows as JSON objects)
+    + syntax like `dataset import CSV csv_filename [column number to use for key value]`
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
 + [ ] add Bleve search support to *dataset* cli
     + default search would return IDS
     + detailed search would return values based on a list of dotpaths
++ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
+    + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
+
 
 
 ## Completed
