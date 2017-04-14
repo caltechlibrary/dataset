@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/storage"
 )
 
 var (
@@ -32,8 +32,10 @@ COMMANDS
 Collection and JSON Documant related--
 
 + init - initialize a new collection if none exists, requires a path to collection
-  + once collection is created, set the environment variable DATASET_COLLECTION
+  + once collection is created, set the environment variable DATASET
     to collection name
+  + if you're using S3 for storing your dataset prefix your path with 's3://'
+    'dataset init s3://mybucket/mydataset-collections'
 + create - creates a new JSON document or replace an existing one in collection
   + requires JSON document name followed by JSON blob or JSON blob read from stdin
 + read - displays a JSON document to stdout
@@ -97,7 +99,7 @@ This is an example of creating a dataset called testdata/friends, saving
 a record called "littlefreda.json" and reading it back.
 
    dataset init testdata/friends
-   export DATASET_COLLECTION=testdata/friends
+   export DATASET=testdata/friends
    dataset create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(dataset keys); do
       echo "Path: $(dataset path $KY) 
@@ -197,15 +199,15 @@ func collectionInit(args ...string) (string, error) {
 		return "", fmt.Errorf("missing a collection name")
 	}
 	name := args[0]
-	if len(name) == 0 {
-		return "", fmt.Errorf("missing a collection name")
-	}
 	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
 	if err != nil {
 		return "", err
 	}
 	defer collection.Close()
-	return fmt.Sprintf("export DATASET_COLLECTION=%s", path.Join(collection.Dataset, collection.Name)), nil
+	if collection.Store.Type == storage.S3 {
+		return fmt.Sprintf("export DATASET=s3://%s/%s", collection.Store.Config["AwsBucket"], collection.Name), nil
+	}
+	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
@@ -215,7 +217,7 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name, set DATASET_COLLECTION in the environment variable or use -c option")
+		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
@@ -267,7 +269,7 @@ func updateJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name, set DATASET_COLLECTION in the environment variable or use -c option")
+		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
@@ -634,17 +636,9 @@ func addAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
 	}
 	key := params[0]
-	for _, fname := range params[1:] {
-		if buf, err := ioutil.ReadFile(fname); err != nil {
-			return "", err
-		} else {
-			if err := collection.Attach(key, &dataset.Attachment{
-				Name: fname,
-				Body: buf,
-			}); err != nil {
-				return "", err
-			}
-		}
+	err = collection.AttachFiles(key, params[1:]...)
+	if err != nil {
+		return "", err
 	}
 	return "OK", nil
 }
@@ -676,20 +670,11 @@ func getAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
 	}
 	key := params[0]
-	attachments, err := collection.GetAttached(key, params[1:]...)
+	err = collection.GetAttachedFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
 	}
-	names := []string{}
-	for _, item := range attachments {
-		// Write out Body and
-		names = append(names, item.Name)
-		err := ioutil.WriteFile(item.Name, item.Body, 0664)
-		if err != nil {
-			return strings.Join(names, "\n"), err
-		}
-	}
-	return strings.Join(names, "\n"), err
+	return "OK", nil
 }
 
 func removeAttachments(params ...string) (string, error) {
@@ -698,10 +683,10 @@ func removeAttachments(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) != 1 {
+	if len(params) < 1 {
 		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
 	}
-	err = collection.Detach(params[0])
+	err = collection.Detach(params[0], params[1:]...)
 	if err != nil {
 		return "", err
 	}

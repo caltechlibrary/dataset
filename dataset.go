@@ -21,11 +21,14 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"net/url"
 	"os"
 	"path"
 	"sort"
 	"strings"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/storage"
 )
 
 const (
@@ -125,21 +128,27 @@ type Collection struct {
 	Version string `json:"verison"`
 	// Name of collection
 	Name string `json:"name"`
-	// Dataset is a directory name that holds collections
-	Dataset string `json:"dataset"`
 	// Buckets is a list of bucket names used by collection
 	Buckets []string `json:"buckets"`
 	// KeyMap holds the document name to bucket map for the collection
 	KeyMap map[string]string `json:"keymap"`
 	// SelectLists holds the names of available select lists
 	SelectLists []string `json:"select_lists"`
+	// Store holds the storage system information (e.g. local disc, S3)
+	// and related methods for interacting with it
+	Store *storage.Store `json:"-"`
 }
 
 // SelectList is an ordered set of keys
 type SelectList struct {
-	FName        string   `json:"name"`
-	Keys         []string `json:"keys"`
+	// FName select list filename
+	FName string `json:"name"`
+	// Keys is the keys stored from a collection
+	Keys []string `json:"keys"`
+	// CustomLessFn points at the less than function used in sorting
 	CustomLessFn func([]string, int, int) bool
+	// Store is a pointer to the storage system available
+	Store *storage.Store
 }
 
 // Len returns the number of keys in the select list
@@ -160,42 +169,91 @@ func (s *SelectList) Less(i, j int) bool {
 	return s.Keys[i] < s.Keys[j]
 }
 
+// getStore returns a store object, collectionName from name
+func getStore(name string) (*storage.Store, string, error) {
+	var (
+		collectionName string
+		store          *storage.Store
+		err            error
+	)
+	// Pick storage based on name
+	if strings.HasPrefix(name, "s3://") == true {
+		u, err := url.Parse(name)
+		opts := storage.EnvToOptions(os.Environ())
+		opts["AwsBucket"] = u.Host
+		store, err = storage.Init(storage.S3, opts)
+		if err != nil {
+			return nil, "", err
+		}
+		p := u.Path
+		if strings.HasPrefix(p, "/") {
+			p = p[1:]
+		}
+		collectionName = p
+		return store, collectionName, nil
+	}
+
+	// Regular file system storage.
+	store, err = storage.Init(storage.FS, map[string]interface{}{})
+	if err != nil {
+		return nil, "", err
+	}
+	collectionName = name
+	return store, collectionName, nil
+}
+
 // Create - create a new collection structure on disc
 // name should be filesystem friendly
 func Create(name string, bucketNames []string) (*Collection, error) {
-	if _, err := os.Stat(name); err == nil {
+	if len(name) == 0 {
+		return nil, fmt.Errorf("missing a collection name")
+	}
+	store, collectionName, err := getStore(name)
+	if err != nil {
+		return nil, err
+	}
+	// See if we need an open or continue with create
+	if _, err := store.Stat(collectionName); err == nil {
 		return Open(name)
 	}
 	c := new(Collection)
 	c.Version = Version
-	c.Name = path.Base(name)
-	c.Dataset = path.Dir(name)
+	c.Name = collectionName
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
 	c.SelectLists = []string{"keys"}
+	c.Store = store
 	// Save the metadata for collection
-	err := c.saveMetadata()
+	err = c.saveMetadata()
 	return c, err
 }
 
 // Open reads in a collection's metadata and returns and new collection structure and err
 func Open(name string) (*Collection, error) {
-	dataPath := path.Dir(name)
-	fname := path.Base(name)
-	src, err := ioutil.ReadFile(path.Join(dataPath, fname, "collection.json"))
+	store, collectionName, err := getStore(name)
+	if err != nil {
+		return nil, err
+	}
+	src, err := store.ReadFile(path.Join(collectionName, "collection.json"))
 	if err != nil {
 		return nil, err
 	}
 	c := new(Collection)
 	if err := json.Unmarshal(src, &c); err == nil {
+		c.Store = store
 		return c, err
 	}
+	c.Store = store
 	return c, nil
 }
 
 // Delete an entire collection
 func Delete(name string) error {
-	if err := os.RemoveAll(name); err != nil {
+	store, collectionName, err := getStore(name)
+	if err != nil {
+		return err
+	}
+	if err := store.RemoveAll(collectionName); err != nil {
 		return err
 	}
 	return nil
@@ -203,22 +261,25 @@ func Delete(name string) error {
 
 // saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
 func (c *Collection) saveMetadata() error {
-	if err := os.MkdirAll(path.Join(c.Dataset, c.Name), 0775); err != nil {
-		return err
+	// Check to see if collection exists, if not create it!
+	if _, err := os.Stat(c.Name); err != nil {
+		if err := c.Store.MkdirAll(c.Name, 0775); err != nil {
+			return err
+		}
 	}
 	src, err := json.Marshal(c)
 	if err != nil {
-		return fmt.Errorf("Can't save metadata, %s", err)
+		return fmt.Errorf("Can't marshal metadata, %s", err)
 	}
-	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "collection.json"), src, 0664); err != nil {
-		return err
+	if err := c.Store.WriteFile(path.Join(c.Name, "collection.json"), src, 0664); err != nil {
+		return fmt.Errorf("Can't store collection metadata, %s", err)
 	}
 	src, err = json.Marshal(c.Keys())
 	if err != nil {
 		return fmt.Errorf("Can't save key list, %s", err)
 	}
-	if err := ioutil.WriteFile(path.Join(c.Dataset, c.Name, "keys.json"), src, 0664); err != nil {
-		return err
+	if err := c.Store.WriteFile(path.Join(c.Name, "keys.json"), src, 0664); err != nil {
+		return fmt.Errorf("Can't store key list, %s", err)
 	}
 	return nil
 }
@@ -227,7 +288,7 @@ func (c *Collection) saveMetadata() error {
 func (c *Collection) DocPath(name string) (string, error) {
 	keyName, name := keyAndFName(name)
 	if bucketName, ok := c.KeyMap[keyName]; ok == true {
-		return path.Join(c.Dataset, c.Name, bucketName, name), nil
+		return path.Join(c.Name, bucketName, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
 }
@@ -235,11 +296,11 @@ func (c *Collection) DocPath(name string) (string, error) {
 // Close closes a collection, writing the updated keys to disc
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
-	c.Dataset = ""
 	c.Buckets = []string{}
 	c.Name = ""
 	c.KeyMap = map[string]string{}
 	c.SelectLists = []string{}
+	c.Store = nil
 	return nil
 }
 
@@ -255,14 +316,14 @@ func (c *Collection) CreateAsJSON(name string, src []byte) error {
 		return fmt.Errorf("collection is not valid, zero buckets")
 	}
 	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
-	p := path.Join(c.Dataset, c.Name, bucketName)
-	err := os.MkdirAll(p, 0770)
+	p := path.Join(c.Name, bucketName)
+	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
 		return fmt.Errorf("mkdir %s %s", p, err)
 	}
 	// We've almost made it, save the key's bucket name and write the blob to bucket
 	c.KeyMap[keyName] = path.Join(bucketName)
-	err = ioutil.WriteFile(path.Join(p, name), src, 0664)
+	err = c.Store.WriteFile(path.Join(p, name), src, 0664)
 	if err != nil {
 		return err
 	}
@@ -297,8 +358,8 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist", name)
 	}
-	p := path.Join(c.Dataset, c.Name, bucketName)
-	src, err := ioutil.ReadFile(path.Join(p, name))
+	p := path.Join(c.Name, bucketName)
+	src, err := c.Store.ReadFile(path.Join(p, name))
 	if err != nil {
 		return nil, err
 	}
@@ -329,12 +390,12 @@ func (c *Collection) UpdateAsJSON(name string, src []byte) error {
 	if ok != true {
 		return fmt.Errorf("%q does not exist", name)
 	}
-	p := path.Join(c.Dataset, c.Name, bucketName)
-	err := os.MkdirAll(p, 0770)
+	p := path.Join(c.Name, bucketName)
+	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
 		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
 	}
-	return ioutil.WriteFile(path.Join(p, name), src, 0664)
+	return c.Store.WriteFile(path.Join(p, name), src, 0664)
 }
 
 // Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
@@ -356,8 +417,8 @@ func (c *Collection) Delete(name string) error {
 	if ok != true {
 		return fmt.Errorf("%q key not found", name)
 	}
-	p := path.Join(c.Dataset, c.Name, bucketName, name)
-	if err := os.Remove(p); err != nil {
+	p := path.Join(c.Name, bucketName, name)
+	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
 	delete(c.KeyMap, keyName)
@@ -394,7 +455,7 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 
 	_, name = keyAndFName(name)
 
-	src, err := ioutil.ReadFile(path.Join(c.Dataset, c.Name, name))
+	src, err := c.Store.ReadFile(path.Join(c.Name, name))
 	if err != nil {
 		return nil, err
 	}
@@ -403,8 +464,9 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 		return nil, err
 	}
 	sl := &SelectList{
-		FName: path.Join(c.Dataset, c.Name, name),
+		FName: path.Join(c.Name, name),
 		Keys:  data,
+		Store: c.Store,
 	}
 	return sl, nil
 }
@@ -449,8 +511,9 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 	}
 
 	sl := new(SelectList)
-	sl.FName = path.Join(c.Dataset, c.Name, name)
+	sl.FName = path.Join(c.Name, name)
 	sl.Keys = keys[:]
+	sl.Store = c.Store
 	err := sl.SaveList()
 	if err != nil {
 		return nil, err
@@ -494,7 +557,7 @@ func (c *Collection) Clear(name string) error {
 		return err
 	}
 
-	err = os.Remove(path.Join(c.Dataset, c.Name, name))
+	err = c.Store.Remove(path.Join(c.Name, name))
 	if err != nil {
 		return err
 	}
@@ -519,13 +582,13 @@ func (s *SelectList) String() string {
 // SaveList writes the .Keys to a JSON document named .FName
 func (s *SelectList) SaveList() error {
 	if len(s.Keys) == 0 {
-		return ioutil.WriteFile(s.FName, []byte("[]"), 0664)
+		return s.Store.WriteFile(s.FName, []byte("[]"), 0664)
 	}
 	src, err := json.Marshal(s.Keys)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(s.FName, src, 0664)
+	return s.Store.WriteFile(s.FName, src, 0664)
 }
 
 // First select list returns the first item in the list (non-destructively)

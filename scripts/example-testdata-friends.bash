@@ -5,7 +5,7 @@ if [ ! -f testdata/fiends/collection.json ]; then
 	echo "Creating testdata/friends"
 	dataset init testdata/friends
 fi
-export DATASET_COLLECTION=testdata/friends
+export DATASET=testdata/friends
 echo "Creating document 'littlefreda.json'"
 dataset create littlefreda.json '{"name":"Freda","email":"little.freda@inverness.example.org"}'
 for KY in $(dataset keys); do

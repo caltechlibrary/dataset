@@ -1,13 +1,13 @@
 #!/bin/bash
 
-if [ "$DATASET_COLLECTION" != "" ]; then
-	OLD_COLLECTION=$DATASET_COLLECTION
+if [ "$DATASET" != "" ]; then
+	OLD_DATASET=$DATASET
 fi
 
 # Create a collection "mystuff" inside the directory called demo
 dataset init demo/mystuff
 # if successful an expression to export the collection name is show
-export DATASET_COLLECTION=demo/mystuff
+export DATASET=demo/mystuff
 
 # Create a JSON document 
 dataset create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
@@ -32,8 +32,8 @@ dataset delete freda.json
 # To remove the collection just use the Unix shell command
 # /bin/rm -fR demo/mystuff
 
-if [ "$OLD_COLLECTION" != "" ]; then
-	export DATASET_COLLECTION=$OLD_COLLECTION
+if [ "$OLD_DATASET" != "" ]; then
+	export DATASET=$OLD_DATASET
 else
-	unset DATASET_COLLECTION
+	unset DATASET
 fi

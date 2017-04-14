@@ -9,14 +9,11 @@ BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
 PROJECT_LIST = dataset
 
-build: package $(PROJECT_LIST)
-
-package: dataset.go
-	go build
+build: $(PROJECT_LIST)
 
 dataset: bin/dataset
 
-bin/dataset: dataset.go cmds/dataset/dataset.go
+bin/dataset: dataset.go attachments.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
 install: $(PROJECT_LIST)
@@ -31,14 +28,20 @@ test:
 format:
 	goimports -w dataset.go
 	goimports -w dataset_test.go
+	goimports -w attachments.go
+	goimports -w attachments_test.go
 	goimports -w cmds/dataset/dataset.go
 	gofmt -w dataset.go
 	gofmt -w dataset_test.go
+	gofmt -w attachments.go
+	gofmt -w attachments_test.go
 	gofmt -w cmds/dataset/dataset.go
 
 lint:
 	golint dataset.go
 	golint dataset_test.go
+	golint attachments.go
+	golint attachments_test.go
 	golint cmds/dataset/dataset.go
 
 clean:
@@ -48,17 +51,16 @@ clean:
 	if [ -f $(PROJECT)-$(VERSION)-release.zip ]; then /bin/rm $(PROJECT)-$(VERSION)-release.zip; fi
 
 dist/linux-amd64:
-	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
 
 dist/windows-amd64:
-	env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset cmds/dataset/dataset.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset cmds/dataset/dataset.go
 
 dist/macosx-amd64:
-	env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dataset cmds/dataset/dataset.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dataset cmds/dataset/dataset.go
 
 dist/raspbian-arm7:
-	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
-
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
 
 release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 	mkdir -p dist

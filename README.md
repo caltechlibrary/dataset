@@ -77,7 +77,7 @@ Common operations using the *dataset* command line tool
     # Create a collection "mystuff" inside the directory called demo
     dataset init demo/mystuff
     # if successful an expression to export the collection name is show
-    export DATASET_COLLECTION=demo/mystuff
+    export DATASET=demo/mystuff
 
     # Create a JSON document 
     dataset create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'

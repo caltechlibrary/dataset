@@ -18,7 +18,7 @@ based JSON document keys (aka JSON document names).
 Collection and JSON Documant related--
 
 + init - initialize a new collection if none exists, requires a path to collection
-  + once collection is created, set the environment variable DATASET_COLLECTION
+  + once collection is created, set the environment variable DATASET
     to collection name
 + create - creates a new JSON document or replace an existing one in collection
   + requires JSON document name followed by JSON blob or JSON blob read from stdin
@@ -97,7 +97,7 @@ a record called "littlefreda.json" and reading it back.
 
 ```shell
    dataset init testdata/friends
-   export DATASET_COLLECTION=testdata/friends
+   export DATASET=testdata/friends
    dataset create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(dataset keys); do
       echo "Path: $(dataset path $KY) 
