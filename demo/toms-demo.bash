@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Initialize the collection and set the DATASET_COLLECTION environment variable
+# Initialize the collection and set the DATASET environment variable
 echo "Initializing collection testdataset/noaaweather"
 E=$(dataset init testdataset/noaaweather)
 $E
-if [ "$DATASET_COLLECTION" = "" ]; then
-	echo "Something went wrong DATASET_COLLECTION not set."
+if [ "$DATASET" = "" ]; then
+	echo "Something went wrong DATASET not set."
 	exit 1
 fi
-echo "Using $DATASET_COLLECTION"
+echo "Using $DATASET"
 
 # Fetch some weather info
 echo "Getting some weather info from NOAA..."

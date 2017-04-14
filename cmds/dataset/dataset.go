@@ -32,7 +32,7 @@ COMMANDS
 Collection and JSON Documant related--
 
 + init - initialize a new collection if none exists, requires a path to collection
-  + once collection is created, set the environment variable DATASET_COLLECTION
+  + once collection is created, set the environment variable DATASET
     to collection name
   + if you're using S3 for storing your dataset prefix your path with 's3://'
     'dataset init s3://mybucket/mydataset-collections'
@@ -99,7 +99,7 @@ This is an example of creating a dataset called testdata/friends, saving
 a record called "littlefreda.json" and reading it back.
 
    dataset init testdata/friends
-   export DATASET_COLLECTION=testdata/friends
+   export DATASET=testdata/friends
    dataset create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(dataset keys); do
       echo "Path: $(dataset path $KY) 
@@ -205,9 +205,9 @@ func collectionInit(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	if collection.Store.Type == storage.S3 {
-		return fmt.Sprintf("export DATASET_COLLECTION=s3://%s/%s", collection.Store.Config["AwsBucket"], collection.Name), nil
+		return fmt.Sprintf("export DATASET=s3://%s/%s", collection.Store.Config["AwsBucket"], collection.Name), nil
 	}
-	return fmt.Sprintf("export DATASET_COLLECTION=%s", collection.Name), nil
+	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
@@ -217,7 +217,7 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name, set DATASET_COLLECTION in the environment variable or use -c option")
+		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")
@@ -269,7 +269,7 @@ func updateJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name, set DATASET_COLLECTION in the environment variable or use -c option")
+		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
 		return "", fmt.Errorf("missing document name")

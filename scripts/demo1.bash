@@ -5,7 +5,7 @@ if [ ! -f demo/friends ]; then
 	dataset init demo/friends
 fi
 echo "Save the collection name in the environment"
-export DATASET_COLLECTION="demo/friends"
+export DATASET="demo/friends"
 echo "Add some records ..."
 for NAME in "Captain Jack Flanders" "Little Frieda" "Mojo Sam" "Dominique" "Kamela" "Ruby" "Angel Sisters"; do
 	echo "Add '$NAME'"
