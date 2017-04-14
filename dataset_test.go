@@ -67,8 +67,12 @@ func TestCollection(t *testing.T) {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
 	}
-	if _, err := os.Stat(colName); os.IsNotExist(err) == true {
-		t.Errorf("%s was not created", colName)
+	// Make sure directories were create for col1
+	if fInfo, err := os.Stat(colName); err != nil {
+		t.Errorf("%s was not created, %s", colName, err)
+		t.FailNow()
+	} else if fInfo.IsDir() != true {
+		t.Errorf("%s is supposed to be a directory!", colName)
 		t.FailNow()
 	}
 	err = collection.Close()
@@ -76,6 +80,8 @@ func TestCollection(t *testing.T) {
 		t.Errorf("error Close() a collection %q", err)
 		t.FailNow()
 	}
+
+	// Now open the existing collection of colName
 	collection, err = Open(colName)
 	if err != nil {
 		t.Errorf("error Open() a collection %q", err)
@@ -404,7 +410,12 @@ func TestComplexKeys(t *testing.T) {
 }
 
 func TestSelectListSort(t *testing.T) {
+
 	colName := "testdata/complex-sorting"
+	// Removing the path if it exists from previous test run
+
+	os.RemoveAll(colName)
+
 	buckets := GenerateBucketNames("ab", 2)
 	if len(buckets) != 4 {
 		t.Errorf("Should have four buckets %+v", buckets)
@@ -417,6 +428,12 @@ func TestSelectListSort(t *testing.T) {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
 	}
+	if _, err := os.Stat(colName); err != nil {
+		t.Errorf("Create failed for %s, %s", colName, err)
+		t.FailNow()
+	}
+
+	collection.Clear("sorttests")
 
 	testKeyList := []string{
 		"A|2017-01-01|0",
@@ -429,10 +446,10 @@ func TestSelectListSort(t *testing.T) {
 		"B|1920-01-01|7",
 		"C|2021-06-08|8",
 	}
-	collection.Clear("sorttests")
+
 	sl, err := collection.Select(append([]string{"sorttests"}, testKeyList[:]...)...)
 	if err != nil {
-		t.Errorf("Cannot create select list simple: %s", err)
+		t.Errorf("Collection %s, cannot create select list simple: %s", sl.FName, err)
 		t.FailNow()
 	}
 

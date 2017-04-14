@@ -44,7 +44,7 @@ based JSON document keys (aka JSON document names).</p>
 <li>init - initialize a new collection if none exists, requires a path to collection
 
 <ul>
-<li>once collection is created, set the environment variable DATASET_COLLECTION
+<li>once collection is created, set the environment variable DATASET
 to collection name</li>
 </ul></li>
 <li>create - creates a new JSON document or replace an existing one in collection
@@ -188,7 +188,7 @@ mylist adding keys k1, k2, k3</li>
 a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 
 <pre><code class="language-shell">   dataset init testdata/friends
-   export DATASET_COLLECTION=testdata/friends
+   export DATASET=testdata/friends
    dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
    for KY in $(dataset keys); do
       echo &quot;Path: $(dataset path $KY) 
