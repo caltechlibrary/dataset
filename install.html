@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="./">README</a></li>
+<li><a href="license.html">LICENSE</a></li>
+<li><a href="install.html">INSTALL</a></li>
+<li><a href="docs/">Documentation</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Installation</h1>
+
+<p>This is generalized instructions for a release.  For deployment suggestions see NOTES.md</p>
+
+<h2>Compiled version</h2>
+
+<p><em>dataset</em> is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents
+into a collection by unique filename.</p>
+
+<p>Compiled versions are available for Mac OS X (amd64 processor), Linux (amd64), Windows (amd64) and Rapsberry Pi (both ARM6 and ARM7)</p>
+
+<p>VERSION_NUMBER is a <a href="http://semver.org/">symantic version number</a> (e.g. v0.1.2)</p>
+
+<h3>Mac OS X</h3>
+
+<ol>
+<li>Download <strong>dataset-VERSION_NUMBER-release.zip</strong> from <a href="https://github.com/caltechlibrary/dataset/releases/latest">https://github.com/caltechlibrary/dataset/releases/latest</a></li>
+<li>Open a finder window, find and unzip <strong>dataset-VERSION_NUMBER-release.zip</strong></li>
+<li>Look in the unziped folder and find the files in <em>dist/macosx-amd64/</em></li>
+<li>Drag (or copy) <em>dataset</em> to a &ldquo;bin&rdquo; directory in your path</li>
+<li>Open and &ldquo;Terminal&rdquo; and run <code>dataset -h</code> to confirm you were successful</li>
+</ol>
+
+<h3>Windows</h3>
+
+<ol>
+<li>Download <strong>dataset-VERSION_NUMBER-release.zip</strong> from <a href="https://github.com/caltechlibrary/dataset/releases/latest">https://github.com/caltechlibrary/dataset/releases/latest</a></li>
+<li>Open the file manager find and unzip <strong>dataset-VERSION_NUMBER-release.zip</strong></li>
+<li>Look in the unziped folder and find the files in <em>dist/windows-amd64/</em></li>
+<li>Drag (or copy) <em>dataset.exe</em> to a directory in your path</li>
+<li>Open Bash and and run <code>dataset -h</code> to confirm you were successful</li>
+</ol>
+
+<h3>Linux</h3>
+
+<ol>
+<li>Download <strong>dataset-VERSION_NUMBER-release.zip</strong> from <a href="https://github.com/caltechlibrary/dataset/releases/latest">https://github.com/caltechlibrary/dataset/releases/latest</a></li>
+<li>Find and unzip <strong>dataset-VERSION_NUMBER-release.zip</strong></li>
+<li>In the unziped directory and find the files in <em>dist/linux-amd64/</em></li>
+<li>Copy <em>dataset</em> to a &ldquo;bin&rdquo; directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/linux-amd64/dataset ~/bin/)</li>
+<li>From the shell prompt run <code>dataset -h</code> to confirm you were successful</li>
+</ol>
+
+<h3>Raspberry Pi</h3>
+
+<p>Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).</p>
+
+<ol>
+<li>Download <strong>dataset-VERSION_NUMBER-release.zip</strong> from <a href="https://github.com/caltechlibrary/dataset/releases/latest">https://github.com/caltechlibrary/dataset/releases/latest</a></li>
+<li>Find and unzip <strong>dataset-VERSION_NUMBER-release.zip</strong></li>
+<li>In the unziped directory and find the files in <em>dist/rasbian-arm7/</em></li>
+<li>Copy <em>dataset</em> to a &ldquo;bin&rdquo; directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/rasbian-arm7/dataset ~/bin/)</li>
+<li>From the shell prompt run <code>dataset -h</code> to confirm you were successful</li>
+</ol>
+
+<h2>Compiling from source</h2>
+
+<p>Use &ldquo;go get&rdquo;</p>
+
+<pre><code class="language-shell">    go get -u github.com/caltechlibrary/dataset/...
+</code></pre>
+
+<p>OR the old fasion way&hellip;</p>
+
+<pre><code class="language-shell">    export GOPATH=$(pwd)
+    mkdir -p src/github.com/caltechlibrary
+    cd src/github.com/caltechlibrary
+    git clone https://github.com/caltechlibrary/cli
+    git clone https://github.com/caltechlibrary/tmplfn
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
+    make
+    make test
+    make install
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
