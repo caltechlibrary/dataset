@@ -205,9 +205,9 @@ func collectionInit(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	if collection.Store.Type == storage.S3 {
-		return fmt.Sprintf("export DATASET_COLLECTION=s3://%s/%s", collection.Store.Config["AwsBucket"], path.Join(collection.Dataset, collection.Name)), nil
+		return fmt.Sprintf("export DATASET_COLLECTION=s3://%s/%s", collection.Store.Config["AwsBucket"], collection.Name), nil
 	}
-	return fmt.Sprintf("export DATASET_COLLECTION=%s", path.Join(collection.Dataset, collection.Name)), nil
+	return fmt.Sprintf("export DATASET_COLLECTION=%s", collection.Name), nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
