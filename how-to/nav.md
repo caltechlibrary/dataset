@@ -3,7 +3,7 @@
 + [README](../)
 + [LICENSE](../license.html)
 + [INSTALL](../install.html)
-+ [Documentation](./)
-+ [How To](../how-to/)
++ [Documentation](../docs/)
++ [How To](./)
 + [Github](https://github.com/caltechlibrary/dataset)
 
