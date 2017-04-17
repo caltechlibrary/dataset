@@ -82,11 +82,3 @@ publish:
 	./mk-website.bash NO
 	./publish.bash
 
-#
-# Experimental packaging for integrating dataset as Python 2/3 modules
-#
-python2:
-	gopy gen -lang=py2 -output=dist/py2 github.com/caltechlibrary/dataset
-	gopy bind -lang=py2 -output=dist/py2 github.com/caltechlibrary/dataset
-
-
