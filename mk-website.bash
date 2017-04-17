@@ -23,6 +23,16 @@ function MakePage() {
 	git add "$html"
 }
 
+function MakeSubPages() {
+    SUBDIR="${1}"
+    find "${SUBDIR}" -type f | grep -E '\.md$' | while read FNAME; do
+        FNAME="$(basename "${FNAME}" ".md")"
+        if [ "$FNAME" != "nav" ]; then
+	        MakePage "${SUBDIR}/nav.md" "${SUBDIR}/${FNAME}.md" "${SUBDIR}/${FNAME}.html"
+        fi
+    done
+}
+
 echo "Checking software..."
 softwareCheck mkpage
 echo "Generating website"
@@ -31,6 +41,7 @@ MakePage nav.md INSTALL.md install.html
 MakePage nav.md "markdown:$(cat LICENSE)" license.html
 
 # Build utility docs pages
-for FNAME in index package dataset; do
-	MakePage "docs/nav.md" "docs/${FNAME}.md" "docs/${FNAME}.html"
-done
+MakeSubPages docs
+
+# Build how-to pages
+MakeSubPages how-to

@@ -732,7 +732,10 @@ func main() {
 	}
 
 	// Merge environment
-	collectionName = cfg.MergeEnv("collection", collectionName)
+	datasetEnv := os.Getenv("DATASET")
+	if datasetEnv != "" && collectionName == "" {
+		collectionName = datasetEnv
+	}
 
 	args := flag.Args()
 	if len(args) == 0 {

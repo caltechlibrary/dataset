@@ -14,7 +14,7 @@ VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
 ### Mac OS X
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from [https://github.com/caltechlibrary/dataset/releases/latest](https://github.com/caltechlibrary/dataset/releases/latest)
+1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
 2. Open a finder window, find and unzip **dataset-VERSION_NUMBER-release.zip**
 3. Look in the unziped folder and find the files in *dist/macosx-amd64/*
 4. Drag (or copy) *dataset* to a "bin" directory in your path
@@ -22,7 +22,7 @@ VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
 ### Windows
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from [https://github.com/caltechlibrary/dataset/releases/latest](https://github.com/caltechlibrary/dataset/releases/latest)
+1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
 2. Open the file manager find and unzip **dataset-VERSION_NUMBER-release.zip**
 3. Look in the unziped folder and find the files in *dist/windows-amd64/*
 4. Drag (or copy) *dataset.exe* to a directory in your path
@@ -30,7 +30,7 @@ VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
 ### Linux
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from [https://github.com/caltechlibrary/dataset/releases/latest](https://github.com/caltechlibrary/dataset/releases/latest)
+1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
 2. Find and unzip **dataset-VERSION_NUMBER-release.zip**
 3. In the unziped directory and find the files in *dist/linux-amd64/*
 4. Copy *dataset* to a "bin" directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/linux-amd64/dataset ~/bin/)
@@ -40,7 +40,7 @@ VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
 Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from [https://github.com/caltechlibrary/dataset/releases/latest](https://github.com/caltechlibrary/dataset/releases/latest)
+1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
 2. Find and unzip **dataset-VERSION_NUMBER-release.zip**
 3. In the unziped directory and find the files in *dist/rasbian-arm7/*
 4. Copy *dataset* to a "bin" directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/rasbian-arm7/dataset ~/bin/)
@@ -49,24 +49,20 @@ Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 suppo
 
 ## Compiling from source
 
-Use "go get"
+_dataset_ is "go gettable".  Use the "go get" command to download the dependant packages
+as well as _dataset_'s source code.
 
 ```shell
-    go get -u github.com/caltechlibrary/dataset/...
+    go get -u github.com/caltechlibrary/dataset
 ```
 
-OR the old fasion way...
+And then compile
 
 ```shell
-    export GOPATH=$(pwd)
-    mkdir -p src/github.com/caltechlibrary
-    cd src/github.com/caltechlibrary
-    git clone https://github.com/caltechlibrary/cli
-    git clone https://github.com/caltechlibrary/tmplfn
-    git clone https://github.com/caltechlibrary/dataset
-    cd dataset
+    cd $GOPATH/src/github.com/caltechlibrary/dataset
     make
     make test
     make install
 ```
+
 

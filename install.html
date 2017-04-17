@@ -16,6 +16,7 @@
 <li><a href="license.html">LICENSE</a></li>
 <li><a href="install.html">INSTALL</a></li>
 <li><a href="docs/">Documentation</a></li>
+<li><a href="how-to/">How To</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
@@ -79,20 +80,15 @@ into a collection by unique filename.</p>
 
 <h2>Compiling from source</h2>
 
-<p>Use &ldquo;go get&rdquo;</p>
+<p><em>dataset</em> is &ldquo;go gettable&rdquo;.  Use the &ldquo;go get&rdquo; command to download the dependant packages
+as well as <em>dataset</em>&rsquo;s source code.</p>
 
-<pre><code class="language-shell">    go get -u github.com/caltechlibrary/dataset/...
+<pre><code class="language-shell">    go get -u github.com/caltechlibrary/dataset
 </code></pre>
 
-<p>OR the old fasion way&hellip;</p>
+<p>And then compile</p>
 
-<pre><code class="language-shell">    export GOPATH=$(pwd)
-    mkdir -p src/github.com/caltechlibrary
-    cd src/github.com/caltechlibrary
-    git clone https://github.com/caltechlibrary/cli
-    git clone https://github.com/caltechlibrary/tmplfn
-    git clone https://github.com/caltechlibrary/dataset
-    cd dataset
+<pre><code class="language-shell">    cd $GOPATH/src/github.com/caltechlibrary/dataset
     make
     make test
     make install
