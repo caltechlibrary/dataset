@@ -262,7 +262,11 @@ func createJSONDoc(args ...string) (string, error) {
 		if err := json.Unmarshal([]byte(src), &m); err != nil {
 			return "", err
 		}
-		m["uuid"] = name
+		if _, ok := m["uuid"]; ok == true {
+			m["_uuid"] = name
+		} else {
+			m["uuid"] = name
+		}
 		if err := collection.Create(name, m); err != nil {
 			return "", err
 		}
@@ -780,7 +784,11 @@ func importCSV(params ...string) (string, error) {
 			jsonFName = fmt.Sprintf("%s_%d", csvFName, lineNo)
 		} else if useUUID == true {
 			jsonFName = uuid.New().String()
-			record["uuid"] = jsonFName
+			if _, ok := record["uuid"]; ok == true {
+				record["_uuid"] = jsonFName
+			} else {
+				record["uuid"] = jsonFName
+			}
 		}
 		for i, val := range row {
 			if i < len(fieldNames) {
