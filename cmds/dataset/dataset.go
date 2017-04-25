@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -223,10 +224,24 @@ func collectionInit(args ...string) (string, error) {
 
 // createJSONDoc adds a new JSON document to the collection
 func createJSONDoc(args ...string) (string, error) {
-	if len(args) != 2 {
+	var (
+		name string
+		src  string
+	)
+
+	switch {
+	case useUUID == true:
+		name = uuid.New().String()
+		if len(args) != 1 {
+			return "", fmt.Errorf("Expected a JSON blob")
+		}
+		src = args[0]
+	case len(args) == 2:
+		name, src = args[0], args[1]
+	default:
 		return "", fmt.Errorf("Expected a doc name and JSON blob")
 	}
-	name, src := args[0], args[1]
+
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
 	}
@@ -242,9 +257,19 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	if err := collection.CreateAsJSON(name, []byte(src)); err != nil {
+	if useUUID == true {
+		m := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(src), &m); err != nil {
+			return "", err
+		}
+		m["uuid"] = name
+		if err := collection.Create(name, m); err != nil {
+			return "", err
+		}
+	} else if err := collection.CreateAsJSON(name, []byte(src)); err != nil {
 		return "", err
 	}
+
 	return "OK", nil
 }
 
@@ -791,7 +816,7 @@ func init() {
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
-	flag.BoolVar(&useUUID, "uuid", false, "use a UUID for JSON document name")
+	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 }
 
 func main() {
