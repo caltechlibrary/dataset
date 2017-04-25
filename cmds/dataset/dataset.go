@@ -146,7 +146,7 @@ Get the attachments for "capt-jack" (this will untar in your current directory)
 
    dataset attached capt-jack
 
-Remove _high-capt-jack.txt_ from "capt-jack"
+Remove high-capt-jack.txt from "capt-jack"
 
     dataset detach capt-jack high-capt-jack.txt
 
