@@ -12,64 +12,60 @@
 <nav>
 <ul>
 <li><a href="/">Home</a></li>
-<li><a href="./">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="how-to/">How To</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="../how-to/">How To</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h1>dataset</h1>
-
-<p><em>dataset</em> is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
-<em>dataset</em> is also a command line tool exercising the features of the golang <em>dataset</em> package.
-A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other Unix tools (e.g. it
-respects standard in, out and error with minimal side effects). This means it is easily scriptable
-via Bash shell or interpretted languages like Python.</p>
-
-<p><em>dataset</em> organanizes JSON documents by unique names in collections. Collections are represented
-as Unix subdirectories (or paths under S3) with each collection having a series of buckets (sub-directories/sub-paths)
-spreading the JSON documents and their attachments across the file system (this avoids having too many
-JSON documents in a given directory).</p>
-
-<h2>Operations</h2>
-
-<p>The basic operations support by <em>dataset</em> are listed below organized by collection and JSON document level.</p>
-
-<h3>Collection Level</h3>
+<h2><em>dataset</em> Operations</h2>
 
 <ul>
-<li>Create a collection</li>
-<li>List the JSON document ids in a collection</li>
-<li>Create named lists of JSON document ids (aka select lists)</li>
-<li>Read back a named list of JSON document ids</li>
-<li>Delete a named list of JSON document ids</li>
-<li>Import JSON documents from rows of a CSV file</li>
-</ul>
-
-<h3>JSON Document level</h3>
+<li>Collection level
 
 <ul>
-<li>Create a JSON document in a collection</li>
-<li>Update a JSON document in a collection</li>
-<li>Read back a JSON document in a collection</li>
-<li>Delete a JSON document in a collection</li>
-</ul>
-
-<p>Additionally</p>
+<li>Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new</li>
+<li>Open (collection) - opens an existing collections and reads collection.json into memory</li>
+<li>Close (collection) - writes changes to collection.json to disc if dirty</li>
+<li>Delete (collection) - removes a collection from disc</li>
+<li>Keys (collection) - list of keys in the collection</li>
+<li>Select (collection) - returns the request select list, will create the list if not exist, append keys if provided</li>
+<li>Clear (collection) - Removes a select list from a collection and disc</li>
+<li>Lists (collection) - returns the names of the available select lists</li>
+<li>Import CSV (collection) - imports rows of a CSV file as JSON documents</li>
+</ul></li>
+<li>JSON document level
 
 <ul>
-<li>Attach a file to a JSON document in a collection</li>
-<li>List the files attached to a JSON document in a collection</li>
-<li>Update a file attached to a JSON document in a collection</li>
-<li>Delete one or more attached files of a JSON document in a collection</li>
+<li>Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed</li>
+<li>Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents</li>
+<li>Update (JSON document) - updates an existing blob on disc (record must already exist)</li>
+<li>Delete (JSON document) - removes a JSON blob from its disc</li>
+<li>Path (JSON document) - returns the path to the JSON document</li>
+</ul></li>
+<li>Select list level
+
+<ul>
+<li>First (select list) - returns the value of the first key in the select list (non-distructively)</li>
+<li>Last (select list) - returns the value of the last key in the select list (non-distructively)</li>
+<li>Rest (select list) - returns values of all keys in the select list except the first (non-destructively)</li>
+<li>List (select list) - returns values of all keys in the select list (non-destructively)</li>
+<li>Length (select list) - returns the number of keys in a select list</li>
+<li>Push (select list) - appends one or more keys to an existing select list</li>
+<li>Pop (select list) - returns the last key in select list and removes it</li>
+<li>Unshift (select list) - inserts one or more new keys at the beginning of the select list</li>
+<li>Shift (select list) - returns the first key in a select list and removes it</li>
+<li>Sort (select list) - orders the select lists&rsquo; keys in ascending or descending alphabetical order</li>
+<li>Reverse (select list) - flips the order of the keys in the select list</li>
+</ul></li>
 </ul>
 
-<h2>Examples</h2>
+<h2>Example</h2>
 
 <p>Common operations using the <em>dataset</em> command line tool</p>
 
@@ -79,6 +75,8 @@ JSON documents in a given directory).</p>
 <li>read a JSON document</li>
 <li>update a JSON document</li>
 <li>delete a JSON document</li>
+<li>import a CSV file as JSON documents</li>
+<li>how to remove a <em>dataset</em> collection</li>
 </ul>
 
 <pre><code class="language-shell">    # Create a collection &quot;mystuff&quot; inside the directory called demo
@@ -105,6 +103,10 @@ JSON documents in a given directory).</p>
 
     # Delete a JSON document
     dataset delete freda.json
+
+    # Import CSV file as JSON documents using column 1 as JSON document name
+    # (if no column given the row number will be used for the JSON document name)
+    dataset import my-data.csv 1
 
     # To remove the collection just use the Unix shell command
     # /bin/rm -fR demo/mystuff
@@ -146,11 +148,6 @@ JSON documents in a given directory).</p>
         log.Fatalf(&quot;%s&quot;, err)
     }
 </code></pre>
-
-<h2>Releases</h2>
-
-<p>Compiled versions are provided for Linux (amd64), Mac OS X (amd64), Windows 10 (amd64) and Raspbian (ARM7).
-See <a href="https://github.com/caltechlibrary/dataset/releases">https://github.com/caltechlibrary/dataset/releases</a>.</p>
 
 </section>
 

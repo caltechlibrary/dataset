@@ -1,18 +1,20 @@
 
 # dataset
 
-_dataset_ is a go package for managing JSON documents stored on disc along with attached documents. 
-*dataset* is also a command line tool exercising the features of the _dataset_ package.
-It organanizes JSON documents by unique name in collections distributing the content across 
-subdirectories (buckets) that allow easy process with common Unix text utilities. It also is
-friendly for scripting languages like Bash (available on many operating systems such as Linux, Mac OS X,
-Windows 10).
+_dataset_ is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
+_dataset_ is also a command line tool exercising the features of the golang _dataset_ package.
+A project goal of _dataset_ is to "play nice" with shell scripts and other Unix tools (e.g. it 
+respects standard in, out and error with minimal side effects). This means it is easily scriptable
+via Bash shell or interpretted languages like Python.
+
+_dataset_ organanizes JSON documents by unique names in collections. Collections are represented
+as Unix subdirectories (or paths under S3) with each collection having a series of buckets (sub-directories/sub-paths)
+spreading the JSON documents and their attachments across the file system (this avoids having too many
+JSON documents in a given directory).
 
 ## Operations
 
-A project goal of _dataset_ is to "play nice" with shell scripts and other Unix tools (e.g. it 
-respects standard in, out and error with minimal side effects).  The operations support by *dataset* 
-command line tools are listed below organized at the collection level, JSON document level.
+The basic operations support by *dataset* are listed below organized by collection and JSON document level.
 
 ### Collection Level
 

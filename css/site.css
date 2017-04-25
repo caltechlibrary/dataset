@@ -161,6 +161,10 @@ section h3 {
     text-transform: uppercase;
 }
 
+section p {
+    max-width: 98%;
+}
+
 section ul {
     display: block;
     list-style: inside;
