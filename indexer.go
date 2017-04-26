@@ -38,6 +38,7 @@ func (c *Collection) Indexer(indexName string, indexMap *mapping.IndexMappingImp
 	var (
 		rec map[string]interface{}
 	)
+	//FIXME: if indexName exists use bleve.Open()
 	index, err := bleve.New(indexName, indexMap)
 	if err != nil {
 		return err
