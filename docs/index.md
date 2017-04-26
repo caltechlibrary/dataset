@@ -3,3 +3,5 @@
 
 + [dataset command](dataset.html) - Docs on the command line tool named _dataset_
 + [package docs](package.html) - Go language reference for the _dataset_ package
++ [operations](operations.html) - Lists the operations support on dataset with examples
++ [file system layout](file-system-layout.html) - Describes how collections are organized

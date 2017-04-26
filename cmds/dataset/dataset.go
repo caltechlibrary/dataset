@@ -1,16 +1,23 @@
 package main
 
 import (
+	"encoding/csv"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/storage"
+
+	// 3rd Party packages
+	"github.com/google/uuid"
 )
 
 var (
@@ -59,6 +66,8 @@ Collection and JSON Documant related--
 + detach - remove attachments to a JSON document
     + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
     + "dataset detach k1" would remove ALL attachments to k1
++ import - import a CSV file's rows as JSON documents
+	+ "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
 
 Select list related--
 
@@ -137,7 +146,7 @@ Get the attachments for "capt-jack" (this will untar in your current directory)
 
    dataset attached capt-jack
 
-Remove _high-capt-jack.txt_ from "capt-jack"
+Remove high-capt-jack.txt from "capt-jack"
 
     dataset detach capt-jack high-capt-jack.txt
 
@@ -154,6 +163,8 @@ Remove all attachments from "capt-jack"
 
 	// App Specific Options
 	collectionName string
+	skipHeaderRow  bool
+	useUUID        bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -182,6 +193,7 @@ Remove all attachments from "capt-jack"
 		"attachments": listAttachments,
 		"attached":    getAttachments,
 		"detach":      removeAttachments,
+		"import":      importCSV,
 	}
 
 	// alphabet to use for buckets
@@ -212,10 +224,24 @@ func collectionInit(args ...string) (string, error) {
 
 // createJSONDoc adds a new JSON document to the collection
 func createJSONDoc(args ...string) (string, error) {
-	if len(args) != 2 {
+	var (
+		name string
+		src  string
+	)
+
+	switch {
+	case useUUID == true:
+		name = uuid.New().String()
+		if len(args) != 1 {
+			return "", fmt.Errorf("Expected a JSON blob")
+		}
+		src = args[0]
+	case len(args) == 2:
+		name, src = args[0], args[1]
+	default:
 		return "", fmt.Errorf("Expected a doc name and JSON blob")
 	}
-	name, src := args[0], args[1]
+
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
 	}
@@ -231,9 +257,23 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	if err := collection.CreateAsJSON(name, []byte(src)); err != nil {
+	if useUUID == true {
+		m := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(src), &m); err != nil {
+			return "", err
+		}
+		if _, ok := m["uuid"]; ok == true {
+			m["_uuid"] = name
+		} else {
+			m["uuid"] = name
+		}
+		if err := collection.Create(name, m); err != nil {
+			return "", err
+		}
+	} else if err := collection.CreateAsJSON(name, []byte(src)); err != nil {
 		return "", err
 	}
+
 	return "OK", nil
 }
 
@@ -693,6 +733,82 @@ func removeAttachments(params ...string) (string, error) {
 	return "OK", nil
 }
 
+func importCSV(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s import CSV_FILENAME [COL_NUMBER_USED_FOR_ID]", os.Args[0])
+	}
+	idCol := -1
+	csvFName := params[0]
+	if len(params) > 1 {
+		idCol, err = strconv.Atoi(params[1])
+		if err != nil {
+			return "", fmt.Errorf("Can't convert column number to integer, %s", err)
+		}
+		// NOTE: we need to adjust to zero based index
+		idCol--
+	}
+	fp, err := os.Open(csvFName)
+	if err != nil {
+		return "", fmt.Errorf("Can't open %s, %s", csvFName, err)
+	}
+	defer fp.Close()
+
+	jsonFName := ""
+	fieldNames := []string{}
+	r := csv.NewReader(fp)
+	lineNo := 0
+	if skipHeaderRow == true {
+		lineNo++
+		fieldNames, err = r.Read()
+		if err != nil {
+			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
+		}
+	}
+	for {
+		lineNo++
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
+		}
+		fieldName := ""
+		record := map[string]string{}
+		if idCol < 0 && useUUID == false {
+			jsonFName = fmt.Sprintf("%s_%d", csvFName, lineNo)
+		} else if useUUID == true {
+			jsonFName = uuid.New().String()
+			if _, ok := record["uuid"]; ok == true {
+				record["_uuid"] = jsonFName
+			} else {
+				record["uuid"] = jsonFName
+			}
+		}
+		for i, val := range row {
+			if i < len(fieldNames) {
+				fieldName = fieldNames[i]
+				if idCol == i {
+					jsonFName = val
+				}
+			} else {
+				fieldName = fmt.Sprintf("col%d", i+1)
+			}
+			record[fieldName] = val
+		}
+		err = collection.Create(jsonFName, record)
+		if err != nil {
+			return "", fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		}
+	}
+	return "OK", nil
+}
+
 func init() {
 	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "display help")
@@ -707,6 +823,8 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
+	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
+	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 }
 
 func main() {
