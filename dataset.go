@@ -33,7 +33,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-beta10"
+	Version = "v0.0.1-beta11"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -239,10 +239,11 @@ func Open(name string) (*Collection, error) {
 		return nil, err
 	}
 	c := new(Collection)
-	if err := json.Unmarshal(src, &c); err == nil {
-		c.Store = store
-		return c, err
+	if err := json.Unmarshal(src, &c); err != nil {
+		return nil, err
 	}
+	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
+	c.Name = collectionName
 	c.Store = store
 	return c, nil
 }
@@ -358,6 +359,7 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist", name)
 	}
+	// NOTE: c.Name is the path to the collection not the name of JSON document
 	p := path.Join(c.Name, bucketName)
 	src, err := c.Store.ReadFile(path.Join(p, name))
 	if err != nil {

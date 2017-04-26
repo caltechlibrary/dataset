@@ -11,13 +11,17 @@ PROJECT_LIST = dataset
 
 build: $(PROJECT_LIST)
 
-dataset: bin/dataset
+dataset: bin/dataset bin/dsindexer
 
 bin/dataset: dataset.go attachments.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
+bin/dsindexer: dataset.go indexer.go cmds/dsindexer/dsindexer.go
+	go build -o bin/dsindexer cmds/dsindexer/dsindexer.go
+
 install: $(PROJECT_LIST)
 	env GOBIN=$(GOPATH)/bin go install cmds/dataset/dataset.go
+	env GOBIN=$(GOPATH)/bin go install cmds/dsindexer/dsindexer.go
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	./mk-website.bash
@@ -26,23 +30,22 @@ test:
 	go test
 
 format:
-	goimports -w dataset.go
-	goimports -w dataset_test.go
-	goimports -w attachments.go
-	goimports -w attachments_test.go
-	goimports -w cmds/dataset/dataset.go
 	gofmt -w dataset.go
 	gofmt -w dataset_test.go
 	gofmt -w attachments.go
 	gofmt -w attachments_test.go
+	gofmt -w indexer.go
 	gofmt -w cmds/dataset/dataset.go
+	gofmt -w cmds/dsindexer/dsindexer.go
 
 lint:
 	golint dataset.go
 	golint dataset_test.go
 	golint attachments.go
 	golint attachments_test.go
+	golint indexer.go
 	golint cmds/dataset/dataset.go
+	golint cmds/dsindexer/dsindexer.go
 
 clean:
 	if [ -f index.html ]; then /bin/rm *.html; fi
@@ -52,15 +55,19 @@ clean:
 
 dist/linux-amd64:
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsindexer cmds/dsindexer/dsindexer.go
 
 dist/windows-amd64:
-	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset cmds/dataset/dataset.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset.exe cmds/dataset/dataset.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsindexer.exe cmds/dsindexer/dsindexer.go
 
 dist/macosx-amd64:
 	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dataset cmds/dataset/dataset.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsindexer cmds/dsindexer/dsindexer.go
 
 dist/raspbian-arm7:
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsindexer cmds/dsindexer/dsindexer.go
 
 release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 	mkdir -p dist
@@ -68,6 +75,11 @@ release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
 	cp -v docs/dataset.md dist/
+	cp -v docs/operations.md dist/
+	cp -v docs/file-system-layout.md dist/
+	cp -v docs/package.md dist/
+	cp -v how-to/import-csv-rows-as-json-documents.md dist/
+	cp -v how-to/use-dataset-with-s3.md dist/
 	zip -r $(PROJECT)-$(VERSION)-release.zip dist/*
 
 
