@@ -20,6 +20,8 @@ package dataset
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -43,12 +45,18 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		return nil, nil, err
 	}
 
-	cfg := map[string]string{}
-	if err := json.Unmarshal(src, &cfg); err != nil {
-		return nil, nil, err
+	definitions := map[string]map[string]string{}
+	if err := json.Unmarshal(src, &definitions); err != nil {
+		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
 	}
 
 	//FIXME: convert definition into an appropriate index map
+	cfg := map[string]string{}
+	for fName, defn := range definitions {
+		if dPath, ok := defn["object_path"]; ok == true {
+			cfg[fName] = dPath
+		}
+	}
 
 	return cfg, bleve.NewIndexMapping(), nil
 }
@@ -71,7 +79,8 @@ func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string
 	return idxMap, nil
 }
 
-// Indexeri ingests all the records of a collection
+// Indexer ingests all the records of a collection applying the definition
+// creating or updating a Bleve index. Returns an error.
 func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	var (
 		idx bleve.Index
@@ -79,7 +88,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	)
 	recordMap, idxMap, err := readIndexDefinition(idxMapName)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read index definition %s, %s", idxMapName, err)
 	}
 
 	//NOTE: if indexName exists use bleve.Open() instead of bleve.New()
@@ -109,5 +118,22 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 		}
 	}
 	log.Printf("%d total records indexed", cnt)
+	return nil
+}
+
+// Find takes a Bleve index name and query string, opens the index, and writes the
+// results to the os.File provided. Function returns an error if their are problems.
+func Find(out io.Writer, indexName string, queryString string) error {
+	query := bleve.NewMatchQuery(queryString)
+	search := bleve.NewSearchRequest(query)
+	if idx, err := bleve.Open(indexName); err == nil {
+		if results, err := idx.Search(search); err == nil {
+			fmt.Fprintf(out, "%s\n", results)
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
 	return nil
 }
