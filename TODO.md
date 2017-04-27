@@ -26,7 +26,8 @@
     + support for segmented key maps (to limit memory consuption for very large collections)
 + sparql cli interface for searching collection
 + cli to convert collection into JSON-LD
-
++ dsselect would generate select lists based on query results from searching
++ dstoscv would take a select list and a list of heading names/dot paths pairs and convert into a CSV file
 
 
 ## Completed
