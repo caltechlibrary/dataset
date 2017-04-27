@@ -3,11 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	//	"io"
 	"os"
 	"path"
-	//	"strconv"
-	//"strings"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"

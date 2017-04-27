@@ -3,11 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	//	"io"
 	"os"
 	"path"
-	//	"strconv"
-	//"strings"
+	"strings"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
@@ -42,6 +40,8 @@ returning records that matched based on how the index was defined.`
 
 	// App Specific Options
 	collectionName string
+	showHighlight  bool
+	resultFields   string
 )
 
 func init() {
@@ -56,6 +56,8 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
+	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
+	flag.StringVar(&resultFields, "fields", "*", "colon delimited list of fields to display in the results, defaults to *")
 }
 
 func main() {
@@ -91,8 +93,16 @@ func main() {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)
 	}
+	options := map[string]string{}
+	if showHighlight == true {
+		options["highlight"] = "true"
+		options["highlighter"] = "ansi"
+	}
+	if resultFields != "" {
+		options["result_fields"] = strings.TrimSpace(resultFields)
+	}
 	indexName, queryString := args[0], args[1]
-	if err := dataset.Find(os.Stdout, indexName, queryString); err != nil {
+	if err := dataset.Find(os.Stdout, indexName, queryString, options); err != nil {
 		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", indexName, err)
 		os.Exit(1)
 	}

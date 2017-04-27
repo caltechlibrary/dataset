@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/datatools/dotpath"
@@ -32,7 +33,16 @@ import (
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/mapping"
+	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
+	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
 )
+
+// isTrueString normlize string values to true if they are "true", "t", "1" case insensitive
+// otherwise it returns false
+func isTrueString(s string) bool {
+	s = strings.TrimSpace(strings.ToLower(s))
+	return (s == "true" || s == "t" || s == "1")
+}
 
 // readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
 func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappingImpl, error) {
@@ -50,15 +60,45 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
 	}
 
-	//FIXME: convert definition into an appropriate index map
+	documentMapping := bleve.NewDocumentMapping()
+
+	indexMapping := bleve.NewIndexMapping()
+	indexMapping.AddDocumentMapping("document", documentMapping)
+
+	//NOTE: convert definition into an appropriate index mappings and record data paths
 	cfg := map[string]string{}
 	for fName, defn := range definitions {
+		fieldMap := bleve.NewTextFieldMapping()
 		if dPath, ok := defn["object_path"]; ok == true {
 			cfg[fName] = dPath
 		}
+		if sVal, ok := defn["store"]; ok == true {
+			if isTrueString(sVal) == true {
+				fieldMap.Store = true
+			} else {
+				fieldMap.Store = false
+			}
+		}
+		if sVal, ok := defn["lang"]; ok == true {
+			fieldMap.Analyzer = strings.TrimSpace(sVal)
+		}
+		if sVal, ok := defn["include_in_all"]; ok == true {
+			if isTrueString(sVal) == true {
+				fieldMap.IncludeInAll = true
+			} else {
+				fieldMap.IncludeInAll = false
+			}
+		}
+		if sVal, ok := defn["include_term_vectors"]; ok == true {
+			if isTrueString(sVal) == true {
+				fieldMap.IncludeTermVectors = true
+			} else {
+				fieldMap.IncludeTermVectors = false
+			}
+		}
+		documentMapping.AddFieldMappingsAt(fName, fieldMap)
 	}
-
-	return cfg, bleve.NewIndexMapping(), nil
+	return cfg, indexMapping, nil
 }
 
 // recordMapToIndexRecord takes the definition map, Unmarshals the JSON record and
@@ -123,9 +163,33 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
-func Find(out io.Writer, indexName string, queryString string) error {
+func Find(out io.Writer, indexName string, queryString string, options map[string]string) error {
 	query := bleve.NewMatchQuery(queryString)
 	search := bleve.NewSearchRequest(query)
+	if sVal, ok := options["highlight"]; ok == true {
+		if isTrueString(sVal) == true {
+			if sHighlighter, ok := options["highlighter"]; ok == true {
+				switch strings.TrimSpace(strings.ToLower(sHighlighter)) {
+				case "ansi":
+					search.Highlight = bleve.NewHighlightWithStyle(ansi.Name)
+				case "html":
+					search.Highlight = bleve.NewHighlightWithStyle(html.Name)
+				default:
+					log.Printf("Unknown highlighter, %q, using defaults", sHighlighter)
+					search.Highlight = bleve.NewHighlight()
+				}
+			} else {
+				search.Highlight = bleve.NewHighlight()
+			}
+		}
+	}
+	if sVal, ok := options["result_fields"]; ok == true {
+		if strings.Contains(sVal, ":") == true {
+			search.Fields = strings.Split(sVal, ":")
+		} else {
+			search.Fields = []string{sVal}
+		}
+	}
 	if idx, err := bleve.Open(indexName); err == nil {
 		if results, err := idx.Search(search); err == nil {
 			fmt.Fprintf(out, "%s\n", results)
