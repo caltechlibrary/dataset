@@ -24,6 +24,8 @@
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
++ sparql cli interface for searching collection
++ cli to convert collection into JSON-LD
 
 
 
