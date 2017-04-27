@@ -137,6 +137,12 @@ type Collection struct {
 	// Store holds the storage system information (e.g. local disc, S3)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
+	// Indexes is a list of known Bleve indexes associated with the collection
+	Indexes []string `json:"-"`
+	// A list of JSON filenames defining the indexes
+	IndexDefs []string `json:"index_defs"`
+	// FullPath is the fully qualified path on disc or URI to S3 bucket
+	FullPath string `json:"-"`
 }
 
 // SelectList is an ordered set of keys

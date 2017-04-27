@@ -42,6 +42,7 @@
 + dsbagit would generate a "BagIt" bag for preservation of collection objects
 + collection.json should hold a list of available indexes and their definitions to automate repair
 + OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
++ merge dsindexer and dsfind into dataset cli and depreciate individual programs
 
 
 ## Completed
