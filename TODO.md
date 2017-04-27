@@ -6,8 +6,16 @@
 
 ## Next
 
-+ [ ] add a _import_ verb to dataset where a single file can be rendered as many dataset records (e.g. spreadsheet rows as JSON objects)
-    + syntax like `dataset import csv_filename [column number to use for key value]`
++ [ ] add Bleve search support to dataset
+    + [x] default search would return IDS
+    + [x] detailed indexing should be configurable including which fields on a list of dotpaths
+    + [ ] sortable result options (e.g. sort by ascending,descending fields)
+    + [ ] handle typed data like dates and geo cordinates
+    + [ ] facet result support
+    + [ ] optional query types with sane default
+    + [ ] default index should have same name as collection but with .bleve extension (e.g. characters default index would be characters.bleve)
+    + [ ] search results should be able to merge multiple indexes
+    + [ ] should be able to specify non-BoltDB builds (e.g. support leveldb which allows indexing updates without locking up the index)
 
 ## Someday, Maybe
 
@@ -15,14 +23,14 @@
     + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
-+ [ ] add Bleve search support to *dataset* cli
-    + default search would return IDS
-    + detailed search would return values based on a list of dotpaths
+    + support for segmented key maps (to limit memory consuption for very large collections)
 
 
 
 ## Completed
 
++ [x] add a _import_ verb to dataset where a single file can be rendered as many dataset records (e.g. spreadsheet rows as JSON objects)
+    + syntax like `dataset import csv_filename [column number to use for key value]`
 + [x] integrate support for storing dataset collections in AWS S3
     + [x] figure out how to handle attachments with AWS S3 (e.g. download tar to temp file then work with it?)
     + [x] dataset init s3://.... is not showing the correct export value
