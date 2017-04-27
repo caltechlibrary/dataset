@@ -21,8 +21,29 @@ var (
 SYNOPSIS
 
 %s is a command line tool for creating a Bleve index based on records in a dataset 
-collection. %s reads a JSON document for the record structure of the index being 
-built and saves the result s a bleve index.`
+collection. %s reads a JSON document for the index definition and uses that to
+configure the Bleve index built based on the dataset collection.
+
+A index definition file is JSON document where the index able record is defined
+along with dot paths into the JSON collection record being indexed.
+
+If your collection has records that look like
+
+    {"name":"Frieda Kahlo","occupation":"artist","id":"Frida_Kahlo","dob":"1907-07-06"}
+
+and your wanted an index of names and occupation then your index definition file would
+look like
+
+   {
+	   "name":{
+		   "object_path": ".name"
+	   },
+	   "occupation": {
+		   "object_path":".occupation"
+	   }
+   }
+
+Based on this definition the "id" and "dob" fields would not be included in the index.`
 
 	examples = `
 EXAMPLES
@@ -99,13 +120,8 @@ func main() {
 	}
 	defer collection.Close()
 
-	if mapping, err := dataset.ReadIndexMapFile(args[0]); err == nil {
-		if err = collection.Indexer(indexName, mapping); err != nil {
-			fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
-			os.Exit(1)
-		}
-	} else {
-		fmt.Fprintf(os.Stderr, "Can't load index mapping %s, %s\n", definitionFName, err)
+	if err = collection.Indexer(indexName, definitionFName); err != nil {
+		fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
 		os.Exit(1)
 	}
 }

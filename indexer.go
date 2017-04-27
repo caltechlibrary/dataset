@@ -19,41 +19,95 @@
 package dataset
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
-	//"os"
+	"os"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/datatools/dotpath"
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/mapping"
 )
 
-// ReadIndexMapFile reads a JSON document and converts it into a Bleve index map.
-func ReadIndexMapFile(mapName string) (*mapping.IndexMappingImpl, error) {
-	//FIXME: translate mapName into an appropriate mapping
-	return bleve.NewIndexMapping(), nil
+// readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
+func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappingImpl, error) {
+	var (
+		src []byte
+		err error
+	)
+
+	if src, err = ioutil.ReadFile(mapName); err != nil {
+		return nil, nil, err
+	}
+
+	cfg := map[string]string{}
+	if err := json.Unmarshal(src, &cfg); err != nil {
+		return nil, nil, err
+	}
+
+	//FIXME: convert definition into an appropriate index map
+
+	return cfg, bleve.NewIndexMapping(), nil
+}
+
+// recordMapToIndexRecord takes the definition map, Unmarshals the JSON record and
+// renders a new map[string]string that is ready to be indexed.
+func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string]interface{}, error) {
+	raw := map[string]interface{}{}
+	idxMap := map[string]interface{}{}
+	err := json.Unmarshal(src, &raw)
+	if err != nil {
+		return nil, err
+	}
+	// Copy the dot path elements to new smaller map
+	for pName, dPath := range recordMap {
+		if val, err := dotpath.Eval(dPath, raw); err == nil {
+			idxMap[pName] = val
+		}
+	}
+	return idxMap, nil
 }
 
 // Indexeri ingests all the records of a collection
-func (c *Collection) Indexer(indexName string, indexMap *mapping.IndexMappingImpl) error {
+func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	var (
-		rec map[string]interface{}
+		idx bleve.Index
+		err error
 	)
-	//FIXME: if indexName exists use bleve.Open()
-	index, err := bleve.New(indexName, indexMap)
+	recordMap, idxMap, err := readIndexDefinition(idxMapName)
+	if err != nil {
+		return err
+	}
+
+	//NOTE: if indexName exists use bleve.Open() instead of bleve.New()
+	if _, e := os.Stat(idxName); os.IsNotExist(e) {
+		idx, err = bleve.New(idxName, idxMap)
+	} else {
+		idx, err = bleve.Open(idxName)
+	}
 	if err != nil {
 		return err
 	}
 
 	// Get all the keys and index each record
 	keys := c.Keys()
-	for _, key := range keys {
-		rec = map[string]interface{}{}
-		if err = c.Read(key, rec); err == nil {
-			log.Printf("DEBUG key %s, rec: %+v\n", key, rec)
-			index.Index(key, rec)
+	cnt := 0
+	for i, key := range keys {
+		if src, err := c.ReadAsJSON(key); err == nil {
+			if rec, err := recordMapToIndexRecord(recordMap, src); err == nil {
+				idx.Index(key, rec)
+				cnt++
+				if (cnt % 100) == 0 {
+					log.Printf("%d records indexed", cnt)
+				}
+			}
 		} else {
-			log.Printf("Can't index %s, %s\n", key, err)
+			log.Printf("%d, can't index %s, %s", i, key, err)
 		}
 	}
+	log.Printf("%d total records indexed", cnt)
 	return nil
 }

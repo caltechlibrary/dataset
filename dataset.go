@@ -360,8 +360,8 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 		return nil, fmt.Errorf("%q does not exist", name)
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
-	p := path.Join(c.Name, bucketName)
-	src, err := c.Store.ReadFile(path.Join(p, name))
+	// we need to join c.Name + bucketName + name to get path do JSON document
+	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, name))
 	if err != nil {
 		return nil, err
 	}
