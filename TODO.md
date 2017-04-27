@@ -41,6 +41,7 @@
     + permissions (CRUD) would be based on group and collection (permissions would be collection wide, not record specific)
 + dsbagit would generate a "BagIt" bag for preservation of collection objects
 + collection.json should hold a list of available indexes and their definitions to automate repair
++ OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
 
 
 ## Completed
