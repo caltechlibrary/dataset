@@ -20,15 +20,27 @@
 ## Someday, Maybe
 
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
-    + `dataset repair COLLECTION_NAME` would rescan the disc and write a new keys.json and collection.json
+    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
+        + this could be used to update a collection from one version of dataset to another
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
 + sparql cli interface for searching collection
 + cli to convert collection into JSON-LD
-+ dsselect would generate select lists based on query results from searching
-+ dstoscv would take a select list and a list of heading names/dot paths pairs and convert into a CSV file
++ dsselect would generate select lists based on query results in the manner of dsfind
++ dstoscv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
+    + header line would be optional 
+    + dot paths that point at array, objects would be joined with a multi-value delimiter based on type 
+    + mult-value delimiters would be configurable indepentantly
+        + a object k/v might be delimited by colon which each pair delimited by newline
+        + an array might be delimited by a pipe or semi-colon
++ dataset "versioning" support via something like libgit2
++ dsserver would allow HTTPS REST access do a collection server, it would support multi-user access and with group acls
+    + authentication would be through an external system (e.g. Shibboleth, PAM, or OAuth2)
+    + groups would contain a list of users
+    + permissions (CRUD) would be based on group and collection (permissions would be collection wide, not record specific)
 + dsbagit would generate a "BagIt" bag for preservation of collection objects
++ collection.json should hold a list of available indexes and their definitions to automate repair
 
 
 ## Completed
