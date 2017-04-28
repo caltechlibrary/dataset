@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="../how-to/">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<p>USAGE: dsfind [OPTIONS] SEARCH_STRINGS</p>
+
+<p>SYNOPSIS</p>
+
+<p>dsfind is a command line tool for querying a Bleve indexes based on the records in a
+dataset collection. By default dsfind is assumed there is an index named after the
+collection. An option lets you choose different indexes to query. Results are
+written to standard out and are paged. The query syntax supported is described
+at <a href="http://www.blevesearch.com/docs/Query-String-Query/">http://www.blevesearch.com/docs/Query-String-Query/</a>.</p>
+
+<p>Options can be used to modify the type of indexes queried as well as how results
+are output.
+OPTIONS</p>
+
+<pre><code>-c  sets the collection to be used
+-collection sets the collection to be used
+-fields colon delimited list of fields to display in the results, defaults to *
+-h  display help
+-help   display help
+-highlight  display highlight in search results
+-indexes    a colon delimited list of index names
+-l  display license
+-license    display license
+-sort   a colon delimited list of field names to sort by
+-v  display version
+-version    display version
+</code></pre>
+
+<p>EXAMPLES</p>
+
+<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
+
+<pre><code>dsfind -c characters &quot;Jack Flanders&quot;
+</code></pre>
+
+<p>This would search the Bleve index named characters.bleve for the string &ldquo;Jack Flanders&rdquo;
+returning records that matched based on how the index was defined.</p>
+
+<p>dsfind v0.0.1-beta11</p>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
