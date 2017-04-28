@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -165,6 +166,7 @@ Remove all attachments from "capt-jack"
 	collectionName string
 	skipHeaderRow  bool
 	useUUID        bool
+	showVerbose    bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -805,6 +807,12 @@ func importCSV(params ...string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
 		}
+		if showVerbose == true && (lineNo%1000) == 0 {
+			log.Printf("%d rows processed", lineNo)
+		}
+	}
+	if showVerbose == true {
+		log.Printf("%d total rows processed", lineNo)
 	}
 	return "OK", nil
 }
@@ -825,6 +833,7 @@ func init() {
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
+	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 }
 
 func main() {
