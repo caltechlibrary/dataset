@@ -21,8 +21,11 @@ SYNOPSIS
 %s is a command line tool for querying a Bleve indexes based on the records in a 
 dataset collection. By default %s is assumed there is an index named after the 
 collection. An option lets you choose different indexes to query. Results are 
-written to standard out and are paged. Options can be used to modify the type
-of queries submitted as well as indexes and what is output.`
+written to standard out and are paged. The query syntax supported is described
+at http://www.blevesearch.com/docs/Query-String-Query/.
+
+Options can be used to modify the type of indexes queried as well as how results
+are output.`
 
 	examples = `
 EXAMPLES
@@ -44,6 +47,7 @@ returning records that matched based on how the index was defined.`
 	indexNames     string
 	showHighlight  bool
 	resultFields   string
+	sortBy         string
 )
 
 func init() {
@@ -59,6 +63,7 @@ func init() {
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.StringVar(&indexNames, "indexes", "", "a colon delimited list of index names")
+	flag.StringVar(&sortBy, "sort", "", "a colon delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
 	flag.StringVar(&resultFields, "fields", "*", "colon delimited list of fields to display in the results, defaults to *")
 }
@@ -100,6 +105,9 @@ func main() {
 		os.Exit(1)
 	}
 	options := map[string]string{}
+	if sortBy != "" {
+		options["sort_by"] = sortBy
+	}
 	if showHighlight == true {
 		options["highlight"] = "true"
 		options["highlighter"] = "ansi"

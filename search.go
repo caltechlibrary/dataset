@@ -164,9 +164,27 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
 func Find(out io.Writer, indexNames []string, queryStrings []string, options map[string]string) error {
-	//FIXME: need to support various types of searches
-	query := bleve.NewMatchQuery(queryStrings[0])
+	// Opening all our indexes
+	var (
+		idxAlias bleve.IndexAlias
+	)
+	for i, idxName := range indexNames {
+		idx, err := bleve.Open(idxName)
+		if err != nil {
+			return err
+		}
+		if i == 0 {
+			idxAlias = bleve.NewIndexAlias(idx)
+		} else {
+			idxAlias.Add(idx)
+		}
+	}
+
+	//Note: find uses the Query String Query, it'll join queryStrings with a space
+	query := bleve.NewQueryStringQuery(strings.Join(queryStrings, " "))
 	search := bleve.NewSearchRequest(query)
+
+	// Handle various options modifying search
 	if sVal, ok := options["highlight"]; ok == true {
 		if isTrueString(sVal) == true {
 			if sHighlighter, ok := options["highlighter"]; ok == true {
@@ -185,23 +203,6 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 		}
 	}
 
-	// Opening all our indexes
-	var (
-		idxAlias bleve.IndexAlias
-	)
-	for i, idxName := range indexNames {
-		idx, err := bleve.Open(idxName)
-		if err != nil {
-			return err
-		}
-		if i == 0 {
-			idxAlias = bleve.NewIndexAlias(idx)
-		} else {
-			idxAlias.Add(idx)
-		}
-	}
-
-	// Now setup search and results
 	if sVal, ok := options["result_fields"]; ok == true {
 		if strings.Contains(sVal, ":") == true {
 			search.Fields = strings.Split(sVal, ":")
@@ -209,6 +210,16 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 			search.Fields = []string{sVal}
 		}
 	}
+
+	if sVal, ok := options["sort_by"]; ok == true {
+		if strings.Contains(sVal, ":") == true {
+			search.SortBy(strings.Split(sVal, ":"))
+		} else {
+			search.SortBy([]string{sVal})
+		}
+	}
+
+	// Run the query and process results
 	results, err := idxAlias.Search(search)
 	if err != nil {
 		return err
