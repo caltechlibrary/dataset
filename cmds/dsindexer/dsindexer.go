@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
@@ -20,8 +21,8 @@ SYNOPSIS
 %s is a command line tool for creating a Bleve index based on records in a dataset 
 collection. %s reads a JSON document for the index definition and uses that to
 configure the Bleve index built based on the dataset collection. If an index
-name is not provided then the index name will be the same as the collection with
-the file extension of "bleve".
+name is not provided then the index name will be the same as the definition file
+with the .json replaced by .bleve.
 
 A index definition is JSON document where the indexable record is defined
 along with dot paths into the JSON collection record being indexed.
@@ -110,7 +111,12 @@ func main() {
 	indexName := ""
 	if len(args) == 1 {
 		definitionFName = args[0]
-		indexName = fmt.Sprintf("%s.bleve", collectionName)
+		ext := path.Ext(definitionFName)
+		if ext != "" {
+			indexName = strings.TrimSuffix(definitionFName, ext) + ".bleve"
+		} else {
+			indexName = path.Base(definitionFName) + ".bleve"
+		}
 	} else if len(args) == 2 {
 		definitionFName, indexName = args[0], args[1]
 	} else {
