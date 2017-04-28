@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -48,6 +49,8 @@ returning records that matched based on how the index was defined.`
 	showHighlight  bool
 	resultFields   string
 	sortBy         string
+	jsonFormat     bool
+	idsOnly        bool
 )
 
 func init() {
@@ -66,6 +69,8 @@ func init() {
 	flag.StringVar(&sortBy, "sort", "", "a colon delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
 	flag.StringVar(&resultFields, "fields", "*", "colon delimited list of fields to display in the results, defaults to *")
+	flag.BoolVar(&jsonFormat, "json", false, "output JSON results")
+	flag.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
 }
 
 func main() {
@@ -116,8 +121,25 @@ func main() {
 		options["result_fields"] = strings.TrimSpace(resultFields)
 	}
 
-	if err := dataset.Find(os.Stdout, strings.Split(indexNames, ":"), args, options); err != nil {
+	results, err := dataset.Find(os.Stdout, strings.Split(indexNames, ":"), args, options)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", indexNames, err)
 		os.Exit(1)
 	}
+	if jsonFormat == true {
+		src, err := json.Marshal(results)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "JSON conversion error, %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stdout, "%s\n", src)
+		os.Exit(0)
+	}
+	if idsOnly == true {
+		for _, hit := range results.Hits {
+			fmt.Fprintf(os.Stdout, "%s\n", hit.ID)
+		}
+		os.Exit(0)
+	}
+	fmt.Fprintf(os.Stdout, "%s\n", results)
 }

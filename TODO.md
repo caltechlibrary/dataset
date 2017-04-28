@@ -6,6 +6,7 @@
 
 ## Next
 
++ [ ] add verbose option for importing CSV file, for large files it would be nice to see activity
 + [ ] add Bleve search support to dataset
     + [x] default search would return IDS
     + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
