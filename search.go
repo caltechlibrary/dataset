@@ -163,8 +163,9 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
-func Find(out io.Writer, indexName string, queryString string, options map[string]string) error {
-	query := bleve.NewMatchQuery(queryString)
+func Find(out io.Writer, indexNames []string, queryStrings []string, options map[string]string) error {
+	//FIXME: need to support various types of searches
+	query := bleve.NewMatchQuery(queryStrings[0])
 	search := bleve.NewSearchRequest(query)
 	if sVal, ok := options["highlight"]; ok == true {
 		if isTrueString(sVal) == true {
@@ -183,6 +184,24 @@ func Find(out io.Writer, indexName string, queryString string, options map[strin
 			}
 		}
 	}
+
+	// Opening all our indexes
+	var (
+		idxAlias bleve.IndexAlias
+	)
+	for i, idxName := range indexNames {
+		idx, err := bleve.Open(idxName)
+		if err != nil {
+			return err
+		}
+		if i == 0 {
+			idxAlias = bleve.NewIndexAlias(idx)
+		} else {
+			idxAlias.Add(idx)
+		}
+	}
+
+	// Now setup search and results
 	if sVal, ok := options["result_fields"]; ok == true {
 		if strings.Contains(sVal, ":") == true {
 			search.Fields = strings.Split(sVal, ":")
@@ -190,14 +209,10 @@ func Find(out io.Writer, indexName string, queryString string, options map[strin
 			search.Fields = []string{sVal}
 		}
 	}
-	if idx, err := bleve.Open(indexName); err == nil {
-		if results, err := idx.Search(search); err == nil {
-			fmt.Fprintf(out, "%s\n", results)
-		} else {
-			return err
-		}
-	} else {
+	results, err := idxAlias.Search(search)
+	if err != nil {
 		return err
 	}
+	fmt.Fprintf(out, "%s\n", results)
 	return nil
 }
