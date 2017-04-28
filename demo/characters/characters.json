@@ -1,0 +1,10 @@
+{
+    "name":{
+        "object_path": ".name",
+        "store":"true"
+    },
+    "email":{
+        "object_path": ".email",
+        "store":"true"
+    }
+}
