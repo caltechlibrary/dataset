@@ -5,6 +5,7 @@
 
 + [dataset command](dataset.html) - Docs on the command line tool named _dataset_
 + [dsindexer command](dsindexer.html) - Creates/updates a Bleve index of _dataset_ content based on index definition document
++ [dsfind command](dsfind.html) - Searches one or more Bleve indexes creates with _dsindexer_
 
 ## Golang related
 
