@@ -8,14 +8,17 @@
 
 + [ ] add Bleve search support to dataset
     + [x] default search would return IDS
-    + [x] detailed indexing should be configurable including which fields on a list of dotpaths
-    + [ ] sortable result options (e.g. sort by ascending,descending fields)
-    + [ ] handle typed data like dates and geo cordinates
-    + [ ] facet result support
-    + [ ] optional query types with sane default
-    + [ ] default index should have same name as collection but with .bleve extension (e.g. characters default index would be characters.bleve)
-    + [ ] search results should be able to merge multiple indexes
-    + [ ] should be able to specify non-BoltDB builds (e.g. support leveldb which allows indexing updates without locking up the index)
+    + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
+    + [x] search results should be able to merge multiple indexes
+    + [x] sortable result options (e.g. sort by ascending,descending fields)
+    + [ ] output should support returning only ids and integrate with select list concept
+    + [ ] alternate paging options
+    + [ ] alternate output formats (e.g. JSON arrays, select lists, CSV exports)
+    + [ ] handle specific typed data like dates and geo cordinates in index definition
+        + look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
+        + thing about handling common date formatting
+        + look at GeoCoding and custom Sort in Bleve
+    + [ ] facet support
 
 ## Someday, Maybe
 

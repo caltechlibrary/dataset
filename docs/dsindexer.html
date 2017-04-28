@@ -23,12 +23,17 @@
 </nav>
 
 <section>
-<p>USAGE: dsindexer [OPTIONS] INDEX_MAPPING_FILE INDEX_NAME</p>
+<h1>dsindexer</h1>
 
-<p>SYNOPSIS</p>
+<h2>USAGE</h2>
 
-<p>dsindexer is a command line tool for creating a Bleve index based on records in a dataset
-collection. dsindexer reads a JSON document for the index definition and uses that to
+<pre><code>dsindexer [OPTIONS] INDEX_MAPPING_FILE INDEX_NAME
+</code></pre>
+
+<h2>SYNOPSIS</h2>
+
+<p><em>dsindexer</em> is a command line tool for creating a Bleve index based on records in a dataset
+collection. <em>dsindexer</em> reads a JSON document for the index definition and uses that to
 configure the Bleve index built based on the dataset collection.</p>
 
 <p>A index definition file is JSON document where the index able record is defined
@@ -36,39 +41,41 @@ along with dot paths into the JSON collection record being indexed.</p>
 
 <p>If your collection has records that look like</p>
 
-<pre><code>{&quot;name&quot;:&quot;Frieda Kahlo&quot;,&quot;occupation&quot;:&quot;artist&quot;,&quot;id&quot;:&quot;Frida_Kahlo&quot;,&quot;dob&quot;:&quot;1907-07-06&quot;}
+<pre><code>    {&quot;name&quot;:&quot;Frieda Kahlo&quot;,&quot;occupation&quot;:&quot;artist&quot;,&quot;id&quot;:&quot;Frida_Kahlo&quot;,&quot;dob&quot;:&quot;1907-07-06&quot;}
 </code></pre>
 
 <p>and your wanted an index of names and occupation then your index definition file would
 look like</p>
 
-<p>{
-       &ldquo;name&rdquo;:{
-           &ldquo;object_path&rdquo;: &ldquo;.name&rdquo;
-       },
-       &ldquo;occupation&rdquo;: {
-           &ldquo;object_path&rdquo;:&ldquo;.occupation&rdquo;
-       }
-   }</p>
-
-<p>Based on this definition the &ldquo;id&rdquo; and &ldquo;dob&rdquo; fields would not be included in the index.
-OPTIONS</p>
-
-<pre><code>-c  sets the collection to be used
--collection sets the collection to be used
--h  display help
--help   display help
--l  display license
--license    display license
--v  display version
--version    display version
+<pre><code>   {
+	   &quot;name&quot;:{
+		   &quot;object_path&quot;: &quot;.name&quot;
+	   },
+	   &quot;occupation&quot;: {
+		   &quot;object_path&quot;:&quot;.occupation&quot;
+	   }
+   }
 </code></pre>
 
-<p>EXAMPLES</p>
+<p>Based on this definition the &ldquo;id&rdquo; and &ldquo;dob&rdquo; fields would not be included in the index.</p>
+
+<h2>OPTIONS</h2>
+
+<pre><code>	-c	sets the collection to be used
+	-collection	sets the collection to be used
+	-h	display help
+	-help	display help
+	-l	display license
+	-license	display license
+	-v	display version
+	-version	display version
+</code></pre>
+
+<h2>EXAMPLES</h2>
 
 <p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
 
-<pre><code>dsindexer -c characters email-mapping.json email-index
+<pre><code class="language-shell">    dsindexer -c characters email-mapping.json email-index
 </code></pre>
 
 <p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
