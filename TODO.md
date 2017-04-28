@@ -6,8 +6,8 @@
 
 ## Next
 
-+ [ ] add verbose option for importing CSV file, for large files it would be nice to see activity
 + [ ] add Bleve search support to dataset
+    + [ ] paging options (starting from/to, all records)
     + [x] default search would return IDS
     + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
     + [x] search results should be able to merge multiple indexes
@@ -69,3 +69,4 @@
     + [x] `dataset detach KEY FILENAME_LIST` would remove the selected file from tarball
     + [x] `dataset get KEY` get returns all the files in tarbal
     + [x] `dataset get KEY FILENAME_LIST` would return specific files from tarball
++ [x] add verbose option for importing CSV file, for large files it would be nice to see activity
