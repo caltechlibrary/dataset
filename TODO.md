@@ -6,7 +6,9 @@
 
 ## Next
 
+
 + [ ] add Bleve search support to dataset
+    + [ ] integrate batch ingest to speed things up
     + [ ] paging options (starting from/to, all records)
     + [x] default search would return IDS
     + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
