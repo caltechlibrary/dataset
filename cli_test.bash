@@ -31,7 +31,7 @@ flanders,Jack,captain.jack@zbs@example.org
 art,far seeing,old.far.seeing.art@zbs.example.org
 shoe,ruby,ruby2@zbs.example.org
 turu,t.j.,t.j.turu@zbs.example.org
-or,and,and.or@zbs.example.org
+the andover,rhodes,arhodes@another.example.org
 kapur,rodant,rodant.kapur@zbs.example.org
 FILE1
 
