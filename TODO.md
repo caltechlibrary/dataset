@@ -8,16 +8,17 @@
 
 
 + [ ] add Bleve search support to dataset
-    + [ ] paging options (starting from/to, all records)
-        + add option to return all results
+    + [x] paging options (starting from/to, all records)
+        + [x] add option to return all results
     + [x] default search would return IDS
     + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
     + [x] search results should be able to merge multiple indexes
     + [x] sortable result options (e.g. sort by ascending,descending fields)
     + [x] output should support returning only ids 
-    + [ ] alternate output formats (e.g. JSON arrays, select lists, CSV exports)
+    + [x] alternate output formats (e.g. JSON arrays, select lists, CSV exports)
         + [x] JSON output
-        + [ ] CSV output
+        + [x] CSV output
+        + [x] id only list
     + [ ] handle specific typed data like dates and geo cordinates in index definition
         + look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
         + thing about handling common date formatting

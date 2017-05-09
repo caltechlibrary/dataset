@@ -15,3 +15,4 @@
 
 + [operations](operations.html) - Lists the operations support on dataset with examples
 + [file system layout](file-system-layout.html) - Describes how collections are organized
++ [defining indexes](defining-indexes.html) - Describes the index definition JSON document format

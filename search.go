@@ -41,8 +41,11 @@ import (
 // isTrueString normlize string values to true if they are "true", "t", "1" case insensitive
 // otherwise it returns false
 func isTrueString(s string) bool {
-	s = strings.TrimSpace(strings.ToLower(s))
-	return (s == "true" || s == "t" || s == "1")
+	v, err := strconv.ParseBool(s)
+	if err != nil {
+		return false
+	}
+	return v
 }
 
 // readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
@@ -68,10 +71,27 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 
 	//NOTE: convert definition into an appropriate index mappings and record data paths
 	cfg := map[string]string{}
+	var fieldMap *mapping.FieldMapping
+
 	for fName, defn := range definitions {
-		fieldMap := bleve.NewTextFieldMapping()
 		if dPath, ok := defn["object_path"]; ok == true {
 			cfg[fName] = dPath
+		}
+		if fieldType, ok := defn["field_mapping"]; ok == true {
+			switch fieldType {
+			case "numeric":
+				fieldMap = bleve.NewNumericFieldMapping()
+			case "datetime":
+				fieldMap = bleve.NewDateTimeFieldMapping()
+			case "boolean":
+				fieldMap = bleve.NewBooleanFieldMapping()
+			case "geopoint":
+				fieldMap = bleve.NewGeoPointFieldMapping()
+			default:
+				fieldMap = bleve.NewTextFieldMapping()
+			}
+		} else {
+			fieldMap = bleve.NewTextFieldMapping()
 		}
 		if sVal, ok := defn["store"]; ok == true {
 			if isTrueString(sVal) == true {
@@ -80,8 +100,15 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 				fieldMap.Store = false
 			}
 		}
-		if sVal, ok := defn["lang"]; ok == true {
-			fieldMap.Analyzer = strings.TrimSpace(sVal)
+		if analyzerType, ok := defn["analyzer"]; ok == true {
+			switch analyzerType {
+			case "lang":
+				if sVal, ok := defn["lang"]; ok == true {
+					fieldMap.Analyzer = strings.TrimSpace(sVal)
+				}
+			default:
+				fieldMap.Analyzer = strings.TrimSpace(analyzerType)
+			}
 		}
 		if sVal, ok := defn["include_in_all"]; ok == true {
 			if isTrueString(sVal) == true {
@@ -96,6 +123,9 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 			} else {
 				fieldMap.IncludeTermVectors = false
 			}
+		}
+		if sVal, ok := defn["date_format"]; ok == true {
+			fieldMap.DateFormat = strings.TrimSpace(sVal)
 		}
 		documentMapping.AddFieldMappingsAt(fName, fieldMap)
 	}

@@ -34,3 +34,4 @@ dataset/*
 testdata/*
 bin/*
 demo/*
+*.swp
