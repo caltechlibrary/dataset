@@ -8,23 +8,29 @@
 
 
 + [ ] add Bleve search support to dataset
-    + [ ] integrate batch ingest to speed things up
     + [ ] paging options (starting from/to, all records)
+        + add option to return all results
     + [x] default search would return IDS
     + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
     + [x] search results should be able to merge multiple indexes
     + [x] sortable result options (e.g. sort by ascending,descending fields)
-    + [ ] output should support returning only ids and integrate with select list concept
-    + [ ] alternate paging options
+    + [x] output should support returning only ids 
     + [ ] alternate output formats (e.g. JSON arrays, select lists, CSV exports)
+        + [x] JSON output
+        + [ ] CSV output
     + [ ] handle specific typed data like dates and geo cordinates in index definition
         + look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
         + thing about handling common date formatting
         + look at GeoCoding and custom Sort in Bleve
-    + [ ] facet support
+    + [ ] generate a select list from search results
+    + [ ] add facet support
+    + [ ] add optional output template for _dsfind_
+    + [ ] integrate batch ingest to speed things up
 
 ## Someday, Maybe
 
++ [ ] implement a dsfind like as web service
+    + add SparQL support to search
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
     + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
         + this could be used to update a collection from one version of dataset to another

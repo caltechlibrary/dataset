@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	// Caltech Library packages
@@ -167,6 +168,10 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 	// Opening all our indexes
 	var (
 		idxAlias bleve.IndexAlias
+		size     int
+		from     int
+		explain  bool
+		err      error
 	)
 	for i, idxName := range indexNames {
 		idx, err := bleve.Open(idxName)
@@ -180,9 +185,32 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 		}
 	}
 
+	if sVal, ok := options["from"]; ok == true {
+		from, err = strconv.Atoi(sVal)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if sVal, ok := options["size"]; ok == true {
+		size, err = strconv.Atoi(sVal)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		size = 10
+	}
+	if sVal, ok := options["explain"]; ok == true {
+		explain, err = strconv.ParseBool(sVal)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		explain = false
+	}
+
 	//Note: find uses the Query String Query, it'll join queryStrings with a space
 	query := bleve.NewQueryStringQuery(strings.Join(queryStrings, " "))
-	search := bleve.NewSearchRequest(query)
+	search := bleve.NewSearchRequestOptions(query, size, from, explain)
 
 	// Handle various options modifying search
 	if sVal, ok := options["highlight"]; ok == true {
