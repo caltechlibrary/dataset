@@ -19,14 +19,14 @@
         + [x] JSON output
         + [x] CSV output
         + [x] id only list
-    + [ ] handle specific typed data like dates and geo cordinates in index definition
+    + [x] handle specific typed data like dates and geo cordinates in index definition
         + look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
         + thing about handling common date formatting
         + look at GeoCoding and custom Sort in Bleve
+    + [ ] integrate batch ingest to speed things up
     + [ ] generate a select list from search results
     + [ ] add facet support
     + [ ] add optional output template for _dsfind_
-    + [ ] integrate batch ingest to speed things up
 
 ## Someday, Maybe
 

@@ -135,9 +135,9 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 // recordMapToIndexRecord takes the definition map, Unmarshals the JSON record and
 // renders a new map[string]string that is ready to be indexed.
 func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string]interface{}, error) {
-	raw := map[string]interface{}{}
 	idxMap := map[string]interface{}{}
-	err := json.Unmarshal(src, &raw)
+
+	raw, err := dotpath.JSONDecode(src)
 	if err != nil {
 		return nil, err
 	}
