@@ -34,37 +34,37 @@ import (
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/analysis/analyzer/simple"
+	"github.com/blevesearch/bleve/analysis/analyzer/standard"
+	"github.com/blevesearch/bleve/analysis/analyzer/web"
 	"github.com/blevesearch/bleve/analysis/lang/ar"
-	"github.com/blevesearch/bleve/analysis/lang/bg"
 	"github.com/blevesearch/bleve/analysis/lang/ca"
 	"github.com/blevesearch/bleve/analysis/lang/cjk"
 	"github.com/blevesearch/bleve/analysis/lang/ckb"
-	"github.com/blevesearch/bleve/analysis/lang/cs"
 	"github.com/blevesearch/bleve/analysis/lang/de"
-	"github.com/blevesearch/bleve/analysis/lang/el"
 	"github.com/blevesearch/bleve/analysis/lang/en"
 	"github.com/blevesearch/bleve/analysis/lang/es"
-	"github.com/blevesearch/bleve/analysis/lang/eu"
 	"github.com/blevesearch/bleve/analysis/lang/fa"
 	"github.com/blevesearch/bleve/analysis/lang/fr"
-	"github.com/blevesearch/bleve/analysis/lang/ga"
-	"github.com/blevesearch/bleve/analysis/lang/gl"
 	"github.com/blevesearch/bleve/analysis/lang/hi"
-	"github.com/blevesearch/bleve/analysis/lang/hy"
-	"github.com/blevesearch/bleve/analysis/lang/id"
-	"github.com/blevesearch/bleve/analysis/lang/in"
 	"github.com/blevesearch/bleve/analysis/lang/it"
 	"github.com/blevesearch/bleve/analysis/lang/pt"
-	/*
-		"github.com/blevesearch/bleve/analysis/token/lowercase"
-		"github.com/blevesearch/bleve/analysis/token/porter"
-		"github.com/blevesearch/bleve/analysis/token/truncate"
-		"github.com/blevesearch/bleve/analysis/tokenizer/unicode"
-	*/
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
+
 	"github.com/blevesearch/blevex/detectlang"
+	"github.com/blevesearch/blevex/lang/da"
+	"github.com/blevesearch/blevex/lang/fi"
+	"github.com/blevesearch/blevex/lang/hu"
+	//"github.com/blevesearch/blevex/lang/ja"
+	"github.com/blevesearch/blevex/lang/nl"
+	"github.com/blevesearch/blevex/lang/no"
+	"github.com/blevesearch/blevex/lang/ro"
+	"github.com/blevesearch/blevex/lang/ru"
+	"github.com/blevesearch/blevex/lang/sv"
+	//"github.com/blevesearch/blevex/lang/th"
+	"github.com/blevesearch/blevex/lang/tr"
 )
 
 // isTrueString normlize string values to true if they are "true", "t", "1" case insensitive
@@ -78,51 +78,54 @@ func isTrueString(s string) bool {
 }
 
 // returnLanguageAnalyzer takes a string and then return the constant
-// na!e dor tur analyzer
 func returnLangAnalyzer(s string) string {
 	switch s {
 	case "ar":
-		return ar.Name
-	case "bg":
-		return bg.Name
+		return ar.AnalyzerName
 	case "ca":
-		return ca.Name
+		return ca.ArticlesName
 	case "cjk":
-		return cjk.Name
+		return cjk.AnalyzerName
 	case "ckb":
-		return ckb.Name
-	case "cs":
-		return cs.Name
+		return ckb.AnalyzerName
 	case "de":
-		return de.Name
-	case "el":
-		return el.Name
+		return de.AnalyzerName
 	case "en":
-		return en.Name
+		return en.AnalyzerName
 	case "es":
-		return es.Name
-	case "eu":
-		return eu.Name
+		return es.AnalyzerName
 	case "fa":
-		return fa.Name
+		return fa.AnalyzerName
 	case "fr":
-		return fr.Name
-	case "ga":
-		return ga.Name
-	case "gl":
-		return gl.Name
+		return fr.AnalyzerName
 	case "hi":
-		return hi.Name
-	case "hy":
-		return hy.Name
-	case "id":
-		return id.Name
-	case "in":
-		return in.Name
+		return hi.AnalyzerName
 	case "it":
-		return it.Name
+		return it.AnalyzerName
 	case "pt":
-		return pt.Name
+		return pt.AnalyzerName
+	case "da":
+		return da.AnalyzerName
+	case "fi":
+		return fi.AnalyzerName
+	case "hu":
+		return hu.AnalyzerName
+	//case "ja":
+	//	return ja.AnalyzerName
+	case "nl":
+		return nl.AnalyzerName
+	case "no":
+		return no.AnalyzerName
+	case "ro":
+		return ro.AnalyzerName
+	case "ru":
+		return ru.AnalyzerName
+	case "sv":
+		return sv.AnalyzerName
+	//case "th":
+	//	return th.AnalyzerName
+	case "tr":
+		return tr.AnalyzerName
 	default:
 		return ""
 	}
@@ -188,8 +191,10 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 				fieldMap.Analyzer = simple.Name
 			case "standard":
 				fieldMap.Analyzer = standard.Name
+			case "web":
+				fieldMap.Analyzer = web.Name
 			case "detectlang":
-				fieldMap.Analyzer = detectlang.Name
+				fieldMap.Analyzer = detectlang.AnalyzerName
 			case "lang":
 				if sVal, ok := defn["lang"]; ok == true {
 					fieldMap.Analyzer = returnLangAnalyzer(sVal)
