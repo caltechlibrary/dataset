@@ -33,9 +33,38 @@ import (
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/analysis/lang/ar"
+	"github.com/blevesearch/bleve/analysis/lang/bg"
+	"github.com/blevesearch/bleve/analysis/lang/ca"
+	"github.com/blevesearch/bleve/analysis/lang/cjk"
+	"github.com/blevesearch/bleve/analysis/lang/ckb"
+	"github.com/blevesearch/bleve/analysis/lang/cs"
+	"github.com/blevesearch/bleve/analysis/lang/de"
+	"github.com/blevesearch/bleve/analysis/lang/el"
+	"github.com/blevesearch/bleve/analysis/lang/en"
+	"github.com/blevesearch/bleve/analysis/lang/es"
+	"github.com/blevesearch/bleve/analysis/lang/eu"
+	"github.com/blevesearch/bleve/analysis/lang/fa"
+	"github.com/blevesearch/bleve/analysis/lang/fr"
+	"github.com/blevesearch/bleve/analysis/lang/ga"
+	"github.com/blevesearch/bleve/analysis/lang/gl"
+	"github.com/blevesearch/bleve/analysis/lang/hi"
+	"github.com/blevesearch/bleve/analysis/lang/hy"
+	"github.com/blevesearch/bleve/analysis/lang/id"
+	"github.com/blevesearch/bleve/analysis/lang/in"
+	"github.com/blevesearch/bleve/analysis/lang/it"
+	"github.com/blevesearch/bleve/analysis/lang/pt"
+	/*
+		"github.com/blevesearch/bleve/analysis/token/lowercase"
+		"github.com/blevesearch/bleve/analysis/token/porter"
+		"github.com/blevesearch/bleve/analysis/token/truncate"
+		"github.com/blevesearch/bleve/analysis/tokenizer/unicode"
+	*/
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
+	"github.com/blevesearch/blevex/detectlang"
 )
 
 // isTrueString normlize string values to true if they are "true", "t", "1" case insensitive
@@ -46,6 +75,57 @@ func isTrueString(s string) bool {
 		return false
 	}
 	return v
+}
+
+// returnLanguageAnalyzer takes a string and then return the constant
+// na!e dor tur analyzer
+func returnLangAnalyzer(s string) string {
+	switch s {
+	case "ar":
+		return ar.Name
+	case "bg":
+		return bg.Name
+	case "ca":
+		return ca.Name
+	case "cjk":
+		return cjk.Name
+	case "ckb":
+		return ckb.Name
+	case "cs":
+		return cs.Name
+	case "de":
+		return de.Name
+	case "el":
+		return el.Name
+	case "en":
+		return en.Name
+	case "es":
+		return es.Name
+	case "eu":
+		return eu.Name
+	case "fa":
+		return fa.Name
+	case "fr":
+		return fr.Name
+	case "ga":
+		return ga.Name
+	case "gl":
+		return gl.Name
+	case "hi":
+		return hi.Name
+	case "hy":
+		return hy.Name
+	case "id":
+		return id.Name
+	case "in":
+		return in.Name
+	case "it":
+		return it.Name
+	case "pt":
+		return pt.Name
+	default:
+		return ""
+	}
 }
 
 // readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
@@ -102,9 +182,17 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		}
 		if analyzerType, ok := defn["analyzer"]; ok == true {
 			switch analyzerType {
+			case "keyword":
+				fieldMap.Analyzer = keyword.Name
+			case "simple":
+				fieldMap.Analyzer = simple.Name
+			case "standard":
+				fieldMap.Analyzer = standard.Name
+			case "detectlang":
+				fieldMap.Analyzer = detectlang.Name
 			case "lang":
 				if sVal, ok := defn["lang"]; ok == true {
-					fieldMap.Analyzer = strings.TrimSpace(sVal)
+					fieldMap.Analyzer = returnLangAnalyzer(sVal)
 				}
 			default:
 				fieldMap.Analyzer = strings.TrimSpace(analyzerType)
