@@ -26,13 +26,16 @@ var (
 	{"email":"andoi@digital-circus.example.org","first_name":"And","last_name":"Oi"},
 	{"email":"andon@digital-circus.example.org","first_name":"And","last_name":"On"},
 	{"email":"andof@digital-circus.example.org","first_name":"And","last_name":"Of"},
-	{"email":"offthe@digital-circus.example.org","first_name":"off","last_name":"the"}
+	{"email":"offthe@digital-circus.example.org","first_name":"off","last_name":"the"},
+	{"email":"t.j.turu@zbs.example.org","first_name":"t.j.","last_name":"turu"}
 ]`)
 )
 
 func main() {
 	// Define my index
 	documentMapping := bleve.NewDocumentMapping()
+	documentMapping.DefaultAnalyzer = ""
+
 	indexMapping := bleve.NewIndexMapping()
 	indexMapping.AddDocumentMapping("document", documentMapping)
 
@@ -73,7 +76,7 @@ func main() {
 		log.Fatalf("can't open demo.bleve, %s", err)
 	}
 
-	for _, s := range []string{"Or", "*", "Li"} {
+	for _, s := range []string{"*", "Or", "the", "Li"} {
 		qry := bleve.NewQueryStringQuery(s)
 		search := bleve.NewSearchRequestOptions(qry, 20, 0, false)
 
