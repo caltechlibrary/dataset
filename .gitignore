@@ -35,3 +35,4 @@ testdata/*
 bin/*
 demo/*
 *.swp
+*.bleve
