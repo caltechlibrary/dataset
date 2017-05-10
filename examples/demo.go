@@ -73,7 +73,7 @@ func main() {
 		log.Fatalf("can't open demo.bleve, %s", err)
 	}
 
-	for _, s := range []string{"Or", "*"} {
+	for _, s := range []string{"Or", "*", "Li"} {
 		qry := bleve.NewQueryStringQuery(s)
 		search := bleve.NewSearchRequestOptions(qry, 20, 0, false)
 
