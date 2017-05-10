@@ -52,19 +52,24 @@ import (
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
+)
 
-	"github.com/blevesearch/blevex/detectlang"
-	"github.com/blevesearch/blevex/lang/da"
-	"github.com/blevesearch/blevex/lang/fi"
-	"github.com/blevesearch/blevex/lang/hu"
-	//"github.com/blevesearch/blevex/lang/ja"
-	"github.com/blevesearch/blevex/lang/nl"
-	"github.com/blevesearch/blevex/lang/no"
-	"github.com/blevesearch/blevex/lang/ro"
-	"github.com/blevesearch/blevex/lang/ru"
-	"github.com/blevesearch/blevex/lang/sv"
-	//"github.com/blevesearch/blevex/lang/th"
-	"github.com/blevesearch/blevex/lang/tr"
+var (
+	// languagesSupported by Analyzer
+	languagesSupported = map[string]string{
+		"ar":  ar.AnalyzerName,
+		"ca":  ca.ArticlesName,
+		"cjk": cjk.AnalyzerName,
+		"ckb": ckb.AnalyzerName,
+		"de":  de.AnalyzerName,
+		"en":  en.AnalyzerName,
+		"es":  es.AnalyzerName,
+		"fa":  fa.AnalyzerName,
+		"fr":  fr.AnalyzerName,
+		"hi":  hi.AnalyzerName,
+		"it":  it.AnalyzerName,
+		"pt":  pt.AnalyzerName,
+	}
 )
 
 // isTrueString normlize string values to true if they are "true", "t", "1" case insensitive
@@ -75,60 +80,6 @@ func isTrueString(s string) bool {
 		return false
 	}
 	return v
-}
-
-// returnLanguageAnalyzer takes a string and then return the constant
-func returnLangAnalyzer(s string) string {
-	switch s {
-	case "ar":
-		return ar.AnalyzerName
-	case "ca":
-		return ca.ArticlesName
-	case "cjk":
-		return cjk.AnalyzerName
-	case "ckb":
-		return ckb.AnalyzerName
-	case "de":
-		return de.AnalyzerName
-	case "en":
-		return en.AnalyzerName
-	case "es":
-		return es.AnalyzerName
-	case "fa":
-		return fa.AnalyzerName
-	case "fr":
-		return fr.AnalyzerName
-	case "hi":
-		return hi.AnalyzerName
-	case "it":
-		return it.AnalyzerName
-	case "pt":
-		return pt.AnalyzerName
-	case "da":
-		return da.AnalyzerName
-	case "fi":
-		return fi.AnalyzerName
-	case "hu":
-		return hu.AnalyzerName
-	//case "ja":
-	//	return ja.AnalyzerName
-	case "nl":
-		return nl.AnalyzerName
-	case "no":
-		return no.AnalyzerName
-	case "ro":
-		return ro.AnalyzerName
-	case "ru":
-		return ru.AnalyzerName
-	case "sv":
-		return sv.AnalyzerName
-	//case "th":
-	//	return th.AnalyzerName
-	case "tr":
-		return tr.AnalyzerName
-	default:
-		return ""
-	}
 }
 
 // readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
@@ -193,14 +144,12 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 				fieldMap.Analyzer = standard.Name
 			case "web":
 				fieldMap.Analyzer = web.Name
-			case "detectlang":
-				fieldMap.Analyzer = detectlang.AnalyzerName
 			case "lang":
-				if sVal, ok := defn["lang"]; ok == true {
-					fieldMap.Analyzer = returnLangAnalyzer(sVal)
+				if langCode, ok := defn["lang"]; ok == true {
+					if langAnalyzer, ok := languagesSupported[langCode]; ok == true {
+						fieldMap.Analyzer = langAnalyzer
+					}
 				}
-			default:
-				fieldMap.Analyzer = strings.TrimSpace(analyzerType)
 			}
 		}
 		if sVal, ok := defn["include_in_all"]; ok == true {
@@ -220,7 +169,7 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		if sVal, ok := defn["date_format"]; ok == true {
 			fieldMap.DateFormat = strings.TrimSpace(sVal)
 		}
-		documentMapping.AddFieldMappingsAt(fName, fieldMap)
+		documentMapping.AddFieldMapping(fieldMap)
 	}
 	return cfg, indexMapping, nil
 }
@@ -320,7 +269,7 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 			return nil, err
 		}
 	} else {
-		size = 10
+		size = 12
 	}
 	if sVal, ok := options["explain"]; ok == true {
 		explain, err = strconv.ParseBool(sVal)

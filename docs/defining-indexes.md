@@ -103,56 +103,104 @@ _dsindexer_ support the following types of analyzers
 + keyword - performs zero analysis, use this if you want to treat the value as is
 + simple - performs minimal analysis, tokenizes using Unicode and lowercases the value
 + standard - is like simple but adds English stop word removal
-+ detectlang - tries to determine the language then applies that languages analyzer applying its rules (e.g. if
++ web - tries to determine the language then applies that languages analyzer applying its rules (e.g. if
   the language detected was German then German stop words, analysis would be performed)
-+ lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, cjk)
++ lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, fr)
 
-Language analyzers current supported (as of 2017-05-09) by are - Danish (da), Dutch (nl), English (en), Finnish (fi), 
-French (fr), German (de), Hungarian (hu), Italian (it), Norwegian (no), Persian (fa), Portuguese (pt), Romanian (ro), 
-Russian (ru), Sorani (ckb), Spanish (es), Swedish (sv), Thai (th), Turkish (tr).
+Language analyzers current supported are - 
+
++ Arabic (ar) 
++ Catalan (ca)
++ Chokwe (cjk) 
++ Central Kurdish (ckb) 
++ German (de)
++ English (en)
++ Spanish (es)
++ Persian (fa)
++ French (fr)
++ Hindi (hi)
++ Italian (it)
++ Portuguese (pt)
 
 Let's consider a JSON document that has a title and abstract field.
 
 ```json
     {
+        "author": "Doe, Jane",
         "title": "Some title here",
-        "abstract": "blah, blah, blah, hurmph, bip"
+        "abstract": "blah, blah, blah, herrumph, blip, bleep"
     }
 ```
 
-We could index these with a definition like if we wanted to use the "detectlang" analyzer.
+
+
+The default language analyzer is English (en) but you can explicitly indicate that with this definition
 
 ```json
     {
+        "author": {
+            "object_path": ".author",
+            "field_mapping": "text",
+            "analyzer": "simple"
+        },
         "title": {
             "object_path": ".title",
             "field_mapping": "text",
-            "analyzers": "detectlang"
+            "analyzers": "standard"
         },
         "abstract": {
             "object_path": ".abstract",
             "field_mapping": "text",
-            "analyzers": "detectlang"
+            "analyzers": "standard"
         }
     }
 ```
 
-If knew our documents were always in Danish we could try something like this definition--
-
+If your content was in Spanish you could use the Spanish language analyzer.
 
 ```json
     {
+        "author": {
+            "object_path": ".author",
+            "field_mapping": "text",
+            "analyzer": "simple"
+        },
         "title": {
             "object_path": ".title",
             "field_mapping": "text",
             "analyzers": "lang",
-            "lang": "da"
+            "lang":"es"
         },
         "abstract": {
             "object_path": ".abstract",
             "field_mapping": "text",
             "analyzers": "lang",
-            "lang": "da"
+            "lang":"es"
+        }
+    }
+```
+
+If knew our documents were in German we could try something like this definition--
+
+
+```json
+    {
+        "author": {
+            "object_path": ".author",
+            "field_mapping": "text",
+            "analyzer": "simple"
+        },
+        "title": {
+            "object_path": ".title",
+            "field_mapping": "text",
+            "analyzers": "lang",
+            "lang": "de"
+        },
+        "abstract": {
+            "object_path": ".abstract",
+            "field_mapping": "text",
+            "analyzers": "lang",
+            "lang": "de"
         }
     }
 ```
@@ -177,7 +225,9 @@ and like "store" it can be either true/false.
 
 ## Include In all
 
-"include_in_all", not clear on what this does but it's configurable so _dsindexer_ supports it.
+"include_in_all", indicates to include any composite fields named "_all", defaults to true, if you don't need this and
+would like to make the index slightly smaller then you could set this to false.
+
 
 ## Date Format
 

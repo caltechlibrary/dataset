@@ -1,20 +1,26 @@
 #!/bin/bash
 
 cd $(dirname $0)
+
 #
 # Test the cli utilities that demonstrate features of dataset package.
 #
-if [ -d "characters-index.bleve" ]; then
-    rm -fR "characters-index.bleve" 
+
+# Remove stale imported data
+if [ -f "characters-to-import.csv" ]; then
+    rm characters-to-import.csv
 fi
+# Remove stale dataset
 if [ -d "characters" ]; then
     rm -fR characters
 fi
-if [ -f "characters.csv" ]; then
-    rm characters.csv
+# Remove stale indexe
+if [ -d "characters.bleve" ]; then
+    rm -fR "characters.bleve" 
 fi
-if [ -f "characters-index.json" ]; then
-    rm characters-index.json
+# Remove stale index definition
+if [ -f "characters.json" ]; then
+    rm characters.json
 fi
 
 #
@@ -37,29 +43,35 @@ andover,rhodes,arhodes@another.example.org
 kapur,rodant,rodant.kapur@zbs.example.org
 Li,Ho,ho.li@scientists.example.org
 Lee,Ho,ho.lee@scientists.example.org
-Or,Mark,mark.or@scientists.example.org
-Or,Ann,ann.or@scientists.example.org
-Or,And,andor@digital-circus.example.org
+Oh,Mark,mark.oh@scientists.example.org
+Oh,Ann,ann.oh@scientists.example.org
+or,and,andor@digital-circus.example.org
+an,and,andan@digital-circus.example.org
+Oi,And,andoi@digital-circus.example.org
+On,And,andon@digital-circus.example.org
+Of,And,andof@digital-circus.example.org
+the,off,offthe@digital-circus.example.org
 FILE1
 
-# Generate the index mapping
-cat<<FILE2 > characters-index.json
+# Generate the index mapping (we're calling it characters.json)
+cat<<FILE2 > characters.json
 {
     "last_name":{
         "object_path":".last_name",
         "field_mapping":"text",
-        "analyzer":"keyword",
+        "analyzer":"simple",
         "store":"true"
     },
     "first_name":{
         "object_path":".first_name",
         "field_mapping":"text",
-        "analyzer":"keyword",
+        "analyzer":"standard",
         "store":"true"
     },
     "email":{
         "object_path":".email",
-        "analyzer":"simple",
+        "field_mapping":"text",
+        "analyzer":"keyword",
         "store":"true"
     }
 }
@@ -69,8 +81,10 @@ FILE2
 $(dataset init characters)
 # Load the data
 dataset -uuid import characters.csv
-dsindexer characters-index.json
-echo "Sorting records by descending last_name"
-dsfind -sort="-last_name" -fields="last_name" -indexes="characters-index.bleve" "*"
-echo "Sorting records by ascending last_name"
-dsfind -sort="last_name" -fields="last_name" -indexes="characters-index.bleve" "*"
+dsindexer characters.json
+#echo "Sorting records by descending last_name"
+#dsfind -size 25 -sort="-last_name" -fields="last_name" "*"
+#echo "Sorting records by ascending last_name"
+#dsfind -size 25 -sort="last_name" -fields="last_name" "*"
+echo "Revsere sort by last name output as CSV file"
+dsfind -size 25 -csv -fields="last_name:first_name:email" -sort="last_name:first_name" "*"
