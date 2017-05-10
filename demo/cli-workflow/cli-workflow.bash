@@ -46,13 +46,21 @@ FILE1
 cat<<FILE2 > characters-index.json
 {
     "last_name":{
-        "object_path":".last_name"
+        "object_path":".last_name",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
     },
     "first_name":{
-        "object_path":".first_name"
+        "object_path":".first_name",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
     },
     "email":{
-        "object_path":".email"
+        "object_path":".email",
+        "analyzer":"simple",
+        "store":"true"
     }
 }
 FILE2

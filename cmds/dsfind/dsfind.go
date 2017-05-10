@@ -139,7 +139,7 @@ func main() {
 		//options["result_fields"] = "*"
 	}
 	if size == "all" {
-		options["size"] = "1000000000000"
+		options["size"] = "10000000"
 	} else if size != "" {
 		options["size"] = size
 	}
