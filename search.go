@@ -49,6 +49,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/lang/hi"
 	"github.com/blevesearch/bleve/analysis/lang/it"
 	"github.com/blevesearch/bleve/analysis/lang/pt"
+	"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
@@ -69,6 +70,31 @@ var (
 		"hi":  hi.AnalyzerName,
 		"it":  it.AnalyzerName,
 		"pt":  pt.AnalyzerName,
+	}
+
+	// supportedNamedTimeFormats for named Golang time strings (e.g. RFC3339) plus
+	// ones that are for convienence (e.g. mysqldate, mysqldatetime)
+	supportedNamedTimeFormats = map[string]string{
+		"ansic":    "Mon Jan _2 15:04:05 2006",
+		"unixdate": "Mon Jan _2 15:04:05 MST 2006",
+		"rubydate": "Mon Jan 02 15:04:05 -0700 2006",
+		"rfc822":   "02 Jan 06 15:04 MST",
+		// RFC822 with numeric zone
+		"rfc822z": "02 Jan 06 15:04 -0700",
+		"rfc850":  "Monday, 02-Jan-06 15:04:05 MST",
+		"rfc1123": "Mon, 02 Jan 2006 15:04:05 MST",
+		// RFC1123 with numeric zone
+		"rfc1123z":    "Mon, 02 Jan 2006 15:04:05 -0700",
+		"rfc3339":     "2006-01-02T15:04:05Z07:00",
+		"rfc3339nano": "2006-01-02T15:04:05.999999999Z07:00",
+		"kitchen":     "3:04PM",
+		// Handy time stamps.
+		"stamp":         "Jan _2 15:04:05",
+		"stampmilli":    "Jan _2 15:04:05.000",
+		"stampmicro":    "Jan _2 15:04:05.000000",
+		"stampnano":     "Jan _2 15:04:05.000000000",
+		"mysqldate":     "2006-01-02",
+		"mysqldatetime": "2006-01-02 14:05:05",
 	}
 )
 
@@ -165,11 +191,36 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 			}
 		}
 		if sVal, ok := defn["date_format"]; ok == true {
-			fieldMap.DateFormat = strings.TrimSpace(sVal)
+			if fmt, ok := supportedNamedTimeFormats[strings.ToLower(strings.TrimSpace(sVal))]; ok == true {
+				fieldMap.DateFormat = fmt
+			} else {
+				fieldMap.DateFormat = strings.TrimSpace(sVal)
+			}
 		}
 		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
 	}
 	return cfg, indexMapping, nil
+}
+
+// geoPointParse takes a string in latitude,longitude decimal format (e.g. 34.1358302,-118.127694 for Caltech, Pasadena, California)
+// and converts them to a Morton hash used by Bleve
+func geoPointParse(s string) (uint64, error) {
+	if strings.Contains(s, ",") == false {
+		return 0, fmt.Errorf("Missing coordinate pair in %q", s)
+	}
+	latlon := strings.Split(s, ",")
+	if len(latlon) != 2 {
+		return 0, fmt.Errorf("Wrong number for pair in %q", s)
+	}
+	lat, err := strconv.ParseFloat(latlon[0], 64)
+	if err != nil {
+		return 0, fmt.Errorf("Can't parse latitude in %q, %s", s, err)
+	}
+	lon, err := strconv.ParseFloat(latlon[1], 64)
+	if err != nil {
+		return 0, fmt.Errorf("Can't parse longitude in %q, %s", s, err)
+	}
+	return geo.MortonHash(lon, lat), nil
 }
 
 // recordMapToIndexRecord takes the definition map, Unmarshals the JSON record and
@@ -194,7 +245,11 @@ func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string
 					idxMap[pName] = (val.(json.Number)).String()
 				}
 			default:
-				idxMap[pName] = val
+				if pt, err := geoPointParse(val.(string)); err == nil {
+					idxMap[pName] = pt
+				} else {
+					idxMap[pName] = val
+				}
 			}
 		}
 	}

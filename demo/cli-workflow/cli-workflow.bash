@@ -6,34 +6,28 @@ cd $(dirname $0)
 # Test the cli utilities that demonstrate features of dataset package.
 #
 
-# Remove stale imported data
-if [ -f "characters.csv" ]; then
-    rm characters.csv
-fi
-if [ -f "plays.csv" ]; then
-    rm plays.csv
-fi
-# Remove stale dataset
-if [ -d "characters" ]; then
-    rm -fR characters
-fi
-if [ -d "plays" ]; then
-    rm -fR plays
-fi
-# Remove stale indexe
-if [ -d "characters.bleve" ]; then
-    rm -fR "characters.bleve" 
-fi
-if [ -d "plays.bleve" ]; then
-    rm -fR "plays.bleve"
-fi
-# Remove stale index definition
-if [ -f "characters.json" ]; then
-    rm characters.json
-fi
-if [ -d "plays.json" ]; then
-    rm plays.json
-fi
+for NAME in characters plays datatypes; do
+    # Remove stale imported data
+    if [ -f "${NAME}.csv" ]; then
+        echo "Removing stale ${NAME}.csv"
+        rm "${NAME}.csv"
+    fi
+    # Remove stale index definition
+    if [ -d "${NAME}.json" ]; then
+        echo "Removing stale ${NAME}.json"
+        rm "${NAME}.json"
+    fi
+    # Remove stale dataset
+    if [ -d "${NAME}" ]; then
+        echo "Removing stale ${NAME}"
+        rm -fR "${NAME}"
+    fi
+    # Remove stale indexe
+    if [ -d "${NAME}.bleve" ]; then
+        echo "Removing stale ${NAME}.bleve"
+        rm -fR "${NAME}.bleve"
+    fi
+done
 
 #
 # Pick version of cli to test with
@@ -63,16 +57,24 @@ The Incredible Adventures of Jack Flanders,1978,"Jack Flanders, Little Frieda, D
 CSV2
 
 cat<<CSV3 > datatypes.csv
-string,year,int,float
-Hello World,1999,12,12.4
-Good Bye World,2000,1,1.5
+string,year,int,float,date,geo
+Hello world,1999,12,12.4,1999-12-12,"50.7226968,-4.3453813"
+Goodbye world,1834,1,1.5,1834-02-06,"52.3337236,-6.4907425"
+Muddling around the world,1901,0,0,1901-12-31,"10.0344444,139.7700281"
+Give me liberty and give chow fun noodles,1775,1,1.0,1775-03-23,"34.1376576,-118.127463"
 CSV3
 
 # Generate the index mapping (we're calling it characters.json)
 cat<<DEF1 > characters.json
 {
+    "uuid":{
+        "object_path":".uuid",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
+    },
     "name":{
-        "object_path":".last_name",
+        "object_path":".name",
         "field_mapping":"text",
         "analyzer":"simple",
         "store":"true"
@@ -88,6 +90,12 @@ DEF1
 
 cat<<DEF2 > plays.json
 {
+    "uuid":{
+        "object_path":".uuid",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
+    },
     "title": {
         "object_path":".title",
         "field_mapping":"text",
@@ -104,18 +112,18 @@ cat<<DEF2 > plays.json
         "field_mapping":"text",
         "analyzer":"simple",
         "store":"true"
-    },
-    "uuid": {
-        "object_path":".uuid",
-        "field_mapping":"text",
-        "analyzer":"keyword",
-        "store":"true"
     }
 }
 DEF2
 
 cat<<DEF3 > datatypes.json
 {
+    "uuid":{
+        "object_path":".uuid",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
+    },
     "string": {
         "object_path":".string",
         "field_mapping":"text",
@@ -139,10 +147,14 @@ cat<<DEF3 > datatypes.json
         "analyzer":"simple",
         "store":"true"
     },
-    "uuid": {
-        "object_path":".uuid",
-        "field_mapping":"text",
-        "analyzer":"keyword",
+    "date": {
+        "object_path":".date",
+        "field_mapping":"datetime",
+        "store":"true"
+    },
+    "geo": {
+        "object_path":".geo",
+        "field_mapping":"geopoint",
         "store":"true"
     }
 }
@@ -160,11 +172,38 @@ $(dataset init datatypes)
 dataset -uuid import datatypes.csv
 dsindexer datatypes.json
 unset DATASET
+echo
 
-#echo "Sorting records by descending last_name"
-#dsfind -size 25 -sort="-last_name" -fields="last_name" "*"
-#echo "Sorting records by ascending last_name"
-#dsfind -size 25 -sort="last_name" -fields="last_name" "*"
-echo "Revsere sort by last name output as CSV file"
-dsfind -indexes="plays.bleve:characters.bleve" -size 100 -csv -fields="title:year:characters:name:email" -sort="title:name" "Jack ZBS"
-dsfind -indexes="datatypes.bleve" -size 100 -csv -fields="uuid:string:year:int:float" -sort="year" "*"
+echo "Sorting records by ascending name (simple analyzer)"
+echo
+dsfind -indexes="characters.bleve" -size 25 -sort="name" -csv -fields="name:email" "*"
+echo
+
+echo "Combining indexes query for \"Jack ZBS\" in characters.bleve and plays.bleve"
+echo
+dsfind -indexes="plays.bleve:characters.bleve" -size 100 -csv -fields="uuid:title:year:characters:name:email" -sort="title:name" "+Jack +ZBS"
+echo
+
+#
+# Demonstrate formats and interactions with query strings for datatype collection
+#
+export DATASET=datatypes
+echo "Listing datatypes indexes, sort by descending year"
+echo
+dsfind -csv -fields="uuid:string:year:int:float:date" -sort="-year" "*"
+echo
+
+echo "Listing datatypes indexes, sort by descending year, for range 1700 to 1902"
+echo
+dsfind -csv -fields="uuid:string:year:int:float:date" -sort="-year" "+year:>=1700 +year:<=1902"
+echo
+
+echo "Listing in date range 1700 to 1910, ascending dates"
+echo
+dsfind -csv -fields="uuid:string:year:int:float:date" -sort="+date" 'date:>="1700-01-01" date:<="1910-12-31"'
+echo
+
+echo "Looking for Caltech, Pasadena, CA, USA"
+echo
+dsfind -indexes="datatypes.bleve" -csv -fields="uuid:string:date:geo" -sort="geo" 'geo:34.0,-118.0'
+echo 

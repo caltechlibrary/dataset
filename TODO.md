@@ -6,7 +6,6 @@
 
 ## Next
 
-
 + [ ] add Bleve search support to dataset
     + [x] paging options (starting from/to, all records)
         + [x] add option to return all results
@@ -20,16 +19,16 @@
         + [x] CSV output
         + [x] id only list
     + [x] handle specific typed data like dates and geo cordinates in index definition
-        + look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
-        + thing about handling common date formatting
-        + look at GeoCoding and custom Sort in Bleve
-    + [ ] integrate batch ingest to speed things up
-    + [ ] generate a select list from search results
-    + [ ] add facet support
-    + [ ] add optional output template for _dsfind_
+        + [x] look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
+        + [x] think about handling common date formatting for indexing and query
+        + [ ] test GeoCoding and Sort in Bleve
 
 ## Someday, Maybe
 
++ [ ] Bleve search support for dataset
+    + [ ] integrate batch indexing to speed things up
+    + [ ] generate a select list from search results
+    + [ ] add facet support
 + [ ] implement a dsfind like as web service
     + add SparQL support to search
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
