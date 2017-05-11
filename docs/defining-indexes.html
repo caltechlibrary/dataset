@@ -125,53 +125,100 @@ like stop word removal, language settings.</p>
 <li>keyword - performs zero analysis, use this if you want to treat the value as is</li>
 <li>simple - performs minimal analysis, tokenizes using Unicode and lowercases the value</li>
 <li>standard - is like simple but adds English stop word removal</li>
-<li>detectlang - tries to determine the language then applies that languages analyzer applying its rules (e.g. if
+<li>web - tries to determine the language then applies that languages analyzer applying its rules (e.g. if
 the language detected was German then German stop words, analysis would be performed)</li>
-<li>lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, cjk)</li>
+<li>lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, fr)</li>
 </ul>
 
-<p>Language analyzers current supported (as of 2017-05-09) by are - Danish (da), Dutch (nl), English (en), Finnish (fi),
-French (fr), German (de), Hungarian (hu), Italian (it), Norwegian (no), Persian (fa), Portuguese (pt), Romanian (ro),
-Russian (ru), Sorani (ckb), Spanish (es), Swedish (sv), Thai (th), Turkish (tr).</p>
+<p>Language analyzers current supported are -</p>
+
+<ul>
+<li>Arabic (ar)</li>
+<li>Catalan (ca)</li>
+<li>Chokwe (cjk)</li>
+<li>Central Kurdish (ckb)</li>
+<li>German (de)</li>
+<li>English (en)</li>
+<li>Spanish (es)</li>
+<li>Persian (fa)</li>
+<li>French (fr)</li>
+<li>Hindi (hi)</li>
+<li>Italian (it)</li>
+<li>Portuguese (pt)</li>
+</ul>
 
 <p>Let&rsquo;s consider a JSON document that has a title and abstract field.</p>
 
 <pre><code class="language-json">    {
+        &quot;author&quot;: &quot;Doe, Jane&quot;,
         &quot;title&quot;: &quot;Some title here&quot;,
-        &quot;abstract&quot;: &quot;blah, blah, blah, hurmph, bip&quot;
+        &quot;abstract&quot;: &quot;blah, blah, blah, herrumph, blip, bleep&quot;
     }
 </code></pre>
 
-<p>We could index these with a definition like if we wanted to use the &ldquo;detectlang&rdquo; analyzer.</p>
+<p>The default language analyzer is English (en) but you can explicitly indicate that with this definition</p>
 
 <pre><code class="language-json">    {
+        &quot;author&quot;: {
+            &quot;object_path&quot;: &quot;.author&quot;,
+            &quot;field_mapping&quot;: &quot;text&quot;,
+            &quot;analyzer&quot;: &quot;simple&quot;
+        },
         &quot;title&quot;: {
             &quot;object_path&quot;: &quot;.title&quot;,
             &quot;field_mapping&quot;: &quot;text&quot;,
-            &quot;analyzers&quot;: &quot;detectlang&quot;
+            &quot;analyzers&quot;: &quot;standard&quot;
         },
         &quot;abstract&quot;: {
             &quot;object_path&quot;: &quot;.abstract&quot;,
             &quot;field_mapping&quot;: &quot;text&quot;,
-            &quot;analyzers&quot;: &quot;detectlang&quot;
+            &quot;analyzers&quot;: &quot;standard&quot;
         }
     }
 </code></pre>
 
-<p>If knew our documents were always in Danish we could try something like this definition&ndash;</p>
+<p>If your content was in Spanish you could use the Spanish language analyzer.</p>
 
 <pre><code class="language-json">    {
+        &quot;author&quot;: {
+            &quot;object_path&quot;: &quot;.author&quot;,
+            &quot;field_mapping&quot;: &quot;text&quot;,
+            &quot;analyzer&quot;: &quot;simple&quot;
+        },
         &quot;title&quot;: {
             &quot;object_path&quot;: &quot;.title&quot;,
             &quot;field_mapping&quot;: &quot;text&quot;,
             &quot;analyzers&quot;: &quot;lang&quot;,
-            &quot;lang&quot;: &quot;da&quot;
+            &quot;lang&quot;:&quot;es&quot;
         },
         &quot;abstract&quot;: {
             &quot;object_path&quot;: &quot;.abstract&quot;,
             &quot;field_mapping&quot;: &quot;text&quot;,
             &quot;analyzers&quot;: &quot;lang&quot;,
-            &quot;lang&quot;: &quot;da&quot;
+            &quot;lang&quot;:&quot;es&quot;
+        }
+    }
+</code></pre>
+
+<p>If knew our documents were in German we could try something like this definition&ndash;</p>
+
+<pre><code class="language-json">    {
+        &quot;author&quot;: {
+            &quot;object_path&quot;: &quot;.author&quot;,
+            &quot;field_mapping&quot;: &quot;text&quot;,
+            &quot;analyzer&quot;: &quot;simple&quot;
+        },
+        &quot;title&quot;: {
+            &quot;object_path&quot;: &quot;.title&quot;,
+            &quot;field_mapping&quot;: &quot;text&quot;,
+            &quot;analyzers&quot;: &quot;lang&quot;,
+            &quot;lang&quot;: &quot;de&quot;
+        },
+        &quot;abstract&quot;: {
+            &quot;object_path&quot;: &quot;.abstract&quot;,
+            &quot;field_mapping&quot;: &quot;text&quot;,
+            &quot;analyzers&quot;: &quot;lang&quot;,
+            &quot;lang&quot;: &quot;de&quot;
         }
     }
 </code></pre>
@@ -196,7 +243,8 @@ and like &ldquo;store&rdquo; it can be either true/false.</p>
 
 <h2>Include In all</h2>
 
-<p>&ldquo;include_in_all&rdquo;, not clear on what this does but it&rsquo;s configurable so <em>dsindexer</em> supports it.</p>
+<p>&ldquo;include_in_all&rdquo;, indicates to include any composite fields named &ldquo;_all&rdquo;, defaults to true, if you don&rsquo;t need this and
+would like to make the index slightly smaller then you could set this to false.</p>
 
 <h2>Date Format</h2>
 

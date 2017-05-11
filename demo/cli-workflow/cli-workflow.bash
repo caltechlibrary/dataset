@@ -7,20 +7,32 @@ cd $(dirname $0)
 #
 
 # Remove stale imported data
-if [ -f "characters-to-import.csv" ]; then
-    rm characters-to-import.csv
+if [ -f "characters.csv" ]; then
+    rm characters.csv
+fi
+if [ -f "plays.csv" ]; then
+    rm plays.csv
 fi
 # Remove stale dataset
 if [ -d "characters" ]; then
     rm -fR characters
 fi
+if [ -d "plays" ]; then
+    rm -fR plays
+fi
 # Remove stale indexe
 if [ -d "characters.bleve" ]; then
     rm -fR "characters.bleve" 
 fi
+if [ -d "plays.bleve" ]; then
+    rm -fR "plays.bleve"
+fi
 # Remove stale index definition
 if [ -f "characters.json" ]; then
     rm characters.json
+fi
+if [ -d "plays.json" ]; then
+    rm plays.json
 fi
 
 #
@@ -31,60 +43,78 @@ if [ -f "bin/dataset" ] && [ -f "bin/dsfind" ] && [ -f "bin/dsindexer" ]; then
 fi
 
 # Generate CSV test data
-cat<<FILE1 > characters.csv
-last_name,first_name,email
-sam,mojo,mojo.sam@zbs.example.org
-frieda,little,little.frieda@zbs.example.org
-flanders,Jack,captain.jack@zbs.example.org
-art,far seeing,old.far.seeing.art@zbs.example.org
-shoe,ruby,ruby2@zbs.example.org
-turu,t.j.,t.j.turu@zbs.example.org
-andover,rhodes,arhodes@another.example.org
-kapur,rodant,rodant.kapur@zbs.example.org
-Li,Ho,ho.li@scientists.example.org
-Lee,Ho,ho.lee@scientists.example.org
-Oh,Mark,mark.oh@scientists.example.org
-Oh,Ann,ann.oh@scientists.example.org
-or,and,andor@digital-circus.example.org
-an,and,andan@digital-circus.example.org
-Oi,And,andoi@digital-circus.example.org
-On,And,andon@digital-circus.example.org
-Of,And,andof@digital-circus.example.org
-the,off,offthe@digital-circus.example.org
-FILE1
+cat<<CSV1 > characters.csv
+name,email
+Jack Flanders,captain.jack@zbs.example.org
+Sam Mojo,mojo.sam@zbs.example.org
+Frieda Little,little.frieda@zbs.example.org
+Old Far-Seeing Art,old.far.seeing.art@zbs.example.org
+Doctor Mazoola,dr.mazzola@secret-labs.zbs.example.org
+Chief Wampum,chief.wampum@zbs.example.org
+Lord Henry Jowls,lord.henry@inverness.zbs.example.org
+CSV1
+
+cat<<CSV2 > plays.csv
+title,year,characters
+The Fourth Tower of Inverness,1972,"Jack Flanders, Little Fredia, Narrator, Dr. Mazoola, Chief Wampum, Old Far-Seeing Art, Lord Henry Jowls, Meanie Eenie, Lady Sarah Jowls, Whirlitzer"
+Moon Over Morocco,1974,"Jack Flanders, Kasbah Kelly, Mojo Sam, Little Flossic, Sunny Skies, Layla Oolupi, Queen Azora, Narrator, Storyteller Mustafa, Comtese Zazeenia, Abu, Taxi Driver, Marmaduke"
+The Ah-Ha Phenomenon,1977,"Jack Flanders, Sir Seymour Jowls, Cynthia, Hostess, Archivist, Narrator, Troll, Chief Wampum, Wizard"
+The Incredible Adventures of Jack Flanders,1978,"Jack Flanders, Little Frieda, Doctor Mazoola, Narrator, Captian Swallow, Marquis of Carambas, Mojo Sam, The Pirate Queen, Old Far-Seeing Art, Chief Wampum, Owl Eyes, Sorcerer, Waitress"
+CSV2
 
 # Generate the index mapping (we're calling it characters.json)
-cat<<FILE2 > characters.json
+cat<<DEF1 > characters.json
 {
-    "last_name":{
+    "name":{
         "object_path":".last_name",
         "field_mapping":"text",
         "analyzer":"simple",
         "store":"true"
     },
-    "first_name":{
-        "object_path":".first_name",
+    "email":{
+        "object_path":".email",
+        "field_mapping":"text",
+        "analyzer":"simple",
+        "store":"true"
+    }
+}
+DEF1
+
+cat<<DEF2 > plays.json
+{
+    "title": {
+        "object_path":".title",
         "field_mapping":"text",
         "analyzer":"standard",
         "store":"true"
     },
-    "email":{
-        "object_path":".email",
+    "year": {
+        "object_path":".year",
+        "field_mapping":"numeric",
+        "store":"true"
+    },
+    "characters": {
+        "object_path":".characters",
         "field_mapping":"text",
-        "analyzer":"keyword",
+        "analyzer":"simple",
         "store":"true"
     }
 }
-FILE2
+DEF2
 
 # Initialize an empty repository
 $(dataset init characters)
 # Load the data
 dataset -uuid import characters.csv
 dsindexer characters.json
+$(dataset init plays)
+dataset -uuid import plays.csv
+dsindexer plays.json
+unset DATASET
+
 #echo "Sorting records by descending last_name"
 #dsfind -size 25 -sort="-last_name" -fields="last_name" "*"
 #echo "Sorting records by ascending last_name"
 #dsfind -size 25 -sort="last_name" -fields="last_name" "*"
 echo "Revsere sort by last name output as CSV file"
-dsfind -size 25 -csv -fields="last_name:first_name:email" -sort="last_name:first_name" "*"
+dsfind -indexes="plays.bleve:characters.bleve" -size 100 -csv -fields="title:year:characters:name:email" -sort="title:name" "Jack ZBS"

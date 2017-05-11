@@ -98,18 +98,16 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
 	}
 
-	documentMapping := bleve.NewDocumentMapping()
-
 	indexMapping := bleve.NewIndexMapping()
-	indexMapping.AddDocumentMapping("document", documentMapping)
+	indexMapping.DefaultAnalyzer = simple.Name
 
 	//NOTE: convert definition into an appropriate index mappings and record data paths
 	cfg := map[string]string{}
 	var fieldMap *mapping.FieldMapping
 
-	for fName, defn := range definitions {
+	for fieldName, defn := range definitions {
 		if dPath, ok := defn["object_path"]; ok == true {
-			cfg[fName] = dPath
+			cfg[fieldName] = dPath
 		}
 		if fieldType, ok := defn["field_mapping"]; ok == true {
 			switch fieldType {
@@ -169,7 +167,7 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		if sVal, ok := defn["date_format"]; ok == true {
 			fieldMap.DateFormat = strings.TrimSpace(sVal)
 		}
-		documentMapping.AddFieldMapping(fieldMap)
+		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
 	}
 	return cfg, indexMapping, nil
 }

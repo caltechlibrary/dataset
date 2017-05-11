@@ -33,11 +33,7 @@ var (
 
 func main() {
 	// Define my index
-	documentMapping := bleve.NewDocumentMapping()
-	documentMapping.DefaultAnalyzer = ""
-
 	indexMapping := bleve.NewIndexMapping()
-	indexMapping.AddDocumentMapping("document", documentMapping)
 
 	lastNameMapping := bleve.NewTextFieldMapping()
 	lastNameMapping.Analyzer = simple.Name
@@ -48,9 +44,10 @@ func main() {
 	emailMapping := bleve.NewTextFieldMapping()
 	emailMapping.Analyzer = simple.Name
 
-	documentMapping.AddFieldMapping(lastNameMapping)
-	documentMapping.AddFieldMapping(firstNameMapping)
-	documentMapping.AddFieldMapping(emailMapping)
+	indexMapping.DefaultMapping.AddFieldMappingsAt("last_name", lastNameMapping)
+	indexMapping.DefaultMapping.AddFieldMappingsAt("first_name", firstNameMapping)
+	indexMapping.DefaultMapping.AddFieldMappingsAt("email", emailMapping)
+	indexMapping.DefaultAnalyzer = simple.Name
 
 	// Convert my JSON to array of maps
 	data := []map[string]string{}

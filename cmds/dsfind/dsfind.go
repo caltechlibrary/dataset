@@ -54,7 +54,7 @@ returning records that matched based on how the index was defined.`
 	jsonFormat     bool
 	csvFormat      bool
 	idsOnly        bool
-	size           string
+	size           int
 	from           int
 	explain        string // Note: will be converted to boolean so expecting 1,0,T,F,true,false, etc.
 )
@@ -78,7 +78,7 @@ func init() {
 	flag.BoolVar(&jsonFormat, "json", false, "format results as a JSON document")
 	flag.BoolVar(&csvFormat, "csv", false, "format results as a CSV document, used with fields option")
 	flag.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
-	flag.StringVar(&size, "size", "", "number of results returned per request or the word \"all\"")
+	flag.IntVar(&size, "size", 0, "number of results returned for request")
 	flag.IntVar(&from, "from", 0, "return the result starting with this result number")
 	flag.StringVar(&explain, "explain", "", "explain results in a verbose JSON document")
 }
@@ -138,10 +138,8 @@ func main() {
 	} else {
 		//options["result_fields"] = "*"
 	}
-	if size == "all" {
-		options["size"] = "10000000"
-	} else if size != "" {
-		options["size"] = size
+	if size > 0 {
+		options["size"] = fmt.Sprintf("%d", size)
 	}
 	if from != 0 {
 		options["from"] = fmt.Sprintf("%d", from)

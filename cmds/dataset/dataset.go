@@ -781,7 +781,7 @@ func importCSV(params ...string) (string, error) {
 			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
 		}
 		fieldName := ""
-		record := map[string]string{}
+		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
 			jsonFName = fmt.Sprintf("%s_%d", csvFName, lineNo)
 		} else if useUUID == true {
@@ -799,9 +799,16 @@ func importCSV(params ...string) (string, error) {
 					jsonFName = val
 				}
 			} else {
-				fieldName = fmt.Sprintf("col%d", i+1)
+				fieldName = fmt.Sprintf("col_%d", i+1)
 			}
-			record[fieldName] = val
+			//FIXME: Do we need to convert the value?
+			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+				record[fieldName] = i
+			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
+				record[fieldName] = f
+			} else {
+				record[fieldName] = val
+			}
 		}
 		err = collection.Create(jsonFName, record)
 		if err != nil {
