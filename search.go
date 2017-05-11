@@ -184,7 +184,18 @@ func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string
 	// Copy the dot path elements to new smaller map
 	for pName, dPath := range recordMap {
 		if val, err := dotpath.Eval(dPath, raw); err == nil {
-			idxMap[pName] = val
+			switch val.(type) {
+			case json.Number:
+				if i, err := (val.(json.Number)).Int64(); err == nil {
+					idxMap[pName] = i
+				} else if f, err := (val.(json.Number)).Float64(); err == nil {
+					idxMap[pName] = f
+				} else {
+					idxMap[pName] = (val.(json.Number)).String()
+				}
+			default:
+				idxMap[pName] = val
+			}
 		}
 	}
 	return idxMap, nil

@@ -62,6 +62,12 @@ The Ah-Ha Phenomenon,1977,"Jack Flanders, Sir Seymour Jowls, Cynthia, Hostess, A
 The Incredible Adventures of Jack Flanders,1978,"Jack Flanders, Little Frieda, Doctor Mazoola, Narrator, Captian Swallow, Marquis of Carambas, Mojo Sam, The Pirate Queen, Old Far-Seeing Art, Chief Wampum, Owl Eyes, Sorcerer, Waitress"
 CSV2
 
+cat<<CSV3 > datatypes.csv
+string,year,int,float
+Hello World,1999,12,12.4
+Good Bye World,2000,1,1.5
+CSV3
+
 # Generate the index mapping (we're calling it characters.json)
 cat<<DEF1 > characters.json
 {
@@ -98,9 +104,49 @@ cat<<DEF2 > plays.json
         "field_mapping":"text",
         "analyzer":"simple",
         "store":"true"
+    },
+    "uuid": {
+        "object_path":".uuid",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
     }
 }
 DEF2
+
+cat<<DEF3 > datatypes.json
+{
+    "string": {
+        "object_path":".string",
+        "field_mapping":"text",
+        "analyzer":"standard",
+        "store":"true"
+    },
+    "year": {
+        "object_path":".year",
+        "field_mapping":"numeric",
+        "store":"true"
+    },
+    "int": {
+        "object_path":".int",
+        "field_mapping":"numeric",
+        "analyzer":"simple",
+        "store":"true"
+    },
+    "float": {
+        "object_path":".float",
+        "field_mapping":"numeric",
+        "analyzer":"simple",
+        "store":"true"
+    },
+    "uuid": {
+        "object_path":".uuid",
+        "field_mapping":"text",
+        "analyzer":"keyword",
+        "store":"true"
+    }
+}
+DEF3
 
 # Initialize an empty repository
 $(dataset init characters)
@@ -110,6 +156,9 @@ dsindexer characters.json
 $(dataset init plays)
 dataset -uuid import plays.csv
 dsindexer plays.json
+$(dataset init datatypes)
+dataset -uuid import datatypes.csv
+dsindexer datatypes.json
 unset DATASET
 
 #echo "Sorting records by descending last_name"
@@ -118,3 +167,4 @@ unset DATASET
 #dsfind -size 25 -sort="last_name" -fields="last_name" "*"
 echo "Revsere sort by last name output as CSV file"
 dsfind -indexes="plays.bleve:characters.bleve" -size 100 -csv -fields="title:year:characters:name:email" -sort="title:name" "Jack ZBS"
+dsfind -indexes="datatypes.bleve" -size 100 -csv -fields="uuid:string:year:int:float" -sort="year" "*"
