@@ -5,12 +5,14 @@
 
 ## Next
 
-+ [ ] Add support for indexing arrays of objects (e.g. an array of authors in a catalog of articles, where author data is display_name and ORCID)
-+ [ ] Prototype what a web service might look like for a dataset collection (including search)
-    + [ ] evaluate including SparQL support
++ [ ] Add support for indexing arrays values and arrays of objects in index definitions (e.g. an array of authors in a catalog of articles, where author data is display_name and ORCID)
 
 ## Someday, Maybe
 
++ [ ] prototype what a web service might look like for a dataset collection (including search)
+    + [ ] template HTML results and search forms
+    + [ ] support static pages in site
+    + [ ] evaluate including SparQL support
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
     + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
         + this could be used to update a collection from one version of dataset to another
@@ -21,8 +23,6 @@
     + [ ] integrate batch indexing to speed things up
     + [ ] generate a select list from search results
     + [ ] add facet support
-+ [ ] implement a dsfind like as web service
-    + add SparQL support
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
