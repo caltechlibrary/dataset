@@ -119,6 +119,7 @@ func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping
 		return nil, nil, err
 	}
 
+	//FIXME: I need to be able to handle nested definitions
 	definitions := map[string]map[string]string{}
 	if err := json.Unmarshal(src, &definitions); err != nil {
 		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
@@ -131,6 +132,7 @@ func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping
 	var fieldMap *mapping.FieldMapping
 
 	for fieldName, defn := range definitions {
+		//FIXME: I need to be able to handle nested definitions
 		if fieldType, ok := defn["field_mapping"]; ok == true {
 			switch fieldType {
 			case "numeric":

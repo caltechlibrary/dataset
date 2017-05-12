@@ -5,7 +5,7 @@
 
 ## Next
 
-+ [ ] Add support for indexing arrays values and arrays of objects in index definitions (e.g. an array of authors in a catalog of articles, where author data is display_name and ORCID)
++ [ ] Add support for indexing arrays values and objects in index definitions
 
 ## Someday, Maybe
 
