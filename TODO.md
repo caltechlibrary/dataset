@@ -3,11 +3,17 @@
 
 ## Bugs
 
-
 ## Next
+
++ [ ] Add support for indexing arrays of objects (e.g. an array of authors in a catalog of articles, where author data is display_name and ORCID)
++ [ ] Prototype what a web service might look like for a dataset collection (including search)
+    + [ ] evaluate including SparQL support
 
 ## Someday, Maybe
 
++ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
+    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
+        + this could be used to update a collection from one version of dataset to another
 + [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
     + [ ] N35.0000,W118.0000 or S35.000,E118.000
     + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
@@ -17,9 +23,6 @@
     + [ ] add facet support
 + [ ] implement a dsfind like as web service
     + add SparQL support
-+ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
-    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
-        + this could be used to update a collection from one version of dataset to another
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
