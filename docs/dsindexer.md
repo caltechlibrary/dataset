@@ -3,27 +3,29 @@
 
 ## USAGE
 
-    dsindexer [OPTIONS] INDEX_MAPPING_FILE INDEX_NAME
+    dsindexer [OPTIONS] INDEX_DEFINITION [INDEX_NAME]
 
 ## SYNOPSIS
 
-_dsindexer_ is a command line tool for creating a Bleve index based on records in a dataset 
-collection. _dsindexer_ reads a JSON document for the index definition and uses that to
-configure the Bleve index built based on the dataset collection.
+dsindexer is a command line tool for creating a Bleve index based on records in a dataset 
+collection. dsindexer reads a JSON document for the index definition and uses that to
+configure the Bleve index built based on the dataset collection. If an index
+name is not provided then the index name will be the same as the definition file
+with the .json replaced by .bleve.
 
-A index definition file is JSON document where the index able record is defined
+A index definition is JSON document where the indexable record is defined
 along with dot paths into the JSON collection record being indexed.
 
 If your collection has records that look like
 
-```
+```json
     {"name":"Frieda Kahlo","occupation":"artist","id":"Frida_Kahlo","dob":"1907-07-06"}
 ```
 
-and your wanted an index of names and occupation then your index definition file would
+and your wanted an index of names and occupation then your index definition file could
 look like
 
-```
+```json
    {
 	   "name":{
 		   "object_path": ".name"
@@ -35,8 +37,8 @@ look like
 ```
 
 Based on this definition the "id" and "dob" fields would not be included in the index.
+OPTIONS
 
-## OPTIONS
 
 ```
 	-c	sets the collection to be used
@@ -61,4 +63,4 @@ This will build a Bleve index called "email-index" based on the index defined
 in "email-mapping.json".
 
 
-dsindexer v0.0.1-beta11
+dsindexer v0.0.2

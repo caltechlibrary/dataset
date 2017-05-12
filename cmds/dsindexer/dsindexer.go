@@ -36,14 +36,15 @@ look like
 
    {
 	   "name":{
-		   "object_path": ".name",
+		   "object_path": ".name"
 	   },
 	   "occupation": {
 		   "object_path":".occupation"
 	   }
    }
 
-Based on this definition the "id" and "dob" fields would not be included in the index.`
+Based on this definition the "id" and "dob" fields would not be included in the index.
+`
 
 	examples = `
 EXAMPLES
@@ -53,7 +54,8 @@ In the example the index will be created for a collection called "characters".
     %s -c characters email-mapping.json email-index
 
 This will build a Bleve index called "email-index" based on the index defined
-in "email-mapping.json".`
+in "email-mapping.json".
+`
 
 	// Standard Options
 	showHelp    bool

@@ -28,7 +28,8 @@ written to standard out and are paged. The query syntax supported is described
 at http://www.blevesearch.com/docs/Query-String-Query/.
 
 Options can be used to modify the type of indexes queried as well as how results
-are output.`
+are output.
+`
 
 	examples = `
 EXAMPLES
@@ -38,7 +39,8 @@ In the example the index will be created for a collection called "characters".
     %s -c characters "Jack Flanders"
 
 This would search the Bleve index named characters.bleve for the string "Jack Flanders" 
-returning records that matched based on how the index was defined.`
+returning records that matched based on how the index was defined.
+`
 
 	// Standard Options
 	showHelp    bool
