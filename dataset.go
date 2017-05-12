@@ -33,7 +33,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.1-beta10"
+	Version = "v0.0.2"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -137,6 +137,12 @@ type Collection struct {
 	// Store holds the storage system information (e.g. local disc, S3)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
+	// Indexes is a list of known Bleve indexes associated with the collection
+	Indexes []string `json:"-"`
+	// A list of JSON filenames defining the indexes
+	IndexDefs []string `json:"index_defs"`
+	// FullPath is the fully qualified path on disc or URI to S3 bucket
+	FullPath string `json:"-"`
 }
 
 // SelectList is an ordered set of keys
@@ -239,10 +245,11 @@ func Open(name string) (*Collection, error) {
 		return nil, err
 	}
 	c := new(Collection)
-	if err := json.Unmarshal(src, &c); err == nil {
-		c.Store = store
-		return c, err
+	if err := json.Unmarshal(src, &c); err != nil {
+		return nil, err
 	}
+	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
+	c.Name = collectionName
 	c.Store = store
 	return c, nil
 }
@@ -358,8 +365,9 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist", name)
 	}
-	p := path.Join(c.Name, bucketName)
-	src, err := c.Store.ReadFile(path.Join(p, name))
+	// NOTE: c.Name is the path to the collection not the name of JSON document
+	// we need to join c.Name + bucketName + name to get path do JSON document
+	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, name))
 	if err != nil {
 		return nil, err
 	}

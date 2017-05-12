@@ -34,3 +34,5 @@ dataset/*
 testdata/*
 bin/*
 demo/*
+*.swp
+*.bleve

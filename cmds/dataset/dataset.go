@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -165,6 +166,7 @@ Remove all attachments from "capt-jack"
 	collectionName string
 	skipHeaderRow  bool
 	useUUID        bool
+	showVerbose    bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -779,7 +781,7 @@ func importCSV(params ...string) (string, error) {
 			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
 		}
 		fieldName := ""
-		record := map[string]string{}
+		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
 			jsonFName = fmt.Sprintf("%s_%d", csvFName, lineNo)
 		} else if useUUID == true {
@@ -797,14 +799,27 @@ func importCSV(params ...string) (string, error) {
 					jsonFName = val
 				}
 			} else {
-				fieldName = fmt.Sprintf("col%d", i+1)
+				fieldName = fmt.Sprintf("col_%d", i+1)
 			}
-			record[fieldName] = val
+			//FIXME: Do we need to convert the value?
+			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+				record[fieldName] = i
+			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
+				record[fieldName] = f
+			} else {
+				record[fieldName] = val
+			}
 		}
 		err = collection.Create(jsonFName, record)
 		if err != nil {
 			return "", fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
 		}
+		if showVerbose == true && (lineNo%1000) == 0 {
+			log.Printf("%d rows processed", lineNo)
+		}
+	}
+	if showVerbose == true {
+		log.Printf("%d total rows processed", lineNo)
 	}
 	return "OK", nil
 }
@@ -825,6 +840,7 @@ func init() {
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
+	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 }
 
 func main() {

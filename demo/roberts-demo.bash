@@ -12,6 +12,13 @@ fi
 # Initialize the collection and set the DATASET environment variable
 echo "Initializing collection ${S3}"
 E=$(dataset init ${S3})
+if [ "$E" = "" ] || [ "${E:0:6}" != "export" ]; then
+    echo "Problem initializing ${S3}"
+    if [ "$E" != "" ]; then
+        echo "Error: ${E}"
+    fi
+    exit 1
+fi
 echo "Trying '${E}'"
 $E
 #export DATASET="${S3}"
