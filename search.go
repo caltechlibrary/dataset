@@ -49,7 +49,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/lang/hi"
 	"github.com/blevesearch/bleve/analysis/lang/it"
 	"github.com/blevesearch/bleve/analysis/lang/pt"
-	"github.com/blevesearch/bleve/geo"
+	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
@@ -109,7 +109,7 @@ func isTrueString(s string) bool {
 }
 
 // readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
-func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappingImpl, error) {
+func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping.IndexMappingImpl, error) {
 	var (
 		src []byte
 		err error
@@ -127,14 +127,10 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 	indexMapping := bleve.NewIndexMapping()
 	indexMapping.DefaultAnalyzer = simple.Name
 
-	//NOTE: convert definition into an appropriate index mappings and record data paths
-	cfg := map[string]string{}
+	//NOTE: convert definition into an appropriate index mappings, analyzers and such
 	var fieldMap *mapping.FieldMapping
 
 	for fieldName, defn := range definitions {
-		if dPath, ok := defn["object_path"]; ok == true {
-			cfg[fieldName] = dPath
-		}
 		if fieldType, ok := defn["field_mapping"]; ok == true {
 			switch fieldType {
 			case "numeric":
@@ -199,33 +195,30 @@ func readIndexDefinition(mapName string) (map[string]string, *mapping.IndexMappi
 		}
 		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
 	}
-	return cfg, indexMapping, nil
+	return definitions, indexMapping, nil
 }
 
-// geoPointParse takes a string in latitude,longitude decimal format (e.g. 34.1358302,-118.127694 for Caltech, Pasadena, California)
-// and converts them to a Morton hash used by Bleve
-func geoPointParse(s string) (uint64, error) {
-	if strings.Contains(s, ",") == false {
-		return 0, fmt.Errorf("Missing coordinate pair in %q", s)
-	}
-	latlon := strings.Split(s, ",")
-	if len(latlon) != 2 {
-		return 0, fmt.Errorf("Wrong number for pair in %q", s)
-	}
-	lat, err := strconv.ParseFloat(latlon[0], 64)
+// stringToGeoPoint takes a lat,lng string and converts it into a map[string]float64
+func stringToGeoPoint(s string) (map[string]float64, bool) {
+	ptString := strings.Split(s, ",")
+	lat, err := strconv.ParseFloat(ptString[0], 64)
 	if err != nil {
-		return 0, fmt.Errorf("Can't parse latitude in %q, %s", s, err)
+		return nil, false
 	}
-	lon, err := strconv.ParseFloat(latlon[1], 64)
+	lng, err := strconv.ParseFloat(ptString[1], 64)
 	if err != nil {
-		return 0, fmt.Errorf("Can't parse longitude in %q, %s", s, err)
+		return nil, false
 	}
-	return geo.MortonHash(lon, lat), nil
+	pt := map[string]float64{
+		"lat": lat,
+		"lng": lng,
+	}
+	return pt, true
 }
 
-// recordMapToIndexRecord takes the definition map, Unmarshals the JSON record and
-// renders a new map[string]string that is ready to be indexed.
-func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string]interface{}, error) {
+// recordMapToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
+// renders a new map[string]interface{} ready to be indexed.
+func recordMapToIndexRecord(defnMap map[string]map[string]string, src []byte) (map[string]interface{}, error) {
 	idxMap := map[string]interface{}{}
 
 	raw, err := dotpath.JSONDecode(src)
@@ -233,7 +226,9 @@ func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string
 		return nil, err
 	}
 	// Copy the dot path elements to new smaller map
-	for pName, dPath := range recordMap {
+	for pName, _ := range defnMap {
+		dPath, _ := defnMap[pName]["object_path"]
+		dType, _ := defnMap[pName]["field_mapping"]
 		if val, err := dotpath.Eval(dPath, raw); err == nil {
 			switch val.(type) {
 			case json.Number:
@@ -244,12 +239,16 @@ func recordMapToIndexRecord(recordMap map[string]string, src []byte) (map[string
 				} else {
 					idxMap[pName] = (val.(json.Number)).String()
 				}
-			default:
-				if pt, err := geoPointParse(val.(string)); err == nil {
-					idxMap[pName] = pt
+			case string:
+				if dType == "geopoint" {
+					if pt, ok := stringToGeoPoint(val.(string)); ok == true {
+						idxMap[pName] = pt
+					}
 				} else {
-					idxMap[pName] = val
+					idxMap[pName] = val.(string)
 				}
+			default:
+				idxMap[pName] = val
 			}
 		}
 	}

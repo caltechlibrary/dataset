@@ -8,51 +8,43 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
 	// Bleve imports
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzer/standard"
-	"github.com/blevesearch/bleve/geo"
 )
-
-// geoPointParse takes a string in latitude,longitude decimal format (e.g. 34.1358302,-118.127694 for Caltech, Pasadena, California)
-// and converts them to a Morton hash used by Bleve
-func geoPointParse(s string) (uint64, error) {
-	if strings.Contains(s, ",") == false {
-		return 0, fmt.Errorf("Missing coordinate pair in %q", s)
-	}
-	latlon := strings.Split(s, ",")
-	if len(latlon) != 2 {
-		return 0, fmt.Errorf("Wrong number for pair in %q", s)
-	}
-	lat, err := strconv.ParseFloat(latlon[0], 64)
-	if err != nil {
-		return 0, fmt.Errorf("Can't parse latitude in %q, %s", s, err)
-	}
-	lon, err := strconv.ParseFloat(latlon[1], 64)
-	if err != nil {
-		return 0, fmt.Errorf("Can't parse longitude in %q, %s", s, err)
-	}
-	return geo.MortonHash(lon, lat), nil
-}
 
 func main() {
 	var (
 		src = []byte(`
 [
 	{
+		"place":"Caltech, Pasadena, California",
+		"loc": {
+			"lat": 34.1377,
+			"lng": -118.1253
+		}
+	},
+	{
 		"place":"Colonia, Yap, Micronesia",
-		"loc":"9.5165712,138.1190079"
+		"loc":{
+			"lng": -138.1190079,
+			"lat": 9.5165712
+		}
 	},
 	{
 		"place":"Ulithi, Yap, Micronesia",
-		"loc":"10.028822,139.764123"
+		"loc": {
+			"lng": -139.764123,
+			"lat": 10.028822
+		}
 	},
 	{
 		"place":"Pechilemu,Chile",
-		"loc":"-34.3972709,-72.0263149"
+		"loc":{
+			"lat": -34.3972709,
+			"lng": -72.0263149
+		}
 	}
 ]
 `)
@@ -86,17 +78,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't create demo.bleve, %s", err)
 	}
-	for key, val := range data {
-		place, _ := val["place"].(string)
-		loc, _ := val["loc"].(string)
-		geoHash, err := geoPointParse(loc)
-		if err != nil {
-			log.Fatal(err)
-		}
 
+	// Index out data
+	var (
+		loc   interface{}
+		place string
+	)
+	for key, val := range data {
+		// Note: We want place to be a string for indexing purposes
+		place, _ = val["place"].(string)
+		// Note: we accept the map[string]interface{} for location (with keys lat, lng)  as is.
+		loc, _ = val["loc"]
 		idx.Index(fmt.Sprintf("%d", key), &map[string]interface{}{
 			"place": place,
-			"loc":   geoHash,
+			"loc":   loc,
 		})
 	}
 	idx.Close()
@@ -107,7 +102,7 @@ func main() {
 		log.Fatalf("can't open demo.bleve, %s", err)
 	}
 
-	for _, s := range []string{"place:Ulithi", "place:Colonia", "place:Pechilemu"} {
+	for _, s := range []string{"place:Ulithi", "place:Colonia", "place:Pechilemu", "*"} {
 		qry := bleve.NewQueryStringQuery(s)
 		search := bleve.NewSearchRequestOptions(qry, 20, 0, false)
 
