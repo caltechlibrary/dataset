@@ -6,31 +6,17 @@
 
 ## Next
 
-+ [ ] add Bleve search support to dataset
-    + [x] paging options (starting from/to, all records)
-        + [x] add option to return all results
-    + [x] default search would return IDS
-    + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
-    + [x] search results should be able to merge multiple indexes
-    + [x] sortable result options (e.g. sort by ascending,descending fields)
-    + [x] output should support returning only ids 
-    + [x] alternate output formats (e.g. JSON arrays, select lists, CSV exports)
-        + [x] JSON output
-        + [x] CSV output
-        + [x] id only list
-    + [x] handle specific typed data like dates and geo cordinates in index definition
-        + [x] look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
-        + [x] think about handling common date formatting for indexing and query
-        + [ ] test GeoCoding and Sort in Bleve
-
 ## Someday, Maybe
 
++ [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
+    + [ ] N35.0000,W118.0000 or S35.000,E118.000
+    + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
 + [ ] Bleve search support for dataset
     + [ ] integrate batch indexing to speed things up
     + [ ] generate a select list from search results
     + [ ] add facet support
 + [ ] implement a dsfind like as web service
-    + add SparQL support to search
+    + add SparQL support
 + [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
     + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
         + this could be used to update a collection from one version of dataset to another
@@ -58,6 +44,23 @@
 
 
 ## Completed
+
++ [x] add Bleve search support to dataset
+    + [x] paging options (starting from/to, all records)
+        + [x] add option to return all results
+    + [x] default search would return IDS
+    + [x] detailed indexing should be configurable including which fields on a list of dotpaths and options
+    + [x] search results should be able to merge multiple indexes
+    + [x] sortable result options (e.g. sort by ascending,descending fields)
+    + [x] output should support returning only ids 
+    + [x] alternate output formats (e.g. JSON arrays, select lists, CSV exports)
+        + [x] JSON output
+        + [x] CSV output
+        + [x] id only list
+    + [x] handle specific typed data like dates and geo cordinates in index definition
+        + [x] look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
+        + [x] think about handling common date formatting for indexing and query
+        + [x] test GeoCoding and Sort in Bleve
 
 + [x] add a _import_ verb to dataset where a single file can be rendered as many dataset records (e.g. spreadsheet rows as JSON objects)
     + syntax like `dataset import csv_filename [column number to use for key value]`
