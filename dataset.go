@@ -19,16 +19,23 @@
 package dataset
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/url"
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/storage"
+
+	// 3rd Party packages
+	"github.com/google/uuid"
 )
 
 const (
@@ -697,4 +704,71 @@ func (s *SelectList) Reverse() {
 // Reset a select list to an empty state (file still exists on disc)
 func (s *SelectList) Reset() {
 	s.Keys = []string{}
+}
+
+// ImportCSV takes a reader and iterates over the rows and imports them as
+// a JSON records into dataset.
+func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
+	var (
+		fieldNames []string
+		jsonFName  string
+		err        error
+	)
+	r := csv.NewReader(buf)
+	lineNo := 0
+	if skipHeaderRow == true {
+		lineNo++
+		fieldNames, err = r.Read()
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
+		}
+	}
+	for {
+		lineNo++
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
+		}
+		fieldName := ""
+		record := map[string]interface{}{}
+		if idCol < 0 && useUUID == false {
+			jsonFName = fmt.Sprintf("%d", lineNo)
+		} else if useUUID == true {
+			jsonFName = uuid.New().String()
+			if _, ok := record["uuid"]; ok == true {
+				record["_uuid"] = jsonFName
+			} else {
+				record["uuid"] = jsonFName
+			}
+		}
+		for i, val := range row {
+			if i < len(fieldNames) {
+				fieldName = fieldNames[i]
+				if idCol == i {
+					jsonFName = val
+				}
+			} else {
+				fieldName = fmt.Sprintf("col_%d", i+1)
+			}
+			//Note: We need to convert the value
+			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+				record[fieldName] = i
+			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
+				record[fieldName] = f
+			} else {
+				record[fieldName] = val
+			}
+		}
+		err = c.Create(jsonFName, record)
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		}
+		if verboseLog == true && (lineNo%1000) == 0 {
+			log.Printf("%d rows processed", lineNo)
+		}
+	}
+	return lineNo, nil
 }

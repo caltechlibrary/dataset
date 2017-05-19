@@ -762,61 +762,12 @@ func importCSV(params ...string) (string, error) {
 
 	jsonFName := ""
 	fieldNames := []string{}
-	r := csv.NewReader(fp)
-	lineNo := 0
-	if skipHeaderRow == true {
-		lineNo++
-		fieldNames, err = r.Read()
-		if err != nil {
-			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
-		}
-	}
-	for {
-		lineNo++
-		row, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
-		}
-		fieldName := ""
-		record := map[string]interface{}{}
-		if idCol < 0 && useUUID == false {
-			jsonFName = fmt.Sprintf("%s_%d", csvFName, lineNo)
-		} else if useUUID == true {
-			jsonFName = uuid.New().String()
-			if _, ok := record["uuid"]; ok == true {
-				record["_uuid"] = jsonFName
-			} else {
-				record["uuid"] = jsonFName
-			}
-		}
-		for i, val := range row {
-			if i < len(fieldNames) {
-				fieldName = fieldNames[i]
-				if idCol == i {
-					jsonFName = val
-				}
-			} else {
-				fieldName = fmt.Sprintf("col_%d", i+1)
-			}
-			//FIXME: Do we need to convert the value?
-			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
-				record[fieldName] = i
-			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
-				record[fieldName] = f
-			} else {
-				record[fieldName] = val
-			}
-		}
-		err = collection.Create(jsonFName, record)
-		if err != nil {
-			return "", fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
-		}
-		if showVerbose == true && (lineNo%1000) == 0 {
-			log.Printf("%d rows processed", lineNo)
-		}
+	var (
+		lineNo int
+		err    error
+	)
+	if linesNo, err = ImportCSV(fp, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+		return "", fmt.Errorf("Can't import CSV, %s", err)
 	}
 	if showVerbose == true {
 		log.Printf("%d total rows processed", lineNo)

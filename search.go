@@ -265,6 +265,7 @@ func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byt
 					idxMap[pName] = val.(string)
 				}
 			default:
+				fmt.Printf("DEBUG dotpath %s -> %T %+v\n", dPath, val, val)
 				idxMap[pName] = val
 			}
 		}

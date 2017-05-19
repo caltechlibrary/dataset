@@ -315,13 +315,13 @@ index can reach into
            "object_path": ".title"
        },
        "authors_display_name": { 
-            "object_path": ".authors[].display_name"
+            "object_path": ".authors[:].display_name"
        },
        "authors_sort_name": {
-            "object_path": ".authors[].sort_name"
+            "object_path": ".authors[:].sort_name"
        },
        "authors_orcid": {
-            "object_path": ".authors[].orcid"
+            "object_path": ".authors[:].orcid"
        }
     }
 ```
@@ -334,14 +334,10 @@ it with an anonymous object but the dotpath would only contain a single period "
 Here's an example where what an array of years might look like as a definition
 
 ```json
-       "years": [
-            {
-               "year": {
-                    "object_path": ".",
-                    "field_mapping": "numeric"
-               }
-            }
-       ]
+       "years": {
+          "object_path": ".years[:]",
+          "field_mapping": "numeric"
+       }
     }
 ```
 
