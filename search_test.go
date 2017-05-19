@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -24,7 +25,62 @@ var (
 415750,0007-6597,,BCD : business conditions digest,
 `
 	cName = "testdata/search-test"
+	mName = "testdata/search-test.json"
 	iName = "testdata/search-test.bleve"
+
+	defn1 = []byte(`{
+	"tind_id": {
+		"object_path": ".tind",
+		"field_mapping": "numeric",
+		"store": true
+	},
+	"issn": {
+		"object_path": ".issn",
+		"field_mapping": "keyword",
+		"store": true
+	},
+	"oclc": {
+		"object_path": ".oclc",
+		"field_mapping": "keyword",
+		"store": true
+	},
+	"title": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "lang",
+		"lang":"en",
+		"store": true
+	},
+	"title_simple": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "simple",
+		"store": true
+	},
+	"title_standard": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "standard",
+		"store": true
+	},
+	"title_keyword": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "keyword",
+		"store": true
+	},
+	"title_web": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "web",
+		"store": true
+	},
+	"year": {
+		"object_path": ".date",
+		"field_mapping": "numeric",
+		"store": true
+	}
+}`)
 )
 
 func TestSearch(t *testing.T) {
@@ -40,7 +96,7 @@ func TestSearch(t *testing.T) {
 	}
 	defer c.Close()
 
-	lines, err := c.ImportCSV(strings.NewReader(csvtable), false, 0, false, false)
+	lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
 	if err != nil {
 		t.Errorf("Error import csvtable, %s", err)
 		t.FailNow()
@@ -50,7 +106,14 @@ func TestSearch(t *testing.T) {
 		t.FailNow()
 	}
 	// Build an index to test with
-	t.Errorf("building test index not implemented")
+	if err := ioutil.WriteFile(mName, defn1, 0666); err != nil {
+		t.Errorf("Can't write %q, %s", mName, err)
+		t.FailNow()
+	}
+	if err := c.Indexer(iName, mName); err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
 	// Run queries and test results
 	t.Errorf("run tests of queries and results, not implemented")
 }

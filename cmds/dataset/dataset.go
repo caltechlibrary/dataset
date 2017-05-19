@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -760,17 +758,10 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	jsonFName := ""
-	fieldNames := []string{}
-	var (
-		lineNo int
-		err    error
-	)
-	if linesNo, err = ImportCSV(fp, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't import CSV, %s", err)
-	}
-	if showVerbose == true {
-		log.Printf("%d total rows processed", lineNo)
+	} else if showVerbose == true {
+		log.Printf("%d total rows processed", linesNo)
 	}
 	return "OK", nil
 }
