@@ -98,18 +98,33 @@ var (
 	}
 )
 
-// isTrueString normlize string values to true if they are "true", "t", "1" case insensitive
+// isTrueValue normlize if bool, return bool, if an int/int64 return true for 1,
+// string values to true if they are "true", "t", "1" case insensitive
 // otherwise it returns false
-func isTrueString(s string) bool {
-	v, err := strconv.ParseBool(s)
-	if err != nil {
-		return false
+func isTrueValue(val interface{}) bool {
+	switch val.(type) {
+	case int:
+		if val.(int) > 0 {
+			return true
+		}
+	case int64:
+		if val.(int64) > 0 {
+			return true
+		}
+	case bool:
+		return val.(bool)
+	case string:
+		v, err := strconv.ParseBool(val.(string))
+		if err != nil {
+			return false
+		}
+		return v
 	}
-	return v
+	return false
 }
 
 // readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
-func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping.IndexMappingImpl, error) {
+func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *mapping.IndexMappingImpl, error) {
 	var (
 		src []byte
 		err error
@@ -120,7 +135,7 @@ func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping
 	}
 
 	//FIXME: I need to be able to handle nested definitions
-	definitions := map[string]map[string]string{}
+	definitions := map[string]map[string]interface{}{}
 	if err := json.Unmarshal(src, &definitions); err != nil {
 		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
 	}
@@ -134,7 +149,7 @@ func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping
 	for fieldName, defn := range definitions {
 		//FIXME: I need to be able to handle nested definitions
 		if fieldType, ok := defn["field_mapping"]; ok == true {
-			switch fieldType {
+			switch fieldType.(string) {
 			case "numeric":
 				fieldMap = bleve.NewNumericFieldMapping()
 			case "datetime":
@@ -150,14 +165,14 @@ func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping
 			fieldMap = bleve.NewTextFieldMapping()
 		}
 		if sVal, ok := defn["store"]; ok == true {
-			if isTrueString(sVal) == true {
+			if isTrueValue(sVal) == true {
 				fieldMap.Store = true
 			} else {
 				fieldMap.Store = false
 			}
 		}
 		if analyzerType, ok := defn["analyzer"]; ok == true {
-			switch analyzerType {
+			switch analyzerType.(string) {
 			case "keyword":
 				fieldMap.Analyzer = keyword.Name
 			case "simple":
@@ -168,31 +183,31 @@ func readIndexDefinition(mapName string) (map[string]map[string]string, *mapping
 				fieldMap.Analyzer = web.Name
 			case "lang":
 				if langCode, ok := defn["lang"]; ok == true {
-					if langAnalyzer, ok := languagesSupported[langCode]; ok == true {
+					if langAnalyzer, ok := languagesSupported[langCode.(string)]; ok == true {
 						fieldMap.Analyzer = langAnalyzer
 					}
 				}
 			}
 		}
 		if sVal, ok := defn["include_in_all"]; ok == true {
-			if isTrueString(sVal) == true {
+			if isTrueValue(sVal) == true {
 				fieldMap.IncludeInAll = true
 			} else {
 				fieldMap.IncludeInAll = false
 			}
 		}
 		if sVal, ok := defn["include_term_vectors"]; ok == true {
-			if isTrueString(sVal) == true {
+			if isTrueValue(sVal) == true {
 				fieldMap.IncludeTermVectors = true
 			} else {
 				fieldMap.IncludeTermVectors = false
 			}
 		}
 		if sVal, ok := defn["date_format"]; ok == true {
-			if fmt, ok := supportedNamedTimeFormats[strings.ToLower(strings.TrimSpace(sVal))]; ok == true {
+			if fmt, ok := supportedNamedTimeFormats[strings.ToLower(strings.TrimSpace(sVal.(string)))]; ok == true {
 				fieldMap.DateFormat = fmt
 			} else {
-				fieldMap.DateFormat = strings.TrimSpace(sVal)
+				fieldMap.DateFormat = strings.TrimSpace(sVal.(string))
 			}
 		}
 		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
@@ -220,7 +235,7 @@ func stringToGeoPoint(s string) (map[string]float64, bool) {
 
 // recordMapToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
 // renders a new map[string]interface{} ready to be indexed.
-func recordMapToIndexRecord(defnMap map[string]map[string]string, src []byte) (map[string]interface{}, error) {
+func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byte) (map[string]interface{}, error) {
 	idxMap := map[string]interface{}{}
 
 	raw, err := dotpath.JSONDecode(src)
@@ -229,8 +244,8 @@ func recordMapToIndexRecord(defnMap map[string]map[string]string, src []byte) (m
 	}
 	// Copy the dot path elements to new smaller map
 	for pName, _ := range defnMap {
-		dPath, _ := defnMap[pName]["object_path"]
-		dType, _ := defnMap[pName]["field_mapping"]
+		dPath, _ := defnMap[pName]["object_path"].(string)
+		dType, _ := defnMap[pName]["field_mapping"].(string)
 		if val, err := dotpath.Eval(dPath, raw); err == nil {
 			switch val.(type) {
 			case json.Number:
@@ -351,7 +366,7 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 
 	// Handle various options modifying search
 	if sVal, ok := options["highlight"]; ok == true {
-		if isTrueString(sVal) == true {
+		if isTrueValue(sVal) == true {
 			if sHighlighter, ok := options["highlighter"]; ok == true {
 				switch strings.TrimSpace(strings.ToLower(sHighlighter)) {
 				case "ansi":

@@ -314,19 +314,15 @@ index can reach into
        "title": {
            "object_path": ".title"
        },
-       "authors": [
-            {
-               "display_name": {
-                    "object_path": ".display_name"
-               },
-               "sort_name": {
-                    "object_path": ".sort_name"
-               },
-               "orcid": {
-                    "object_path": ".orcid"
-               }
-           }
-       ]
+       "authors_display_name": { 
+            "object_path": ".authors[].display_name"
+       },
+       "authors_sort_name": {
+            "object_path": ".authors[].sort_name"
+       },
+       "authors_orcid": {
+            "object_path": ".authors[].orcid"
+       }
     }
 ```
 
