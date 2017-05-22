@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -83,7 +84,7 @@ var (
 }`)
 )
 
-func TestSearch(t *testing.T) {
+func TestIndexing(t *testing.T) {
 	// Remove stale collection and index
 	os.RemoveAll(cName)
 	os.RemoveAll(iName)
@@ -94,7 +95,6 @@ func TestSearch(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	defer c.Close()
 
 	lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
 	if err != nil {
@@ -114,6 +114,26 @@ func TestSearch(t *testing.T) {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}
+	if err := c.Close(); err != nil {
+		t.Errorf("Can't close index, %s", err)
+		t.FailNow()
+	}
+}
+
+func TestSearch(t *testing.T) {
 	// Run queries and test results
-	t.Errorf("run tests of queries and results, not implemented")
+	opts := map[string]string{
+		"result_fields": "*",
+	}
+
+	results, err := Find(os.Stderr, []string{iName}, []string{"600622"}, opts)
+	if err != nil {
+		t.Errorf("Find returned an error, %s", err)
+		t.FailNow()
+	}
+	src, _ := json.Marshal(results)
+	if len(results.Hits) != 1 {
+		t.Errorf("unexpected results -> %s", src)
+		t.FailNow()
+	}
 }

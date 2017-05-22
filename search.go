@@ -294,6 +294,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	if err != nil {
 		return err
 	}
+	defer idx.Close()
 
 	// Get all the keys and index each record
 	keys := c.Keys()
@@ -337,7 +338,6 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 			idxAlias.Add(idx)
 		}
 	}
-
 	if sVal, ok := options["from"]; ok == true {
 		from, err = strconv.Atoi(sVal)
 		if err != nil {
