@@ -1,13 +1,10 @@
 package main
 
 import (
-	"encoding/csv"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
 	// CaltechLibrary Packages
@@ -138,7 +135,7 @@ func main() {
 	if resultFields != "" {
 		options["result_fields"] = strings.TrimSpace(resultFields)
 	} else {
-		//options["result_fields"] = "*"
+		options["result_fields"] = "*"
 	}
 	if size > 0 {
 		options["size"] = fmt.Sprintf("%d", size)
@@ -147,7 +144,14 @@ func main() {
 		options["from"] = fmt.Sprintf("%d", from)
 	}
 
-	results, err := dataset.Find(os.Stdout, strings.Split(indexNames, ":"), args, options)
+	idxAlias, err := dataset.OpenIndexes(strings.Split(indexNames, ":"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", indexNames, err)
+		os.Exit(1)
+	}
+	defer idxAlias.Close()
+
+	results, err := dataset.Find(os.Stdout, idxAlias, args, options)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", indexNames, err)
 		os.Exit(1)
@@ -156,72 +160,26 @@ func main() {
 	//
 	// Handle results formatting choices
 	//
-
-	if jsonFormat == true {
-		src, err := json.Marshal(results)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "JSON conversion error, %s\n", err)
+	switch {
+	case jsonFormat == true:
+		if err := dataset.JSONFormatter(os.Stdout, results); err != nil {
+			fmt.Fprintf(os.Stderr, "JSON formatting error, %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stdout, "%s\n", src)
-		os.Exit(0)
-	}
-
-	if csvFormat == true {
+	case csvFormat == true:
 		if resultFields == "" {
 			fmt.Fprintf(os.Stderr, "-csv must be used with -fields option\n")
 			os.Exit(1)
 		}
-		// Note: we need to provide the fieldnames that will be come columns
-		w := csv.NewWriter(os.Stdout)
-
-		// write a header row
-		colNames := strings.Split(resultFields, ":")
-		if err := w.Write(colNames); err != nil {
+		if err := dataset.CSVFormatter(os.Stdout, results, strings.Split(resultFields, ":")); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-		}
-		for _, hit := range results.Hits {
-			row := []string{}
-			for _, col := range colNames {
-				if val, ok := hit.Fields[col]; ok == true {
-					switch val := val.(type) {
-					case int:
-						row = append(row, strconv.FormatInt(int64(val), 10))
-					case uint:
-						row = append(row, strconv.FormatUint(uint64(val), 10))
-					case int64:
-						row = append(row, strconv.FormatInt(val, 10))
-					case uint64:
-						row = append(row, strconv.FormatUint(val, 10))
-					case float64:
-						row = append(row, strconv.FormatFloat(val, 'G', -1, 64))
-					case string:
-						row = append(row, strings.TrimSpace(val))
-					default:
-						row = append(row, strings.TrimSpace(fmt.Sprintf("%s", val)))
-					}
-				} else {
-					row = append(row, "")
-				}
-			}
-			if err := w.Write(row); err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-			}
-		}
-		w.Flush()
-		if err := w.Error(); err != nil {
-			fmt.Fprint(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
-		os.Exit(0)
-	}
-
-	if idsOnly == true {
+	case idsOnly == true:
 		for _, hit := range results.Hits {
 			fmt.Fprintf(os.Stdout, "%s\n", hit.ID)
 		}
-		os.Exit(0)
+	default:
+		fmt.Fprintf(os.Stdout, "%s\n", results)
 	}
-
-	fmt.Fprintf(os.Stdout, "%s\n", results)
 }

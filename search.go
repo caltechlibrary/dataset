@@ -316,16 +316,10 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	return nil
 }
 
-// Find takes a Bleve index name and query string, opens the index, and writes the
-// results to the os.File provided. Function returns an error if their are problems.
-func Find(out io.Writer, indexNames []string, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
-	// Opening all our indexes
+// OpenIndexes opens a list of index names and returns an index alias and error
+func OpenIndexes(indexNames []string) (bleve.IndexAlias, error) {
 	var (
 		idxAlias bleve.IndexAlias
-		size     int
-		from     int
-		explain  bool
-		err      error
 	)
 	for i, idxName := range indexNames {
 		idx, err := bleve.Open(idxName)
@@ -338,6 +332,19 @@ func Find(out io.Writer, indexNames []string, queryStrings []string, options map
 			idxAlias.Add(idx)
 		}
 	}
+	return idxAlias, nil
+}
+
+// Find takes a Bleve index name and query string, opens the index, and writes the
+// results to the os.File provided. Function returns an error if their are problems.
+func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
+	// Opening all our indexes
+	var (
+		size    int
+		from    int
+		explain bool
+		err     error
+	)
 	if sVal, ok := options["from"]; ok == true {
 		from, err = strconv.Atoi(sVal)
 		if err != nil {
