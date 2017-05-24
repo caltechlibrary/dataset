@@ -7,10 +7,15 @@ VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\"  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-PROJECT_LIST = dataset
+PROJECT_LIST = dataset 
 
 build: $(PROJECT_LIST)
 
+assets.go: 
+	pkgassets -p dataset -o assets.go SiteDefaults defaults
+
+dataset.go: assets.go
+	
 dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 
 bin/dataset: dataset.go attachments.go cmds/dataset/dataset.go
@@ -38,6 +43,7 @@ test:
 	go test
 
 format:
+	gofmt -w assets.go
 	gofmt -w dataset.go
 	gofmt -w dataset_test.go
 	gofmt -w attachments.go
@@ -50,6 +56,7 @@ format:
 	gofmt -w cmds/dsfind/dsfind.go
 
 lint:
+	golint assets.go
 	golint dataset.go
 	golint dataset_test.go
 	golint attachments.go

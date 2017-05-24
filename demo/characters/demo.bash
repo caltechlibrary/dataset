@@ -1,5 +1,7 @@
 #!/bin/bash
-
+if [ -d characters ]; then
+    rm -fR characters
+fi
 $(dataset init characters)
 dataset -uuid import characters.csv
 dsindexer characters.json

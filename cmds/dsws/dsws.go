@@ -20,9 +20,9 @@ package main
 
 import (
 	"bytes"
+	"encoding/json" // DEBUG
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -40,7 +40,7 @@ import (
 
 // Flag options
 var (
-	usage = `USAGE: %s [OPTIONS] [DOCROOT]`
+	usage = `USAGE: %s [OPTIONS] DOC_ROOT BLEVE_INDEXES`
 
 	description = `
 SYNOPSIS
@@ -54,12 +54,10 @@ CONFIGURATION
 %s can be configurated through environment settings. The following are
 supported.
 
-+ DATASET_URL  - sets the URL to listen on (e.g. http://localhost:8000)
-+ DATASET_DOCROOT - sets the document path to use
-+ DATASET_SSL_KEY - the path to the SSL key if using https
-+ DATASET_SSL_CERT - the path to the SSL cert if using https
-+ DATASET_INDEXES - a list of Bleve indexes available to query
-+ DATASET_TEMPLATES - directory holding the templates
++ DATASET_URL  - (optional) sets the URL to listen on (e.g. http://localhost:8011)
++ DATASET_SSL_KEY - (optional) the path to the SSL key if using https
++ DATASET_SSL_CERT - (optional) the path to the SSL cert if using https
++ DATASET_TEMPLATE - (optional) path to search results template
 `
 
 	examples = `
@@ -71,9 +69,9 @@ Run web server using the content in the current directory
    %s
 
 Run web service using "index.bleve" index, results templates in 
-"templates" direcotry and a "htdocs" directory for static files.
+"templates/search.tmpl" and a "htdocs" directory for static files.
 
-   %s -indexes index.bleve -templates templates htdocs
+   %s -template templates/search.tmpl htdocs index.bleve
 `
 
 	// Standard options
@@ -83,11 +81,13 @@ Run web service using "index.bleve" index, results templates in
 
 	// local app options
 	uri         string
-	docRoot     string
 	sslKey      string
 	sslCert     string
-	indexNames  string
-	templateDir string
+	searchTName string
+
+	// Provided as an ordered command line arg
+	docRoot    string
+	indexNames []string
 )
 
 func logRequest(r *http.Request) {
@@ -102,48 +102,25 @@ func logger(next http.Handler) http.Handler {
 }
 
 func init() {
-	defaultDocRoot := "."
-	defaultURL := "http://localhost:8000"
+	defaultURL := "http://localhost:8011"
 
+	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "Display this help message")
 	flag.BoolVar(&showHelp, "help", false, "Display this help message")
 	flag.BoolVar(&showVersion, "v", false, "Should version info")
 	flag.BoolVar(&showVersion, "version", false, "Should version info")
 	flag.BoolVar(&showLicense, "l", false, "Should license info")
 	flag.BoolVar(&showLicense, "license", false, "Should license info")
-	flag.StringVar(&docRoot, "d", defaultDocRoot, "Set the htdocs path")
-	flag.StringVar(&docRoot, "docs", defaultDocRoot, "Set the htdocs path")
+
+	// App Options
 	flag.StringVar(&uri, "u", defaultURL, "The protocal and hostname listen for as a URL")
 	flag.StringVar(&uri, "url", defaultURL, "The protocal and hostname listen for as a URL")
 	flag.StringVar(&sslKey, "k", "", "Set the path for the SSL Key")
 	flag.StringVar(&sslKey, "key", "", "Set the path for the SSL Key")
 	flag.StringVar(&sslCert, "c", "", "Set the path for the SSL Cert")
 	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
-
-	flag.StringVar(&indexNames, "indexes", "", "A colon delimited list of Bleve indexes")
-	flag.StringVar(&indexNames, "i", "", "A colon delimited list of Bleve indexes")
-
-	flag.StringVar(&templateDir, "templates", "", "the path to the templates directory")
-	flag.StringVar(&templateDir, "t", "", "the path to the templates directory")
-}
-
-func loadTemplates(templateDir string) (*template.Template, error) {
-	templateNames := []string{}
-
-	tMaps := tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap)
-
-	files, err := ioutil.ReadDir(templateDir)
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		fName := file.Name()
-		ext := path.Ext(fName)
-		if ext == ".tmpl" {
-			templateNames = append(templateNames, fName)
-		}
-	}
-	return tmplfn.Assemble(tMaps, templateNames...)
+	flag.StringVar(&searchTName, "template", "", "the path to the search result template")
+	flag.StringVar(&searchTName, "t", "", "the path to the search result template")
 }
 
 func main() {
@@ -175,13 +152,26 @@ func main() {
 	if len(args) > 0 {
 		docRoot = args[0]
 	}
+	if len(args) > 1 {
+		indexNames = args[1:]
+	} else {
+		fmt.Fprintf(os.Stderr, cfg.UsageText)
+		fmt.Fprintf(os.Stderr, "error: one or more Bleve index is required\n")
+		os.Exit(1)
+	}
 
-	docRoot = cfg.CheckOption(docRoot, cfg.MergeEnv("docroot", docRoot), true)
 	log.Printf("DocRoot %s", docRoot)
-	indexNames = cfg.CheckOption(indexNames, cfg.MergeEnv("indexes", indexNames), true)
-	log.Printf("Indexes %s", docRoot)
-	templateDir = cfg.CheckOption(templateDir, cfg.MergeEnv("templates", templateDir), true)
-	log.Printf("Templates %s", docRoot)
+	if len(indexNames) == 1 {
+		log.Printf("Index %s", strings.Join(indexNames, ", "))
+	} else {
+		log.Printf("Indexes %s", strings.Join(indexNames, ", "))
+	}
+	searchTName = cfg.CheckOption(searchTName, cfg.MergeEnv("template", searchTName), false)
+	if searchTName != "" {
+		log.Printf("Search result template is %q", searchTName)
+	} else {
+		log.Printf("Using default search result template")
+	}
 
 	uri = cfg.CheckOption(uri, cfg.MergeEnv("url", uri), true)
 	u, err := url.Parse(uri)
@@ -198,16 +188,32 @@ func main() {
 	}
 
 	// Open the indexes for reading
-	idxAlias, err := dataset.OpenIndexes(strings.Split(indexNames, ":"))
+	idxAlias, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		log.Fatalf("Can't open indexes, %s", err)
 	}
 	defer idxAlias.Close()
 
+	var searchTmpl *template.Template
+
 	// Load and validate the templates for using in the searchHandler
-	tmpl, err := loadTemplates(templateDir)
-	if err != nil {
-		log.Fatalf("Can't load templates, %s", err)
+	if searchTName != "" {
+		searchTmpl, err = tmplfn.Assemble(tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap), searchTName)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s error, %s\n", searchTName, err)
+			os.Exit(1)
+		}
+	} else {
+		if tSrc, ok := dataset.SiteDefaults["/templates/search.tmpl"]; ok == true {
+			searchTmpl, err = template.New("search.tmpl").Funcs(tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap)).Parse(string(tSrc))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
+				os.Exit(1)
+			}
+		} else {
+			fmt.Fprintf(os.Stderr, "can't process default template\n")
+			os.Exit(1)
+		}
 	}
 
 	// Construct our handler
@@ -242,35 +248,28 @@ func main() {
 			if err := dataset.JSONFormatter(w, results); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
-		case "html":
-			if err := dataset.HTMLFormatter(w, results, tmpl); err != nil {
-				http.Error(w, fmt.Sprintf("%s", err), 500)
-			}
-		case "include":
-			if err := dataset.IncludeFormatter(w, results, tmpl); err != nil {
-				http.Error(w, fmt.Sprintf("%s", err), 500)
-			}
 		default:
-			// Assume plain text results
-			fmt.Fprintf(w, "%s\n", results)
+			src, _ := json.MarshalIndent(results, " ", " ")
+			log.Printf("DEBUG src:\n%s\n", src)
+			if err := dataset.HTMLFormatter(w, results, searchTmpl); err != nil {
+				http.Error(w, fmt.Sprintf("%s", err), 500)
+			}
 		}
 	}
 
 	// Define our search API prefix path
-	wsapi := new(mkpage.WSAPI)
+	http.HandleFunc("/api", searchHandler)
 
-	if err := wsapi.AddRoute("/q", searchHandler); err != nil {
-		log.Fatal("can't add search route, %s", err)
-	}
+	// FIXME: If DocRoot defined we want to use it, otherwise we need to fallback to what is supplied in dataset.SiteDefaults
 
 	http.Handle("/", http.FileServer(http.Dir(docRoot)))
 	if u.Scheme == "https" {
-		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(wsapi.Router(mkpage.StaticRouter(http.DefaultServeMux))))
+		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
 	} else {
-		err := http.ListenAndServe(u.Host, mkpage.RequestLogger(wsapi.Router(mkpage.StaticRouter(http.DefaultServeMux))))
+		err := http.ListenAndServe(u.Host, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
 		if err != nil {
 			log.Fatalf("%s", err)
 		}

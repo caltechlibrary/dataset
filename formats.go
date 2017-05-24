@@ -64,10 +64,16 @@ func CSVFormatter(out io.Writer, results *bleve.SearchResult, colNames []string)
 	return nil
 }
 
-func HTMLFormatter(out io.Writer, results *bleve.SearchResult, templates *template.Template) error {
-	return fmt.Errorf("HTMLFormatter() not implemented")
-}
-
-func IncludeFormatter(out io.Writer, results *bleve.SearchResult, templates *template.Template) error {
-	return fmt.Errorf("HTMLFormatter() not implemented")
+func HTMLFormatter(out io.Writer, results *bleve.SearchResult, tmpl *template.Template) error {
+	src, err := json.Marshal(results)
+	if err != nil {
+		return err
+	}
+	data := map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		return err
+	}
+	err = tmpl.Execute(out, data)
+	return err
 }

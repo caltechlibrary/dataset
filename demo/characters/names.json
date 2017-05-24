@@ -1,6 +1,7 @@
 {
     "name":{
         "object_path": ".name",
+        "field_mapping": "simple",
         "store":"true"
     }
 }

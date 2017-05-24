@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dsws search results</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header><h1>search results</h1></header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+</ul>
+</nav>
+
+<section>
+<pre><code>{{ stringify .request true }}</code></pre>
+<pre><code>{{ stringify .status true }}</code></pre>
+
+<form class="search-form" method="get" action="/q">
+    {{ with .sort }}<input type="hidden" name="sort" value="{{- . -}}" >{{ end }}
+    {{ with .highlight }}<input type="hidden" name="highlight" value="{{- . -}}">{{ end }}
+    {{ with .sort }}<input type="hidden" name="sort" value="{{- . -}}">{{ end }}
+    {{ with .size }}<input type="hidden" name="size" value="{{- . -}}">{{ end }}
+    {{ with .fields }}<input type="hidden" name="fields" value="{{- . -}}">{{ end }}
+    <div><label>Search</label><input type="text" {{ with .request.query.query }}value="{{- . -}}"{{ end }} placeholder="Enter your query terms here" /></div>
+    <div><input type="submit" value="Go" ></div>
+</form>
+
+<section class="search-results">
+{{ range .hits }}
+    <pre>{{ stringify . true }}</pre>
+{{ end }}
+</section/><!-- END: search-results -->
+</section>
+
+<footer>
+dsws is part of <a href="https://caltechlibrary.github.io/dataset">dataset</a> project.
+</footer>
+</body>
+</html>

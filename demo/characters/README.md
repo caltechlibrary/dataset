@@ -6,11 +6,17 @@ version of the dataset is derived from the _character.csv_ file with
 different options for importing the content.
 
 Additionally a set of example index definition files are included for
-exploring _dsindexer_ and _dsfind_ utilities.
+exploring _dsindexer_, _dsfind_ and _dsws_ utilities.
 
 ## Try things out
 
+Try _demo.bash_
+
 ```shell
+    #!/bin/bash
+    if [ -d characters ]; then
+        rm -fR characters
+    fi
     $(dataset init characters)
     dataset -uuid import characters.csv
     dsindexer characters.json
@@ -24,6 +30,21 @@ exploring _dsindexer_ and _dsfind_ utilities.
     dsfind -indexes=names.bleve "Mojo Sam"
     dsfind -indexes=names.bleve:emails.bleve "Mojo Sam" 
     dsfind -sort='-name'  -indexes=characters.bleve:names.bleve:emails.bleve "email:zbs.example.org"
+```
+
+Or try the website version (you'll need a web browser)
+
+```shell
+    #!/bin/bash
+    if [ -d characters ]; then
+        rm -fR characters
+    fi
+    $(dataset init characters)
+    dataset -uuid import characters.csv
+    dsindexer characters.json
+    dsindexer names.json
+    dsindexer emails.json
+    dsws htdocs characters.bleve names.bleve emails.bleve
 ```
 
 ## the files
