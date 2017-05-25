@@ -1,10 +1,10 @@
 {
-    "name":{
-        "object_path": ".name",
-        "field_mapping": "simple",
+    "story":{
+        "object_path": ".story",
+        "field_mapping": "standard",
         "store":"true"
     },
-    "year":{
+    "year": {
         "object_path": ".year",
         "field_mapping": "numeric",
         "store":"true"

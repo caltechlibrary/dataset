@@ -4,9 +4,15 @@
         "field_mapping": "simple",
         "store":"true"
     },
-    "email":{
-        "object_path": ".email",
-        "field_mapping": "simple",
+    "story":{
+        "object_path": ".story",
+        "field_mapping": "standard",
+        "lang":"en",
+        "store":"true"
+    },
+    "year":{
+        "object_path": ".year",
+        "field_mapping": "numeric",
         "store":"true"
     }
 }

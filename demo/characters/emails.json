@@ -1,7 +1,0 @@
-{
-    "email":{
-        "object_path": ".email",
-        "field_mapping": "simple",
-        "store":"true"
-    }
-}
