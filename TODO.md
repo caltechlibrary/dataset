@@ -7,10 +7,12 @@
 ## Next
 
 + [ ] Add support for indexing arrays values and objects in index definitions
+    + [x] code 
+    + [ ] test
 
 ## Someday, Maybe
 
-+ [ ] need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
++ [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
 + [ ] prototype what a web service might look like for a dataset collection (including search)
     + [ ] template HTML results and search forms
     + [ ] support static pages in site
