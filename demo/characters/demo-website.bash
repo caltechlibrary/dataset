@@ -5,6 +5,12 @@ fi
 if [ -d characters.bleve ]; then
     rm -fR characters.bleve
 fi
+if [ -d names.bleve ]; then
+    rm -fR names.bleve
+fi
+if [ -d emails.bleve ]; then
+    rm -fR emails.bleve
+fi
 $(dataset init characters)
 dataset -uuid import characters.csv
 dsindexer characters.json

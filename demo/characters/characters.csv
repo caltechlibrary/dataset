@@ -1,8 +1,196 @@
-name,email
-Jack Flanders,captain.jack@zbs.example.org
-Sam Mojo,mojo.sam@zbs.example.org
-Frieda Little,little.frieda@zbs.example.org
-Old Far-Seeing Art,old.far.seeing.art@zbs.example.org
-Doctor Mazoola,dr.mazzola@secret-labs.zbs.example.org
-Chief Wampum,chief.wampum@zbs.example.org
-Lord Henry Jowls,lord.henry@inverness.zbs.example.org
+name,story,year
+Jack Flanders,The Fourth Tower of Inverness,1972
+Little Freida,The Fourth Tower of Inverness,1972
+Dr. Mazoola,The Fourth Tower of Inverness,1972
+The Madonna Vampyra,The Fourth Tower of Inverness,1972
+Chief Wampum,The Fourth Tower of Inverness,1972
+Old Far-Seeing Art,The Fourth Tower of Inverness,1972
+Lord Henry Jowls,The Fourth Tower of Inverness,1972
+Meanie Eenie,The Fourth Tower of Inverness,1972
+Lady Sarah Jowls,The Fourth Tower of Inverness,1972
+Jack Flanders,Moon Over Morocco,1973
+Kashbah Kelly,Moon Over Morocco,1973
+Mojo Sam,Moon Over Morocco,1973
+Little Flossic,Moon Over Morocco,1973
+Sunny Skies,Moon Over Morocco,1973
+Layla Oolupi,Moon Over Morocco,1973
+Queen Azora,Moon Over Morocco,1973
+Grand Wazir,Moon Over Morocco,1973
+Story Teller Mustafa,Moon Over Morocco,1973
+Comtese Zazeenia,Moon Over Morocco,1973
+Abu,Moon Over Morocco,1973
+Taxi Driver,Moon Over Morocco,1973
+Marmaduke,Moon Over Morocco,1973
+Jack Flanders,The Ah-Ha Phenomenon,1977
+Sir Seymour Jowls,The Ah-Ha Phenomenon,1977
+Cynthia,The Ah-Ha Phenomenon,1977
+Troll,The Ah-Ha Phenomenon,1977
+Chief Wampum,The Ah-Ha Phenomenon,1977
+Wizard,The Ah-Ha Phenomenon,1977
+Jack Flanders,The Incredible Adventures of Jack Flanders,1978
+Little Frieda,The Incredible Adventures of Jack Flanders,1978
+Dr. Mazoola,The Incredible Adventures of Jack Flanders,1978
+Captain Swallow,The Incredible Adventures of Jack Flanders,1978
+Marquis of Carambas,The Incredible Adventures of Jack Flanders,1978
+Mojo Sam,The Incredible Adventures of Jack Flanders,1978
+The Pirate Queen,The Incredible Adventures of Jack Flanders,1978
+Old Far-Seeing Art,The Incredible Adventures of Jack Flanders,1978
+Owl Eyes,The Incredible Adventures of Jack Flanders,1978
+Sorcerer,The Incredible Adventures of Jack Flanders,1978
+Chief Wampum,The Incredible Adventures of Jack Flanders,1978
+Waitress,The Incredible Adventures of Jack Flanders,1978
+Sailors,The Incredible Adventures of Jack Flanders,1978
+Pirates,The Incredible Adventures of Jack Flanders,1978
+Jack Flanders,Dreams of Rio,1987
+Mojo Sam,Dreams of Rio,1987
+Carla D'Avila,Dreams of Rio,1987
+Paulo Pompadora,Dreams of Rio,1987
+Carmen,Dreams of Rio,1987
+Short Top Detroit,Dreams of Rio,1987
+Claudia Guedes,Dreams of Rio,1987
+Gas Station Attendant,Dreams of Rio,1987
+Big Frieda,Dreams of Rio,1987
+Professor Klaus Vargas,Dreams of Rio,1987
+Mia Josefa,Dreams of Rio,1987
+Talking Statue,Dreams of Rio,1987
+Zeca,Dreams of Rio,1987
+Museum Guard,Dreams of Rio,1987
+Kelley,Dreams of Rio,1987
+Short Top's Secretary,Dreams of Rio,1987
+Dave Herman,Dreams of Rio,1987
+Zuom,Dreams of Rio,1987
+Jack Flanders,Travels with Jack,1992
+Jack Flanders,Dreams of the Amazon,1992
+Tereza Cavalcanti,Dreams of the Amazon,1992
+Paulo Pompadora,Dreams of the Amazon,1992
+Claudia Guedes,Dreams of the Amazon,1992
+Terry Newman,Dreams of the Amazon,1992
+Prefessor Elvis,Dreams of the Amazon,1992
+Chico,Dreams of the Amazon,1992
+Jack Flanders,Dreams of India,1992
+Kamala Shukla,Dreams of India,1992
+Lalitha Chatterjee,Dreams of India,1992
+Ramchandra,Dreams of India,1992
+The Djin,Dreams of India,1992
+Jack Flanders,Dreams of Bali,1992
+Tiffany,Dreams of Bali,1992
+Made,Dreams of Bali,1992
+Nani,Dreams of Bali,1992
+Man in Hotel,Dreams of Bali,1992
+Black Magic Woman,Dreams of Bali,1992
+Wise Old Man,Dreams of Bali,1992
+Jack Flanders,Dreams of Sumtra,1992
+Louise Nettles,Dreams of Sumtra,1992
+Indranee DeSilva,Dreams of Sumtra,1992
+Mojo Sam,Dreams of Sumtra,1992
+Wu Ling,Dreams of Sumtra,1992
+Jesse Nettles,Dreams of Sumtra,1992
+Henry,Dreams of Sumtra,1992
+Story Teller,Dreams of Sumtra,1992
+Jack Flanders,The Mystery of Jaguar Reef,1996
+Carmen,The Mystery of Jaguar Reef,1996
+Cassie,The Mystery of Jaguar Reef,1996
+Paulina,The Mystery of Jaguar Reef,1996
+Antonio,The Mystery of Jaguar Reef,1996
+Captian Coco,The Mystery of Jaguar Reef,1996
+Dr. Weiss,The Mystery of Jaguar Reef,1996
+Popeyes,The Mystery of Jaguar Reef,1996
+Pirate Pete,The Mystery of Jaguar Reef,1996
+Hook,The Mystery of Jaguar Reef,1996
+Wolfgang,The Mystery of Jaguar Reef,1996
+Juanita,The Mystery of Jaguar Reef,1996
+Jack Flanders,Return to Inverness,2000
+Lady Sarah Jowls,Return to Inverness,2000
+Lady Pompon,Return to Inverness,2000
+Lord Henry Jowls,Return to Inverness,2000
+Mojo Sam,Return to Inverness,2000
+Little Frieda,Return to Inverness,2000
+Sait Sey,Return to Inverness,2000
+Jack Flanders,Traveling Jack,2003
+Jack Flanders,Dreams of the Blue Morpho,2002
+Mojo,Dreams of the Blue Morpho,2002
+Amy,Dreams of the Blue Morpho,2002
+Nina,Dreams of the Blue Morpho,2002
+Felix,Dreams of the Blue Morpho,2002
+Jack Flanders,Somewhere Next Door to Reality,2002
+Mojo Sam,Somewhere Next Door to Reality,2002
+Dominique,Somewhere Next Door to Reality,2002
+Madame Caio,Somewhere Next Door to Reality,2002
+Claudine,Somewhere Next Door to Reality,2002
+Isabelle,Somewhere Next Door to Reality,2002
+Waiter,Somewhere Next Door to Reality,2002
+Jack Flanders,Do That in Real Life,2003
+Mojo Sam,Do That in Real Life,2003
+Dominique,Do That in Real Life,2003
+Claudine,Do That in Real Life,2003
+Madame Ebbo,Do That in Real Life,2003
+Sophia,Do That in Real Life,2003
+The Zombie,Do That in Real Life,2003
+Rufus,Do That in Real Life,2003
+Waiter,Do That in Real Life,2003
+Jack Flanders,The Eye of Van Gogh,2003
+Mojo Sam,The Eye of Van Gogh,2003
+Dominique,The Eye of Van Gogh,2003
+Claudine,The Eye of Van Gogh,2003
+La Petite Frieda,The Eye of Van Gogh,2003
+Jean-Claude,The Eye of Van Gogh,2003
+Waiter,The Eye of Van Gogh,2003
+Jack Flanders,The Fantastic Voyages of Captain Jack Flanders',2008
+Jack Flanders,Orchids and Moombeams,2005
+Mojo Sam,Orchids and Moombeams,2005
+Claudine,Orchids and Moombeams,2005
+Pat Patterson,Orchids and Moombeams,2005
+Bunny,Orchids and Moombeams,2005
+Amber,Orchids and Moombeams,2005
+Jack Flanders,The Ghost Islands,2006
+Mojo Sam,The Ghost Islands,2006
+Dominique,The Ghost Islands,2006
+Rose Jamal,The Ghost Islands,2006
+Madame Jamal,The Ghost Islands,2006
+Bunny,The Ghost Islands,2006
+Una,The Ghost Islands,2006
+Fast Freddie,The Ghost Islands,2006
+Joseph,The Ghost Islands,2006
+Georgette,The Ghost Islands,2006
+Jack Flanders,Tropical Hot Dog Night,2007 
+Mojo Sam,Tropical Hot Dog Night,2007 
+Claudine,Tropical Hot Dog Night,2007 
+Dominique,Tropical Hot Dog Night,2007 
+Rose,Tropical Hot Dog Night,2007 
+Johnny,Tropical Hot Dog Night,2007 
+Fritzy,Tropical Hot Dog Night,2007 
+Danny,Tropical Hot Dog Night,2007 
+Wolf,Tropical Hot Dog Night,2007 
+Jack Flanders,The White Castle,2008
+Mojo Sam,The White Castle,2008
+Claudine,The White Castle,2008
+Dominique,The White Castle,2008
+Rose,The White Castle,2008
+Johnny Seven,The White Castle,2008
+Sanford White,The White Castle,2008
+Zeevo,The White Castle,2008
+Jack Flanders,Steam Dreamers of Inverness,2011
+Mojo Sam,Steam Dreamers of Inverness,2011
+Claudine,Steam Dreamers of Inverness,2011
+Jack Flanders,Do Angels Really Have Wings,2012
+Jack Flanders,Dreams of the Tiffany Blue,2013
+Friedrich,Dreams of the Tiffany Blue,2013
+Lindz,Dreams of the Tiffany Blue,2013
+Jack Flanders,The Secret of the Crystal Maidens,2014
+Jack Flanders,The Green Velvet Chair,2015
+Jack's Neice,League of the Green Velvet Chairs,2016
+Old Far-Seeing Art,The Green Velvet Chair,2015
+Mojo Sam,The Green Velvet Chair,2015
+Zula,The Green Velvet Chair,2015
+Zoey,The Green Velvet Chair,2015
+Homer,The Green Velvet Chair,2015
+Cairo,The Green Velvet Chair,2015
+Little Frieda,The Adventures of Rocket Pierre, a sub-series within Stars and Stuff,1977
+Mojo Sam,Land of Enchantment,1997
+Little Frieda,Little Frieda's Life Lessons,2001
+Little Frieda,The Wee Weever - A Little Frieda Mystery,2004
+Mojo Sam,The Wee Weever - A Little Frieda Mystery,2004
+The Case of the Disappearing Witch (2005) 
+Mojo Sam,The Case of the Disappearing Witch,2005
+Little Frieda,The Case of the Disappearing Witch,2005
+Mojo Sam,Mojo's Vest Pocket Voodoo Adventures,2009
