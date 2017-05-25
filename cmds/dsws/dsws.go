@@ -20,7 +20,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json" // DEBUG
 	"flag"
 	"fmt"
 	"log"
@@ -28,6 +27,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -218,14 +218,20 @@ func main() {
 
 	// Construct our handler
 	searchHandler := func(w http.ResponseWriter, r *http.Request) {
-		opts := map[string]string{}
 		values := r.URL.Query()
-		format := values.Get("fmt")
+		qformat := values.Get("fmt")
 		qString := values.Get("q")
 		// Get the options understood by dataset.Find()
+		opts := map[string]string{}
 		for _, ky := range []string{"size", "from", "ids", "sort", "explain", "fields", "highlight"} {
 			if v := values.Get(ky); v != "" {
 				opts[ky] = v
+			}
+		}
+		//NOTE: If highlight is passed then set the highliter to HTML for web view
+		if sVal, ok := opts["highlight"]; ok == true {
+			if bVal, err := strconv.ParseBool(sVal); bVal == true && err == nil {
+				opts["highlighter"] = "html"
 			}
 		}
 		buf := bytes.NewBufferString("")
@@ -233,13 +239,12 @@ func main() {
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%s", err), 500)
 		}
-
 		// Based on the request info, format the results appropriately
-		switch strings.ToLower(format) {
+		switch strings.ToLower(qformat) {
 		case "csv":
-			fields := strings.Split(values.Get("fields"), ":")
+			fields := strings.Split(values.Get("fields"), ",")
 			if len(fields) == 0 {
-				fields = []string{"*"}
+				http.Error(w, "Missing field names needed to render CSV", 500)
 			}
 			if err := dataset.CSVFormatter(w, results, fields); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
@@ -249,8 +254,6 @@ func main() {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 		default:
-			src, _ := json.MarshalIndent(results, " ", " ")
-			log.Printf("DEBUG src:\n%s\n", src)
 			if err := dataset.HTMLFormatter(w, results, searchTmpl); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}

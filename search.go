@@ -147,7 +147,6 @@ func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *ma
 	var fieldMap *mapping.FieldMapping
 
 	for fieldName, defn := range definitions {
-		//FIXME: I need to be able to handle nested definitions
 		if fieldType, ok := defn["field_mapping"]; ok == true {
 			switch fieldType.(string) {
 			case "numeric":
@@ -158,6 +157,8 @@ func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *ma
 				fieldMap = bleve.NewBooleanFieldMapping()
 			case "geopoint":
 				fieldMap = bleve.NewGeoPointFieldMapping()
+			case "text":
+				fieldMap = bleve.NewTextFieldMapping()
 			default:
 				fieldMap = bleve.NewTextFieldMapping()
 			}
@@ -265,7 +266,6 @@ func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byt
 					idxMap[pName] = val.(string)
 				}
 			default:
-				fmt.Printf("DEBUG dotpath %s -> %T %+v\n", dPath, val, val)
 				idxMap[pName] = val
 			}
 		}
@@ -340,11 +340,13 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, error) {
 func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
 	// Opening all our indexes
 	var (
-		size    int
-		from    int
-		explain bool
-		err     error
+		size             int
+		from             int
+		explain          bool
+		includeLocations bool
+		err              error
 	)
+	// Normalize option values
 	if sVal, ok := options["from"]; ok == true {
 		from, err = strconv.Atoi(sVal)
 		if err != nil {
@@ -367,10 +369,18 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 	} else {
 		explain = false
 	}
+	if sVal, ok := options["include_locations"]; ok == true {
+		if bVal, err := strconv.ParseBool(sVal); err == nil {
+			includeLocations = bVal
+		}
+	}
 
 	//Note: find uses the Query String Query, it'll join queryStrings with a space
 	query := bleve.NewQueryStringQuery(strings.Join(queryStrings, " "))
 	search := bleve.NewSearchRequestOptions(query, size, from, explain)
+	if includeLocations == true {
+		search.IncludeLocations = true
+	}
 
 	// Handle various options modifying search
 	if sVal, ok := options["highlight"]; ok == true {
@@ -391,21 +401,25 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 		}
 	}
 
-	if sVal, ok := options["result_fields"]; ok == true {
-		if strings.Contains(sVal, ":") == true {
-			search.Fields = strings.Split(sVal, ":")
-		} else {
+	if sVal, ok := options["fields"]; ok == true {
+		if strings.Contains(sVal, ",") == true {
+			search.Fields = strings.Split(sVal, ",")
+		} else if len(sVal) > 0 {
 			search.Fields = []string{sVal}
+		} else {
+			search.Fields = []string{"*"}
 		}
 	}
 
-	if sVal, ok := options["sort_by"]; ok == true {
-		if strings.Contains(sVal, ":") == true {
-			search.SortBy(strings.Split(sVal, ":"))
+	if sVal, ok := options["sort"]; ok == true {
+		if strings.Contains(sVal, ",") == true {
+			search.SortBy(strings.Split(sVal, ","))
 		} else {
 			search.SortBy([]string{sVal})
 		}
 	}
+
+	//FIXME: include_in_all, include_term_vectors, include_locations, facets
 
 	// Run the query and process results
 	results, err := idxAlias.Search(search)

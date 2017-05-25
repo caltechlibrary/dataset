@@ -48,6 +48,7 @@ returning records that matched based on how the index was defined.
 	collectionName string
 	indexNames     string
 	showHighlight  bool
+	setHighlighter string
 	resultFields   string
 	sortBy         string
 	jsonFormat     bool
@@ -70,10 +71,11 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.StringVar(&indexNames, "indexes", "", "a colon delimited list of index names")
-	flag.StringVar(&sortBy, "sort", "", "a colon delimited list of field names to sort by")
+	flag.StringVar(&indexNames, "indexes", "", "comma delimited list of index names")
+	flag.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
-	flag.StringVar(&resultFields, "fields", "", "colon delimited list of fields to display in the results")
+	flag.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
+	flag.StringVar(&resultFields, "fields", "", "comma delimited list of fields to display in the results")
 	flag.BoolVar(&jsonFormat, "json", false, "format results as a JSON document")
 	flag.BoolVar(&csvFormat, "csv", false, "format results as a CSV document, used with fields option")
 	flag.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
@@ -124,27 +126,31 @@ func main() {
 		jsonFormat = true
 	}
 
+	if from != 0 {
+		options["from"] = fmt.Sprintf("%d", from)
+	}
+	if size > 0 {
+		options["size"] = fmt.Sprintf("%d", size)
+	}
 	if sortBy != "" {
-		options["sort_by"] = sortBy
+		options["sort"] = sortBy
 	}
 	if showHighlight == true {
 		options["highlight"] = "true"
 		options["highlighter"] = "ansi"
 	}
+	if setHighlighter != "" {
+		options["highlight"] = "true"
+		options["highlighter"] = setHighlighter
+	}
 
 	if resultFields != "" {
-		options["result_fields"] = strings.TrimSpace(resultFields)
+		options["fields"] = strings.TrimSpace(resultFields)
 	} else {
-		options["result_fields"] = "*"
-	}
-	if size > 0 {
-		options["size"] = fmt.Sprintf("%d", size)
-	}
-	if from != 0 {
-		options["from"] = fmt.Sprintf("%d", from)
+		options["fields"] = "*"
 	}
 
-	idxAlias, err := dataset.OpenIndexes(strings.Split(indexNames, ":"))
+	idxAlias, err := dataset.OpenIndexes(strings.Split(indexNames, ","))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", indexNames, err)
 		os.Exit(1)
@@ -171,7 +177,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "-csv must be used with -fields option\n")
 			os.Exit(1)
 		}
-		if err := dataset.CSVFormatter(os.Stdout, results, strings.Split(resultFields, ":")); err != nil {
+		if err := dataset.CSVFormatter(os.Stdout, results, strings.Split(resultFields, ",")); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}

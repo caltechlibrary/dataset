@@ -6,11 +6,22 @@
 <body>
 <form method="get" action="/api">
 <input type="hidden" name="highlight" value="true">
-<input type="hidden" name="from" value="0">
 <input type="hidden" name="size" value="100">
-<input type="hidden" name="fields" value="name,email">
+<input type="hidden" name="fields" value="name,story,year">
+<input type="hidden" name="sort" value="story,name,year">
 <div><label>Search</label> <input type="text" name="q" value="" placeholder="Enter a query"></div>
-<div><input type="submit" value="Go">
+<div>
+    <label>Sort By</label>
+    <select name="sort">
+        <option value="">Relevance</option>
+        <option value="name,story,year">Name, Story, Year</option>
+        <option value="story,name,year">Story, Name, Year</option>
+        <option value="year,story,name">Year, Story, Name</option>
+        <option value="year,name,story">Year, Name, Story</option>
+        <option value="name,year,story">Name, Year, Story</option>
+    </select>
+</div>
+<div><input type="submit" value="Go"></div>
 </form>
 </body>
 </html>

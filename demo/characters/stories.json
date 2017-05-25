@@ -1,12 +1,15 @@
 {
     "story":{
         "object_path": ".story",
-        "field_mapping": "standard",
+        "field_mapping": "text",
+        "anlyzer": "standard",
+        "include_in_all": true,
         "store":"true"
     },
     "year": {
         "object_path": ".year",
         "field_mapping": "numeric",
+        "include_in_all": true,
         "store":"true"
     }
 }

@@ -1,12 +1,15 @@
 {
     "name":{
         "object_path": ".name",
-        "field_mapping": "simple",
+        "field_mapping": "text",
+        "anlyzer": "simple",
+        "include_in_all": true,
         "store":"true"
     },
     "year":{
         "object_path": ".year",
         "field_mapping": "numeric",
+        "include_in_all": true,
         "store":"true"
     }
 }

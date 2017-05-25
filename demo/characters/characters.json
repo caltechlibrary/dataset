@@ -1,18 +1,28 @@
 {
     "name":{
         "object_path": ".name",
-        "field_mapping": "simple",
-        "store":"true"
+        "field_mapping": "text",
+        "analyzer": "simple",
+        "include_in_all": true,
+        "include_term_vectors": true,
+        "include_locations": true,
+        "store":true
     },
     "story":{
         "object_path": ".story",
-        "field_mapping": "standard",
-        "lang":"en",
-        "store":"true"
+        "field_mapping": "text",
+        "analyzer": "standard",
+        "include_in_all": true,
+        "include_term_vectors": true,
+        "include_locations": true,
+        "store":true
     },
     "year":{
         "object_path": ".year",
         "field_mapping": "numeric",
-        "store":"true"
+        "include_in_all": true,
+        "include_term_vectors": true,
+        "include_locations": true,
+        "store":true
     }
 }

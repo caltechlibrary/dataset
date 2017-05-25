@@ -23,18 +23,18 @@ are output.
 	-collection	sets the collection to be used
 	-csv	format results as a CSV document, used with fields option
 	-explain	explain results in a verbose JSON document
-	-fields	colon delimited list of fields to display in the results
+	-fields	comma (no spaces) delimited list of fields to display in the results
 	-from	return the result starting with this result number
 	-h	display help
 	-help	display help
 	-highlight	display highlight in search results
 	-ids	output only a list of ids from results
-	-indexes	a colon delimited list of index names
+	-indexes	a comma delimited list of index names
 	-json	format results as a JSON document
 	-l	display license
 	-license	display license
 	-size	number of results returned for request
-	-sort	a colon delimited list of field names to sort by
+	-sort	a comma delimited list of field names to sort by
 	-v	display version
 	-version	display version
 ```
@@ -42,9 +42,10 @@ are output.
 ## EXAMPLES
 
 In the example the index will be created for a collection called "characters".
+The fields we want to list in our results are name,story,year
 
 ```
-    dsfind -c characters "Jack Flanders"
+    dsfind -c characters -fields=name,story,year "Jack Flanders"
 ```
 
 This would search the Bleve index named characters.bleve for the string "Jack Flanders" 
