@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -70,8 +71,9 @@ func HTMLFormatter(out io.Writer, results *bleve.SearchResult, tmpl *template.Te
 		return err
 	}
 	data := map[string]interface{}{}
-	err = json.Unmarshal(src, &data)
-	if err != nil {
+	decoder := json.NewDecoder(bytes.NewBuffer(src))
+	decoder.UseNumber()
+	if err := decoder.Decode(&data); err != nil {
 		return err
 	}
 	err = tmpl.Execute(out, data)

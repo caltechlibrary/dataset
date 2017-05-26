@@ -84,6 +84,7 @@ Run web service using "index.bleve" index, results templates in
 	sslKey      string
 	sslCert     string
 	searchTName string
+	devMode     bool
 
 	// Provided as an ordered command line arg
 	docRoot    string
@@ -121,6 +122,7 @@ func init() {
 	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
 	flag.StringVar(&searchTName, "template", "", "the path to the search result template")
 	flag.StringVar(&searchTName, "t", "", "the path to the search result template")
+	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 }
 
 func main() {
@@ -194,11 +196,14 @@ func main() {
 	}
 	defer idxAlias.Close()
 
-	var searchTmpl *template.Template
+	var (
+		searchTmpl      *template.Template
+		searchTmplFuncs = tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap, tmplfn.IterationMap, tmplfn.ConversionMap, tmplfn.DotpathMap)
+	)
 
 	// Load and validate the templates for using in the searchHandler
 	if searchTName != "" {
-		searchTmpl, err = tmplfn.Assemble(tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap), searchTName)
+		searchTmpl, err = tmplfn.Assemble(searchTmplFuncs, searchTName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s error, %s\n", searchTName, err)
 			os.Exit(1)
@@ -254,6 +259,15 @@ func main() {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 		default:
+			//FIXME: This is an ugly abuse of a closure to get a developer mode...
+			if devMode == true {
+				if t, err := tmplfn.Assemble(searchTmplFuncs, searchTName); err == nil {
+					searchTmpl = t
+					log.Printf("dev mode: template %s assembled", searchTName)
+				} else {
+					log.Printf("\n\ndev mode: template %s failed, %s\n\n", searchTName, err)
+				}
+			}
 			if err := dataset.HTMLFormatter(w, results, searchTmpl); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
