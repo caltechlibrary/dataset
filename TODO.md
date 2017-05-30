@@ -12,6 +12,8 @@
 
 ## Someday, Maybe
 
++ [ ] optional strageties for including arrays in a single column of CSV output
+    + provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
 + [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
 + [ ] prototype what a web service might look like for a dataset collection (including search)
     + [ ] template HTML results and search forms
@@ -48,6 +50,7 @@
 + collection.json should hold a list of available indexes and their definitions to automate repair
 + OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
 + merge dsindexer and dsfind into dataset cli and depreciate individual programs
++ RSS importer (example RSS as JOSN: http://scripting.com/rss.json)
 
 
 ## Completed

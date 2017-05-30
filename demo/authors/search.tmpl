@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dsws search results</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header><h1>search results</h1></header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+</ul>
+</nav>
+
+<section>
+<!-- 
+Request:
+{{ stringify .request true }}
+
+Status:
+{{ stringify .status false }}
+
+Total Hits: {{ .total_hits }}
+Page: {{ .request.from }}
+Size: {{ .request.size }}
+
+-->
+
+<form class="search-form" method="get" action="/api">
+<!-- BEGIN: Pager -->
+
+{{$qryTerms := (dotpath ".query.query" .request "")}}
+{{$highlight :=  (ifDotpathExists ".highlight.style" .request "true" "false")}} 
+{{$from := (int .request.from)}}
+{{$size := (int .request.size)}}
+{{$prev := (prevPage $from $size 30)}}
+{{$next := (nextPage $from $size 30)}}
+{{$total := (int .total_hits)}}
+{{$sortBy := (join .request.sort ",")}}
+{{$fields := (join (dotpath ".fields" .request "*") ",")}}
+
+<pre>
+DEBUG: 
+    + .request.from {{.request.from}} {{getType .request.from}}
+    + .request.size {{.request.size}} {{getType .request.size}}
+    + From: {{$from}} {{getType $from}}
+    + Size: {{$size}} {{getType $size}}
+    + Next: {{$next}} {{getType $next}}
+    + Prev: {{$prev}} {{getType $prev}}
+    + Total: {{$total}} {{getType $total}}
+    + Sort By: {{$sortBy}} {{getType $sortBy}}
+    + Fields: {{$fields}} {{getType $fields}}
+</pre>
+
+{{if (and (gt $from 0) (ge $prev 0))}}
+<a href="/api?fields={{$fields}}&highlight={{$highlight}}&from={{$prev}}&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Prev</a>
+{{else}}
+    {{if (gt $from 0)}}
+<a href="/api?fields={{$fields}}&highlight={{$highlight}}&from=0&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Prev</a>
+    {{end}}
+{{end}}
+{{(add $from 1)}} to {{if (lt $next $total)}}{{$next}}{{else}}{{$total}}{{end}}, of {{.total_hits}} records
+{{if (lt $prev $total)}}
+<a href="/api?fields={{$fields}}&highlight={{$highlight}}&from={{$next}}&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Next</a>
+{{end}}
+<!-- END: Pager -->
+
+    {{with .request}}
+        <input type="hidden" name="highlight" value="true">
+
+        {{ with .start -}}
+        <input type="hidden" name="start" value="{{- . -}}">
+        {{- end }}
+        {{ with .fields -}}
+        <input type="hidden" name="fields" value="{{- join . "," -}}">
+        {{- else -}}
+        <input type="hidden" name="fields" value="id,title,authors_id,authors_family,authors_given,orcid">
+        {{- end }}
+    {{else}}
+        <input type="hidden" name="fields" value="id,title,authors_id,authors_family,authors_given,orcid">
+    {{end}}
+    <div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" /></div>
+<div>
+     <select name="sort">
+        {{with $sortBy := (join .request.sort ",") -}}
+            {{if (or (eq $sortBy "-_score") (eq $sortBy ""))}}
+         <option value="" selected>Relevance</option>
+            {{else}}
+         <option value="">Relevance</option>
+            {{end}}
+            {{if eq $sortBy "title"}}
+        <option value="title" selected>Title</option>
+            {{else}}
+        <option value="title">Title</option>
+            {{end}}
+            {{if eq $sortBy "authors_family"}} 
+        <option value="authors_family" selected>Name</option>
+            {{else}}
+        <option value="authors_family">Name</option>
+            {{end}}
+            {{if eq $sortBy "date,date_type"}}
+        <option value="date,date_type" selected>Date</option>
+            {{else}}
+        <option value="date,date_type">Date</option>
+            {{end}}
+        {{- end }}
+     </select>
+</div>
+<div>
+    <select name="size">
+        {{range $i := (forInt 3 30 3)}}
+            {{if (eq $i $size) -}}
+        <option value="{{$i}}" selected>{{$i}}</option>
+            {{- else -}}
+        <option value="{{$i}}">{{$i}}</option>
+            {{- end -}}
+        {{- end}}
+    </select>
+</div>
+
+    <div><input type="submit" value="Go" ></div>
+</form>
+
+<section class="search-results">
+{{ range .hits }}
+<ul>
+            <li>
+    {{with .fields}}
+        {{with .eprint_id}}<label>Eprint ID</label> {{ . }} {{ end }}<br />
+        {{with .title}}<label>Title</label><h2>{{ . }}</h2>{{ end }}<br />
+        {{with .abstract}}<label>Abstract:<label> <p>{{ . }}</p> {{ end }}<br />
+        {{ $familyName := .authors_family}}
+        {{ $givenName := .authors_given}}
+        {{ $orcid := .orcid}}
+        {{ $lastAuthor := (int (sub (len .authors_id) 1))}}
+        <label>Authors ({{(len .authors_id)}})</label>
+        <ul>
+        {{range $i := (forInt 0 $lastAuthor 1)}}
+            <li>
+             {{(index $familyName $i)}}, {{index $givenName $i}} 
+             {{with (index $orcid $i)}}(ORCID: <a href="http://orcid.org/{{- . -}}">{{ . }}</a>){{end}}
+            </li>
+        {{end}}
+        </ul>
+        {{if (eq $highlight "true")}}
+        <ul>
+            {{range $k,$v := .fragments}}
+                <li>Matched {{$k}}: {{ join $v "... " }}</li>
+            {{end}}
+        </ul>
+        {{end}}
+    {{end}}
+            </li>
+</ul>
+    <!-- 
+    {{ stringify . true }}
+    -->
+{{ end }}
+</section/><!-- END: search-results -->
+</section>
+
+<footer>
+dsws is part of <a href="https://caltechlibrary.github.io/dataset">dataset</a> project.
+</footer>
+</body>
+</html>

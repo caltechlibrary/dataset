@@ -198,7 +198,7 @@ func main() {
 
 	var (
 		searchTmpl      *template.Template
-		searchTmplFuncs = tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap, tmplfn.IterationMap, tmplfn.ConversionMap, tmplfn.DotpathMap)
+		searchTmplFuncs = tmplfn.Join(tmplfn.Time, tmplfn.Types, tmplfn.Strings, tmplfn.Page, tmplfn.Iterations, tmplfn.Conversions, tmplfn.Dotpath, tmplfn.Math)
 	)
 
 	// Load and validate the templates for using in the searchHandler
@@ -210,7 +210,7 @@ func main() {
 		}
 	} else {
 		if tSrc, ok := dataset.SiteDefaults["/templates/search.tmpl"]; ok == true {
-			searchTmpl, err = template.New("search.tmpl").Funcs(tmplfn.Join(tmplfn.TimeMap, tmplfn.PageMap)).Parse(string(tSrc))
+			searchTmpl, err = template.New("search.tmpl").Funcs(searchTmplFuncs).Parse(string(tSrc))
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
 				os.Exit(1)

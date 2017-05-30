@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dsws demo</title>
+</head>
+<body>
+<form method="get" action="/api">
+<input type="hidden" name="highlight" value="true">
+<input type="hidden" name="size" value="100">
+<input type="hidden" name="fields" value="*">
+<input type="hidden" name="sort" value="">
+<div><label>Search</label> <input type="text" name="q" value="" placeholder="Enter a query"></div>
+<div>
+    <label>Sort By</label>
+    <select name="sort">
+        <option value="" selected>Relevance</option>
+        <option value="title">title</option>
+        <option value="authors_family">Name</option>
+        <option value="date,date_type">Date</option>
+    </select>
+</div>
+<div><input type="submit" value="Go"></div>
+</form>
+</body>
+</html>
