@@ -1,0 +1,10 @@
+{{- define "head" -}}
+<head>
+{{with .pageTitle -}}<title>{{- . -}}</title>{{- end }}
+{{with .CSSPath -}}<link rel="stylesheet" href="{{- . -}}">{{- end }}
+{{with .CSSStyle -}}
+<style>
+</style>
+{{- end }}
+</head>
+{{- end -}}
