@@ -57,7 +57,7 @@ supported.
 + DATASET_URL  - (optional) sets the URL to listen on (e.g. http://localhost:8011)
 + DATASET_SSL_KEY - (optional) the path to the SSL key if using https
 + DATASET_SSL_CERT - (optional) the path to the SSL cert if using https
-+ DATASET_TEMPLATE - (optional) path to search results template
++ DATASET_TEMPLATE - (optional) path to search results template(s)
 `
 
 	examples = `
@@ -71,7 +71,7 @@ Run web server using the content in the current directory
 Run web service using "index.bleve" index, results templates in 
 "templates/search.tmpl" and a "htdocs" directory for static files.
 
-   %s -template templates/search.tmpl htdocs index.bleve
+   %s -template=templates/search.tmpl htdocs index.bleve
 `
 
 	// Standard options
@@ -120,7 +120,7 @@ func init() {
 	flag.StringVar(&sslKey, "key", "", "Set the path for the SSL Key")
 	flag.StringVar(&sslCert, "c", "", "Set the path for the SSL Cert")
 	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
-	flag.StringVar(&searchTName, "template", "", "the path to the search result template")
+	flag.StringVar(&searchTName, "template", "", "the path to the search result template(s) (colon delimited)")
 	flag.StringVar(&searchTName, "t", "", "the path to the search result template")
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 }
@@ -198,12 +198,13 @@ func main() {
 
 	var (
 		searchTmpl      *template.Template
-		searchTmplFuncs = tmplfn.Join(tmplfn.Time, tmplfn.Types, tmplfn.Strings, tmplfn.Page, tmplfn.Iterations, tmplfn.Conversions, tmplfn.Dotpath, tmplfn.Math)
+		searchTmplFuncs = tmplfn.AllFuncs()
 	)
 
 	// Load and validate the templates for using in the searchHandler
 	if searchTName != "" {
-		searchTmpl, err = tmplfn.Assemble(searchTmplFuncs, searchTName)
+		//Note: Handle single template and template lists
+		searchTmpl, err = tmplfn.Assemble(searchTmplFuncs, (strings.Split(searchTName, ":"))...)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s error, %s\n", searchTName, err)
 			os.Exit(1)

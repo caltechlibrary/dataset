@@ -4,6 +4,18 @@
     <title>dsws search results</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/css/site.css">
+    <style>
+    .hide {
+        display: none;
+    }
+    ul {
+        list-style: disc;
+    }
+
+    .result:nth-child(odd) {
+        background-color: lightgrey;
+    }
+    </style>
 </head>
 <body>
 <header><h1>search results</h1></header>
@@ -34,9 +46,9 @@ Size: {{ .request.size }}
 {{$highlight :=  (ifDotpathExists ".highlight.style" .request "true" "false")}} 
 {{$from := (int .request.from)}}
 {{$size := (int .request.size)}}
-{{$prev := (prevPage $from $size 30)}}
-{{$next := (nextPage $from $size 30)}}
 {{$total := (int .total_hits)}}
+{{$prev := (prevI $from $size 0 $total false)}}
+{{$next := (nextI $from $size 0 $total false)}}
 {{$sortBy := (join .request.sort ",")}}
 {{$fields := (join (dotpath ".fields" .request "*") ",")}}
 
@@ -68,7 +80,6 @@ DEBUG:
 
     {{with .request}}
         <input type="hidden" name="highlight" value="true">
-
         {{ with .start -}}
         <input type="hidden" name="start" value="{{- . -}}">
         {{- end }}
@@ -124,35 +135,57 @@ DEBUG:
 
 <section class="search-results">
 {{ range .hits }}
-<ul>
-            <li>
+<div class="result">
     {{with .fields}}
-        {{with .eprint_id}}<label>Eprint ID</label> {{ . }} {{ end }}<br />
-        {{with .title}}<label>Title</label><h2>{{ . }}</h2>{{ end }}<br />
-        {{with .abstract}}<label>Abstract:<label> <p>{{ . }}</p> {{ end }}<br />
-        {{ $familyName := .authors_family}}
-        {{ $givenName := .authors_given}}
+        {{with .title}}<div class="title"><label class="hide">Title</label><h2 class="title">{{ . }}</h2></div>{{- end }}
+        {{with .eprint_id}}<div class="eprint-id"><label>Eprint ID</label> <span class="eprint-id">{{- . -}}</span></div>{{- end }}
+        {{with .abstract}}<div class="abstract"><label>Abstract:<label> <p>{{ . }}</p></div>{{- end }}
+        {{ $familyName := .authors_family -}}
+        {{ $givenName := .authors_given -}}
         {{ $orcid := .orcid}}
-        {{ $lastAuthor := (int (sub (len .authors_id) 1))}}
-        <label>Authors ({{(len .authors_id)}})</label>
+        {{ $lastAuthor := (subi (len .authors_id) 1) -}}
+        {{ $official_url := .official_url -}}
+        {{if (gt (len .authors_id) 0) -}}<div class="authors"><label>Authors ({{- (len .authors_id) -}})</label>
         <ul>
-        {{range $i := (forInt 0 $lastAuthor 1)}}
+        {{ range $i := (forInt 0 $lastAuthor 1) -}}
             <li>
              {{(index $familyName $i)}}, {{index $givenName $i}} 
-             {{with (index $orcid $i)}}(ORCID: <a href="http://orcid.org/{{- . -}}">{{ . }}</a>){{end}}
+             {{- with (index $orcid $i) -}}(ORCID: <a href="http://orcid.org/{{- . -}}">{{- . -}}</a>){{- end }}
             </li>
-        {{end}}
+        {{- end}}
         </ul>
+        {{if (eq .date_type "published")}}
+            <div class="publication-date"><label>Published</label><span class="date">{{.date}}</span></div>
+        {{end}}
+        {{with .publication}}
+            Publication: {{.}}<br />
+        {{end}}
+        {{with .number}}
+            <div class="number"><label>Number</label><span class="number">{{- . -}}</span></div>
+        {{end}}
+        {{with .issn}}
+            <div class="issn"><label>ISSN</label><span class="issn">{{- . -}}</span></div>
+        {{end}}
+        {{with .citation}}
+            <div class="citation"><label>Citation</label><span class="citation">{{- . -}}</span></div>
+        {{end}}
+        {{with .keywords}}
+            <div class="keywords"><label>Keywords</label><span class="keywords">{{- . -}}</span></div>
+        {{end}}
+        {{with .referencetext}}
+            <div class="referencetext"><label>Reference Texts</label><span class="referencetext">{{- . -}}</span></div>
+        {{end}}
+    {{end}}
         {{if (eq $highlight "true")}}
+
         <ul>
             {{range $k,$v := .fragments}}
-                <li>Matched {{$k}}: {{ join $v "... " }}</li>
+                <li>Matched ({{- $k -}}): {{- join $v "... " -}}</li>
             {{end}}
         </ul>
         {{end}}
-    {{end}}
-            </li>
-</ul>
+</div><!-- END result-row -->
+        {{end}}
     <!-- 
     {{ stringify . true }}
     -->
