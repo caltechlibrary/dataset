@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -80,11 +81,12 @@ Run web service using "index.bleve" index, results templates in
 	showLicense bool
 
 	// local app options
-	uri         string
-	sslKey      string
-	sslCert     string
-	searchTName string
-	devMode     bool
+	uri          string
+	sslKey       string
+	sslCert      string
+	searchTName  string
+	devMode      bool
+	showTemplate bool
 
 	// Provided as an ordered command line arg
 	docRoot    string
@@ -122,6 +124,7 @@ func init() {
 	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
 	flag.StringVar(&searchTName, "template", "", "the path to the search result template(s) (colon delimited)")
 	flag.StringVar(&searchTName, "t", "", "the path to the search result template")
+	flag.BoolVar(&showTemplate, "show-template", false, "display the source of the template(s)")
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 }
 
@@ -202,24 +205,33 @@ func main() {
 	)
 
 	// Load and validate the templates for using in the searchHandler
+	tSrc := []string{}
 	if searchTName != "" {
-		//Note: Handle single template and template lists
-		searchTmpl, err = tmplfn.Assemble(searchTmplFuncs, (strings.Split(searchTName, ":"))...)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s error, %s\n", searchTName, err)
-			os.Exit(1)
-		}
-	} else {
-		if tSrc, ok := dataset.SiteDefaults["/templates/search.tmpl"]; ok == true {
-			searchTmpl, err = template.New("search.tmpl").Funcs(searchTmplFuncs).Parse(string(tSrc))
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
+		// Load the templates from disc
+		for _, tName := range strings.Split(searchTName, ":") {
+			if src, err := ioutil.ReadFile(tName); err == nil {
+				tSrc = append(tSrc, string(src))
+			} else {
+				fmt.Fprintf(os.Stderr, "Can't read %s, %s\n", tName, err)
 				os.Exit(1)
 			}
-		} else {
-			fmt.Fprintf(os.Stderr, "can't process default template\n")
-			os.Exit(1)
 		}
+	} else {
+		// Load the default templates
+		for tName, src := range dataset.SiteDefaults {
+			if strings.HasPrefix(tName, "/templates/") == true {
+				tSrc = append(tSrc, string(src))
+			}
+		}
+	}
+	if showTemplate == true {
+		fmt.Fprintf(os.Stdout, "%s\n", tSrc)
+		os.Exit(0)
+	}
+	searchTmpl, err = template.New("master").Funcs(searchTmplFuncs).Parse(strings.Join(tSrc, "\n"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
+		os.Exit(1)
 	}
 
 	// Construct our handler
