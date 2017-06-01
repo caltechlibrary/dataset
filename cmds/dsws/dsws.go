@@ -153,6 +153,43 @@ func main() {
 		os.Exit(0)
 	}
 
+	// make sure we have templates to work with
+	var (
+		searchTmpl      *template.Template
+		searchTmplFuncs = tmplfn.AllFuncs()
+	)
+
+	// Load and validate the templates for using in the searchHandler
+	tSrc := []string{}
+	if searchTName != "" {
+		// Load the templates from disc
+		for _, tName := range strings.Split(searchTName, ":") {
+			if src, err := ioutil.ReadFile(tName); err == nil {
+				tSrc = append(tSrc, string(src))
+			} else {
+				fmt.Fprintf(os.Stderr, "Can't read %s, %s\n", tName, err)
+				os.Exit(1)
+			}
+		}
+	} else {
+		// Load the default templates
+		for tName, src := range dataset.SiteDefaults {
+			if strings.HasPrefix(tName, "/templates/") == true {
+				tSrc = append(tSrc, string(src))
+			}
+		}
+	}
+	if showTemplate == true {
+		fmt.Fprintf(os.Stdout, "%s\n", strings.Join(tSrc,"\n"))
+		os.Exit(0)
+	}
+	searchTmpl, err := template.New("master").Funcs(searchTmplFuncs).Parse(strings.Join(tSrc, "\n"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
+		os.Exit(1)
+	}
+
+
 	// setup from command line
 	if len(args) > 0 {
 		docRoot = args[0]
@@ -198,41 +235,6 @@ func main() {
 		log.Fatalf("Can't open indexes, %s", err)
 	}
 	defer idxAlias.Close()
-
-	var (
-		searchTmpl      *template.Template
-		searchTmplFuncs = tmplfn.AllFuncs()
-	)
-
-	// Load and validate the templates for using in the searchHandler
-	tSrc := []string{}
-	if searchTName != "" {
-		// Load the templates from disc
-		for _, tName := range strings.Split(searchTName, ":") {
-			if src, err := ioutil.ReadFile(tName); err == nil {
-				tSrc = append(tSrc, string(src))
-			} else {
-				fmt.Fprintf(os.Stderr, "Can't read %s, %s\n", tName, err)
-				os.Exit(1)
-			}
-		}
-	} else {
-		// Load the default templates
-		for tName, src := range dataset.SiteDefaults {
-			if strings.HasPrefix(tName, "/templates/") == true {
-				tSrc = append(tSrc, string(src))
-			}
-		}
-	}
-	if showTemplate == true {
-		fmt.Fprintf(os.Stdout, "%s\n", tSrc)
-		os.Exit(0)
-	}
-	searchTmpl, err = template.New("master").Funcs(searchTmplFuncs).Parse(strings.Join(tSrc, "\n"))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
-		os.Exit(1)
-	}
 
 	// Construct our handler
 	searchHandler := func(w http.ResponseWriter, r *http.Request) {
