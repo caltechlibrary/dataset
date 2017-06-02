@@ -76,6 +76,5 @@ func HTMLFormatter(out io.Writer, results *bleve.SearchResult, tmpl *template.Te
 	if err := decoder.Decode(&data); err != nil {
 		return err
 	}
-	err = tmpl.Execute(out, data)
-	return err
+	return tmpl.Execute(out, data)
 }

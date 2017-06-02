@@ -9,4 +9,4 @@ $(dataset init characters)
 dataset import characters.csv
 dsindexer characters.json
 echo "Open your web browser and go to http://localhost:8011"
-dsws -t search.tmpl htdocs characters.bleve
+dsws -dev-mode=true -t search.tmpl htdocs characters.bleve

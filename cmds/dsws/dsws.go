@@ -158,6 +158,7 @@ func main() {
 		templateNames = strings.Split(searchTName, ":")
 	}
 	tmpl := tmplfn.New(tmplfn.AllFuncs())
+	log.Printf("DEBUG has_dotpath -> %+v", tmpl.FuncMap)
 
 	// Grab our default templates
 	defaultTemplates := map[string][]byte{}
@@ -303,8 +304,12 @@ func main() {
 					}
 				}
 			}
-			if err := dataset.HTMLFormatter(w, results, searchTmpl); err != nil {
-				http.Error(w, fmt.Sprintf("%s", err), 500)
+			pg := new(bytes.Buffer)
+			if err := dataset.HTMLFormatter(pg, results, searchTmpl); err != nil {
+				log.Println(err)
+				http.Error(w, "Cannot fullfil the request at this time", 500)
+			} else {
+				pg.WriteTo(w)
 			}
 		}
 	}

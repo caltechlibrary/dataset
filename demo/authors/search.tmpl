@@ -120,7 +120,7 @@ DEBUG:
 </div>
 <div>
     <select name="size">
-        {{range $i := (forInt 3 30 3)}}
+        {{range $i := (ints 3 30 3)}}
             {{if (eq $i $size) -}}
         <option value="{{$i}}" selected>{{$i}}</option>
             {{- else -}}
@@ -147,7 +147,7 @@ DEBUG:
         {{ $official_url := .official_url -}}
         {{if (gt (len .authors_id) 0) -}}<div class="authors"><label>Authors ({{- (len .authors_id) -}})</label>
         <ul>
-        {{ range $i := (forInt 0 $lastAuthor 1) -}}
+        {{ range $i := (ints 0 $lastAuthor 1) -}}
             <li>
              {{(index $familyName $i)}}, {{index $givenName $i}} 
              {{- with (index $orcid $i) -}}(ORCID: <a href="http://orcid.org/{{- . -}}">{{- . -}}</a>){{- end }}
