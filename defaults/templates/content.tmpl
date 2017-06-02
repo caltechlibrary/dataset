@@ -1,8 +1,10 @@
 {{- define "content" -}}
-<section class="searchbox">
-{{ template "searchbox" . }}
-</section><!-- END: searchbox -->
-<section class="search-results">
-{{ template "results" . }}
-</section><!-- END: search-results -->
+<section class="page-content">
+    <div class="searchbox">
+    {{ template "searchbox" . }}
+    </div><!-- END: searchbox -->
+    <div class="search-results">
+    {{ template "results" . }}
+    </div><!-- END: search-results -->
+</section><!-- END: page-content -->
 {{- end -}}

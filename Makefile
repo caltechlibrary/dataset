@@ -7,6 +7,8 @@ VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\"  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
+PKGASSETS = $(shell which pkgassets)
+
 PROJECT_LIST = dataset 
 
 build: $(PROJECT_LIST)
@@ -69,6 +71,7 @@ lint:
 	golint cmds/dsfind/dsfind.go
 
 clean:
+	if [ "$(PKGASSETS)" != "" ]; then rm assets.go; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi

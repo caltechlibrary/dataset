@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -30,7 +29,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"text/template"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/cli"
@@ -81,12 +79,12 @@ Run web service using "index.bleve" index, results templates in
 	showLicense bool
 
 	// local app options
-	uri          string
-	sslKey       string
-	sslCert      string
-	searchTName  string
-	devMode      bool
-	showTemplate bool
+	uri           string
+	sslKey        string
+	sslCert       string
+	searchTName   string
+	devMode       bool
+	showTemplates bool
 
 	// Provided as an ordered command line arg
 	docRoot    string
@@ -124,7 +122,7 @@ func init() {
 	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
 	flag.StringVar(&searchTName, "template", "", "the path to the search result template(s) (colon delimited)")
 	flag.StringVar(&searchTName, "t", "", "the path to the search result template")
-	flag.BoolVar(&showTemplate, "show-template", false, "display the source of the template(s)")
+	flag.BoolVar(&showTemplates, "show-templates", false, "display the source code of the template(s)")
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 }
 
@@ -153,44 +151,65 @@ func main() {
 		os.Exit(0)
 	}
 
-	// make sure we have templates to work with
-	var (
-		searchTmpl      *template.Template
-		searchTmplFuncs = tmplfn.AllFuncs()
-	)
-
 	// Load and validate the templates for using in the searchHandler
-	tSrc := []string{}
-	if searchTName != "" {
-		// Load the templates from disc
-		for _, tName := range strings.Split(searchTName, ":") {
-			if src, err := ioutil.ReadFile(tName); err == nil {
-				tSrc = append(tSrc, string(src))
-			} else {
-				fmt.Fprintf(os.Stderr, "Can't read %s, %s\n", tName, err)
-				os.Exit(1)
-			}
+	searchTName = cfg.CheckOption(searchTName, cfg.MergeEnv("template", searchTName), false)
+	templateNames := []string{}
+	if len(searchTName) == 0 {
+		templateNames = strings.Split(searchTName, ":")
+	}
+	tmpl := tmplfn.New(tmplfn.AllFuncs())
+
+	// Grab our default templates
+	defaultTemplates := map[string][]byte{}
+	for name, src := range dataset.SiteDefaults {
+		ext := path.Ext(name)
+		if ext == ".tmpl" {
+			defaultTemplates[name] = src
+		}
+	}
+
+	// Setup templates
+	if len(templateNames) > 0 {
+		// Load any user supplied templates
+		log.Printf("Search templates %q", strings.Join(templateNames, ", "))
+		if err := tmpl.ReadFiles(templateNames...); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
 		}
 	} else {
-		// Load the default templates
-		for tName, src := range dataset.SiteDefaults {
-			if strings.HasPrefix(tName, "/templates/") == true {
-				tSrc = append(tSrc, string(src))
-			}
+		log.Printf("Using default search templates")
+		// Load our default template maps
+		if err := tmpl.Merge(defaultTemplates); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
 		}
 	}
-	if showTemplate == true {
-		fmt.Fprintf(os.Stdout, "%s\n", strings.Join(tSrc,"\n"))
+
+	if showTemplates == true {
+		for name, src := range tmpl.Code {
+			if len(tmpl.Code) == 0 {
+				fmt.Fprintf(os.Stdout, "%s\n", src)
+			} else {
+				fmt.Fprintf(os.Stdout,
+					"---------------- START: %s -----------------\n",
+					name)
+				fmt.Fprintf(os.Stdout, "%s\n", src)
+				fmt.Fprintf(os.Stdout,
+					"---------------- END:   %s -----------------\n",
+					name)
+			}
+		}
 		os.Exit(0)
 	}
-	searchTmpl, err := template.New("master").Funcs(searchTmplFuncs).Parse(strings.Join(tSrc, "\n"))
+
+	// Assemble the templates
+	searchTmpl, err := tmpl.Assemble()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "default search template error, %s\n", err)
 		os.Exit(1)
 	}
 
-
-	// setup from command line
+	// Setup from command line
 	if len(args) > 0 {
 		docRoot = args[0]
 	}
@@ -202,17 +221,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	//
+	// Final set and start the webservice
+	//
 	log.Printf("DocRoot %s", docRoot)
 	if len(indexNames) == 1 {
 		log.Printf("Index %s", strings.Join(indexNames, ", "))
 	} else {
 		log.Printf("Indexes %s", strings.Join(indexNames, ", "))
-	}
-	searchTName = cfg.CheckOption(searchTName, cfg.MergeEnv("template", searchTName), false)
-	if searchTName != "" {
-		log.Printf("Search result template is %q", searchTName)
-	} else {
-		log.Printf("Using default search result template")
 	}
 
 	uri = cfg.CheckOption(uri, cfg.MergeEnv("url", uri), true)
@@ -276,11 +292,15 @@ func main() {
 		default:
 			//FIXME: This is an ugly abuse of a closure to get a developer mode...
 			if devMode == true {
-				if t, err := tmplfn.Assemble(searchTmplFuncs, searchTName); err == nil {
-					searchTmpl = t
-					log.Printf("dev mode: template %s assembled", searchTName)
+				if err := tmpl.ReadFiles(templateNames...); err != nil {
+					fmt.Fprintf(os.Stderr, "%s\n", err)
 				} else {
-					log.Printf("\n\ndev mode: template %s failed, %s\n\n", searchTName, err)
+					if t, err := tmpl.Assemble(); err == nil {
+						searchTmpl = t
+						log.Printf("dev mode: template %s assembled", searchTName)
+					} else {
+						log.Printf("\n\ndev mode: template %s failed, %s\n\n", strings.Join(templateNames, ", "), err)
+					}
 				}
 			}
 			if err := dataset.HTMLFormatter(w, results, searchTmpl); err != nil {
@@ -292,9 +312,10 @@ func main() {
 	// Define our search API prefix path
 	http.HandleFunc("/api", searchHandler)
 
-	// FIXME: If DocRoot defined we want to use it, otherwise we need to fallback to what is supplied in dataset.SiteDefaults
-
+	// FIXME: If DocRoot is NOT defined we need to use dataset.SiteDefaults
+	// instead of htt.FileServer(http.Dir(docRoot)
 	http.Handle("/", http.FileServer(http.Dir(docRoot)))
+
 	if u.Scheme == "https" {
 		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
 		if err != nil {
