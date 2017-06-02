@@ -2,33 +2,33 @@
 <form class="search-form" method="get" action="/api">
 {{/* Define some useful local variables for form.*/}}
 {{$qryTerms := (dotpath ".query.query" .request "")}}
-{{$highlight :=  (ifDotpathExists ".highlight.style" .request "true" "false")}} 
+{{$highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}} 
 {{$from := (int .request.from)}}
 {{$size := (int .request.size)}}
 {{$total := (int .total_hits)}}
-{{$prev := (prevI $from $size 0 $total false)}}
-{{$next := (nextI $from $size 0 $total false)}}
+{{$prev := (previ $from $size 0 $total false)}}
+{{$next := (nexti $from $size 0 $total false)}}
 {{$sortBy := (join .request.sort ",")}}
 {{$fields := (join (dotpath ".fields" .request "*") ",")}}
 
 <!-- 
 DEBUG: START
-    + .request.from {{.request.from}} {{getType .request.from}}
-    + .request.size {{.request.size}} {{getType .request.size}}
-    + From: {{$from}} {{getType $from}}
-    + Size: {{$size}} {{getType $size}}
-    + Next: {{$next}} {{getType $next}}
-    + Prev: {{$prev}} {{getType $prev}}
-    + Total: {{$total}} {{getType $total}}
-    + Sort By: {{$sortBy}} {{getType $sortBy}}
-    + Fields: {{$fields}} {{getType $fields}}
+    + .request.from {{.request.from}} {{typeof .request.from}}
+    + .request.size {{.request.size}} {{typeof .request.size}}
+    + From: {{$from}} {{typeof $from}}
+    + Size: {{$size}} {{typeof $size}}
+    + Next: {{$next}} {{typeof $next}}
+    + Prev: {{$prev}} {{typeof $prev}}
+    + Total: {{$total}} {{typeof $total}}
+    + Sort By: {{$sortBy}} {{typeof $sortBy}}
+    + Fields: {{$fields}} {{typeof $fields}}
 DEBUG: END 
 -->
 {{with .request}}
     {{ with $highlight -}}<input type="hidden" name="highlight" value="true">{{- end}}
     {{ with .start -}}<input type="hidden" name="start" value="{{- . -}}">{{- end }}
     {{ with .fields -}}
-    <input type="hidden" name="fields" value="{{- join . "," -}}">
+    <input type="hidden" name="fields" value="{{- $fields -}}">
     {{- else -}}
     <input type="hidden" name="fields" value="*">
     {{- end }}
@@ -38,13 +38,13 @@ DEBUG: END
     <div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" /></div>
 <div>
      <select name="sort">
-        {{with $sortBy := (join .request.sort ",") -}}
+        {{with $sortBy -}}
             {{if (or (eq $sortBy "-_score") (eq $sortBy ""))}}
          <option value="" selected>Relevance</option>
             {{else}}
-            {{range $i := len($fields) -}}
+            {{range $i := (len $fields) -}}
                 {{$fieldName := (index $fields "$i")}}
-                {{if (neq $fieldName "*") -}}
+                {{if (ne $fieldName "*") -}}
                 <option value="{{- $fieldName -}}">{{- $fieldName -}}</option>
                 {{- end}}
             {{- end}}
@@ -53,7 +53,7 @@ DEBUG: END
 </div>
 <div>
     <select name="size">
-        {{range $i := (forInt 5 100 5)}}
+        {{range $i := (ints 5 100 5)}}
             {{if (eq $i $size) -}}
         <option value="{{$i}}" selected>{{$i}}</option>
             {{- else -}}
@@ -64,4 +64,5 @@ DEBUG: END
 </div>
     <div><input type="submit" value="Go" ></div>
 </form>
+{{- end -}}
 {{- end -}}

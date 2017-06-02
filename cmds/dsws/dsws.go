@@ -154,7 +154,7 @@ func main() {
 	// Load and validate the templates for using in the searchHandler
 	searchTName = cfg.CheckOption(searchTName, cfg.MergeEnv("template", searchTName), false)
 	templateNames := []string{}
-	if len(searchTName) == 0 {
+	if searchTName != "" {
 		templateNames = strings.Split(searchTName, ":")
 	}
 	tmpl := tmplfn.New(tmplfn.AllFuncs())
@@ -216,7 +216,7 @@ func main() {
 	if len(args) > 1 {
 		indexNames = args[1:]
 	} else {
-		fmt.Fprintf(os.Stderr, cfg.UsageText)
+		fmt.Fprintln(os.Stderr, cfg.UsageText)
 		fmt.Fprintf(os.Stderr, "error: one or more Bleve index is required\n")
 		os.Exit(1)
 	}

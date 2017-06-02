@@ -43,26 +43,26 @@ Size: {{ .request.size }}
 <!-- BEGIN: Pager -->
 
 {{$qryTerms := (dotpath ".query.query" .request "")}}
-{{$highlight :=  (ifDotpathExists ".highlight.style" .request "true" "false")}} 
+{{$highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}} 
 {{$from := (int .request.from)}}
 {{$size := (int .request.size)}}
 {{$total := (int .total_hits)}}
-{{$prev := (prevI $from $size 0 $total false)}}
-{{$next := (nextI $from $size 0 $total false)}}
+{{$prev := (previ $from $size 0 $total false)}}
+{{$next := (nexti $from $size 0 $total false)}}
 {{$sortBy := (join .request.sort ",")}}
 {{$fields := (join (dotpath ".fields" .request "*") ",")}}
 
 <pre>
 DEBUG: 
-    + .request.from {{.request.from}} {{getType .request.from}}
-    + .request.size {{.request.size}} {{getType .request.size}}
-    + From: {{$from}} {{getType $from}}
-    + Size: {{$size}} {{getType $size}}
-    + Next: {{$next}} {{getType $next}}
-    + Prev: {{$prev}} {{getType $prev}}
-    + Total: {{$total}} {{getType $total}}
-    + Sort By: {{$sortBy}} {{getType $sortBy}}
-    + Fields: {{$fields}} {{getType $fields}}
+    + .request.from {{.request.from}} {{typeof .request.from}}
+    + .request.size {{.request.size}} {{typeof .request.size}}
+    + From: {{$from}} {{typeof $from}}
+    + Size: {{$size}} {{typeof $size}}
+    + Next: {{$next}} {{typeof $next}}
+    + Prev: {{$prev}} {{typeof $prev}}
+    + Total: {{$total}} {{typeof $total}}
+    + Sort By: {{$sortBy}} {{typeof $sortBy}}
+    + Fields: {{$fields}} {{typeof $fields}}
 </pre>
 
 {{if (and (gt $from 0) (ge $prev 0))}}
