@@ -8,8 +8,8 @@
         "include_locations": true,
         "store":true
     },
-    "story":{
-        "object_path": ".story",
+    "title":{
+        "object_path": ".title",
         "field_mapping": "text",
         "analyzer": "standard",
         "include_in_all": true,

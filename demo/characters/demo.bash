@@ -8,21 +8,21 @@ fi
 if [ -d names.bleve ]; then
     rm -fR names.bleve
 fi
-if [ -d stories.bleve ]; then
-    rm -fR stories.bleve
+if [ -d titles.bleve ]; then
+    rm -fR titles.bleve
 fi
 $(dataset init characters)
-dataset -uuid import characters.csv
-dsindexer characters.json
-dsindexer names.json
-dsindexer stories.json
+dataset -uuid import htdocs/characters.csv
+dsindexer htdocs/characters.json characters.bleve
+dsindexer htdocs/names.json names.bleve
+dsindexer htdocs/titles.json titles.bleve
 dsfind "Mojo Sam"
-dsfind -indexes=characters.bleve -fields="name,story,year" "Mojo Sam"
-dsfind -indexes=stories.bleve -fields="name,story,year" "Mojo"
-dsfind -indexes=names.bleve -fields="name,story,year" "Mojo Sam"
-dsfind -size=1000 -indexes=stories.bleve -csv -fields="name,story,year" 'year:2002'
-dsfind -size=1000 -indexes=names.bleve -csv -fields="name,story,year" 'year:2002'
-dsfind -size=1000 -indexes="names.bleve,stories.bleve" -csv -fields="name,story,year" "Mojo Sam" 
-dsfind -size=1000 -sort='year' -indexes=characters.bleve -csv -fields="story,year" '+name,"Jack" +name,"Flanders"'
-dsfind -size=1000 -sort='story' -indexes=characters.bleve -csv -fields="story,year" '+name,"Jack" +name,"Flanders"'
-dsfind -size=1000 -sort='name' -indexes=characters.bleve -csv -fields="name,story,year" "Mojo Frieda"
+dsfind -indexes=characters.bleve -fields="name,title,year" "Mojo Sam"
+dsfind -indexes=titles.bleve -fields="name,title,year" "Mojo"
+dsfind -indexes=names.bleve -fields="name,title,year" "Mojo Sam"
+dsfind -size=1000 -indexes=titles.bleve -csv -fields="name,title,year" 'year:2002'
+dsfind -size=1000 -indexes=names.bleve -csv -fields="name,title,year" 'year:2002'
+dsfind -size=1000 -indexes="names.bleve,titles.bleve" -csv -fields="name,title,year" "Mojo Sam" 
+dsfind -size=1000 -sort='year' -indexes=characters.bleve -csv -fields="title,year" '+name,"Jack" +name,"Flanders"'
+dsfind -size=1000 -sort='title' -indexes=characters.bleve -csv -fields="title,year" '+name,"Jack" +name,"Flanders"'
+dsfind -size=1000 -sort='name' -indexes=characters.bleve -csv -fields="name,title,year" "Mojo Frieda"

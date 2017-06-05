@@ -1,6 +1,6 @@
 {
-    "story":{
-        "object_path": ".story",
+    "title":{
+        "object_path": ".title",
         "field_mapping": "text",
         "anlyzer": "standard",
         "include_in_all": true,

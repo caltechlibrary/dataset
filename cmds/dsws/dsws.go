@@ -102,6 +102,15 @@ func logger(next http.Handler) http.Handler {
 	})
 }
 
+// trimmedSplit splits a string on commas and run performs a TrimSpace on the resulting array elements
+func trimmedSplit(s, delimiter string) []string {
+	r := strings.Split(s, delimiter)
+	for i, val := range r {
+		r[i] = strings.TrimSpace(val)
+	}
+	return r
+}
+
 func init() {
 	defaultURL := "http://localhost:8011"
 
@@ -121,7 +130,7 @@ func init() {
 	flag.StringVar(&sslCert, "c", "", "Set the path for the SSL Cert")
 	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
 	flag.StringVar(&searchTName, "template", "", "the path to the search result template(s) (colon delimited)")
-	flag.StringVar(&searchTName, "t", "", "the path to the search result template")
+	flag.StringVar(&searchTName, "t", "", "the path to the search result template(s) (colon delimited)")
 	flag.BoolVar(&showTemplates, "show-templates", false, "display the source code of the template(s)")
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 }
@@ -158,16 +167,6 @@ func main() {
 		templateNames = strings.Split(searchTName, ":")
 	}
 	tmpl := tmplfn.New(tmplfn.AllFuncs())
-	log.Printf("DEBUG has_dotpath -> %+v", tmpl.FuncMap)
-
-	// Grab our default templates
-	defaultTemplates := map[string][]byte{}
-	for name, src := range dataset.SiteDefaults {
-		ext := path.Ext(name)
-		if ext == ".tmpl" {
-			defaultTemplates[name] = src
-		}
-	}
 
 	// Setup templates
 	if len(templateNames) > 0 {
@@ -179,8 +178,8 @@ func main() {
 		}
 	} else {
 		log.Printf("Using default search templates")
-		// Load our default template maps
-		if err := tmpl.Merge(defaultTemplates); err != nil {
+		// Load our default templates from dataset.SiteDefaults
+		if err := tmpl.ReadMap(dataset.SiteDefaults); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
@@ -279,7 +278,7 @@ func main() {
 		// Based on the request info, format the results appropriately
 		switch strings.ToLower(qformat) {
 		case "csv":
-			fields := strings.Split(values.Get("fields"), ",")
+			fields := trimmedSplit(values.Get("fields"), ",")
 			if len(fields) == 0 {
 				http.Error(w, "Missing field names needed to render CSV", 500)
 			}

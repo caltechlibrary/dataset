@@ -76,5 +76,6 @@ func HTMLFormatter(out io.Writer, results *bleve.SearchResult, tmpl *template.Te
 	if err := decoder.Decode(&data); err != nil {
 		return err
 	}
+	fmt.Printf("DEBUG template name: %s\n", tmpl.Name()) // DEBUG
 	return tmpl.Execute(out, data)
 }

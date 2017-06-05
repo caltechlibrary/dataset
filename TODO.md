@@ -6,9 +6,7 @@
 
 ## Next
 
-+ [ ] Add support for indexing arrays values and objects in index definitions
-    + [x] code 
-    + [ ] test
++ [ ] switch to batch indexing in dsindexer
 
 ## Someday, Maybe
 
@@ -55,6 +53,9 @@
 
 ## Completed
 
++ [x] Add support for indexing arrays values and objects in index definitions
+    + [x] code 
+    + [x] test
 + [x] add Bleve search support to dataset
     + [x] paging options (starting from/to, all records)
         + [x] add option to return all results

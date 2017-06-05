@@ -64,6 +64,7 @@ in "email-mapping.json".
 
 	// App Specific Options
 	collectionName string
+	documentType   string
 )
 
 func init() {
@@ -78,6 +79,7 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
+	flag.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
 }
 
 func main() {

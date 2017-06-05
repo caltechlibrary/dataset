@@ -13,12 +13,13 @@ PROJECT_LIST = dataset
 
 build: $(PROJECT_LIST)
 
+dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
+
+dataset.go: assets.go
+
 assets.go: 
 	pkgassets -p dataset -o assets.go SiteDefaults defaults
 
-dataset.go: assets.go
-	
-dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 
 bin/dataset: dataset.go attachments.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
@@ -29,7 +30,7 @@ bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go
 bin/dsfind: dataset.go search.go formats.go cmds/dsfind/dsfind.go
 	go build -o bin/dsfind cmds/dsfind/dsfind.go
 	
-bin/dsws: dataset.go search.go formats.go cmds/dsws/dsws.go
+bin/dsws: dataset.go search.go assets.go formats.go cmds/dsws/dsws.go
 	go build -o bin/dsws cmds/dsws/dsws.go
 
 install: $(PROJECT_LIST)
@@ -71,7 +72,7 @@ lint:
 	golint cmds/dsfind/dsfind.go
 
 clean:
-	if [ "$(PKGASSETS)" != "" ]; then rm assets.go; fi
+	if [ "$(PKGASSETS)" != "" ] && [ -f assets.go ]; then rm assets.go; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
