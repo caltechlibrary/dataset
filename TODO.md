@@ -6,6 +6,7 @@
 
 ## Next
 
++ [ ] Add check to make sure page.tmpl and include.tmpl are available, if not use the ones from defaults
 + [ ] switch to batch indexing in dsindexer
 
 ## Someday, Maybe
