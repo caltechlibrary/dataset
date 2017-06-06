@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
-{{- template "head" . -}}
+{{template "head.tmpl" . }}
 <body>
-{{- template "header" . -}}
-{{- template "content" . -}}
-{{- template "aside" . -}}
-{{- template "nav" . -}}
-{{- template "footer" . -}}
+{{template "header.tmpl" . }}
+{{template "nav.tmpl" . }}
+{{template "content.tmpl" . }}
+{{template "footer.tmpl" . }}
 </body>
 </html>

@@ -1,20 +1,20 @@
-{{- define "searchbox" -}}
+{{define "searchbox.tmpl"}}
+<div class="search-box">
 <form class="search-form" method="get" action="/api">
 {{/* Define some useful local variables for form.*/}}
-{{$qryTerms := (dotpath ".query.query" .request "")}}
-{{$highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}} 
-{{$from := (int .request.from)}}
-{{$size := (int .request.size)}}
-{{$total := (int .total_hits)}}
-{{$prev := (previ $from $size 0 $total false)}}
-{{$next := (nexti $from $size 0 $total false)}}
-{{$sortBy := (join .request.sort ",")}}
-{{$fields := (join (dotpath ".fields" .request "*") ",")}}
-
+{{- $qryTerms := (dotpath ".request.query.query" . "") -}}
+{{- $highlight := (has_dotpath ".request.highlight.style" . "true" "false") -}} 
+{{- $from := (int .request.from) -}}
+{{- $size := (int .request.size) -}}
+{{- $total := (int .total_hits) -}}
+{{- $prev := (previ $from $size 0 $total false) -}}
+{{- $next := (nexti $from $size 0 $total false) -}}
+{{- $fields := (join (dotpath ".request.fields" . nil) ",") -}}
+{{- $fieldValues := (dotpath ".request.fields" . nil) -}}
+{{- $sortBy := (join (dotpath ".request.sort" . nil) ",") -}}
 <!-- 
 DEBUG: START
-    + .request.from {{.request.from}} {{typeof .request.from}}
-    + .request.size {{.request.size}} {{typeof .request.size}}
+    + Query: {{$qryTerms}} {{typeof $qryTerms}}
     + From: {{$from}} {{typeof $from}}
     + Size: {{$size}} {{typeof $size}}
     + Next: {{$next}} {{typeof $next}}
@@ -22,37 +22,57 @@ DEBUG: START
     + Total: {{$total}} {{typeof $total}}
     + Sort By: {{$sortBy}} {{typeof $sortBy}}
     + Fields: {{$fields}} {{typeof $fields}}
+    + Fields: {{$fieldValues}} {{typeof $fieldValues}}
 DEBUG: END 
 -->
-{{with .request}}
-    {{ with $highlight -}}<input type="hidden" name="highlight" value="true">{{- end}}
-    {{ with .start -}}<input type="hidden" name="start" value="{{- . -}}">{{- end }}
-    {{ with .fields -}}
-    <input type="hidden" name="fields" value="{{- $fields -}}">
+<div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" /></div>
+{{ with $highlight -}}
+    {{if (eq $highlight "true") -}}
+    <div><label> Show matching text?</label> <input type="radio" name="highlight" value="true" checked>Yes <input type="radio" name="highlight" value="false">No</div>
     {{- else -}}
+    <div><label> Show matching text?</label> <input type="radio" name="highlight" value="true">Yes <input type="radio" name="highlight" value="false" checked>No</div>
+    {{- end -}}
+    </div>
+{{- else -}}
+    <div><label> Show matching text?</label> <input type="radio" name="highlight" value="true">Yes <input type="radio" name="highlight" value="false">No</div>
+{{- end }}
+{{ with $fields -}}
+    <input type="hidden" name="fields" value="{{- . -}}">
+{{- else -}}
     <input type="hidden" name="fields" value="*">
-    {{- end }}
-{{else}}
-    <input type="hidden" name="fields" value="*">
-{{end}}
-    <div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" /></div>
+{{- end }}
 <div>
-     <select name="sort">
-        {{with $sortBy -}}
-            {{if (or (eq $sortBy "-_score") (eq $sortBy ""))}}
-         <option value="" selected>Relevance</option>
-            {{else}}
-            {{range $i := (len $fields) -}}
-                {{$fieldName := (index $fields "$i")}}
-                {{if (ne $fieldName "*") -}}
-                <option value="{{- $fieldName -}}">{{- $fieldName -}}</option>
-                {{- end}}
-            {{- end}}
-        {{- end }}
-     </select>
+{{ with $sortBy -}}
+    {{if (eq $fields "*")}}
+    <input type="hidden" name="sort" value="{{- . -}}">
+    {{- else -}}
+    <label>Sort by</label>
+    <select name="sort">
+        {{- if (or (eq $sortBy "_score") (eq $sortBy "")) -}}
+        <option value="_score" selected>Relevance</option>
+        {{- else -}}
+        <option value="_score">Relevance</option>
+        {{- end -}}
+        {{- range $fieldName := $fieldValues -}}
+            {{- if (eq $sortBy $fieldName) -}}
+        <option value="{{- $fieldName -}}" selected>{{- $fieldName -}}</option>
+            {{- else -}}
+        <option value="{{- $fieldName -}}">{{- $fieldName -}}</option>
+            {{- end -}}
+        {{- end -}}
+    </select><!-- END: select.name[sort] -->
+    {{- end -}}
+{{- else -}}
+    <input type="hidden" name="sort" value="_score">
+{{- end }}
 </div>
+{{ with $from -}}
+    <input type="hidden" name="start" value="{{- . -}}">
+{{- else -}}
+    <input type="hidden" name="start" value="0">
+{{- end }}
 <div>
-    <select name="size">
+    <label>Results per page</label><select name="size">
         {{range $i := (ints 5 100 5)}}
             {{if (eq $i $size) -}}
         <option value="{{$i}}" selected>{{$i}}</option>
@@ -64,5 +84,5 @@ DEBUG: END
 </div>
     <div><input type="submit" value="Go" ></div>
 </form>
-{{- end -}}
+</div><!-- END: searchbox -->
 {{- end -}}

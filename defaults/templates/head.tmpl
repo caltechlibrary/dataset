@@ -1,12 +1,6 @@
-{{- define "head" -}}
+{{- define "head.tmpl" -}}
 <head>
-{{with .pageTitle -}}
-    <title>{{- . -}}</title>
-{{- else -}}
     <title>Dataset Search Results</title>
-{{- end }}
-{{with .CSSPath -}}<link rel="stylesheet" href="{{- . -}}">{{- end }}
-{{with .CSSStyle -}}
 <style>
 /**
  * site.css - stylesheet for the Caltech Library's Digital Library Development Group's sandbox.
@@ -40,7 +34,8 @@ body {
      color: white;
      background-color: white;
      z-index: 2;
-     height: 105px;
+     width: 100%;
+     height: 4em;
      vertical-align: middle;
 }
 
@@ -53,10 +48,13 @@ body {
      padding-top: 32px;
 }
 
-.pager-header h1 {
+.page-header h1 {
      position: relative;
      display: inline-block;
-     margin: 0;
+     margin-top: 0;
+     margin-bottom: 0;
+     margin-left: 0.24em;
+     margin-right: 0;
      border: 0;
      padding: 0;
      font-size: 3em;
@@ -251,9 +249,14 @@ a:active, a:hover, a:focus {
      z-index: 2;
 }
 
+.page-footer div {
+    margin-left: 0.25em;
+}
+
 .page-footer h1, .page-footer span, .page-footer address {
      position: relative;
      display: inline-block;
+
      margin: 0;
      padding-left: 0.24em;
      font-family: Open Sans, Helvetica, Sans-Serif;
@@ -271,7 +274,34 @@ a:active, a:hover, a:focus {
      color: #FF6E1E;
      text-decoration: none;
 }
+
+.searchbox {
+    padding-bottom: 1.24em;
+}
+
+.search-pager {
+    padding-bottom: 1.24em;
+}
+
+.search-result {
+    padding-top: 0.24em;
+    padding-bottom: 1.24em;
+}
+
+.search-result:nth-child(odd) {
+    background-color: lightgrey;
+}
+
+.field-name, .matched-name {
+    width: auto;
+    height: auto;
+    padding-left: 0.24em;
+    padding-right: 0.24em;
+    text-transform: uppercase;
+    font-size: 40%;
+}
+
+
 </style>
-{{- end }}
 </head>
 {{- end -}}

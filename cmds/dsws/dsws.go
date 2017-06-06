@@ -39,7 +39,7 @@ import (
 
 // Flag options
 var (
-	usage = `USAGE: %s [OPTIONS] DOC_ROOT BLEVE_INDEXES`
+	usage = `USAGE: %s [OPTIONS] [DOC_ROOT] BLEVE_INDEXES`
 
 	description = `
 SYNOPSIS
@@ -109,6 +109,11 @@ func trimmedSplit(s, delimiter string) []string {
 		r[i] = strings.TrimSpace(val)
 	}
 	return r
+}
+
+// redirectToApi will redirect to the /api search result page
+func redirectToApi(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/api", 301)
 }
 
 func init() {
@@ -210,12 +215,15 @@ func main() {
 	}
 
 	// Setup from command line
-	if len(args) > 0 {
-		docRoot = args[0]
+	for _, arg := range args {
+		ext := path.Ext(arg)
+		if ext == ".bleve" {
+			indexNames = append(indexNames, arg)
+		} else {
+			docRoot = arg
+		}
 	}
-	if len(args) > 1 {
-		indexNames = args[1:]
-	} else {
+	if len(indexNames) < 1 {
 		fmt.Fprintln(os.Stderr, cfg.UsageText)
 		fmt.Fprintf(os.Stderr, "error: one or more Bleve index is required\n")
 		os.Exit(1)
@@ -224,7 +232,11 @@ func main() {
 	//
 	// Final set and start the webservice
 	//
-	log.Printf("DocRoot %s", docRoot)
+	if docRoot != "" {
+		log.Printf("DocRoot %s", docRoot)
+	} else {
+		log.Printf("Using /api as landing page")
+	}
 	if len(indexNames) == 1 {
 		log.Printf("Index %s", strings.Join(indexNames, ", "))
 	} else {
@@ -275,7 +287,21 @@ func main() {
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%s", err), 500)
 		}
+		//FIXME: This is an ugly abuse of a closure to get a developer mode...
+		if devMode == true {
+			if err := tmpl.ReadFiles(templateNames...); err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+			} else {
+				if t, err := tmpl.Assemble(); err == nil {
+					searchTmpl = t
+					log.Printf("dev mode: template %s assembled", searchTName)
+				} else {
+					log.Printf("\n\ndev mode: template %s failed, %s\n\n", strings.Join(templateNames, ", "), err)
+				}
+			}
+		}
 		// Based on the request info, format the results appropriately
+		var tName string
 		switch strings.ToLower(qformat) {
 		case "csv":
 			fields := trimmedSplit(values.Get("fields"), ",")
@@ -285,31 +311,24 @@ func main() {
 			if err := dataset.CSVFormatter(w, results, fields); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
+			return
 		case "json":
 			if err := dataset.JSONFormatter(w, results); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
+			return
+		case "include":
+			tName = "include.tmpl"
+			log.Printf("DEBUG picking include.tmpl")
 		default:
-			//FIXME: This is an ugly abuse of a closure to get a developer mode...
-			if devMode == true {
-				if err := tmpl.ReadFiles(templateNames...); err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", err)
-				} else {
-					if t, err := tmpl.Assemble(); err == nil {
-						searchTmpl = t
-						log.Printf("dev mode: template %s assembled", searchTName)
-					} else {
-						log.Printf("\n\ndev mode: template %s failed, %s\n\n", strings.Join(templateNames, ", "), err)
-					}
-				}
-			}
-			pg := new(bytes.Buffer)
-			if err := dataset.HTMLFormatter(pg, results, searchTmpl); err != nil {
-				log.Println(err)
-				http.Error(w, "Cannot fullfil the request at this time", 500)
-			} else {
-				pg.WriteTo(w)
-			}
+			tName = "page.tmpl"
+		}
+		pg := new(bytes.Buffer)
+		if err := dataset.HTMLFormatter(pg, results, searchTmpl, tName); err != nil {
+			log.Println(err)
+			http.Error(w, fmt.Sprintf("Oops, %s formatting error", tName), 500)
+		} else {
+			pg.WriteTo(w)
 		}
 	}
 
@@ -318,7 +337,12 @@ func main() {
 
 	// FIXME: If DocRoot is NOT defined we need to use dataset.SiteDefaults
 	// instead of htt.FileServer(http.Dir(docRoot)
-	http.Handle("/", http.FileServer(http.Dir(docRoot)))
+	if docRoot != "" {
+		http.Handle("/", http.FileServer(http.Dir(docRoot)))
+	} else {
+		// If no docRoot then redirect to /api
+		http.HandleFunc("/", redirectToApi)
+	}
 
 	if u.Scheme == "https" {
 		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
