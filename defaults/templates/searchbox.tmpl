@@ -25,7 +25,7 @@ DEBUG: START
     + Fields: {{$fieldValues}} {{typeof $fieldValues}}
 DEBUG: END 
 -->
-<div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" /></div>
+<div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" size="80" /></div>
 {{ with $highlight -}}
     {{if (eq $highlight "true") -}}
     <div><label> Show matching text?</label> <input type="radio" name="highlight" value="true" checked>Yes <input type="radio" name="highlight" value="false">No</div>
@@ -43,12 +43,12 @@ DEBUG: END
 {{- end }}
 <div>
 {{ with $sortBy -}}
-    {{if (eq $fields "*")}}
+    {{if (or (eq $fields "*") (eq $fields ""))}}
     <input type="hidden" name="sort" value="{{- . -}}">
     {{- else -}}
     <label>Sort by</label>
     <select name="sort">
-        {{- if (or (eq $sortBy "_score") (eq $sortBy "")) -}}
+        {{- if (or (eq $sortBy "_score") (eq $sortBy "+_score") (eq $sortBy "-_score") (eq $sortBy "")) -}}
         <option value="_score" selected>Relevance</option>
         {{- else -}}
         <option value="_score">Relevance</option>

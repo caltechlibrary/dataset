@@ -24,7 +24,11 @@
 {{- if (gt $total 0) -}}
 {{add $from 1}} to {{if lt $next $last}}{{$next}}{{else}}{{$last}}{{end}}, of {{.total_hits}} records
 {{- else -}}
+    {{if (eq $qryTerms "")}}
+Enter a new search
+    {{- else -}}
 0 records
+    {{- end -}}
 {{- end -}}
 {{if lt (add $from $size) $last}}
 <a href="/api?fields={{$fields}}&highlight={{$highlight}}&from={{$next}}&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Next</a>
