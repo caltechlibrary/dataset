@@ -3,11 +3,15 @@
 
 ## Bugs
 
++ [ ] when adding a fielded search in default templates the query string breaks the HTML of the query input form
+    + double quotes make <input ... value="{{- . -}}" ...> break
 
 ## Next
 
 + [ ] Add check to make sure page.tmpl and include.tmpl are available, if not use the ones from defaults
 + [ ] switch to batch indexing in dsindexer
++ [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
++ [ ] Add RSS2 and BibTeX format support
 
 ## Someday, Maybe
 
