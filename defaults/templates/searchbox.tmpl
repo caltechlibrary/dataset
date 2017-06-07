@@ -42,13 +42,15 @@
         <option value="_score">Relevance</option>
         {{- end -}}
         {{- range $fieldName := $fieldValues }}
+        {{- if (and (ne $fieldName "_id") (ne $fieldName "_index")) -}}
         {{ if (eq $sortBy $fieldName) -}}
         <option value="{{- $fieldName -}}" selected>{{- $fieldName -}}</option>
         {{- else -}}
         <option value="{{- $fieldName -}}">{{- $fieldName -}}</option>
         {{- end }}
-    </select><!-- END: select.name[sort] -->
+        {{- end -}}
     {{- end }}
+    </select><!-- END: select.name[sort] -->
     {{- end }}
 </div><!-- END: search-input-sort-by -->
 {{- else -}}

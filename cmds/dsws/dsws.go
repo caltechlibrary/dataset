@@ -282,9 +282,16 @@ func main() {
 		opts := map[string]string{}
 		for _, ky := range []string{"size", "from", "ids", "sort", "explain", "fields", "highlight"} {
 			if v := values.Get(ky); v != "" {
-				opts[ky] = v
+				// NOTE: we use idxFields for fields' value is noth fields or star are passed in
+				if ky == "fields" && v == "*" {
+					opts[ky] = strings.Join(idxFields, ",")
+				} else {
+					opts[ky] = v
+				}
+
 			}
 		}
+
 		//NOTE: If highlight is passed then set the highliter to HTML for web view
 		if sVal, ok := opts["highlight"]; ok == true {
 			if bVal, err := strconv.ParseBool(sVal); bVal == true && err == nil {

@@ -355,8 +355,8 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 
 	if len(indexNames) > 1 {
 		allFields = appendField(allFields, "_index")
-		allFields = appendField(allFields, "_id")
 	}
+	allFields = appendField(allFields, "_id")
 	return idxAlias, allFields, nil
 }
 
