@@ -275,11 +275,25 @@ a:active, a:hover, a:focus {
      text-decoration: none;
 }
 
-.searchbox {
-    padding-bottom: 1.24em;
+.search-box {
+    display: block;
 }
 
-.search-pager {
+.search-box div {
+    display: block;
+}
+
+.search-go-button {
+    display: block;
+}
+
+.search-go-button input {
+    text-align: center;
+    margin: 0.24em;
+}
+
+.search-result-pager {
+    padding-top: 1.24em;
     padding-bottom: 1.24em;
 }
 
@@ -299,15 +313,24 @@ a:active, a:hover, a:focus {
     background-color: lightgrey;
 }
 
-.field-name, .matched-name {
+.field-name, .matched-name, .index-name {
     width: auto;
     height: auto;
     padding-left: 0.24em;
     padding-right: 0.24em;
-    text-transform: uppercase;
+    text-transform: lowercase;
     font-size: 40%;
 }
 
+.index-name {
+    text-transform: lowercase;
+}
+
+.index-value {
+    font-size: smaller;
+    font-size: 40%;
+    font-style: italic;
+}
 
 </style>
 </head>

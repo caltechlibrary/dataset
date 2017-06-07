@@ -33,7 +33,11 @@ func CSVFormatter(out io.Writer, results *bleve.SearchResult, colNames []string)
 	for _, hit := range results.Hits {
 		row := []string{}
 		for _, col := range colNames {
-			if val, ok := hit.Fields[col]; ok == true {
+			if col == "_id" {
+				row = append(row, hit.ID)
+			} else if col == "_index" {
+				row = append(row, hit.Index)
+			} else if val, ok := hit.Fields[col]; ok == true {
 				switch val := val.(type) {
 				case int:
 					row = append(row, strconv.FormatInt(int64(val), 10))

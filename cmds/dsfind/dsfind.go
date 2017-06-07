@@ -46,7 +46,7 @@ returning records that matched based on how the index was defined.
 
 	// App Specific Options
 	collectionName string
-	indexNames     string
+	indexList      string
 	showHighlight  bool
 	setHighlighter string
 	resultFields   string
@@ -71,7 +71,7 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.StringVar(&indexNames, "indexes", "", "comma delimited list of index names")
+	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
 	flag.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
 	flag.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
@@ -111,8 +111,19 @@ func main() {
 	if datasetEnv != "" && collectionName == "" {
 		collectionName = datasetEnv
 	}
+
+	// Handle the case where indexes were listed with the -indexes option like dsfind
+	var indexNames []string
+	if indexList != "" {
+		var delimiter = ","
+		if strings.Contains(indexList, ":") {
+			delimiter = ":"
+		}
+		indexNames = strings.Split(indexList, delimiter)
+	}
+
 	if len(indexNames) == 0 {
-		indexNames = fmt.Sprintf("%s.bleve", collectionName)
+		indexNames = []string{fmt.Sprintf("%s.bleve", collectionName)}
 	}
 
 	args := flag.Args()
@@ -150,16 +161,16 @@ func main() {
 		options["fields"] = "*"
 	}
 
-	idxAlias, err := dataset.OpenIndexes(strings.Split(indexNames, ","))
+	idxAlias, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", indexNames, err)
+		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", strings.Join(indexNames, ", "), err)
 		os.Exit(1)
 	}
 	defer idxAlias.Close()
 
 	results, err := dataset.Find(os.Stdout, idxAlias, args, options)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", indexNames, err)
+		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", strings.Join(indexNames, ", "), err)
 		os.Exit(1)
 	}
 
@@ -173,11 +184,25 @@ func main() {
 			os.Exit(1)
 		}
 	case csvFormat == true:
+		var fields []string
 		if resultFields == "" {
-			fmt.Fprintf(os.Stderr, "-csv must be used with -fields option\n")
-			os.Exit(1)
+			idxFields, err := idxAlias.Fields()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "-csv can't determine field names, %s, try using with -fields option\n", err)
+				os.Exit(1)
+
+			}
+			for _, field := range idxFields {
+				if field != "_all" {
+					fields = append(fields, field)
+				}
+			}
+			fields = append(fields, "_id")
+			fields = append(fields, "_index")
+		} else {
+			fields = strings.Split(resultFields, ",")
 		}
-		if err := dataset.CSVFormatter(os.Stdout, results, strings.Split(resultFields, ",")); err != nil {
+		if err := dataset.CSVFormatter(os.Stdout, results, fields); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}

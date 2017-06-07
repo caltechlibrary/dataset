@@ -44,9 +44,7 @@ var (
 	description = `
 SYNOPSIS
 
-	web service for search dataset collections
-
-%s which support a web search of a dataset collection.
+	%s is a web search service for indexes data collection
 
 CONFIGURATION
 
@@ -85,6 +83,7 @@ Run web service using "index.bleve" index, results templates in
 	searchTName   string
 	devMode       bool
 	showTemplates bool
+	indexList     string
 
 	// Provided as an ordered command line arg
 	docRoot    string
@@ -138,6 +137,7 @@ func init() {
 	flag.StringVar(&searchTName, "t", "", "the path to the search result template(s) (colon delimited)")
 	flag.BoolVar(&showTemplates, "show-templates", false, "display the source code of the template(s)")
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
+	flag.StringVar(&indexList, "indexes", "", "comma or colon delimited list of index names")
 }
 
 func main() {
@@ -214,6 +214,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Handle the case where indexes were listed with the -indexes option like dsfind
+	if indexList != "" {
+		var delimiter = ","
+		if strings.Contains(indexList, ":") {
+			delimiter = ":"
+		}
+		indexNames = strings.Split(indexList, delimiter)
+	}
+
 	// Setup from command line
 	for _, arg := range args {
 		ext := path.Ext(arg)
@@ -264,6 +273,11 @@ func main() {
 	}
 	defer idxAlias.Close()
 
+	idxFields, err := idxAlias.Fields()
+	if err != nil {
+		log.Fatalf("Can't list fields in index, %s", err)
+	}
+
 	// Construct our handler
 	searchHandler := func(w http.ResponseWriter, r *http.Request) {
 		values := r.URL.Query()
@@ -304,23 +318,26 @@ func main() {
 		var tName string
 		switch strings.ToLower(qformat) {
 		case "csv":
+			//FIXME: Need to write the Content-Type header appropriately...
 			fields := trimmedSplit(values.Get("fields"), ",")
 			if len(fields) == 0 {
-				http.Error(w, "Missing field names needed to render CSV", 500)
+				fields = idxFields
 			}
 			if err := dataset.CSVFormatter(w, results, fields); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
 		case "json":
+			//FIXME: Need to write the Content-Type header appropriately...
 			if err := dataset.JSONFormatter(w, results); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
 		case "include":
+			//FIXME: Need to write the Content-Type header appropriately...
 			tName = "include.tmpl"
-			log.Printf("DEBUG picking include.tmpl")
 		default:
+			//FIXME: Need to write the Content-Type header appropriately...
 			tName = "page.tmpl"
 		}
 		pg := new(bytes.Buffer)
@@ -334,14 +351,14 @@ func main() {
 
 	// Define our search API prefix path
 	http.HandleFunc("/api", searchHandler)
+	// FIXME: For each Linux add a /api/INDEXNAME handler
 
-	// FIXME: If DocRoot is NOT defined we need to use dataset.SiteDefaults
-	// instead of htt.FileServer(http.Dir(docRoot)
-	if docRoot != "" {
-		http.Handle("/", http.FileServer(http.Dir(docRoot)))
-	} else {
-		// If no docRoot then redirect to /api
+	// Note: If DocRoot is NOT provided we need to redirect to /api
+	// instead of using a docRoot with htt.FileServer(http.Dir(docRoot)
+	if docRoot == "" {
 		http.HandleFunc("/", redirectToApi)
+	} else {
+		http.Handle("/", http.FileServer(http.Dir(docRoot)))
 	}
 
 	if u.Scheme == "https" {

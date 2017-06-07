@@ -12,6 +12,7 @@
 + [ ] switch to batch indexing in dsindexer
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
 + [ ] Add RSS2 and BibTeX format support
++ [ ] Reconfigure Makefile to build individual releases for each supported platform
 
 ## Someday, Maybe
 

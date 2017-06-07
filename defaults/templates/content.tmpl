@@ -1,13 +1,7 @@
 {{define "content.tmpl"}}
 <section class="page-content">
-    <div class="searchbox">
-    {{template "searchbox.tmpl" . }}
-    </div><!-- END: searchbox -->
-    <div class="search-pager">
-    {{template "pager.tmpl" . }}
-    </div><!-- END: search-pager -->
-    <div class="search-results">
-    {{template "results.tmpl" . }}
-    </div><!-- END: search-results -->
+{{template "searchbox.tmpl" . }}
+{{template "pager.tmpl" . }}
+{{template "results.tmpl" . }}
 </section><!-- END: page-content -->
 {{end}}
