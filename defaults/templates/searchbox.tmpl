@@ -12,19 +12,7 @@
 {{- $fields := (join (dotpath ".request.fields" . nil) ",") -}}
 {{- $fieldValues := (dotpath ".request.fields" . nil) -}}
 {{- $sortBy := (join (dotpath ".request.sort" . nil) ",") -}}
-<!-- 
-DEBUG: START
-    + Query: {{$qryTerms}} {{typeof $qryTerms}}
-    + From: {{$from}} {{typeof $from}}
-    + Size: {{$size}} {{typeof $size}}
-    + Next: {{$next}} {{typeof $next}}
-    + Prev: {{$prev}} {{typeof $prev}}
-    + Total: {{$total}} {{typeof $total}}
-    + Sort By: {{$sortBy}} {{typeof $sortBy}}
-    + Fields: {{$fields}} {{typeof $fields}}
-    + Fields: {{$fieldValues}} {{typeof $fieldValues}}
-DEBUG: END 
--->
+
 <div><label>Search</label><input type="text" name="q" {{- with .request.query.query }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" size="80" /></div>
 {{ with $highlight -}}
     {{if (eq $highlight "true") -}}
@@ -80,6 +68,7 @@ DEBUG: END
         <option value="{{$i}}">{{$i}}</option>
             {{- end -}}
         {{- end}}
+	<option value="{{$total}}">All</option>
     </select>
 </div>
     <div><input type="submit" value="Go" ></div>
