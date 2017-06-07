@@ -316,23 +316,48 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	return nil
 }
 
-// OpenIndexes opens a list of index names and returns an index alias and error
-func OpenIndexes(indexNames []string) (bleve.IndexAlias, error) {
+// OpenIndexes opens a list of index names and returns an index alias, a combined list of fields and error
+func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 	var (
-		idxAlias bleve.IndexAlias
+		idxAlias  bleve.IndexAlias
+		allFields []string
 	)
+
+	// appendField append the fieldname if not in list
+	appendField := func(l []string, s string) []string {
+		for _, item := range l {
+			if item == s {
+				return l
+			}
+		}
+		return append(l, s)
+	}
+
 	for i, idxName := range indexNames {
 		idx, err := bleve.Open(idxName)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		if fields, err := idx.Fields(); err == nil {
+			for _, field := range fields {
+				if field != "_all" {
+					allFields = appendField(allFields, field)
+				}
+			}
+		}
+
 		if i == 0 {
 			idxAlias = bleve.NewIndexAlias(idx)
 		} else {
 			idxAlias.Add(idx)
 		}
 	}
-	return idxAlias, nil
+
+	if len(indexNames) > 1 {
+		allFields = appendField(allFields, "_index")
+		allFields = appendField(allFields, "_id")
+	}
+	return idxAlias, allFields, nil
 }
 
 // Find takes a Bleve index name and query string, opens the index, and writes the

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -36,7 +37,7 @@ func CSVFormatter(out io.Writer, results *bleve.SearchResult, colNames []string)
 			if col == "_id" {
 				row = append(row, hit.ID)
 			} else if col == "_index" {
-				row = append(row, hit.Index)
+				row = append(row, path.Base(hit.Index))
 			} else if val, ok := hit.Fields[col]; ok == true {
 				switch val := val.(type) {
 				case int:

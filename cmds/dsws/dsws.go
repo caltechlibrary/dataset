@@ -267,16 +267,11 @@ func main() {
 	}
 
 	// Open the indexes for reading
-	idxAlias, err := dataset.OpenIndexes(indexNames)
+	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		log.Fatalf("Can't open indexes, %s", err)
 	}
 	defer idxAlias.Close()
-
-	idxFields, err := idxAlias.Fields()
-	if err != nil {
-		log.Fatalf("Can't list fields in index, %s", err)
-	}
 
 	// Construct our handler
 	searchHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -320,7 +315,7 @@ func main() {
 		case "csv":
 			//FIXME: Need to write the Content-Type header appropriately...
 			fields := trimmedSplit(values.Get("fields"), ",")
-			if len(fields) == 0 {
+			if len(fields) == 0 || (len(fields) == 1 && fields[0] == "*") {
 				fields = idxFields
 			}
 			if err := dataset.CSVFormatter(w, results, fields); err != nil {

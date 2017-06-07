@@ -161,7 +161,7 @@ func main() {
 		options["fields"] = "*"
 	}
 
-	idxAlias, err := dataset.OpenIndexes(indexNames)
+	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", strings.Join(indexNames, ", "), err)
 		os.Exit(1)
@@ -186,19 +186,7 @@ func main() {
 	case csvFormat == true:
 		var fields []string
 		if resultFields == "" {
-			idxFields, err := idxAlias.Fields()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "-csv can't determine field names, %s, try using with -fields option\n", err)
-				os.Exit(1)
-
-			}
-			for _, field := range idxFields {
-				if field != "_all" {
-					fields = append(fields, field)
-				}
-			}
-			fields = append(fields, "_id")
-			fields = append(fields, "_index")
+			fields = idxFields
 		} else {
 			fields = strings.Split(resultFields, ",")
 		}
