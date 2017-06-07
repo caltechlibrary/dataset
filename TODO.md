@@ -3,6 +3,7 @@
 
 ## Bugs
 
++ [ ] idxFields work for single indexes but fail on multiple indexes in an Alias, find a workaround
 + [ ] when adding a fielded search in default templates the query string breaks the HTML of the query input form
     + double quotes make <input ... value="{{- . -}}" ...> break
 
