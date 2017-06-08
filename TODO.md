@@ -19,6 +19,7 @@
 
 ## Someday, Maybe
 
++ [ ] Should the keymap in collection.json be a separate file(s)?
 + [ ] optional strageties for including arrays in a single column of CSV output
     + provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
 + [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
