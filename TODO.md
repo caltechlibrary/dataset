@@ -3,14 +3,16 @@
 
 ## Bugs
 
-+ [ ] idxFields work for single indexes but fail on multiple indexes in an Alias, find a workaround
++ [ ] keys.json and collection.json's keymap are empty in some cases
 + [ ] when adding a fielded search in default templates the query string breaks the HTML of the query input form
     + double quotes make <input ... value="{{- . -}}" ...> break
 
 ## Next
 
-+ [ ] Add check to make sure page.tmpl and include.tmpl are available, if not use the ones from defaults
-+ [ ] switch to batch indexing in dsindexer
++ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
+    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
+    + Should also serve as a means to update a collection from one version of dataset to another
++ [ ] Add option for batch indexing in dsindexer
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
 + [ ] Add RSS2 and BibTeX format support
 + [ ] Reconfigure Makefile to build individual releases for each supported platform
@@ -24,9 +26,6 @@
     + [ ] template HTML results and search forms
     + [ ] support static pages in site
     + [ ] evaluate including SparQL support
-+ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
-    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
-        + this could be used to update a collection from one version of dataset to another
 + [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
     + [ ] N35.0000,W118.0000 or S35.000,E118.000
     + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
@@ -60,6 +59,8 @@
 
 ## Completed
 
++ [x] idxFields work for single indexes but fail on multiple indexes in an Alias, find a workaround
++ [x] Add check to make sure page.tmpl and include.tmpl are available, if not use the ones from defaults
 + [x] Add support for indexing arrays values and objects in index definitions
     + [x] code 
     + [x] test
