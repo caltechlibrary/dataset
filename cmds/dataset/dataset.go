@@ -194,6 +194,8 @@ Remove all attachments from "capt-jack"
 		"attached":    getAttachments,
 		"detach":      removeAttachments,
 		"import":      importCSV,
+		"analyse":     analyzeCollection,
+		"repair":      repairCollection,
 	}
 
 	// alphabet to use for buckets
@@ -203,6 +205,33 @@ Remove all attachments from "capt-jack"
 //
 // These are verbs used in the command line utility
 //
+
+// analyzeCollection takes a collection name and checks for problems
+func analyzeCollection(args ...string) (string, error) {
+	if len(args) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	for _, cName := range args {
+		if err := dataset.Analyzer(cName); err != nil {
+			return "", err
+		}
+	}
+	return "OK", nil
+}
+
+// repairCollection takes a collection name and recreates collection.json, keys.json
+// based on what it finds on disc
+func repairCollection(args ...string) (string, error) {
+	if len(args) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	for _, cName := range args {
+		if err := dataset.Repair(cName); err != nil {
+			return "", err
+		}
+	}
+	return "OK", nil
+}
 
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc

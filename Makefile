@@ -21,7 +21,7 @@ assets.go:
 	pkgassets -p dataset -o assets.go SiteDefaults defaults
 
 
-bin/dataset: dataset.go attachments.go cmds/dataset/dataset.go
+bin/dataset: dataset.go attachments.go repair.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
 bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go
