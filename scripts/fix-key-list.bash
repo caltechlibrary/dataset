@@ -19,8 +19,10 @@ done | sed -E 's/,$//' >> collection-fixed.json
 echo -n '],"keymap":{' >> collection-fixed.json
 cat dir-listing.txt | cut -d/ -f 2,3 | sed -E 's/.json//;s/.tar//' | sort -u | while read ITEM; do 
     if [ "${ITEM}" != "" ]; then
-        ky=$(echo "${ITEM}" | cut -d/ -f 1)
-        bucket=$(echo "${ITEM}" | cut -d/ -f 2)
+        bucket=$(echo "${ITEM}" | cut -d/ -f 1)
+        ky=$(echo "${ITEM}" | cut -d/ -f 2)
+# FIXME: i have duplicate record spread across multple buckets
+# so this fails to create valid map
         if [ "${ky}" != "" ] && [ "${bucket}" != "" ]; then
             echo -n  "\"${ky}\":\"${bucket}\","; 
         fi
