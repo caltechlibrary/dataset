@@ -9,9 +9,9 @@ fi
 echo "Run dataset command and create our collection from our CaltechAUTHORS sample"
 read -p "Press any key to run command, ctrl-C to exit" NEXT
 $(dataset init authors)
-for ITEM in $(ls data); do
-    ID=$(jsoncols -i "data/${ITEM}" .id)
-    dataset -i "data/${ITEM}" create "${ID}";
+for ITEM in $(ls data/*.json); do
+    ID=$(jsoncols -i "${ITEM}" .id)
+    dataset -i "${ITEM}" create "${ID}";
     echo "ID: ${ID}, Item: ${ITEM}"
 done
 
