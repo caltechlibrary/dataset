@@ -7,6 +7,7 @@
     + [x] check dataset
     + [ ] check cait usage
     + [ ] check epgo usage
++ [ ] repair and check will fail on S3 without warning or indication why
 
 ## Next
 
@@ -16,6 +17,7 @@
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
 + [ ] Add option for batch indexing in dsindexer
 + [ ] Reconfigure Makefile to build individual releases for each supported platform
++ [ ] add repair and check support for S3 storage
 
 ## Someday, Maybe
 

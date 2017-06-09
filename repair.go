@@ -84,6 +84,7 @@ func Analyzer(collectionName string) error {
 	var (
 		eCnt    int
 		wCnt    int
+		kCnt    int
 		data    interface{}
 		keys    []string
 		buckets []string
@@ -173,25 +174,24 @@ func Analyzer(collectionName string) error {
 
 	// Check to see if records can be found in their buckets
 	log.Printf("Checking for %d keys from keymaps against their buckets", len(c.KeyMap))
-	x := 0
 	for ky, bucket := range c.KeyMap {
 		if docPath, exists := checkFileExists(path.Join(collectionName, bucket, ky+".json")); exists == false {
 			log.Printf("%s is missing", docPath)
 			eCnt++
 		}
-		x++
-		if (x % 5000) == 0 {
-			log.Printf("%d of %d keys checked", x, len(c.KeyMap))
+		kCnt++
+		if (kCnt % 5000) == 0 {
+			log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
 		}
 	}
-	log.Printf("%d of %d keys checked", x, len(c.KeyMap))
+	log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
 
 	// Check for duplicate records and orphaned records
 	log.Printf("Scanning buckets for orphaned and duplicate records")
-	x = 0
+	kCnt = 0
 	for j, bck := range buckets {
 		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
-			for i, jsonDoc := range jsonDocs {
+			for _, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(path.Base(jsonDoc), ".json")
 				if val, ok := c.KeyMap[ky]; ok == true {
 					if val != bck {
@@ -202,17 +202,17 @@ func Analyzer(collectionName string) error {
 					log.Printf("%s is an orphaned JSON Doc", path.Join(collectionName, bck, jsonDoc))
 					eCnt++
 				}
-				x = i
+				kCnt++
 			}
 		} else {
 			log.Printf("Can't open bucket %s, %s", bck, err)
 			eCnt++
 		}
-		if (x % 5000) == 0 {
-			log.Printf("%d json docs in %d buckets processed", x, j)
+		if (kCnt % 5000) == 0 {
+			log.Printf("%d json docs in %d buckets processed", kCnt, j)
 		}
 	}
-	log.Printf("%d docs in %d buckets processed", x, len(buckets))
+	log.Printf("%d docs in %d buckets processed", kCnt, len(buckets))
 
 	if eCnt > 0 || wCnt > 0 {
 		return fmt.Errorf("%d errors, %d warnings detected", eCnt, wCnt)
@@ -286,6 +286,7 @@ func Repair(collectionName string) error {
 			return err
 		}
 	}
+	log.Printf("%d keys in %d buckets", len(c.KeyMap), len(c.Buckets))
 	log.Printf("Saving metadata for %s", collectionName)
 	return c.saveMetadata()
 }
