@@ -1,0 +1,11 @@
+{{- define "footer.tmpl" -}}
+{{- with .footer -}}
+<footer class="page-footer">
+{{- . -}}
+</footer>
+{{- else -}}
+<footer class="page-footer">
+<div>dsws is part of <a href="https://caltechlibrary.github.io/dataset">dataset</a> project.</div>
+</footer>
+{{- end -}}
+{{- end -}}

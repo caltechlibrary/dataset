@@ -1,0 +1,37 @@
+{{- define "pager.tmpl" -}}
+<!-- BEGIN: Pager -->
+<div class="search-result-pager">
+{{- $qryTerms := (urlencode (dotpath ".query.query" .request ""))}}
+{{- $highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}}
+{{- $from := (int .request.from)}}
+{{- $size := (int .request.size)}}
+{{- $total := (int .total_hits)}}
+{{- $prev := (subi $from $size)}}
+{{- $next := (addi $from $size)}}
+{{- $last := (int .total_hits)}}
+{{- $sortBy := (join .request.sort ",")}}
+{{- $fields := (join (dotpath ".fields" .request "*") ",") -}}
+
+{{- if (gt $total 0) -}}
+    {{- if (and (gt $from 0) (ge $prev 0)) -}}
+    <a href="/api?fields={{- $fields -}}&highlight={{- $highlight -}}&from={{- $prev -}}&size={{- $size -}}&sort={{- $sortBy -}}&q={{- $qryTerms -}}">Prev</a>
+    {{ else -}}
+        {{- if (gt $from 0) -}}
+    <a href="/api?fields={{- $fields -}}&highlight={{- $highlight -}}&from=0&size={{- $size -}}&sort={{- $sortBy -}}&q={{- $qryTerms -}}">Prev</a>
+        {{- end }}
+    {{ end }}
+{{- end }}
+{{- if (gt $total 0) -}}
+{{add $from 1}} to {{if lt $next $last}}{{$next}}{{else}}{{$last}}{{end}}, of {{.total_hits}} records
+{{- else -}}
+    {{- if (eq $qryTerms "") -}}
+Enter a new search
+    {{- else -}}
+0 records
+    {{- end -}}
+{{- end -}}
+{{- if lt (add $from $size) $last }}
+<a href="/api?fields={{- $fields -}}&highlight={{- $highlight -}}&from={{- $next -}}&size={{- $size -}}&sort={{- $sortBy -}}&q={{- $qryTerms -}}">Next</a>
+{{- end -}}
+</div><!-- END: search-result-pager -->
+{{- end -}}
