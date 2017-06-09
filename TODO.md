@@ -6,6 +6,7 @@
 + [ ] keys.json and collection.json's keymap are empty in some cases
 + [ ] when adding a fielded search in default templates the query string breaks the HTML of the query input form
     + double quotes make <input ... value="{{- . -}}" ...> break
+    	+ is it better to just have query field be a textarea?
 
 ## Next
 

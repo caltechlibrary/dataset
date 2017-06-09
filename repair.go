@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"io"
 	"fmt"
 )
 
