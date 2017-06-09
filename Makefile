@@ -77,47 +77,50 @@ clean:
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
 	if [ -f $(PROJECT)-$(VERSION)-release.zip ]; then rm $(PROJECT)-$(VERSION)-release.zip; fi
+	if [ -f dist/$(PROJECT)-$(VERSION)-linux-amd64.zip ]; then rm dist/$(PROJECT)-$(VERSION)-linux-amd64.zip; fi
+	if [ -f dist/$(PROJECT)-$(VERSION)-windows-amd64.zip ]; then rm dist/$(PROJECT)-$(VERSION)-windows-amd64.zip; fi
+	if [ -f dist/$(PROJECT)-$(VERSION)-macosx-amd64.zip ]; then rm dist/$(PROJECT)-$(VERSION)-macosx-amd64.zip; fi
+	if [ -f dist/$(PROJECT)-$(VERSION)-raspbian-arm7.zip ]; then rm dist/$(PROJECT)-$(VERSION)-raspbian-arm7.zip; fi
 
 dist/linux-amd64:
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsindexer cmds/dsindexer/dsindexer.go
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsfind cmds/dsfind/dsfind.go
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsws cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd46.zip linux-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
 dist/windows-amd64:
 	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset.exe cmds/dataset/dataset.go
 	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsindexer.exe cmds/dsindexer/dsindexer.go
 	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsfind.exe cmds/dsfind/dsfind.go
 	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsws.exe cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip windows-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
 dist/macosx-amd64:
 	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dataset cmds/dataset/dataset.go
 	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsindexer cmds/dsindexer/dsindexer.go
 	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsfind cmds/dsfind/dsfind.go
 	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsws cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-macosx-amd64.zip macosx-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
 dist/raspbian-arm7:
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsindexer cmds/dsindexer/dsindexer.go
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsfind cmds/dsfind/dsfind.go
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsws cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip raspbian-arm7-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
-release: dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
-	mkdir -p dist
+distribute_docs:
+	mkdir -p dist/how-to
+	mkdir -p dist/docs
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
-	cp -v docs/dataset.md dist/
-	cp -v docs/dsindexer.md dist/
-	cp -v docs/dsfind.md dist/
-	cp -v docs/dsws.md dist/
-	cp -v docs/operations.md dist/
-	cp -v docs/file-system-layout.md dist/
-	cp -v docs/package.md dist/
-	cp -v how-to/import-csv-rows-as-json-documents.md dist/
-	cp -v how-to/use-dataset-with-s3.md dist/
+	cp -v docs/*.md dist/docs/
+	cp -v how-to/*.md dist/how-to/
 	zip -r $(PROJECT)-$(VERSION)-release.zip dist/*
 
+release: distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
 status:
 	git status
