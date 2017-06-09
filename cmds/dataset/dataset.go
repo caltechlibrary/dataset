@@ -194,7 +194,7 @@ Remove all attachments from "capt-jack"
 		"attached":    getAttachments,
 		"detach":      removeAttachments,
 		"import":      importCSV,
-		"analyse":     analyzeCollection,
+		"check":       checkCollection,
 		"repair":      repairCollection,
 	}
 
@@ -206,8 +206,8 @@ Remove all attachments from "capt-jack"
 // These are verbs used in the command line utility
 //
 
-// analyzeCollection takes a collection name and checks for problems
-func analyzeCollection(args ...string) (string, error) {
+// checkCollection takes a collection name and checks for problems
+func checkCollection(args ...string) (string, error) {
 	if len(args) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}

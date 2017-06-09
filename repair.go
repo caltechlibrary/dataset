@@ -129,14 +129,22 @@ func Analyzer(collectionName string) error {
 	// Open and parse the keys.json file for comparison
 	if src, err := ioutil.ReadFile(path.Join(collectionName, "keys.json")); err == nil {
 		json.Unmarshal(src, &keys)
+	} else {
+		log.Printf("Can't read %s, %s", path.Join(collectionName, "keys.json"), err)
 	}
 	// Check to see if keys.json matches length of keymap
 	if len(c.KeyMap) == len(keys) {
 		// Check to see if the keys in keymap and keys in keys.json are the same
+		log.Printf("Checking keys against keymap\n")
+		b := 0
 		for ky, _ := range c.KeyMap {
 			if keyFound(ky, keys) == false {
 				log.Printf("%s not found in keys.json", ky)
 				wCnt++
+			}
+			b++
+			if (b % 5000) == 0 {
+				log.Printf("%d keys processed from keymap", b)
 			}
 		}
 	} else {
@@ -151,39 +159,61 @@ func Analyzer(collectionName string) error {
 		eCnt++
 	}
 	// Check if buckets match
-	for _, bck := range buckets {
+	log.Printf("Checking buckets")
+	for i, bck := range buckets {
 		if keyFound(bck, c.Buckets) == false {
 			log.Printf("%s is missing from collection bucket list", bck)
 			eCnt++
 		}
+		if i > 0 && (i%100) == 0 {
+			log.Printf("%d buckets matched", i)
+		}
 	}
+	log.Printf("%d buckets matched", len(buckets))
 
 	// Check to see if records can be found in their buckets
+	log.Printf("Checking for %d keys from keymaps against their buckets", len(c.KeyMap))
+	x := 0
 	for ky, bucket := range c.KeyMap {
 		if docPath, exists := checkFileExists(path.Join(collectionName, bucket, ky+".json")); exists == false {
 			log.Printf("%s is missing", docPath)
+			eCnt++
+		}
+		x++
+		if (x % 5000) == 0 {
+			log.Printf("%d of %d keys checked", x, len(c.KeyMap))
 		}
 	}
+	log.Printf("%d of %d keys checked", x, len(c.KeyMap))
 
-	// Check for duplicate records, and missing records
-	for _, bck := range buckets {
+	// Check for duplicate records and orphaned records
+	log.Printf("Scanning buckets for orphaned and duplicate records")
+	x = 0
+	for j, bck := range buckets {
 		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
-			for _, jsonDoc := range jsonDocs {
+			for i, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(path.Base(jsonDoc), ".json")
 				if val, ok := c.KeyMap[ky]; ok == true {
 					if val != bck {
-						log.Printf("%s is a duplicate")
+						log.Printf("%s is a duplicate", path.Join(collectionName, val, jsonDoc))
+						wCnt++
 					}
 				} else {
 					log.Printf("%s is an orphaned JSON Doc", path.Join(collectionName, bck, jsonDoc))
 					eCnt++
 				}
+				x = i
 			}
 		} else {
 			log.Printf("Can't open bucket %s, %s", bck, err)
 			eCnt++
 		}
+		if (x % 5000) == 0 {
+			log.Printf("%d json docs in %d buckets processed", x, j)
+		}
 	}
+	log.Printf("%d docs in %d buckets processed", x, len(buckets))
+
 	if eCnt > 0 || wCnt > 0 {
 		return fmt.Errorf("%d errors, %d warnings detected", eCnt, wCnt)
 	}
@@ -212,12 +242,18 @@ func Repair(collectionName string) error {
 		c = new(Collection)
 		eCnt++
 	}
+	if c.Version != Version {
+		log.Printf("Migrating format from %s to %s", c.Version, Version)
+	}
+	c.Version = Version
+	log.Printf("Getting a list of buckets")
 	if buckets, err := findBuckets(path.Join(collectionName)); err == nil {
 		c.Buckets = buckets
 	} else {
 		return err
 	}
-	for _, bck := range c.Buckets {
+	log.Printf("Finding JSON docs in buckets")
+	for j, bck := range c.Buckets {
 		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
 			for i, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(jsonDoc, ".json")
@@ -227,7 +263,7 @@ func Repair(collectionName string) error {
 							m1 := stat1.ModTime()
 							m2 := stat2.ModTime()
 							if m1.Unix() > m2.Unix() {
-								log.Printf("Updating key %s in %s (%s) over %s (%s)", ky, bck, m1, val, m2)
+								log.Printf("Switching key %s from %s (%s) to  %s (%s)", ky, val, m2, bck, m1)
 								c.KeyMap[ky] = bck
 							}
 						}
@@ -236,19 +272,20 @@ func Repair(collectionName string) error {
 					c.KeyMap[ky] = bck
 				}
 				if i > 0 && (i%5000) == 0 {
+					log.Printf("Saving %d items in bucket %s", i, bck)
 					if err := c.saveMetadata(); err != nil {
 						return err
 					}
-					log.Printf("Saving %d items in bucket %s", i, bck)
 				}
 			}
 		} else {
 			return err
 		}
+		log.Printf("Saving bucket %s (%d of %d)", bck, j, len(c.Buckets))
 		if err := c.saveMetadata(); err != nil {
 			return err
 		}
-		log.Printf("Saving bucket %s", bck)
 	}
+	log.Printf("Saving metadata for %s", collectionName)
 	return c.saveMetadata()
 }

@@ -4,18 +4,17 @@
 ## Bugs
 
 + [ ] keys.json and collection.json's keymap are empty in some cases
-+ [ ] when adding a fielded search in default templates the query string breaks the HTML of the query input form
-    + double quotes make <input ... value="{{- . -}}" ...> break
-    	+ is it better to just have query field be a textarea?
+    + [x] check dataset
+    + [ ] check cait usage
+    + [ ] check epgo usage
 
 ## Next
 
-+ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
-    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
-    + Should also serve as a means to update a collection from one version of dataset to another
-+ [ ] Add option for batch indexing in dsindexer
++ [ ] Add RSS2 and BibTeX format support via templates
+    + currently required templates are page.tmpl (for HTML pages), include.tmpl (for HTML includable output)
+    + if fmt value has a related template then format is "supported" by dsws
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
-+ [ ] Add RSS2 and BibTeX format support
++ [ ] Add option for batch indexing in dsindexer
 + [ ] Reconfigure Makefile to build individual releases for each supported platform
 
 ## Someday, Maybe
@@ -61,6 +60,12 @@
 
 ## Completed
 
++ [x] when adding a fielded search in default templates the query string breaks the HTML of the query input form
+    + double quotes make <input ... value="{{- . -}}" ...> break
+    	+ is it better to just have query field be a textarea, or use the urlencode/urldecode functions from tmplfn
++ [x] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
+    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
+    + Should also serve as a means to update a collection from one version of dataset to another
 + [x] idxFields work for single indexes but fail on multiple indexes in an Alias, find a workaround
 + [x] Add check to make sure page.tmpl and include.tmpl are available, if not use the ones from defaults
 + [x] Add support for indexing arrays values and objects in index definitions
@@ -82,7 +87,6 @@
         + [x] look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
         + [x] think about handling common date formatting for indexing and query
         + [x] test GeoCoding and Sort in Bleve
-
 + [x] add a _import_ verb to dataset where a single file can be rendered as many dataset records (e.g. spreadsheet rows as JSON objects)
     + syntax like `dataset import csv_filename [column number to use for key value]`
 + [x] integrate support for storing dataset collections in AWS S3
