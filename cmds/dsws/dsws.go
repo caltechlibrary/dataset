@@ -325,11 +325,13 @@ func main() {
 			if len(fields) == 0 || (len(fields) == 1 && fields[0] == "*") {
 				fields = idxFields
 			}
+			w.Header().Set("Content-Type", "application/csv")
 			if err := dataset.CSVFormatter(w, results, fields); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
 		case "json":
+			w.Header().Set("Content-Type", "application/json")
 			//FIXME: Need to write the Content-Type header appropriately...
 			if err := dataset.JSONFormatter(w, results); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)

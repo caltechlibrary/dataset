@@ -40,7 +40,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.3-dr1"
+	Version = "v0.0.3-dr2"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
