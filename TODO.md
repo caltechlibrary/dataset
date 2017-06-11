@@ -62,6 +62,7 @@
 
 ## Completed
 
++ [x] CSV and JSON output not sending correct Content-Type header in _dsws_
 + [x] when adding a fielded search in default templates the query string breaks the HTML of the query input form
     + double quotes make <input ... value="{{- . -}}" ...> break
     	+ is it better to just have query field be a textarea, or use the urlencode/urldecode functions from tmplfn
