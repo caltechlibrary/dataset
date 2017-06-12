@@ -108,7 +108,7 @@ dist/raspbian-arm7:
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsindexer cmds/dsindexer/dsindexer.go
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsfind cmds/dsfind/dsfind.go
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsws cmds/dsws/dsws.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip raspbian-arm7-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
+	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip raspbian-arm7/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
 distribute_docs:
 	rm -fR dist/*

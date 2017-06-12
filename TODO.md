@@ -11,7 +11,6 @@
 
 ## Next
 
-+ [ ] Merge results.tmpl changes into defaults from dr2
 + [ ] Add RSS2 and BibTeX format support via templates
     + currently required templates are page.tmpl (for HTML pages), include.tmpl (for HTML includable output)
     + if fmt value has a related template then format is "supported" by dsws
@@ -22,6 +21,8 @@
 
 ## Someday, Maybe
 
++ [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq .authors_family[:] "Doiel")))
+    + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
 + [ ] Should the keymap in collection.json be a separate file(s)?
 + [ ] optional strageties for including arrays in a single column of CSV output
     + provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
@@ -63,6 +64,7 @@
 
 ## Completed
 
++ [x] Merge results.tmpl changes into defaults from dr2
 + [x] CSV and JSON output not sending correct Content-Type header in _dsws_
 + [x] when adding a fielded search in default templates the query string breaks the HTML of the query input form
     + double quotes make <input ... value="{{- . -}}" ...> break
