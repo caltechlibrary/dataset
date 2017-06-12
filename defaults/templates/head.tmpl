@@ -314,12 +314,19 @@ a:active, a:hover, a:focus {
 }
 
 .field-name, .matched-name, .index-name {
+    display: inline-block;
     width: auto;
     height: auto;
     padding-left: 0.24em;
     padding-right: 0.24em;
     text-transform: lowercase;
+    vertical-align: top;
+    text-align: center;
     font-size: 40%;
+}
+
+.field-value, .matched-value, .index-value {
+    display: inline-block;
 }
 
 .index-name {

@@ -11,6 +11,7 @@
 
 ## Next
 
++ [ ] Merge results.tmpl changes into defaults from dr2
 + [ ] Add RSS2 and BibTeX format support via templates
     + currently required templates are page.tmpl (for HTML pages), include.tmpl (for HTML includable output)
     + if fmt value has a related template then format is "supported" by dsws

@@ -87,7 +87,7 @@ dist/linux-amd64:
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsindexer cmds/dsindexer/dsindexer.go
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsfind cmds/dsfind/dsfind.go
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsws cmds/dsws/dsws.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd46.zip linux-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
+	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip linux-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
 dist/windows-amd64:
 	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset.exe cmds/dataset/dataset.go
@@ -111,6 +111,7 @@ dist/raspbian-arm7:
 	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip raspbian-arm7-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
 
 distribute_docs:
+	rm -fR dist/*
 	mkdir -p dist/how-to
 	mkdir -p dist/docs
 	cp -v README.md dist/
@@ -118,7 +119,7 @@ distribute_docs:
 	cp -v INSTALL.md dist/
 	cp -v docs/*.md dist/docs/
 	cp -v how-to/*.md dist/how-to/
-	zip -r $(PROJECT)-$(VERSION)-release.zip dist/*
+	zip -r $(PROJECT)-$(VERSION)-release-docs.zip dist/*
 
 release: distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
