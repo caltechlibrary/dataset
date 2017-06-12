@@ -12,7 +12,7 @@
 {{- $fields := (join (dotpath ".request.fields" . nil) ",") -}}
 {{- $fieldValues := (dotpath ".request.fields" . nil) -}}
 {{- $sortBy := (join (dotpath ".request.sort" . nil) ",") -}}
-<div class="search-input-query"><label>Search</label> <textarea name="q" cols="80" rows="2" placeholder="Enter your query terms here">{{- with .request.query.query }}{{- . -}}{{- end }}</textarea></div><!-- END: search-input-query -->
+<div class="search-input-query"><label>Search</label> <textarea name="q" cols="80" rows="1" placeholder="Enter your query terms here">{{- with .request.query.query }}{{- . -}}{{- end }}</textarea></div><!-- END: search-input-query -->
 {{ with $highlight -}}
     {{if (eq $highlight "true") -}}
     <div class="search-input-highlight"><label> Show matching text?</label> <input type="radio" name="highlight" value="true" checked>Yes <input type="radio" name="highlight" value="false">No</div><!-- END: search-input-highlight -->
@@ -72,10 +72,12 @@
         <option value="{{$i}}">{{$i}}</option>
             {{- end }}
         {{- end }}
-        {{- if (eq $total $size) -}}
-	    <option value="{{$total}}" selected>All</option>
-        {{- else -}}
-	    <option value="{{$total}}">All</option>
+        {{- if (gt $total 0) -}}
+            {{- if (eq $total $size) -}}
+        <option value="{{$total}}" selected>All</option>
+            {{- else -}}
+        <option value="{{$total}}">All</option>
+            {{- end }}
         {{- end }}
     </select>
     </div><!-- END: search-results-per-page -->

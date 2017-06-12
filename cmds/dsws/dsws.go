@@ -320,28 +320,27 @@ func main() {
 		var tName string
 		switch strings.ToLower(qformat) {
 		case "csv":
-			//FIXME: Need to write the Content-Type header appropriately...
 			fields := trimmedSplit(values.Get("fields"), ",")
 			if len(fields) == 0 || (len(fields) == 1 && fields[0] == "*") {
 				fields = idxFields
 			}
-			w.Header().Set("Content-Type", "application/csv")
+			w.Header().Set("Content-Type", "text/csv")
 			if err := dataset.CSVFormatter(w, results, fields); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
 		case "json":
 			w.Header().Set("Content-Type", "application/json")
-			//FIXME: Need to write the Content-Type header appropriately...
 			if err := dataset.JSONFormatter(w, results); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
 		case "include":
-			//FIXME: Need to write the Content-Type header appropriately...
+			w.Header().Set("Content-Type", "text/plain")
 			tName = "include.tmpl"
 		default:
-			//FIXME: Need to write the Content-Type header appropriately...
+			//FIXME: need to check if fmt matches an installed template and set Content-Type appropriately
+			w.Header().Set("Content-Type", "text/html")
 			tName = "page.tmpl"
 		}
 		pg := new(bytes.Buffer)

@@ -21,7 +21,7 @@ assets.go:
 	pkgassets -p dataset -o assets.go SiteDefaults defaults
 
 
-bin/dataset: dataset.go attachments.go repair.go cmds/dataset/dataset.go
+bin/dataset: dataset.go attachments.go repair.go assets.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
 bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go
@@ -121,7 +121,7 @@ distribute_docs:
 	cp -v how-to/*.md dist/how-to/
 	zip -r $(PROJECT)-$(VERSION)-release-docs.zip dist/*
 
-release: distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
 status:
 	git status
