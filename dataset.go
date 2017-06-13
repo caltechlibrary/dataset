@@ -276,7 +276,7 @@ func Delete(name string) error {
 // saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
 func (c *Collection) saveMetadata() error {
 	// Check to see if collection exists, if not create it!
-	if _, err := os.Stat(c.Name); err != nil {
+	if _, err := c.Store.Stat(c.Name); err != nil {
 		if err := c.Store.MkdirAll(c.Name, 0775); err != nil {
 			return err
 		}
@@ -495,6 +495,7 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 		keys     []string
 	)
 
+	log.Printf("DEBUG before c.KeyMap -> %+v", c.KeyMap)
 	if len(params) == 0 {
 		name = "keys"
 	} else {
@@ -509,10 +510,11 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 		return nil, fmt.Errorf("%s is not a valid select list", listName)
 	}
 
-	if name == "keys.json" {
-		return c.getList("keys")
+	if listName == "keys" {
+		// NOTE: Never save/alter keys.json (it should be treated a read only select list)
+		log.Printf("DEBUG before, getList on keys.json c.KeyMap -> %+v", c.KeyMap)
+		return c.getList(listName)
 	}
-
 	if c.hasList(listName) == true {
 		sl, err := c.getList(listName)
 		if err != nil {
@@ -534,11 +536,20 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 		return nil, err
 	}
 
-	c.SelectLists = append(c.SelectLists, listName)
-	err = c.saveMetadata()
-	if err != nil {
-		return nil, err
+	listExists := false
+	for _, lName := range c.SelectLists {
+		if lName == listName {
+			listExists = true
+		}
 	}
+	if listExists == false {
+		c.SelectLists = append(c.SelectLists, listName)
+		err = c.saveMetadata()
+		if err != nil {
+			return nil, err
+		}
+	}
+	log.Printf("DEBUG after c.KeyMap -> %+v", c.KeyMap)
 	return sl, nil
 }
 
@@ -550,6 +561,7 @@ func (c *Collection) Clear(name string) error {
 	)
 
 	listName, name = keyAndFName(name)
+	log.Printf("DEBUG before c.KeyMap %+v", c.KeyMap)
 
 	if name == "collection.json" {
 		return fmt.Errorf("%s is not a select list", listName)
@@ -576,6 +588,7 @@ func (c *Collection) Clear(name string) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("DEBUG after, before save c.KeyMap %+v", c.KeyMap)
 	return c.saveMetadata()
 }
 
