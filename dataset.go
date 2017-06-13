@@ -495,7 +495,6 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 		keys     []string
 	)
 
-	log.Printf("DEBUG before c.KeyMap -> %+v", c.KeyMap)
 	if len(params) == 0 {
 		name = "keys"
 	} else {
@@ -512,7 +511,6 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 
 	if listName == "keys" {
 		// NOTE: Never save/alter keys.json (it should be treated a read only select list)
-		log.Printf("DEBUG before, getList on keys.json c.KeyMap -> %+v", c.KeyMap)
 		return c.getList(listName)
 	}
 	if c.hasList(listName) == true {
@@ -549,7 +547,6 @@ func (c *Collection) Select(params ...string) (*SelectList, error) {
 			return nil, err
 		}
 	}
-	log.Printf("DEBUG after c.KeyMap -> %+v", c.KeyMap)
 	return sl, nil
 }
 
@@ -561,7 +558,6 @@ func (c *Collection) Clear(name string) error {
 	)
 
 	listName, name = keyAndFName(name)
-	log.Printf("DEBUG before c.KeyMap %+v", c.KeyMap)
 
 	if name == "collection.json" {
 		return fmt.Errorf("%s is not a select list", listName)
@@ -588,7 +584,6 @@ func (c *Collection) Clear(name string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("DEBUG after, before save c.KeyMap %+v", c.KeyMap)
 	return c.saveMetadata()
 }
 
