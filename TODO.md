@@ -3,11 +3,7 @@
 
 ## Bugs
 
-+ [ ] keys.json and collection.json's keymap are empty in some cases
-    + [x] check dataset
-    + [ ] check cait usage
-    + [ ] check epgo usage
-+ [ ] repair and check will fail on S3 without warning or indication why
++ [ ] Repair and check will fail on S3 without warning or indication why
 
 ## Next
 
@@ -15,9 +11,7 @@
     + currently required templates are page.tmpl (for HTML pages), include.tmpl (for HTML includable output)
     + if fmt value has a related template then format is "supported" by dsws
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
-+ [ ] Add option for batch indexing in dsindexer
-+ [ ] Reconfigure Makefile to build individual releases for each supported platform
-+ [ ] add repair and check support for S3 storage
++ [ ] Add repair and check support for S3 storage
 
 ## Someday, Maybe
 
@@ -65,6 +59,8 @@
 
 ## Completed
 
++ [x] Add option for batch indexing in dsindexer
++ [x] Reconfigure Makefile to build individual releases for each supported platform
 + [x] Merge results.tmpl changes into defaults from dr2
 + [x] CSV and JSON output not sending correct Content-Type header in _dsws_
 + [x] when adding a fielded search in default templates the query string breaks the HTML of the query input form
@@ -113,3 +109,7 @@
     + [x] `dataset get KEY` get returns all the files in tarbal
     + [x] `dataset get KEY FILENAME_LIST` would return specific files from tarball
 + [x] add verbose option for importing CSV file, for large files it would be nice to see activity
++ [x] keys.json and collection.json's keymap are empty in some cases
+    + [x] check dataset
+    + [x] check cait usage
+    + [x] check epgo usage
