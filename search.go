@@ -299,6 +299,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 
 	// Get all the keys and index each record
 	startT := time.Now()
+	batchT := time.Now()
 	batchIdx := idx.NewBatch()
 	keys := c.Keys()
 	cnt := 0
@@ -312,8 +313,9 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 					if err := idx.Batch(batchIdx); err != nil {
 						log.Fatal(err)
 					}
-					log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
+					log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
 					batchIdx = idx.NewBatch()
+					batchT = time.Now()
 				}
 			}
 		} else {
@@ -324,6 +326,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 		if err := idx.Batch(batchIdx); err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
 	}
 	log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
 	return nil
