@@ -27,6 +27,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/datatools/dotpath"
@@ -275,7 +276,7 @@ func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byt
 
 // Indexer ingests all the records of a collection applying the definition
 // creating or updating a Bleve index. Returns an error.
-func (c *Collection) Indexer(idxName string, idxMapName string) error {
+func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) error {
 	var (
 		idx bleve.Index
 		err error
@@ -297,22 +298,34 @@ func (c *Collection) Indexer(idxName string, idxMapName string) error {
 	defer idx.Close()
 
 	// Get all the keys and index each record
+	startT := time.Now()
+	batchIdx := idx.NewBatch()
 	keys := c.Keys()
 	cnt := 0
 	for i, key := range keys {
 		if src, err := c.ReadAsJSON(key); err == nil {
 			if rec, err := recordMapToIndexRecord(recordMap, src); err == nil {
-				idx.Index(key, rec)
+				//idx.Index(key, rec)
+				batchIdx.Index(key, rec)
 				cnt++
-				if (cnt % 100) == 0 {
-					log.Printf("%d records indexed", cnt)
+				if (cnt % batchSize) == 0 {
+					if err := idx.Batch(batchIdx); err != nil {
+						log.Fatal(err)
+					}
+					log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
+					batchIdx = idx.NewBatch()
 				}
 			}
 		} else {
 			log.Printf("%d, can't index %s, %s", i, key, err)
 		}
 	}
-	log.Printf("%d total records indexed", cnt)
+	if batchIdx.Size() > 0 {
+		if err := idx.Batch(batchIdx); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
 	return nil
 }
 

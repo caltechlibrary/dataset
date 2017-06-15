@@ -21,6 +21,7 @@
 
 ## Someday, Maybe
 
++ [ ] explore using templates as filters for select lists and the like
 + [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq .authors_family[:] "Doiel")))
     + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
 + [ ] Should the keymap in collection.json be a separate file(s)?

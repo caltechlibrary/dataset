@@ -241,11 +241,6 @@ func main() {
 	//
 	// Final set and start the webservice
 	//
-	if docRoot != "" {
-		log.Printf("DocRoot %s", docRoot)
-	} else {
-		log.Printf("Using /api as landing page")
-	}
 	if len(indexNames) == 1 {
 		log.Printf("Index %s", strings.Join(indexNames, ", "))
 	} else {
@@ -359,8 +354,10 @@ func main() {
 	// Note: If DocRoot is NOT provided we need to redirect to /api
 	// instead of using a docRoot with htt.FileServer(http.Dir(docRoot)
 	if docRoot == "" {
-		http.HandleFunc("/", redirectToApi)
+		log.Printf("Using /api as langing pageq")
+		//http.HandleFunc("/", redirectToApi)
 	} else {
+		log.Printf("Document root %s", docRoot)
 		http.Handle("/", http.FileServer(http.Dir(docRoot)))
 	}
 

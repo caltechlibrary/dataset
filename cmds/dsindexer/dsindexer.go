@@ -65,6 +65,7 @@ in "email-mapping.json".
 	// App Specific Options
 	collectionName string
 	documentType   string
+	batchSize      int
 )
 
 func init() {
@@ -80,6 +81,7 @@ func init() {
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
+	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
 }
 
 func main() {
@@ -135,7 +137,7 @@ func main() {
 	}
 	defer collection.Close()
 
-	if err = collection.Indexer(indexName, definitionFName); err != nil {
+	if err = collection.Indexer(indexName, definitionFName, batchSize); err != nil {
 		fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
 		os.Exit(1)
 	}
