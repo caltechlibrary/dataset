@@ -19,6 +19,7 @@ dataset.go: assets.go
 
 assets.go: 
 	pkgassets -p dataset -o assets.go SiteDefaults defaults
+	git add assets.go
 
 
 bin/dataset: dataset.go attachments.go repair.go assets.go cmds/dataset/dataset.go
@@ -76,11 +77,7 @@ clean:
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
-	if [ -f $(PROJECT)-$(VERSION)-release.zip ]; then rm $(PROJECT)-$(VERSION)-release.zip; fi
-	if [ -f dist/$(PROJECT)-$(VERSION)-linux-amd64.zip ]; then rm dist/$(PROJECT)-$(VERSION)-linux-amd64.zip; fi
-	if [ -f dist/$(PROJECT)-$(VERSION)-windows-amd64.zip ]; then rm dist/$(PROJECT)-$(VERSION)-windows-amd64.zip; fi
-	if [ -f dist/$(PROJECT)-$(VERSION)-macosx-amd64.zip ]; then rm dist/$(PROJECT)-$(VERSION)-macosx-amd64.zip; fi
-	if [ -f dist/$(PROJECT)-$(VERSION)-raspbian-arm7.zip ]; then rm dist/$(PROJECT)-$(VERSION)-raspbian-arm7.zip; fi
+	if [ -f "$(PROJECT)-$(VERSION)-release-docs.zip" ]; then rm -f $(PROJECT)-$(VERSION)-release-docs.zip; fi
 
 dist/linux-amd64:
 	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
