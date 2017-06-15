@@ -354,8 +354,8 @@ func main() {
 	// Note: If DocRoot is NOT provided we need to redirect to /api
 	// instead of using a docRoot with htt.FileServer(http.Dir(docRoot)
 	if docRoot == "" {
-		log.Printf("Using /api as langing pageq")
-		//http.HandleFunc("/", redirectToApi)
+		log.Printf("Using /api as langing page")
+		http.HandleFunc("/", redirectToApi)
 	} else {
 		log.Printf("Document root %s", docRoot)
 		http.Handle("/", http.FileServer(http.Dir(docRoot)))
