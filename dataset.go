@@ -226,8 +226,14 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 		return nil, err
 	}
 	// See if we need an open or continue with create
-	if _, err := store.Stat(collectionName); err == nil {
-		return Open(name)
+	if store.Type == storage.S3 {
+		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
+			return Open(name)
+		}
+	} else {
+		if _, err := store.Stat(collectionName); err == nil {
+			return Open(name)
+		}
 	}
 	c := new(Collection)
 	c.Version = Version
