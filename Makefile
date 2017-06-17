@@ -77,48 +77,56 @@ clean:
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
-	if [ -f "$(PROJECT)-$(VERSION)-release-docs.zip" ]; then rm -f $(PROJECT)-$(VERSION)-release-docs.zip; fi
 
 dist/linux-amd64:
-	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dataset cmds/dataset/dataset.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsindexer cmds/dsindexer/dsindexer.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsfind cmds/dsfind/dsfind.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/dsws cmds/dsws/dsws.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip linux-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
+	mkdir -p dist/bin
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dataset cmds/dataset/dataset.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsindexer cmds/dsindexer/dsindexer.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsfind cmds/dsfind/dsfind.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsws cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
+	rm -fR dist/bin
 
 dist/windows-amd64:
-	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dataset.exe cmds/dataset/dataset.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsindexer.exe cmds/dsindexer/dsindexer.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsfind.exe cmds/dsfind/dsfind.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/dsws.exe cmds/dsws/dsws.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip windows-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
+	mkdir -p dist/bin
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dataset.exe cmds/dataset/dataset.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsindexer.exe cmds/dsindexer/dsindexer.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsfind.exe cmds/dsfind/dsfind.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsws.exe cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
+	rm -fR dist/bin
 
 dist/macosx-amd64:
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dataset cmds/dataset/dataset.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsindexer cmds/dsindexer/dsindexer.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsfind cmds/dsfind/dsfind.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/macosx-amd64/dsws cmds/dsws/dsws.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-macosx-amd64.zip macosx-amd64/* README.md LICENSE INSTALL.md docs/* how-to/* 
+	mkdir -p dist/bin
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dataset cmds/dataset/dataset.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsindexer cmds/dsindexer/dsindexer.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsfind cmds/dsfind/dsfind.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsws cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-macosx-amd64.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
+	rm -fR dist/bin
 
 dist/raspbian-arm7:
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dataset cmds/dataset/dataset.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsindexer cmds/dsindexer/dsindexer.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsfind cmds/dsfind/dsfind.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/raspbian-arm7/dsws cmds/dsws/dsws.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip raspbian-arm7/* README.md LICENSE INSTALL.md docs/* how-to/* 
+	mkdir -p dist/bin
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dataset cmds/dataset/dataset.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsindexer cmds/dsindexer/dsindexer.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsfind cmds/dsfind/dsfind.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsws cmds/dsws/dsws.go
+	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
+	rm -fR dist/bin
 
 distribute_docs:
-	rm -fR dist/*
+	rm -fR dist
 	mkdir -p dist/how-to
 	mkdir -p dist/docs
+	mkdir -p dist/demos
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
 	cp -v docs/*.md dist/docs/
 	cp -v how-to/*.md dist/how-to/
-	zip -r $(PROJECT)-$(VERSION)-release-docs.zip dist/*
+	cp -vR demos dist/
 
-release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+release: dataset.go assets.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
 status:
 	git status

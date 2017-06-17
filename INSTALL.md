@@ -1,50 +1,123 @@
 
 # Installation
 
+*dataset* is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents
+into a collection by unique filename. 
+
 This is generalized instructions for a release.  For deployment suggestions see NOTES.md
 
 ## Compiled version
 
-*dataset* is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents
-into a collection by unique filename. 
-
-Compiled versions are available for Mac OS X (amd64 processor), Linux (amd64), Windows (amd64) and Rapsberry Pi (both ARM6 and ARM7)
+Compiled versions are available for Mac OS X (amd64 processor, macosx-amd64), Linux (amd64 process, linux-amd64), 
+Windows (amd64 processor, windows-amd64) and Rapsberry Pi (arm7 processor, raspbian-arm7)
 
 VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
+
+For all the released version go to the project page on Github and click latest release
+
+>    https://github.com/caltechlibrary/dataset/releases/latest
+
+
+| Platform    | Zip Filename                             | Folder for executables |
+|-------------|------------------------------------------|------------------------|
+| Windows     | dataset-VERSION_NUMBER-windows-amd64.zip | windows_amd64          |
+| Mac OS X    | dataset-VERSION_NUMBER-macosx-amd64.zip  | macosx_amd64           |
+| Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip   | linux_amd64            |
+| Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip | raspbian_arm7          |
+
+## The basic recipe
+
++ Find the Zip file listed matching the architecture you're running and download it
+    + (e.g. if you're on a Windows 10 laptop/Surface with a amd64 style CPU you'd choose the Zip file with "windows-amd64" in the name).
++ Download the zip file and unzip the file.  
++ Copy the contents of the folder named "bin" to a folder that is in your path 
+    + (e.g. "$HOME/bin" is common).
++ Adjust your PATH if needed
+    + (e.g. `export PATH="$HOME/bin:$PATH"`)
++ Test
+
+
 ### Mac OS X
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
-2. Open a finder window, find and unzip **dataset-VERSION_NUMBER-release.zip**
-3. Look in the unziped folder and find the files in *dist/macosx-amd64/*
-4. Drag (or copy) *dataset* to a "bin" directory in your path
-5. Open and "Terminal" and run `dataset -h` to confirm you were successful
+1. Download the zip file
+2. Unzip the zip file
+3. Copy the executables to $HOME/bin (or a folder in your path)
+4. Make sure the new location in in our path
+5. Test
+
+Here's an example of the commands run in the Terminal App after downloading the 
+zip file.
+
+```shell
+    cd Downloads/
+    unzip dataset-*-macosx-amd64.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
 
 ### Windows
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
-2. Open the file manager find and unzip **dataset-VERSION_NUMBER-release.zip**
-3. Look in the unziped folder and find the files in *dist/windows-amd64/*
-4. Drag (or copy) *dataset.exe* to a directory in your path
-5. Open Bash and and run `dataset -h` to confirm you were successful
+1. Download the zip file
+2. Unzip the zip file
+3. Copy the executables to $HOME/bin (or a folder in your path)
+4. Test
 
-### Linux
+Here's an example of the commands run in from the Bash shell on Windows 10 after
+downloading the zip file.
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
-2. Find and unzip **dataset-VERSION_NUMBER-release.zip**
-3. In the unziped directory and find the files in *dist/linux-amd64/*
-4. Copy *dataset* to a "bin" directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/linux-amd64/dataset ~/bin/)
-5. From the shell prompt run `dataset -h` to confirm you were successful
+```shell
+    cd Downloads/
+    unzip dataset-*-windows-amd64.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
+
+
+### Linux 
+
+1. Download the zip file
+2. Unzip the zip file
+3. Copy the executables to $HOME/bin (or a folder in your path)
+4. Test
+
+Here's an example of the commands run in from the Bash shell after
+downloading the zip file.
+
+```shell
+    cd Downloads/
+    unzip dataset-*-linux-amd64.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
+
 
 ### Raspberry Pi
 
 Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
 
-1. Download **dataset-VERSION_NUMBER-release.zip** from https://github.com/caltechlibrary/dataset/releases/latest
-2. Find and unzip **dataset-VERSION_NUMBER-release.zip**
-3. In the unziped directory and find the files in *dist/rasbian-arm7/*
-4. Copy *dataset* to a "bin" directory (e.g. cp ~/Downloads/dataset-VERSION_NUMBER-release/dist/rasbian-arm7/dataset ~/bin/)
-5. From the shell prompt run `dataset -h` to confirm you were successful
+1. Download the zip file
+2. Unzip the zip file
+3. Copy the executables to $HOME/bin (or a folder in your path)
+4. Test
+
+Here's an example of the commands run in from the Bash shell after
+downloading the zip file.
+
+```shell
+    cd Downloads/
+    unzip dataset-*-raspbian-arm7.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
 
 
 ## Compiling from source
@@ -53,13 +126,15 @@ _dataset_ is "go gettable".  Use the "go get" command to download the dependant 
 as well as _dataset_'s source code.
 
 ```shell
-    go get -u github.com/caltechlibrary/dataset
+    go get -u github.com/caltechlibrary/dataset/...
 ```
 
-And then compile
+Or clone the repstory and then compile
 
 ```shell
-    cd $GOPATH/src/github.com/caltechlibrary/dataset
+    cd
+    git clone https://github.com/caltechlibrary/dataset src/github.com/caltechlibrary/dataset
+    cd src/github.com/caltechlibrary/dataset
     make
     make test
     make install
