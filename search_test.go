@@ -84,7 +84,7 @@ var (
 }`)
 )
 
-func TestIndexing(t *testing.T) {
+func TestIndexingSearch(t *testing.T) {
 	// Remove stale collection and index
 	os.RemoveAll(cName)
 	os.RemoveAll(iName)
@@ -110,7 +110,7 @@ func TestIndexing(t *testing.T) {
 		t.Errorf("Can't write %q, %s", mName, err)
 		t.FailNow()
 	}
-	if err := c.Indexer(iName, mName); err != nil {
+	if err := c.Indexer(iName, mName, 100); err != nil {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}
@@ -121,12 +121,25 @@ func TestIndexing(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
+	c, err := Open(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+
 	// Run queries and test results
 	opts := map[string]string{
 		"result_fields": "*",
 	}
 
-	results, err := Find(os.Stderr, []string{iName}, []string{"600622"}, opts)
+	idx, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", iName, err)
+		t.FailNow()
+	}
+
+	results, err := Find(os.Stderr, idx, []string{"600622"}, opts)
 	if err != nil {
 		t.Errorf("Find returned an error, %s", err)
 		t.FailNow()
