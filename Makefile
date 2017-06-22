@@ -9,7 +9,7 @@ BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
 PKGASSETS = $(shell which pkgassets)
 
-PROJECT_LIST = dataset 
+PROJECT_LIST = dataset assets.go 
 
 build: $(PROJECT_LIST)
 
@@ -18,11 +18,11 @@ dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 dataset.go: assets.go
 
 assets.go: 
-	pkgassets -p dataset -o assets.go SiteDefaults defaults
+	pkgassets -p dataset -o assets.go Defaults defaults
 	git add assets.go
 
 
-bin/dataset: dataset.go attachments.go repair.go assets.go cmds/dataset/dataset.go
+bin/dataset: dataset.go attachments.go repair.go cmds/dataset/dataset.go
 	go build -o bin/dataset cmds/dataset/dataset.go
 
 bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go
@@ -73,7 +73,6 @@ lint:
 	golint cmds/dsfind/dsfind.go
 
 clean:
-	if [ "$(PKGASSETS)" != "" ] && [ -f assets.go ]; then rm assets.go; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi

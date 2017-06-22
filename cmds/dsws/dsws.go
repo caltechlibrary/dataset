@@ -183,8 +183,8 @@ func main() {
 		}
 	} else {
 		log.Printf("Using default search templates")
-		// Load our default templates from dataset.SiteDefaults
-		if err := tmpl.ReadMap(dataset.SiteDefaults); err != nil {
+		// Load our default templates from dataset.Defaults
+		if err := tmpl.ReadMap(dataset.Defaults); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
