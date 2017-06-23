@@ -11,7 +11,6 @@ PKGASSETS = $(shell which pkgassets)
 
 PROJECT_LIST = dataset assets.go 
 
-build: $(PROJECT_LIST)
 
 dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 
@@ -34,7 +33,9 @@ bin/dsfind: dataset.go search.go formats.go cmds/dsfind/dsfind.go
 bin/dsws: dataset.go search.go assets.go formats.go cmds/dsws/dsws.go
 	go build -o bin/dsws cmds/dsws/dsws.go
 
-install: $(PROJECT_LIST)
+build: $(PROJECT_LIST)
+
+install: 
 	env GOBIN=$(GOPATH)/bin go install cmds/dataset/dataset.go
 	env GOBIN=$(GOPATH)/bin go install cmds/dsindexer/dsindexer.go
 	env GOBIN=$(GOPATH)/bin go install cmds/dsfind/dsfind.go
