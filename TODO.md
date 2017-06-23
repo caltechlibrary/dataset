@@ -8,15 +8,16 @@
 ## Next
 
 + [ ] Add RSS2 and BibTeX format support via templates
-    + currently required templates are page.tmpl (for HTML pages), include.tmpl (for HTML includable output)
+    + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
     + if fmt value has a related template then format is "supported" by dsws
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
++ [ ] Add _copy_ would allow you to copy a collection from one place to another (e.g. local disc to S3 or S3 to a local dist)
 + [ ] Add repair and check support for S3 storage
 
 ## Someday, Maybe
 
-+ [ ] explore using templates as filters for select lists and the like
 + [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq .authors_family[:] "Doiel")))
+    + [ ] explore using templates as filters for select lists and the like
     + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
 + [ ] Should the keymap in collection.json be a separate file(s)?
 + [ ] optional strageties for including arrays in a single column of CSV output
