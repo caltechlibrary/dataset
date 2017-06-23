@@ -30,7 +30,7 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/datatools/dotpath"
+	"github.com/caltechlibrary/dotpath"
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
