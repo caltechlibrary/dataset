@@ -12,10 +12,15 @@ if [ -d titles.bleve ]; then
     rm -fR titles.bleve
 fi
 $(dataset init characters)
+echo "Testing import csv file"
 dataset -uuid import htdocs/characters.csv
+echo "Testing filter '(eq .name "Mojo Sam")'"
+dataset filter '(eq .name "Mojo Sam")'
+echo "Testing dsindexer"
 dsindexer htdocs/characters.json characters.bleve
 dsindexer htdocs/names.json names.bleve
 dsindexer htdocs/titles.json titles.bleve
+echo "Testing dsfind"
 dsfind "Mojo Sam"
 dsfind -indexes=characters.bleve -fields="name,title,year" "Mojo Sam"
 dsfind -indexes=titles.bleve -fields="name,title,year" "Mojo"

@@ -14,6 +14,7 @@ import (
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/storage"
+	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/google/uuid"
@@ -52,7 +53,10 @@ Collection and JSON Documant related--
   + JSON document must already exist
 + delete - removes a JSON document from collection
   + requires JSON document name
++ filter - takes a filter and returns an unordered list of keys that match filter expression
+  + if filter expression not provided as a command line parameter then it is read from stdin
 + keys - returns the keys to stdout, one key per line
++ haskey - returns true is key is in collection, false otherwise
 + path - given a document name return the full path to document
 + attach - attaches a non-JSON content to a JSON record 
     + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
@@ -114,6 +118,10 @@ a record called "littlefreda.json" and reading it back.
       echo "Doc: $(dataset read $KY)
    done
 
+Now check to see if the key, littlefreda, is in the collection
+
+   dataset haskey littlefreda
+
 You can also read your JSON formatted data from a file or standard input.
 In this example we are creating a mojosam record and reading back the contents
 of testdata/friends
@@ -152,6 +160,16 @@ Remove high-capt-jack.txt from "capt-jack"
 Remove all attachments from "capt-jack"
 
    dataset detach capt-jack
+
+Filter can be used to return only the record keys that return true for a given
+expression. Here's is a simple case for match records where name is equal to
+"Mojo Sam".
+
+   dataset filter '(eq .name "Mojo Sam")'
+
+If you are using a complex filter it can read a file in and apply it as a filter.
+
+    dataset filter < myfilter.txt
 `
 
 	// Standard Options
@@ -174,6 +192,8 @@ Remove all attachments from "capt-jack"
 		"update":      updateJSONDoc,
 		"delete":      deleteJSONDoc,
 		"keys":        collectionKeys,
+		"haskey":      hasKey,
+		"filter":      filter,
 		"path":        docPath,
 		"select":      selectList,
 		"lists":       lists,
@@ -384,6 +404,7 @@ func deleteJSONDoc(args ...string) (string, error) {
 
 // collectionKeys returns the keys in a collection
 func collectionKeys(args ...string) (string, error) {
+	// NOTE: We ignore args because this function always returns the full list
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
@@ -393,6 +414,60 @@ func collectionKeys(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	return strings.Join(collection.Keys(), "\n"), nil
+}
+
+// hasKey returns true if key is found in collection.json, false otherwise
+// If more than one key is provided then each key is checked and an array
+// of true/false values will be returned matching the order of the keys provided
+// one key state per line
+func hasKey(args ...string) (string, error) {
+	keyState := []string{}
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	for _, arg := range args {
+		keyState = append(keyState, fmt.Sprintf("%t", collection.HasKey(arg)))
+	}
+	return strings.Join(keyState, "\n"), nil
+}
+
+// filter returns a list of collection ids where the filter value returns true.
+// the filter notation is based on that Go text/template pipelines that would return
+// true in an if/else block.
+func filter(args ...string) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("filter requires a single filter expression")
+	}
+
+	f, err := tmplfn.ParseFilter([]byte(args[0]))
+	if err != nil {
+		return "", err
+	}
+
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	keys := []string{}
+	for _, key := range collection.Keys() {
+		data := map[string]interface{}{}
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				keys = append(keys, key)
+			}
+		}
+	}
+	return strings.Join(keys, "\n"), nil
 }
 
 // docPath returns the path to a JSON document or an error

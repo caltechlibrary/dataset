@@ -455,6 +455,12 @@ func (c *Collection) Keys() []string {
 	return keys
 }
 
+// HasKey returns true if key is in collection's KeyMap, false otherwise
+func (c *Collection) HasKey(key string) bool {
+	_, hasKey := c.KeyMap[key]
+	return hasKey
+}
+
 //
 // Note: Select Lists are an array of keys (JSON documents in the collection but not in buckets)
 //
@@ -492,49 +498,112 @@ func (c *Collection) getList(name string) (*SelectList, error) {
 	return sl, nil
 }
 
+// assignSelectParams takes a parameter list and returns name, filter, keys values
+//
+// 	    select [LIST_NAME] ["filter" FILTER_EXP | "keys" KEYS_TO_ADD]
+//
+func assignSelectParams(params ...string) (string, string, []string) {
+	var (
+		name   = "default"
+		filter string
+		keys   []string
+	)
+
+	if len(params) == 0 {
+		return name, filter, keys
+	}
+
+	for i, val := range params {
+		switch strings.ToLower(val) {
+		case "filter":
+			if len(params) > i {
+				filter = params[i+1]
+				return name, filter, keys
+			}
+		case "keys":
+			if len(params) > i {
+				keys = params[i+1:]
+				return name, filter, keys
+			}
+		default:
+			if val != "default" {
+				name = val
+			}
+		}
+	}
+
+	return name, filter, keys
+}
+
 // Select returns a select assocaited with a collection, it will be created if neccessary and
 // any keys included will be added before returning the updated list
 func (c *Collection) Select(params ...string) (*SelectList, error) {
 	var (
 		name     string
 		listName string
+		filter   string
 		keys     []string
+		sl       *SelectList
 	)
 
 	if len(params) == 0 {
-		name = "keys"
-	} else {
-		name = params[0]
-		if len(params) > 1 {
-			keys = params[1:]
-		}
+		return c.getList("keys")
 	}
+
+	//FIXME: still a skectch, not implemented!!!!
+
+	//
+	// NOTE: select list syntax
+	//
+	// 	    select [LIST_NAME] ["filter" FILTER_EXP | "keys" KEYS_TO_ADD | all]
+	//
+	name, filter, keys := assignSelectParams(params)
 
 	listName, name = keyAndFName(name)
 	if name == "collection.json" {
 		return nil, fmt.Errorf("%s is not a valid select list", listName)
 	}
 
-	if listName == "keys" {
-		// NOTE: Never save/alter keys.json (it should be treated a read only select list)
-		return c.getList(listName)
-	}
+	// NOTE: Select lists narrow if they exist, get the list or create a new one if non-exist.
 	if c.hasList(listName) == true {
-		sl, err := c.getList(listName)
+		sl, err = c.getList(listName)
 		if err != nil {
 			return nil, err
 		}
-		if len(keys) > 0 {
-			sl.Keys = append(sl.Keys, keys[:]...)
-			err = sl.SaveList()
-		}
-		return sl, err
+	} else {
+		sl = new(SelectList)
+		sl.FName = path.Join(c.Name, name)
+		sl.Store = c.Store
 	}
 
-	sl := new(SelectList)
-	sl.FName = path.Join(c.Name, name)
-	sl.Keys = keys[:]
-	sl.Store = c.Store
+	// Now apply filter
+	if filter != "" {
+		f, err := tmplfn.ParseFilter(filter)
+		if err != nil {
+			return nil, err
+		}
+
+		var (
+			data interface{}
+			err  error
+		)
+		for _, key := range sl.Keys {
+			// Get record
+			if err = c.Read(key, &data); err == nil {
+				// apply filter
+				if f.Apply(data) == true {
+					// if true add key to keys
+					keys = append(keys, key)
+				}
+			}
+		}
+	}
+
+	// Apply any added keys (either from filter or from key list)
+	if len(keys) > 0 {
+		sl.Keys = append(sl.Keys, keys[:]...)
+	}
+
 	err := sl.SaveList()
 	if err != nil {
 		return nil, err
