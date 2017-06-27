@@ -19,6 +19,7 @@
 package dataset
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 )
@@ -89,41 +90,69 @@ func TestCollection(t *testing.T) {
 	if len(collection.KeyMap) > 0 {
 		t.Errorf("expected 0 keys, got %d", len(collection.KeyMap))
 	}
-	rec1 := map[string]string{
-		"name":  "freda",
-		"email": "freda@inverness.example.org",
-	}
-	err = collection.Create("freda", rec1)
-	if err != nil {
-		t.Errorf("collection.Create(), %s", err)
+	testData := []map[string]string{}
+	src := `[
+		{
+			"id": "Kahlo-F",
+			"given_name":  "Freda",
+			"last_name": "Kahlo",
+			"email": "freda@arts.example.org"
+		},
+		{
+			"id": "Rivera-D",
+			"given_name": "Diego",
+			"family_name": "Rivera",
+			"email": "deigo@arts.example.org"
+		},
+		{
+			"id": "Dali-S",
+			"given_name": "Salvador",
+			"family_name": "Dali",
+			"email": "salvador@collectivo.example.org"
+		}
+]`
+	if err := json.Unmarshal([]byte(src), &testData); err != nil {
+		t.Errorf("Failed to marshal test data, %s", err)
 		t.FailNow()
 	}
-	p, err := collection.DocPath("freda")
-	if err != nil {
-		t.Errorf("Should have docpath for %s, %s", "freda", err)
-		t.FailNow()
+
+	for _, rec := range testData {
+		if id, ok := rec["id"]; ok == true {
+			err = collection.Create(id, rec)
+			if err != nil {
+				t.Errorf("collection.Create(), %s", err)
+				t.FailNow()
+			}
+			p, err := collection.DocPath(id)
+			if err != nil {
+				t.Errorf("Should have docpath for %s, %s", id, err)
+				t.FailNow()
+			}
+			if _, err := os.Stat(p); os.IsNotExist(err) == true {
+				t.Errorf("Should have saved %s to disc at %s", id, p)
+				t.FailNow()
+			}
+		}
 	}
-	if _, err := os.Stat(p); os.IsNotExist(err) == true {
-		t.Errorf("Should have saved %s to disc at %s", "freda", p)
-		t.FailNow()
-	}
-	if len(collection.KeyMap) != 1 {
+
+	if len(collection.KeyMap) != 3 {
 		t.Errorf("expected 1 key, got %+v", collection)
 		t.FailNow()
 	}
 	keys := collection.Keys()
-	if len(keys) != 1 {
-		t.Errorf("expected 1 key, got %+v", keys)
+	if len(keys) != 3 {
+		t.Errorf("expected 3 keys, got %+v", keys)
 		t.FailNow()
 	}
 
 	// Create an empty record, then read it again to compare
 	var rec2 map[string]string
-	err = collection.Read("freda", &rec2)
+	err = collection.Read("Kahlo-F", &rec2)
 	if err != nil {
 		t.Errorf("Read(), %s", err)
 		t.FailNow()
 	}
+	rec1 := testData[0]
 	for k, expected := range rec1 {
 		if val, ok := rec2[k]; ok == true {
 			if expected != val {
@@ -136,14 +165,14 @@ func TestCollection(t *testing.T) {
 		}
 	}
 	// Should trigger update if a duplicate record
-	err = collection.Create("freda", rec2)
+	err = collection.Create("Kahlo-F", rec2)
 	if err != nil {
 		t.Errorf("Create on an existing record should just update it %+v", rec2)
 		t.FailNow()
 	}
 
 	rec3 := map[string]string{}
-	if err := collection.Read("freda", &rec3); err != nil {
+	if err := collection.Read("Kahlo-F", &rec3); err != nil {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
@@ -157,15 +186,15 @@ func TestCollection(t *testing.T) {
 		}
 	}
 
-	rec2["email"] = "freda@zbs.example.org"
-	err = collection.Update("freda", rec2)
+	rec2["email"] = "freda@collectivo.example.org"
+	err = collection.Update("Kahlo-F", rec2)
 	if err != nil {
 		t.Errorf("Could not update %s, %s", "freda", err)
 		t.FailNow()
 	}
 
 	rec4 := map[string]string{}
-	if err := collection.Read("freda", &rec4); err != nil {
+	if err := collection.Read("Kahlo-F", &rec4); err != nil {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
@@ -179,12 +208,12 @@ func TestCollection(t *testing.T) {
 		}
 	}
 
-	err = collection.Delete("freda")
+	err = collection.Delete("Kahlo-F")
 	if err != nil {
 		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
 		t.FailNow()
 	}
-	err = collection.Read("freda", &rec2)
+	err = collection.Read("Kahlo-F", &rec2)
 	if err == nil {
 		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
 	}

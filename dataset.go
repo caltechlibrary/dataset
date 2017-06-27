@@ -31,7 +31,9 @@ import (
 	"strings"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/storage"
+	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/google/uuid"
@@ -415,11 +417,6 @@ func (c *Collection) HasKey(key string) bool {
 	return hasKey
 }
 
-// ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
-func (c *Collection) ExportCSV(buf io.Reader, filterExpr string, dotPaths []string, colNames []string, verboseLog bool) (int, error) {
-	return 0, fmt.Errorf("ExportCSV() not implemented")
-}
-
 // ImportCSV takes a reader and iterates over the rows and imports them as
 // a JSON records into dataset.
 func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
@@ -487,8 +484,95 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 	return lineNo, nil
 }
 
+func colToString(cell interface{}) string {
+	var s string
+	switch cell.(type) {
+	case string:
+		s = fmt.Sprintf("%s", cell)
+	case json.Number:
+		s = fmt.Sprintf("%s", cell.(json.Number).String())
+	default:
+		src, err := json.Marshal(cell)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+		s = fmt.Sprintf("%s", src)
+	}
+	return s
+}
+
+// ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
+func (c *Collection) ExportCSV(fp io.Writer, filterExpr string, dotPaths []string, colNames []string, verboseLog bool) (int, error) {
+	keys := c.Keys()
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return 0, err
+	}
+
+	// write out colNames
+	w := csv.NewWriter(fp)
+	if err := w.Write(colNames); err != nil {
+		return 0, err
+	}
+
+	var (
+		data interface{}
+		cnt  int
+		row  []string
+	)
+	for _, key := range keys {
+		if err := c.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				// write row out.
+				row = []string{}
+				for _, colPath := range dotPaths {
+					col, err := dotpath.Eval(colPath, data)
+					if err == nil {
+						row = append(row, colToString(col))
+					} else {
+						row = append(row, "")
+					}
+				}
+				if err := w.Write(row); err == nil {
+					cnt++
+				}
+				data = nil
+			}
+		}
+	}
+	w.Flush()
+	if err := w.Error(); err != nil {
+		return cnt, err
+	}
+	return cnt, nil
+}
+
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error) {
-	return []string{}, fmt.Errorf("Extract() not implemented.")
+	keys := c.Keys()
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		data interface{}
+		rows []string
+	)
+	for _, key := range keys {
+		if err := c.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				col, err := dotpath.Eval(dotPath, data)
+				if err == nil {
+					rows = append(rows, colToString(col))
+				} else {
+					rows = append(rows, "")
+				}
+				data = nil
+			}
+		}
+	}
+	return rows, nil
 }

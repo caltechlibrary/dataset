@@ -429,7 +429,7 @@ func filter(args ...string) (string, error) {
 		return "", fmt.Errorf("filter requires a single filter expression")
 	}
 
-	f, err := tmplfn.ParseFilter([]byte(args[0]))
+	f, err := tmplfn.ParseFilter(args[0])
 	if err != nil {
 		return "", err
 	}
