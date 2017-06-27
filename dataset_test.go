@@ -20,8 +20,6 @@ package dataset
 
 import (
 	"os"
-	"sort"
-	"strings"
 	"testing"
 )
 
@@ -179,11 +177,6 @@ func TestCollection(t *testing.T) {
 		} else {
 			t.Errorf("missing key %s rec4 in %+v <- rec2: %+v \n", k2, rec4, rec2)
 		}
-	}
-
-	// Run subtests of select list behavior
-	if ok := selectListBehavior(t, collection); ok == false {
-		t.FailNow()
 	}
 
 	err = collection.Delete("freda")
