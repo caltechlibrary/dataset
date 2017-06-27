@@ -7,12 +7,9 @@
 
 ## Next
 
-+ [ ] Add filter aware CSV export
-+ [ ] Add filter aware value list extraction (e.g. all the unique orcids in a collection of authors data)
-+ [x] Depreciate select commands in favor of filter, export and extract
++ [ ] Add repair and check support for S3 storage
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
 + [ ] Add _copy_ would allow you to copy a collection from one place to another (e.g. local disc to S3 or S3 to a local dist)
-+ [ ] Add repair and check support for S3 storage
 + [ ] Fix attachment handling so listing attachment names is fast
 + [ ] Add RSS2 and BibTeX format support via templates
     + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
@@ -64,6 +61,9 @@
 
 ## Completed
 
++ [x] Add filter aware CSV export
++ [x] Add filter aware value list extraction (e.g. all the unique orcids in a collection of authors data)
++ [x] Depreciate select commands in favor of filter, export and extract
 + [x] Add a filter function to support listing keys for records where the filter evaluates to true
     + Use the pipeline filters available in Go's text templates's if clause
 + [x] Add _haskey_ for a fast check if the key exists (look inside collections.json/keys.json only)
