@@ -71,37 +71,11 @@ Collection and JSON Documant related--
     + "dataset detach k1" would remove ALL attachments to k1
 + import - import a CSV file's rows as JSON documents
 	+ "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
-
-Select list related--
-
-+ select - is the command for working with lists of collection keys
-	+ "dataset select mylist k1 k2 k3" would create/update a select list 
-	  mylist adding keys k1, k2, k3
-+ lists - returns the select list names associated with a collection
-	+ "dataset lists"
-+ clear - removes a select list from the collection
-	+ "dataset clear mylist"
-+ first - writes the first key to stdout
-	+ "dataset first mylist"
-+ last would display the last key in the list
-	+ "dataset last mylist"
-+ rest displays all but the first key in the list
-	+ "dataset rest mylist"
-+ list displays a list of keys from the select list to stdout
-	+ "dataet list mylist" 
-+ shift writes the first key to stdout and remove it from list
-	+ "dataset shift mylist" 
-+ unshift would insert at the beginning 
-	+ "dataset unshift mylist k4"
-+ push would append the list
-	+ "dataset push mylist k4"
-+ pop removes last key form list and displays it
-	+ "dataset pop mylist" 
-+ sort orders the keys alphabetically in the list
-	+ "dataset sort mylist asc" - sorts in ascending order
-	+ "dataset sort mylist desc" - sorts in descending order
-+ reverse flips the order of the list
-	+ "dataset reverse mylists"
++ export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
+	+ "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
+	  this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
++ extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
+    + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
 `
 
 	examples = `
@@ -169,7 +143,30 @@ expression. Here's is a simple case for match records where name is equal to
 
 If you are using a complex filter it can read a file in and apply it as a filter.
 
-    dataset filter < myfilter.txt
+   dataset filter < myfilter.txt
+
+Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we're generating a UUID for the key name of each row
+
+   dataset -uuid import my-data.csv
+
+You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.
+
+   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+   
+If you wanted to restrict to a subset (e.g. publication in year 2016)
+
+   dataset export titles2016.csv '(eq 2016 (year .pubDate))' '.id,.title,.pubDate' 'id,title,publication date'
+
+If wanted to extract a unqie list of all ORCIDs from a collection 
+
+   dataset extract true .authors[:].orcid
+
+Finally if you wanted to extract a list of ORCIDs from publications in 2016.
+
+   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+
 `
 
 	// Standard Options
@@ -195,25 +192,13 @@ If you are using a complex filter it can read a file in and apply it as a filter
 		"haskey":      hasKey,
 		"filter":      filter,
 		"path":        docPath,
-		"select":      selectList,
-		"lists":       lists,
-		"clear":       clear,
-		"first":       first,
-		"last":        last,
-		"rest":        rest,
-		"list":        list,
-		"push":        push,
-		"pop":         pop,
-		"shift":       shift,
-		"unshift":     unshift,
-		"length":      length,
-		"sort":        sort,
-		"reverse":     reverse,
 		"attach":      addAttachments,
 		"attachments": listAttachments,
 		"attached":    getAttachments,
 		"detach":      removeAttachments,
 		"import":      importCSV,
+		"export":      exportCSV,
+		"extract":     extract,
 		"check":       checkCollection,
 		"repair":      repairCollection,
 	}
@@ -487,288 +472,6 @@ func docPath(args ...string) (string, error) {
 	return collection.DocPath(name)
 }
 
-func selectList(params ...string) (string, error) {
-	if len(params) == 0 {
-		params = []string{"keys"}
-	}
-	if params[0] == "collection" {
-		return "", fmt.Errorf("collection is not a valid list name")
-	}
-
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	l, err := collection.Select(params...)
-	if err != nil {
-		return "", err
-	}
-	return strings.Join(l.Keys, "\n"), nil
-}
-
-func lists(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	return strings.Join(collection.Lists(), "\n"), nil
-}
-
-func clear(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("you can only clear one select list at a time")
-	}
-	if strings.Compare(params[0], "keys") == 0 {
-		return "", fmt.Errorf("select list %s cannot be cleared", params[0])
-	}
-	if strings.Compare(params[0], "collection") == 0 {
-		return "", fmt.Errorf("collection is not a valid select list name")
-	}
-	err = collection.Clear(params[0])
-	if err != nil {
-		return "", err
-	}
-	return "OK", nil
-
-}
-
-func first(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return sl.First(), nil
-}
-
-func last(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return sl.Last(), nil
-}
-
-func rest(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return strings.Join(sl.Rest(), "\n"), nil
-}
-
-func list(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return strings.Join(sl.List(), "\n"), nil
-}
-
-func length(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%d", sl.Len()), nil
-}
-
-func push(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) < 2 {
-		return "", fmt.Errorf("requires list name and one or more keys")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	for _, param := range params[1:] {
-		l := sl.Len() + 1
-		sl.Push(param)
-		if l != sl.Len() {
-			return "", fmt.Errorf("%s not added to %s", param, params[0])
-		}
-	}
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
-func pop(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	r := sl.Pop()
-	if err := sl.SaveList(); err != nil {
-		return r, err
-	}
-	return r, nil
-}
-
-func shift(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	r := sl.Shift()
-	if err := sl.SaveList(); err != nil {
-		return r, err
-	}
-	return r, nil
-}
-
-func unshift(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) < 2 {
-		return "", fmt.Errorf("requires list name and one or more keys")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	for _, param := range params[1:] {
-		l := sl.Len() + 1
-		sl.Unshift(param)
-		if l != sl.Len() {
-			return "", fmt.Errorf("%s not added to %s", param, params[0])
-		}
-	}
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
-func sort(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) < 2 {
-		return "", fmt.Errorf("requires list name and direction (e.g. asc or desc)")
-	}
-	d := dataset.ASC
-	direction := strings.ToLower(strings.TrimSpace(params[1]))
-	switch {
-	case strings.HasPrefix(direction, "asc"):
-		d = dataset.ASC
-	case strings.HasPrefix(direction, "desc"):
-		d = dataset.DESC
-	default:
-		d = dataset.ASC
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	sl.Sort(d)
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
-func reverse(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	sl.Reverse()
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
 func addAttachments(params ...string) (string, error) {
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -868,6 +571,68 @@ func importCSV(params ...string) (string, error) {
 		log.Printf("%d total rows processed", linesNo)
 	}
 	return "OK", nil
+}
+
+func exportCSV(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 3 {
+		return "", fmt.Errorf("syntax: %s export CSV_FILENAME FILTER_EXPR DOTPATHS [COLUMN_NAMES]", os.Args[0])
+	}
+	csvFName := params[0]
+	filterExpr := params[1]
+	dotPaths := strings.Split(params[2], ",")
+	colNames := []string{}
+	if len(params) == 4 {
+		colNames = strings.Split(params[3], ",")
+	} else {
+		for _, val := range dotPaths {
+			colNames = append(colNames, val)
+		}
+	}
+	// Trim the any spaces for paths and column names
+	for i, val := range dotPaths {
+		dotPaths[i] = strings.TrimSpace(val)
+	}
+	for i, val := range colNames {
+		colNames[i] = strings.TrimSpace(val)
+	}
+
+	fp, err := os.Create(csvFName)
+	if err != nil {
+		return "", fmt.Errorf("Can't create %s, %s", csvFName, err)
+	}
+	defer fp.Close()
+
+	if linesNo, err := collection.ExportCSV(fp, filterExpr, dotPaths, colNames, showVerbose); err != nil {
+		return "", fmt.Errorf("Can't export CSV, %s", err)
+	} else if showVerbose == true {
+		log.Printf("%d total rows processed", linesNo)
+	}
+	return "OK", nil
+}
+
+// extract returns a list of unique values from nested arrays across collection based on
+// the filter expression provided.
+func extract(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH", os.Args[0])
+	}
+	filterExpr := strings.TrimSpace(params[0])
+	dotPaths := strings.TrimSpace(params[1])
+	lines, err := collection.Extract(filterExpr, dotPaths)
+	if err != nil {
+		return "", fmt.Errorf("Can't export CSV, %s", err)
+	}
+	return strings.Join(lines, "\n"), nil
 }
 
 func init() {

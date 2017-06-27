@@ -3,7 +3,7 @@
 
 ## USAGE
 
-> dataset [OPTIONS] COMMAND_AND_PARAMETERS
+    dataset [OPTIONS] COMMAND_AND_PARAMETERS
 
 ## SYNOPSIS
 
@@ -33,7 +33,10 @@ Collection and JSON Documant related--
   + JSON document must already exist
 + delete - removes a JSON document from collection
   + requires JSON document name
++ filter - takes a filter and returns an unordered list of keys that match filter expression
+  + if filter expression not provided as a command line parameter then it is read from stdin
 + keys - returns the keys to stdout, one key per line
++ haskey - returns true is key is in collection, false otherwise
 + path - given a document name return the full path to document
 + attach - attaches a non-JSON content to a JSON record 
     + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
@@ -48,37 +51,12 @@ Collection and JSON Documant related--
     + "dataset detach k1" would remove ALL attachments to k1
 + import - import a CSV file's rows as JSON documents
 	+ "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
++ export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
+	+ "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
+	  this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
++ extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
+    + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
 
-Select list related--
-
-+ select - is the command for working with lists of collection keys
-	+ "dataset select mylist k1 k2 k3" would create/update a select list 
-	  mylist adding keys k1, k2, k3
-+ lists - returns the select list names associated with a collection
-	+ "dataset lists"
-+ clear - removes a select list from the collection
-	+ "dataset clear mylist"
-+ first - writes the first key to stdout
-	+ "dataset first mylist"
-+ last would display the last key in the list
-	+ "dataset last mylist"
-+ rest displays all but the first key in the list
-	+ "dataset rest mylist"
-+ list displays a list of keys from the select list to stdout
-	+ "dataet list mylist" 
-+ shift writes the first key to stdout and remove it from list
-	+ "dataset shift mylist" 
-+ unshift would insert at the beginning 
-	+ "dataset unshift mylist k4"
-+ push would append the list
-	+ "dataset push mylist k4"
-+ pop removes last key form list and displays it
-	+ "dataset pop mylist" 
-+ sort orders the keys alphabetically in the list
-	+ "dataset sort mylist asc" - sorts in ascending order
-	+ "dataset sort mylist desc" - sorts in descending order
-+ reverse flips the order of the list
-	+ "dataset reverse mylists"
 
 ## OPTIONS
 
@@ -98,6 +76,7 @@ Select list related--
 	-version	display version
 ```
 
+
 ## EXAMPLES
 
 This is an example of creating a dataset called testdata/friends, saving
@@ -111,6 +90,12 @@ a record called "littlefreda.json" and reading it back.
       echo "Path: $(dataset path $KY) 
       echo "Doc: $(dataset read $KY)
    done
+```
+
+Now check to see if the key, littlefreda, is in the collection
+
+```shell
+   dataset haskey littlefreda
 ```
 
 You can also read your JSON formatted data from a file or standard input.
@@ -166,5 +151,52 @@ Remove all attachments from "capt-jack"
    dataset detach capt-jack
 ```
 
-dataset v0.0.2
+Filter can be used to return only the record keys that return true for a given
+expression. Here's is a simple case for match records where name is equal to
+"Mojo Sam".
 
+```shell
+   dataset filter '(eq .name "Mojo Sam")'
+```
+
+If you are using a complex filter it can read a file in and apply it as a filter.
+
+```shell
+   dataset filter < myfilter.txt
+```
+
+Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we're generating a UUID for the key name of each row
+
+```shell
+   dataset -uuid import my-data.csv
+```
+
+You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.
+
+```shell
+   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+```
+
+If you wanted to restrict to a subset (e.g. publication in year 2016)
+
+```shell
+   dataset export titles2016.csv '(eq 2016 (year .pubDate))' '.id,.title,.pubDate' 'id,title,publication date'
+```
+
+If wanted to extract a unqie list of all ORCIDs from a collection 
+
+```shell
+   dataset extract true .authors[:].orcid
+```
+
+Finally if you wanted to extract a list of ORCIDs from publications in 2016.
+
+```shell
+   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+```
+
+
+
+dataset v0.0.3-rc1

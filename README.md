@@ -24,6 +24,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 + Read back a named list of JSON document ids
 + Delete a named list of JSON document ids
 + Import JSON documents from rows of a CSV file
++ Filter JSON documents and return a list of matching ids
 
 ### JSON Document level
 
@@ -72,47 +73,14 @@ Common operations using the *dataset* command line tool
     # List the keys in the collection
     dataset keys
 
+    # Filter for the name "freda"
+    dataset filter '(eq .name "freda")'
+
     # Delete a JSON document
     dataset delete freda.json
 
     # To remove the collection just use the Unix shell command
     # /bin/rm -fR demo/mystuff
-```
-
-Common operations shown in Golang
-
-+ create collection
-+ create a JSON document to collection
-+ read a JSON document
-+ update a JSON document
-+ delete a JSON document
-
-```go
-    // Create a collection "mystuff" inside the directory called demo
-    collection, err := dataset.Create("demo/mystuff", dataset.GenerateBucketNames("ab", 2))
-    if err != nil {
-        log.Fatalf("%s", err)
-    }
-    defer collection.Close()
-    // Create a JSON document 
-    docName := "freda.json"
-    document := map[string]string{"name":"freda","email":"freda@inverness.example.org"}
-    if err := collection.Create(docName, document); err != nil {
-        log.Fatalf("%s", err)
-    }
-    // Read a JSON document
-    if err := collection.Read(docName, document); err != nil {
-        log.Fatalf("%s", err)
-    }
-    // Update a JSON document
-    document["email"] = "freda@zbs.example.org"
-    if err := collection.Update(docName, document); err != nil {
-        log.Fatalf("%s", err)
-    }
-    // Delete a JSON document
-    if err := collection.Delete(docName); err != nil {
-        log.Fatalf("%s", err)
-    }
 ```
 
 ## Releases
