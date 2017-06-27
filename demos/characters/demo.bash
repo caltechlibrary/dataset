@@ -12,15 +12,37 @@ if [ -d titles.bleve ]; then
     rm -fR titles.bleve
 fi
 $(dataset init characters)
-echo "Testing import csv file"
+echo "TESTING import csv file"
 dataset -uuid import htdocs/characters.csv
-echo "Testing filter '(eq .name "Mojo Sam")'"
+echo ""
+echo "TESTING filter '(eq .name \"Mojo Sam\")'"
 dataset filter '(eq .name "Mojo Sam")'
-echo "Testing dsindexer"
+echo ""
+echo "TESTING export (eq .name \"Mojo Sam\")"
+if [ -d mojo.csv ]; then
+    rm mojo.csv
+fi
+dataset "export" mojo.csv '(eq .name "Mojo Sam")' ".name,.title,.year" "Name,Title,Year"
+cat mojo.csv
+echo ""
+echo "TESTING export true"
+if [ -d all.csv ]; then
+    rm all.csv
+fi
+dataset "export" all.csv '(true)' ".name,.title,.year" "Name,Title,Year"
+cat all.csv
+
+echo ""
+echo "TESTING extract '(eq .name \"Mojo Same\") .year"
+dataset extract '(eq .name "Mojo Sam")' .year
+
+echo ""
+echo "TESTING dsindexer"
 dsindexer htdocs/characters.json characters.bleve
 dsindexer htdocs/names.json names.bleve
 dsindexer htdocs/titles.json titles.bleve
-echo "Testing dsfind"
+echo ""
+echo "TESTING dsfind"
 dsfind "Mojo Sam"
 dsfind -indexes=characters.bleve -fields="name,title,year" "Mojo Sam"
 dsfind -indexes=titles.bleve -fields="name,title,year" "Mojo"

@@ -561,18 +561,20 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 		data interface{}
 		rows []string
 	)
+	hash := make(map[string]bool)
 	for _, key := range keys {
 		if err := c.Read(key, &data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				col, err := dotpath.Eval(dotPath, data)
 				if err == nil {
-					rows = append(rows, colToString(col))
-				} else {
-					rows = append(rows, "")
+					hash[colToString(col)] = true
 				}
 				data = nil
 			}
 		}
+	}
+	for ky, _ := range hash {
+		rows = append(rows, ky)
 	}
 	return rows, nil
 }
