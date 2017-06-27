@@ -7,6 +7,7 @@
 
 ## Next
 
++ [ ] Explore think through cost of ordered id lists and taking subsets of filtered ids
 + [ ] Add repair and check support for S3 storage
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
 + [ ] Add _copy_ would allow you to copy a collection from one place to another (e.g. local disc to S3 or S3 to a local dist)
