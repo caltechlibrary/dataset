@@ -18,6 +18,7 @@
 
 ## Someday, Maybe
 
++ [ ] _dssubset_ would produced ordered arrays of JSON docs passing filter and sort criteria
 + [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq .authors_family[:] "Doiel")))
     + [ ] explore using templates as filters for select lists and the like
     + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
