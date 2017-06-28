@@ -18,8 +18,10 @@
 
 ## Someday, Maybe
 
-+ [ ] _dssubset_ would produced ordered arrays of JSON docs passing filter and sort criteria
-+ [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq .authors_family[:] "Doiel")))
++ [ ] VCARD and VCAL importer
++ [ ] _subset_ would produced ordered arrays of JSON docs passing filter and sort criteria
+    + `dataset -filter FILTER_CLAUSE -order ORDER_CLAUSE -o recent-pubs.json subset` 
++ [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
     + [ ] explore using templates as filters for select lists and the like
     + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
 + [ ] Should the keymap in collection.json be a separate file(s)?
@@ -43,22 +45,22 @@
 + sparql cli interface for searching collection
 + cli to convert collection into JSON-LD
 + dsselect would generate select lists based on query results in the manner of dsfind
-+ dstoscv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
++ dstocsv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
     + header line would be optional 
     + dot paths that point at array, objects would be joined with a multi-value delimiter based on type 
     + mult-value delimiters would be configurable indepentantly
         + a object k/v might be delimited by colon which each pair delimited by newline
         + an array might be delimited by a pipe or semi-colon
+    + optional filter for specific JSON documents to flatten
 + dataset "versioning" support via something like libgit2
 + dsserver would allow HTTPS REST access do a collection server, it would support multi-user access and with group acls
     + authentication would be through an external system (e.g. Shibboleth, PAM, or OAuth2)
     + groups would contain a list of users
     + permissions (CRUD) would be based on group and collection (permissions would be collection wide, not record specific)
 + dsbagit would generate a "BagIt" bag for preservation of collection objects
-+ collection.json should hold a list of available indexes and their definitions to automate repair
 + OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
-+ merge dsindexer and dsfind into dataset cli and depreciate individual programs
-+ RSS importer (example RSS as JOSN: http://scripting.com/rss.json)
++ RSS importer (example RSS as JSON: http://scripting.com/rss.json)
++ OPML importer
 
 
 ## Completed
