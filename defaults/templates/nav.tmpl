@@ -1,6 +1,8 @@
 {{define "nav.tmpl"}}
 <nav class="page-nav">
+{{with .Nav -}}{{ . }}{{- else }}
    <ul class="page-nav"><li><a href="/">Home</a></li></ul>
+{{- end }}
 </nav>
 <p>
 {{end}}

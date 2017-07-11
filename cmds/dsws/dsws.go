@@ -39,7 +39,7 @@ import (
 
 // Flag options
 var (
-	usage = `USAGE: %s [OPTIONS] [DOC_ROOT] BLEVE_INDEXES`
+	usage = `USAGE: %s [OPTIONS] [KEY_VALUE_PAIRS] [DOC_ROOT] BLEVE_INDEXES`
 
 	description = `
 SYNOPSIS
@@ -69,6 +69,10 @@ Run web service using "index.bleve" index, results templates in
 "templates/search.tmpl" and a "htdocs" directory for static files.
 
    %s -template=templates/search.tmpl htdocs index.bleve
+
+Run a web service with custom navigation taken from a Markdown file
+
+   %s -template=templates/search.tmpl "Nav=nav.md" index.bleve
 `
 
 	// Standard options
@@ -224,10 +228,15 @@ func main() {
 	}
 
 	// Setup from command line
+	pageData := map[string]string{}
+
 	for _, arg := range args {
 		ext := path.Ext(arg)
 		if ext == ".bleve" {
 			indexNames = append(indexNames, arg)
+		} else if strings.Contains(arg, "=") {
+			kv := strings.SplitN(arg, "=", 2)
+			pageData[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
 		} else {
 			docRoot = arg
 		}
@@ -333,13 +342,22 @@ func main() {
 		case "include":
 			w.Header().Set("Content-Type", "text/plain")
 			tName = "include.tmpl"
-		default:
-			//FIXME: need to check if fmt matches an installed template and set Content-Type appropriately
-			w.Header().Set("Content-Type", "text/html")
+		case "html":
 			tName = "page.tmpl"
+			w.Header().Set("Content-Type", "text/html")
+		default:
+			if qformat == "" {
+				tName = "page.tmpl"
+				w.Header().Set("Content-Type", "text/html")
+			} else {
+				tName = qformat + ".tmpl"
+				//FIXME: Need to pick an appropriate mime type based on format...
+				w.Header().Set("Content-Type", "text/plain")
+			}
 		}
+
 		pg := new(bytes.Buffer)
-		if err := dataset.HTMLFormatter(pg, results, searchTmpl, tName); err != nil {
+		if err := dataset.Formatter(pg, results, searchTmpl, tName, pageData); err != nil {
 			log.Println(err)
 			http.Error(w, fmt.Sprintf("Oops, %s formatting error", tName), 500)
 		} else {
@@ -349,6 +367,7 @@ func main() {
 
 	// Define our search API prefix path
 	http.HandleFunc("/api", searchHandler)
+	http.HandleFunc("/api/", searchHandler)
 	// FIXME: For each Linux add a /api/INDEXNAME handler
 
 	// Note: If DocRoot is NOT provided we need to redirect to /api
