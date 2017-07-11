@@ -4,6 +4,7 @@
 ## Bugs
 
 + [ ] Repair and check will fail on S3 without warning or indication why
++ [ ] Fix CORS setting in _dsws_
 
 ## Next
 
