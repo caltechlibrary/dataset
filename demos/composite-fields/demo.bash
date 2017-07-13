@@ -14,6 +14,6 @@ echo "Indexing creating family_name, given_name, display_name fields via templat
 dsindexer -c data idxdefn.json index.bleve
 
 # Show CSV output for indexes records
-dsfind -csv -size 100 -sort "orcid" -fields "orcid,family_name,given_name,display_name" -indexes index.bleve "*"
+dsfind -csv -size 100 -sort "orcid" -fields "orcid,family_name,given_name,display_name" index.bleve "*"
 
 
