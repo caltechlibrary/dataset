@@ -19,6 +19,7 @@
 package dataset
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,10 +28,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
@@ -135,7 +138,6 @@ func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *ma
 		return nil, nil, err
 	}
 
-	//FIXME: I need to be able to handle nested definitions
 	definitions := map[string]map[string]interface{}{}
 	if err := json.Unmarshal(src, &definitions); err != nil {
 		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
@@ -148,6 +150,15 @@ func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *ma
 	var fieldMap *mapping.FieldMapping
 
 	for fieldName, defn := range definitions {
+		if templateName, ok := defn["object_template"].(string); ok == true {
+			// NOTE: if we have an object_template, read it in, parse it and add it to the
+			// definitions.
+			tmpl, err := template.New(templateName).Funcs(tmplfn.AllFuncs()).ParseFiles(templateName)
+			if err != nil {
+				return definitions, indexMapping, fmt.Errorf("Can't parse template %s,%s", templateName, err)
+			}
+			definitions[fieldName]["object_tmpl"] = tmpl
+		}
 		if fieldType, ok := defn["field_mapping"]; ok == true {
 			switch fieldType.(string) {
 			case "numeric":
@@ -246,28 +257,44 @@ func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byt
 	}
 	// Copy the dot path elements to new smaller map
 	for pName, _ := range defnMap {
-		dPath, _ := defnMap[pName]["object_path"].(string)
-		dType, _ := defnMap[pName]["field_mapping"].(string)
-		if val, err := dotpath.Eval(dPath, raw); err == nil {
-			switch val.(type) {
-			case json.Number:
-				if i, err := (val.(json.Number)).Int64(); err == nil {
-					idxMap[pName] = i
-				} else if f, err := (val.(json.Number)).Float64(); err == nil {
-					idxMap[pName] = f
-				} else {
-					idxMap[pName] = (val.(json.Number)).String()
-				}
-			case string:
-				if dType == "geopoint" {
-					if pt, ok := stringToGeoPoint(val.(string)); ok == true {
-						idxMap[pName] = pt
+		//FIXME: Need to handle both object_path and object_template
+		//dTemplate, _ := defnMap[pName]["object_template"].(string)
+		if dPath, ok := defnMap[pName]["object_path"].(string); ok == true {
+			if val, err := dotpath.Eval(dPath, raw); err == nil {
+				switch val.(type) {
+				case json.Number:
+					if i, err := (val.(json.Number)).Int64(); err == nil {
+						idxMap[pName] = i
+					} else if f, err := (val.(json.Number)).Float64(); err == nil {
+						idxMap[pName] = f
+					} else {
+						idxMap[pName] = (val.(json.Number)).String()
 					}
-				} else {
-					idxMap[pName] = val.(string)
+				case string:
+					if dType, tOk := defnMap[pName]["field_mapping"].(string); tOk == true && dType == "geopoint" {
+						if pt, ok := stringToGeoPoint(val.(string)); ok == true {
+							idxMap[pName] = pt
+						}
+					} else {
+						idxMap[pName] = val.(string)
+					}
+				default:
+					idxMap[pName] = val
 				}
-			default:
-				idxMap[pName] = val
+			}
+		}
+		if tmpl, ok := defnMap[pName]["object_tmpl"].(*template.Template); ok == true {
+			//NOTE: the whole record is passed to the template for processing...
+			if rec, err := dotpath.Eval(".", raw); err == nil {
+				var (
+					buf bytes.Buffer
+				)
+				wr := io.Writer(&buf)
+				if err := tmpl.Execute(wr, rec); err == nil {
+					idxMap[pName] = buf.String()
+				} else {
+					log.Printf("Can't execute template %s", err)
+				}
 			}
 		}
 	}
