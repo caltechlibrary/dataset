@@ -3,7 +3,7 @@
 
 ## USAGE
 
-    dsfind [OPTIONS] SEARCH_STRINGS
+    dsfind [OPTIONS] INDEX_LIST SEARCH_STRINGS
 
 ## SYNOPSIS
 
@@ -45,7 +45,7 @@ In the example the index will be created for a collection called "characters".
 The fields we want to list in our results are name,story,year
 
 ```
-    dsfind -c characters -fields=name,story,year "Jack Flanders"
+    dsfind  -fields=name,story,year characters.bleve "Jack Flanders"
 ```
 
 This would search the Bleve index named characters.bleve for the string "Jack Flanders" 

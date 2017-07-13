@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] SEARCH_STRINGS`
+	usage = `USAGE: %s [OPTIONS] [INDEX_LIST] SEARCH_STRINGS`
 
 	description = `
 SYNOPSIS
@@ -33,7 +33,7 @@ EXAMPLES
 
 In the example the index will be created for a collection called "characters".
 
-    %s -c characters "Jack Flanders"
+    %s characters.bleve "Jack Flanders"
 
 This would search the Bleve index named characters.bleve for the string "Jack Flanders" 
 returning records that matched based on how the index was defined.
@@ -45,7 +45,6 @@ returning records that matched based on how the index was defined.
 	showVersion bool
 
 	// App Specific Options
-	collectionName string
 	indexList      string
 	showHighlight  bool
 	setHighlighter string
@@ -69,8 +68,6 @@ func init() {
 	flag.BoolVar(&showVersion, "version", false, "display version")
 
 	// Application Options
-	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
-	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
 	flag.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
@@ -106,12 +103,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Merge environment
-	datasetEnv := os.Getenv("DATASET")
-	if datasetEnv != "" && collectionName == "" {
-		collectionName = datasetEnv
-	}
-
 	// Handle the case where indexes were listed with the -indexes option like dsfind
 	var indexNames []string
 	if indexList != "" {
@@ -122,15 +113,23 @@ func main() {
 		indexNames = strings.Split(indexList, delimiter)
 	}
 
-	if len(indexNames) == 0 {
-		indexNames = []string{fmt.Sprintf("%s.bleve", collectionName)}
-	}
-
 	args := flag.Args()
 	if len(args) == 0 {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)
 	}
+
+	// Collect any additional index names from the remaining args
+	for _, arg := range args {
+		if path.Ext(arg) == ".bleve" {
+			indexNames = append(indexNames, arg)
+		}
+	}
+	if len(indexNames) == 0 {
+		fmt.Printf("Do not know what index to use")
+		os.Exit(1)
+	}
+
 	options := map[string]string{}
 	if explain != "" {
 		options["explain"] = "true"
