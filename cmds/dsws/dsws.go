@@ -153,7 +153,7 @@ func main() {
 	cfg := cli.New(appName, "DATASET", fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
-	cfg.ExampleText = fmt.Sprintf(examples, appName, appName)
+	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName)
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {
