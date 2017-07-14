@@ -19,6 +19,7 @@
 
 ## Someday, Maybe
 
++ [ ] _dsfind_ should work on all bleve indexes in current directory if none are specified
 + [ ] VCARD and VCAL importer
 + [ ] _subset_ would produced ordered arrays of JSON docs passing filter and sort criteria
     + `dataset -filter FILTER_CLAUSE -order ORDER_CLAUSE -o recent-pubs.json subset` 

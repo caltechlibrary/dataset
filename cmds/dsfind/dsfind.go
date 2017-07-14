@@ -69,8 +69,6 @@ func init() {
 	flag.BoolVar(&showVersion, "version", false, "display version")
 
 	// Application Options
-	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
-	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
 	flag.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
@@ -106,12 +104,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Merge environment
-	datasetEnv := os.Getenv("DATASET")
-	if datasetEnv != "" && collectionName == "" {
-		collectionName = datasetEnv
-	}
-
 	// Handle the case where indexes were listed with the -indexes option like dsfind
 	var indexNames []string
 	if indexList != "" {
@@ -120,10 +112,37 @@ func main() {
 			delimiter = ":"
 		}
 		indexNames = strings.Split(indexList, delimiter)
+	} else {
+		//NOTE: scan the current directory for *.bleve indexes
+		if dName, err := os.Getwd(); err != nil {
+			fmt.Fprintf(os.Stderr, "Can't get current directory, %s")
+			os.Exit(1)
+		} else {
+			if dir, err := os.Open(dName); err != nil {
+				fmt.Fprintf(os.Stderr, "Can't open directory to find indexes, %s")
+				os.Exit(1)
+			} else {
+				if entries, err := dir.Readdir(0); err != nil {
+					fmt.Fprintf(os.Stderr, "Can't read directory to find indexes, %s")
+				} else {
+					for _, f := range entries {
+						m := f.Mode()
+						if m.IsDir() == true {
+							name := f.Name()
+							if path.Ext(name) == ".bleve" {
+								indexNames = append(indexNames, name)
+							}
+						}
+					}
+				}
+				dir.Close()
+			}
+		}
 	}
 
 	if len(indexNames) == 0 {
-		indexNames = []string{fmt.Sprintf("%s.bleve", collectionName)}
+		fmt.Fprintf(os.Stderr, "No indexes found\n")
+		os.Exit(1)
 	}
 
 	args := flag.Args()
