@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] SEARCH_STRINGS`
+	usage = `USAGE: %s [OPTIONS] [INDEX_LIST] SEARCH_STRINGS`
 
 	description = `
 SYNOPSIS
@@ -33,7 +33,7 @@ EXAMPLES
 
 In the example the index will be created for a collection called "characters".
 
-    %s -c characters "Jack Flanders"
+    %s characters.bleve "Jack Flanders"
 
 This would search the Bleve index named characters.bleve for the string "Jack Flanders" 
 returning records that matched based on how the index was defined.
@@ -45,7 +45,6 @@ returning records that matched based on how the index was defined.
 	showVersion bool
 
 	// App Specific Options
-	collectionName string
 	indexList      string
 	showHighlight  bool
 	setHighlighter string
@@ -140,16 +139,23 @@ func main() {
 		}
 	}
 
-	if len(indexNames) == 0 {
-		fmt.Fprintf(os.Stderr, "No indexes found\n")
-		os.Exit(1)
-	}
-
 	args := flag.Args()
 	if len(args) == 0 {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)
 	}
+
+	// Collect any additional index names from the remaining args
+	for _, arg := range args {
+		if path.Ext(arg) == ".bleve" {
+			indexNames = append(indexNames, arg)
+		}
+	}
+	if len(indexNames) == 0 {
+		fmt.Printf("Do not know what index to use")
+		os.Exit(1)
+	}
+
 	options := map[string]string{}
 	if explain != "" {
 		options["explain"] = "true"

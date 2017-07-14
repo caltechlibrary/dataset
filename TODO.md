@@ -8,14 +8,8 @@
 
 ## Next
 
-+ [ ] Explore think through cost of ordered id lists and taking subsets of filtered ids
-+ [ ] Add repair and check support for S3 storage
 + [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
-+ [ ] Add _copy_ would allow you to copy a collection from one place to another (e.g. local disc to S3 or S3 to a local dist)
-+ [ ] Fix attachment handling so listing attachment names is fast
-+ [ ] Add RSS2 and BibTeX format support via templates
-    + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
-    + if fmt value has a related template then format is "supported" by dsws
++ [ ] Fix attachment handling so listing attachment names is fast (move out of tarball and save as a subdirectory using ID as name)
 
 ## Someday, Maybe
 
@@ -67,6 +61,10 @@
 
 ## Completed
 
++ [x] Add composite fields to indexes by leveraging text templates to modify JSON structure
++ [x] Add template defined format support 
+    + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
+    + if format parameters' value matches a known template name then it should treated as a "supported" format by dsws instance
 + [x] Add filter aware CSV export
 + [x] Add filter aware value list extraction (e.g. all the unique orcids in a collection of authors data)
 + [x] Depreciate select commands in favor of filter, export and extract
