@@ -35,6 +35,9 @@ import (
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/mkpage"
 	"github.com/caltechlibrary/tmplfn"
+
+	// Other packages
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // Flag options
@@ -73,6 +76,15 @@ Run web service using "index.bleve" index, results templates in
 Run a web service with custom navigation taken from a Markdown file
 
    %s -template=templates/search.tmpl "Nav=nav.md" index.bleve
+
+Running above web service using ACME TLS support (i.e. Let's Encrypt).
+Note will only include the hostname as the ACME setup is for
+listenning on port 443. This may require privilaged account
+and will require that the hostname listed matches the public
+DNS for the machine (this is need by the ACME protocol to
+issue the cert, see https://letsencrypt.org for details)
+
+   %s -acme -template=templates/search.tmpl "Nav=nav.md" index.bleve
 `
 
 	// Standard options
@@ -88,6 +100,7 @@ Run a web service with custom navigation taken from a Markdown file
 	devMode       bool
 	showTemplates bool
 	indexList     string
+	letsEncrypt   bool
 
 	// Provided as an ordered command line arg
 	docRoot    string
@@ -142,6 +155,7 @@ func init() {
 	flag.BoolVar(&showTemplates, "show-templates", false, "display the source code of the template(s)")
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 	flag.StringVar(&indexList, "indexes", "", "comma or colon delimited list of index names")
+	flag.BoolVar(&letsEncrypt, "acme", false, "Enable Let's Encypt ACME TLS support")
 }
 
 func main() {
@@ -153,7 +167,7 @@ func main() {
 	cfg := cli.New(appName, "DATASET", fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
-	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName)
+	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName, appName)
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {
@@ -380,7 +394,12 @@ func main() {
 		http.Handle("/", http.FileServer(http.Dir(docRoot)))
 	}
 
-	if u.Scheme == "https" {
+	if letsEncrypt == true {
+		err := http.Serve(autocert.NewListener(u.Host), mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
+		if err != nil {
+			log.Fatalf("%s", err)
+		}
+	} else if u.Scheme == "https" {
 		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
 		if err != nil {
 			log.Fatalf("%s", err)
