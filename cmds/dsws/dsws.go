@@ -184,7 +184,7 @@ func main() {
 	}
 
 	// Load and validate the templates for using in the searchHandler
-	searchTName = cfg.CheckOption(searchTName, cfg.MergeEnv("template", searchTName), false)
+	searchTName = cfg.CheckOption("template", cfg.MergeEnv("template", searchTName), false)
 	templateNames := []string{}
 	if searchTName != "" {
 		templateNames = strings.Split(searchTName, ":")
@@ -270,7 +270,7 @@ func main() {
 		log.Printf("Indexes %s", strings.Join(indexNames, ", "))
 	}
 
-	uri = cfg.CheckOption(uri, cfg.MergeEnv("url", uri), true)
+	uri = cfg.CheckOption("url", cfg.MergeEnv("url", uri), true)
 	u, err := url.Parse(uri)
 	if err != nil {
 		log.Fatalf("Can't parse %q, %s", uri, err)
@@ -278,8 +278,8 @@ func main() {
 
 	log.Printf("Listening for %s", uri)
 	if u.Scheme == "https" {
-		sslKey = cfg.CheckOption(sslKey, cfg.MergeEnv("ssl_key", sslKey), true)
-		sslCert = cfg.CheckOption(sslCert, cfg.MergeEnv("ssl_cert", sslCert), true)
+		sslKey = cfg.CheckOption("ssl_key", cfg.MergeEnv("ssl_key", sslKey), true)
+		sslCert = cfg.CheckOption("ssl_cert", cfg.MergeEnv("ssl_cert", sslCert), true)
 		log.Printf("SSL Key %s", sslKey)
 		log.Printf("SSL Cert %s", sslCert)
 	}
