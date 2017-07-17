@@ -395,10 +395,21 @@ func main() {
 	}
 
 	if letsEncrypt == true {
-		err := http.Serve(autocert.NewListener(u.Host), mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
-		if err != nil {
-			log.Fatalf("%s", err)
+		// Note: use a sensible value for data directory
+		// this is where cached certificates are stored
+		cacheDir := "etc/acme"
+		os.MkdirAll(cacheDir, 0700)
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(u.Host),
+			Cache:      autocert.DirCache(cacheDir),
 		}
+		s := &http.Server{
+			Addr:      ":https",
+			TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
+			Handler:   mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)),
+		}
+		log.Fatal(s.ListenAndServeTLS("", ""))
 	} else if u.Scheme == "https" {
 		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
 		if err != nil {
