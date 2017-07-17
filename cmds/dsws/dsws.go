@@ -20,6 +20,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
