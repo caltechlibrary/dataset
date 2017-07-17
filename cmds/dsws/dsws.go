@@ -278,7 +278,7 @@ func main() {
 	}
 
 	log.Printf("Listening for %s", uri)
-	if u.Scheme == "https" {
+	if u.Scheme == "https" && letsEncrypt == false {
 		sslKey = cfg.CheckOption("ssl_key", cfg.MergeEnv("ssl_key", sslKey), true)
 		sslCert = cfg.CheckOption("ssl_cert", cfg.MergeEnv("ssl_cert", sslCert), true)
 		log.Printf("SSL Key %s", sslKey)
