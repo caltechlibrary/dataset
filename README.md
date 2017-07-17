@@ -1,5 +1,5 @@
 
-# dataset
+# dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
 _dataset_ is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
 _dataset_ is also a command line tool exercising the features of the golang _dataset_ package.
