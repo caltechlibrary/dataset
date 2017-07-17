@@ -707,12 +707,12 @@ func main() {
 
 		output, err := fn(params...)
 		if err != nil {
-			fmt.Printf("Error %s\n", err)
+			fmt.Fprintf(os.Stderr, "Error %s\n", err)
 			os.Exit(1)
 		}
 		fmt.Println(output)
 	} else {
-		fmt.Printf("Don't understand %s\n", action)
+		fmt.Fprintf(os.Stderr, "Don't understand %s\n", action)
 		os.Exit(1)
 	}
 }
