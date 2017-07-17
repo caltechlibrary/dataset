@@ -396,6 +396,7 @@ func main() {
 	}
 
 	if letsEncrypt == true {
+
 		// Note: use a sensible value for data directory
 		// this is where cached certificates are stored
 		cacheDir := "etc/acme"
@@ -411,6 +412,7 @@ func main() {
 			Handler:   mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)),
 		}
 		log.Fatal(s.ListenAndServeTLS("", ""))
+		//FIXME: need to redirect Port 80 to Port 443
 	} else if u.Scheme == "https" {
 		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
 		if err != nil {
