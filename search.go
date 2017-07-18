@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -153,9 +154,9 @@ func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *ma
 		if templateName, ok := defn["object_template"].(string); ok == true {
 			// NOTE: if we have an object_template, read it in, parse it and add it to the
 			// definitions.
-			tmpl, err := template.New(templateName).Funcs(tmplfn.AllFuncs()).ParseFiles(templateName)
+			tmpl, err := template.New(path.Base(templateName)).Funcs(tmplfn.AllFuncs()).ParseFiles(templateName)
 			if err != nil {
-				return definitions, indexMapping, fmt.Errorf("Can't parse template %s,%s", templateName, err)
+				return definitions, indexMapping, fmt.Errorf("Can't parse template %s for %s,%s", templateName, fieldName, err)
 			}
 			definitions[fieldName]["object_tmpl"] = tmpl
 		}
@@ -248,7 +249,7 @@ func stringToGeoPoint(s string) (map[string]float64, bool) {
 
 // recordMapToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
 // renders a new map[string]interface{} ready to be indexed.
-func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byte) (map[string]interface{}, error) {
+func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}, src []byte) (map[string]interface{}, error) {
 	idxMap := map[string]interface{}{}
 
 	raw, err := dotpath.JSONDecode(src)
@@ -293,7 +294,7 @@ func recordMapToIndexRecord(defnMap map[string]map[string]interface{}, src []byt
 				if err := tmpl.Execute(wr, rec); err == nil {
 					idxMap[pName] = buf.String()
 				} else {
-					log.Printf("Can't execute template %s", err)
+					log.Printf("key %s, %s", ky, err)
 				}
 			}
 		}
@@ -333,7 +334,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 	log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
 		if src, err := c.ReadAsJSON(key); err == nil {
-			if rec, err := recordMapToIndexRecord(recordMap, src); err == nil {
+			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
 				//idx.Index(key, rec)
 				batchIdx.Index(key, rec)
 				cnt++

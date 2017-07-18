@@ -103,6 +103,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	// We expect at least one arg, the search string
+	args := flag.Args()
+	if len(args) == 0 {
+		fmt.Println(cfg.Usage())
+		os.Exit(1)
+	}
+
 	// Handle the case where indexes were listed with the -indexes option like dsfind
 	var indexNames []string
 	if indexList != "" {
@@ -111,38 +118,6 @@ func main() {
 			delimiter = ":"
 		}
 		indexNames = strings.Split(indexList, delimiter)
-	} else {
-		//NOTE: scan the current directory for *.bleve indexes
-		if dName, err := os.Getwd(); err != nil {
-			fmt.Fprintf(os.Stderr, "Can't get current directory, %s")
-			os.Exit(1)
-		} else {
-			if dir, err := os.Open(dName); err != nil {
-				fmt.Fprintf(os.Stderr, "Can't open directory to find indexes, %s")
-				os.Exit(1)
-			} else {
-				if entries, err := dir.Readdir(0); err != nil {
-					fmt.Fprintf(os.Stderr, "Can't read directory to find indexes, %s")
-				} else {
-					for _, f := range entries {
-						m := f.Mode()
-						if m.IsDir() == true {
-							name := f.Name()
-							if path.Ext(name) == ".bleve" {
-								indexNames = append(indexNames, name)
-							}
-						}
-					}
-				}
-				dir.Close()
-			}
-		}
-	}
-
-	args := flag.Args()
-	if len(args) == 0 {
-		fmt.Println(cfg.Usage())
-		os.Exit(1)
 	}
 
 	// Collect any additional index names from the remaining args
