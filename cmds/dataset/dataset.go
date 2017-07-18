@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -174,6 +175,7 @@ Finally if you wanted to extract a list of ORCIDs from publications in 2016.
 	showLicense bool
 	showVersion bool
 	inputFName  string
+	outputFName string
 
 	// App Specific Options
 	collectionName string
@@ -455,6 +457,33 @@ func filter(args ...string) (string, error) {
 	return strings.Join(keys, "\n"), nil
 }
 
+// streamFilterResults works like filter but outputs the results as it find them
+func streamFilterResults(w *os.File, filterExp string) error {
+	f, err := tmplfn.ParseFilter(filterExp)
+	if err != nil {
+		return err
+	}
+
+	if len(collectionName) == 0 {
+		return fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return err
+	}
+	defer collection.Close()
+
+	for _, key := range collection.Keys() {
+		data := map[string]interface{}{}
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				fmt.Fprintln(w, key)
+			}
+		}
+	}
+	return nil
+}
+
 // docPath returns the path to a JSON document or an error
 func docPath(args ...string) (string, error) {
 	if len(args) != 1 {
@@ -645,6 +674,8 @@ func init() {
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.StringVar(&inputFName, "i", "", "input filename")
 	flag.StringVar(&inputFName, "input", "", "input filename")
+	flag.StringVar(&outputFName, "o", "", "output filename")
+	flag.StringVar(&outputFName, "output", "", "output filename")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -687,16 +718,41 @@ func main() {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)
 	}
+
+	in, err := cli.Open(inputFName, os.Stdin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+	defer cli.CloseFile(inputFName, in)
+
+	out, err := cli.Create(outputFName, os.Stdout)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+	defer cli.CloseFile(outputFName, out)
+
 	action, params := args[0], args[1:]
 	if fn, ok := voc[action]; ok == true {
+		// If filter we want to output the ids as a stream as they are found
+		if action == "filter" {
+			var filterExp string
+			if len(params) > 0 {
+				filterExp = params[0]
+			} else {
+				buf, err := ioutil.ReadAll(in)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "%s\n", err)
+					os.Exit(1)
+				}
+				filterExp = fmt.Sprintf("%s", buf)
+			}
+			log.Fatal(streamFilterResults(out, filterExp))
+			os.Exit(0)
+		}
 		// Handle case of piping in or reading JSON from a file.
 		if (action == "create" || action == "update") && len(params) <= 1 {
-			in, err := cli.Open(inputFName, os.Stdin)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-				os.Exit(1)
-			}
-			defer cli.CloseFile(inputFName, in)
 			lines, err := cli.ReadLines(in)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err)
@@ -710,7 +766,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Println(output)
+		fmt.Fprintln(out, output)
 	} else {
 		fmt.Fprintf(os.Stderr, "Don't understand %s\n", action)
 		os.Exit(1)
