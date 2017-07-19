@@ -106,7 +106,7 @@ func main() {
 	// We expect at least one arg, the search string
 	args := flag.Args()
 	if len(args) == 0 {
-		fmt.Println(cfg.Usage())
+		fmt.Fprintln(os.Stderr, cfg.Usage())
 		os.Exit(1)
 	}
 
@@ -127,7 +127,7 @@ func main() {
 		}
 	}
 	if len(indexNames) == 0 {
-		fmt.Printf("Do not know what index to use")
+		fmt.Fprintln(os.Stderr, "Do not know what index to use")
 		os.Exit(1)
 	}
 
