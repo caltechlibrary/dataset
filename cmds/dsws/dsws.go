@@ -436,6 +436,7 @@ func main() {
 			if len(r.URL.RawQuery) > 0 {
 				target += "?" + r.URL.RawQuery
 			}
+			log.Printf("Request from %s redirected to  %s to %s", r.RemoteAddr, r.URL.String(), target)
 			http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 		})
 		pSvr := &http.Server{
