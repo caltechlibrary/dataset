@@ -130,7 +130,7 @@ func trimmedSplit(s, delimiter string) []string {
 
 // redirectToApi will redirect to the /api search result page
 func redirectToApi(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/api", 301)
+	http.Redirect(w, r, "/api/", http.StatusTemporaryRedirect)
 }
 
 func init() {
@@ -277,7 +277,6 @@ func main() {
 		log.Fatalf("Can't parse %q, %s", uri, err)
 	}
 
-	log.Printf("Listening for %s", uri)
 	if u.Scheme == "https" && letsEncrypt == false {
 		sslKey = cfg.CheckOption("ssl_key", cfg.MergeEnv("ssl_key", sslKey), true)
 		sslCert = cfg.CheckOption("ssl_cert", cfg.MergeEnv("ssl_cert", sslCert), true)
@@ -381,50 +380,79 @@ func main() {
 	}
 
 	// Define our search API prefix path
-	http.HandleFunc("/api", searchHandler)
-	http.HandleFunc("/api/", searchHandler)
+	mux := http.NewServeMux()
+	//mux.HandleFunc("/api", searchHandler)
+	mux.HandleFunc("/api/", searchHandler)
 	// FIXME: For each Linux add a /api/INDEXNAME handler
 
 	// Note: If DocRoot is NOT provided we need to redirect to /api
 	// instead of using a docRoot with htt.FileServer(http.Dir(docRoot)
 	if docRoot == "" {
 		log.Printf("Using /api as langing page")
-		http.HandleFunc("/", redirectToApi)
+		mux.HandleFunc("/", redirectToApi)
 	} else {
 		log.Printf("Document root %s", docRoot)
-		http.Handle("/", http.FileServer(http.Dir(docRoot)))
+		mux.Handle("/", http.FileServer(http.Dir(docRoot)))
 	}
 
 	if letsEncrypt == true {
-		// Note: use a sensible value for data directory
+		// Note: need use a sensible value for data directory
 		// this is where cached certificates are stored
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal("Can't determine current working directory where I need to create etc/acme")
+		}
+		if docRoot == "." || docRoot == cwd {
+			log.Fatal("Can't create etc/acme in your shared document root")
+		}
 		cacheDir := "etc/acme"
 		os.MkdirAll(cacheDir, 0700)
+
+		// Setup AMCE TLS Web Server
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(u.Host),
 			Cache:      autocert.DirCache(cacheDir),
 		}
-		s := &http.Server{
+		sSvr := &http.Server{
 			Addr:      ":https",
 			TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
-			Handler:   mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)),
+			Handler:   mkpage.RequestLogger(mkpage.StaticRouter(mux)),
 		}
 		go func() {
-			log.Fatal(s.ListenAndServeTLS("", ""))
+			log.Printf("Listening for %s (ACME)", u.String())
+			log.Fatal(sSvr.ListenAndServeTLS("", ""))
 		}()
 
-		// Launch the redirect service from port http to port https
-		log.Fatal(http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, u.String(), http.StatusMovedPermanently)
-		})))
+		// Setup Redirect Web Server
+		rmux := http.NewServeMux()
+		rmux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			var target string
+			if strings.HasPrefix(r.URL.Path, "/") == false {
+				target = u.String() + "/" + r.URL.Path
+			} else {
+				target = u.String() + r.URL.Path
+			}
+			if len(r.URL.RawQuery) > 0 {
+				target += "?" + r.URL.RawQuery
+			}
+			http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+		})
+		pSvr := &http.Server{
+			Addr:    ":http",
+			Handler: mkpage.RequestLogger(rmux),
+		}
+		log.Printf("Redirecting http://%s to to %s", u.Host, u.String())
+		log.Fatal(pSvr.ListenAndServe())
 	} else if u.Scheme == "https" {
-		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
+		log.Printf("Listening for %s", u.String())
+		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(mux)))
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
 	} else {
-		err := http.ListenAndServe(u.Host, mkpage.RequestLogger(mkpage.StaticRouter(http.DefaultServeMux)))
+		log.Printf("Listening for %s", u.String())
+		err := http.ListenAndServe(u.Host, mkpage.RequestLogger(mkpage.StaticRouter(mux)))
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
