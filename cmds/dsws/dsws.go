@@ -108,17 +108,6 @@ issue the cert, see https://letsencrypt.org for details)
 	indexNames []string
 )
 
-func logRequest(r *http.Request) {
-	log.Printf("Request: %s Path: %s RemoteAddr: %s UserAgent: %s\n", r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent())
-}
-
-func logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logRequest(r)
-		next.ServeHTTP(w, r)
-	})
-}
-
 // trimmedSplit splits a string on commas and run performs a TrimSpace on the resulting array elements
 func trimmedSplit(s, delimiter string) []string {
 	r := strings.Split(s, delimiter)
@@ -130,7 +119,9 @@ func trimmedSplit(s, delimiter string) []string {
 
 // redirectToApi will redirect to the /api search result page
 func redirectToApi(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/api/", http.StatusTemporaryRedirect)
+	target := "/api/"
+	mkpage.ResponseLogger(r, http.StatusTemporaryRedirect, fmt.Errorf("redirected %s to %s", r.URL.Path, target))
+	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 }
 
 func init() {
@@ -436,7 +427,7 @@ func main() {
 			if len(r.URL.RawQuery) > 0 {
 				target += "?" + r.URL.RawQuery
 			}
-			log.Printf("Request from %s redirected to  %s to %s", r.RemoteAddr, r.URL.String(), target)
+			mkpage.ResponseLogger(r, http.StatusTemporaryRedirect, fmt.Errorf("redirected %s to %s", r.URL.String(), target))
 			http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 		})
 		pSvr := &http.Server{
