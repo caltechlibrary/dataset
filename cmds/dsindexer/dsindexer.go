@@ -66,6 +66,7 @@ in "email-mapping.json".
 	collectionName string
 	documentType   string
 	batchSize      int
+	updateIndex    bool
 )
 
 func init() {
@@ -82,6 +83,7 @@ func init() {
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
 	flag.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
 	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
+	flag.BoolVar(&updateIndex, "update", false, "updating is slow, use this flag if you want to update an exists")
 }
 
 func main() {
@@ -136,6 +138,14 @@ func main() {
 		os.Exit(1)
 	}
 	defer collection.Close()
+
+	// Abort index build if it exists and updateIndex is false
+	if updateIndex == false {
+		if _, err := os.Stat(indexName); os.IsNotExist(err) == false {
+			fmt.Fprintf(os.Stderr, "Index exists, updating requires -update option (can be very slow)\n")
+			os.Exit(1)
+		}
+	}
 
 	if err = collection.Indexer(indexName, definitionFName, batchSize); err != nil {
 		fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
