@@ -182,6 +182,7 @@ Finally if you wanted to extract a list of ORCIDs from publications in 2016.
 	skipHeaderRow  bool
 	useUUID        bool
 	showVerbose    bool
+	quietMode      bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -664,6 +665,15 @@ func extract(params ...string) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
+func handleError(err error, exitCode int) {
+	if quietMode == false {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+	}
+	if exitCode >= 0 {
+		os.Exit(exitCode)
+	}
+}
+
 func init() {
 	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "display help")
@@ -683,6 +693,7 @@ func init() {
 	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
+	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
 }
 
 func main() {
@@ -721,15 +732,13 @@ func main() {
 
 	in, err := cli.Open(inputFName, os.Stdin)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+		handleError(err, 1)
 	}
 	defer cli.CloseFile(inputFName, in)
 
 	out, err := cli.Create(outputFName, os.Stdout)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+		handleError(err, 1)
 	}
 	defer cli.CloseFile(outputFName, out)
 
@@ -743,8 +752,7 @@ func main() {
 			} else {
 				buf, err := ioutil.ReadAll(in)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", err)
-					os.Exit(1)
+					handleError(err, 1)
 				}
 				filterExp = fmt.Sprintf("%s", buf)
 			}
@@ -755,20 +763,19 @@ func main() {
 		if (action == "create" || action == "update") && len(params) <= 1 {
 			lines, err := cli.ReadLines(in)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-				os.Exit(1)
+				handleError(err, 1)
 			}
 			params = append(params, strings.Join(lines, "\n"))
 		}
 
 		output, err := fn(params...)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error %s\n", err)
-			os.Exit(1)
+			handleError(err, 1)
 		}
-		fmt.Fprintln(out, output)
+		if quietMode == false || showVerbose == true {
+			fmt.Fprintln(out, output)
+		}
 	} else {
-		fmt.Fprintf(os.Stderr, "Don't understand %s\n", action)
-		os.Exit(1)
+		handleError(fmt.Errorf("Don't understand %s\n", action), 1)
 	}
 }
