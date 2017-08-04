@@ -13,6 +13,7 @@
 
 ## Someday, Maybe
 
++ [ ] Swap UUID for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
 + [ ] convert filter, extract, etc to work on streams so we can leverage pipelines more effeciently
 + [ ] _dsfind_ should work on all bleve indexes in current directory if none are specified
 + [ ] VCARD and VCAL importer
