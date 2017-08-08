@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -67,6 +69,7 @@ in "email-mapping.json".
 	documentType   string
 	batchSize      int
 	updateIndex    bool
+	idListFName    string
 )
 
 func init() {
@@ -84,6 +87,7 @@ func init() {
 	flag.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
 	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
 	flag.BoolVar(&updateIndex, "update", false, "updating is slow, use this flag if you want to update an exists")
+	flag.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
 }
 
 func main() {
@@ -147,7 +151,21 @@ func main() {
 		}
 	}
 
-	if err = collection.Indexer(indexName, definitionFName, batchSize); err != nil {
+	// NOTE: If a list of ids is provided create/update the index for those ids only
+	var keys []string
+	if idListFName != "" {
+		if src, err := ioutil.ReadFile(idListFName); err == nil {
+			klist := bytes.Split(src, []byte("\n"))
+			for _, k := range klist {
+				keys = append(keys, fmt.Sprintf("%s", k))
+			}
+		} else {
+			fmt.Fprintf(os.Stderr, "Can't read %s, %s", idListFName, err)
+			os.Exit(1)
+		}
+	}
+
+	if err = collection.Indexer(indexName, definitionFName, batchSize, keys); err != nil {
 		fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
 		os.Exit(1)
 	}

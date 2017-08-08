@@ -304,7 +304,7 @@ func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}
 
 // Indexer ingests all the records of a collection applying the definition
 // creating or updating a Bleve index. Returns an error.
-func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) error {
+func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, keys []string) error {
 	var (
 		idx bleve.Index
 		err error
@@ -329,7 +329,9 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 	startT := time.Now()
 	batchT := time.Now()
 	batchIdx := idx.NewBatch()
-	keys := c.Keys()
+	if len(keys) == 0 {
+		keys = c.Keys()
+	}
 	cnt := 0
 	log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
@@ -343,9 +345,13 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 						log.Fatal(err)
 					}
 					log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+					// Force release of memory
+					batchIdx = nil
 					batchIdx = idx.NewBatch()
 					batchT = time.Now()
 				}
+				// Force release of memory
+				rec = nil
 			}
 		} else {
 			log.Printf("%d, can't index %s, %s", i, key, err)
@@ -356,6 +362,8 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int) e
 			log.Fatal(err)
 		}
 		log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+		// force release of memory fo rlast batchIdx
+		batchIdx = nil
 	}
 	log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
 	return nil
