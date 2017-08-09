@@ -29,12 +29,14 @@ func JSONFormatter(out io.Writer, results *bleve.SearchResult) error {
 }
 
 // CSVFormatter writes out CSV representation using encoding/csv
-func CSVFormatter(out io.Writer, results *bleve.SearchResult, colNames []string) error {
+func CSVFormatter(out io.Writer, results *bleve.SearchResult, colNames []string, skipHeaderRow bool) error {
 	// Note: we need to provide the fieldnames that will be come columns
 	w := csv.NewWriter(out)
-	// write a header row
-	if err := w.Write(colNames); err != nil {
-		return err
+	// write a header row if needed
+	if skipHeaderRow == false {
+		if err := w.Write(colNames); err != nil {
+			return err
+		}
 	}
 	for _, hit := range results.Hits {
 		row := []string{}

@@ -52,6 +52,7 @@ returning records that matched based on how the index was defined.
 	sortBy         string
 	jsonFormat     bool
 	csvFormat      bool
+	csvSkipHeader  bool
 	idsOnly        bool
 	size           int
 	from           int
@@ -75,6 +76,7 @@ func init() {
 	flag.StringVar(&resultFields, "fields", "", "comma delimited list of fields to display in the results")
 	flag.BoolVar(&jsonFormat, "json", false, "format results as a JSON document")
 	flag.BoolVar(&csvFormat, "csv", false, "format results as a CSV document, used with fields option")
+	flag.BoolVar(&csvSkipHeader, "csv-skip-header", false, "don't output a header row, only values for csv output")
 	flag.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
 	flag.IntVar(&size, "size", 0, "number of results returned for request")
 	flag.IntVar(&from, "from", 0, "return the result starting with this result number")
@@ -190,7 +192,7 @@ func main() {
 		} else {
 			fields = strings.Split(resultFields, ",")
 		}
-		if err := dataset.CSVFormatter(os.Stdout, results, fields); err != nil {
+		if err := dataset.CSVFormatter(os.Stdout, results, fields, csvSkipHeader); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}

@@ -334,7 +334,7 @@ func main() {
 				fields = idxFields
 			}
 			w.Header().Set("Content-Type", "text/csv")
-			if err := dataset.CSVFormatter(w, results, fields); err != nil {
+			if err := dataset.CSVFormatter(w, results, fields, false); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
