@@ -183,6 +183,7 @@ Finally if you wanted to extract a list of ORCIDs from publications in 2016.
 	useUUID        bool
 	showVerbose    bool
 	quietMode      bool
+	noNewLine      bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -694,6 +695,7 @@ func init() {
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
+	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
 }
 
 func main() {
@@ -773,7 +775,11 @@ func main() {
 			handleError(err, 1)
 		}
 		if quietMode == false || showVerbose == true {
-			fmt.Fprintln(out, output)
+			nl := "\n"
+			if noNewLine == true {
+				nl = ""
+			}
+			fmt.Fprintf(out, "%s%s", output, nl)
 		}
 	} else {
 		handleError(fmt.Errorf("Don't understand %s\n", action), 1)
