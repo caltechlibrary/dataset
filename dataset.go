@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.3-rc4"
+	Version = "v0.0.3-rc5"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -332,7 +332,7 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 	keyName, name = keyAndFName(name)
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
-		return nil, fmt.Errorf("%q does not exist", name)
+		return nil, fmt.Errorf("%q does not exist in %s", name, c.Name)
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
