@@ -268,6 +268,11 @@ func main() {
 		log.Fatalf("Can't parse %q, %s", uri, err)
 	}
 
+	// if the URL starts with http:// then turn off letsEncrypt...
+	if u.Scheme == "http" {
+		letsEncrypt = false
+	}
+
 	if u.Scheme == "https" && letsEncrypt == false {
 		sslKey = cfg.CheckOption("ssl_key", cfg.MergeEnv("ssl_key", sslKey), true)
 		sslCert = cfg.CheckOption("ssl_cert", cfg.MergeEnv("ssl_cert", sslCert), true)
