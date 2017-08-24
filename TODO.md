@@ -9,7 +9,10 @@
 
 ## Next
 
-+ [ ] Add specific index search under /api (e.g. /api gives you everything, /api/authors would limit search to the authors.bleve index)
++ [ ] Add specific index search under /api/COLLECTION_NAME/ provides collection specific search
+    + /api/COLLECTION_NAME/INDEX_NAME could provide index specific search if needed in the future
++ [ ] Add /api/COLLECTION_NAME/keys end point to get ALL keys in collection
++ [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
     + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
 
