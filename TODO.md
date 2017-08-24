@@ -18,6 +18,7 @@
 
 ## Someday, Maybe
 
++ [ ] Add Fast CGI support in _dswS_ to allow custom development in Python or PHP
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
 + [ ] Swap UUID for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
 + [ ] convert filter, extract, etc to work on streams so we can leverage pipelines more effeciently
