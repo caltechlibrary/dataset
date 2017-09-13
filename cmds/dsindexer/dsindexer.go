@@ -157,7 +157,9 @@ func main() {
 		if src, err := ioutil.ReadFile(idListFName); err == nil {
 			klist := bytes.Split(src, []byte("\n"))
 			for _, k := range klist {
-				keys = append(keys, fmt.Sprintf("%s", k))
+				if len(k) > 0 {
+					keys = append(keys, fmt.Sprintf("%s", k))
+				}
 			}
 		} else {
 			fmt.Fprintf(os.Stderr, "Can't read %s, %s", idListFName, err)
