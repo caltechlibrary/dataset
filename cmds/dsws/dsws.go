@@ -292,6 +292,10 @@ func main() {
 		values := r.URL.Query()
 		qformat := values.Get("fmt")
 		qString := values.Get("q")
+		if qString == "%2A" || qString == "*" {
+			http.Error(w, "Missing search terms", 400)
+			return
+		}
 		// Get the options understood by dataset.Find()
 		opts := map[string]string{}
 		for _, ky := range []string{"size", "from", "ids", "sort", "explain", "fields", "highlight"} {
@@ -361,7 +365,8 @@ func main() {
 				w.Header().Set("Content-Type", "text/html")
 			} else {
 				tName = qformat + ".tmpl"
-				//FIXME: Need to pick an appropriate mime type based on format...
+				//FIXME: Need to pick an appropriate mime type based on format
+				//(e.g. BibTeX mime type...)
 				w.Header().Set("Content-Type", "text/plain")
 			}
 		}
