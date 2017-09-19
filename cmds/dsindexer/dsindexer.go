@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	// CaltechLibrary Packages
@@ -70,6 +72,7 @@ in "email-mapping.json".
 	batchSize      int
 	updateIndex    bool
 	idListFName    string
+	goMaxProcs     int
 )
 
 func init() {
@@ -88,6 +91,7 @@ func init() {
 	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
 	flag.BoolVar(&updateIndex, "update", false, "updating is slow, use this flag if you want to update an exists")
 	flag.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
+	flag.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaniously")
 }
 
 func main() {
@@ -110,6 +114,11 @@ func main() {
 	if showVersion == true {
 		fmt.Println(cfg.Version())
 		os.Exit(0)
+	}
+
+	if goMaxProcs > 0 {
+		availProcs := runtime.GOMAXPROCS(goMaxProcs)
+		log.Printf("Using %d of %d CPU", goMaxProcs, availableMaxProcs)
 	}
 
 	// Merge environment
