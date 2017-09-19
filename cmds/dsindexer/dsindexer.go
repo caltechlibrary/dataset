@@ -117,8 +117,8 @@ func main() {
 	}
 
 	if goMaxProcs > 0 {
-		availProcs := runtime.GOMAXPROCS(goMaxProcs)
-		log.Printf("Using %d of %d CPU", goMaxProcs, availableMaxProcs)
+		availableProcs := runtime.GOMAXPROCS(goMaxProcs)
+		log.Printf("Using %d of %d CPU", goMaxProcs, availableProcs)
 	}
 
 	// Merge environment
