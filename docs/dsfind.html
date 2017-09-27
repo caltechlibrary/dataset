@@ -27,7 +27,7 @@
 
 <h2>USAGE</h2>
 
-<pre><code>dsfind [OPTIONS] SEARCH_STRINGS
+<pre><code>dsfind [OPTIONS] INDEX_LIST SEARCH_STRINGS
 </code></pre>
 
 <h2>SYNOPSIS</h2>
@@ -68,7 +68,7 @@ are output.</p>
 <p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.
 The fields we want to list in our results are name,story,year</p>
 
-<pre><code>    dsfind -c characters -fields=name,story,year &quot;Jack Flanders&quot;
+<pre><code>    dsfind  -fields=name,story,year characters.bleve &quot;Jack Flanders&quot;
 </code></pre>
 
 <p>This would search the Bleve index named characters.bleve for the string &ldquo;Jack Flanders&rdquo;

@@ -32,6 +32,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 + Update a JSON document in a collection
 + Read back a JSON document in a collection
 + Delete a JSON document in a collection
++ Join a JSON document with a documents in a collection
 
 Additionally
 
@@ -75,6 +76,13 @@ Common operations using the *dataset* command line tool
 
     # Filter for the name "freda"
     dataset filter '(eq .name "freda")'
+
+    # Join freda-profile.json with "freda" adding unique key/value pairs
+    dataset join update freda freda-profile.json
+
+    # Join freda-profile.json overwriting in commont key/values adding unique key/value pairs
+    # from freda-profile.json
+    dataset join overwrite freda freda-profile.json
 
     # Delete a JSON document
     dataset delete freda.json

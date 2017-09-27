@@ -54,29 +54,32 @@ Collection and JSON Documant related--
   + JSON document must already exist
 + delete - removes a JSON document from collection
   + requires JSON document name
++ join - brings the functionality of jsonjoin to the dataset command.
+  + option update will only add unique key/values not in the existing stored document
+  + option overwrite will overwrite all key/values in the existing document
 + filter - takes a filter and returns an unordered list of keys that match filter expression
   + if filter expression not provided as a command line parameter then it is read from stdin
 + keys - returns the keys to stdout, one key per line
 + haskey - returns true is key is in collection, false otherwise
 + path - given a document name return the full path to document
 + attach - attaches a non-JSON content to a JSON record 
-    + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
-    + (stores content in a related tar file)
+  + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
+  + (stores content in a related tar file)
 + attachments - lists any attached content for JSON document
-    + "dataset attachments k1" would list all the attachments for k1
+  + "dataset attachments k1" would list all the attachments for k1
 + attached - returns attachments for a JSON document 
-    + "dataset attached k1" would write out all the attached files for k1
-    + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
+  + "dataset attached k1" would write out all the attached files for k1
+  + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
 + detach - remove attachments to a JSON document
-    + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
-    + "dataset detach k1" would remove ALL attachments to k1
+  + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
+  + "dataset detach k1" would remove ALL attachments to k1
 + import - import a CSV file's rows as JSON documents
-	+ "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
+  + "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
 + export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
-	+ "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
-	  this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
+  + "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
+    this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
 + extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
-    + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
+  + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
 `
 
 	examples = `
@@ -158,16 +161,45 @@ then givening columns a name.
    
 If you wanted to restrict to a subset (e.g. publication in year 2016)
 
-   dataset export titles2016.csv '(eq 2016 (year .pubDate))' '.id,.title,.pubDate' 'id,title,publication date'
+   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
 
 If wanted to extract a unqie list of all ORCIDs from a collection 
 
    dataset extract true .authors[:].orcid
 
-Finally if you wanted to extract a list of ORCIDs from publications in 2016.
+If you wanted to extract a list of ORCIDs from publications in 2016.
 
    dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
 
+
+You can augement JSON key/value pairs for a JSON document in your collection
+using the join operation. This works similar to the datatools cli called jsonjoin.
+
+Let's assume you have a record in your collection with a key 'jane.doe'. It has
+three fields - name, email, age.  
+
+    {"name":"Doe, Jane", "email": "jd@example.org", age: 42}
+
+You also have an external JSON document called profile.json. It looks like
+
+    {"name": "Doe, Jane", "email": "jane.doe@example.edu", "bio": "world renowned geophysist"}
+
+You can merge the unique fields in profile.json with your existing jane.doe record
+
+    dataset join update jane.doe profile.json
+
+The result would look like
+
+    {"name":"Doe, Jane", "email": "jd@example.org", "age": 42, "bio": "renowned geophysist"}
+
+If you wanted to overwrite the common fields you would use 'join overwrite'
+
+    dataset join overwrite jane.doe profile.json
+
+Which would result in a record like
+
+    {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
 `
 
 	// Standard Options
@@ -192,6 +224,7 @@ Finally if you wanted to extract a list of ORCIDs from publications in 2016.
 		"read":        readJSONDoc,
 		"update":      updateJSONDoc,
 		"delete":      deleteJSONDoc,
+		"join":        joinJSONDoc,
 		"keys":        collectionKeys,
 		"haskey":      hasKey,
 		"filter":      filter,
@@ -386,6 +419,56 @@ func deleteJSONDoc(args ...string) (string, error) {
 	defer collection.Close()
 
 	if err := collection.Delete(name); err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+// joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
+func joinJSONDoc(args ...string) (string, error) {
+	if len(args) < 3 {
+		return "", fmt.Errorf("either update or overwrite, collection key, one or more JSON document names")
+	}
+	action := strings.ToLower(args[0])
+	key := args[1]
+	args = args[2:]
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	outObject := map[string]interface{}{}
+	newObject := map[string]interface{}{}
+
+	if err := collection.Read(key, &outObject); err != nil {
+		return "", err
+	}
+	for _, arg := range args {
+		src, err := ioutil.ReadFile(arg)
+		if err != nil {
+			return "", err
+		}
+		if err := json.Unmarshal(src, &newObject); err != nil {
+			return "", err
+		}
+		switch action {
+		case "update":
+			for k, v := range newObject {
+				if _, ok := outObject[k]; ok != true {
+					outObject[k] = v
+				}
+			}
+		case "overwrite":
+			for k, v := range newObject {
+				outObject[k] = v
+			}
+		default:
+			return "", fmt.Errorf("Unknown join type %q", action)
+		}
+	}
+	if err := collection.Update(key, outObject); err != nil {
 		return "", err
 	}
 	return "OK", nil
