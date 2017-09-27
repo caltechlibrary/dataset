@@ -1,0 +1,37 @@
+{
+    "family_name": {
+        "object_path": ".name[0]",
+        "field_mapping": "text",
+        "analyzer": "simple",
+        "store": true
+    },
+    "given_name": {
+        "object_path": ".name[1:]",
+        "field_mapping": "text",
+        "analyzer": "simple",
+        "store": true
+    },
+    "full_name": {
+        "object_path": ".full_name",
+        "field_mapping": "text",
+        "analyzer": "standard",
+        "store": true
+    },
+    "organization": {
+        "object_path": ".organization[:]",
+        "field_mapping": "text",
+        "analyzer": "standard",
+        "store": true
+    },
+    "job_title": {
+        "object_path": ".title",
+        "field_mapping": "text",
+        "analyzer": "standard",
+        "store": true
+    },
+    "revision": {
+        "object_path": ".title",
+        "field_mapping": "datetime",
+        "store": true
+    }
+}

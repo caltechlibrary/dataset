@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	// CaltechLibrary Packages
@@ -64,6 +68,11 @@ in "email-mapping.json".
 
 	// App Specific Options
 	collectionName string
+	documentType   string
+	batchSize      int
+	updateIndex    bool
+	idListFName    string
+	goMaxProcs     int
 )
 
 func init() {
@@ -78,6 +87,11 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
+	flag.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
+	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
+	flag.BoolVar(&updateIndex, "update", false, "updating is slow, use this flag if you want to update an exists")
+	flag.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
+	flag.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaniously")
 }
 
 func main() {
@@ -100,6 +114,11 @@ func main() {
 	if showVersion == true {
 		fmt.Println(cfg.Version())
 		os.Exit(0)
+	}
+
+	if goMaxProcs > 0 {
+		availableProcs := runtime.GOMAXPROCS(goMaxProcs)
+		log.Printf("Using %d of %d CPU", goMaxProcs, availableProcs)
 	}
 
 	// Merge environment
@@ -133,7 +152,31 @@ func main() {
 	}
 	defer collection.Close()
 
-	if err = collection.Indexer(indexName, definitionFName); err != nil {
+	// Abort index build if it exists and updateIndex is false
+	if updateIndex == false {
+		if _, err := os.Stat(indexName); os.IsNotExist(err) == false {
+			fmt.Fprintf(os.Stderr, "Index exists, updating requires -update option (can be very slow)\n")
+			os.Exit(1)
+		}
+	}
+
+	// NOTE: If a list of ids is provided create/update the index for those ids only
+	var keys []string
+	if idListFName != "" {
+		if src, err := ioutil.ReadFile(idListFName); err == nil {
+			klist := bytes.Split(src, []byte("\n"))
+			for _, k := range klist {
+				if len(k) > 0 {
+					keys = append(keys, fmt.Sprintf("%s", k))
+				}
+			}
+		} else {
+			fmt.Fprintf(os.Stderr, "Can't read %s, %s", idListFName, err)
+			os.Exit(1)
+		}
+	}
+
+	if err = collection.Indexer(indexName, definitionFName, batchSize, keys); err != nil {
 		fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
 		os.Exit(1)
 	}

@@ -1,9 +1,7 @@
 
-# dataset
+# USAGE
 
-## USAGE
-
-> dataset [OPTIONS] COMMAND_AND_PARAMETERS
+## dataset [OPTIONS] COMMAND_AND_PARAMETERS
 
 ## SYNOPSIS
 
@@ -33,56 +31,35 @@ Collection and JSON Documant related--
   + JSON document must already exist
 + delete - removes a JSON document from collection
   + requires JSON document name
++ join - brings the functionality of jsonjoin to the dataset command.
+  + option update will only add unique key/values not in the existing stored document
+  + option overwrite will overwrite all key/values in the existing document
++ filter - takes a filter and returns an unordered list of keys that match filter expression
+  + if filter expression not provided as a command line parameter then it is read from stdin
 + keys - returns the keys to stdout, one key per line
++ haskey - returns true is key is in collection, false otherwise
 + path - given a document name return the full path to document
 + attach - attaches a non-JSON content to a JSON record 
-    + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
-    + (stores content in a related tar file)
+  + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
+  + (stores content in a related tar file)
 + attachments - lists any attached content for JSON document
-    + "dataset attachments k1" would list all the attachments for k1
+  + "dataset attachments k1" would list all the attachments for k1
 + attached - returns attachments for a JSON document 
-    + "dataset attached k1" would write out all the attached files for k1
-    + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
+  + "dataset attached k1" would write out all the attached files for k1
+  + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
 + detach - remove attachments to a JSON document
-    + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
-    + "dataset detach k1" would remove ALL attachments to k1
+  + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
+  + "dataset detach k1" would remove ALL attachments to k1
 + import - import a CSV file's rows as JSON documents
-	+ "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
-
-Select list related--
-
-+ select - is the command for working with lists of collection keys
-	+ "dataset select mylist k1 k2 k3" would create/update a select list 
-	  mylist adding keys k1, k2, k3
-+ lists - returns the select list names associated with a collection
-	+ "dataset lists"
-+ clear - removes a select list from the collection
-	+ "dataset clear mylist"
-+ first - writes the first key to stdout
-	+ "dataset first mylist"
-+ last would display the last key in the list
-	+ "dataset last mylist"
-+ rest displays all but the first key in the list
-	+ "dataset rest mylist"
-+ list displays a list of keys from the select list to stdout
-	+ "dataet list mylist" 
-+ shift writes the first key to stdout and remove it from list
-	+ "dataset shift mylist" 
-+ unshift would insert at the beginning 
-	+ "dataset unshift mylist k4"
-+ push would append the list
-	+ "dataset push mylist k4"
-+ pop removes last key form list and displays it
-	+ "dataset pop mylist" 
-+ sort orders the keys alphabetically in the list
-	+ "dataset sort mylist asc" - sorts in ascending order
-	+ "dataset sort mylist desc" - sorts in descending order
-+ reverse flips the order of the list
-	+ "dataset reverse mylists"
+  + "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
++ export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
+  + "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
+    this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
++ extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
+  + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
 
 ## OPTIONS
 
-```
 	-c	sets the collection to be used
 	-collection	sets the collection to be used
 	-h	display help
@@ -91,12 +68,15 @@ Select list related--
 	-input	input filename
 	-l	display license
 	-license	display license
+	-no-newline	suppress a trailing newline on output
+	-o	output filename
+	-output	output filename
+	-quiet	suppress error and status output
 	-skip-header-row	skip the header row (use as property names)
 	-uuid	generate a UUID for a new JSON document name
 	-v	display version
 	-verbose	output rows processed on importing from CSV
 	-version	display version
-```
 
 ## EXAMPLES
 
@@ -111,6 +91,12 @@ a record called "littlefreda.json" and reading it back.
       echo "Path: $(dataset path $KY) 
       echo "Doc: $(dataset read $KY)
    done
+```
+
+Now check to see if the key, littlefreda, is in the collection
+
+```shell
+   dataset haskey littlefreda
 ```
 
 You can also read your JSON formatted data from a file or standard input.
@@ -166,5 +152,92 @@ Remove all attachments from "capt-jack"
    dataset detach capt-jack
 ```
 
-dataset v0.0.2
+Filter can be used to return only the record keys that return true for a given
+expression. Here's is a simple case for match records where name is equal to
+"Mojo Sam".
 
+```shell
+   dataset filter '(eq .name "Mojo Sam")'
+```
+
+If you are using a complex filter it can read a file in and apply it as a filter.
+
+```shell
+   dataset filter < myfilter.txt
+```
+
+Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we're generating a UUID for the key name of each row
+
+```shell
+   dataset -uuid import my-data.csv
+```
+
+You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.
+
+```shell
+   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+```
+
+If you wanted to restrict to a subset (e.g. publication in year 2016)
+ 
+```shell
+   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+```
+
+If wanted to extract a unqie list of all ORCIDs from a collection 
+
+```shell
+   dataset extract true .authors[:].orcid
+```
+
+If you wanted to extract a list of ORCIDs from publications in 2016.
+
+```shell
+   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+```
+
+
+You can augement JSON key/value pairs for a JSON document in your collection
+using the join operation. This works similar to the datatools cli called jsonjoin.
+
+Let's assume you have a record in your collection with a key 'jane.doe'. It has
+three fields - name, email, age.
+
+```json
+    {"name":"Doe, Jane", "email": "jd@example.org", "age": 42}
+```
+You also have an external JSON document called profile.json. It looks like
+
+```json
+    {"name": "Doe, Jane", "email": "jane.doe@example.edu", "bio": "world renowned geophysist"}
+```
+
+You can merge the unique fields in profile.json with your existing jane.doe record
+
+```shell
+    dataset join update jane.doe profile.json
+```
+
+The result would look like
+
+```json
+    {"name":"Doe, Jane", "email": "jd@example.org", "age": 42, "bio": "renowned geophysist"}
+```
+
+If you wanted to overwrite the common fields you would use 'join overwrite'
+
+```shell
+    dataset join overwrite jane.doe profile.json
+```
+
+Which would result in a record like
+
+```json
+    {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
+```
+
+
+dataset v0.0.3-rc8

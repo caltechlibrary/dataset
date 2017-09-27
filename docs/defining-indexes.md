@@ -42,7 +42,7 @@ You could create an index of last name and date of birth with the following defi
 The dotpath notation lets you reach into a nested JSON property and bring it out into a field that will
 be indexed. 
 
-## Working with field mappings
+### Working with field mappings
 
 In our example of above we have three types of data in our JSON document.  The name properties are
 strings. The date of birth property is a date in YYYY-MM-DD format and finally we have an email
@@ -91,7 +91,7 @@ If we want to expand our definition to include the location of Smiley's birth we
     }
 ```
 
-## Working with analyzers
+### Working with analyzers
 
 In addition to setting the controlling how the values are mapped into the index you can control the analysis
 that are applied when building your index (see http://www.blevesearch.com/docs/Analyzers/ for details).
@@ -207,32 +207,140 @@ If knew our documents were in German we could try something like this definition
 
 Note you can use different analyzers on different fields. 
 
-## Additoinal configuration
+### Additoinal configuration
 
 This additional configuration is useful for managing the size your of your index(es) on disc as
 well as impact the ammount of time it takes to index your data.
 
-### Storing the field values in the index
+#### Storing the field values in the index
 
 As we define the numbers of fields in our index the size the index will also grow.  If you don't need to
 see the field in the results you can choose not to store it in the index.  This is done with the "store"
 attribute in the field's definition. The value can be true/false.
 
-## Include Term Vectors
+### Include Term Vectors
 
 You can choose to include term vectors in your index. This is set by the field property called "include_term_vectors"
 and like "store" it can be either true/false.
 
-## Include In all
+### Include In all
 
 "include_in_all", indicates to include any composite fields named "_all", defaults to true, if you don't need this and
 would like to make the index slightly smaller then you could set this to false.
 
 
-## Date Format
+### Date Format
 
 The "date_format" string is used to indentify how to parse the date. The formatting pattern is based on Go's time.Parse()
 module. You can read more about that here at https://golang.org/pkg/time/#pkg-constants. If you're using the "datetime"
 field mapping for a field you should probably set the "date_format" too since dates can be written so many ways.
 
+
+FIXME: This is expeculation on how defining complex indexes might work.
+
+## Indexing more complex JSON documents
+
+One of the reason JSON is used for serialization of data is that it can represent many of the common types
+of data structures in addition to primitive data types like string and number.  We've already seen how to
+work with simple JSON structures as an object. The JSON object (or map) presents data as a series
+of key and value pairs.  Another common data structure represented in JSON is that of an array. An
+array can be thought of as a list containing some other data types. An array often contains strings or
+numbers but it can also contain objects and other arrays.  In this way JSON documents can describe the
+relatationship between say an article, it's title and the authors who wrote it. It can even describe
+unique identifiers for authors as well as variation of their names. Here's an example
+
+```json
+    {
+        "title": "Analysis of literary dog commentary of Summer '17",
+        "abstract": "Bark, yip, gur, wine, Bark. That's why you said yesterday.",
+        "authors": [{
+            "display_name": "R. S. Doiel",
+            "species": "human",
+            "sort_name": "Doiel, Robert",
+            "orcid": "0000-0003-0900-6903"
+        },
+        {
+            "display_name":"Wesneday",
+            "sort_name":"A Dog, Wedneday",
+            "species":"canine"
+        },
+        {
+            "display_name":"Dodger",
+            "sort_name":"Daschund, Dodger",
+            "species":"canine"
+        }],
+        "years":[
+            1992,
+            1998,
+            2002
+        ]
+    }
+```
+
+I this data example we have three authors along two fields about an article written by two canines and a human.
+In our simple approach we could describe the title and three authors explicitly like this.
+
+```json
+   {
+       "title": {
+           "object_path": ".title"
+       },
+       "author_1":{
+           "object_path": ".authors[0].sort_name"
+       },
+       "author_2": {
+           "object_path": ".authors[1].sort_name"
+       },
+       "author_3": {
+           "object_path": ".authors[2].sort_name"
+       }
+   }
+```
+
+The trouble is what if we want to index display name and sort name independantly? What if we have 100 authors instread of three.
+This simple approach of explicit paths quickly becomes problematic. What we need to do is beable to describe to Bleve how to reach
+into our tree and pull out the pieces we're interested in. It's a problem of notation really. If your writing a custom indexer in
+Go the Bleve package has functions for handling but this leaves us with the problem of how do we easily describe in our
+definition file those more complex relationships?
+
+The approach _dataset_ takes when describing the index structure is to nest the definitions just like the data structure we're
+describing. Let's take another pass at describing our article metadata.
+
+
+index can reach into 
+
+```json
+    {
+       "title": {
+           "object_path": ".title"
+       },
+       "authors_display_name": { 
+            "object_path": ".authors[:].display_name"
+       },
+       "authors_sort_name": {
+            "object_path": ".authors[:].sort_name"
+       },
+       "authors_orcid": {
+            "object_path": ".authors[:].orcid"
+       }
+    }
+```
+
+Notice that we've create an array os the value for "authors".  In the array we have a single object that describes what the array 
+is holding. If we're working with an array objects then an anonymous object is described with each property of the object
+named and defined with a dot path in relationship to the object. If we were describing an array of strings we'd still describe
+it with an anonymous object but the dotpath would only contain a single period "." as its relative root.
+
+Here's an example where what an array of years might look like as a definition
+
+```json
+       "years": {
+          "object_path": ".years[:]",
+          "field_mapping": "numeric"
+       }
+    }
+```
+
+_dsindexer_ will only index arrays that containing a single data type.  So if you have an array that has an object,
+a numeric value and a string you're out of luck or you'll need to index each type separately. 
 

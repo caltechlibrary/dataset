@@ -23,13 +23,9 @@
 </nav>
 
 <section>
-<h1>dataset</h1>
+<h1>USAGE</h1>
 
-<h2>USAGE</h2>
-
-<blockquote>
-<p>dataset [OPTIONS] COMMAND_AND_PARAMETERS</p>
-</blockquote>
+<h2>dataset [OPTIONS] COMMAND_AND_PARAMETERS</h2>
 
 <h2>SYNOPSIS</h2>
 
@@ -75,7 +71,19 @@ JSON document read from stdin</li>
 <ul>
 <li>requires JSON document name</li>
 </ul></li>
+<li>join - brings the functionality of jsonjoin to the dataset command.
+
+<ul>
+<li>option update will only add unique key/values not in the existing stored document</li>
+<li>option overwrite will overwrite all key/values in the existing document</li>
+</ul></li>
+<li>filter - takes a filter and returns an unordered list of keys that match filter expression
+
+<ul>
+<li>if filter expression not provided as a command line parameter then it is read from stdin</li>
+</ul></li>
 <li>keys - returns the keys to stdout, one key per line</li>
+<li>haskey - returns true is key is in collection, false otherwise</li>
 <li>path - given a document name return the full path to document</li>
 <li>attach - attaches a non-JSON content to a JSON record
 
@@ -105,95 +113,38 @@ JSON document read from stdin</li>
 <ul>
 <li>&ldquo;dataset import mydata.csv 1&rdquo; would import the CSV file mydata.csv using column one&rsquo;s value as key</li>
 </ul></li>
-</ul>
-
-<p>Select list related&ndash;</p>
+<li>export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
 
 <ul>
-<li>select - is the command for working with lists of collection keys
-
-<ul>
-<li>&ldquo;dataset select mylist k1 k2 k3&rdquo; would create/update a select list
-mylist adding keys k1, k2, k3</li>
+<li>&ldquo;dataset export titles.csv &lsquo;true&rsquo; &lsquo;._id,.title,.pubDate&rsquo; &lsquo;id,title,publication date&rsquo;&rdquo;
+this would export all the ids, titles and publication dates as a CSV fiile named titles.csv</li>
 </ul></li>
-<li>lists - returns the select list names associated with a collection
+<li>extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
 
 <ul>
-<li>&ldquo;dataset lists&rdquo;</li>
-</ul></li>
-<li>clear - removes a select list from the collection
-
-<ul>
-<li>&ldquo;dataset clear mylist&rdquo;</li>
-</ul></li>
-<li>first - writes the first key to stdout
-
-<ul>
-<li>&ldquo;dataset first mylist&rdquo;</li>
-</ul></li>
-<li>last would display the last key in the list
-
-<ul>
-<li>&ldquo;dataset last mylist&rdquo;</li>
-</ul></li>
-<li>rest displays all but the first key in the list
-
-<ul>
-<li>&ldquo;dataset rest mylist&rdquo;</li>
-</ul></li>
-<li>list displays a list of keys from the select list to stdout
-
-<ul>
-<li>&ldquo;dataet list mylist&rdquo;</li>
-</ul></li>
-<li>shift writes the first key to stdout and remove it from list
-
-<ul>
-<li>&ldquo;dataset shift mylist&rdquo;</li>
-</ul></li>
-<li>unshift would insert at the beginning
-
-<ul>
-<li>&ldquo;dataset unshift mylist k4&rdquo;</li>
-</ul></li>
-<li>push would append the list
-
-<ul>
-<li>&ldquo;dataset push mylist k4&rdquo;</li>
-</ul></li>
-<li>pop removes last key form list and displays it
-
-<ul>
-<li>&ldquo;dataset pop mylist&rdquo;</li>
-</ul></li>
-<li>sort orders the keys alphabetically in the list
-
-<ul>
-<li>&ldquo;dataset sort mylist asc&rdquo; - sorts in ascending order</li>
-<li>&ldquo;dataset sort mylist desc&rdquo; - sorts in descending order</li>
-</ul></li>
-<li>reverse flips the order of the list
-
-<ul>
-<li>&ldquo;dataset reverse mylists&rdquo;</li>
+<li>&ldquo;dataset extract true .authors[:].orcid&rdquo; would extract a list of authors&rsquo; orcid ids in collection</li>
 </ul></li>
 </ul>
 
 <h2>OPTIONS</h2>
 
-<pre><code>	-c	sets the collection to be used
-	-collection	sets the collection to be used
-	-h	display help
-	-help	display help
-	-i	input filename
-	-input	input filename
-	-l	display license
-	-license	display license
-	-skip-header-row	skip the header row (use as property names)
-	-uuid	generate a UUID for a new JSON document name
-	-v	display version
-	-verbose	output rows processed on importing from CSV
-	-version	display version
+<pre><code>-c  sets the collection to be used
+-collection sets the collection to be used
+-h  display help
+-help   display help
+-i  input filename
+-input  input filename
+-l  display license
+-license    display license
+-no-newline suppress a trailing newline on output
+-o  output filename
+-output output filename
+-quiet  suppress error and status output
+-skip-header-row    skip the header row (use as property names)
+-uuid   generate a UUID for a new JSON document name
+-v  display version
+-verbose    output rows processed on importing from CSV
+-version    display version
 </code></pre>
 
 <h2>EXAMPLES</h2>
@@ -208,6 +159,11 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
       echo &quot;Path: $(dataset path $KY) 
       echo &quot;Doc: $(dataset read $KY)
    done
+</code></pre>
+
+<p>Now check to see if the key, littlefreda, is in the collection</p>
+
+<pre><code class="language-shell">   dataset haskey littlefreda
 </code></pre>
 
 <p>You can also read your JSON formatted data from a file or standard input.
@@ -256,7 +212,81 @@ of testdata/friends</p>
 <pre><code class="language-shell">   dataset detach capt-jack
 </code></pre>
 
-<p>dataset v0.0.2</p>
+<p>Filter can be used to return only the record keys that return true for a given
+expression. Here&rsquo;s is a simple case for match records where name is equal to
+&ldquo;Mojo Sam&rdquo;.</p>
+
+<pre><code class="language-shell">   dataset filter '(eq .name &quot;Mojo Sam&quot;)'
+</code></pre>
+
+<p>If you are using a complex filter it can read a file in and apply it as a filter.</p>
+
+<pre><code class="language-shell">   dataset filter &lt; myfilter.txt
+</code></pre>
+
+<p>Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we&rsquo;re generating a UUID for the key name of each row</p>
+
+<pre><code class="language-shell">   dataset -uuid import my-data.csv
+</code></pre>
+
+<p>You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.</p>
+
+<pre><code class="language-shell">   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
+
+<pre><code class="language-shell">   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If wanted to extract a unqie list of all ORCIDs from a collection</p>
+
+<pre><code class="language-shell">   dataset extract true .authors[:].orcid
+</code></pre>
+
+<p>If you wanted to extract a list of ORCIDs from publications in 2016.</p>
+
+<pre><code class="language-shell">   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+</code></pre>
+
+<p>You can augement JSON key/value pairs for a JSON document in your collection
+using the join operation. This works similar to the datatools cli called jsonjoin.</p>
+
+<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
+three fields - name, email, age.</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
+</code></pre>
+
+<p>You also have an external JSON document called profile.json. It looks like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;: &quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;bio&quot;: &quot;world renowned geophysist&quot;}
+</code></pre>
+
+<p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
+
+<pre><code class="language-shell">    dataset join update jane.doe profile.json
+</code></pre>
+
+<p>The result would look like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+<p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
+
+<pre><code class="language-shell">    dataset join overwrite jane.doe profile.json
+</code></pre>
+
+<p>Which would result in a record like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+<p>dataset v0.0.3-rc8</p>
 
 </section>
 

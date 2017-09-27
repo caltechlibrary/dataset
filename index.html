@@ -23,7 +23,7 @@
 </nav>
 
 <section>
-<h1>dataset</h1>
+<h1>dataset   <a href="https://data.caltech.edu/badge/latestdoi/79394591"><img src="https://data.caltech.edu/badge/79394591.svg" alt="DOI" /></a></h1>
 
 <p><em>dataset</em> is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
 <em>dataset</em> is also a command line tool exercising the features of the golang <em>dataset</em> package.
@@ -49,6 +49,7 @@ JSON documents in a given directory).</p>
 <li>Read back a named list of JSON document ids</li>
 <li>Delete a named list of JSON document ids</li>
 <li>Import JSON documents from rows of a CSV file</li>
+<li>Filter JSON documents and return a list of matching ids</li>
 </ul>
 
 <h3>JSON Document level</h3>
@@ -58,6 +59,7 @@ JSON documents in a given directory).</p>
 <li>Update a JSON document in a collection</li>
 <li>Read back a JSON document in a collection</li>
 <li>Delete a JSON document in a collection</li>
+<li>Join a JSON document with a documents in a collection</li>
 </ul>
 
 <p>Additionally</p>
@@ -103,48 +105,21 @@ JSON documents in a given directory).</p>
     # List the keys in the collection
     dataset keys
 
+    # Filter for the name &quot;freda&quot;
+    dataset filter '(eq .name &quot;freda&quot;)'
+
+    # Join freda-profile.json with &quot;freda&quot; adding unique key/value pairs
+    dataset join update freda freda-profile.json
+
+    # Join freda-profile.json overwriting in commont key/values adding unique key/value pairs
+    # from freda-profile.json
+    dataset join overwrite freda freda-profile.json
+
     # Delete a JSON document
     dataset delete freda.json
 
     # To remove the collection just use the Unix shell command
     # /bin/rm -fR demo/mystuff
-</code></pre>
-
-<p>Common operations shown in Golang</p>
-
-<ul>
-<li>create collection</li>
-<li>create a JSON document to collection</li>
-<li>read a JSON document</li>
-<li>update a JSON document</li>
-<li>delete a JSON document</li>
-</ul>
-
-<pre><code class="language-go">    // Create a collection &quot;mystuff&quot; inside the directory called demo
-    collection, err := dataset.Create(&quot;demo/mystuff&quot;, dataset.GenerateBucketNames(&quot;ab&quot;, 2))
-    if err != nil {
-        log.Fatalf(&quot;%s&quot;, err)
-    }
-    defer collection.Close()
-    // Create a JSON document 
-    docName := &quot;freda.json&quot;
-    document := map[string]string{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@inverness.example.org&quot;}
-    if err := collection.Create(docName, document); err != nil {
-        log.Fatalf(&quot;%s&quot;, err)
-    }
-    // Read a JSON document
-    if err := collection.Read(docName, document); err != nil {
-        log.Fatalf(&quot;%s&quot;, err)
-    }
-    // Update a JSON document
-    document[&quot;email&quot;] = &quot;freda@zbs.example.org&quot;
-    if err := collection.Update(docName, document); err != nil {
-        log.Fatalf(&quot;%s&quot;, err)
-    }
-    // Delete a JSON document
-    if err := collection.Delete(docName); err != nil {
-        log.Fatalf(&quot;%s&quot;, err)
-    }
 </code></pre>
 
 <h2>Releases</h2>

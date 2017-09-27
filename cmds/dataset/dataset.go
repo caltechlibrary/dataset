@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -16,6 +15,7 @@ import (
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/storage"
+	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/google/uuid"
@@ -54,52 +54,32 @@ Collection and JSON Documant related--
   + JSON document must already exist
 + delete - removes a JSON document from collection
   + requires JSON document name
++ join - brings the functionality of jsonjoin to the dataset command.
+  + option update will only add unique key/values not in the existing stored document
+  + option overwrite will overwrite all key/values in the existing document
++ filter - takes a filter and returns an unordered list of keys that match filter expression
+  + if filter expression not provided as a command line parameter then it is read from stdin
 + keys - returns the keys to stdout, one key per line
++ haskey - returns true is key is in collection, false otherwise
 + path - given a document name return the full path to document
 + attach - attaches a non-JSON content to a JSON record 
-    + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
-    + (stores content in a related tar file)
+  + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
+  + (stores content in a related tar file)
 + attachments - lists any attached content for JSON document
-    + "dataset attachments k1" would list all the attachments for k1
+  + "dataset attachments k1" would list all the attachments for k1
 + attached - returns attachments for a JSON document 
-    + "dataset attached k1" would write out all the attached files for k1
-    + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
+  + "dataset attached k1" would write out all the attached files for k1
+  + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
 + detach - remove attachments to a JSON document
-    + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
-    + "dataset detach k1" would remove ALL attachments to k1
+  + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
+  + "dataset detach k1" would remove ALL attachments to k1
 + import - import a CSV file's rows as JSON documents
-	+ "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
-
-Select list related--
-
-+ select - is the command for working with lists of collection keys
-	+ "dataset select mylist k1 k2 k3" would create/update a select list 
-	  mylist adding keys k1, k2, k3
-+ lists - returns the select list names associated with a collection
-	+ "dataset lists"
-+ clear - removes a select list from the collection
-	+ "dataset clear mylist"
-+ first - writes the first key to stdout
-	+ "dataset first mylist"
-+ last would display the last key in the list
-	+ "dataset last mylist"
-+ rest displays all but the first key in the list
-	+ "dataset rest mylist"
-+ list displays a list of keys from the select list to stdout
-	+ "dataet list mylist" 
-+ shift writes the first key to stdout and remove it from list
-	+ "dataset shift mylist" 
-+ unshift would insert at the beginning 
-	+ "dataset unshift mylist k4"
-+ push would append the list
-	+ "dataset push mylist k4"
-+ pop removes last key form list and displays it
-	+ "dataset pop mylist" 
-+ sort orders the keys alphabetically in the list
-	+ "dataset sort mylist asc" - sorts in ascending order
-	+ "dataset sort mylist desc" - sorts in descending order
-+ reverse flips the order of the list
-	+ "dataset reverse mylists"
+  + "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
++ export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
+  + "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
+    this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
++ extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
+  + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
 `
 
 	examples = `
@@ -115,6 +95,10 @@ a record called "littlefreda.json" and reading it back.
       echo "Path: $(dataset path $KY) 
       echo "Doc: $(dataset read $KY)
    done
+
+Now check to see if the key, littlefreda, is in the collection
+
+   dataset haskey littlefreda
 
 You can also read your JSON formatted data from a file or standard input.
 In this example we are creating a mojosam record and reading back the contents
@@ -154,6 +138,68 @@ Remove high-capt-jack.txt from "capt-jack"
 Remove all attachments from "capt-jack"
 
    dataset detach capt-jack
+
+Filter can be used to return only the record keys that return true for a given
+expression. Here's is a simple case for match records where name is equal to
+"Mojo Sam".
+
+   dataset filter '(eq .name "Mojo Sam")'
+
+If you are using a complex filter it can read a file in and apply it as a filter.
+
+   dataset filter < myfilter.txt
+
+Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we're generating a UUID for the key name of each row
+
+   dataset -uuid import my-data.csv
+
+You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.
+
+   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+   
+If you wanted to restrict to a subset (e.g. publication in year 2016)
+
+   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+
+If wanted to extract a unqie list of all ORCIDs from a collection 
+
+   dataset extract true .authors[:].orcid
+
+If you wanted to extract a list of ORCIDs from publications in 2016.
+
+   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+
+
+You can augement JSON key/value pairs for a JSON document in your collection
+using the join operation. This works similar to the datatools cli called jsonjoin.
+
+Let's assume you have a record in your collection with a key 'jane.doe'. It has
+three fields - name, email, age.  
+
+    {"name":"Doe, Jane", "email": "jd@example.org", age: 42}
+
+You also have an external JSON document called profile.json. It looks like
+
+    {"name": "Doe, Jane", "email": "jane.doe@example.edu", "bio": "world renowned geophysist"}
+
+You can merge the unique fields in profile.json with your existing jane.doe record
+
+    dataset join update jane.doe profile.json
+
+The result would look like
+
+    {"name":"Doe, Jane", "email": "jd@example.org", "age": 42, "bio": "renowned geophysist"}
+
+If you wanted to overwrite the common fields you would use 'join overwrite'
+
+    dataset join overwrite jane.doe profile.json
+
+Which would result in a record like
+
+    {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
 `
 
 	// Standard Options
@@ -161,12 +207,15 @@ Remove all attachments from "capt-jack"
 	showLicense bool
 	showVersion bool
 	inputFName  string
+	outputFName string
 
 	// App Specific Options
 	collectionName string
 	skipHeaderRow  bool
 	useUUID        bool
 	showVerbose    bool
+	quietMode      bool
+	noNewLine      bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -175,27 +224,20 @@ Remove all attachments from "capt-jack"
 		"read":        readJSONDoc,
 		"update":      updateJSONDoc,
 		"delete":      deleteJSONDoc,
+		"join":        joinJSONDoc,
 		"keys":        collectionKeys,
+		"haskey":      hasKey,
+		"filter":      filter,
 		"path":        docPath,
-		"select":      selectList,
-		"lists":       lists,
-		"clear":       clear,
-		"first":       first,
-		"last":        last,
-		"rest":        rest,
-		"list":        list,
-		"push":        push,
-		"pop":         pop,
-		"shift":       shift,
-		"unshift":     unshift,
-		"length":      length,
-		"sort":        sort,
-		"reverse":     reverse,
 		"attach":      addAttachments,
 		"attachments": listAttachments,
 		"attached":    getAttachments,
 		"detach":      removeAttachments,
 		"import":      importCSV,
+		"export":      exportCSV,
+		"extract":     extract,
+		"check":       checkCollection,
+		"repair":      repairCollection,
 	}
 
 	// alphabet to use for buckets
@@ -205,6 +247,33 @@ Remove all attachments from "capt-jack"
 //
 // These are verbs used in the command line utility
 //
+
+// checkCollection takes a collection name and checks for problems
+func checkCollection(args ...string) (string, error) {
+	if len(args) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	for _, cName := range args {
+		if err := dataset.Analyzer(cName); err != nil {
+			return "", err
+		}
+	}
+	return "OK", nil
+}
+
+// repairCollection takes a collection name and recreates collection.json, keys.json
+// based on what it finds on disc
+func repairCollection(args ...string) (string, error) {
+	if len(args) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	for _, cName := range args {
+		if err := dataset.Repair(cName); err != nil {
+			return "", err
+		}
+	}
+	return "OK", nil
+}
 
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc
@@ -355,8 +424,59 @@ func deleteJSONDoc(args ...string) (string, error) {
 	return "OK", nil
 }
 
+// joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
+func joinJSONDoc(args ...string) (string, error) {
+	if len(args) < 3 {
+		return "", fmt.Errorf("either update or overwrite, collection key, one or more JSON document names")
+	}
+	action := strings.ToLower(args[0])
+	key := args[1]
+	args = args[2:]
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	outObject := map[string]interface{}{}
+	newObject := map[string]interface{}{}
+
+	if err := collection.Read(key, &outObject); err != nil {
+		return "", err
+	}
+	for _, arg := range args {
+		src, err := ioutil.ReadFile(arg)
+		if err != nil {
+			return "", err
+		}
+		if err := json.Unmarshal(src, &newObject); err != nil {
+			return "", err
+		}
+		switch action {
+		case "update":
+			for k, v := range newObject {
+				if _, ok := outObject[k]; ok != true {
+					outObject[k] = v
+				}
+			}
+		case "overwrite":
+			for k, v := range newObject {
+				outObject[k] = v
+			}
+		default:
+			return "", fmt.Errorf("Unknown join type %q", action)
+		}
+	}
+	if err := collection.Update(key, outObject); err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
 // collectionKeys returns the keys in a collection
 func collectionKeys(args ...string) (string, error) {
+	// NOTE: We ignore args because this function always returns the full list
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
@@ -366,6 +486,87 @@ func collectionKeys(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	return strings.Join(collection.Keys(), "\n"), nil
+}
+
+// hasKey returns true if key is found in collection.json, false otherwise
+// If more than one key is provided then each key is checked and an array
+// of true/false values will be returned matching the order of the keys provided
+// one key state per line
+func hasKey(args ...string) (string, error) {
+	keyState := []string{}
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	for _, arg := range args {
+		keyState = append(keyState, fmt.Sprintf("%t", collection.HasKey(arg)))
+	}
+	return strings.Join(keyState, "\n"), nil
+}
+
+// filter returns a list of collection ids where the filter value returns true.
+// the filter notation is based on that Go text/template pipelines that would return
+// true in an if/else block.
+func filter(args ...string) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("filter requires a single filter expression")
+	}
+
+	f, err := tmplfn.ParseFilter(args[0])
+	if err != nil {
+		return "", err
+	}
+
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+
+	keys := []string{}
+	for _, key := range collection.Keys() {
+		data := map[string]interface{}{}
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				keys = append(keys, key)
+			}
+		}
+	}
+	return strings.Join(keys, "\n"), nil
+}
+
+// streamFilterResults works like filter but outputs the results as it find them
+func streamFilterResults(w *os.File, filterExp string) error {
+	f, err := tmplfn.ParseFilter(filterExp)
+	if err != nil {
+		return err
+	}
+
+	if len(collectionName) == 0 {
+		return fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return err
+	}
+	defer collection.Close()
+
+	for _, key := range collection.Keys() {
+		data := map[string]interface{}{}
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				fmt.Fprintln(w, key)
+			}
+		}
+	}
+	return nil
 }
 
 // docPath returns the path to a JSON document or an error
@@ -383,288 +584,6 @@ func docPath(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	return collection.DocPath(name)
-}
-
-func selectList(params ...string) (string, error) {
-	if len(params) == 0 {
-		params = []string{"keys"}
-	}
-	if params[0] == "collection" {
-		return "", fmt.Errorf("collection is not a valid list name")
-	}
-
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	l, err := collection.Select(params...)
-	if err != nil {
-		return "", err
-	}
-	return strings.Join(l.Keys, "\n"), nil
-}
-
-func lists(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	return strings.Join(collection.Lists(), "\n"), nil
-}
-
-func clear(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("you can only clear one select list at a time")
-	}
-	if strings.Compare(params[0], "keys") == 0 {
-		return "", fmt.Errorf("select list %s cannot be cleared", params[0])
-	}
-	if strings.Compare(params[0], "collection") == 0 {
-		return "", fmt.Errorf("collection is not a valid select list name")
-	}
-	err = collection.Clear(params[0])
-	if err != nil {
-		return "", err
-	}
-	return "OK", nil
-
-}
-
-func first(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return sl.First(), nil
-}
-
-func last(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return sl.Last(), nil
-}
-
-func rest(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return strings.Join(sl.Rest(), "\n"), nil
-}
-
-func list(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return strings.Join(sl.List(), "\n"), nil
-}
-
-func length(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%d", sl.Len()), nil
-}
-
-func push(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) < 2 {
-		return "", fmt.Errorf("requires list name and one or more keys")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	for _, param := range params[1:] {
-		l := sl.Len() + 1
-		sl.Push(param)
-		if l != sl.Len() {
-			return "", fmt.Errorf("%s not added to %s", param, params[0])
-		}
-	}
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
-func pop(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	r := sl.Pop()
-	if err := sl.SaveList(); err != nil {
-		return r, err
-	}
-	return r, nil
-}
-
-func shift(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	r := sl.Shift()
-	if err := sl.SaveList(); err != nil {
-		return r, err
-	}
-	return r, nil
-}
-
-func unshift(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) < 2 {
-		return "", fmt.Errorf("requires list name and one or more keys")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	for _, param := range params[1:] {
-		l := sl.Len() + 1
-		sl.Unshift(param)
-		if l != sl.Len() {
-			return "", fmt.Errorf("%s not added to %s", param, params[0])
-		}
-	}
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
-func sort(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) < 2 {
-		return "", fmt.Errorf("requires list name and direction (e.g. asc or desc)")
-	}
-	d := dataset.ASC
-	direction := strings.ToLower(strings.TrimSpace(params[1]))
-	switch {
-	case strings.HasPrefix(direction, "asc"):
-		d = dataset.ASC
-	case strings.HasPrefix(direction, "desc"):
-		d = dataset.DESC
-	default:
-		d = dataset.ASC
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	sl.Sort(d)
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
-}
-
-func reverse(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	if len(params) != 1 {
-		return "", fmt.Errorf("requires a single list name")
-	}
-	sl, err := collection.Select(params[0])
-	if err != nil {
-		return "", err
-	}
-	sl.Reverse()
-	if err := sl.SaveList(); err != nil {
-		return "", err
-	}
-	return "OK", nil
 }
 
 func addAttachments(params ...string) (string, error) {
@@ -760,68 +679,83 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	jsonFName := ""
-	fieldNames := []string{}
-	r := csv.NewReader(fp)
-	lineNo := 0
-	if skipHeaderRow == true {
-		lineNo++
-		fieldNames, err = r.Read()
-		if err != nil {
-			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
-		}
-	}
-	for {
-		lineNo++
-		row, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("Can't read %s at %d, %s", csvFName, lineNo, err)
-		}
-		fieldName := ""
-		record := map[string]interface{}{}
-		if idCol < 0 && useUUID == false {
-			jsonFName = fmt.Sprintf("%s_%d", csvFName, lineNo)
-		} else if useUUID == true {
-			jsonFName = uuid.New().String()
-			if _, ok := record["uuid"]; ok == true {
-				record["_uuid"] = jsonFName
-			} else {
-				record["uuid"] = jsonFName
-			}
-		}
-		for i, val := range row {
-			if i < len(fieldNames) {
-				fieldName = fieldNames[i]
-				if idCol == i {
-					jsonFName = val
-				}
-			} else {
-				fieldName = fmt.Sprintf("col_%d", i+1)
-			}
-			//FIXME: Do we need to convert the value?
-			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
-				record[fieldName] = i
-			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
-				record[fieldName] = f
-			} else {
-				record[fieldName] = val
-			}
-		}
-		err = collection.Create(jsonFName, record)
-		if err != nil {
-			return "", fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
-		}
-		if showVerbose == true && (lineNo%1000) == 0 {
-			log.Printf("%d rows processed", lineNo)
-		}
-	}
-	if showVerbose == true {
-		log.Printf("%d total rows processed", lineNo)
+	if linesNo, err := collection.ImportCSV(fp, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+		return "", fmt.Errorf("Can't import CSV, %s", err)
+	} else if showVerbose == true {
+		log.Printf("%d total rows processed", linesNo)
 	}
 	return "OK", nil
+}
+
+func exportCSV(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 3 {
+		return "", fmt.Errorf("syntax: %s export CSV_FILENAME FILTER_EXPR DOTPATHS [COLUMN_NAMES]", os.Args[0])
+	}
+	csvFName := params[0]
+	filterExpr := params[1]
+	dotPaths := strings.Split(params[2], ",")
+	colNames := []string{}
+	if len(params) == 4 {
+		colNames = strings.Split(params[3], ",")
+	} else {
+		for _, val := range dotPaths {
+			colNames = append(colNames, val)
+		}
+	}
+	// Trim the any spaces for paths and column names
+	for i, val := range dotPaths {
+		dotPaths[i] = strings.TrimSpace(val)
+	}
+	for i, val := range colNames {
+		colNames[i] = strings.TrimSpace(val)
+	}
+
+	fp, err := os.Create(csvFName)
+	if err != nil {
+		return "", fmt.Errorf("Can't create %s, %s", csvFName, err)
+	}
+	defer fp.Close()
+
+	if linesNo, err := collection.ExportCSV(fp, filterExpr, dotPaths, colNames, showVerbose); err != nil {
+		return "", fmt.Errorf("Can't export CSV, %s", err)
+	} else if showVerbose == true {
+		log.Printf("%d total rows processed", linesNo)
+	}
+	return "OK", nil
+}
+
+// extract returns a list of unique values from nested arrays across collection based on
+// the filter expression provided.
+func extract(params ...string) (string, error) {
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH", os.Args[0])
+	}
+	filterExpr := strings.TrimSpace(params[0])
+	dotPaths := strings.TrimSpace(params[1])
+	lines, err := collection.Extract(filterExpr, dotPaths)
+	if err != nil {
+		return "", fmt.Errorf("Can't export CSV, %s", err)
+	}
+	return strings.Join(lines, "\n"), nil
+}
+
+func handleError(err error, exitCode int) {
+	if quietMode == false {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+	}
+	if exitCode >= 0 {
+		os.Exit(exitCode)
+	}
 }
 
 func init() {
@@ -834,6 +768,8 @@ func init() {
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.StringVar(&inputFName, "i", "", "input filename")
 	flag.StringVar(&inputFName, "input", "", "input filename")
+	flag.StringVar(&outputFName, "o", "", "output filename")
+	flag.StringVar(&outputFName, "output", "", "output filename")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -841,6 +777,8 @@ func init() {
 	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
+	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
+	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
 }
 
 func main() {
@@ -876,32 +814,57 @@ func main() {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)
 	}
+
+	in, err := cli.Open(inputFName, os.Stdin)
+	if err != nil {
+		handleError(err, 1)
+	}
+	defer cli.CloseFile(inputFName, in)
+
+	out, err := cli.Create(outputFName, os.Stdout)
+	if err != nil {
+		handleError(err, 1)
+	}
+	defer cli.CloseFile(outputFName, out)
+
 	action, params := args[0], args[1:]
 	if fn, ok := voc[action]; ok == true {
+		// If filter we want to output the ids as a stream as they are found
+		if action == "filter" {
+			var filterExp string
+			if len(params) > 0 {
+				filterExp = params[0]
+			} else {
+				buf, err := ioutil.ReadAll(in)
+				if err != nil {
+					handleError(err, 1)
+				}
+				filterExp = fmt.Sprintf("%s", buf)
+			}
+			log.Fatal(streamFilterResults(out, filterExp))
+			os.Exit(0)
+		}
 		// Handle case of piping in or reading JSON from a file.
 		if (action == "create" || action == "update") && len(params) <= 1 {
-			in, err := cli.Open(inputFName, os.Stdin)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-				os.Exit(1)
-			}
-			defer cli.CloseFile(inputFName, in)
 			lines, err := cli.ReadLines(in)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-				os.Exit(1)
+				handleError(err, 1)
 			}
 			params = append(params, strings.Join(lines, "\n"))
 		}
 
 		output, err := fn(params...)
 		if err != nil {
-			fmt.Printf("Error %s\n", err)
-			os.Exit(1)
+			handleError(err, 1)
 		}
-		fmt.Println(output)
+		if quietMode == false || showVerbose == true {
+			nl := "\n"
+			if noNewLine == true {
+				nl = ""
+			}
+			fmt.Fprintf(out, "%s%s", output, nl)
+		}
 	} else {
-		fmt.Printf("Don't understand %s\n", action)
-		os.Exit(1)
+		handleError(fmt.Errorf("Don't understand %s\n", action), 1)
 	}
 }

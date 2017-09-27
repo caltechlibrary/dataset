@@ -19,21 +19,29 @@
 package dataset
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/url"
 	"os"
 	"path"
-	"sort"
+	"strconv"
 	"strings"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/storage"
+	"github.com/caltechlibrary/tmplfn"
+
+	// 3rd Party packages
+	"github.com/google/uuid"
 )
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.2"
+	Version = "v0.0.3-rc8"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -132,47 +140,11 @@ type Collection struct {
 	Buckets []string `json:"buckets"`
 	// KeyMap holds the document name to bucket map for the collection
 	KeyMap map[string]string `json:"keymap"`
-	// SelectLists holds the names of available select lists
-	SelectLists []string `json:"select_lists"`
 	// Store holds the storage system information (e.g. local disc, S3)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
-	// Indexes is a list of known Bleve indexes associated with the collection
-	Indexes []string `json:"-"`
-	// A list of JSON filenames defining the indexes
-	IndexDefs []string `json:"index_defs"`
 	// FullPath is the fully qualified path on disc or URI to S3 bucket
 	FullPath string `json:"-"`
-}
-
-// SelectList is an ordered set of keys
-type SelectList struct {
-	// FName select list filename
-	FName string `json:"name"`
-	// Keys is the keys stored from a collection
-	Keys []string `json:"keys"`
-	// CustomLessFn points at the less than function used in sorting
-	CustomLessFn func([]string, int, int) bool
-	// Store is a pointer to the storage system available
-	Store *storage.Store
-}
-
-// Len returns the number of keys in the select list
-func (s *SelectList) Len() int {
-	return len(s.Keys)
-}
-
-// Swap updates the position of two compared keys
-func (s *SelectList) Swap(i, j int) {
-	s.Keys[i], s.Keys[j] = s.Keys[j], s.Keys[i]
-}
-
-// Less compare two elements returning true if first is less than second, false otherwise
-func (s *SelectList) Less(i, j int) bool {
-	if s.CustomLessFn != nil {
-		return s.CustomLessFn(s.Keys, i, j)
-	}
-	return s.Keys[i] < s.Keys[j]
 }
 
 // getStore returns a store object, collectionName from name
@@ -219,15 +191,20 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 		return nil, err
 	}
 	// See if we need an open or continue with create
-	if _, err := store.Stat(collectionName); err == nil {
-		return Open(name)
+	if store.Type == storage.S3 {
+		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
+			return Open(name)
+		}
+	} else {
+		if _, err := store.Stat(collectionName); err == nil {
+			return Open(name)
+		}
 	}
 	c := new(Collection)
 	c.Version = Version
 	c.Name = collectionName
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
-	c.SelectLists = []string{"keys"}
 	c.Store = store
 	// Save the metadata for collection
 	err = c.saveMetadata()
@@ -269,7 +246,7 @@ func Delete(name string) error {
 // saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
 func (c *Collection) saveMetadata() error {
 	// Check to see if collection exists, if not create it!
-	if _, err := os.Stat(c.Name); err != nil {
+	if _, err := c.Store.Stat(c.Name); err != nil {
 		if err := c.Store.MkdirAll(c.Name, 0775); err != nil {
 			return err
 		}
@@ -280,13 +257,6 @@ func (c *Collection) saveMetadata() error {
 	}
 	if err := c.Store.WriteFile(path.Join(c.Name, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
-	}
-	src, err = json.Marshal(c.Keys())
-	if err != nil {
-		return fmt.Errorf("Can't save key list, %s", err)
-	}
-	if err := c.Store.WriteFile(path.Join(c.Name, "keys.json"), src, 0664); err != nil {
-		return fmt.Errorf("Can't store key list, %s", err)
 	}
 	return nil
 }
@@ -306,7 +276,6 @@ func (c *Collection) Close() error {
 	c.Buckets = []string{}
 	c.Name = ""
 	c.KeyMap = map[string]string{}
-	c.SelectLists = []string{}
 	c.Store = nil
 	return nil
 }
@@ -363,7 +332,7 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 	keyName, name = keyAndFName(name)
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
-		return nil, fmt.Errorf("%q does not exist", name)
+		return nil, fmt.Errorf("%q does not exist in %s", name, c.Name)
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
@@ -442,259 +411,170 @@ func (c *Collection) Keys() []string {
 	return keys
 }
 
-//
-// Note: Select Lists are an array of keys (JSON documents in the collection but not in buckets)
-//
-
-func (c *Collection) hasList(name string) bool {
-	keyName, _ := keyAndFName(name)
-	for _, k := range c.SelectLists {
-		if k == keyName {
-			return true
-		}
-	}
-	return false
+// HasKey returns true if key is in collection's KeyMap, false otherwise
+func (c *Collection) HasKey(key string) bool {
+	_, hasKey := c.KeyMap[key]
+	return hasKey
 }
 
-func (c *Collection) getList(name string) (*SelectList, error) {
+// ImportCSV takes a reader and iterates over the rows and imports them as
+// a JSON records into dataset.
+func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
 	var (
-		data []string
+		fieldNames []string
+		jsonFName  string
+		err        error
 	)
-
-	_, name = keyAndFName(name)
-
-	src, err := c.Store.ReadFile(path.Join(c.Name, name))
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(src, &data)
-	if err != nil {
-		return nil, err
-	}
-	sl := &SelectList{
-		FName: path.Join(c.Name, name),
-		Keys:  data,
-		Store: c.Store,
-	}
-	return sl, nil
-}
-
-// Select returns a select assocaited with a collection, it will be created if neccessary and
-// any keys included will be added before returning the updated list
-func (c *Collection) Select(params ...string) (*SelectList, error) {
-	var (
-		name     string
-		listName string
-		keys     []string
-	)
-
-	if len(params) == 0 {
-		name = "keys"
-	} else {
-		name = params[0]
-		if len(params) > 1 {
-			keys = params[1:]
-		}
-	}
-
-	listName, name = keyAndFName(name)
-	if name == "collection.json" {
-		return nil, fmt.Errorf("%s is not a valid select list", listName)
-	}
-
-	if name == "keys.json" {
-		return c.getList("keys")
-	}
-
-	if c.hasList(listName) == true {
-		sl, err := c.getList(listName)
+	r := csv.NewReader(buf)
+	lineNo := 0
+	if skipHeaderRow == true {
+		lineNo++
+		fieldNames, err = r.Read()
 		if err != nil {
-			return nil, err
+			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
 		}
-		if len(keys) > 0 {
-			sl.Keys = append(sl.Keys, keys[:]...)
-			err = sl.SaveList()
+	}
+	for {
+		lineNo++
+		row, err := r.Read()
+		if err == io.EOF {
+			break
 		}
-		return sl, err
-	}
-
-	sl := new(SelectList)
-	sl.FName = path.Join(c.Name, name)
-	sl.Keys = keys[:]
-	sl.Store = c.Store
-	err := sl.SaveList()
-	if err != nil {
-		return nil, err
-	}
-
-	c.SelectLists = append(c.SelectLists, listName)
-	err = c.saveMetadata()
-	if err != nil {
-		return nil, err
-	}
-	return sl, nil
-}
-
-// Clear removes a select list from disc and the collection
-func (c *Collection) Clear(name string) error {
-	var (
-		listName string
-		err      error
-	)
-
-	listName, name = keyAndFName(name)
-
-	if name == "collection.json" {
-		return fmt.Errorf("%s is not a select list", listName)
-	}
-	if name == "keys.json" {
-		return fmt.Errorf("cannot clear default select list")
-	}
-
-	removeItem := func(s []string, r string) ([]string, error) {
-		for i, v := range s {
-			if v == r {
-				return append(s[:i], s[i+1:]...), nil
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
+		}
+		fieldName := ""
+		record := map[string]interface{}{}
+		if idCol < 0 && useUUID == false {
+			jsonFName = fmt.Sprintf("%d", lineNo)
+		} else if useUUID == true {
+			jsonFName = uuid.New().String()
+			if _, ok := record["uuid"]; ok == true {
+				record["_uuid"] = jsonFName
+			} else {
+				record["uuid"] = jsonFName
 			}
 		}
-		return s, fmt.Errorf("%s not found", r)
-	}
-
-	c.SelectLists, err = removeItem(c.SelectLists, listName)
-	if err != nil {
-		return err
-	}
-
-	err = c.Store.Remove(path.Join(c.Name, name))
-	if err != nil {
-		return err
-	}
-	return c.saveMetadata()
-}
-
-// Lists returns a list of available select lists, should always contain the default keys list
-func (c *Collection) Lists() []string {
-	return c.SelectLists
-}
-
-//
-// Select list operations and functions (operating on type SelectList)
-//
-
-// String returns the Keys portion of the select list as a string
-// delimited with new lines
-func (s *SelectList) String() string {
-	return strings.Join(s.Keys, "\n")
-}
-
-// SaveList writes the .Keys to a JSON document named .FName
-func (s *SelectList) SaveList() error {
-	if len(s.Keys) == 0 {
-		return s.Store.WriteFile(s.FName, []byte("[]"), 0664)
-	}
-	src, err := json.Marshal(s.Keys)
-	if err != nil {
-		return err
-	}
-	return s.Store.WriteFile(s.FName, src, 0664)
-}
-
-// First select list returns the first item in the list (non-destructively)
-func (s SelectList) First() string {
-	if len(s.Keys) > 0 {
-		return s.Keys[0]
-	}
-	return ""
-}
-
-// Last select list returns the list item from the list (non-destructively)
-func (s *SelectList) Last() string {
-	l := len(s.Keys)
-	if l > 0 {
-		return s.Keys[l-1]
-	}
-	return ""
-}
-
-// Rest select list returns all but the first n items of the list (non-destructively)
-func (s *SelectList) Rest() []string {
-	l := len(s.Keys)
-	if l > 1 {
-		return s.Keys[1:]
-	}
-	return []string{}
-}
-
-// List returns all the keys in the select list (non-destructively)
-func (s *SelectList) List() []string {
-	return s.Keys[:]
-}
-
-//
-// Mutable select list operations include
-// Pop, Push, Shift, Unshift, Sort, Reverse
-//
-
-// Pop select list removes from the end of an array returning the element removed
-func (s *SelectList) Pop() string {
-	pos := len(s.Keys) - 1
-	if pos < 0 {
-		return ""
-	}
-	r := s.Keys[pos]
-	if pos <= 0 {
-		s.Keys = []string{}
-	} else {
-		s.Keys = s.Keys[0:pos]
-	}
-	return r
-}
-
-// Push select list appends an element to the end of an array
-func (s *SelectList) Push(val string) {
-	s.Keys = append(s.Keys, val)
-}
-
-// Shift select list removes from the beginning of and array returning the element removed
-func (s *SelectList) Shift() string {
-	l := len(s.Keys)
-	if l > 0 {
-		r := s.Keys[0]
-		if l > 1 {
-			s.Keys = s.Keys[1:]
-		} else {
-			s.Keys = []string{}
+		for i, val := range row {
+			if i < len(fieldNames) {
+				fieldName = fieldNames[i]
+				if idCol == i {
+					jsonFName = val
+				}
+			} else {
+				fieldName = fmt.Sprintf("col_%d", i+1)
+			}
+			//Note: We need to convert the value
+			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+				record[fieldName] = i
+			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
+				record[fieldName] = f
+			} else {
+				record[fieldName] = val
+			}
 		}
-		return r
+		err = c.Create(jsonFName, record)
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		}
+		if verboseLog == true && (lineNo%1000) == 0 {
+			log.Printf("%d rows processed", lineNo)
+		}
 	}
-	return ""
+	return lineNo, nil
 }
 
-// Unshift select list inserts an element at the start of an array
-func (s *SelectList) Unshift(val string) {
-	s.Keys = append([]string{val}, s.Keys[:]...)
-}
-
-// Sort sorts the keys in in ascending order alphabetically
-func (s *SelectList) Sort(direction int) {
-	if direction == DESC {
-		sort.Sort(sort.Reverse(s))
-		return
+func colToString(cell interface{}) string {
+	var s string
+	switch cell.(type) {
+	case string:
+		s = fmt.Sprintf("%s", cell)
+	case json.Number:
+		s = fmt.Sprintf("%s", cell.(json.Number).String())
+	default:
+		src, err := json.Marshal(cell)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+		s = fmt.Sprintf("%s", src)
 	}
-	sort.Sort(s)
+	return s
 }
 
-// Reverse flips the order of a select list
-func (s *SelectList) Reverse() {
-	last := len(s.Keys) - 1
-	n := []string{}
-	for i := last; i >= 0; i-- {
-		n = append(n, s.Keys[i])
+// ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
+func (c *Collection) ExportCSV(fp io.Writer, filterExpr string, dotPaths []string, colNames []string, verboseLog bool) (int, error) {
+	keys := c.Keys()
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return 0, err
 	}
-	s.Keys = n
+
+	// write out colNames
+	w := csv.NewWriter(fp)
+	if err := w.Write(colNames); err != nil {
+		return 0, err
+	}
+
+	var (
+		data interface{}
+		cnt  int
+		row  []string
+	)
+	for _, key := range keys {
+		if err := c.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				// write row out.
+				row = []string{}
+				for _, colPath := range dotPaths {
+					col, err := dotpath.Eval(colPath, data)
+					if err == nil {
+						row = append(row, colToString(col))
+					} else {
+						row = append(row, "")
+					}
+				}
+				if err := w.Write(row); err == nil {
+					cnt++
+				}
+				data = nil
+			}
+		}
+	}
+	w.Flush()
+	if err := w.Error(); err != nil {
+		return cnt, err
+	}
+	return cnt, nil
 }
 
-// Reset a select list to an empty state (file still exists on disc)
-func (s *SelectList) Reset() {
-	s.Keys = []string{}
+// Extract takes a collection, a filter and a dot path and returns a list of unique values
+// E.g. in a collection article records extracting orcid ids which are values in a authors field
+func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error) {
+	keys := c.Keys()
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		data interface{}
+		rows []string
+	)
+	hash := make(map[string]bool)
+	for _, key := range keys {
+		if err := c.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				col, err := dotpath.Eval(dotPath, data)
+				if err == nil {
+					hash[colToString(col)] = true
+				}
+				data = nil
+			}
+		}
+	}
+	for ky, _ := range hash {
+		rows = append(rows, ky)
+	}
+	return rows, nil
 }

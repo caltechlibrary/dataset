@@ -62,6 +62,7 @@ Hello world,1999,12,12.4,1999-12-12,"50.7226968,-4.3453813"
 Goodbye world,1834,1,1.5,1834-02-06,"52.3337236,-6.4907425"
 Muddling around the world,1901,0,0,1901-12-31,"10.0344444,139.7700281"
 Give me liberty and give chow fun noodles,1775,1,1.0,1775-03-23,"34.1376576,-118.127463"
+"Caltech Pasadena, California",1891,3,3.0,1891-09-01,"34.138,-118.125"
 CSV3
 
 # Generate the index mapping (we're calling it characters.json)
@@ -71,19 +72,19 @@ cat<<DEF1 > characters.json
         "object_path":".uuid",
         "field_mapping":"text",
         "analyzer":"keyword",
-        "store":"true"
+        "store":true
     },
     "name":{
         "object_path":".name",
         "field_mapping":"text",
         "analyzer":"simple",
-        "store":"true"
+        "store":true
     },
     "email":{
         "object_path":".email",
         "field_mapping":"text",
         "analyzer":"simple",
-        "store":"true"
+        "store":true
     }
 }
 DEF1
@@ -94,24 +95,24 @@ cat<<DEF2 > plays.json
         "object_path":".uuid",
         "field_mapping":"text",
         "analyzer":"keyword",
-        "store":"true"
+        "store":true
     },
     "title": {
         "object_path":".title",
         "field_mapping":"text",
         "analyzer":"standard",
-        "store":"true"
+        "store":true
     },
     "year": {
         "object_path":".year",
         "field_mapping":"numeric",
-        "store":"true"
+        "store":true
     },
     "characters": {
         "object_path":".characters",
         "field_mapping":"text",
         "analyzer":"simple",
-        "store":"true"
+        "store":true
     }
 }
 DEF2
@@ -122,40 +123,40 @@ cat<<DEF3 > datatypes.json
         "object_path":".uuid",
         "field_mapping":"text",
         "analyzer":"keyword",
-        "store":"true"
+        "store":true
     },
     "string": {
         "object_path":".string",
         "field_mapping":"text",
         "analyzer":"standard",
-        "store":"true"
+        "store":true
     },
     "year": {
         "object_path":".year",
         "field_mapping":"numeric",
-        "store":"true"
+        "store":true
     },
     "int": {
         "object_path":".int",
         "field_mapping":"numeric",
         "analyzer":"simple",
-        "store":"true"
+        "store":true
     },
     "float": {
         "object_path":".float",
         "field_mapping":"numeric",
         "analyzer":"simple",
-        "store":"true"
+        "store":true
     },
     "date": {
         "object_path":".date",
         "field_mapping":"datetime",
-        "store":"true"
+        "store":true
     },
     "geo": {
         "object_path":".geo",
         "field_mapping":"geopoint",
-        "store":"true"
+        "store":true
     }
 }
 DEF3
@@ -176,12 +177,12 @@ echo
 
 echo "Sorting records by ascending name (simple analyzer)"
 echo
-dsfind -indexes="characters.bleve" -size 25 -sort="name" -csv -fields="name:email" "*"
+dsfind -indexes="characters.bleve" -size 25 -sort="+name" -csv -fields="name,email" "*"
 echo
 
-echo "Combining indexes query for \"Jack ZBS\" in characters.bleve and plays.bleve"
+echo "Combining indexes query for \"Jack ZBS\" in characters.bleve and plays.bleve (sort by title,name)"
 echo
-dsfind -indexes="plays.bleve:characters.bleve" -size 100 -csv -fields="uuid:title:year:characters:name:email" -sort="title:name" "+Jack +ZBS"
+dsfind -indexes="plays.bleve,characters.bleve" -size 100 -csv -fields="uuid,title,year,characters,name,email" -sort="title,name" "+Jack +ZBS"
 echo
 
 #
@@ -190,20 +191,20 @@ echo
 export DATASET=datatypes
 echo "Listing datatypes indexes, sort by descending year"
 echo
-dsfind -csv -fields="uuid:string:year:int:float:date" -sort="-year" "*"
+dsfind -csv -fields="uuid,string,year,int,float,date" -sort="-year" "*"
 echo
 
 echo "Listing datatypes indexes, sort by descending year, for range 1700 to 1902"
 echo
-dsfind -csv -fields="uuid:string:year:int:float:date" -sort="-year" "+year:>=1700 +year:<=1902"
+dsfind -csv -fields="uuid,string,year,int,float,date" -sort="-year" "+year:>=1700 +year:<=1902"
 echo
 
 echo "Listing in date range 1700 to 1910, ascending dates"
 echo
-dsfind -csv -fields="uuid:string:year:int:float:date" -sort="+date" 'date:>="1700-01-01" date:<="1910-12-31"'
+dsfind -csv -fields="uuid,string,year,int,float,date" -sort="+date" '+date:>="1700-01-01" +date:<="1910-12-31"'
 echo
 
 echo "Looking for Caltech, Pasadena, CA, USA"
 echo
-dsfind -indexes="datatypes.bleve" -csv -fields="uuid:string:date:geo" -sort="geo" 'geo:34.0,-118.0'
+dsfind -indexes="datatypes.bleve" -csv -fields="uuid,string,date,geo.lat,geo.lng" -sort="+geo.lat,+geo.lng" '+geo.lat:34.138 +geo.lng:-118.125'
 echo 

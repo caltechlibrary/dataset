@@ -3,11 +3,41 @@
 
 ## Bugs
 
++ [ ] Repair and check will fail on S3 without warning or indication why
++ [ ] Fix CORS setting in _dsws_
++ [ ] Titles don't seem to sort in deployment, triage problem - index, definition or faulty search implementation
 
 ## Next
 
++ [ ] A zero or negative length of results will be treated as a request for all results in _dsws_ and _dsfind_
++ [ ] Add specific index search under /api/COLLECTION_NAME/ provides collection specific search
+    + /api/COLLECTION_NAME/INDEX_NAME could provide index specific search if needed in the future
++ [ ] Add /api/COLLECTION_NAME/keys end point to get ALL keys in collection
++ [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
++ [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
+    + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
+
 ## Someday, Maybe
 
++ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python or PHP
++ [ ] Add support for https:// based datasets (in addition to local disc and s3://)
++ [ ] Swap UUID for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
++ [ ] convert filter, extract, etc to work on streams so we can leverage pipelines more effeciently
++ [ ] _dsfind_ should work on all bleve indexes in current directory if none are specified
++ [ ] VCARD and VCAL importer
++ [ ] _subset_ would produced ordered arrays of JSON docs passing filter and sort criteria
+    + `dataset -filter FILTER_CLAUSE -order ORDER_CLAUSE -o recent-pubs.json subset` 
++ [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
+    + [ ] explore using templates as filters for select lists and the like
+    + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
++ [ ] Should the keymap in collection.json be a separate file(s)?
++ [ ] optional strageties for including arrays in a single column of CSV output
+    + provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
++ [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
++ [ ] prototype what a web service might look like for a dataset collection (including search)
+    + [ ] template HTML results and search forms
+    + [ ] support static pages in site
+    + [ ] evaluate including SparQL support
 + [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
     + [ ] N35.0000,W118.0000 or S35.000,E118.000
     + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
@@ -15,36 +45,57 @@
     + [ ] integrate batch indexing to speed things up
     + [ ] generate a select list from search results
     + [ ] add facet support
-+ [ ] implement a dsfind like as web service
-    + add SparQL support
-+ [ ] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
-    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
-        + this could be used to update a collection from one version of dataset to another
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
 + sparql cli interface for searching collection
 + cli to convert collection into JSON-LD
 + dsselect would generate select lists based on query results in the manner of dsfind
-+ dstoscv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
++ dstocsv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
     + header line would be optional 
     + dot paths that point at array, objects would be joined with a multi-value delimiter based on type 
     + mult-value delimiters would be configurable indepentantly
         + a object k/v might be delimited by colon which each pair delimited by newline
         + an array might be delimited by a pipe or semi-colon
+    + optional filter for specific JSON documents to flatten
 + dataset "versioning" support via something like libgit2
 + dsserver would allow HTTPS REST access do a collection server, it would support multi-user access and with group acls
     + authentication would be through an external system (e.g. Shibboleth, PAM, or OAuth2)
     + groups would contain a list of users
     + permissions (CRUD) would be based on group and collection (permissions would be collection wide, not record specific)
 + dsbagit would generate a "BagIt" bag for preservation of collection objects
-+ collection.json should hold a list of available indexes and their definitions to automate repair
 + OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
-+ merge dsindexer and dsfind into dataset cli and depreciate individual programs
++ RSS importer (example RSS as JSON: http://scripting.com/rss.json)
++ OPML importer
 
 
 ## Completed
 
++ [x] Add composite fields to indexes by leveraging text templates to modify JSON structure
++ [x] Add template defined format support 
+    + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
+    + if format parameters' value matches a known template name then it should treated as a "supported" format by dsws instance
++ [x] Add filter aware CSV export
++ [x] Add filter aware value list extraction (e.g. all the unique orcids in a collection of authors data)
++ [x] Depreciate select commands in favor of filter, export and extract
++ [x] Add a filter function to support listing keys for records where the filter evaluates to true
+    + Use the pipeline filters available in Go's text templates's if clause
++ [x] Add _haskey_ for a fast check if the key exists (look inside collections.json/keys.json only)
++ [x] Add option for batch indexing in dsindexer
++ [x] Reconfigure Makefile to build individual releases for each supported platform
++ [x] Merge results.tmpl changes into defaults from dr2
++ [x] CSV and JSON output not sending correct Content-Type header in _dsws_
++ [x] when adding a fielded search in default templates the query string breaks the HTML of the query input form
+    + double quotes make <input ... value="{{- . -}}" ...> break
+    	+ is it better to just have query field be a textarea, or use the urlencode/urldecode functions from tmplfn
++ [x] implement a repair collection command that would allow replacing/re-creating collection.json and keys.json based on what is discovered on disc
+    + `dataset repair COLLECTION_NAME` would rescan the disc or s3 bucket and write a new keys.json and collection.json
+    + Should also serve as a means to update a collection from one version of dataset to another
++ [x] idxFields work for single indexes but fail on multiple indexes in an Alias, find a workaround
++ [x] Add check to make sure page.tmpl and include.tmpl are available, if not use the ones from defaults
++ [x] Add support for indexing arrays values and objects in index definitions
+    + [x] code 
+    + [x] test
 + [x] add Bleve search support to dataset
     + [x] paging options (starting from/to, all records)
         + [x] add option to return all results
@@ -61,7 +112,6 @@
         + [x] look at using dataset JSONDencode rather than json.Unmashal so numbers aren't all treated as float64
         + [x] think about handling common date formatting for indexing and query
         + [x] test GeoCoding and Sort in Bleve
-
 + [x] add a _import_ verb to dataset where a single file can be rendered as many dataset records (e.g. spreadsheet rows as JSON objects)
     + syntax like `dataset import csv_filename [column number to use for key value]`
 + [x] integrate support for storing dataset collections in AWS S3
@@ -81,3 +131,7 @@
     + [x] `dataset get KEY` get returns all the files in tarbal
     + [x] `dataset get KEY FILENAME_LIST` would return specific files from tarball
 + [x] add verbose option for importing CSV file, for large files it would be nice to see activity
++ [x] keys.json and collection.json's keymap are empty in some cases
+    + [x] check dataset
+    + [x] check cait usage
+    + [x] check epgo usage

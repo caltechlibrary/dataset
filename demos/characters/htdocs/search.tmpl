@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Character Demo -- results</title>
+    <style>
+        body {
+            font-family: arial, sans;
+        }
+        dt {
+            font-family: courier;
+            padding-bottom: 0.24em;
+        }
+        dd {
+            padding-bottom: 0.24em;
+        }
+    </style>
+</head>
+<body>
+<header><h1>Dataset Character Demo</h1><h2>search results</h2></header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+</ul>
+</nav>
+
+<section>
+There are three fields in each record indexed&mdash; <em>name</em>, <em>title</em>, and <em>year</em>. You can 
+filter your query results by using Bleve's simple query language described in the 
+<a href="http://www.blevesearch.com/docs/Query-String-Query/">Query-String-Query</a> documentation of Bleve's website.
+Below are some suggests queries to experiment with.</p>
+
+<dl>
+    <dt>name:"Jack Flanders"</dt><dd>Query the name column for "Jack Flanders"</dd>
+    <dt>-name:"Jack" -name:"Flanders"</dt><dd>Query the name column for records that don't have "Jack" or  "Flanders"</dd>
+    <dt>+title:"Jack" -name:"Flanders"</dt><dd>Query the title column for "Jack" and names column not containing "Flanders"</dd>
+</dl>
+<!-- 
+Request:
+{{ stringify .request true }}
+
+Status:
+{{ stringify .status false }}
+
+Total Hits: {{ .total_hits }}
+Page: {{ .request.from }}
+Size: {{ .request.size }}
+
+-->
+
+<form class="search-form" method="get" action="/api">
+<!-- BEGIN: Pager -->
+{{$qryTerms := (urlencode (dotpath ".query.query" .request ""))}}
+{{$highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}} 
+{{$from := (int .request.from)}}
+{{$size := (int .request.size)}}
+{{$total := (int .total_hits)}}
+{{$prev := (subi $from $size)}}
+{{$next := (addi $from $size)}}
+{{$last := (int .total_hits)}}
+{{$sortBy := (join .request.sort ",")}}
+{{$fields := (join (dotpath ".fields" .request "*") ",")}}
+
+{{if (and (gt $from 0) (ge $prev 0))}}
+<a href="/api?fields={{$fields}}&highlight={{$highlight}}&from={{$prev}}&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Prev</a>
+{{else}}
+    {{if gt $from 0}}
+<a href="/api?fields={{$fields}}&highlight={{$highlight}}&from=0&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Prev</a>
+    {{end}}
+{{end}}
+{{- if (gt $total 0) -}}
+{{add $from 1}} to {{if lt $next $last}}{{$next}}{{else}}{{$last}}{{end}}, of {{.total_hits}} records
+{{- else -}}
+0 records
+{{- end -}}
+{{if lt (add $from $size) $last}}
+<a href="/api?fields={{$fields}}&highlight={{$highlight}}&from={{$next}}&size={{$size}}&sort={{$sortBy}}&q={{$qryTerms}}">Next</a>
+{{end}}
+<!-- END: Pager -->
+
+    {{with .request}}
+        <input type="hidden" name="highlight" value="true">
+
+        {{ with .start -}}
+        <input type="hidden" name="start" value="{{- . -}}">
+        {{- end }}
+        {{ with .fields -}}
+        <input type="hidden" name="fields" value="{{- (urlencode (join . ",")) -}}">
+        {{- else -}}
+        <input type="hidden" name="fields" value="name,title,year">
+        {{- end }}
+    {{else}}
+        <input type="hidden" name="fields" value="name,title,year">
+    {{end}}
+    <div><label>Search</label><input id="q-terms" type="text" name="q" {{- with $qryTerms }} value="{{- . -}}" {{- end }} placeholder="Enter your query terms here" /></div>
+<div>
+     <select name="sort">
+        {{with $sortBy := (join .request.sort ",") -}}
+            {{if (or (eq $sortBy "-_score") (eq $sortBy ""))}}
+         <option value="" selected>Relevance</option>
+            {{else}}
+         <option value="">Relevance</option>
+            {{end}}
+            {{if eq $sortBy "name,title,year"}} 
+        <option value="name,title,year" selected>Name, Title, Year</option>
+            {{else}}
+        <option value="name,title,year">Name, Title, Year</option>
+            {{end}}
+            {{if eq $sortBy "title,name,year"}}
+        <option value="title,name,year" selected>Title, Name, Year</option>
+            {{else}}
+        <option value="title,name,year">Title, Name, Year</option>
+            {{end}}
+            {{if eq $sortBy "year,title,name"}}
+        <option value="year,title,name" selected>Year, Title, Name</option>
+            {{else}}
+        <option value="year,title,name">Year, Title, Name</option>
+            {{end}}
+            {{if eq $sortBy "year,name,title"}}
+        <option value="year,name,title" selected>Year, Name, Title</option>
+            {{else}}
+        <option value="year,name,title">Year, Name, Title</option>
+            {{end}}
+            {{if eq $sortBy "name,year,title"}}
+        <option value="name,year,title" selected>Name, Year, Title</option>
+            {{else}}
+        <option value="name,year,title">Name, Year, Title</option>
+            {{end}}
+        {{- end }}
+     </select>
+</div>
+<div>
+    <select name="size">
+        {{- with $size := (int .request.size) -}}
+            {{range $i := (ints 5 100 5)}}
+                {{if eq $i $size -}}
+        <option value="{{$i}}" selected>{{$i}}</option>
+                {{- else -}}
+        <option value="{{$i}}">{{$i}}</option>
+                {{- end -}}
+            {{- end}}
+        {{- end -}}
+    </select>
+</div>
+
+    <div><input id="submit-query" type="submit" value="Go" ></div>
+</form>
+
+<section class="search-results">
+{{ range .hits }}
+<ul>
+            <li>
+    {{with .fields}}
+                {{with .name}}Name: {{ . }}, {{end}} 
+                {{with .title}}Title: {{ . }}, 
+                {{ end }}{{with .year}}Year: {{ . }}{{ end }}</br >
+    {{end}}
+    {{if (eq $highlight "true")}}
+        <ul>{{range $k,$v := .fragments}}
+                <li>Matched {{$k}}: {{ join $v "... " }}</li>
+        {{end}}</ul>
+    {{end}}
+            </li>
+</ul>
+    <!-- 
+    {{ stringify . true }}
+    -->
+{{ end }}
+</section/><!-- END: search-results -->
+</section>
+
+<footer>
+dsws is part of <a href="https://caltechlibrary.github.io/dataset">dataset</a> project.
+</footer>
+<script>
+(function(document, window) {
+    var submit = document.getElementById("submit-query"),
+        qTerms = document.getElementById("q-terms");
+
+    if (qTerms) {
+        if (qTerms !== "") {
+            var t = decodeURIComponent(qTerms.value);
+            qTerms.value = t.replace(/\+/g, ' ');
+        }
+    }
+    /*
+    submit.addEventListener("click", function(evt) {
+        var val = qTerm.value;
+        val = encodeURIComponent(val);
+        console.log("DEBUG submitted value is", val);
+        alert("wait to submit ["+val+"]");
+    }, false);
+    */
+}(document, window));
+</script>
+</body>
+</html>

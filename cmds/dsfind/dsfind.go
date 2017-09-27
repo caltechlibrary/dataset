@@ -1,13 +1,10 @@
 package main
 
 import (
-	"encoding/csv"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
 	// CaltechLibrary Packages
@@ -16,7 +13,7 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] SEARCH_STRINGS`
+	usage = `USAGE: %s [OPTIONS] [INDEX_LIST] SEARCH_STRINGS`
 
 	description = `
 SYNOPSIS
@@ -36,7 +33,7 @@ EXAMPLES
 
 In the example the index will be created for a collection called "characters".
 
-    %s -c characters "Jack Flanders"
+    %s characters.bleve "Jack Flanders"
 
 This would search the Bleve index named characters.bleve for the string "Jack Flanders" 
 returning records that matched based on how the index was defined.
@@ -48,13 +45,14 @@ returning records that matched based on how the index was defined.
 	showVersion bool
 
 	// App Specific Options
-	collectionName string
-	indexNames     string
+	indexList      string
 	showHighlight  bool
+	setHighlighter string
 	resultFields   string
 	sortBy         string
 	jsonFormat     bool
 	csvFormat      bool
+	csvSkipHeader  bool
 	idsOnly        bool
 	size           int
 	from           int
@@ -71,14 +69,14 @@ func init() {
 	flag.BoolVar(&showVersion, "version", false, "display version")
 
 	// Application Options
-	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
-	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.StringVar(&indexNames, "indexes", "", "a colon delimited list of index names")
-	flag.StringVar(&sortBy, "sort", "", "a colon delimited list of field names to sort by")
+	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
+	flag.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
-	flag.StringVar(&resultFields, "fields", "", "colon delimited list of fields to display in the results")
+	flag.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
+	flag.StringVar(&resultFields, "fields", "", "comma delimited list of fields to display in the results")
 	flag.BoolVar(&jsonFormat, "json", false, "format results as a JSON document")
 	flag.BoolVar(&csvFormat, "csv", false, "format results as a CSV document, used with fields option")
+	flag.BoolVar(&csvSkipHeader, "csv-skip-header", false, "don't output a header row, only values for csv output")
 	flag.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
 	flag.IntVar(&size, "size", 0, "number of results returned for request")
 	flag.IntVar(&from, "from", 0, "return the result starting with this result number")
@@ -107,121 +105,102 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Merge environment
-	datasetEnv := os.Getenv("DATASET")
-	if datasetEnv != "" && collectionName == "" {
-		collectionName = datasetEnv
-	}
-	if len(indexNames) == 0 {
-		indexNames = fmt.Sprintf("%s.bleve", collectionName)
-	}
-
+	// We expect at least one arg, the search string
 	args := flag.Args()
 	if len(args) == 0 {
-		fmt.Println(cfg.Usage())
+		fmt.Fprintln(os.Stderr, cfg.Usage())
 		os.Exit(1)
 	}
+
+	// Handle the case where indexes were listed with the -indexes option like dsfind
+	var indexNames []string
+	if indexList != "" {
+		var delimiter = ","
+		if strings.Contains(indexList, ":") {
+			delimiter = ":"
+		}
+		indexNames = strings.Split(indexList, delimiter)
+	}
+
+	// Collect any additional index names from the remaining args
+	for _, arg := range args {
+		if path.Ext(arg) == ".bleve" {
+			indexNames = append(indexNames, arg)
+		}
+	}
+	if len(indexNames) == 0 {
+		fmt.Fprintln(os.Stderr, "Do not know what index to use")
+		os.Exit(1)
+	}
+
 	options := map[string]string{}
 	if explain != "" {
 		options["explain"] = "true"
 		jsonFormat = true
 	}
 
+	if from != 0 {
+		options["from"] = fmt.Sprintf("%d", from)
+	}
+	if size > 0 {
+		options["size"] = fmt.Sprintf("%d", size)
+	}
 	if sortBy != "" {
-		options["sort_by"] = sortBy
+		options["sort"] = sortBy
 	}
 	if showHighlight == true {
 		options["highlight"] = "true"
 		options["highlighter"] = "ansi"
 	}
+	if setHighlighter != "" {
+		options["highlight"] = "true"
+		options["highlighter"] = setHighlighter
+	}
 
 	if resultFields != "" {
-		options["result_fields"] = strings.TrimSpace(resultFields)
+		options["fields"] = strings.TrimSpace(resultFields)
 	} else {
-		//options["result_fields"] = "*"
-	}
-	if size > 0 {
-		options["size"] = fmt.Sprintf("%d", size)
-	}
-	if from != 0 {
-		options["from"] = fmt.Sprintf("%d", from)
+		options["fields"] = "*"
 	}
 
-	results, err := dataset.Find(os.Stdout, strings.Split(indexNames, ":"), args, options)
+	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", indexNames, err)
+		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", strings.Join(indexNames, ", "), err)
+		os.Exit(1)
+	}
+	defer idxAlias.Close()
+
+	results, err := dataset.Find(os.Stdout, idxAlias, args, options)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", strings.Join(indexNames, ", "), err)
 		os.Exit(1)
 	}
 
 	//
 	// Handle results formatting choices
 	//
-
-	if jsonFormat == true {
-		src, err := json.Marshal(results)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "JSON conversion error, %s\n", err)
+	switch {
+	case jsonFormat == true:
+		if err := dataset.JSONFormatter(os.Stdout, results); err != nil {
+			fmt.Fprintf(os.Stderr, "JSON formatting error, %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stdout, "%s\n", src)
-		os.Exit(0)
-	}
-
-	if csvFormat == true {
+	case csvFormat == true:
+		var fields []string
 		if resultFields == "" {
-			fmt.Fprintf(os.Stderr, "-csv must be used with -fields option\n")
-			os.Exit(1)
+			fields = idxFields
+		} else {
+			fields = strings.Split(resultFields, ",")
 		}
-		// Note: we need to provide the fieldnames that will be come columns
-		w := csv.NewWriter(os.Stdout)
-
-		// write a header row
-		colNames := strings.Split(resultFields, ":")
-		if err := w.Write(colNames); err != nil {
+		if err := dataset.CSVFormatter(os.Stdout, results, fields, csvSkipHeader); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-		}
-		for _, hit := range results.Hits {
-			row := []string{}
-			for _, col := range colNames {
-				if val, ok := hit.Fields[col]; ok == true {
-					switch val := val.(type) {
-					case int:
-						row = append(row, strconv.FormatInt(int64(val), 10))
-					case uint:
-						row = append(row, strconv.FormatUint(uint64(val), 10))
-					case int64:
-						row = append(row, strconv.FormatInt(val, 10))
-					case uint64:
-						row = append(row, strconv.FormatUint(val, 10))
-					case float64:
-						row = append(row, strconv.FormatFloat(val, 'G', -1, 64))
-					case string:
-						row = append(row, strings.TrimSpace(val))
-					default:
-						row = append(row, strings.TrimSpace(fmt.Sprintf("%s", val)))
-					}
-				} else {
-					row = append(row, "")
-				}
-			}
-			if err := w.Write(row); err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-			}
-		}
-		w.Flush()
-		if err := w.Error(); err != nil {
-			fmt.Fprint(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
-		os.Exit(0)
-	}
-
-	if idsOnly == true {
+	case idsOnly == true:
 		for _, hit := range results.Hits {
 			fmt.Fprintf(os.Stdout, "%s\n", hit.ID)
 		}
-		os.Exit(0)
+	default:
+		fmt.Fprintf(os.Stdout, "%s\n", results)
 	}
-
-	fmt.Fprintf(os.Stdout, "%s\n", results)
 }

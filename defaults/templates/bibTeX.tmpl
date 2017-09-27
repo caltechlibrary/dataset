@@ -1,0 +1,10 @@
+{{- define "bibTeX.tmpl" -}}
+{{- range $hit := .hits }}
+@misc {
+    {{- range $key, $value := .fields }}
+        {{ $key -}} = {{- printf "%q" $value -}},
+    {{- end -}}
+}
+
+{{ end }}
+{{- end -}}

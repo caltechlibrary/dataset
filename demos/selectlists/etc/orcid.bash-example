@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Below are the env vars needed to using the _orcid_ cli tool to access the ORCID API
+#export ORCID_API_URL="https://pub.sandbox.orcid.org"
+#export ORCID_CLIENT_ID="APP-01XX65MXBF79VJGF"
+#export ORCID_CLIENT_SECRET="3a87028d-c84c-4d5f-8ad5-38a93181c9e1"
+
