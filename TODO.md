@@ -19,6 +19,7 @@
 
 ## Someday, Maybe
 
++ [ ] collection.Create() will replace an existing record. What I want to want to do a Join style update instead of a replace? 
 + [ ] Add Fast CGI support in _dsws_ to allow custom development in Python or PHP
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
 + [ ] Swap UUID for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
