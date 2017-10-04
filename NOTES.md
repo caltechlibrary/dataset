@@ -41,4 +41,9 @@ S3 brings additional overhead for attachments it works like a k/v store where th
 1. calc tarball name
 2. Remove() on tarball in either location
 
+## Reference Google API integration
+
++ [Google Sheets API v4](https://developers.google.com/sheets/)
+
+
 

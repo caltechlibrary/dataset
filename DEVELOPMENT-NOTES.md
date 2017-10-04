@@ -3,8 +3,8 @@
 
 ## Using the _dataset_ package
 
-+ create collection
-+ create a JSON document to collection
++ create/initialize collection
++ create a JSON document in a collection
 + read a JSON document
 + update a JSON document
 + delete a JSON document
