@@ -6,7 +6,6 @@
 + [ ] Repair and check will fail on S3 without warning or indication why
 + [ ] Fix CORS setting in _dsws_
 + [ ] Titles don't seem to sort in deployment, triage problem - index, definition or faulty search implementation
-+ [ ] Quote handling on dataset read output needs to be refined
 
 ## Next
 
