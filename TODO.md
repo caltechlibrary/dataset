@@ -9,16 +9,21 @@
 
 ## Next
 
-+ [ ] A zero or negative length of results will be treated as a request for all results in _dsws_ and _dsfind_
-+ [ ] Add specific index search under /api/COLLECTION_NAME/ provides collection specific search
-    + /api/COLLECTION_NAME/INDEX_NAME could provide index specific search if needed in the future
-+ [ ] Add /api/COLLECTION_NAME/keys end point to get ALL keys in collection
++ [ ] Add ds2sheets which will provide a daemon for syncronizing a Google Sheets document with a dataset collection
+    + it should handle setting up and maintaining a connection to the Sheets API 
+    + it will require a column to play the role of ID for JSON document in collection
+    + it will require a list of paths to map to columns
+    + option for implode/exploding sub-fields in the spreadsheet cells
+        + e.g. arrays of strings could be flattened as pipe delimited and expected as an array of string in dataset collection JSON document
++ [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
++ [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
-+ [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
-    + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
 
 ## Someday, Maybe
 
++ [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
++ [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
+    + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
 + [ ] collection.Create() will replace an existing record. What I want to want to do a Join style update instead of a replace? 
 + [ ] Add Fast CGI support in _dsws_ to allow custom development in Python or PHP
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
