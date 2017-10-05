@@ -21,6 +21,7 @@
 
 ## Someday, Maybe
 
++ [ ] Add support for gs:// Google cloud storage as an alternative to disc and s3://
 + [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
     + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)

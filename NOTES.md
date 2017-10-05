@@ -44,6 +44,9 @@ S3 brings additional overhead for attachments it works like a k/v store where th
 ## Reference Google API integration
 
 + [Google Sheets API v4](https://developers.google.com/sheets/)
+    + [REST methods](https://developers.google.com/sheets/api/reference/rest/)
+    + [Golang Quickstart docs](https://developers.google.com/sheets/api/quickstart/go)
+        + where to go to setup credentials and project specifics, we're using Go for our project
 
 
 
