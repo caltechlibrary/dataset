@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.3-rc8"
+	Version = "v0.0.3"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -140,10 +140,10 @@ type Collection struct {
 	Buckets []string `json:"buckets"`
 	// KeyMap holds the document name to bucket map for the collection
 	KeyMap map[string]string `json:"keymap"`
-	// Store holds the storage system information (e.g. local disc, S3)
+	// Store holds the storage system information (e.g. local disc, S3, GS)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
-	// FullPath is the fully qualified path on disc or URI to S3 bucket
+	// FullPath is the fully qualified path on disc or URI to S3 or GS bucket
 	FullPath string `json:"-"`
 }
 
@@ -155,7 +155,8 @@ func getStore(name string) (*storage.Store, string, error) {
 		err            error
 	)
 	// Pick storage based on name
-	if strings.HasPrefix(name, "s3://") == true {
+	switch {
+	case strings.HasPrefix(name, "s3://") == true:
 		u, err := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
@@ -168,15 +169,28 @@ func getStore(name string) (*storage.Store, string, error) {
 			p = p[1:]
 		}
 		collectionName = p
-		return store, collectionName, nil
+	case strings.HasPrefix(name, "gs://") == true:
+		u, err := url.Parse(name)
+		opts := storage.EnvToOptions(os.Environ())
+		opts["GoogleBucket"] = u.Host
+		store, err = storage.Init(storage.GS, opts)
+		if err != nil {
+			return nil, "", err
+		}
+		p := u.Path
+		if strings.HasPrefix(p, "/") {
+			p = p[1:]
+		}
+		collectionName = p
+	default:
+		// Regular file system storage.
+		store, err = storage.Init(storage.FS, map[string]interface{}{})
+		if err != nil {
+			return nil, "", err
+		}
+		collectionName = name
 	}
 
-	// Regular file system storage.
-	store, err = storage.Init(storage.FS, map[string]interface{}{})
-	if err != nil {
-		return nil, "", err
-	}
-	collectionName = name
 	return store, collectionName, nil
 }
 
@@ -191,7 +205,7 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 		return nil, err
 	}
 	// See if we need an open or continue with create
-	if store.Type == storage.S3 {
+	if store.Type == storage.S3 || store.Type == storage.GS {
 		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
 			return Open(name)
 		}

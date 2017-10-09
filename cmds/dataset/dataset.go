@@ -44,6 +44,8 @@ Collection and JSON Documant related--
     to collection name
   + if you're using S3 for storing your dataset prefix your path with 's3://'
     'dataset init s3://mybucket/mydataset-collections'
+  + if you're using GS (Google Cloud Storage) prefix your path with 'gs://'
+    'dataset init gs://mybucket/mydataset-collections'
 + create - creates a new JSON document or replace an existing one in collection
   + requires JSON document name followed by JSON blob or JSON blob read from stdin
 + read - displays a JSON document to stdout
@@ -288,7 +290,10 @@ func collectionInit(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	if collection.Store.Type == storage.S3 {
-		return fmt.Sprintf("export DATASET=s3://%s/%s", collection.Store.Config["AwsBucket"], collection.Name), nil
+		return fmt.Sprintf("export DATASET=\"s3://%s/%s\"", collection.Store.Config["AwsBucket"], collection.Name), nil
+	}
+	if collection.Store.Type == storage.GS {
+		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
 	}
 	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
 }
