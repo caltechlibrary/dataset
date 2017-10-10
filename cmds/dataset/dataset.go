@@ -798,6 +798,16 @@ func main() {
 	cfg.OptionText = "OPTIONS"
 	cfg.ExampleText = examples
 
+	for k, v := range dataset.Help {
+		keyword := strings.TrimSuffix(path.Base(k), ".md")
+		cfg.AddHelp(keyword, fmt.Sprintf("%s\n", v))
+	}
+
+	for k, v := range dataset.Examples {
+		keyword := strings.TrimSuffix(path.Base(k), ".md")
+		cfg.AddExample(keyword, fmt.Sprintf("%s\n", v))
+	}
+
 	if showHelp == true {
 		if len(args) > 0 {
 			fmt.Println(cfg.Help(args...))

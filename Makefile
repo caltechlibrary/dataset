@@ -17,7 +17,7 @@ dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 dataset.go: assets.go
 
 assets.go: 
-	pkgassets -p dataset -o assets.go Defaults defaults
+	pkgassets -p dataset -o assets.go Defaults defaults Examples examples Help help
 	git add assets.go
 
 
