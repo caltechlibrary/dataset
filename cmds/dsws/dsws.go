@@ -45,8 +45,7 @@ import (
 var (
 	usage = `USAGE: %s [OPTIONS] [KEY_VALUE_PAIRS] [DOC_ROOT] BLEVE_INDEXES`
 
-	description = `
-SYNOPSIS
+	description = `SYNOPSIS
 
 	%s is a web search service for indexes data collection
 
@@ -61,8 +60,7 @@ supported.
 + DATASET_TEMPLATE - (optional) path to search results template(s)
 `
 
-	examples = `
-EXAMPLES
+	examples = `EXAMPLES
 
 Run web server using the content in the current directory
 (assumes the environment variables DATASET_DOCROOT are not defined).
@@ -89,9 +87,10 @@ issue the cert, see https://letsencrypt.org for details)
 `
 
 	// Standard options
-	showHelp    bool
-	showVersion bool
-	showLicense bool
+	showHelp     bool
+	showVersion  bool
+	showLicense  bool
+	showExamples bool
 
 	// local app options
 	uri           string
@@ -128,12 +127,13 @@ func init() {
 	defaultURL := "http://localhost:8011"
 
 	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "Display this help message")
-	flag.BoolVar(&showHelp, "help", false, "Display this help message")
-	flag.BoolVar(&showVersion, "v", false, "Should version info")
-	flag.BoolVar(&showVersion, "version", false, "Should version info")
-	flag.BoolVar(&showLicense, "l", false, "Should license info")
-	flag.BoolVar(&showLicense, "license", false, "Should license info")
+	flag.BoolVar(&showHelp, "h", false, "display help")
+	flag.BoolVar(&showHelp, "help", false, "display help")
+	flag.BoolVar(&showLicense, "l", false, "display license")
+	flag.BoolVar(&showLicense, "license", false, "display license")
+	flag.BoolVar(&showVersion, "v", false, "display version")
+	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 
 	// App Options
 	flag.StringVar(&uri, "u", defaultURL, "The protocal and hostname listen for as a URL")
@@ -156,16 +156,32 @@ func main() {
 	args := flag.Args()
 
 	// Configuration and command line interation
-	cfg := cli.New(appName, "DATASET", fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
+	cfg := cli.New(appName, "DATASET", dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
+	cfg.OptionText = "OPTIONS"
 	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName, appName)
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
 		os.Exit(0)
 	}
+
+	if showExamples == true {
+		if len(args) > 0 {
+			fmt.Println(cfg.Example(args...))
+		} else {
+			fmt.Println(cfg.ExampleText)
+		}
+		os.Exit(0)
+	}
+
 	if showLicense == true {
 		fmt.Println(cfg.License())
 		os.Exit(0)

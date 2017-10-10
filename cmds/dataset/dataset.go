@@ -24,8 +24,7 @@ import (
 var (
 	usage = `USAGE: %s [OPTIONS] COMMAND_AND_PARAMETERS`
 
-	description = `
-SYNOPSIS
+	description = `SYNOPSIS
 
 dataset is a command line tool demonstrating dataset package for managing 
 JSON documents stored on disc. A dataset is organized around collections,
@@ -84,8 +83,7 @@ Collection and JSON Documant related--
   + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
 `
 
-	examples = `
-EXAMPLES
+	examples = `EXAMPLES
 
 This is an example of creating a dataset called testdata/friends, saving
 a record called "littlefreda.json" and reading it back.
@@ -205,11 +203,12 @@ Which would result in a record like
 `
 
 	// Standard Options
-	showHelp    bool
-	showLicense bool
-	showVersion bool
-	inputFName  string
-	outputFName string
+	showHelp     bool
+	showLicense  bool
+	showVersion  bool
+	showExamples bool
+	inputFName   string
+	outputFName  string
 
 	// App Specific Options
 	collectionName string
@@ -771,6 +770,7 @@ func init() {
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 	flag.StringVar(&inputFName, "i", "", "input filename")
 	flag.StringVar(&inputFName, "input", "", "input filename")
 	flag.StringVar(&outputFName, "o", "", "output filename")
@@ -789,14 +789,29 @@ func init() {
 func main() {
 	appName := path.Base(os.Args[0])
 	flag.Parse()
+	args := flag.Args()
 
-	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
+	cfg := cli.New(appName, strings.ToUpper(appName), dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = description
+	cfg.OptionText = "OPTIONS"
 	cfg.ExampleText = examples
 
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
+		os.Exit(0)
+	}
+	if showExamples == true {
+		if len(args) > 0 {
+			fmt.Println(cfg.Example(args...))
+		} else {
+			fmt.Println(cfg.ExampleText)
+		}
 		os.Exit(0)
 	}
 	if showLicense == true {
@@ -814,7 +829,6 @@ func main() {
 		collectionName = datasetEnv
 	}
 
-	args := flag.Args()
 	if len(args) == 0 {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)

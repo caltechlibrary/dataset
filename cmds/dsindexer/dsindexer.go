@@ -19,8 +19,7 @@ import (
 var (
 	usage = `USAGE: %s [OPTIONS] INDEX_DEFINITION [INDEX_NAME]`
 
-	description = `
-SYNOPSIS
+	description = `SYNOPSIS
 
 %s is a command line tool for creating a Bleve index based on records in a dataset 
 collection. %s reads a JSON document for the index definition and uses that to
@@ -50,8 +49,7 @@ look like
 Based on this definition the "id" and "dob" fields would not be included in the index.
 `
 
-	examples = `
-EXAMPLES
+	examples = `EXAMPLES
 
 In the example the index will be created for a collection called "characters".
 
@@ -62,9 +60,10 @@ in "email-mapping.json".
 `
 
 	// Standard Options
-	showHelp    bool
-	showLicense bool
-	showVersion bool
+	showHelp     bool
+	showLicense  bool
+	showVersion  bool
+	showExamples bool
 
 	// App Specific Options
 	collectionName string
@@ -83,6 +82,7 @@ func init() {
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -97,20 +97,38 @@ func init() {
 func main() {
 	appName := path.Base(os.Args[0])
 	flag.Parse()
+	args := flag.Args()
 
-	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
+	cfg := cli.New(appName, appName, dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
+	cfg.OptionText = "OPTIONS"
 	cfg.ExampleText = fmt.Sprintf(examples, appName)
 
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
 		os.Exit(0)
 	}
+
+	if showExamples == true {
+		if len(args) > 0 {
+			fmt.Println(cfg.Example(args...))
+		} else {
+			fmt.Println(cfg.ExampleText)
+		}
+		os.Exit(0)
+	}
+
 	if showLicense == true {
 		fmt.Println(cfg.License())
 		os.Exit(0)
 	}
+
 	if showVersion == true {
 		fmt.Println(cfg.Version())
 		os.Exit(0)
@@ -127,7 +145,6 @@ func main() {
 		collectionName = datasetEnv
 	}
 
-	args := flag.Args()
 	definitionFName := ""
 	indexName := ""
 	if len(args) == 1 {

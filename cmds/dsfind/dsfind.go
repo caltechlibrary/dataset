@@ -15,8 +15,7 @@ import (
 var (
 	usage = `USAGE: %s [OPTIONS] [INDEX_LIST] SEARCH_STRINGS`
 
-	description = `
-SYNOPSIS
+	description = `SYNOPSIS
 
 %s is a command line tool for querying a Bleve indexes based on the records in a 
 dataset collection. By default %s is assumed there is an index named after the 
@@ -28,8 +27,7 @@ Options can be used to modify the type of indexes queried as well as how results
 are output.
 `
 
-	examples = `
-EXAMPLES
+	examples = `EXAMPLES
 
 In the example the index will be created for a collection called "characters".
 
@@ -40,9 +38,10 @@ returning records that matched based on how the index was defined.
 `
 
 	// Standard Options
-	showHelp    bool
-	showLicense bool
-	showVersion bool
+	showHelp     bool
+	showLicense  bool
+	showVersion  bool
+	showExamples bool
 
 	// App Specific Options
 	indexList      string
@@ -67,6 +66,7 @@ func init() {
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 
 	// Application Options
 	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
@@ -86,16 +86,33 @@ func init() {
 func main() {
 	appName := path.Base(os.Args[0])
 	flag.Parse()
+	args := flag.Args()
 
-	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
+	cfg := cli.New(appName, appName, dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
 	cfg.UsageText = fmt.Sprintf(usage, appName)
 	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
+	cfg.OptionText = "OPTIONS"
 	cfg.ExampleText = fmt.Sprintf(examples, appName)
 
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
 		os.Exit(0)
 	}
+
+	if showExamples == true {
+		if len(args) > 0 {
+			fmt.Println(cfg.Example(args...))
+		} else {
+			fmt.Println(cfg.ExampleText)
+		}
+		os.Exit(0)
+	}
+
 	if showLicense == true {
 		fmt.Println(cfg.License())
 		os.Exit(0)
@@ -106,7 +123,6 @@ func main() {
 	}
 
 	// We expect at least one arg, the search string
-	args := flag.Args()
 	if len(args) == 0 {
 		fmt.Fprintln(os.Stderr, cfg.Usage())
 		os.Exit(1)
