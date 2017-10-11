@@ -1,0 +1,5 @@
+
+# USAGE
+
+    dsfind [OPTIONS] [INDEX_LIST] SEARCH_STRINGS
+

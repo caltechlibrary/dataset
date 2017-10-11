@@ -1,3 +1,22 @@
+//
+// dataset is a command line utility to manage content stored in a dataset collection.
+//
+// @author R. S. Doiel, <rsdoiel@caltech.edu>
+//
+//
+// Copyright (c) 2017, Caltech
+// All rights not granted herein are expressly reserved by Caltech.
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
 package main
 
 import (
@@ -22,192 +41,13 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] COMMAND_AND_PARAMETERS`
-
-	description = `
-SYNOPSIS
-
-dataset is a command line tool demonstrating dataset package for managing 
-JSON documents stored on disc. A dataset is organized around collections,
-collections contain buckets holding specific JSON documents and related content.
-In addition to the JSON documents dataset maintains metadata for management
-of the documents, their attachments as well as a ability to generate select lists
-based JSON document keys (aka JSON document names).
-
-
-COMMANDS
-
-Collection and JSON Documant related--
-
-+ init - initialize a new collection if none exists, requires a path to collection
-  + once collection is created, set the environment variable DATASET
-    to collection name
-  + if you're using S3 for storing your dataset prefix your path with 's3://'
-    'dataset init s3://mybucket/mydataset-collections'
-+ create - creates a new JSON document or replace an existing one in collection
-  + requires JSON document name followed by JSON blob or JSON blob read from stdin
-+ read - displays a JSON document to stdout
-  + requires JSON document name
-+ update - updates a JSON document in collection
-  + requires JSON document name, followed by replacement JSON document name or 
-    JSON document read from stdin
-  + JSON document must already exist
-+ delete - removes a JSON document from collection
-  + requires JSON document name
-+ join - brings the functionality of jsonjoin to the dataset command.
-  + option update will only add unique key/values not in the existing stored document
-  + option overwrite will overwrite all key/values in the existing document
-+ filter - takes a filter and returns an unordered list of keys that match filter expression
-  + if filter expression not provided as a command line parameter then it is read from stdin
-+ keys - returns the keys to stdout, one key per line
-+ haskey - returns true is key is in collection, false otherwise
-+ path - given a document name return the full path to document
-+ attach - attaches a non-JSON content to a JSON record 
-  + "dataset attach k1 stats.xlsx" would attach the stats.xlsx file to JSON document named k1
-  + (stores content in a related tar file)
-+ attachments - lists any attached content for JSON document
-  + "dataset attachments k1" would list all the attachments for k1
-+ attached - returns attachments for a JSON document 
-  + "dataset attached k1" would write out all the attached files for k1
-  + "dataset attached k1 stats.xlsx" would write out only the stats.xlsx file attached to k1
-+ detach - remove attachments to a JSON document
-  + "dataset detach k1 stats.xlsx" would rewrite the attachments tar file without including stats.xlsx
-  + "dataset detach k1" would remove ALL attachments to k1
-+ import - import a CSV file's rows as JSON documents
-  + "dataset import mydata.csv 1" would import the CSV file mydata.csv using column one's value as key
-+ export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
-  + "dataset export titles.csv 'true' '._id,.title,.pubDate' 'id,title,publication date'" 
-    this would export all the ids, titles and publication dates as a CSV fiile named titles.csv
-+ extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
-  + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
-`
-
-	examples = `
-EXAMPLES
-
-This is an example of creating a dataset called testdata/friends, saving
-a record called "littlefreda.json" and reading it back.
-
-   dataset init testdata/friends
-   export DATASET=testdata/friends
-   dataset create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
-   for KY in $(dataset keys); do
-      echo "Path: $(dataset path $KY) 
-      echo "Doc: $(dataset read $KY)
-   done
-
-Now check to see if the key, littlefreda, is in the collection
-
-   dataset haskey littlefreda
-
-You can also read your JSON formatted data from a file or standard input.
-In this example we are creating a mojosam record and reading back the contents
-of testdata/friends
-
-   dataset -i mojosam.json create mojosam
-   for KY in $(dataset keys); do
-      echo "Path: $(dataset path $KY) 
-      echo "Doc: $(dataset read $KY)
-   done
-
-Or similarly using a Unix pipe to create a "capt-jack" JSON record.
-
-   cat capt-jack.json | dataset create capt-jack
-   for KY in $(dataset keys); do
-      echo "Path: $(dataset path $KY) 
-      echo "Doc: $(dataset read $KY)
-   done
-
-Adding high-capt-jack.txt as an attachment to "capt-jack"
-
-   echo "Hi Capt. Jack, Hello World!" > high-capt-jack.txt
-   dataset attach capt-jack high-capt-jack.txt
-
-List attachments for "capt-jack"
-
-   dataset attachments capt-jack
-
-Get the attachments for "capt-jack" (this will untar in your current directory)
-
-   dataset attached capt-jack
-
-Remove high-capt-jack.txt from "capt-jack"
-
-    dataset detach capt-jack high-capt-jack.txt
-
-Remove all attachments from "capt-jack"
-
-   dataset detach capt-jack
-
-Filter can be used to return only the record keys that return true for a given
-expression. Here's is a simple case for match records where name is equal to
-"Mojo Sam".
-
-   dataset filter '(eq .name "Mojo Sam")'
-
-If you are using a complex filter it can read a file in and apply it as a filter.
-
-   dataset filter < myfilter.txt
-
-Import can take a CSV file and store each row as a JSON document in dataset. In
-this example we're generating a UUID for the key name of each row
-
-   dataset -uuid import my-data.csv
-
-You can create a CSV export by providing the dot paths for each column and
-then givening columns a name.
-
-   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
-   
-If you wanted to restrict to a subset (e.g. publication in year 2016)
-
-   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
-           '.id,.title,.pubDate' 'id,title,publication date'
-
-If wanted to extract a unqie list of all ORCIDs from a collection 
-
-   dataset extract true .authors[:].orcid
-
-If you wanted to extract a list of ORCIDs from publications in 2016.
-
-   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
-
-
-You can augement JSON key/value pairs for a JSON document in your collection
-using the join operation. This works similar to the datatools cli called jsonjoin.
-
-Let's assume you have a record in your collection with a key 'jane.doe'. It has
-three fields - name, email, age.  
-
-    {"name":"Doe, Jane", "email": "jd@example.org", age: 42}
-
-You also have an external JSON document called profile.json. It looks like
-
-    {"name": "Doe, Jane", "email": "jane.doe@example.edu", "bio": "world renowned geophysist"}
-
-You can merge the unique fields in profile.json with your existing jane.doe record
-
-    dataset join update jane.doe profile.json
-
-The result would look like
-
-    {"name":"Doe, Jane", "email": "jd@example.org", "age": 42, "bio": "renowned geophysist"}
-
-If you wanted to overwrite the common fields you would use 'join overwrite'
-
-    dataset join overwrite jane.doe profile.json
-
-Which would result in a record like
-
-    {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
-`
-
 	// Standard Options
-	showHelp    bool
-	showLicense bool
-	showVersion bool
-	inputFName  string
-	outputFName string
+	showHelp     bool
+	showLicense  bool
+	showVersion  bool
+	showExamples bool
+	inputFName   string
+	outputFName  string
 
 	// App Specific Options
 	collectionName string
@@ -288,7 +128,10 @@ func collectionInit(args ...string) (string, error) {
 	}
 	defer collection.Close()
 	if collection.Store.Type == storage.S3 {
-		return fmt.Sprintf("export DATASET=s3://%s/%s", collection.Store.Config["AwsBucket"], collection.Name), nil
+		return fmt.Sprintf("export DATASET=\"s3://%s/%s\"", collection.Store.Config["AwsBucket"], collection.Name), nil
+	}
+	if collection.Store.Type == storage.GS {
+		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
 	}
 	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
 }
@@ -766,6 +609,7 @@ func init() {
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 	flag.StringVar(&inputFName, "i", "", "input filename")
 	flag.StringVar(&inputFName, "input", "", "input filename")
 	flag.StringVar(&outputFName, "o", "", "output filename")
@@ -784,14 +628,51 @@ func init() {
 func main() {
 	appName := path.Base(os.Args[0])
 	flag.Parse()
+	args := flag.Args()
 
-	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
-	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = description
-	cfg.ExampleText = examples
+	cfg := cli.New(appName, strings.ToUpper(appName), dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
+	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dataset/usage.md"])
+	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dataset/description.md"])
+	cfg.OptionText = "## OPTIONS\n\n"
+	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dataset/examples.md"])
+
+	for k, v := range dataset.Help {
+		ext := path.Ext(k)
+		dname := strings.TrimPrefix(path.Dir(k), "/")
+		if dname == appName && ext == ".md" {
+			keyword := strings.TrimSuffix(path.Base(k), ext)
+			if keyword != "nav" {
+				cfg.AddHelp(keyword, fmt.Sprintf("%s\n", v))
+			}
+		}
+	}
+
+	for k, v := range dataset.Examples {
+		ext := path.Ext(k)
+		dname := strings.TrimPrefix(path.Dir(k), "/")
+		if dname == appName && ext == ".md" {
+			keyword := strings.TrimSuffix(path.Base(k), ".md")
+			if keyword != "nav" {
+				cfg.AddExample(keyword, fmt.Sprintf("%s\n", v))
+			}
+		}
+	}
 
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
+		os.Exit(0)
+	}
+	if showExamples == true {
+		if len(args) > 0 {
+			fmt.Println(cfg.Example(args...))
+		} else {
+			fmt.Println(cfg.Example("index"))
+		}
 		os.Exit(0)
 	}
 	if showLicense == true {
@@ -809,7 +690,6 @@ func main() {
 		collectionName = datasetEnv
 	}
 
-	args := flag.Args()
 	if len(args) == 0 {
 		fmt.Println(cfg.Usage())
 		os.Exit(1)

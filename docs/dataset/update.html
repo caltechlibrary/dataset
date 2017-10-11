@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">dataset</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>update</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset update JSON_RECORD_ID
+</code></pre>
+
+<h2>Description</h2>
+
+<p>update will replace a JSON document in a dataset collection for a given JSON_RECORD_ID.
+By default the JSON document is read from standard input but you can specific a spefic
+file with the &ldquo;-input&rdquo; option. The JSON document should aready exist in the collection
+when you use update.</p>
+
+<h2>Usage</h2>
+
+<p>In this example we assume there is a JSON document on local disc named <em>blob.json</em>. It
+contains <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code> and the JSON_RECORD_ID is &ldquo;jane.doe&rdquo;. In the first
+one we specify the full JSON document via the command line after the JSON_RECORD_ID.
+In the second example we read the data from <em>blob.json</em>. Finally in the last we
+read the JSON document from standard input and save the update to &ldquo;jane.doe&rdquo;.</p>
+
+<pre><code class="language-shell">    dataset update jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'
+    dataset -i blob.json update jane.doe
+    cat blob.json | dataset update jane.doe
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

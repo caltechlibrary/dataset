@@ -12,10 +12,12 @@
 <nav>
 <ul>
 <li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="/">README</a></li>
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
 <li><a href="./">Documentation</a></li>
+<li><a href="../examples/">Examples</a></li>
 <li><a href="../how-to/">How To</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
@@ -23,14 +25,12 @@
 </nav>
 
 <section>
-<h1>dsfind</h1>
+<h1>USAGE</h1>
 
-<h2>USAGE</h2>
-
-<pre><code>dsfind [OPTIONS] INDEX_LIST SEARCH_STRINGS
+<pre><code>dsfind [OPTIONS] [INDEX_LIST] SEARCH_STRINGS
 </code></pre>
 
-<h2>SYNOPSIS</h2>
+<h2>Description</h2>
 
 <p>dsfind is a command line tool for querying a Bleve indexes based on the records in a
 dataset collection. By default dsfind is assumed there is an index named after the
@@ -43,38 +43,38 @@ are output.</p>
 
 <h2>OPTIONS</h2>
 
-<pre><code>	-c	sets the collection to be used
-	-collection	sets the collection to be used
-	-csv	format results as a CSV document, used with fields option
-	-explain	explain results in a verbose JSON document
-	-fields	comma (no spaces) delimited list of fields to display in the results
-	-from	return the result starting with this result number
-	-h	display help
-	-help	display help
-	-highlight	display highlight in search results
-	-ids	output only a list of ids from results
-	-indexes	a comma delimited list of index names
-	-json	format results as a JSON document
-	-l	display license
-	-license	display license
-	-size	number of results returned for request
-	-sort	a comma delimited list of field names to sort by
-	-v	display version
-	-version	display version
+<pre><code>-csv    format results as a CSV document, used with fields option
+-csv-skip-header    don't output a header row, only values for csv output
+-example    display example(s)
+-explain    explain results in a verbose JSON document
+-fields comma delimited list of fields to display in the results
+-from   return the result starting with this result number
+-h  display help
+-help   display help
+-highlight  display highlight in search results
+-highlighter    set the highlighter (ansi,html) for search results
+-ids    output only a list of ids from results
+-indexes    colon or comma delimited list of index names
+-json   format results as a JSON document
+-l  display license
+-license    display license
+-size   number of results returned for request
+-sort   a comma delimited list of field names to sort by
+-v  display version
+-version    display version
 </code></pre>
 
 <h2>EXAMPLES</h2>
 
-<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.
-The fields we want to list in our results are name,story,year</p>
+<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
 
-<pre><code>    dsfind  -fields=name,story,year characters.bleve &quot;Jack Flanders&quot;
+<pre><code>dsfind characters.bleve &quot;Jack Flanders&quot;
 </code></pre>
 
 <p>This would search the Bleve index named characters.bleve for the string &ldquo;Jack Flanders&rdquo;
 returning records that matched based on how the index was defined.</p>
 
-<p>dsfind v0.0.2</p>
+<p>dsfind v0.0.3</p>
 
 </section>
 

@@ -21,7 +21,7 @@ package dataset
 import (
 	"archive/tar"
 	"bytes"
-	//"fmt"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -261,9 +261,14 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 		return err
 	}
 	docPath = tarballName(docPath)
+	if path.Ext(docPath) != ".tar" {
+		return fmt.Errorf("Can't remove %q attachments", docPath)
+	}
 
 	// NOTE: If we're removing everything then just call Removeall on store for that tarball name
 	if len(filterNames) == 0 {
+		//fmt.Printf("DEBUG c.Store.RemoveAll(%q)", docPath) // DEBUG
+		//return nil                                         // DEBUG
 		return c.Store.RemoveAll(docPath)
 	}
 

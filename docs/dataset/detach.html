@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">dataset</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>detach</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset detach JSON_RECORD_ID
+    dataset detach JSON_RECORD_ID ATTACHMENT_NAME
+</code></pre>
+
+<h2>Description</h2>
+
+<p>detach removes all or specific attachments to a JSON document. If only
+the key is supplied then all attachments are removed if an attachment
+name is supplied then only the specific attachment is removed.</p>
+
+<h2>Usage</h2>
+
+<p>In the following examples <em>r1</em> is the JSON_RECORD_ID, <em>stats.xlsx</em> is the
+attached file. In the first example only <em>stats.xlsx</em> is removed in
+the second all attachments are removed.</p>
+
+<pre><code class="language-shell">    dataset detach k1 stats.xlsx
+    dataset detach k1
+</code></pre>
+
+<p>Related topics: attach, attached, and attachments</p>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

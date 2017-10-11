@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">dataset</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Help</h1>
+
+<p>The following topics are available by specifying the name after the &ldquo;-help&rdquo; option.
+E.g. to get help on the &ldquo;init&rdquo; command.</p>
+
+<pre><code>    dataset -help init
+</code></pre>
+
+<h2>Topics</h2>
+
+<ul>
+<li><a href="init.html">init</a> - initialize a new collection if none exists, requires a path to collection</li>
+<li><a href="create.html">create</a> - creates a new JSON document or replace an existing one in collection</li>
+<li><a href="read.html">read</a> - displays a JSON document to stdout</li>
+<li><a href="update.html">update</a> - updates a JSON document in collection</li>
+<li><a href="delete.html">delete</a> - removes a JSON document from collection</li>
+<li><a href="join.html">join</a> - brings the functionality of jsonjoin to the dataset command.</li>
+<li><a href="filter.html">filter</a> - takes a filter and returns an unordered list of keys that match filter expression</li>
+<li><a href="keys.html">keys</a> - returns the keys to stdout, one key per line</li>
+<li><a href="haskeys.html">haskey</a> - returns true is key is in collection, false otherwise</li>
+<li><a href="path.html">path</a> - given a document name return the full path to document</li>
+<li><a href="attach.html">attach</a> - attaches a non-JSON content to a JSON record</li>
+<li><a href="attachments.html">attachments</a> - lists any attached content for JSON document</li>
+<li><a href="attached.html">attached</a> - returns attachments for a JSON document</li>
+<li><a href="detach.html">detach</a> - remove attachments to a JSON document</li>
+<li><a href="import.html">import</a> - import a CSV file&rsquo;s rows as JSON documents</li>
+<li><a href="export.html">export</a> - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names</li>
+<li><a href="extract.html">extract</a> - will return a unique list of unique values based on the associated dot path described in the JSON docs</li>
+<li><a href="commands.html">commands</a> - return a list of command names</li>
+</ul>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
