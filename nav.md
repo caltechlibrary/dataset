@@ -1,6 +1,6 @@
 
 + [Home](/)
-+ [README](./)
++ [README](../)
 + [LICENSE](license.html)
 + [INSTALL](install.html)
 + [Documentation](docs/)
