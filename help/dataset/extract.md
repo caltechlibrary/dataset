@@ -1,2 +1,23 @@
-+ extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
-  + "dataset extract true .authors[:].orcid" would extract a list of authors' orcid ids in collection
+
+# extract
+
+## Syntax
+
+```
+    dataset extract FILTER DOTPATH
+```
+
+## Description
+
+extract returns a list of unique values across documents in a collection based on the FILTER and
+DOTPATH provided (for DOTPATH see `dataset -help dotpath` and FITLER see `dataset -help filter).
+
+## Usage
+
+In this example we're turning a list of unique author orcid ids across the collection. The filter
+we use is "true". The author field is an array so our dotpath uses that notation.
+
+```shell
+    dataset extract true .authors[:].orcid
+```
+

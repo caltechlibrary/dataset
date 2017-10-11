@@ -793,8 +793,8 @@ func main() {
 
 	cfg := cli.New(appName, strings.ToUpper(appName), dataset.Version)
 	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = description
+	cfg.UsageText = fmt.Sprintf("%s\n", dataset.Help["/dataset/usage.md"])
+	cfg.DescriptionText = fmt.Sprintf("%s\n", dataset.Help["/dataset/description.md"])
 	cfg.OptionText = "OPTIONS"
 	cfg.ExampleText = examples
 
