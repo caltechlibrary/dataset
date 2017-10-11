@@ -118,7 +118,7 @@ func main() {
 	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dsws/usage.md"])
 	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dsws/description.md"])
 	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsws/basic.md"])
+	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsws/index.md"])
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {

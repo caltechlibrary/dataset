@@ -12,11 +12,11 @@
 <nav>
 <ul>
 <li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="/">README</a></li>
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
 <li><a href="./">Documentation</a></li>
-<li><a href="../help/">Help</a></li>
 <li><a href="../examples/">Examples</a></li>
 <li><a href="../how-to/">How To</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
@@ -78,6 +78,16 @@ look like</p>
 -v  display version
 -version    display version
 </code></pre>
+
+<h2>EXAMPLES</h2>
+
+<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
+
+<pre><code>dsindexer -c characters email-mapping.json email-index
+</code></pre>
+
+<p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
+in &ldquo;email-mapping.json&rdquo;.</p>
 
 <p>dsindexer v0.0.3</p>
 

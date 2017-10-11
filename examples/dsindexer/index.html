@@ -12,24 +12,22 @@
 <nav>
 <ul>
 <li><a href="/">Home</a></li>
-<li><a href="./">Index</a></li>
 <li><a href="../">Up</a></li>
+<li><a href="./">dsindexer</a></li>
 </ul>
 
 </nav>
 
 <section>
-<pre><code>examples = `EXAMPLES
-</code></pre>
+<h2>EXAMPLES</h2>
 
 <p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
 
-<pre><code>%s -c characters email-mapping.json email-index
+<pre><code>dsindexer -c characters email-mapping.json email-index
 </code></pre>
 
 <p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
-in &ldquo;email-mapping.json&rdquo;.
-`</p>
+in &ldquo;email-mapping.json&rdquo;.</p>
 
 </section>
 

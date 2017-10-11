@@ -199,12 +199,12 @@ Which would result in a record like
     {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
 ```
 
-Related topics: attachattached, attachments, commands, create, 
+Related topics: attach, attached, attachments, commands, create, 
 delete, description, detach, dotpath, export, extract, filter, 
 haskeys, import, index, init, join, keys, path, read, update, 
 usage.
 
-Related examples: attachmentsbasic, basics, examples, export, 
-extract, filters, import, index, join.
+Related examples: attachments, basics, examples, export, extract, 
+filters, import, index, join.
 
 dataset v0.0.3

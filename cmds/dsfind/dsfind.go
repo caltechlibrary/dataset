@@ -89,7 +89,7 @@ func main() {
 	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dsfind/usage.md"])
 	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dsfind/description.md"])
 	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsfind/basic.md"])
+	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsfind/index.md"])
 
 	if showHelp == true {
 		if len(args) > 0 {

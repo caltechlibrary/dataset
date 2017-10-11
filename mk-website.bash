@@ -33,45 +33,39 @@ function MakeSubPages() {
     done
 }
 
-function MakeAssetPages() {
+function MakeSubSubPages() {
     ASSET_FOLDER="${1}"
-    echo "Creating index.md for asset: ${ASSET_FOLDER}"
-    if [ -f "${ASSET_FOLDER}/index.md" ]; then
-        rm "${ASSET_FOLDER}/index.md"
-    fi
-    # Create an index.md for the asset list
-    cat <<EOT >"${ASSET_FOLDER}/index.md"
+    if [ ! -f "${ASSET_FOLDER}/index.md" ]; then
+        echo "Creating index.md for asset: ${ASSET_FOLDER}"
+        # Create an index.md for the asset list
+        cat <<EOT >"${ASSET_FOLDER}/index.md"
 
 # ${ASSET_FOLDER}
 
 EOT
 
-    echo "Creating nav.md for asset: ${ASSET_FOLDER}"
-    # Create some nav
-    cat <<EOT >"${ASSET_FOLDER}/nav.md"
+        echo "Creating nav.md for asset: ${ASSET_FOLDER}"
+        # Create some nav
+        cat <<EOT >"${ASSET_FOLDER}/nav.md"
 + [Home](/)
-+ [Index](./)
 + [Up](../)
++ [${ASSET_FOLDER}](./)
 EOT
+
+    fi
 
     find "${ASSET_FOLDER}" -type d -depth 1 | sort | while read DNAME; do
         T="$(basename "${DNAME}")"
-        echo "Appending ${T} to index.md for asset: ${ASSET_FOLDER}"
-        cat <<EOT >>"${ASSET_FOLDER}/index.md"
-+ [${T}](${T}/)
-EOT
         echo "Creating nav.md for asset: ${ASSET_FOLDER}/${T}"
         cat <<EOT >"${ASSET_FOLDER}/${T}/nav.md"
 + [Home](/)
-+ [Index](./)
 + [Up](../)
++ [${T}](./)
 EOT
         # Generate the index of topics for the cmd described in asset folder
         MakeSubPages "${ASSET_FOLDER}/${T}"
     done
     echo "" >>"${ASSET_FOLDER}/index.md"
-    # Generate the index of topics for the cmd described in asset folder
-    #MakeSubPages "${ASSET_FOLDER}"
 }
 
 echo "Checking software..."
@@ -81,15 +75,12 @@ MakePage nav.md README.md index.html
 MakePage nav.md INSTALL.md install.html
 MakePage nav.md "markdown:$(cat LICENSE)" license.html
 
-# Build help pages
-MakeAssetPages help
-MakeSubPages help
-
 # Build example pages
-MakeAssetPages examples
+MakeSubSubPages examples
 MakeSubPages examples
 
 # Build utility docs pages
+MakeSubSubPages docs
 MakeSubPages docs
 
 # Build how-to pages

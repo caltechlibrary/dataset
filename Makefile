@@ -17,7 +17,7 @@ dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 dataset.go: assets.go
 
 assets.go:
-	pkgassets -p dataset -o assets.go Defaults defaults Examples examples Help help
+	pkgassets -p dataset -o assets.go Defaults defaults Examples examples Help docs
 	git add assets.go
 
 
@@ -74,7 +74,7 @@ lint:
 	golint cmds/dsfind/dsfind.go
 
 clean:
-	if [ "$(PKGASSETS)" != "" ]; then rm assets.go; pkgassets -p dataset -o assets.go Defaults defaults Examples examples Help help; git add assets.go; fi
+	if [ "$(PKGASSETS)" != "" ]; then rm assets.go; pkgassets -p dataset -o assets.go Defaults defaults Examples examples Help docs; git add assets.go; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
