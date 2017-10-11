@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="./">Index</a></li>
+<li><a href="../">Up</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>create</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    cat JSON_DOCNAME | dataset create JSON_RECORD_ID
+    dataset -i JSON_DOCNAME create JSON_RECORD_ID
+    dataset create JSON_RECORD_ID JSON_VALUE
+</code></pre>
+
+<h2>Description</h2>
+
+<p>create adds or replaces a JSON document to a collection. The JSON document can be read from a
+standard in, a named file or expressed on the command line.</p>
+
+<h2>Usage</h2>
+
+<p>In the following three examples <em>blob.json</em> is a file on the local file system
+contains JSON data containing the JSON_VALUE of <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code>.  The JSON_RECORD_ID we will
+create is <em>r1</em>.</p>
+
+<pre><code class="language-shell">    cat blob.json | dataset create r1
+    dataset -i blob.json create r1
+    dataset create r1 '{&quot;name&quot;:&quot;Jane Doe&quot;}'
+</code></pre>
+
+<p>Related topics: update, read, and delete</p>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

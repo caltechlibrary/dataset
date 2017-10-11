@@ -1,4 +1,5 @@
-	examples = `## EXAMPLES
+
+## EXAMPLES
 
 This is an example of creating a dataset called testdata/friends, saving
 a record called "littlefreda.json" and reading it back.
@@ -159,4 +160,4 @@ Which would result in a record like
 ```json
     {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
 ```
-`
+

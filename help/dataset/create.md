@@ -26,3 +26,5 @@ create is _r1_.
     dataset create r1 '{"name":"Jane Doe"}'
 ```
 
+Related topics: update, read, and delete
+

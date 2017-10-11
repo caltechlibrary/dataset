@@ -25,9 +25,10 @@
 <section>
 <h1>USAGE</h1>
 
-<h2>dataset [OPTIONS] COMMAND_AND_PARAMETERS</h2>
+<pre><code>    dataset [OPTIONS] COMMAND_AND_PARAMETERS
+</code></pre>
 
-<h2>SYNOPSIS</h2>
+<h1>Description</h1>
 
 <p>dataset is a command line tool demonstrating dataset package for managing
 JSON documents stored on disc. A dataset is organized around collections,
@@ -36,100 +37,11 @@ In addition to the JSON documents dataset maintains metadata for management
 of the documents, their attachments as well as a ability to generate select lists
 based JSON document keys (aka JSON document names).</p>
 
-<h2>COMMANDS</h2>
-
-<p>Collection and JSON Documant related&ndash;</p>
-
-<ul>
-<li>init - initialize a new collection if none exists, requires a path to collection
-
-<ul>
-<li>once collection is created, set the environment variable DATASET
-to collection name</li>
-<li>if you&rsquo;re using S3 for storing your dataset prefix your path with &lsquo;s3://&rsquo;
-&lsquo;dataset init s3://mybucket/mydataset-collections&rsquo;</li>
-</ul></li>
-<li>create - creates a new JSON document or replace an existing one in collection
-
-<ul>
-<li>requires JSON document name followed by JSON blob or JSON blob read from stdin</li>
-</ul></li>
-<li>read - displays a JSON document to stdout
-
-<ul>
-<li>requires JSON document name</li>
-</ul></li>
-<li>update - updates a JSON document in collection
-
-<ul>
-<li>requires JSON document name, followed by replacement JSON document name or
-JSON document read from stdin</li>
-<li>JSON document must already exist</li>
-</ul></li>
-<li>delete - removes a JSON document from collection
-
-<ul>
-<li>requires JSON document name</li>
-</ul></li>
-<li>join - brings the functionality of jsonjoin to the dataset command.
-
-<ul>
-<li>option update will only add unique key/values not in the existing stored document</li>
-<li>option overwrite will overwrite all key/values in the existing document</li>
-</ul></li>
-<li>filter - takes a filter and returns an unordered list of keys that match filter expression
-
-<ul>
-<li>if filter expression not provided as a command line parameter then it is read from stdin</li>
-</ul></li>
-<li>keys - returns the keys to stdout, one key per line</li>
-<li>haskey - returns true is key is in collection, false otherwise</li>
-<li>path - given a document name return the full path to document</li>
-<li>attach - attaches a non-JSON content to a JSON record
-
-<ul>
-<li>&ldquo;dataset attach k1 stats.xlsx&rdquo; would attach the stats.xlsx file to JSON document named k1</li>
-<li>(stores content in a related tar file)</li>
-</ul></li>
-<li>attachments - lists any attached content for JSON document
-
-<ul>
-<li>&ldquo;dataset attachments k1&rdquo; would list all the attachments for k1</li>
-</ul></li>
-<li>attached - returns attachments for a JSON document
-
-<ul>
-<li>&ldquo;dataset attached k1&rdquo; would write out all the attached files for k1</li>
-<li>&ldquo;dataset attached k1 stats.xlsx&rdquo; would write out only the stats.xlsx file attached to k1</li>
-</ul></li>
-<li>detach - remove attachments to a JSON document
-
-<ul>
-<li>&ldquo;dataset detach k1 stats.xlsx&rdquo; would rewrite the attachments tar file without including stats.xlsx</li>
-<li>&ldquo;dataset detach k1&rdquo; would remove ALL attachments to k1</li>
-</ul></li>
-<li>import - import a CSV file&rsquo;s rows as JSON documents
-
-<ul>
-<li>&ldquo;dataset import mydata.csv 1&rdquo; would import the CSV file mydata.csv using column one&rsquo;s value as key</li>
-</ul></li>
-<li>export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
-
-<ul>
-<li>&ldquo;dataset export titles.csv &lsquo;true&rsquo; &lsquo;._id,.title,.pubDate&rsquo; &lsquo;id,title,publication date&rsquo;&rdquo;
-this would export all the ids, titles and publication dates as a CSV fiile named titles.csv</li>
-</ul></li>
-<li>extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
-
-<ul>
-<li>&ldquo;dataset extract true .authors[:].orcid&rdquo; would extract a list of authors&rsquo; orcid ids in collection</li>
-</ul></li>
-</ul>
-
 <h2>OPTIONS</h2>
 
 <pre><code>-c  sets the collection to be used
 -collection sets the collection to be used
+-example    display example(s)
 -h  display help
 -help   display help
 -i  input filename
@@ -258,7 +170,7 @@ using the join operation. This works similar to the datatools cli called jsonjoi
 <p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
 three fields - name, email, age.</p>
 
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, age: 42}
 </code></pre>
 
 <p>You also have an external JSON document called profile.json. It looks like</p>
@@ -286,7 +198,15 @@ three fields - name, email, age.</p>
 <pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
 </code></pre>
 
-<p>dataset v0.0.3-rc8</p>
+<p>Related topics: attachattached, attachments, commands, create,
+delete, description, detach, dotpath, export, extract, filter,
+haskeys, import, index, init, join, keys, path, read, update,
+usage.</p>
+
+<p>Related examples: attachmentsbasic, basics, examples, export,
+extract, filters, import, index, join.</p>
+
+<p>dataset v0.0.3</p>
 
 </section>
 

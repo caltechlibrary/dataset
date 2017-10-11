@@ -26,4 +26,5 @@ the second all attachments are removed.
     dataset detach k1
 ```
 
+Related topics: attach, attached, and attachments
 

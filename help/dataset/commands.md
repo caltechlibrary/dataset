@@ -1,5 +1,5 @@
 
-# COMMANDS
+# commands
 
 Documentation on individual commands can be see with `dataset -help COMMAND_NAME` where
 "COMMAND_NAME" is replaced with one of the commands below --

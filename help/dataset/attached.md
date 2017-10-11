@@ -27,5 +27,5 @@ Write out only the *stats.xlsx* file attached to k1
     dataset attached k1 stats.xlsx
 ```
 
-Also see attach, attachments, and detach
+Related topics: attach, attachments, and detach
 

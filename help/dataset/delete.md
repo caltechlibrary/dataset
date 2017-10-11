@@ -21,3 +21,5 @@ the currently active collection.
     dataset delete r1
 ```
 
+Related topics: create, read, and update
+

@@ -20,3 +20,5 @@ List all the attachments for _k1_.
     dataset attachments k1
 ```
 
+Related topics: attach, attached, detach
+

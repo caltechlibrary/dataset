@@ -43,49 +43,6 @@ import (
 
 // Flag options
 var (
-	usage = `USAGE: %s [OPTIONS] [KEY_VALUE_PAIRS] [DOC_ROOT] BLEVE_INDEXES`
-
-	description = `SYNOPSIS
-
-	%s is a web search service for indexes data collection
-
-CONFIGURATION
-
-%s can be configurated through environment settings. The following are
-supported.
-
-+ DATASET_URL  - (optional) sets the URL to listen on (e.g. http://localhost:8011)
-+ DATASET_SSL_KEY - (optional) the path to the SSL key if using https
-+ DATASET_SSL_CERT - (optional) the path to the SSL cert if using https
-+ DATASET_TEMPLATE - (optional) path to search results template(s)
-`
-
-	examples = `EXAMPLES
-
-Run web server using the content in the current directory
-(assumes the environment variables DATASET_DOCROOT are not defined).
-
-   %s
-
-Run web service using "index.bleve" index, results templates in 
-"templates/search.tmpl" and a "htdocs" directory for static files.
-
-   %s -template=templates/search.tmpl htdocs index.bleve
-
-Run a web service with custom navigation taken from a Markdown file
-
-   %s -template=templates/search.tmpl "Nav=nav.md" index.bleve
-
-Running above web service using ACME TLS support (i.e. Let's Encrypt).
-Note will only include the hostname as the ACME setup is for
-listenning on port 443. This may require privilaged account
-and will require that the hostname listed matches the public
-DNS for the machine (this is need by the ACME protocol to
-issue the cert, see https://letsencrypt.org for details)
-
-   %s -acme -template=templates/search.tmpl "Nav=nav.md" index.bleve
-`
-
 	// Standard options
 	showHelp     bool
 	showVersion  bool
@@ -158,10 +115,10 @@ func main() {
 	// Configuration and command line interation
 	cfg := cli.New(appName, "DATASET", dataset.Version)
 	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
-	cfg.OptionText = "OPTIONS"
-	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName, appName)
+	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dsws/usage.md"])
+	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dsws/description.md"])
+	cfg.OptionText = "## OPTIONS\n\n"
+	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsws/basic.md"])
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {

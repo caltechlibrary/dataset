@@ -1,5 +1,4 @@
 
-
 # filter
 
 ## Description
@@ -55,4 +54,6 @@ Two fields match, .family_name and .given_name, known values "Feynman" and "Rich
 ```
 	(and (eq .family_name "Feynman") (eq .given_name "Richard"))
 ```
+
+Related topics: extract and export
 

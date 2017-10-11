@@ -35,3 +35,5 @@ The example blow creates a CSV file then creates a Workbook with a sheet named "
 	dataset -sheet 'Title List' export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
 ```
 
+Related topics: extract and import
+

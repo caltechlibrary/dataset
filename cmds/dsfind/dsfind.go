@@ -1,3 +1,23 @@
+//
+// dsfind is a command line utility that will search one or more Blevesearch indexes created by
+// dsindexer. The output can be in a number formats included text, CSV and JSON.
+//
+// @author R. S. Doiel, <rsdoiel@caltech.edu>
+//
+//
+// Copyright (c) 2017, Caltech
+// All rights not granted herein are expressly reserved by Caltech.
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
 package main
 
 import (
@@ -13,30 +33,6 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] [INDEX_LIST] SEARCH_STRINGS`
-
-	description = `SYNOPSIS
-
-%s is a command line tool for querying a Bleve indexes based on the records in a 
-dataset collection. By default %s is assumed there is an index named after the 
-collection. An option lets you choose different indexes to query. Results are 
-written to standard out and are paged. The query syntax supported is described
-at http://www.blevesearch.com/docs/Query-String-Query/.
-
-Options can be used to modify the type of indexes queried as well as how results
-are output.
-`
-
-	examples = `EXAMPLES
-
-In the example the index will be created for a collection called "characters".
-
-    %s characters.bleve "Jack Flanders"
-
-This would search the Bleve index named characters.bleve for the string "Jack Flanders" 
-returning records that matched based on how the index was defined.
-`
-
 	// Standard Options
 	showHelp     bool
 	showLicense  bool
@@ -90,10 +86,10 @@ func main() {
 
 	cfg := cli.New(appName, appName, dataset.Version)
 	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
-	cfg.OptionText = "OPTIONS"
-	cfg.ExampleText = fmt.Sprintf(examples, appName)
+	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dsfind/usage.md"])
+	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dsfind/description.md"])
+	cfg.OptionText = "## OPTIONS\n\n"
+	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsfind/basic.md"])
 
 	if showHelp == true {
 		if len(args) > 0 {

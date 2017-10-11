@@ -20,5 +20,5 @@ Attaching a file named *start.xlsx* to the JSON record with id _t1_
     dataset attach t1 start.xlsx
 ```
 
-Also see attached, attachments, and detach
+Related topics: attached, attachments, and detach
 

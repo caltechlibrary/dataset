@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="./">Index</a></li>
+<li><a href="../">Up</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>import</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset import TABLE_FILENAME [COLUMN_AS_ID_NUMBER]
+</code></pre>
+
+<h2>Description</h2>
+
+<p>import adds JSON documents to a collection from a table. Tables can be either
+CSV files, or Workbook sheets.</p>
+
+<h2>Usage</h2>
+
+<p>In the following examples the CSV filename is <em>data.csv</em>, the Workbook filename is
+<em>data.xlsx</em> The first column (column 1) is used as the value for JSON_RECORD_ID if
+specified. For the Workbook example the option &ldquo;-sheet&rdquo; specifies the name of the
+sheet to be imported. In our example the sheet name is &ldquo;Title List&rdquo;.</p>
+
+<p>Note if no ID column is specified then row number becomes the ID.  Import will replace
+any records with the same ID, if the &ldquo;-update-only&rdquo; option is used then
+it&rsquo;ll only add records and skip importing rows that have an existing JSON_RECORD_ID
+in the collection.</p>
+
+<p>In the following examples the first one imports all the contents of <em>data.csv</em> using the
+row number as JSON_RECORD_ID. In the second one all the rows are import from <em>data.csv</em>
+using the first column as the JSON_RECORD_ID (overwriting records with the same id).
+In the third version we&rsquo;re importing all the rows of <em>data.xlsx</em> using column 1 as
+the JSON_RECORD_ID. In the final example we&rsquo;re only adding new records from <em>data.xlsx</em>
+workbook sheet named &ldquo;Title List&rdquo; where the JSON_RECORD_ID is taken from column 1.</p>
+
+<pre><code class="language-shell">    dataset import data.csv
+    dataset import data.csv 1
+    dataset -sheet &quot;Title List&quot; import data.xlsx 1
+    dataset -sheet &quot;Title List&quot; -update-only import data.xlsx 1
+</code></pre>
+
+<p>Related topics: extract and export</p>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
