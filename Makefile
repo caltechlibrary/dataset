@@ -15,19 +15,19 @@ PROJECT_LIST = dataset
 dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
 
 cmds/dataset/assets.go:
-	pkgassets -o cmds/dataset/assets.go -p main -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
+	pkgassets -o cmds/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
 	git add cmds/dataset/assets.go
 
 cmds/dsindexer/assets.go:
-	pkgassets -o cmds/dsindexer/assets.go -p main -strip-prefix="/" -strip-suffix=".md" Examples examples/dsindexer Help docs/dsindexer
+	pkgassets -o cmds/dsindexer/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsindexer Help docs/dsindexer
 	git add cmds/dsindexer/assets.go
 
 cmds/dsfind/assets.go:
-	pkgassets -o cmds/dsfind/assets.go -p main -strip-prefix="/" -strip-suffix=".md" Examples examples/dsfind Help docs/dsfind
+	pkgassets -o cmds/dsfind/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsfind Help docs/dsfind
 	git add cmds/dsfind/assets.go
 
 cmds/dsws/assets.go:
-	pkgassets -o cmds/dsws/assets.go -p main -strip-prefix="/" -strip-suffix=".md" Examples examples/dsws Help docs/dsws 
+	pkgassets -o cmds/dsws/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsws Help docs/dsws 
 	git add cmds/dsws/assets.go
 
 cmds/dsws/templates.go:

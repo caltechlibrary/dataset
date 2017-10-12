@@ -122,10 +122,14 @@ func main() {
 
 	// Add help and examples
 	for k, v := range Help {
-		cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		if k != "nav" {
+			cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		}
 	}
 	for k, v := range Examples {
-		cfg.AddExample(k, fmt.Sprintf("%s", v))
+		if k != "nav" {
+			cfg.AddExample(k, fmt.Sprintf("%s", v))
+		}
 	}
 
 	// Process flags and update the environment as needed.
@@ -139,11 +143,14 @@ func main() {
 	}
 
 	if showExamples == true {
-		if len(args) > 0 {
-			fmt.Println(cfg.Example(args...))
-		} else {
-			fmt.Println(cfg.ExampleText)
-		}
+		/*
+			if len(args) > 0 {
+				fmt.Println(cfg.Example(args...))
+			} else {
+				fmt.Printf("\n%s", cfg.Example())
+			}
+		*/
+		fmt.Println(cfg.ExampleText)
 		os.Exit(0)
 	}
 

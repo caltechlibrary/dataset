@@ -639,10 +639,14 @@ func main() {
 
 	// Add help and example pages
 	for k, v := range Help {
-		cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		if k != "nav" {
+			cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		}
 	}
 	for k, v := range Examples {
-		cfg.AddExample(k, fmt.Sprintf("%s\n", v))
+		if k != "nav" {
+			cfg.AddExample(k, fmt.Sprintf("%s\n", v))
+		}
 	}
 
 	if showHelp == true {
@@ -657,7 +661,7 @@ func main() {
 		if len(args) > 0 {
 			fmt.Println(cfg.Example(args...))
 		} else {
-			fmt.Println(cfg.Example("index"))
+			fmt.Printf("\n%s", cfg.Example())
 		}
 		os.Exit(0)
 	}
