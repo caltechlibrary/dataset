@@ -632,30 +632,20 @@ func main() {
 
 	cfg := cli.New(appName, strings.ToUpper(appName), dataset.Version)
 	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dataset/usage.md"])
-	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dataset/description.md"])
+	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
+	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
 	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dataset/examples.md"])
+	cfg.ExampleText = fmt.Sprintf("%s", Examples["examples"])
 
-	for k, v := range dataset.Help {
-		ext := path.Ext(k)
-		dname := strings.TrimPrefix(path.Dir(k), "/")
-		if dname == appName && ext == ".md" {
-			keyword := strings.TrimSuffix(path.Base(k), ext)
-			if keyword != "nav" {
-				cfg.AddHelp(keyword, fmt.Sprintf("%s\n", v))
-			}
+	// Add help and example pages
+	for k, v := range Help {
+		if k != "nav" {
+			cfg.AddHelp(k, fmt.Sprintf("%s", v))
 		}
 	}
-
-	for k, v := range dataset.Examples {
-		ext := path.Ext(k)
-		dname := strings.TrimPrefix(path.Dir(k), "/")
-		if dname == appName && ext == ".md" {
-			keyword := strings.TrimSuffix(path.Base(k), ".md")
-			if keyword != "nav" {
-				cfg.AddExample(keyword, fmt.Sprintf("%s\n", v))
-			}
+	for k, v := range Examples {
+		if k != "nav" {
+			cfg.AddExample(k, fmt.Sprintf("%s\n", v))
 		}
 	}
 
@@ -671,7 +661,7 @@ func main() {
 		if len(args) > 0 {
 			fmt.Println(cfg.Example(args...))
 		} else {
-			fmt.Println(cfg.Example("index"))
+			fmt.Printf("\n%s", cfg.Example())
 		}
 		os.Exit(0)
 	}

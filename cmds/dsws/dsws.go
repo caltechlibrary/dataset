@@ -115,10 +115,22 @@ func main() {
 	// Configuration and command line interation
 	cfg := cli.New(appName, "DATASET", dataset.Version)
 	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dsws/usage.md"])
-	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dsws/description.md"])
+	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
+	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
 	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsws/index.md"])
+	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
+
+	// Add help and examples
+	for k, v := range Help {
+		if k != "nav" {
+			cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		}
+	}
+	for k, v := range Examples {
+		if k != "nav" {
+			cfg.AddExample(k, fmt.Sprintf("%s", v))
+		}
+	}
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {
@@ -131,11 +143,14 @@ func main() {
 	}
 
 	if showExamples == true {
-		if len(args) > 0 {
-			fmt.Println(cfg.Example(args...))
-		} else {
-			fmt.Println(cfg.ExampleText)
-		}
+		/*
+			if len(args) > 0 {
+				fmt.Println(cfg.Example(args...))
+			} else {
+				fmt.Printf("\n%s", cfg.Example())
+			}
+		*/
+		fmt.Println(cfg.ExampleText)
 		os.Exit(0)
 	}
 
@@ -166,8 +181,8 @@ func main() {
 		}
 	} else {
 		log.Printf("Using default search templates")
-		// Load our default templates from dataset.Defaults
-		if err := tmpl.ReadMap(dataset.Defaults); err != nil {
+		// Load our default templates from Defaults
+		if err := tmpl.ReadMap(Defaults); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
