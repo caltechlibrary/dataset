@@ -79,10 +79,18 @@ func main() {
 
 	cfg := cli.New(appName, appName, dataset.Version)
 	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", dataset.Help["/dsindexer/usage.md"])
-	cfg.DescriptionText = fmt.Sprintf("%s", dataset.Help["/dsindexer/description.md"])
+	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
+	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
 	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", dataset.Examples["/dsindexer/index.md"])
+	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
+
+	// Add help and examples
+	for k, v := range Help {
+		cfg.AddHelp(k, fmt.Sprintf("%s", v))
+	}
+	for k, v := range Examples {
+		cfg.AddExample(k, fmt.Sprintf("%s", v))
+	}
 
 	if showHelp == true {
 		if len(args) > 0 {
