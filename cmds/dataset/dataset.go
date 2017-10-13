@@ -33,6 +33,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -59,25 +60,26 @@ var (
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
-		"init":        collectionInit,
-		"create":      createJSONDoc,
-		"read":        readJSONDoc,
-		"update":      updateJSONDoc,
-		"delete":      deleteJSONDoc,
-		"join":        joinJSONDoc,
-		"keys":        collectionKeys,
-		"haskey":      hasKey,
-		"filter":      filter,
-		"path":        docPath,
-		"attach":      addAttachments,
-		"attachments": listAttachments,
-		"attached":    getAttachments,
-		"detach":      removeAttachments,
-		"import":      importCSV,
-		"export":      exportCSV,
-		"extract":     extract,
-		"check":       checkCollection,
-		"repair":      repairCollection,
+		"init":          collectionInit,
+		"create":        createJSONDoc,
+		"read":          readJSONDoc,
+		"update":        updateJSONDoc,
+		"delete":        deleteJSONDoc,
+		"join":          joinJSONDoc,
+		"keys":          collectionKeys,
+		"haskey":        hasKey,
+		"filter":        filter,
+		"path":          docPath,
+		"attach":        addAttachments,
+		"attachments":   listAttachments,
+		"attached":      getAttachments,
+		"detach":        removeAttachments,
+		"import":        importCSV,
+		"export":        exportCSV,
+		"extract":       extract,
+		"check":         checkCollection,
+		"repair":        repairCollection,
+		"import-gsheet": importGSheet,
 	}
 
 	// alphabet to use for buckets
@@ -530,6 +532,46 @@ func importCSV(params ...string) (string, error) {
 	return "OK", nil
 }
 
+func importGSheet(params ...string) (string, error) {
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME_AND_CELL_RANGE [COL_NO_FOR_ID]", os.Args[0])
+	}
+	spreadSheetId := params[0]
+	sheetName := params[1]
+	cellRange := "A1:Z"
+	if strings.Contains(params[1], "!") {
+		parts := strings.SplitN(params[1], "!", 2)
+		sheetName = parts[0]
+		cellRange = parts[1]
+	}
+	idCol := -1
+	if len(params) == 3 {
+		if colNumber, err := strconv.Atoi(params[2]); err != nil {
+			return "", fmt.Errorf("Can't convert column number to integer, %s", err)
+		} else {
+			idCol = colNumber
+		}
+	}
+
+	table, err := gsheets.ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange)
+	if err != nil {
+		return "", err
+	}
+
+	if linesNo, err := collection.ImportTable(table, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
+	} else if showVerbose == true {
+		log.Printf("%d total rows processed", linesNo)
+	}
+	return "OK", nil
+}
+
 func exportCSV(params ...string) (string, error) {
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -735,6 +777,6 @@ func main() {
 			fmt.Fprintf(out, "%s%s", output, nl)
 		}
 	} else {
-		handleError(fmt.Errorf("Don't understand %s\n", action), 1)
+		handleError(fmt.Errorf("Don't understand %q\n", action), 1)
 	}
 }
