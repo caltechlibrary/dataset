@@ -143,7 +143,7 @@ distribute_docs:
 	cp -v examples/*.md dist/examples/
 	cp -vR demos dist/
 
-release: dataset.go assets.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
 status:
 	git status
