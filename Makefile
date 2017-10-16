@@ -60,6 +60,7 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 
 test:
 	go test
+	cd gsheets && go test
 
 format:
 	gofmt -w dataset.go

@@ -52,7 +52,7 @@ var (
 
 	// App Specific Options
 	collectionName string
-	skipHeaderRow  bool
+	useHeaderRow   bool
 	useUUID        bool
 	showVerbose    bool
 	quietMode      bool
@@ -524,7 +524,7 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ImportCSV(fp, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't import CSV, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
@@ -539,21 +539,16 @@ func importGSheet(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME_AND_CELL_RANGE [COL_NO_FOR_ID]", os.Args[0])
+	if len(params) < 3 {
+		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE [COL_NO_FOR_ID]", os.Args[0])
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
-	cellRange := "A1:Z"
-	if strings.Contains(params[1], "!") {
-		parts := strings.SplitN(params[1], "!", 2)
-		sheetName = parts[0]
-		cellRange = parts[1]
-	}
+	cellRange := params[2]
 	idCol := -1
-	if len(params) == 3 {
-		if colNumber, err := strconv.Atoi(params[2]); err != nil {
-			return "", fmt.Errorf("Can't convert column number to integer, %s", err)
+	if len(params) == 4 {
+		if colNumber, err := strconv.Atoi(params[3]); err != nil {
+			return "", fmt.Errorf("Can't convert column number id to integer, %s", err)
 		} else {
 			idCol = colNumber
 		}
@@ -564,7 +559,7 @@ func importGSheet(params ...string) (string, error) {
 		return "", err
 	}
 
-	if linesNo, err := collection.ImportTable(table, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
@@ -660,7 +655,7 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
+	flag.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
