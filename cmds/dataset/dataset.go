@@ -33,6 +33,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -51,7 +52,7 @@ var (
 
 	// App Specific Options
 	collectionName string
-	skipHeaderRow  bool
+	useHeaderRow   bool
 	useUUID        bool
 	showVerbose    bool
 	quietMode      bool
@@ -59,25 +60,26 @@ var (
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
-		"init":        collectionInit,
-		"create":      createJSONDoc,
-		"read":        readJSONDoc,
-		"update":      updateJSONDoc,
-		"delete":      deleteJSONDoc,
-		"join":        joinJSONDoc,
-		"keys":        collectionKeys,
-		"haskey":      hasKey,
-		"filter":      filter,
-		"path":        docPath,
-		"attach":      addAttachments,
-		"attachments": listAttachments,
-		"attached":    getAttachments,
-		"detach":      removeAttachments,
-		"import":      importCSV,
-		"export":      exportCSV,
-		"extract":     extract,
-		"check":       checkCollection,
-		"repair":      repairCollection,
+		"init":          collectionInit,
+		"create":        createJSONDoc,
+		"read":          readJSONDoc,
+		"update":        updateJSONDoc,
+		"delete":        deleteJSONDoc,
+		"join":          joinJSONDoc,
+		"keys":          collectionKeys,
+		"haskey":        hasKey,
+		"filter":        filter,
+		"path":          docPath,
+		"attach":        addAttachments,
+		"attachments":   listAttachments,
+		"attached":      getAttachments,
+		"detach":        removeAttachments,
+		"import":        importCSV,
+		"export":        exportCSV,
+		"extract":       extract,
+		"check":         checkCollection,
+		"repair":        repairCollection,
+		"import-gsheet": importGSheet,
 	}
 
 	// alphabet to use for buckets
@@ -522,8 +524,43 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ImportCSV(fp, skipHeaderRow, idCol, useUUID, showVerbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't import CSV, %s", err)
+	} else if showVerbose == true {
+		log.Printf("%d total rows processed", linesNo)
+	}
+	return "OK", nil
+}
+
+func importGSheet(params ...string) (string, error) {
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 3 {
+		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE [COL_NO_FOR_ID]", os.Args[0])
+	}
+	spreadSheetId := params[0]
+	sheetName := params[1]
+	cellRange := params[2]
+	idCol := -1
+	if len(params) == 4 {
+		if colNumber, err := strconv.Atoi(params[3]); err != nil {
+			return "", fmt.Errorf("Can't convert column number id to integer, %s", err)
+		} else {
+			idCol = colNumber
+		}
+	}
+
+	table, err := gsheets.ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange)
+	if err != nil {
+		return "", err
+	}
+
+	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
+		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
 	}
@@ -618,7 +655,7 @@ func init() {
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
 	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.BoolVar(&skipHeaderRow, "skip-header-row", true, "skip the header row (use as property names)")
+	flag.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
@@ -735,6 +772,6 @@ func main() {
 			fmt.Fprintf(out, "%s%s", output, nl)
 		}
 	} else {
-		handleError(fmt.Errorf("Don't understand %s\n", action), 1)
+		handleError(fmt.Errorf("Don't understand %q\n", action), 1)
 	}
 }

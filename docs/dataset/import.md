@@ -38,5 +38,11 @@ workbook sheet named "Title List" where the JSON_RECORD_ID is taken from column 
     dataset -sheet "Title List" -update-only import data.xlsx 1
 ```
 
+By default the header row of the table (the first row of the table) is used as the
+attribute names of the JSON document you create on import.  If you don't want that
+behavior you can use the "-use-header-row=false" option and the fields will be in the
+form of "column_IDNO" where IDNO is replaced with a left zero padded column number
+(e.g. column_001, column_002, column_003).
+
 Related topics: extract and export
 

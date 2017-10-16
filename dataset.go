@@ -498,6 +498,78 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 	return lineNo, nil
 }
 
+// ImportTable takes a [][]string and iterates over the rows and imports them as
+// a JSON records into dataset.
+func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
+	var (
+		fieldNames []string
+		jsonFName  string
+		err        error
+	)
+	if len(table) == 0 {
+		return 0, fmt.Errorf("No data in table")
+	}
+	lineNo := 0
+	// i.e. use the header row for field names
+	if skipHeaderRow == true {
+		for i, field := range table[lineNo] {
+			if strings.TrimSpace(field) == "" {
+				fieldNames = append(fieldNames, fmt.Sprintf("column_%03d", i))
+			} else {
+				fieldNames = append(fieldNames, strings.TrimSpace(field))
+			}
+		}
+		lineNo++
+	}
+	rowCount := len(table)
+	for {
+		if lineNo >= rowCount {
+			break
+		}
+		row := table[lineNo]
+		lineNo++
+
+		fieldName := ""
+		record := map[string]interface{}{}
+		if idCol < 0 && useUUID == false {
+			jsonFName = fmt.Sprintf("%d", lineNo)
+		} else if useUUID == true {
+			jsonFName = uuid.New().String()
+			if _, ok := record["uuid"]; ok == true {
+				record["_uuid"] = jsonFName
+			} else {
+				record["uuid"] = jsonFName
+			}
+		}
+		for i, val := range row {
+			if i < len(fieldNames) {
+				fieldName = fieldNames[i]
+				if idCol == i {
+					jsonFName = val
+				}
+			} else {
+				fieldName = fmt.Sprintf("column_%03d", i+1)
+			}
+			//Note: We need to convert the value
+			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+				record[fieldName] = i
+			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
+				record[fieldName] = f
+			} else {
+				record[fieldName] = val
+			}
+		}
+		err = c.Create(jsonFName, record)
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		}
+		if verboseLog == true && (lineNo%1000) == 0 {
+			log.Printf("%d rows processed", lineNo)
+		}
+	}
+	return lineNo, nil
+}
+
 func colToString(cell interface{}) string {
 	var s string
 	switch cell.(type) {
