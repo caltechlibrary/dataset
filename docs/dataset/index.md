@@ -25,6 +25,7 @@ E.g. to get help on the "init" command.
 + [attached](attached.html) - returns attachments for a JSON document 
 + [detach](detach.html) - remove attachments to a JSON document
 + [import](import.html) - import a CSV file's rows as JSON documents
+    + [import-gsheet](import-gsheet.html) - import a Google Sheets sheet rows as JSON documents
 + [export](export.html) - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
 + [extract](extract.html) - will return a unique list of unique values based on the associated dot path described in the JSON docs
 + [commands](commands.html) - return a list of command names
