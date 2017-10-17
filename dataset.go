@@ -555,6 +555,10 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 				record[fieldName] = i
 			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
 				record[fieldName] = f
+			} else if strings.ToLower(val) == "true" {
+				record[fieldName] = true
+			} else if strings.ToLower(val) == "false" {
+				record[fieldName] = false
 			} else {
 				record[fieldName] = val
 			}

@@ -547,11 +547,12 @@ func importGSheet(params ...string) (string, error) {
 	cellRange := params[2]
 	idCol := -1
 	if len(params) == 4 {
-		if colNumber, err := strconv.Atoi(params[3]); err != nil {
-			return "", fmt.Errorf("Can't convert column number id to integer, %s", err)
-		} else {
-			idCol = colNumber
+		idCol, err = strconv.Atoi(params[3])
+		if err != nil {
+			return "", fmt.Errorf("Can't convert column number to integer, %s", err)
 		}
+		// NOTE: we need to adjust to zero based index
+		idCol--
 	}
 
 	table, err := gsheets.ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange)
