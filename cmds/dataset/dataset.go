@@ -749,7 +749,9 @@ func main() {
 				}
 				filterExp = fmt.Sprintf("%s", buf)
 			}
-			log.Fatal(streamFilterResults(out, filterExp))
+			if err := streamFilterResults(out, filterExp); err != nil {
+				log.Fatal(err)
+			}
 			os.Exit(0)
 		}
 		// Handle case of piping in or reading JSON from a file.
