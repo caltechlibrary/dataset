@@ -39,11 +39,11 @@
 </code></pre>
 
 <p>Running above web service using ACME TLS support (i.e. Let&rsquo;s Encrypt).
-Note will only include the hostname as the ACME setup is for
+Notice we only include the hostname as the ACME setup is for
 listenning on port 443. This may require privilaged account
 and will require that the hostname listed matches the public
 DNS for the machine (this is need by the ACME protocol to
-issue the cert, see <a href="https://letsencrypt.org">https://letsencrypt.org</a> for details)</p>
+issue the cert, see <a href="https://letsencrypt.org">https://letsencrypt.org</a> for details).</p>
 
 <pre><code>    dsws -acme -template=templates/search.tmpl &quot;Nav=nav.md&quot; index.bleve
 </code></pre>
