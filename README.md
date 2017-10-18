@@ -1,16 +1,36 @@
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
-_dataset_ is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
-_dataset_ is also a command line tool exercising the features of the golang _dataset_ package.
-A project goal of _dataset_ is to "play nice" with shell scripts and other Unix tools (e.g. it 
-respects standard in, out and error with minimal side effects). This means it is easily scriptable
-via Bash shell or interpretted languages like Python.
+_dataset_ is a golang package for managing JSON documents and their attachments on disc or in cloud storage
+(e.g. Amazon S3, Google Cloud Storage).  _dataset_ is also a command line tool exercising the features of 
+the golang _dataset_ package.  A project goal of _dataset_ is to "play nice" with shell scripts and other 
+Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is 
+easily scriptable via Bash shell or interpretted languages like Python.
 
 _dataset_ organanizes JSON documents by unique names in collections. Collections are represented
 as Unix subdirectories (or paths under S3) with each collection having a series of buckets (sub-directories/sub-paths)
 spreading the JSON documents and their attachments across the file system (this avoids having too many
 JSON documents in a given directory).
+
+At its core the itch _dataset_ is trying to scratch is managing JSON documents as collections where they
+are easily available for pipe line processing with common Unix tools and the occassional ad-hoc workflows
+typically encountered processing metadata in a library. You can do much more with it but that's its inception
+use case.
+
+### Limitations of _dataset_
+
+There are some specific things that _dataset_ is not. 
+
++ It is not a multiuser database system
++ It is not a repository management system
++ It is not a general purpose database system
++ It is not a real-time data store
++ It is not a high-performance key/value store
+
+If you're looking for a basis for creating a JSON-LD repository systme you probably are looking for something
+like [Project Fedora](https://fedoraproject.org/wiki/Fedora_Project_Wiki). Likewise if you looking for a more
+full featured database solution you should probably check ones like [Postgres](https://www.postgresql.org/), 
+[CouchDB](https://couchdb.apache.org/) are some good starting points.
 
 ## Operations
 

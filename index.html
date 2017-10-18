@@ -26,16 +26,38 @@
 <section>
 <h1>dataset   <a href="https://data.caltech.edu/badge/latestdoi/79394591"><img src="https://data.caltech.edu/badge/79394591.svg" alt="DOI" /></a></h1>
 
-<p><em>dataset</em> is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
-<em>dataset</em> is also a command line tool exercising the features of the golang <em>dataset</em> package.
-A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other Unix tools (e.g. it
-respects standard in, out and error with minimal side effects). This means it is easily scriptable
-via Bash shell or interpretted languages like Python.</p>
+<p><em>dataset</em> is a golang package for managing JSON documents and their attachments on disc or in cloud storage
+(e.g. Amazon S3, Google Cloud Storage).  <em>dataset</em> is also a command line tool exercising the features of
+the golang <em>dataset</em> package.  A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other
+Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is
+easily scriptable via Bash shell or interpretted languages like Python.</p>
 
 <p><em>dataset</em> organanizes JSON documents by unique names in collections. Collections are represented
 as Unix subdirectories (or paths under S3) with each collection having a series of buckets (sub-directories/sub-paths)
 spreading the JSON documents and their attachments across the file system (this avoids having too many
 JSON documents in a given directory).</p>
+
+<p>At its core the itch <em>dataset</em> is trying to scratch is managing JSON documents as collections where they
+are easily available for pipe line processing with common Unix tools and the occassional ad-hoc workflows
+typically encountered processing metadata in a library. You can do much more with it but that&rsquo;s its inception
+use case.</p>
+
+<h3>Limitations of <em>dataset</em></h3>
+
+<p>There are some specific things that <em>dataset</em> is not.</p>
+
+<ul>
+<li>It is not a multiuser database system</li>
+<li>It is not a repository management system</li>
+<li>It is not a general purpose database system</li>
+<li>It is not a real-time data store</li>
+<li>It is not a high-performance key/value store</li>
+</ul>
+
+<p>If you&rsquo;re looking for a basis for creating a JSON-LD repository systme you probably are looking for something
+like <a href="https://fedoraproject.org/wiki/Fedora_Project_Wiki">Project Fedora</a>. Likewise if you looking for a more
+full featured database solution you should probably check ones like <a href="https://www.postgresql.org/">Postgres</a>,
+<a href="https://couchdb.apache.org/">CouchDB</a> are some good starting points.</p>
 
 <h2>Operations</h2>
 
