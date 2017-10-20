@@ -87,8 +87,7 @@ lint:
 	golint cmds/dsfind/dsfind.go
 
 clean: 
-	if [ "$(PKGASSETS)" != "" ]; then rm cmds/*/assets.go; fi
-	if [ "$(PKGASSETS)" != "" ]; then rm cmds/*/templates.go; fi
+	if [ "$(PKGASSETS)" != "" ]; then ./rebuild-assets.bash; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
