@@ -34,6 +34,7 @@ import (
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/gsheets"
+	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -576,17 +577,16 @@ func exportGSheet(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) < 5 {
-		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELD_LIST [COLUMN_NAMES]", os.Args[0])
+	if len(params) < 4 {
+		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME FILTER_EXPR FIELD_LIST [COLUMN_NAMES]", os.Args[0])
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
-	cellRange := params[2]
-	filterExpr := params[3]
-	dotPaths := strings.Split(params[4], ",")
+	filterExpr := params[2]
+	dotPaths := strings.Split(params[3], ",")
 	colNames := []string{}
-	if len(params) >= 5 {
-		colNames = strings.Split(params[3], ",")
+	if len(params) >= 4 {
+		colNames = strings.Split(params[4], ",")
 	} else {
 		for _, val := range dotPaths {
 			colNames = append(colNames, val)
@@ -603,14 +603,13 @@ func exportGSheet(params ...string) (string, error) {
 	keys := collection.Keys()
 	f, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	var (
 		table [][]interface{}
 		data  interface{}
-		cnt   int
-		row   []string
+		row   []interface{}
 	)
 	for i, key := range keys {
 		if err := collection.Read(key, &data); err == nil {
@@ -629,7 +628,7 @@ func exportGSheet(params ...string) (string, error) {
 			}
 		}
 	}
-	if err := gsheets.WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange, table); err != nil {
+	if err := gsheets.WriteSheet(clientSecretJSON, spreadSheetId, sheetName, table); err != nil {
 		return "", err
 	}
 	return "OK", nil

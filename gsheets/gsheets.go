@@ -99,27 +99,27 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 
 	b, err := ioutil.ReadFile(clientSecretJSON)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
+		return nil, fmt.Errorf("Unable to read client secret file: %s", err)
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to parse client secret file to config: %v", err)
+		return nil, fmt.Errorf("Unable to parse client secret file to config: %s", err)
 	}
 	client := getClient(ctx, config)
 
 	srv, err := sheets.New(client)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve Sheets Client %v", err)
+		return nil, fmt.Errorf("Unable to retrieve Sheets Client %s", err)
 	}
 
 	// Prints the columns from sheet described by spreadSheetId
 	readRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
 	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).Do()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve data from sheet. %v", err)
+		return nil, fmt.Errorf("Unable to retrieve data from sheet. %s", err)
 	}
 
 	if len(resp.Values) > 0 {
@@ -137,32 +137,36 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 	return nil, fmt.Errorf("No data found")
 }
 
-func WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string, data [][]interface{}) error {
+func WriteSheet(clientSecretJSON, spreadSheetId, sheetName string, table [][]interface{}) error {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile(clientSecretJSON)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read client secret file: %v", err)
+		return fmt.Errorf("Unable to read client secret file: %s", err)
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to parse client secret file to config: %v", err)
+		return fmt.Errorf("Unable to parse client secret file to config: %s", err)
 	}
 	client := getClient(ctx, config)
 
 	srv, err := sheets.New(client)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve Sheets Client %v", err)
+		return fmt.Errorf("Unable to retrieve Sheets Client %s", err)
 	}
 
+	var vr sheets.ValueRange
+
 	// Prints the columns from sheet described by spreadSheetId
-	writeRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
-	_, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &data).ValueInputOption("RAW").Do()
-	if err != nil {
-		return fmt.Errorf("Unable to write data to sheet. %v", err)
+	for i, row := range table {
+		writeRange := fmt.Sprintf("%s!A%d", sheetName, i+1)
+		vr.Values = append(vr.Values, row)
+		if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("RAW").Do(); err != nil {
+			return fmt.Errorf("Unable to write row %d to sheet. %s", i+1, err)
+		}
 	}
 	return nil
 }
