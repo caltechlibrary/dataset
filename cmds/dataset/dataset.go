@@ -80,6 +80,7 @@ var (
 		"check":         checkCollection,
 		"repair":        repairCollection,
 		"import-gsheet": importGSheet,
+		"export-gsheet": exportGSheet,
 	}
 
 	// alphabet to use for buckets
@@ -564,6 +565,72 @@ func importGSheet(params ...string) (string, error) {
 		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
+	}
+	return "OK", nil
+}
+
+func exportGSheet(params ...string) (string, error) {
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 5 {
+		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELD_LIST [COLUMN_NAMES]", os.Args[0])
+	}
+	spreadSheetId := params[0]
+	sheetName := params[1]
+	cellRange := params[2]
+	filterExpr := params[3]
+	dotPaths := strings.Split(params[4], ",")
+	colNames := []string{}
+	if len(params) >= 5 {
+		colNames = strings.Split(params[3], ",")
+	} else {
+		for _, val := range dotPaths {
+			colNames = append(colNames, val)
+		}
+	}
+	// Trim the any spaces for paths and column names
+	for i, val := range dotPaths {
+		dotPaths[i] = strings.TrimSpace(val)
+	}
+	for i, val := range colNames {
+		colNames[i] = strings.TrimSpace(val)
+	}
+
+	keys := collection.Keys()
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return 0, err
+	}
+
+	var (
+		table [][]interface{}
+		data  interface{}
+		cnt   int
+		row   []string
+	)
+	for i, key := range keys {
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				// save row out.
+				row = []interface{}{}
+				for _, colPath := range dotPaths {
+					col, err := dotpath.Eval(colPath, data)
+					if err == nil {
+						row = append(row, col)
+					} else {
+						row = append(row, "")
+					}
+				}
+				table[i] = append(table[i], row)
+			}
+		}
+	}
+	if err := gsheets.WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange, table); err != nil {
+		return "", err
 	}
 	return "OK", nil
 }
