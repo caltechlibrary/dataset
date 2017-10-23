@@ -136,8 +136,3 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 	}
 	return nil, fmt.Errorf("No data found")
 }
-
-// WriteSheet create/replaces a sheet in a workbook or Google Sheets document
-func WriteSheet(clientSecretJSON, spreadSheetId, sheetName string, dataGrid [][]interface{}) error {
-	return fmt.Errorf("WriteSheet() not implemented")
-}
