@@ -607,15 +607,15 @@ func exportGSheet(params ...string) (string, error) {
 	}
 
 	var (
-		table [][]interface{}
-		data  interface{}
-		row   []interface{}
+		data interface{}
 	)
-	for i, key := range keys {
+
+	table := [][]interface{}{}
+	for _, key := range keys {
 		if err := collection.Read(key, &data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				// save row out.
-				row = []interface{}{}
+				row := []interface{}{}
 				for _, colPath := range dotPaths {
 					col, err := dotpath.Eval(colPath, data)
 					if err == nil {
@@ -624,7 +624,7 @@ func exportGSheet(params ...string) (string, error) {
 						row = append(row, "")
 					}
 				}
-				table[i] = append(table[i], row)
+				table = append(table, row)
 			}
 		}
 	}
