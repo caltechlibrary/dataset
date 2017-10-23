@@ -9,7 +9,8 @@
 
 ## Next
 
-+ [ ] Add Google Sheet import based on existing CSV import code
++ [x] Add Google Sheet import based on existing CSV import code
++ [ ] Add Google Sheet export based on existing CSV export code
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
