@@ -28,15 +28,9 @@ Unix commands like ls, find, grep or their cloud counter parts.
 
 _dataset_ has many limitations, some are listed below
 
-+ it is not a multiuser database system
-+ it is not a repository management system
-+ it is not a general purpose database system
 + it is not a real-time data store
-
-If you're looking for a JSON-LD repository system you probably are might want to checkout something like
-like version 4 of [Project Fedora](https://fedoraproject.org/wiki/Fedora_Project_Wiki). Likewise if you looking 
-a database solution you might start with [SQLite](https://sqlite.org/) or [Postgres](https://www.postgresql.org/)
-for relational systems and [CouchDB](https://couchdb.apache.org/) for a NoSQL approach.
++ it is not a repository management system
++ it is not a general purpose multiuser database system
 
 
 ## Operations
