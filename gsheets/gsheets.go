@@ -136,3 +136,7 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 	}
 	return nil, fmt.Errorf("No data found")
 }
+
+func WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string, data [][]string) error {
+	return fmt.Errorf("WriteSheet() not implemented.")
+}
