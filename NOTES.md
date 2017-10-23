@@ -1,9 +1,10 @@
 
 # Attachment ideas
 
-S3 brings additional overhead for attachments it works like a k/v store where the operations are on files not within them.
+S3/Google Cloud Storage brings additional overhead for attachments it works 
+like a k/v store where the operations are on files not within them.
 
-## Naive implementation steps for S3
+## Naive implementation steps for S3/Google Cloud Storage
 
 ### Attach (no other attachments)
 
@@ -47,6 +48,5 @@ S3 brings additional overhead for attachments it works like a k/v store where th
     + [REST methods](https://developers.google.com/sheets/api/reference/rest/)
     + [Golang Quickstart docs](https://developers.google.com/sheets/api/quickstart/go)
         + where to go to setup credentials and project specifics, we're using Go for our project
-
 
 

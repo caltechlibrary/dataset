@@ -1,9 +1,10 @@
 
 + [Home](/)
-+ [README](./)
++ [README](../)
 + [LICENSE](license.html)
 + [INSTALL](install.html)
 + [Documentation](docs/)
++ [Examples](examples/)
 + [How To](how-to/)
 + [Github](https://github.com/caltechlibrary/dataset)
 

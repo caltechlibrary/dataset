@@ -1,8 +1,8 @@
 {{- define "pager.tmpl" -}}
 <!-- BEGIN: Pager -->
 <div class="search-result-pager">
-{{- $qryTerms := (urlencode (dotpath ".query.query" .request ""))}}
-{{- $highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}}
+{{- $qryTerms := (urlencode (dotpath .request ".query.query" ""))}}
+{{- $highlight :=  (has_dotpath .request ".highlight.style" "true" "false")}}
 {{- $from := (int .request.from)}}
 {{- $size := (int .request.size)}}
 {{- $total := (int .total_hits)}}
@@ -10,7 +10,7 @@
 {{- $next := (addi $from $size)}}
 {{- $last := (int .total_hits)}}
 {{- $sortBy := (join .request.sort ",")}}
-{{- $fields := (join (dotpath ".fields" .request "*") ",") -}}
+{{- $fields := (join (dotpath .request ".fields" "*") ",") -}}
 
 {{- if (gt $total 0) -}}
     {{- if (and (gt $from 0) (ge $prev 0)) -}}

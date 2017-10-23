@@ -3,9 +3,10 @@
 
 ## Command line programs
 
-+ [dataset command](dataset.html) - Docs on the command line tool named _dataset_
-+ [dsindexer command](dsindexer.html) - Creates/updates a Bleve index of _dataset_ content based on index definition document
-+ [dsfind command](dsfind.html) - Searches one or more Bleve indexes creates with _dsindexer_
++ [dataset](dataset/) - the command line tool for managing _dataset_ collections
++ [dsindexer](dsindexer/) - Creates/updates a Bleve index of _dataset_ content based on index definition document
++ [dsfind](dsfind/) - Searches one or more Bleve indexes created with _dsindexer_
++ [dsws](dsws/) - A web server and web service based on one or more Bleve indexes created with _dsindexer_
 
 ## Golang related
 
@@ -16,3 +17,13 @@
 + [operations](operations.html) - Lists the operations support on dataset with examples
 + [file system layout](file-system-layout.html) - Describes how collections are organized
 + [defining indexes](defining-indexes.html) - Describes the index definition JSON document format
++ [cloud storage](cloud-storage.html) - Describes using Cloud Storage (e.g. AWS S3, Google Cloud Storage)
+
+
+
+
+
+
+
+
+

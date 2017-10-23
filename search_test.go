@@ -110,7 +110,7 @@ func TestIndexingSearch(t *testing.T) {
 		t.Errorf("Can't write %q, %s", mName, err)
 		t.FailNow()
 	}
-	if err := c.Indexer(iName, mName, 100); err != nil {
+	if err := c.Indexer(iName, mName, 100, []string{}); err != nil {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}

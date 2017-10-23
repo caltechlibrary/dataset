@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.3-rc8"
+	Version = "v0.0.5-dev"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -140,10 +140,10 @@ type Collection struct {
 	Buckets []string `json:"buckets"`
 	// KeyMap holds the document name to bucket map for the collection
 	KeyMap map[string]string `json:"keymap"`
-	// Store holds the storage system information (e.g. local disc, S3)
+	// Store holds the storage system information (e.g. local disc, S3, GS)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
-	// FullPath is the fully qualified path on disc or URI to S3 bucket
+	// FullPath is the fully qualified path on disc or URI to S3 or GS bucket
 	FullPath string `json:"-"`
 }
 
@@ -155,7 +155,8 @@ func getStore(name string) (*storage.Store, string, error) {
 		err            error
 	)
 	// Pick storage based on name
-	if strings.HasPrefix(name, "s3://") == true {
+	switch {
+	case strings.HasPrefix(name, "s3://") == true:
 		u, err := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
@@ -168,15 +169,28 @@ func getStore(name string) (*storage.Store, string, error) {
 			p = p[1:]
 		}
 		collectionName = p
-		return store, collectionName, nil
+	case strings.HasPrefix(name, "gs://") == true:
+		u, err := url.Parse(name)
+		opts := storage.EnvToOptions(os.Environ())
+		opts["GoogleBucket"] = u.Host
+		store, err = storage.Init(storage.GS, opts)
+		if err != nil {
+			return nil, "", err
+		}
+		p := u.Path
+		if strings.HasPrefix(p, "/") {
+			p = p[1:]
+		}
+		collectionName = p
+	default:
+		// Regular file system storage.
+		store, err = storage.Init(storage.FS, map[string]interface{}{})
+		if err != nil {
+			return nil, "", err
+		}
+		collectionName = name
 	}
 
-	// Regular file system storage.
-	store, err = storage.Init(storage.FS, map[string]interface{}{})
-	if err != nil {
-		return nil, "", err
-	}
-	collectionName = name
 	return store, collectionName, nil
 }
 
@@ -191,7 +205,7 @@ func Create(name string, bucketNames []string) (*Collection, error) {
 		return nil, err
 	}
 	// See if we need an open or continue with create
-	if store.Type == storage.S3 {
+	if store.Type == storage.S3 || store.Type == storage.GS {
 		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
 			return Open(name)
 		}
@@ -469,6 +483,82 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 				record[fieldName] = i
 			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
 				record[fieldName] = f
+			} else {
+				record[fieldName] = val
+			}
+		}
+		err = c.Create(jsonFName, record)
+		if err != nil {
+			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		}
+		if verboseLog == true && (lineNo%1000) == 0 {
+			log.Printf("%d rows processed", lineNo)
+		}
+	}
+	return lineNo, nil
+}
+
+// ImportTable takes a [][]string and iterates over the rows and imports them as
+// a JSON records into dataset.
+func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
+	var (
+		fieldNames []string
+		jsonFName  string
+		err        error
+	)
+	if len(table) == 0 {
+		return 0, fmt.Errorf("No data in table")
+	}
+	lineNo := 0
+	// i.e. use the header row for field names
+	if skipHeaderRow == true {
+		for i, field := range table[lineNo] {
+			if strings.TrimSpace(field) == "" {
+				fieldNames = append(fieldNames, fmt.Sprintf("column_%03d", i))
+			} else {
+				fieldNames = append(fieldNames, strings.TrimSpace(field))
+			}
+		}
+		lineNo++
+	}
+	rowCount := len(table)
+	for {
+		if lineNo >= rowCount {
+			break
+		}
+		row := table[lineNo]
+		lineNo++
+
+		fieldName := ""
+		record := map[string]interface{}{}
+		if idCol < 0 && useUUID == false {
+			jsonFName = fmt.Sprintf("%d", lineNo)
+		} else if useUUID == true {
+			jsonFName = uuid.New().String()
+			if _, ok := record["uuid"]; ok == true {
+				record["_uuid"] = jsonFName
+			} else {
+				record["uuid"] = jsonFName
+			}
+		}
+		for i, val := range row {
+			if i < len(fieldNames) {
+				fieldName = fieldNames[i]
+				if idCol == i {
+					jsonFName = val
+				}
+			} else {
+				fieldName = fmt.Sprintf("column_%03d", i+1)
+			}
+			//Note: We need to convert the value
+			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
+				record[fieldName] = i
+			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
+				record[fieldName] = f
+			} else if strings.ToLower(val) == "true" {
+				record[fieldName] = true
+			} else if strings.ToLower(val) == "false" {
+				record[fieldName] = false
 			} else {
 				record[fieldName] = val
 			}

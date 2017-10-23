@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#
+# Local Disc setup
+#
+export DATASET="my-test-bucket"
+
+#
+# S3 test setup example
+#
+
+# Load the config and credentials in ~/.aws if found
+export AWS_SDK_LOAD_CONFIG=1
+# You will need to define your bucket name
+#export DATASET="s3://my-test-bucket"
+
+#
+# Google Cloud Storage test setup example
+#
+#export DATASET="gs://my-test-bucket"

@@ -43,55 +43,11 @@ import (
 
 // Flag options
 var (
-	usage = `USAGE: %s [OPTIONS] [KEY_VALUE_PAIRS] [DOC_ROOT] BLEVE_INDEXES`
-
-	description = `
-SYNOPSIS
-
-	%s is a web search service for indexes data collection
-
-CONFIGURATION
-
-%s can be configurated through environment settings. The following are
-supported.
-
-+ DATASET_URL  - (optional) sets the URL to listen on (e.g. http://localhost:8011)
-+ DATASET_SSL_KEY - (optional) the path to the SSL key if using https
-+ DATASET_SSL_CERT - (optional) the path to the SSL cert if using https
-+ DATASET_TEMPLATE - (optional) path to search results template(s)
-`
-
-	examples = `
-EXAMPLES
-
-Run web server using the content in the current directory
-(assumes the environment variables DATASET_DOCROOT are not defined).
-
-   %s
-
-Run web service using "index.bleve" index, results templates in 
-"templates/search.tmpl" and a "htdocs" directory for static files.
-
-   %s -template=templates/search.tmpl htdocs index.bleve
-
-Run a web service with custom navigation taken from a Markdown file
-
-   %s -template=templates/search.tmpl "Nav=nav.md" index.bleve
-
-Running above web service using ACME TLS support (i.e. Let's Encrypt).
-Note will only include the hostname as the ACME setup is for
-listenning on port 443. This may require privilaged account
-and will require that the hostname listed matches the public
-DNS for the machine (this is need by the ACME protocol to
-issue the cert, see https://letsencrypt.org for details)
-
-   %s -acme -template=templates/search.tmpl "Nav=nav.md" index.bleve
-`
-
 	// Standard options
-	showHelp    bool
-	showVersion bool
-	showLicense bool
+	showHelp     bool
+	showVersion  bool
+	showLicense  bool
+	showExamples bool
 
 	// local app options
 	uri           string
@@ -128,12 +84,13 @@ func init() {
 	defaultURL := "http://localhost:8011"
 
 	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "Display this help message")
-	flag.BoolVar(&showHelp, "help", false, "Display this help message")
-	flag.BoolVar(&showVersion, "v", false, "Should version info")
-	flag.BoolVar(&showVersion, "version", false, "Should version info")
-	flag.BoolVar(&showLicense, "l", false, "Should license info")
-	flag.BoolVar(&showLicense, "license", false, "Should license info")
+	flag.BoolVar(&showHelp, "h", false, "display help")
+	flag.BoolVar(&showHelp, "help", false, "display help")
+	flag.BoolVar(&showLicense, "l", false, "display license")
+	flag.BoolVar(&showLicense, "license", false, "display license")
+	flag.BoolVar(&showVersion, "v", false, "display version")
+	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 
 	// App Options
 	flag.StringVar(&uri, "u", defaultURL, "The protocal and hostname listen for as a URL")
@@ -156,16 +113,47 @@ func main() {
 	args := flag.Args()
 
 	// Configuration and command line interation
-	cfg := cli.New(appName, "DATASET", fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
-	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
-	cfg.ExampleText = fmt.Sprintf(examples, appName, appName, appName, appName)
+	cfg := cli.New(appName, "DATASET", dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
+	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
+	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
+	cfg.OptionText = "## OPTIONS\n\n"
+	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
+
+	// Add help and examples
+	for k, v := range Help {
+		if k != "nav" {
+			cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		}
+	}
+	for k, v := range Examples {
+		if k != "nav" {
+			cfg.AddExample(k, fmt.Sprintf("%s", v))
+		}
+	}
 
 	// Process flags and update the environment as needed.
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
 		os.Exit(0)
 	}
+
+	if showExamples == true {
+		/*
+			if len(args) > 0 {
+				fmt.Println(cfg.Example(args...))
+			} else {
+				fmt.Printf("\n%s", cfg.Example())
+			}
+		*/
+		fmt.Println(cfg.ExampleText)
+		os.Exit(0)
+	}
+
 	if showLicense == true {
 		fmt.Println(cfg.License())
 		os.Exit(0)
@@ -193,8 +181,8 @@ func main() {
 		}
 	} else {
 		log.Printf("Using default search templates")
-		// Load our default templates from dataset.Defaults
-		if err := tmpl.ReadMap(dataset.Defaults); err != nil {
+		// Load our default templates from Defaults
+		if err := tmpl.ReadMap(Defaults); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}

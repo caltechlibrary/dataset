@@ -49,7 +49,7 @@ Size: {{ .request.size }}
 
 <form class="search-form" method="get" action="/api">
 <!-- BEGIN: Pager -->
-{{$qryTerms := (urlencode (dotpath ".query.query" .request ""))}}
+{{$qryTerms := (urlencode (dotpath .request ".query.query" ""))}}
 {{$highlight :=  (has_dotpath ".highlight.style" .request "true" "false")}} 
 {{$from := (int .request.from)}}
 {{$size := (int .request.size)}}

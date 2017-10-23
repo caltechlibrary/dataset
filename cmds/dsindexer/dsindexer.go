@@ -1,3 +1,23 @@
+//
+// dsindexer creates Blevesearch indexes for a dataset collection. These can be used by
+// both dsfind and dsws (web server).
+//
+// @author R. S. Doiel, <rsdoiel@caltech.edu>
+//
+//
+// Copyright (c) 2017, Caltech
+// All rights not granted herein are expressly reserved by Caltech.
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
 package main
 
 import (
@@ -17,54 +37,11 @@ import (
 )
 
 var (
-	usage = `USAGE: %s [OPTIONS] INDEX_DEFINITION [INDEX_NAME]`
-
-	description = `
-SYNOPSIS
-
-%s is a command line tool for creating a Bleve index based on records in a dataset 
-collection. %s reads a JSON document for the index definition and uses that to
-configure the Bleve index built based on the dataset collection. If an index
-name is not provided then the index name will be the same as the definition file
-with the .json replaced by .bleve.
-
-A index definition is JSON document where the indexable record is defined
-along with dot paths into the JSON collection record being indexed.
-
-If your collection has records that look like
-
-    {"name":"Frieda Kahlo","occupation":"artist","id":"Frida_Kahlo","dob":"1907-07-06"}
-
-and your wanted an index of names and occupation then your index definition file could
-look like
-
-   {
-	   "name":{
-		   "object_path": ".name"
-	   },
-	   "occupation": {
-		   "object_path":".occupation"
-	   }
-   }
-
-Based on this definition the "id" and "dob" fields would not be included in the index.
-`
-
-	examples = `
-EXAMPLES
-
-In the example the index will be created for a collection called "characters".
-
-    %s -c characters email-mapping.json email-index
-
-This will build a Bleve index called "email-index" based on the index defined
-in "email-mapping.json".
-`
-
 	// Standard Options
-	showHelp    bool
-	showLicense bool
-	showVersion bool
+	showHelp     bool
+	showLicense  bool
+	showVersion  bool
+	showExamples bool
 
 	// App Specific Options
 	collectionName string
@@ -83,6 +60,7 @@ func init() {
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -97,20 +75,53 @@ func init() {
 func main() {
 	appName := path.Base(os.Args[0])
 	flag.Parse()
+	args := flag.Args()
 
-	cfg := cli.New(appName, appName, fmt.Sprintf(dataset.License, appName, dataset.Version), dataset.Version)
-	cfg.UsageText = fmt.Sprintf(usage, appName)
-	cfg.DescriptionText = fmt.Sprintf(description, appName, appName)
-	cfg.ExampleText = fmt.Sprintf(examples, appName)
+	cfg := cli.New(appName, appName, dataset.Version)
+	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
+	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
+	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
+	cfg.OptionText = "## OPTIONS\n\n"
+	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
+
+	// Add help and examples
+	for k, v := range Help {
+		if k != "nav" {
+			cfg.AddHelp(k, fmt.Sprintf("%s", v))
+		}
+	}
+	for k, v := range Examples {
+		if k != "nav" {
+			cfg.AddExample(k, fmt.Sprintf("%s", v))
+		}
+	}
 
 	if showHelp == true {
-		fmt.Println(cfg.Usage())
+		if len(args) > 0 {
+			fmt.Println(cfg.Help(args...))
+		} else {
+			fmt.Println(cfg.Usage())
+		}
 		os.Exit(0)
 	}
+
+	if showExamples == true {
+		/*
+			if len(args) > 0 {
+				fmt.Println(cfg.Example(args...))
+			} else {
+				fmt.Printf("\n%s", cfg.Example())
+			}
+		*/
+		fmt.Println(cfg.ExampleText)
+		os.Exit(0)
+	}
+
 	if showLicense == true {
 		fmt.Println(cfg.License())
 		os.Exit(0)
 	}
+
 	if showVersion == true {
 		fmt.Println(cfg.Version())
 		os.Exit(0)
@@ -127,7 +138,6 @@ func main() {
 		collectionName = datasetEnv
 	}
 
-	args := flag.Args()
 	definitionFName := ""
 	indexName := ""
 	if len(args) == 1 {

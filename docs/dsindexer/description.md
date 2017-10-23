@@ -1,11 +1,5 @@
 
-# dsindexer
-
-## USAGE
-
-    dsindexer [OPTIONS] INDEX_DEFINITION [INDEX_NAME]
-
-## SYNOPSIS
+## Description
 
 dsindexer is a command line tool for creating a Bleve index based on records in a dataset 
 collection. dsindexer reads a JSON document for the index definition and uses that to
@@ -37,30 +31,4 @@ look like
 ```
 
 Based on this definition the "id" and "dob" fields would not be included in the index.
-OPTIONS
 
-
-```
-	-c	sets the collection to be used
-	-collection	sets the collection to be used
-	-h	display help
-	-help	display help
-	-l	display license
-	-license	display license
-	-v	display version
-	-version	display version
-```
-
-## EXAMPLES
-
-In the example the index will be created for a collection called "characters".
-
-```shell
-    dsindexer -c characters email-mapping.json email-index
-```
-
-This will build a Bleve index called "email-index" based on the index defined
-in "email-mapping.json".
-
-
-dsindexer v0.0.2

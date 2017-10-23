@@ -5,16 +5,11 @@
 
 + [ ] Repair and check will fail on S3 without warning or indication why
 + [ ] Fix CORS setting in _dsws_
-+ [ ] Titles don't seem to sort in deployment, triage problem - index, definition or faulty search implementation
++ [ ] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
 
 ## Next
 
-+ [ ] Add ds2sheets which will provide a daemon for syncronizing a Google Sheets document with a dataset collection
-    + it should handle setting up and maintaining a connection to the Sheets API 
-    + it will require a column to play the role of ID for JSON document in collection
-    + it will require a list of paths to map to columns
-    + option for implode/exploding sub-fields in the spreadsheet cells
-        + e.g. arrays of strings could be flattened as pipe delimited and expected as an array of string in dataset collection JSON document
++ [ ] Add Google Sheet import based on existing CSV import code
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
@@ -22,6 +17,12 @@
 ## Someday, Maybe
 
 + [ ] Add support for gs:// Google cloud storage as an alternative to disc and s3://
++ [ ] Provide a mechanism to synchronize a Google Sheet with dataset collection.
+    + it should handle setting up and maintaining a connection to the Sheets API 
+    + it will require a column to play the role of ID for JSON document in collection
+    + it will require a list of paths to map to columns
+    + option for implode/exploding sub-fields in the spreadsheet cells
+        + e.g. arrays of strings could be flattened as pipe delimited and expected as an array of string in dataset collection JSON document
 + [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
     + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
