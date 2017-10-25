@@ -19,18 +19,32 @@
 </nav>
 
 <section>
-<h1>export</h1>
+<h1>export-gsheets</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
+<pre><code>    dataset export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
 </code></pre>
 
 <h2>Description</h2>
 
-<p>export will render the contents of a collection as a tabular file. Supported tabular formats include
-CSV and xlsx. Format is determined by file suffix (e.g. .csv for CSV format, .xlsx for
-workbook format).</p>
+<p>export-sheets will write the exported records and exported fields to a Google Sheets sheet in the given cell range.</p>
+
+<p>SHEET_ID is the google sheet id, usually a very long alpha numeric string. If your URL looks like</p>
+
+<pre><code>    https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+</code></pre>
+
+<p>The Sheet ID would be</p>
+
+<pre><code>    1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
+</code></pre>
+
+<p>CELL_RANGE is expressed in a letter colum row fashion (like in an Excel Workbook). E.g. A1:B10 would refer to
+the grid starting in the first column (i.e. A) and row (i.a. 1) moving to the lower left with the grid
+ending in column 2 (i.e. B) row 10. This forms the grid that will be written out. Typically this would be something
+like &ldquo;A1:Z&rdquo; which would translate start in the upper right cell of the spreadsheet and replace all cells
+to column Z going down.</p>
 
 <p>FILTER_EXPR is an expression that evaluates to <em>true</em> or <em>false</em> based on Golang template expressions
 (see <code>dataset -help filter</code> for more explanation).</p>
@@ -38,21 +52,16 @@ workbook format).</p>
 <p>FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. .id,.title,.pubDate) in the JSON documents
 in the collection (see <code>dataset -help dotpath</code> for more explanation)</p>
 
-<p>Note for workbooks you can set the sheet name with the option &ldquo;-sheet&rdquo;.</p>
-
 <h2>Usage</h2>
 
 <p>In the following examples we will &ldquo;filter&rdquo; for all records in a collection so we use the string &ldquo;true&rdquo;.
-The following fields are being exported - ._id,.title, and .pubDate with the following headings &ndash;
-id, title and publication date.</p>
+The following fields are being exported - .name and .contact with the following headings &ndash;
+Name, Contact.</p>
 
-<p>The example blow creates a CSV file then creates a Workbook with a sheet named &ldquo;Title List&rdquo;.</p>
-
-<pre><code class="language-shell">	dataset export titles.csv true '._id,.title,.pubDate' 'id,title,publication date'
-	dataset -sheet 'Title List' export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
+<pre><code class="language-shell">	dataset export-gsheets &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; Sheet1 &quot;A1:Z&quot; true '.name,.contact' 'Name,Contact'
 </code></pre>
 
-<p>Related topics: extract, import, import-gsheets, export-gsheets</p>
+<p>Related topics: extract, import, import-gsheets</p>
 
 </section>
 

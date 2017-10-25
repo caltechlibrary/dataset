@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset export OUTPUT_NAME FILTER FIELDS_TO_EXPORT COLUMN_HEADINGS
+    dataset export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
 ```
 
 ## Description
@@ -13,7 +13,7 @@ export will render the contents of a collection as a tabular file. Supported tab
 CSV and xlsx. Format is determined by file suffix (e.g. .csv for CSV format, .xlsx for
 workbook format).
 
-FILTER is an expression that evaluates to _true_ or _false_ based on Golang template expressions
+FILTER_EXPR is an expression that evaluates to _true_ or _false_ based on Golang template expressions
 (see `dataset -help filter` for more explanation).
 
 FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. .id,.title,.pubDate) in the JSON documents
@@ -35,5 +35,5 @@ The example blow creates a CSV file then creates a Workbook with a sheet named "
 	dataset -sheet 'Title List' export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
 ```
 
-Related topics: extract and import
+Related topics: extract, import, import-gsheets, export-gsheets
 

@@ -578,7 +578,7 @@ func exportGSheet(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 5 {
-		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELD_LIST [COLUMN_NAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR EXPORT_FIELD_LIST [COLUMN_NAMES]", os.Args[0])
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
