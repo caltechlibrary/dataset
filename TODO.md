@@ -17,6 +17,7 @@
 
 ## Someday, Maybe
 
++ [ ] Add support for gs:// Google cloud storage as an alternative to disc and s3://
 + [ ] Provide a mechanism to synchronize a Google Sheet with dataset collection.
     + it should handle setting up and maintaining a connection to the Sheets API 
     + it will require a column to play the role of ID for JSON document in collection
