@@ -104,7 +104,7 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
+	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to parse client secret file to config: %s", err)
 	}
@@ -137,7 +137,7 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 	return nil, fmt.Errorf("No data found")
 }
 
-func WriteSheet(clientSecretJSON, spreadSheetId, sheetName string, table [][]interface{}) error {
+func WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string, table [][]interface{}) error {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile(clientSecretJSON)
@@ -158,15 +158,16 @@ func WriteSheet(clientSecretJSON, spreadSheetId, sheetName string, table [][]int
 		return fmt.Errorf("Unable to retrieve Sheets Client %s", err)
 	}
 
-	var vr sheets.ValueRange
-
 	// Prints the columns from sheet described by spreadSheetId
-	for i, row := range table {
-		writeRange := fmt.Sprintf("%s!A%d", sheetName, i+1)
+	var (
+		vr sheets.ValueRange
+	)
+	for _, row := range table {
 		vr.Values = append(vr.Values, row)
-		if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("RAW").Do(); err != nil {
-			return fmt.Errorf("Unable to write row %d to sheet. %s", i+1, err)
-		}
+	}
+	writeRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
+	if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("RAW").Do(); err != nil {
+		return fmt.Errorf("Unable to write sheet %s. %s", writeRange, err)
 	}
 	return nil
 }

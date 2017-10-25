@@ -35,7 +35,7 @@ cmds/dsws/templates.go:
 	git add cmds/dsws/templates.go
 
 
-bin/dataset: dataset.go attachments.go repair.go cmds/dataset/dataset.go cmds/dataset/assets.go
+bin/dataset: dataset.go attachments.go repair.go gsheets/gsheets.go cmds/dataset/dataset.go cmds/dataset/assets.go
 	go build -o bin/dataset cmds/dataset/dataset.go cmds/dataset/assets.go
 
 bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
