@@ -35,9 +35,9 @@ way you can re-import the sheet's data into your collection and replacing the st
 ## Example
 
 In this example we're using the example Google Sheet from the Golang Google Sheets API v4 
-Quickstart. You'll firts need to have created a *client_secret.json* file as described in
+Quickstart. You'll first need to have created a *client_secret.json* file as described in
 the Step 1 of the [Google Cloud SDK docs](https://developers.google.com/sheets/api/quickstart/go)
-and placed in it *etc/client_secret.json*. 
+and placed it in *etc/client_secret.json*. 
 
 ```shell
     export GOOGLE_CLIENT_SECRET_JSON="etc/client_secret.json"
