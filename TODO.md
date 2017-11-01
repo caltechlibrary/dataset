@@ -14,10 +14,12 @@
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
++ [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
 
 ## Someday, Maybe
 
-+ [ ] Add support for gs:// Google cloud storage as an alternative to disc and s3://
++ [ ] dataset count to return a count of records
+    + might be useful to combine with an filter expression for sub counts
 + [ ] Provide a mechanism to synchronize a Google Sheet with dataset collection.
     + it should handle setting up and maintaining a connection to the Sheets API 
     + it will require a column to play the role of ID for JSON document in collection
