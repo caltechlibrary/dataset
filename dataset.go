@@ -133,7 +133,7 @@ func GenerateBucketNames(alphabet string, length int) []string {
 // Collection is the container holding buckets which in turn hold JSON docs
 type Collection struct {
 	// Version of collection being stored
-	Version string `json:"verison"`
+	Version string `json:"version"`
 	// Name of collection
 	Name string `json:"name"`
 	// Buckets is a list of bucket names used by collection

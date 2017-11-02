@@ -78,7 +78,7 @@ var (
 	}
 
 	// supportedNamedTimeFormats for named Golang time strings (e.g. RFC3339) plus
-	// ones that are for convienence (e.g. mysqldate, mysqldatetime)
+	// ones that are for convenience (e.g. mysqldate, mysqldatetime)
 	supportedNamedTimeFormats = map[string]string{
 		"ansic":    "Mon Jan _2 15:04:05 2006",
 		"unixdate": "Mon Jan _2 15:04:05 MST 2006",
