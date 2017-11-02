@@ -133,7 +133,7 @@ func GenerateBucketNames(alphabet string, length int) []string {
 // Collection is the container holding buckets which in turn hold JSON docs
 type Collection struct {
 	// Version of collection being stored
-	Version string `json:"verison"`
+	Version string `json:"version"`
 	// Name of collection
 	Name string `json:"name"`
 	// Buckets is a list of bucket names used by collection
@@ -157,7 +157,7 @@ func getStore(name string) (*storage.Store, string, error) {
 	// Pick storage based on name
 	switch {
 	case strings.HasPrefix(name, "s3://") == true:
-		u, err := url.Parse(name)
+		u, _ := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
 		store, err = storage.Init(storage.S3, opts)
@@ -170,7 +170,7 @@ func getStore(name string) (*storage.Store, string, error) {
 		}
 		collectionName = p
 	case strings.HasPrefix(name, "gs://") == true:
-		u, err := url.Parse(name)
+		u, _ := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["GoogleBucket"] = u.Host
 		store, err = storage.Init(storage.GS, opts)
@@ -384,7 +384,7 @@ func (c *Collection) UpdateAsJSON(name string, src []byte) error {
 	p := path.Join(c.Name, bucketName)
 	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
+		return fmt.Errorf("WriteJSON() mkdir %s %s", p, err)
 	}
 	return c.Store.WriteFile(path.Join(p, name), src, 0664)
 }
@@ -457,7 +457,7 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 		if err != nil {
 			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
 		}
-		fieldName := ""
+		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
 			jsonFName = fmt.Sprintf("%d", lineNo)
@@ -529,7 +529,7 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 		row := table[lineNo]
 		lineNo++
 
-		fieldName := ""
+		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
 			jsonFName = fmt.Sprintf("%d", lineNo)
@@ -663,7 +663,7 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 			}
 		}
 	}
-	for ky, _ := range hash {
+	for ky := range hash {
 		rows = append(rows, ky)
 	}
 	return rows, nil

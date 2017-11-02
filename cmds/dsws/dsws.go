@@ -93,8 +93,8 @@ func init() {
 	flag.BoolVar(&showExamples, "example", false, "display example(s)")
 
 	// App Options
-	flag.StringVar(&uri, "u", defaultURL, "The protocal and hostname listen for as a URL")
-	flag.StringVar(&uri, "url", defaultURL, "The protocal and hostname listen for as a URL")
+	flag.StringVar(&uri, "u", defaultURL, "The protocol and hostname listen for as a URL")
+	flag.StringVar(&uri, "url", defaultURL, "The protocol and hostname listen for as a URL")
 	flag.StringVar(&sslKey, "k", "", "Set the path for the SSL Key")
 	flag.StringVar(&sslKey, "key", "", "Set the path for the SSL Key")
 	flag.StringVar(&sslCert, "c", "", "Set the path for the SSL Cert")
@@ -288,7 +288,7 @@ func main() {
 		opts := map[string]string{}
 		for _, ky := range []string{"size", "from", "ids", "sort", "explain", "fields", "highlight"} {
 			if v := values.Get(ky); v != "" {
-				// NOTE: we use idxFields for fields' value is noth fields or star are passed in
+				// NOTE: we use idxFields for fields' value if no fields or star are passed in
 				if ky == "fields" && v == "*" {
 					opts[ky] = strings.Join(idxFields, ",")
 				} else {

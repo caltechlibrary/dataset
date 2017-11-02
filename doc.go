@@ -9,7 +9,7 @@ analysis.  The dataset command line tool is in intended to be easy to script bot
 languages like Python.
 
 Dataset is not a good choice if you need a fast key/value store or actual database features. It doesn't support
-multiple users, record locking or a query language interface. It is targetting the sweet spot between ad-hoc
+multiple users, record locking or a query language interface. It is targeting the sweet spot between ad-hoc
 JSON document storage on disc and needing a more complete system like Couch, Solr, or Fedora4 for managing JSON
 docs.
 

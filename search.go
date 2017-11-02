@@ -78,7 +78,7 @@ var (
 	}
 
 	// supportedNamedTimeFormats for named Golang time strings (e.g. RFC3339) plus
-	// ones that are for convienence (e.g. mysqldate, mysqldatetime)
+	// ones that are for convenience (e.g. mysqldate, mysqldatetime)
 	supportedNamedTimeFormats = map[string]string{
 		"ansic":    "Mon Jan _2 15:04:05 2006",
 		"unixdate": "Mon Jan _2 15:04:05 MST 2006",
@@ -257,7 +257,7 @@ func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}
 		return nil, err
 	}
 	// Copy the dot path elements to new smaller map
-	for pName, _ := range defnMap {
+	for pName := range defnMap {
 		//FIXME: Need to handle both object_path and object_template
 		//dTemplate, _ := defnMap[pName]["object_template"].(string)
 		if dPath, ok := defnMap[pName]["object_path"].(string); ok == true {
@@ -350,8 +350,6 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 					batchIdx = idx.NewBatch()
 					batchT = time.Now()
 				}
-				// Force release of memory
-				rec = nil
 			}
 		} else {
 			log.Printf("%d, can't index %s, %s", i, key, err)

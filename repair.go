@@ -138,7 +138,7 @@ func Analyzer(collectionName string) error {
 		// Check to see if the keys in keymap and keys in keys.json are the same
 		log.Printf("Checking keys against keymap\n")
 		b := 0
-		for ky, _ := range c.KeyMap {
+		for ky := range c.KeyMap {
 			if keyFound(ky, keys) == false {
 				log.Printf("%s not found in keys.json", ky)
 				wCnt++
@@ -225,22 +225,18 @@ func Analyzer(collectionName string) error {
 // in discovered buckets and json documents
 func Repair(collectionName string) error {
 	var (
-		eCnt int
-		wCnt int
-		c    *Collection
-		err  error
+		c   *Collection
+		err error
 	)
 	// See if we can open a collection, if not then create an empty struct
 	if c, err = Open(collectionName); err == nil {
 		if c.Version != Version {
 			log.Printf("WARNING: Version mismatch collection moving from %s to %s", c.Version, Version)
-			wCnt++
 		}
 		defer c.Close()
 	} else {
 		log.Printf("ERROR: %s, creating empty collection object", err)
 		c = new(Collection)
-		eCnt++
 	}
 	if c.Version != Version {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)
