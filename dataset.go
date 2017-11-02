@@ -384,7 +384,7 @@ func (c *Collection) UpdateAsJSON(name string, src []byte) error {
 	p := path.Join(c.Name, bucketName)
 	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() mkdir %s", p, err)
+		return fmt.Errorf("WriteJSON() mkdir %s %s", p, err)
 	}
 	return c.Store.WriteFile(path.Join(p, name), src, 0664)
 }
