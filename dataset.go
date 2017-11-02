@@ -663,7 +663,7 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 			}
 		}
 	}
-	for ky, _ := range hash {
+	for ky := range hash {
 		rows = append(rows, ky)
 	}
 	return rows, nil

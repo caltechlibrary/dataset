@@ -257,7 +257,7 @@ func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}
 		return nil, err
 	}
 	// Copy the dot path elements to new smaller map
-	for pName, _ := range defnMap {
+	for pName := range defnMap {
 		//FIXME: Need to handle both object_path and object_template
 		//dTemplate, _ := defnMap[pName]["object_template"].(string)
 		if dPath, ok := defnMap[pName]["object_path"].(string); ok == true {
