@@ -157,7 +157,7 @@ func getStore(name string) (*storage.Store, string, error) {
 	// Pick storage based on name
 	switch {
 	case strings.HasPrefix(name, "s3://") == true:
-		u, err := url.Parse(name)
+		u, _ := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
 		store, err = storage.Init(storage.S3, opts)
@@ -170,7 +170,7 @@ func getStore(name string) (*storage.Store, string, error) {
 		}
 		collectionName = p
 	case strings.HasPrefix(name, "gs://") == true:
-		u, err := url.Parse(name)
+		u, _ := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["GoogleBucket"] = u.Host
 		store, err = storage.Init(storage.GS, opts)
@@ -457,7 +457,7 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 		if err != nil {
 			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
 		}
-		fieldName := ""
+		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
 			jsonFName = fmt.Sprintf("%d", lineNo)
@@ -529,7 +529,7 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 		row := table[lineNo]
 		lineNo++
 
-		fieldName := ""
+		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
 			jsonFName = fmt.Sprintf("%d", lineNo)

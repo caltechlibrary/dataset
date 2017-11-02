@@ -350,8 +350,6 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 					batchIdx = idx.NewBatch()
 					batchT = time.Now()
 				}
-				// Force release of memory
-				rec = nil
 			}
 		} else {
 			log.Printf("%d, can't index %s, %s", i, key, err)

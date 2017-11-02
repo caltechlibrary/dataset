@@ -225,8 +225,6 @@ func Analyzer(collectionName string) error {
 // in discovered buckets and json documents
 func Repair(collectionName string) error {
 	var (
-		eCnt int
-		wCnt int
 		c    *Collection
 		err  error
 	)
@@ -234,13 +232,11 @@ func Repair(collectionName string) error {
 	if c, err = Open(collectionName); err == nil {
 		if c.Version != Version {
 			log.Printf("WARNING: Version mismatch collection moving from %s to %s", c.Version, Version)
-			wCnt++
 		}
 		defer c.Close()
 	} else {
 		log.Printf("ERROR: %s, creating empty collection object", err)
 		c = new(Collection)
-		eCnt++
 	}
 	if c.Version != Version {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)
