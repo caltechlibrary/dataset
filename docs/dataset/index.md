@@ -8,7 +8,7 @@
 
 # Description
 
-dataset is a command line tool demonstrating dataset package for managing 
+dataset is a command line tool demonstrating dataset package for managing
 JSON documents stored on disc. A dataset is organized around collections,
 collections contain buckets holding specific JSON documents and related content.
 In addition to the JSON documents dataset maintains metadata for management
@@ -56,17 +56,18 @@ E.g. to get help on the "init" command.
 + [delete](delete.html) - removes a JSON document from collection
 + [join](join.html) - brings the functionality of jsonjoin to the dataset command.
 + [filter](filter.html) - takes a filter and returns an unordered list of keys that match filter expression
+    + [dotpath](dotpath.html) - reach into an object to return a value(s)
 + [keys](keys.html) - returns the keys to stdout, one key per line
 + [haskey](haskeys.html) - returns true is key is in collection, false otherwise
++ [count](count.html) - returns a count of keys in a collection
 + [path](path.html) - given a document name return the full path to document
-+ [attach](attach.html) - attaches a non-JSON content to a JSON record 
++ [attach](attach.html) - attaches a non-JSON content to a JSON record
 + [attachments](attachments.html) - lists any attached content for JSON document
-+ [attached](attached.html) - returns attachments for a JSON document 
++ [attached](attached.html) - returns attachments for a JSON document
 + [detach](detach.html) - remove attachments to a JSON document
 + [import](import.html) - import a CSV file's rows as JSON documents
     + [import-gsheet](import-gsheet.html) - import a Google Sheets sheet rows as JSON documents
 + [export](export.html) - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
+    + [export-gsheet](export-gsheet.html) - export a Collection of JSON documents to Google Sheets sheet rows
 + [extract](extract.html) - will return a unique list of unique values based on the associated dot path described in the JSON docs
-+ [commands](commands.html) - return a list of command names
-
-
+    + [dotpath](dotpath.html) - reach into an object to return a value(s)
