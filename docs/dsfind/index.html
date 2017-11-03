@@ -19,14 +19,54 @@
 </nav>
 
 <section>
-<h1>dsfind</h1>
+<h1>USAGE</h1>
 
-<p>Uses Bleve indexes to search <em>dataset</em> collections on the command line.</p>
+<pre><code>    dsfind [OPTIONS] [INDEX_LIST] SEARCH_STRINGS
+</code></pre>
 
-<ul>
-<li><a href="usage.html">usage</a></li>
-<li><a href="description.html">description</a></li>
-</ul>
+<h2>Description</h2>
+
+<p>dsfind is a command line tool for querying a Bleve indexes based on the records in a
+dataset collection. By default dsfind is assumed there is an index named after the
+collection. An option lets you choose different indexes to query. Results are
+written to standard out and are paged. The query syntax supported is described
+at <a href="http://www.blevesearch.com/docs/Query-String-Query/">http://www.blevesearch.com/docs/Query-String-Query/</a>.</p>
+
+<p>Options can be used to modify the type of indexes queried as well as how results
+are output.</p>
+
+<h2>OPTIONS</h2>
+
+<pre><code>	-csv	format results as a CSV document, used with fields option
+	-csv-skip-header	don't output a header row, only values for csv output
+	-example	display example(s)
+	-explain	explain results in a verbose JSON document
+	-fields	comma delimited list of fields to display in the results
+	-from	return the result starting with this result number
+	-h	display help
+	-help	display help
+	-highlight	display highlight in search results
+	-highlighter	set the highlighter (ansi,html) for search results
+	-ids	output only a list of ids from results
+	-indexes	colon or comma delimited list of index names
+	-json	format results as a JSON document
+	-l	display license
+	-license	display license
+	-size	number of results returned for request
+	-sort	a comma delimited list of field names to sort by
+	-v	display version
+	-version	display version
+</code></pre>
+
+<h2>EXAMPLES</h2>
+
+<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
+
+<pre><code>    dsfind characters.bleve &quot;Jack Flanders&quot;
+</code></pre>
+
+<p>This would search the Bleve index named characters.bleve for the string &ldquo;Jack Flanders&rdquo;
+returning records that matched based on how the index was defined.</p>
 
 </section>
 

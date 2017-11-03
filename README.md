@@ -1,16 +1,37 @@
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
-_dataset_ is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
-_dataset_ is also a command line tool exercising the features of the golang _dataset_ package.
-A project goal of _dataset_ is to "play nice" with shell scripts and other Unix tools (e.g. it 
-respects standard in, out and error with minimal side effects). This means it is easily scriptable
-via Bash shell or interpretted languages like Python.
+_dataset_ is a small collection of command line tools for working with JSON documents stored as 
+collections.  [This](docs/dataset/) include basic storage actions (e.g. CRUD operations, filtering
+and extraction) as well as [indexing](docs/dsindexer/), [searching](docs/dsfind/) and even 
+[web hosting](docs/dsws/).  A project goal of _dataset_ is to "play nice" with shell scripts and other 
+Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is 
+easily scriptable via Bash shell or interpretted languages like Python.
+
+_dataset_ is also golang package for managing JSON documents and their attachments on disc or in cloud storage
+(e.g. Amazon S3, Google Cloud Storage). The command line utilities excersize this package extensively.
+
+The inspiration for creating _dataset_ was the desire to process metadata as JSON document collections using
+Unix shell utilities and pipe lines. While it has grown in capabilities that remains a core use case.
 
 _dataset_ organanizes JSON documents by unique names in collections. Collections are represented
-as Unix subdirectories (or paths under S3) with each collection having a series of buckets (sub-directories/sub-paths)
-spreading the JSON documents and their attachments across the file system (this avoids having too many
-JSON documents in a given directory).
+as an index into a series of buckets. The buckets are subdirectories (or paths under cloud storage services) 
+holding individual JSON documents and their attachments. The JSON documents in a collection as assigned to a
+bucket (and the bucket generated if necessary) automatically when the document is added to the collection.
+The assigment to the buckets is round robin determined by the order of addition. This avoids having too
+many documents assigned to a single path (e.g. on some Unix there is a limit to how many documents are held
+in a single directory). This means you can list and manipulate the JSON documents directly with with common
+Unix commands like ls, find, grep or their cloud counter parts.
+
+
+### Limitations of _dataset_
+
+_dataset_ has many limitations, some are listed below
+
++ it is not a real-time data store
++ it is not a repository management system
++ it is not a general purpose multiuser database system
+
 
 ## Operations
 
@@ -23,8 +44,9 @@ The basic operations support by *dataset* are listed below organized by collecti
 + Create named lists of JSON document ids (aka select lists)
 + Read back a named list of JSON document ids
 + Delete a named list of JSON document ids
-+ Import JSON documents from rows of a CSV file
++ Import JSON documents from rows of a CSV file or Google Sheets
 + Filter JSON documents and return a list of matching ids
++ Extract Unique JSON attribute values from a collection
 
 ### JSON Document level
 

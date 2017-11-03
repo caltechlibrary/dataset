@@ -2,16 +2,16 @@
 <div class="search-box">
 <form class="search-form" method="get" action="/api">
 {{/* Define some useful local variables for form. */}}
-{{- $qryTerms := (dotpath ".request.query.query" . "") -}}
-{{- $highlight := (has_dotpath ".request.highlight.style" . "true" "false") -}} 
+{{- $qryTerms := (dotpath . ".request.query.query" "") -}}
+{{- $highlight := (has_dotpath . ".request.highlight.style" "true" "false") -}} 
 {{- $from := (int .request.from) -}}
 {{- $size := (int .request.size) -}}
 {{- $total := (int .total_hits) -}}
 {{- $prev := (previ $from $size 0 $total false) -}}
 {{- $next := (nexti $from $size 0 $total false) -}}
-{{- $fields := (join (dotpath ".request.fields" . nil) ",") -}}
-{{- $fieldValues := (dotpath ".request.fields" . nil) -}}
-{{- $sortBy := (join (dotpath ".request.sort" . nil) ",") -}}
+{{- $fields := (join (dotpath . ".request.fields" nil) ",") -}}
+{{- $fieldValues := (dotpath . ".request.fields" nil) -}}
+{{- $sortBy := (join (dotpath . ".request.sort" nil) ",") -}}
 <div class="search-input-query"><label>Search</label> <textarea name="q" cols="80" rows="1" placeholder="Enter your query terms here">{{- with .request.query.query }}{{- . -}}{{- end }}</textarea></div><!-- END: search-input-query -->
 {{ with $highlight -}}
     {{if (eq $highlight "true") -}}

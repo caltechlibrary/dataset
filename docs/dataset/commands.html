@@ -14,6 +14,7 @@
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
 <li><a href="./">dataset</a></li>
+<li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
@@ -21,94 +22,52 @@
 <section>
 <h1>commands</h1>
 
-<p>Documentation on individual commands can be see with <code>dataset -help COMMAND_NAME</code> where
-&ldquo;COMMAND_NAME&rdquo; is replaced with one of the commands below &ndash;</p>
+<p>Documentation on individual commands can be see with
+<code>dataset -help COMMAND_NAME</code> where &ldquo;COMMAND_NAME&rdquo; is replaced with one of
+the commands below &ndash;</p>
 
 <ul>
-<li>init - initialize a new collection if none exists, requires a path to collection
+<li><a href="init.html">init</a> - initialize a new collection if none exists, requires a
+path to collection</li>
+<li><a href="create.html">create</a> - creates a new JSON document or replace an existing
+one in collection</li>
+<li><a href="read.html">read</a> - displays a JSON document to stdout</li>
+<li><a href="update.html">update</a> - updates a JSON document in collection</li>
+<li><a href="delete.html">delete</a> - removes a JSON document from collection</li>
+<li><a href="join.html">join</a> - brings the functionality of jsonjoin to the dataset
+command.</li>
+<li><a href="filter.html">filter</a> - takes a filter and returns an unordered list of keys
+that match filter expression
 
 <ul>
-<li>once collection is created, set the environment variable DATASET
-to collection name</li>
-<li>if you&rsquo;re using S3 for storing your dataset prefix your path with &lsquo;s3://&rsquo;
-&lsquo;dataset init s3://mybucket/mydataset-collections&rsquo;</li>
-<li>if you&rsquo;re using GS (Google Cloud Storage) prefix your path with &lsquo;gs://&rsquo;
-&lsquo;dataset init gs://mybucket/mydataset-collections&rsquo;</li>
+<li><a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)</li>
 </ul></li>
-<li>create - creates a new JSON document or replace an existing one in collection
+<li><a href="keys.html">keys</a> - returns the keys to stdout, one key per line</li>
+<li><a href="haskeys.html">haskey</a> - returns true is key is in collection, false otherwise</li>
+<li><a href="count.html">count</a> - returns a count of keys in a collection</li>
+<li><a href="path.html">path</a> - given a document name return the full path to document</li>
+<li><a href="attach.html">attach</a> - attaches a non-JSON content to a JSON record</li>
+<li><a href="attachments.html">attachments</a> - lists any attached content for JSON document</li>
+<li><a href="attached.html">attached</a> - returns attachments for a JSON document</li>
+<li><a href="detach.html">detach</a> - remove attachments to a JSON document</li>
+<li><a href="import.html">import</a> - import a CSV file&rsquo;s rows as JSON documents
 
 <ul>
-<li>requires JSON document name followed by JSON blob or JSON blob read from stdin</li>
+<li><a href="import-gsheet.html">import-gsheet</a> - import a Google Sheets sheet rows
+as JSON documents</li>
 </ul></li>
-<li>read - displays a JSON document to stdout
+<li><a href="export.html">export</a> - export a CSV file based on filtered results of
+collection records rendering dotpaths associated with column names
 
 <ul>
-<li>requires JSON document name</li>
+<li><a href="export-gsheet.html">export-gsheet</a> - export a Collection of JSON
+documents to Google Sheets sheet rows</li>
 </ul></li>
-<li>update - updates a JSON document in collection
+<li><a href="extract.html">extract</a> - will return a unique list of unique values based on
+the associated dot path described in the JSON docs
 
 <ul>
-<li>requires JSON document name, followed by replacement JSON document name or
-JSON document read from stdin</li>
-<li>JSON document must already exist</li>
-</ul></li>
-<li>delete - removes a JSON document from collection
-
-<ul>
-<li>requires JSON document name</li>
-</ul></li>
-<li>join - brings the functionality of jsonjoin to the dataset command.
-
-<ul>
-<li>option update will only add unique key/values not in the existing stored document</li>
-<li>option overwrite will overwrite all key/values in the existing document</li>
-</ul></li>
-<li>filter - takes a filter and returns an unordered list of keys that match filter expression
-
-<ul>
-<li>if filter expression not provided as a command line parameter then it is read from stdin</li>
-</ul></li>
-<li>keys - returns the keys to stdout, one key per line</li>
-<li>haskey - returns true is key is in collection, false otherwise</li>
-<li>path - given a document name return the full path to document</li>
-<li>attach - attaches a non-JSON content to a JSON record
-
-<ul>
-<li>&ldquo;dataset attach k1 stats.xlsx&rdquo; would attach the stats.xlsx file to JSON document named k1</li>
-<li>(stores content in a related tar file)</li>
-</ul></li>
-<li>attachments - lists any attached content for JSON document
-
-<ul>
-<li>&ldquo;dataset attachments k1&rdquo; would list all the attachments for k1</li>
-</ul></li>
-<li>attached - returns attachments for a JSON document
-
-<ul>
-<li>&ldquo;dataset attached k1&rdquo; would write out all the attached files for k1</li>
-<li>&ldquo;dataset attached k1 stats.xlsx&rdquo; would write out only the stats.xlsx file attached to k1</li>
-</ul></li>
-<li>detach - remove attachments to a JSON document
-
-<ul>
-<li>&ldquo;dataset detach k1 stats.xlsx&rdquo; would rewrite the attachments tar file without including stats.xlsx</li>
-<li>&ldquo;dataset detach k1&rdquo; would remove ALL attachments to k1</li>
-</ul></li>
-<li>import - import a CSV file&rsquo;s rows as JSON documents
-
-<ul>
-<li>&ldquo;dataset import mydata.csv 1&rdquo; would import the CSV file mydata.csv using column one&rsquo;s value as key</li>
-</ul></li>
-<li>export - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
-
-<ul>
-<li>&ldquo;dataset export titles.csv &lsquo;true&rsquo; &lsquo;._id,.title,.pubDate&rsquo; &lsquo;id,title,publication date&rsquo;&rdquo;
-this would export all the ids, titles and publication dates as a CSV fiile named titles.csv</li>
-</ul></li>
-<li>extract - will return a unique list of unique values based on the associated dot path described in the JSON docs
-
-<ul>
-<li>&ldquo;dataset extract true .authors[:].orcid&rdquo; would extract a list of authors&rsquo; orcid ids in collection</li>
+<li><a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)</li>
 </ul></li>
 </ul>
 

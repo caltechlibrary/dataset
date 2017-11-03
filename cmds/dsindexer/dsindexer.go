@@ -69,7 +69,7 @@ func init() {
 	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
 	flag.BoolVar(&updateIndex, "update", false, "updating is slow, use this flag if you want to update an exists")
 	flag.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
-	flag.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaniously")
+	flag.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaneously")
 }
 
 func main() {

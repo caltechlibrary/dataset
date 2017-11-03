@@ -45,5 +45,8 @@ like a k/v store where the operations are on files not within them.
 ## Reference Google API integration
 
 + [Google Sheets API v4](https://developers.google.com/sheets/)
+    + [REST methods](https://developers.google.com/sheets/api/reference/rest/)
+    + [Golang Quickstart docs](https://developers.google.com/sheets/api/quickstart/go)
+        + where to go to setup credentials and project specifics, we're using Go for our project
 
 

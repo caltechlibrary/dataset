@@ -5,7 +5,10 @@ These days it is often useful to leverage cloud storage. _dataset_ currently sup
 cloud storage and Google's cloud storage sollutions. These can be configured through the
 setting the DATASET environment variable or via the command line. The buckets for either Amazon
 or Google need to have already been setup including authenticated configs (e.g. with the aws or gsutil
-tools respectively).  If the prefix for the path to the collection is prefixed with s3:// then the
+tools respectively).  The aws tool is available
+[here](https://aws.amazon.com/cli), and can be set up using `aws configure` and
+entering the Access key information from your AWS user accounts page (under
+"Security credentials".  If the prefix for the path to the collection is prefixed with s3:// then the
 collection is stored at AWS S3, if the prefix is gs:// then it is stored on Google Cloud Storage and
 if there is now prefix it is stored on local disc.
 

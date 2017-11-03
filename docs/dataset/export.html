@@ -14,6 +14,7 @@
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
 <li><a href="./">dataset</a></li>
+<li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
@@ -23,7 +24,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset export OUTPUT_NAME FILTER FIELDS_TO_EXPORT COLUMN_HEADINGS
+<pre><code>    dataset export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
 </code></pre>
 
 <h2>Description</h2>
@@ -32,7 +33,7 @@
 CSV and xlsx. Format is determined by file suffix (e.g. .csv for CSV format, .xlsx for
 workbook format).</p>
 
-<p>FILTER is an expression that evaluates to <em>true</em> or <em>false</em> based on Golang template expressions
+<p>FILTER_EXPR is an expression that evaluates to <em>true</em> or <em>false</em> based on Golang template expressions
 (see <code>dataset -help filter</code> for more explanation).</p>
 
 <p>FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. .id,.title,.pubDate) in the JSON documents
@@ -52,7 +53,7 @@ id, title and publication date.</p>
 	dataset -sheet 'Title List' export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
 </code></pre>
 
-<p>Related topics: extract and import</p>
+<p>Related topics: extract, import, import-gsheets, export-gsheets</p>
 
 </section>
 

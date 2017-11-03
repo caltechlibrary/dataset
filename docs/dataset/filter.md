@@ -36,7 +36,7 @@ A field, .family_name, matches a known value, "Feynman".
 
 
 ```
-	(eq .family_name "Feynman")
+	'(eq .family_name "Feynman")'
 ```
 
 A field, .family_name, does not match a known value, "Feynman".
@@ -44,7 +44,7 @@ A field, .family_name, does not match a known value, "Feynman".
 A field, .family_name, does not match value
 
 ```
-	(ne .family_name "Feynman")
+	'(ne .family_name "Feynman")'
 ```
 
 ### Compound
@@ -52,7 +52,7 @@ A field, .family_name, does not match value
 Two fields match, .family_name and .given_name, known values "Feynman" and "Richard".
 
 ```
-	(and (eq .family_name "Feynman") (eq .given_name "Richard"))
+	'(and (eq .family_name "Feynman") (eq .given_name "Richard"))'
 ```
 
 Related topics: extract and export

@@ -24,25 +24,29 @@
 <p>Run web server using the content in the current directory
 (assumes the environment variables DATASET_DOCROOT are not defined).</p>
 
-<p>dsws</p>
+<pre><code>    dsws
+</code></pre>
 
 <p>Run web service using &ldquo;index.bleve&rdquo; index, results templates in
 &ldquo;templates/search.tmpl&rdquo; and a &ldquo;htdocs&rdquo; directory for static files.</p>
 
-<p>dsws -template=templates/search.tmpl htdocs index.bleve</p>
+<pre><code>    dsws -template=templates/search.tmpl htdocs index.bleve
+</code></pre>
 
 <p>Run a web service with custom navigation taken from a Markdown file</p>
 
-<p>dsws -template=templates/search.tmpl &ldquo;Nav=nav.md&rdquo; index.bleve</p>
+<pre><code>    dsws -template=templates/search.tmpl &quot;Nav=nav.md&quot; index.bleve
+</code></pre>
 
 <p>Running above web service using ACME TLS support (i.e. Let&rsquo;s Encrypt).
-Note will only include the hostname as the ACME setup is for
+Notice we only include the hostname as the ACME setup is for
 listenning on port 443. This may require privilaged account
 and will require that the hostname listed matches the public
 DNS for the machine (this is need by the ACME protocol to
-issue the cert, see <a href="https://letsencrypt.org">https://letsencrypt.org</a> for details)</p>
+issue the cert, see <a href="https://letsencrypt.org">https://letsencrypt.org</a> for details).</p>
 
-<p>dsws -acme -template=templates/search.tmpl &ldquo;Nav=nav.md&rdquo; index.bleve</p>
+<pre><code>    dsws -acme -template=templates/search.tmpl &quot;Nav=nav.md&quot; index.bleve
+</code></pre>
 
 </section>
 

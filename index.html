@@ -26,16 +26,37 @@
 <section>
 <h1>dataset   <a href="https://data.caltech.edu/badge/latestdoi/79394591"><img src="https://data.caltech.edu/badge/79394591.svg" alt="DOI" /></a></h1>
 
-<p><em>dataset</em> is a golang package for managing JSON documents and their attachments on disc or in S3 storage.
-<em>dataset</em> is also a command line tool exercising the features of the golang <em>dataset</em> package.
-A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other Unix tools (e.g. it
-respects standard in, out and error with minimal side effects). This means it is easily scriptable
-via Bash shell or interpretted languages like Python.</p>
+<p><em>dataset</em> is a small collection of command line tools for working with JSON documents stored as
+collections.  <a href="docs/dataset/">This</a> include basic storage actions (e.g. CRUD operations, filtering
+and extraction) as well as <a href="docs/dsindexer/">indexing</a>, <a href="docs/dsfind/">searching</a> and even
+<a href="docs/dsws/">web hosting</a>.  A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other
+Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is
+easily scriptable via Bash shell or interpretted languages like Python.</p>
+
+<p><em>dataset</em> is also golang package for managing JSON documents and their attachments on disc or in cloud storage
+(e.g. Amazon S3, Google Cloud Storage). The command line utilities excersize this package extensively.</p>
+
+<p>The inspiration for creating <em>dataset</em> was the desire to process metadata as JSON document collections using
+Unix shell utilities and pipe lines. While it has grown in capabilities that remains a core use case.</p>
 
 <p><em>dataset</em> organanizes JSON documents by unique names in collections. Collections are represented
-as Unix subdirectories (or paths under S3) with each collection having a series of buckets (sub-directories/sub-paths)
-spreading the JSON documents and their attachments across the file system (this avoids having too many
-JSON documents in a given directory).</p>
+as an index into a series of buckets. The buckets are subdirectories (or paths under cloud storage services)
+holding individual JSON documents and their attachments. The JSON documents in a collection as assigned to a
+bucket (and the bucket generated if necessary) automatically when the document is added to the collection.
+The assigment to the buckets is round robin determined by the order of addition. This avoids having too
+many documents assigned to a single path (e.g. on some Unix there is a limit to how many documents are held
+in a single directory). This means you can list and manipulate the JSON documents directly with with common
+Unix commands like ls, find, grep or their cloud counter parts.</p>
+
+<h3>Limitations of <em>dataset</em></h3>
+
+<p><em>dataset</em> has many limitations, some are listed below</p>
+
+<ul>
+<li>it is not a real-time data store</li>
+<li>it is not a repository management system</li>
+<li>it is not a general purpose multiuser database system</li>
+</ul>
 
 <h2>Operations</h2>
 
@@ -49,8 +70,9 @@ JSON documents in a given directory).</p>
 <li>Create named lists of JSON document ids (aka select lists)</li>
 <li>Read back a named list of JSON document ids</li>
 <li>Delete a named list of JSON document ids</li>
-<li>Import JSON documents from rows of a CSV file</li>
+<li>Import JSON documents from rows of a CSV file or Google Sheets</li>
 <li>Filter JSON documents and return a list of matching ids</li>
+<li>Extract Unique JSON attribute values from a collection</li>
 </ul>
 
 <h3>JSON Document level</h3>

@@ -34,8 +34,7 @@ cmds/dsws/templates.go:
 	pkgassets -o cmds/dsws/templates.go -p main Defaults defaults
 	git add cmds/dsws/templates.go
 
-
-bin/dataset: dataset.go attachments.go repair.go cmds/dataset/dataset.go cmds/dataset/assets.go
+bin/dataset: dataset.go attachments.go repair.go gsheets/gsheets.go cmds/dataset/dataset.go cmds/dataset/assets.go
 	go build -o bin/dataset cmds/dataset/dataset.go cmds/dataset/assets.go
 
 bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
@@ -87,8 +86,7 @@ lint:
 	golint cmds/dsfind/dsfind.go
 
 clean: 
-	if [ "$(PKGASSETS)" != "" ]; then rm cmds/*/assets.go; fi
-	if [ "$(PKGASSETS)" != "" ]; then rm cmds/*/templates.go; fi
+	if [ "$(PKGASSETS)" != "" ]; then ./rebuild-assets.bash; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi

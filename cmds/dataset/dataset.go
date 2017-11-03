@@ -34,6 +34,7 @@ import (
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/gsheets"
+	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -68,6 +69,7 @@ var (
 		"join":          joinJSONDoc,
 		"keys":          collectionKeys,
 		"haskey":        hasKey,
+		"count":         collectionCount,
 		"filter":        filter,
 		"path":          docPath,
 		"attach":        addAttachments,
@@ -80,6 +82,7 @@ var (
 		"check":         checkCollection,
 		"repair":        repairCollection,
 		"import-gsheet": importGSheet,
+		"export-gsheet": exportGSheet,
 	}
 
 	// alphabet to use for buckets
@@ -353,6 +356,20 @@ func hasKey(args ...string) (string, error) {
 	return strings.Join(keyState, "\n"), nil
 }
 
+// collectionCount returns the number of keys in a collection
+func collectionCount(args ...string) (string, error) {
+	// NOTE: We ignore args because this function always returns a count
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	return fmt.Sprintf("%d", collection.Length()), nil
+}
+
 // filter returns a list of collection ids where the filter value returns true.
 // the filter notation is based on that Go text/template pipelines that would return
 // true in an if/else block.
@@ -547,11 +564,12 @@ func importGSheet(params ...string) (string, error) {
 	cellRange := params[2]
 	idCol := -1
 	if len(params) == 4 {
-		if colNumber, err := strconv.Atoi(params[3]); err != nil {
-			return "", fmt.Errorf("Can't convert column number id to integer, %s", err)
-		} else {
-			idCol = colNumber
+		idCol, err = strconv.Atoi(params[3])
+		if err != nil {
+			return "", fmt.Errorf("Can't convert column number to integer, %s", err)
 		}
+		// NOTE: we need to adjust to zero based index
+		idCol--
 	}
 
 	table, err := gsheets.ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange)
@@ -563,6 +581,78 @@ func importGSheet(params ...string) (string, error) {
 		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
+	}
+	return "OK", nil
+}
+
+func exportGSheet(params ...string) (string, error) {
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	if len(params) < 5 {
+		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR EXPORT_FIELD_LIST [COLUMN_NAMES]", os.Args[0])
+	}
+	spreadSheetId := params[0]
+	sheetName := params[1]
+	cellRange := params[2]
+	filterExpr := params[3]
+	dotPaths := strings.Split(params[4], ",")
+	colNames := []string{}
+	if len(params) >= 5 {
+		colNames = strings.Split(params[5], ",")
+	} else {
+		for _, val := range dotPaths {
+			colNames = append(colNames, val)
+		}
+	}
+	// Trim the any spaces for paths and column names
+	for i, val := range dotPaths {
+		dotPaths[i] = strings.TrimSpace(val)
+	}
+	for i, val := range colNames {
+		colNames[i] = strings.TrimSpace(val)
+	}
+
+	keys := collection.Keys()
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return "", err
+	}
+
+	var (
+		data interface{}
+	)
+
+	table := [][]interface{}{}
+	if len(colNames) > 0 {
+		row := []interface{}{}
+		for _, name := range colNames {
+			row = append(row, name)
+		}
+		table = append(table, row)
+	}
+	for _, key := range keys {
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				// save row out.
+				row := []interface{}{}
+				for _, colPath := range dotPaths {
+					col, err := dotpath.Eval(colPath, data)
+					if err == nil {
+						row = append(row, col)
+					} else {
+						row = append(row, "")
+					}
+				}
+				table = append(table, row)
+			}
+		}
+	}
+	if err := gsheets.WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange, table); err != nil {
+		return "", err
 	}
 	return "OK", nil
 }
@@ -748,7 +838,9 @@ func main() {
 				}
 				filterExp = fmt.Sprintf("%s", buf)
 			}
-			log.Fatal(streamFilterResults(out, filterExp))
+			if err := streamFilterResults(out, filterExp); err != nil {
+				log.Fatal(err)
+			}
 			os.Exit(0)
 		}
 		// Handle case of piping in or reading JSON from a file.
