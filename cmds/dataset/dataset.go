@@ -69,6 +69,7 @@ var (
 		"join":          joinJSONDoc,
 		"keys":          collectionKeys,
 		"haskey":        hasKey,
+		"count":         collectionCount,
 		"filter":        filter,
 		"path":          docPath,
 		"attach":        addAttachments,
@@ -353,6 +354,20 @@ func hasKey(args ...string) (string, error) {
 		keyState = append(keyState, fmt.Sprintf("%t", collection.HasKey(arg)))
 	}
 	return strings.Join(keyState, "\n"), nil
+}
+
+// collectionCount returns the number of keys in a collection
+func collectionCount(args ...string) (string, error) {
+	// NOTE: We ignore args because this function always returns a count
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
+	return fmt.Sprintf("%d", collection.Length()), nil
 }
 
 // filter returns a list of collection ids where the filter value returns true.

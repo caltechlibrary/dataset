@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.5-dev"
+	Version = "v0.0.5-dev2"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -429,6 +429,11 @@ func (c *Collection) Keys() []string {
 func (c *Collection) HasKey(key string) bool {
 	_, hasKey := c.KeyMap[key]
 	return hasKey
+}
+
+// Length returns the number of keys in a collection
+func (c *Collection) Length() int {
+	return len(c.KeyMap)
 }
 
 // ImportCSV takes a reader and iterates over the rows and imports them as
