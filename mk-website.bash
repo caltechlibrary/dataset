@@ -24,6 +24,7 @@ function MakePage() {
 }
 
 function MakeSubPages() {
+		SUBDIR="$1"
     findfile -s .md "${SUBDIR}" | while read FNAME; do
         FNAME="$(basename "${FNAME}" ".md")"
         if [ -f "${SUBDIR}/${FNAME}.md" ] && [ "$FNAME" != "nav" ]; then
@@ -55,9 +56,6 @@ EOT
 
     finddir -depth 2  "${ASSET_FOLDER}" | sort | while read DNAME; do
         T="$(basename "${DNAME}")"
-				# Generate the index of topics for the cmd described in asset folder
-        MakeSubPages "${ASSET_FOLDER}/${T}"
-
         # Generate nav and topdics for folder
 				echo "Scanning for topics in: ${ASSET_FOLDER}/${T}"
 				cat <<EOT >"${ASSET_FOLDER}/${T}/topics.md"
@@ -101,19 +99,22 @@ EOT
 				if [ "${C}" != "3" ] ; then
 					echo "Creating nav.md with topic links for: ${ASSET_FOLDER}/${T}"
 	        cat <<EOT >"${ASSET_FOLDER}/${T}/nav.md"
-	+ [Home](/)
-	+ [Up](../)
-	+ [${HERE}](./)
-	+ [topics](topics.html)
++ [Home](/)
++ [Up](../)
++ [${HERE}](./)
++ [topics](topics.html)
 EOT
 				else
 					echo "Creating nav.md without topics for asset: ${ASSET_FOLDER}/${T}"
 	        cat <<EOT >"${ASSET_FOLDER}/${T}/nav.md"
-	+ [Home](/)
-	+ [Up](../)
-	+ [${HERE}](./)
++ [Home](/)
++ [Up](../)
++ [${HERE}](./)
 EOT
 				fi
+
+				# Generate the index of topics for the cmd described in asset folder
+        MakeSubPages "${ASSET_FOLDER}/${T}"
 
     done
     echo "" >>"${ASSET_FOLDER}/index.md"

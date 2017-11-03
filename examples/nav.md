@@ -1,3 +1,3 @@
-	+ [Home](/)
-	+ [Up](../)
-	+ [examples](./)
++ [Home](/)
++ [Up](../)
++ [examples](./)

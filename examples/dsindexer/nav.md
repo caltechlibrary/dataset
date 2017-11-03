@@ -1,3 +1,3 @@
-	+ [Home](/)
-	+ [Up](../)
-	+ [dsindexer](./)
++ [Home](/)
++ [Up](../)
++ [dsindexer](./)
