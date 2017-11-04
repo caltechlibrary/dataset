@@ -3,41 +3,41 @@
 
 ## Bugs
 
-+ [ ] Repair and check will fail on S3 without warning or indication why
 + [ ] Fix CORS setting in _dsws_
-+ [ ] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
++ [ ] Repair and check will fail on S3/Google Cloud Storage without warning or indication why
 
 ## Next
 
-+ [x] Add Google Sheet import based on existing CSV import code
-+ [ ] Add Google Sheet export based on existing CSV export code
-+ [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
-+ [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
-+ [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
-+ [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
-
-## Someday, Maybe
-
-+ [ ] dataset count to return a count of records
-    + might be useful to combine with an filter expression for sub counts
 + [ ] Provide a mechanism to synchronize a Google Sheet with dataset collection.
     + it should handle setting up and maintaining a connection to the Sheets API 
     + it will require a column to play the role of ID for JSON document in collection
     + it will require a list of paths to map to columns
     + option for implode/exploding sub-fields in the spreadsheet cells
         + e.g. arrays of strings could be flattened as pipe delimited and expected as an array of string in dataset collection JSON document
++ [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
++ [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
++ [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
++ [ ] It might be useful to combine count with an filter expression for sub counts
+
+## (Roadmap) Someday, Maybe
+
++ [ ] "read" should be able to take a list of keys and produce a JSON list of records
++ [ ] "keys" could be extended to accept a filter and order expression to produce an ordered list of keys
++ [ ] "keys" could accept an existing list of keys to process further with an filter and order expression
++ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python or PHP
++ [ ] Python3 native dataset module for scripting collection management in Python3
++ [ ] R native dataset module for scripting collection management in R
++ [ ] PHP native dataset module for script collection management in PHP 
 + [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
-    + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
-+ [ ] collection.Create() will replace an existing record. What I want to want to do a Join style update instead of a replace? 
-+ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python or PHP
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
-+ [ ] Swap UUID for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
++ [ ] Inaddition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
 + [ ] convert filter, extract, etc to work on streams so we can leverage pipelines more effeciently
 + [ ] _dsfind_ should work on all bleve indexes in current directory if none are specified
 + [ ] VCARD and VCAL importer
 + [ ] _subset_ would produced ordered arrays of JSON docs passing filter and sort criteria
     + `dataset -filter FILTER_CLAUSE -order ORDER_CLAUSE -o recent-pubs.json subset` 
++ [ ] filter should support RegEx matching maybe with as "like" `(match "*.md$" .filenames[:])`
 + [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
     + [ ] explore using templates as filters for select lists and the like
     + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
@@ -146,3 +146,9 @@
     + [x] check dataset
     + [x] check cait usage
     + [x] check epgo usage
++ [x] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
++ [x] Add Google Sheet import based on existing CSV import code
++ [x] Add Google Sheet export based on existing CSV export code
++ [x] dataset count to return a count of records
++ [x] collection.Create() will replace an existing record. What do I want to want to do a Join style update instead of a replace? 
++ [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
