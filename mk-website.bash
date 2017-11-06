@@ -13,19 +13,19 @@ function softwareCheck() {
 function MakePage() {
 	nav="$1"
 	content="$2"
-	html="$3"
+	output="$3"
 
-	echo "Rendering $html"
+	echo "Rendering $output"
 	mkpage \
 		"nav=$nav" \
 		"content=$content" \
-		page.tmpl >"$html"
-	git add "$html"
+		page.tmpl >"$output"
+	git add "$output"
 }
 
 function MakeSubPages() {
-    SUBDIR="${1}"
-    find "${SUBDIR}" -type f | grep -E '\.md$' | while read FNAME; do
+		SUBDIR="$1"
+    findfile -s .md "${SUBDIR}" | while read FNAME; do
         FNAME="$(basename "${FNAME}" ".md")"
         if [ -f "${SUBDIR}/${FNAME}.md" ] && [ "$FNAME" != "nav" ]; then
 	        MakePage "${SUBDIR}/nav.md" "${SUBDIR}/${FNAME}.md" "${SUBDIR}/${FNAME}.html"
@@ -54,22 +54,74 @@ EOT
 
     fi
 
-    find "${ASSET_FOLDER}" -type d -depth 1 | sort | while read DNAME; do
+    finddir -depth 2  "${ASSET_FOLDER}" | sort | while read DNAME; do
         T="$(basename "${DNAME}")"
-        echo "Creating nav.md for asset: ${ASSET_FOLDER}/${T}"
-        cat <<EOT >"${ASSET_FOLDER}/${T}/nav.md"
+        # Generate nav and topdics for folder
+				echo "Scanning for topics in: ${ASSET_FOLDER}/${T}"
+				cat <<EOT >"${ASSET_FOLDER}/${T}/topics.md"
+
+# Topics
+
+EOT
+
+				findfile -s .md "${ASSET_FOLDER}/${T}" | sort | while read FNAME; do
+						LABEL="$(basename "$FNAME" ".md")"
+						case "${LABEL}" in
+							"nav")
+							;;
+							"commands")
+							;;
+							"description")
+							;;
+							"usage")
+							;;
+							"index")
+							;;
+							"topics")
+							;;
+							*)
+							if [ -f "${ASSET_FOLDER}/${T}/${LABEL}.md" ]; then
+									echo "+ [${LABEL}](${LABEL}.html)"
+							fi
+							;;
+						esac
+				done >>"${ASSET_FOLDER}/${T}/topics.md"
+
+				# Generating "Here" value for folder
+				HERE="${DNAME}"
+				if [ "${HERE}" = '.' ] && [ "$ASSET_FOLDER" = "docs" ]; then
+						HERE="Documentation"
+				elif [ "${HERE}" = '.' ]; then
+						HERE="${ASSET_FOLDER}"
+				fi
+
+				C="$(wc -l "${ASSET_FOLDER}/${T}/topics.md" | cut -d\  -f 1)"
+				if [ "${C}" != "3" ] ; then
+					echo "Creating nav.md with topic links for: ${ASSET_FOLDER}/${T}"
+	        cat <<EOT >"${ASSET_FOLDER}/${T}/nav.md"
 + [Home](/)
 + [Up](../)
-+ [${T}](./)
++ [${HERE}](./)
++ [topics](topics.html)
 EOT
-        # Generate the index of topics for the cmd described in asset folder
+				else
+					echo "Creating nav.md without topics for asset: ${ASSET_FOLDER}/${T}"
+	        cat <<EOT >"${ASSET_FOLDER}/${T}/nav.md"
++ [Home](/)
++ [Up](../)
++ [${HERE}](./)
+EOT
+				fi
+
+				# Generate the index of topics for the cmd described in asset folder
         MakeSubPages "${ASSET_FOLDER}/${T}"
+
     done
     echo "" >>"${ASSET_FOLDER}/index.md"
 }
 
 echo "Checking software..."
-softwareCheck mkpage
+softwareCheck mkpage finddir findfile
 echo "Generating website"
 MakePage nav.md README.md index.html
 MakePage nav.md INSTALL.md install.html

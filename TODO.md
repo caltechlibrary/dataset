@@ -12,24 +12,28 @@
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
++ [ ] "count" should accept a filter to support sub counts
++ [ ] "read" should accept a list of keys and produce an ordered list of JSON list of records
++ [ ] "keys" should be extended to accept a filter and order expression to produce an ordered list of keys
++ [ ] "keys" could accept an existing list of keys to provide a sub-select like feature when combined with filter and order expressions
++ [ ] "filter" should support RegEx matching, e.g. `(match "*.md$" .filenames[:])`
+    + add this support via tmplfn package
 
 ## Someday, Maybe (Roadmap)
 
 + [ ] sparql cli interface for searching collection
     + support JSON-LD for cross collection integration
 + [ ] Add faceted support to search (dsfind, dsws)
++ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python, PHP or R
++ [ ] Python3 native dataset module for scripting collection management in Python3
++ [ ] R native dataset module for scripting collection management in R
++ [ ] PHP native dataset module for script collection management in PHP 
 + [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
-    + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
-+ [ ] collection.Create() will replace an existing record. What I want to want to do a Join style update instead of a replace? 
-+ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python or PHP
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
-+ [ ] Swap UUID for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
++ [ ] Inaddition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
 + [ ] convert filter, extract, etc to work on streams so we can leverage pipelines more effeciently
-+ [ ] _dsfind_ should work on all bleve indexes in current directory if none are specified
 + [ ] VCARD and VCAL importer
-+ [ ] _subset_ would produced ordered arrays of JSON docs passing filter and sort criteria
-    + `dataset -filter FILTER_CLAUSE -order ORDER_CLAUSE -o recent-pubs.json subset` 
 + [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
     + [ ] explore using templates as filters for select lists and the like
     + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
@@ -137,3 +141,9 @@
     + [x] template HTML results and search forms
     + [x] support static pages in site
     + [x] evaluate including SparQL support
++ [x] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
++ [x] Add Google Sheet import based on existing CSV import code
++ [x] Add Google Sheet export based on existing CSV export code
++ [x] dataset count to return a count of records
++ [x] collection.Create() will replace an existing record. What do I want to want to do a Join style update instead of a replace? 
++ [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://

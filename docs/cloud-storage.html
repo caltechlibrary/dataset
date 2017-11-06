@@ -13,13 +13,8 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
 <li><a href="./">Documentation</a></li>
-<li><a href="../examples/">Examples</a></li>
-<li><a href="../how-to/">How To</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
@@ -31,7 +26,10 @@
 cloud storage and Google&rsquo;s cloud storage sollutions. These can be configured through the
 setting the DATASET environment variable or via the command line. The buckets for either Amazon
 or Google need to have already been setup including authenticated configs (e.g. with the aws or gsutil
-tools respectively).  If the prefix for the path to the collection is prefixed with s3:// then the
+tools respectively).  The aws tool is available
+<a href="https://aws.amazon.com/cli">here</a>, and can be set up using <code>aws configure</code> and
+entering the Access key information from your AWS user accounts page (under
+&ldquo;Security credentials&rdquo;.  If the prefix for the path to the collection is prefixed with s3:// then the
 collection is stored at AWS S3, if the prefix is gs:// then it is stored on Google Cloud Storage and
 if there is now prefix it is stored on local disc.</p>
 

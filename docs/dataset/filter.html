@@ -14,6 +14,7 @@
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
 <li><a href="./">dataset</a></li>
+<li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
@@ -55,21 +56,21 @@ is first followed by values).  They can be be simple or compound.</p>
 
 <p>A field, .family_name, matches a known value, &ldquo;Feynman&rdquo;.</p>
 
-<pre><code>	(eq .family_name &quot;Feynman&quot;)
+<pre><code>	'(eq .family_name &quot;Feynman&quot;)'
 </code></pre>
 
 <p>A field, .family_name, does not match a known value, &ldquo;Feynman&rdquo;.</p>
 
 <p>A field, .family_name, does not match value</p>
 
-<pre><code>	(ne .family_name &quot;Feynman&quot;)
+<pre><code>	'(ne .family_name &quot;Feynman&quot;)'
 </code></pre>
 
 <h3>Compound</h3>
 
 <p>Two fields match, .family_name and .given_name, known values &ldquo;Feynman&rdquo; and &ldquo;Richard&rdquo;.</p>
 
-<pre><code>	(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))
+<pre><code>	'(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))'
 </code></pre>
 
 <p>Related topics: extract and export</p>
