@@ -8,16 +8,11 @@
 
 ## Next (v0.1.x)
 
-+ [ ] Provide a mechanism to synchronize (only update matching rows, appending new rows) a Google Sheet with dataset collection.
++ [ ] "keys" should support a single level sort of a dotpath that resolves to a simple JSON type (e.g. int, float or string)
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
-+ [ ] "count" should accept a filter to support sub counts
-+ [ ] "read" should accept a list of keys and produce an ordered list of JSON list of records
-+ [ ] "keys" should be extended to accept a filter and order expression to produce an ordered list of keys
-+ [ ] "keys" could accept an existing list of keys to provide a sub-select like feature when combined with filter and order expressions
-+ [ ] "filter" should support RegEx matching, e.g. `(match "*.md$" .filenames[:])`
-    + add this support via tmplfn package
++ [ ] Provide a mechanism to synchronize (only update matching rows, appending new rows) a Google Sheet with dataset collection.
 
 ## Roadmap (v0.2.x)
 
@@ -39,7 +34,6 @@
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
 + [ ] Inaddition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
-+ [ ] convert filter, extract, etc to work on streams so we can leverage pipelines more effeciently
 + [ ] VCARD and VCAL importer
 + [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
     + [ ] explore using templates as filters for select lists and the like
@@ -64,6 +58,12 @@
 
 ## Completed
 
++ [x] "read" should accept a list of keys and produce an ordered list of JSON list of records
++ [x] "keys" could accept an existing list of keys to provide a sub-select like feature when combined with filter and order expressions
++ [x] "count" should accept a filter to support sub counts
++ [x] "keys" should be extended to accept a filter 
++ [x] "filter" should support RegEx matching, e.g. `(match "*.md$" .filenames[:])`
+    + add this support via tmplfn package
 + [x] Add composite fields to indexes by leveraging text templates to modify JSON structure
 + [x] Add template defined format support 
     + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
@@ -154,3 +154,4 @@
 + [x] dataset count to return a count of records
 + [x] collection.Create() will replace an existing record. What do I want to want to do a Join style update instead of a replace? 
 + [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
++ [x] convert extract, etc to work on streams so we can leverage pipelines more effeciently

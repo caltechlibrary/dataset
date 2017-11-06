@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.6"
+	Version = "v0.0.7-pre"
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -434,6 +434,11 @@ func (c *Collection) HasKey(key string) bool {
 // Length returns the number of keys in a collection
 func (c *Collection) Length() int {
 	return len(c.KeyMap)
+}
+
+// SortKeysByExpression takes a array of keys and a sort expression and turns a sorted list of keys.
+func (c *Collection) SortKeysByExpression(keys []string, expr string) ([]string, error) {
+	return keys, fmt.Errorf("SortKeysByExpression() not implemented.")
 }
 
 // ImportCSV takes a reader and iterates over the rows and imports them as

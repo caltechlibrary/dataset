@@ -1,8 +1,8 @@
 
 # Topics
 
-+ [attached](attached.html)
 + [attach](attach.html)
++ [attached](attached.html)
 + [attachments](attachments.html)
 + [count](count.html)
 + [create](create.html)
@@ -12,7 +12,6 @@
 + [export-gsheets](export-gsheets.html)
 + [export](export.html)
 + [extract](extract.html)
-+ [filter](filter.html)
 + [haskeys](haskeys.html)
 + [import-gsheet](import-gsheet.html)
 + [import](import.html)
