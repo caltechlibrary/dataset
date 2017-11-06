@@ -3,29 +3,21 @@
 
 ## Bugs
 
-+ [ ] Repair and check will fail on S3 without warning or indication why
-+ [ ] Fix CORS setting in _dsws_
-+ [ ] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
++ [ ] Repair and check will fail on S3/Google Cloud Storage without warning or reason why it is failing
+    + Add an error message or implementing repair and check for s3:// and gs:// storage systems
 
 ## Next
 
-+ [x] Add Google Sheet import based on existing CSV import code
-+ [ ] Add Google Sheet export based on existing CSV export code
++ [ ] Provide a mechanism to synchronize (only update matching rows, appending new rows) a Google Sheet with dataset collection.
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
-+ [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
 
-## Someday, Maybe
+## Someday, Maybe (Roadmap)
 
-+ [ ] dataset count to return a count of records
-    + might be useful to combine with an filter expression for sub counts
-+ [ ] Provide a mechanism to synchronize a Google Sheet with dataset collection.
-    + it should handle setting up and maintaining a connection to the Sheets API 
-    + it will require a column to play the role of ID for JSON document in collection
-    + it will require a list of paths to map to columns
-    + option for implode/exploding sub-fields in the spreadsheet cells
-        + e.g. arrays of strings could be flattened as pipe delimited and expected as an array of string in dataset collection JSON document
++ [ ] sparql cli interface for searching collection
+    + support JSON-LD for cross collection integration
++ [ ] Add faceted support to search (dsfind, dsws)
 + [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
     + rather than import into tarball just write the attachments to a path relative to the ID name (e.g. EPrint 4555.xml would be written to 4555/4555.xml)
@@ -45,39 +37,18 @@
 + [ ] optional strageties for including arrays in a single column of CSV output
     + provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
 + [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
-+ [ ] prototype what a web service might look like for a dataset collection (including search)
-    + [ ] template HTML results and search forms
-    + [ ] support static pages in site
-    + [ ] evaluate including SparQL support
 + [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
     + [ ] N35.0000,W118.0000 or S35.000,E118.000
     + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
-+ [ ] Bleve search support for dataset
-    + [ ] integrate batch indexing to speed things up
-    + [ ] generate a select list from search results
-    + [ ] add facet support
 + [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
-+ sparql cli interface for searching collection
-+ cli to convert collection into JSON-LD
++ [ ] dsbagit would generate a "BagIt" bag for preservation of collection objects
++ [ ] OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
++ [ ] RSS importer (example RSS as JSON: http://scripting.com/rss.json)
++ [ ] OPML importer
 + dsselect would generate select lists based on query results in the manner of dsfind
-+ dstocsv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
-    + header line would be optional 
-    + dot paths that point at array, objects would be joined with a multi-value delimiter based on type 
-    + mult-value delimiters would be configurable indepentantly
-        + a object k/v might be delimited by colon which each pair delimited by newline
-        + an array might be delimited by a pipe or semi-colon
-    + optional filter for specific JSON documents to flatten
 + dataset "versioning" support via something like libgit2
-+ dsserver would allow HTTPS REST access do a collection server, it would support multi-user access and with group acls
-    + authentication would be through an external system (e.g. Shibboleth, PAM, or OAuth2)
-    + groups would contain a list of users
-    + permissions (CRUD) would be based on group and collection (permissions would be collection wide, not record specific)
-+ dsbagit would generate a "BagIt" bag for preservation of collection objects
-+ OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
-+ RSS importer (example RSS as JSON: http://scripting.com/rss.json)
-+ OPML importer
 
 
 ## Completed
@@ -146,3 +117,23 @@
     + [x] check dataset
     + [x] check cait usage
     + [x] check epgo usage
++ [x] dstocsv would take a select list and a list of "column name/dot path" pairs or a list of dot paths writing the results into a CSV file
+    + header line would be optional 
+    + dot paths that point at array, objects would be joined with a multi-value delimiter based on type 
+    + mult-value delimiters would be configurable indepentantly
+        + a object k/v might be delimited by colon which each pair delimited by newline
+        + an array might be delimited by a pipe or semi-colon
+    + optional filter for specific JSON documents to flatten
++ [x] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
++ [x] Fix CORS setting in _dsws_ (Let's Encrypt support implemented, not needed)
++ [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
++ [x] Add Google Sheet import based on existing CSV import code
++ [x] Add Google Sheet export based on existing CSV export code
++ [x] dataset count to return a count of records
++ [x] Bleve search support for dataset
+    + [x] integrate batch indexing to speed things up
+    + [x] generate a select list from search results
++ [x] prototype what a web service might look like for a dataset collection (including search)
+    + [x] template HTML results and search forms
+    + [x] support static pages in site
+    + [x] evaluate including SparQL support
