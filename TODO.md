@@ -3,6 +3,8 @@
 
 ## Bugs
 
++ [ ] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error
+
 ## Next (v0.1.x)
 
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
