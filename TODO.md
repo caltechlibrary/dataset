@@ -27,6 +27,7 @@
 
 ## Someday, Maybe
 
++ [ ] Move indexes and definitions into folder with collection.json
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
 + [ ] Inaddition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
