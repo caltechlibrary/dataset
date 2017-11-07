@@ -8,6 +8,9 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	// CaltechLibrary packages
+	"github.com/caltechlibrary/storage"
 )
 
 //
@@ -92,6 +95,10 @@ func Analyzer(collectionName string) error {
 		err     error
 	)
 
+	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
+		return fmt.Errorf("Analyzer only works on local disc storage")
+	}
+
 	// Check of collections.json and keys.json exist
 	for _, fname := range []string{"collection.json", "keys.json"} {
 		if docPath, exists := checkFileExists(path.Join(collectionName, fname)); exists == false {
@@ -116,15 +123,18 @@ func Analyzer(collectionName string) error {
 
 	// See if we can open a collection, if not then create an empty struct
 	if c, err = Open(collectionName); err == nil {
-		if c.Version != Version {
-			log.Printf("Version mismatch collection %s, dataset %s", c.Version, Version)
-			wCnt++
-		}
 		defer c.Close()
 	} else {
-		log.Printf("Open collection error, %s", err)
+		log.Printf("ERROR: Open collection error, %s", err)
 		c = new(Collection)
 		eCnt++
+	}
+	if c.Store.Type != storage.FS {
+		return fmt.Errorf("Analyzer only works on local disc storage")
+	}
+	if c.Version != Version {
+		log.Printf("Version mismatch collection %s, dataset %s", c.Version, Version)
+		wCnt++
 	}
 
 	// Open and parse the keys.json file for comparison
@@ -228,15 +238,16 @@ func Repair(collectionName string) error {
 		c   *Collection
 		err error
 	)
+
 	// See if we can open a collection, if not then create an empty struct
 	if c, err = Open(collectionName); err == nil {
-		if c.Version != Version {
-			log.Printf("WARNING: Version mismatch collection moving from %s to %s", c.Version, Version)
-		}
 		defer c.Close()
 	} else {
-		log.Printf("ERROR: %s, creating empty collection object", err)
+		log.Printf("ERROR: Open collection error, %s", err)
 		c = new(Collection)
+	}
+	if c.Store.Type != storage.FS {
+		return fmt.Errorf("Repair only works on local disc storage")
 	}
 	if c.Version != Version {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)

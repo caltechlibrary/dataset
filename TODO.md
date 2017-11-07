@@ -3,9 +3,6 @@
 
 ## Bugs
 
-+ [ ] Repair and check will fail on S3/Google Cloud Storage without warning or reason why it is failing
-    + Add an error message or implementing repair and check for s3:// and gs:// storage systems
-
 ## Next (v0.1.x)
 
 + [ ] "keys" should support a single level sort of a dotpath that resolves to a simple JSON type (e.g. int, float or string)
@@ -155,3 +152,6 @@
 + [x] collection.Create() will replace an existing record. What do I want to want to do a Join style update instead of a replace? 
 + [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
 + [x] convert extract, etc to work on streams so we can leverage pipelines more effeciently
++ [x] Repair and check will fail on S3/Google Cloud Storage without warning or reason why it is failing
+    + Add an error message or implementing repair and check for s3:// and gs:// storage systems
+
