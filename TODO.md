@@ -3,7 +3,8 @@
 
 ## Bugs
 
-+ [ ] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error
++ [x] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error
+    + fixed error is storage package, line 77 fs.go was using a os.Rename() with out handling the error directly.
 
 ## Next (v0.1.x)
 
