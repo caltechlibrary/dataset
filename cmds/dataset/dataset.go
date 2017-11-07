@@ -29,6 +29,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
@@ -58,19 +59,19 @@ var (
 	showVerbose    bool
 	quietMode      bool
 	noNewLine      bool
+	timeout        string
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
 		"init":          collectionInit,
 		"create":        createJSONDoc,
-		"read":          readJSONDoc,
+		"read":          readJSONDocs,
 		"update":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
 		"keys":          collectionKeys,
 		"haskey":        hasKey,
 		"count":         collectionCount,
-		"filter":        filter,
 		"path":          docPath,
 		"attach":        addAttachments,
 		"attachments":   listAttachments,
@@ -196,16 +197,16 @@ func createJSONDoc(args ...string) (string, error) {
 	return "OK", nil
 }
 
-// readJSONDoc returns the JSON from a document in the collection
-func readJSONDoc(args ...string) (string, error) {
-	if len(args) != 1 {
+// readJSONDocs returns the JSON from a document in the collection, if more than one key is provided
+// it returns an array of JSON docs ordered by the keys provided
+func readJSONDocs(args ...string) (string, error) {
+	if len(args) < 1 {
 		return "", fmt.Errorf("Missing document name")
 	}
-	name := args[0]
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	if len(name) == 0 {
+	if len(args) == 0 {
 		return "", fmt.Errorf("missing document name")
 	}
 	collection, err := dataset.Open(collectionName)
@@ -214,11 +215,25 @@ func readJSONDoc(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	src, err := collection.ReadAsJSON(name)
-	if err != nil {
-		return "", err
+	if len(args) == 1 {
+		src, err := collection.ReadAsJSON(args[0])
+		if err != nil {
+			return "", err
+		}
+		return string(src), nil
 	}
-	return string(src), nil
+
+	var rec interface{}
+	recs := []interface{}{}
+	for _, name := range args {
+		err := collection.Read(name, &rec)
+		if err != nil {
+			return "", err
+		}
+		recs = append(recs, rec)
+	}
+	src, err := json.Marshal(recs)
+	return string(src), err
 }
 
 // updateJSONDoc replaces a JSON document in the collection
@@ -323,7 +338,17 @@ func joinJSONDoc(args ...string) (string, error) {
 }
 
 // collectionKeys returns the keys in a collection
+// If a 'filter expression' is provided it will return a filtered list of keys.
+// Filters with like Go's text/template if statement where the 'filter expression' is
+// the condititional expression in a if/else statement. If the expression evaluates to "true"
+// then the kehy is included in the list of keys If the expression evaluates to "false" then
+// it is excluded for the list of keys.
+// If a 'sort expression' is provided then the resulting keys are ordered by that expression.
 func collectionKeys(args ...string) (string, error) {
+	var (
+		keyList  []string
+		sortExpr string
+	)
 	// NOTE: We ignore args because this function always returns the full list
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
@@ -333,10 +358,53 @@ func collectionKeys(args ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	return strings.Join(collection.Keys(), "\n"), nil
+
+	// Trivial case of return all keys
+	if len(args) == 0 || (len(args) == 1 && args[0] == "true") {
+		return strings.Join(collection.Keys(), "\n"), nil
+	}
+
+	// Some sort of filter is involved
+	f, err := tmplfn.ParseFilter(args[0])
+	if err != nil {
+		return "", err
+	}
+
+	// Some sort of Sort is involved
+	if len(args) > 1 {
+		sortExpr = args[1]
+	}
+
+	// Some sort of sub selection of keys is involved
+	if len(args) > 2 {
+		keyList = args[2:]
+	} else {
+		keyList = collection.Keys()
+	}
+
+	// Save the resulting keys in a separate list
+	keys := []string{}
+
+	// Process the filter
+	for _, key := range keyList {
+		data := map[string]interface{}{}
+		if err := collection.Read(key, &data); err == nil {
+			if ok, err := f.Apply(data); err == nil && ok == true {
+				keys = append(keys, key)
+			}
+		}
+	}
+	// If now sort we're done
+	if len(sortExpr) == 0 {
+		return strings.Join(keys, "\n"), nil
+	}
+
+	// We still have sorting to do.
+	keys, err = collection.SortKeysByExpression(keys, args[1])
+	return strings.Join(keys, "\n"), err
 }
 
-// hasKey returns true if key is found in collection.json, false otherwise
+// hasKey returns true if keys are found in collection.json, false otherwise
 // If more than one key is provided then each key is checked and an array
 // of true/false values will be returned matching the order of the keys provided
 // one key state per line
@@ -357,7 +425,10 @@ func hasKey(args ...string) (string, error) {
 }
 
 // collectionCount returns the number of keys in a collection
+// can optionally accept a filter to return a subset count of keys
 func collectionCount(args ...string) (string, error) {
+	var keyList []string
+
 	// NOTE: We ignore args because this function always returns a count
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("missing a collection name")
@@ -367,45 +438,36 @@ func collectionCount(args ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	return fmt.Sprintf("%d", collection.Length()), nil
-}
 
-// filter returns a list of collection ids where the filter value returns true.
-// the filter notation is based on that Go text/template pipelines that would return
-// true in an if/else block.
-func filter(args ...string) (string, error) {
-	if len(args) != 1 {
-		return "", fmt.Errorf("filter requires a single filter expression")
+	// Trivial case where we want length of whole collection
+	if len(args) == 0 || (len(args) == 1 && args[0] == "true") {
+		return fmt.Sprintf("%d", collection.Length()), nil
 	}
 
+	// Some sort of filter is involved.
 	f, err := tmplfn.ParseFilter(args[0])
 	if err != nil {
 		return "", err
 	}
-
-	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+	if len(args) > 1 {
+		keyList = args[1:]
+	} else {
+		keyList = collection.Keys()
 	}
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-
-	keys := []string{}
-	for _, key := range collection.Keys() {
+	cnt := 0
+	for _, key := range keyList {
 		data := map[string]interface{}{}
 		if err := collection.Read(key, &data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
-				keys = append(keys, key)
+				cnt++
 			}
 		}
 	}
-	return strings.Join(keys, "\n"), nil
+	return fmt.Sprintf("%d", cnt), nil
 }
 
 // streamFilterResults works like filter but outputs the results as it find them
-func streamFilterResults(w *os.File, filterExp string) error {
+func streamFilterResults(w *os.File, keyList []string, filterExp string) error {
 	f, err := tmplfn.ParseFilter(filterExp)
 	if err != nil {
 		return err
@@ -420,7 +482,10 @@ func streamFilterResults(w *os.File, filterExp string) error {
 	}
 	defer collection.Close()
 
-	for _, key := range collection.Keys() {
+	if len(keyList) == 0 {
+		keyList = collection.Keys()
+	}
+	for _, key := range keyList {
 		data := map[string]interface{}{}
 		if err := collection.Read(key, &data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
@@ -750,6 +815,7 @@ func init() {
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
 	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
+	flag.StringVar(&timeout, "timeout", "", "timeout is a duration for waiting to read stdin before giving up")
 }
 
 func main() {
@@ -812,6 +878,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Handle trailing nl
+	nl := "\n"
+	if noNewLine == true {
+		nl = ""
+	}
+
 	in, err := cli.Open(inputFName, os.Stdin)
 	if err != nil {
 		handleError(err, 1)
@@ -826,30 +898,82 @@ func main() {
 
 	action, params := args[0], args[1:]
 	if fn, ok := voc[action]; ok == true {
-		// If filter we want to output the ids as a stream as they are found
-		if action == "filter" {
-			var filterExp string
-			if len(params) > 0 {
-				filterExp = params[0]
-			} else {
-				buf, err := ioutil.ReadAll(in)
+		// Handle case of piping in or reading JSON from a file.
+		if action == "create" || action == "update" || action == "read" || action == "keys" || action == "count" {
+			var (
+				lines []string
+				err   error
+			)
+
+			// Read the input if available
+			stat, err := in.Stat()
+			size := stat.Size()
+			if size == 0 && timeout != "" {
+				if timeout != "" {
+					to, err := time.ParseDuration(timeout)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "%s%s", err, nl)
+						os.Exit(1)
+					}
+					time.Sleep(to)
+				}
+				stat, err = in.Stat()
+				size = stat.Size()
+			}
+			if size > 0 {
+				lines, err = cli.ReadLines(in)
 				if err != nil {
 					handleError(err, 1)
 				}
-				filterExp = fmt.Sprintf("%s", buf)
 			}
-			if err := streamFilterResults(out, filterExp); err != nil {
-				log.Fatal(err)
+
+			if action == "keys" {
+				// If filter we want to output the ids as a stream as they are found
+				filterExpr := "true"
+				sortExpr := ""
+				keyList := []string{}
+
+				if len(params) > 0 {
+					filterExpr = params[0]
+				}
+				if len(params) > 1 {
+					sortExpr = params[1]
+				}
+
+				// Get any key list that might be passed in (either via cli or stdin)
+				if len(params) > 3 {
+					keyList = params[2:]
+				}
+				if len(lines) > 0 {
+					for _, line := range lines {
+						keyList = append(keyList, line)
+					}
+				}
+
+				// If we are NOT sorting we can just filter the output now and be done.
+				if len(sortExpr) == 0 {
+					if err := streamFilterResults(out, keyList, filterExpr); err != nil {
+						fmt.Fprintf(out, "%s%s", err, nl)
+						os.Exit(1)
+					}
+					os.Exit(0)
+				}
+
+				// We need to make sure our params are setup with sane defaults for keys
+				params = []string{
+					filterExpr,
+					sortExpr,
+				}
+				for _, k := range keyList {
+					params = append(params, k)
+				}
+			} else if (action == "create" || action == "update") && len(lines) > 0 {
+				params = append(params, strings.Join(lines, "\n"))
+			} else {
+				for _, line := range lines {
+					params = append(params, line)
+				}
 			}
-			os.Exit(0)
-		}
-		// Handle case of piping in or reading JSON from a file.
-		if (action == "create" || action == "update") && len(params) <= 1 {
-			lines, err := cli.ReadLines(in)
-			if err != nil {
-				handleError(err, 1)
-			}
-			params = append(params, strings.Join(lines, "\n"))
 		}
 
 		output, err := fn(params...)
@@ -857,13 +981,9 @@ func main() {
 			handleError(err, 1)
 		}
 		if quietMode == false || showVerbose == true {
-			nl := "\n"
-			if noNewLine == true {
-				nl = ""
-			}
 			fmt.Fprintf(out, "%s%s", output, nl)
 		}
 	} else {
-		handleError(fmt.Errorf("Don't understand %q\n", action), 1)
+		handleError(fmt.Errorf("Don't understand %q%s", action, nl), 1)
 	}
 }

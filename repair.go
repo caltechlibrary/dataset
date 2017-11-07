@@ -1,3 +1,21 @@
+//
+// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
+//
+// Author R. S. Doiel, <rsdoiel@library.caltech.edu>
+//
+// Copyright (c) 2017, Caltech
+// All rights not granted herein are expressly reserved by Caltech.
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
 package dataset
 
 import (
@@ -8,6 +26,9 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	// CaltechLibrary packages
+	"github.com/caltechlibrary/storage"
 )
 
 //
@@ -92,6 +113,10 @@ func Analyzer(collectionName string) error {
 		err     error
 	)
 
+	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
+		return fmt.Errorf("Analyzer only works on local disc storage")
+	}
+
 	// Check of collections.json and keys.json exist
 	for _, fname := range []string{"collection.json", "keys.json"} {
 		if docPath, exists := checkFileExists(path.Join(collectionName, fname)); exists == false {
@@ -116,15 +141,18 @@ func Analyzer(collectionName string) error {
 
 	// See if we can open a collection, if not then create an empty struct
 	if c, err = Open(collectionName); err == nil {
-		if c.Version != Version {
-			log.Printf("Version mismatch collection %s, dataset %s", c.Version, Version)
-			wCnt++
-		}
 		defer c.Close()
 	} else {
-		log.Printf("Open collection error, %s", err)
+		log.Printf("ERROR: Open collection error, %s", err)
 		c = new(Collection)
 		eCnt++
+	}
+	if c.Store.Type != storage.FS {
+		return fmt.Errorf("Analyzer only works on local disc storage")
+	}
+	if c.Version != Version {
+		log.Printf("Version mismatch collection %s, dataset %s", c.Version, Version)
+		wCnt++
 	}
 
 	// Open and parse the keys.json file for comparison
@@ -228,15 +256,16 @@ func Repair(collectionName string) error {
 		c   *Collection
 		err error
 	)
+
 	// See if we can open a collection, if not then create an empty struct
 	if c, err = Open(collectionName); err == nil {
-		if c.Version != Version {
-			log.Printf("WARNING: Version mismatch collection moving from %s to %s", c.Version, Version)
-		}
 		defer c.Close()
 	} else {
-		log.Printf("ERROR: %s, creating empty collection object", err)
+		log.Printf("ERROR: Open collection error, %s", err)
 		c = new(Collection)
+	}
+	if c.Store.Type != storage.FS {
+		return fmt.Errorf("Repair only works on local disc storage")
 	}
 	if c.Version != Version {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)

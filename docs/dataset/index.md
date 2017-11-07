@@ -55,9 +55,8 @@ E.g. to get help on the "init" command.
 + [update](update.html) - updates a JSON document in collection
 + [delete](delete.html) - removes a JSON document from collection
 + [join](join.html) - brings the functionality of jsonjoin to the dataset command.
-+ [filter](filter.html) - takes a filter and returns an unordered list of keys that match filter expression
-    + [dotpath](dotpath.html) - reach into an object to return a value(s)
 + [keys](keys.html) - returns the keys to stdout, one key per line
+    + [dotpath](dotpath.html) - reach into an object to return a value(s)
 + [haskey](haskeys.html) - returns true is key is in collection, false otherwise
 + [count](count.html) - returns a count of keys in a collection
 + [path](path.html) - given a document name return the full path to document
