@@ -66,33 +66,58 @@ parenthasis (e.g. <code>(and (eq .i 1) (ne .s &quot;1&quot;) (ne .s &quot;one&qu
 <li>nq - not equal (comparing same type but different values)</li>
 <li>lt - less than</li>
 <li>gt - greater than</li>
+<li>match - given a regular expression and string data return true if they match</li>
 <li>and - allows you to combine two expression and if both true the expression is true.</li>
 <li>or - allows you to combine two or more expressions where one is true then expression is true.</li>
 </ul>
 
 <h4>Simple</h4>
 
-<p>A field, .family_name, matches a known value, &ldquo;Feynman&rdquo;.</p>
+<p>A field, <code>.family_name</code>, matches a known value, &ldquo;Feynman&rdquo;.</p>
 
 <pre><code>	'(eq .family_name &quot;Feynman&quot;)'
 </code></pre>
 
-<p>A field, .family_name, does not match a known value, &ldquo;Feynman&rdquo;.</p>
+<p>A field, <code>.family_name</code>, does not match a known value, &ldquo;Feynman&rdquo;.</p>
 
-<p>A field, .family_name, does not match value</p>
+<p>A field, <code>.family_name</code>, does not match value</p>
 
 <pre><code>	'(ne .family_name &quot;Feynman&quot;)'
 </code></pre>
 
+<p>A field, <code>.family_name</code>, match the regular expression <code>Feym*n</code>.</p>
+
+<pre><code>	'(match &quot;Feynm*n&quot; .family_name)'
+</code></pre>
+
 <h4>Compound</h4>
 
-<p>Two fields match, .family_name and .given_name, known values &ldquo;Feynman&rdquo; and &ldquo;Richard&rdquo;.</p>
+<p>Two fields match, <code>.family_name</code> and <code>.given_name</code>, known values &ldquo;Feynman&rdquo; and &ldquo;Richard&rdquo;.</p>
 
 <pre><code>	'(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))'
 </code></pre>
 
 <p>NOTE: That the filters experessions are data type aware. So &ldquo;1&rdquo; is not the same
 as 1. Likewise 1 is not the same as 1.0.</p>
+
+<h2>sort expressions</h2>
+
+<p>The &ldquo;keys&rdquo; option provides for simple one level sorting.  Sorting is described
+by a plus or minus followed by a dotpath to a simple field type (i.e. string, int, or
+float JSON types). In our previous examples sorting ascending by <code>.family_name</code> would
+be expressed as <code>+.family_name</code>. To sort by descending <code>.family_name</code> you would
+use the expression <code>-.family_name</code>.  By default we assume an ascending sort so in
+practice you can omit a leading &ldquo;+&rdquo;.</p>
+
+<p>In this example we listing last names of &ldquo;Smith&rdquo; sorting by ascending given name.</p>
+
+<pre><code>    dataset keys '(eq &quot;Smith&quot; .family_name)' '.given_name'
+</code></pre>
+
+<p>In this example we list last anes of &ldquo;Smith&rdquo; sorted by descending given name.</p>
+
+<pre><code>    dataset keys '(eq &quot;Smith&quot; .family_name)' '-.given_name'
+</code></pre>
 
 <p>Related topics: extract and export</p>
 

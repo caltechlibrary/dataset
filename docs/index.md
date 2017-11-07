@@ -17,7 +17,9 @@
 + [operations](operations.html) - Lists the operations support on dataset with examples
 + [file system layout](file-system-layout.html) - Describes how collections are organized
 + [defining indexes](defining-indexes.html) - Describes the index definition JSON document format
-+ [cloud storage](cloud-storage.html) - Describes using Cloud Storage (e.g. AWS S3, Google Cloud Storage)
++ [cloud storage](cloud-storage.html) - Describes using Cloud Storage (e.g. Amazon S3, Google Cloud Storage)
+
+
 
 
 

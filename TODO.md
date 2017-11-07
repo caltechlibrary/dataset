@@ -5,7 +5,6 @@
 
 ## Next (v0.1.x)
 
-+ [ ] "keys" should support a single level sort of a dotpath that resolves to a simple JSON type (e.g. int, float or string)
 + [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
@@ -55,6 +54,7 @@
 
 ## Completed
 
++ [x] "keys" should support a single level sort of a dotpath that resolves to a simple JSON type (e.g. int, float or string)
 + [x] "read" should accept a list of keys and produce an ordered list of JSON list of records
 + [x] "keys" could accept an existing list of keys to provide a sub-select like feature when combined with filter and order expressions
 + [x] "count" should accept a filter to support sub counts

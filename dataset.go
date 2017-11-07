@@ -1,5 +1,5 @@
 //
-// Package dataset is a go package for managing JSON documents stored on disc
+// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
@@ -434,11 +434,6 @@ func (c *Collection) HasKey(key string) bool {
 // Length returns the number of keys in a collection
 func (c *Collection) Length() int {
 	return len(c.KeyMap)
-}
-
-// SortKeysByExpression takes a array of keys and a sort expression and turns a sorted list of keys.
-func (c *Collection) SortKeysByExpression(keys []string, expr string) ([]string, error) {
-	return keys, fmt.Errorf("SortKeysByExpression() not implemented.")
 }
 
 // ImportCSV takes a reader and iterates over the rows and imports them as

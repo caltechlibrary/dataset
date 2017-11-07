@@ -89,16 +89,17 @@ as 1. Likewise 1 is not the same as 1.0.
 The "keys" option provides for simple one level sorting.  Sorting is described
 by a plus or minus followed by a dotpath to a simple field type (i.e. string, int, or 
 float JSON types). In our previous examples sorting ascending by `.family_name` would
-be expressed as `+.family_name`. Descending by `.family_name` would be `-.family_name`.
-By default we assume an ascending sort so in practice you can omit a leading "+".
+be expressed as `+.family_name`. To sort by descending `.family_name` you would 
+use the expression `-.family_name`.  By default we assume an ascending sort so in 
+practice you can omit a leading "+".
 
-In this example we listing last names of "Smith" sorting by the given name.
+In this example we listing last names of "Smith" sorting by ascending given name.
 
 ```
     dataset keys '(eq "Smith" .family_name)' '.given_name'
 ```
 
-Descending by given name would be 
+In this example we list last anes of "Smith" sorted by descending given name.
 
 
 ```

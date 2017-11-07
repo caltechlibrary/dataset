@@ -1,7 +1,7 @@
 //
-// Package dataset is a go package for managing JSON documents stored on disc
+// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
 // Copyright (c) 2017, Caltech
 // All rights not granted herein are expressly reserved by Caltech.

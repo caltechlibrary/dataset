@@ -1,5 +1,6 @@
 /*
-Package dataset provides a common approach of storing JSON documents and related attachments systematically
+Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
+It provides a common approach of storing JSON documents and related attachments systematically
 and predictably on the file systems. The driving usecase behind dataset is creating a unified approach to
 harvesting metadata from various hetrogenious systems using in Caltech Library (e.g. EPrints, ArchivesSpace,
 Islandora and outside API like ORCID, CrossRef, OCLC). This suggests that dataset as a go package and command
