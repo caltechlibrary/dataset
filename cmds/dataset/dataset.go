@@ -65,6 +65,7 @@ var (
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
 		"init":          collectionInit,
+		"status":        collectionStatus,
 		"create":        createJSONDoc,
 		"read":          readJSONDocs,
 		"update":        updateJSONDoc,
@@ -141,6 +142,21 @@ func collectionInit(args ...string) (string, error) {
 		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
 	}
 	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
+}
+
+// collectionStatus sees if we can find the dataset collection given the path
+func collectionStatus(args ...string) (string, error) {
+	if len(args) == 0 && collectionName == "" {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	args = append(args, collectionName)
+	for _, collectionName := range args {
+		_, err := dataset.Open(collectionName)
+		if err != nil {
+			return "", fmt.Errorf("%s: %s", collectionName, err)
+		}
+	}
+	return "OK", nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
@@ -911,12 +927,12 @@ func main() {
 			stat, err := in.Stat()
 			size := stat.Size()
 			if size == 0 && timeout != "" {
-					to, err := time.ParseDuration(timeout)
-					if err != nil {
-						fmt.Fprintf(os.Stderr, "%s%s", err, nl)
-						os.Exit(1)
-					}
-					time.Sleep(to)
+				to, err := time.ParseDuration(timeout)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "%s%s", err, nl)
+					os.Exit(1)
+				}
+				time.Sleep(to)
 				stat, err = in.Stat()
 				size = stat.Size()
 			}
