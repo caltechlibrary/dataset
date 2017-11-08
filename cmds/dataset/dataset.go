@@ -60,6 +60,7 @@ var (
 	quietMode      bool
 	noNewLine      bool
 	timeout        string
+	waitForInput   bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -816,6 +817,7 @@ func init() {
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
 	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
 	flag.StringVar(&timeout, "timeout", "", "timeout is a duration for waiting to read stdin before giving up")
+	flag.BoolVar(&waitForInput, "wait", false, "wait for data coming from stdin")
 }
 
 func main() {
@@ -909,18 +911,16 @@ func main() {
 			stat, err := in.Stat()
 			size := stat.Size()
 			if size == 0 && timeout != "" {
-				if timeout != "" {
 					to, err := time.ParseDuration(timeout)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "%s%s", err, nl)
 						os.Exit(1)
 					}
 					time.Sleep(to)
-				}
 				stat, err = in.Stat()
 				size = stat.Size()
 			}
-			if size > 0 {
+			if size > 0 || waitForInput == true {
 				lines, err = cli.ReadLines(in)
 				if err != nil {
 					handleError(err, 1)
