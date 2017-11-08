@@ -3,8 +3,10 @@
 
 ## Bugs
 
-+ [x] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error
-    + fixed error is storage package, line 77 fs.go was using a os.Rename() with out handling the error directly.
++ [ ] Memory consumption is high, figure out how to improve memory usage
++ [ ] Attachment listings are slow
+    + idea: assume all collection documents are an object, attach a `._attachments` to each document with attachment metadata, this would allow retrieval at same spead as document
+
 
 ## Next (v0.1.x)
 
@@ -58,6 +60,8 @@
 
 ## Completed
 
++ [x] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error
+    + fixed error is storage package, line 77 fs.go was using a os.Rename() with out handling the error directly.
 + [x] "keys" should support a single level sort of a dotpath that resolves to a simple JSON type (e.g. int, float or string)
 + [x] "read" should accept a list of keys and produce an ordered list of JSON list of records
 + [x] "keys" could accept an existing list of keys to provide a sub-select like feature when combined with filter and order expressions
