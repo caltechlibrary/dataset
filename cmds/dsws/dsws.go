@@ -58,6 +58,7 @@ var (
 	showTemplates bool
 	indexList     string
 	letsEncrypt   bool
+	corsOrigin    string
 
 	// Provided as an ordered command line arg
 	docRoot    string
@@ -105,6 +106,7 @@ func init() {
 	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
 	flag.StringVar(&indexList, "indexes", "", "comma or colon delimited list of index names")
 	flag.BoolVar(&letsEncrypt, "acme", false, "Enable Let's Encypt ACME TLS support")
+	flag.StringVar(&corsOrigin, "cors-origin", "*", "Set the restriction for CORS origin headers")
 }
 
 func main() {
@@ -322,6 +324,7 @@ func main() {
 				}
 			}
 		}
+
 		// Based on the request info, format the results appropriately
 		var tName string
 		switch strings.ToLower(qformat) {
@@ -368,9 +371,13 @@ func main() {
 		}
 	}
 
+	// CORS Policy
+	cors := mkpage.CORSPolicy{
+		Origin: corsOrigin,
+	}
+
 	// Define our search API prefix path
 	mux := http.NewServeMux()
-	//mux.HandleFunc("/api", searchHandler)
 	mux.HandleFunc("/api/", searchHandler)
 	// FIXME: For each Linux add a /api/INDEXNAME handler
 
@@ -381,7 +388,7 @@ func main() {
 		mux.HandleFunc("/", redirectToApi)
 	} else {
 		log.Printf("Document root %s", docRoot)
-		mux.Handle("/", http.FileServer(http.Dir(docRoot)))
+		mux.Handle("/", cors.Handle(http.FileServer(http.Dir(docRoot))))
 	}
 
 	if letsEncrypt == true {
