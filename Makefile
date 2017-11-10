@@ -3,7 +3,7 @@
 #
 PROJECT = dataset
 
-VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\"  -f 2)
+VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\`  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
