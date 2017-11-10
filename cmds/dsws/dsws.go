@@ -34,8 +34,8 @@ import (
 	// Caltech Library packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/mkpage"
 	"github.com/caltechlibrary/tmplfn"
+	"github.com/caltechlibrary/wsfn"
 
 	// Other packages
 	"golang.org/x/crypto/acme/autocert"
@@ -77,7 +77,7 @@ func trimmedSplit(s, delimiter string) []string {
 // redirectToApi will redirect to the /api search result page
 func redirectToApi(w http.ResponseWriter, r *http.Request) {
 	target := "/api/"
-	mkpage.ResponseLogger(r, http.StatusTemporaryRedirect, fmt.Errorf("redirected %s to %s", r.URL.Path, target))
+	wsfn.ResponseLogger(r, http.StatusTemporaryRedirect, fmt.Errorf("redirected %s to %s", r.URL.Path, target))
 	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 }
 
@@ -372,7 +372,7 @@ func main() {
 	}
 
 	// CORS Policy
-	cors := mkpage.CORSPolicy{
+	cors := wsfn.CORSPolicy{
 		Origin: corsOrigin,
 	}
 
@@ -413,7 +413,7 @@ func main() {
 		sSvr := &http.Server{
 			Addr:      ":https",
 			TLSConfig: &tls.Config{GetCertificate: m.GetCertificate},
-			Handler:   mkpage.RequestLogger(mkpage.StaticRouter(mux)),
+			Handler:   wsfn.RequestLogger(wsfn.StaticRouter(mux)),
 		}
 		go func() {
 			log.Printf("Listening for %s (ACME)", u.String())
@@ -432,24 +432,24 @@ func main() {
 			if len(r.URL.RawQuery) > 0 {
 				target += "?" + r.URL.RawQuery
 			}
-			mkpage.ResponseLogger(r, http.StatusTemporaryRedirect, fmt.Errorf("redirected %s to %s", r.URL.String(), target))
+			wsfn.ResponseLogger(r, http.StatusTemporaryRedirect, fmt.Errorf("redirected %s to %s", r.URL.String(), target))
 			http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 		})
 		pSvr := &http.Server{
 			Addr:    ":http",
-			Handler: mkpage.RequestLogger(rmux),
+			Handler: wsfn.RequestLogger(rmux),
 		}
 		log.Printf("Redirecting http://%s to to %s", u.Host, u.String())
 		log.Fatal(pSvr.ListenAndServe())
 	} else if u.Scheme == "https" {
 		log.Printf("Listening for %s", u.String())
-		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, mkpage.RequestLogger(mkpage.StaticRouter(mux)))
+		err := http.ListenAndServeTLS(u.Host, sslCert, sslKey, wsfn.RequestLogger(wsfn.StaticRouter(mux)))
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
 	} else {
 		log.Printf("Listening for %s", u.String())
-		err := http.ListenAndServe(u.Host, mkpage.RequestLogger(mkpage.StaticRouter(mux)))
+		err := http.ListenAndServe(u.Host, wsfn.RequestLogger(wsfn.StaticRouter(mux)))
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
