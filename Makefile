@@ -3,7 +3,7 @@
 #
 PROJECT = dataset
 
-VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\"  -f 2)
+VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\`  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
@@ -140,6 +140,7 @@ distribute_docs:
 	cp -v how-to/*.md dist/how-to/
 	cp -v examples/*.md dist/examples/
 	cp -vR demos dist/
+	./package-versions.bash > dist/package-versions.txt
 
 release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
