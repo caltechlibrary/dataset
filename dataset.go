@@ -194,6 +194,11 @@ func getStore(name string) (*storage.Store, string, error) {
 	return store, collectionName, nil
 }
 
+// InitCollection - creates a new collection with default alphabet and names of length 2.
+func InitCollection(name string) (*Collection, error) {
+	return Create(name, DefaultBucketNames)
+}
+
 // Create - create a new collection structure on disc
 // name should be filesystem friendly
 func Create(name string, bucketNames []string) (*Collection, error) {
