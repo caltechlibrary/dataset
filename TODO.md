@@ -6,6 +6,7 @@
 + [ ] Memory consumption is high, figure out how to improve memory usage
 + [ ] Attachment listings are slow
     + idea: assume all collection documents are an object, attach a `._attachments` to each document with attachment metadata, this would allow retrieval at same spead as document
++ [ ] if you send `dataset read` a list of keys but the list is size 1 it doesn't return an array, that needs to be an option
 
 
 ## Next (v0.1.x)

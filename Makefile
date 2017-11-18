@@ -11,8 +11,15 @@ PKGASSETS = $(shell which pkgassets)
 
 PROJECT_LIST = dataset
 
+OS = $(shell uname)
 
-dataset: bin/dataset bin/dsindexer bin/dsfind bin/dsws
+EXT = 
+ifeq ($(OS), Windows)
+	EXT = .exe
+endif
+
+
+dataset: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXXT)
 
 cmds/dataset/assets.go:
 	pkgassets -o cmds/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
@@ -34,17 +41,17 @@ cmds/dsws/templates.go:
 	pkgassets -o cmds/dsws/templates.go -p main Defaults defaults
 	git add cmds/dsws/templates.go
 
-bin/dataset: dataset.go attachments.go repair.go sort.go gsheets/gsheets.go cmds/dataset/dataset.go cmds/dataset/assets.go
-	go build -o bin/dataset cmds/dataset/dataset.go cmds/dataset/assets.go
+bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheets/gsheets.go cmds/dataset/dataset.go cmds/dataset/assets.go
+	go build -o bin/dataset$(EXT) cmds/dataset/dataset.go cmds/dataset/assets.go
 
-bin/dsindexer: dataset.go search.go cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	go build -o bin/dsindexer cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
+bin/dsindexer$(EXT): dataset.go search.go cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
+	go build -o bin/dsindexer$(EXT) cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
 
-bin/dsfind: dataset.go search.go formats.go cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	go build -o bin/dsfind cmds/dsfind/dsfind.go cmds/dsfind/assets.go
+bin/dsfind$(EXT): dataset.go search.go formats.go cmds/dsfind/dsfind.go cmds/dsfind/assets.go
+	go build -o bin/dsfind$(EXT) cmds/dsfind/dsfind.go cmds/dsfind/assets.go
 	
-bin/dsws: dataset.go search.go formats.go cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
-	go build -o bin/dsws cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+bin/dsws$(EXT): dataset.go search.go formats.go cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+	go build -o bin/dsws$(EXT) cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
 
 build: $(PROJECT_LIST)
 

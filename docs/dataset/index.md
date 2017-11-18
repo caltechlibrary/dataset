@@ -52,6 +52,7 @@ E.g. to get help on the "init" command.
 + [init](init.html) - initialize a new collection if none exists, requires a path to collection
 + [create](create.html) - creates a new JSON document or replace an existing one in collection
 + [read](read.html) - displays a JSON document to stdout
++ [list](list.html) - displays an array of JSON docs to stdout
 + [update](update.html) - updates a JSON document in collection
 + [delete](delete.html) - removes a JSON document from collection
 + [join](join.html) - brings the functionality of jsonjoin to the dataset command.
