@@ -68,6 +68,7 @@ var (
 		"status":        collectionStatus,
 		"create":        createJSONDoc,
 		"read":          readJSONDocs,
+		"list":          listJSONDocs,
 		"update":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
@@ -239,6 +240,37 @@ func readJSONDocs(args ...string) (string, error) {
 		}
 		return string(src), nil
 	}
+
+	var rec interface{}
+	recs := []interface{}{}
+	for _, name := range args {
+		err := collection.Read(name, &rec)
+		if err != nil {
+			return "", err
+		}
+		recs = append(recs, rec)
+	}
+	src, err := json.Marshal(recs)
+	return string(src), err
+}
+
+// listJSONDocs returns a JSON array from a document in the collection
+// if not matching records returns an empty list
+func listJSONDocs(args ...string) (string, error) {
+	if len(args) < 1 {
+		return "", fmt.Errorf("Missing document name")
+	}
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	if len(args) == 0 {
+		return "[]", nil
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
 
 	var rec interface{}
 	recs := []interface{}{}

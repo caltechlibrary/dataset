@@ -1,8 +1,8 @@
 
 # Topics
 
-+ [attach](attach.html)
 + [attached](attached.html)
++ [attach](attach.html)
 + [attachments](attachments.html)
 + [count](count.html)
 + [create](create.html)
@@ -18,6 +18,7 @@
 + [init](init.html)
 + [join](join.html)
 + [keys](keys.html)
++ [list](list.html)
 + [path](path.html)
 + [read](read.html)
 + [update](update.html)
