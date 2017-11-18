@@ -60,12 +60,15 @@ var (
 	quietMode      bool
 	noNewLine      bool
 	timeout        string
+	waitForInput   bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
 		"init":          collectionInit,
+		"status":        collectionStatus,
 		"create":        createJSONDoc,
 		"read":          readJSONDocs,
+		"list":          listJSONDocs,
 		"update":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
@@ -140,6 +143,21 @@ func collectionInit(args ...string) (string, error) {
 		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
 	}
 	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
+}
+
+// collectionStatus sees if we can find the dataset collection given the path
+func collectionStatus(args ...string) (string, error) {
+	if len(args) == 0 && collectionName == "" {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	args = append(args, collectionName)
+	for _, collectionName := range args {
+		_, err := dataset.Open(collectionName)
+		if err != nil {
+			return "", fmt.Errorf("%s: %s", collectionName, err)
+		}
+	}
+	return "OK", nil
 }
 
 // createJSONDoc adds a new JSON document to the collection
@@ -222,6 +240,37 @@ func readJSONDocs(args ...string) (string, error) {
 		}
 		return string(src), nil
 	}
+
+	var rec interface{}
+	recs := []interface{}{}
+	for _, name := range args {
+		err := collection.Read(name, &rec)
+		if err != nil {
+			return "", err
+		}
+		recs = append(recs, rec)
+	}
+	src, err := json.Marshal(recs)
+	return string(src), err
+}
+
+// listJSONDocs returns a JSON array from a document in the collection
+// if not matching records returns an empty list
+func listJSONDocs(args ...string) (string, error) {
+	if len(args) < 1 {
+		return "", fmt.Errorf("Missing document name")
+	}
+	if len(collectionName) == 0 {
+		return "", fmt.Errorf("missing a collection name")
+	}
+	if len(args) == 0 {
+		return "[]", nil
+	}
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer collection.Close()
 
 	var rec interface{}
 	recs := []interface{}{}
@@ -816,6 +865,7 @@ func init() {
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
 	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
 	flag.StringVar(&timeout, "timeout", "", "timeout is a duration for waiting to read stdin before giving up")
+	flag.BoolVar(&waitForInput, "wait", false, "wait for data coming from stdin")
 }
 
 func main() {
@@ -909,18 +959,16 @@ func main() {
 			stat, err := in.Stat()
 			size := stat.Size()
 			if size == 0 && timeout != "" {
-				if timeout != "" {
-					to, err := time.ParseDuration(timeout)
-					if err != nil {
-						fmt.Fprintf(os.Stderr, "%s%s", err, nl)
-						os.Exit(1)
-					}
-					time.Sleep(to)
+				to, err := time.ParseDuration(timeout)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "%s%s", err, nl)
+					os.Exit(1)
 				}
+				time.Sleep(to)
 				stat, err = in.Stat()
 				size = stat.Size()
 			}
-			if size > 0 {
+			if size > 0 || waitForInput == true {
 				lines, err = cli.ReadLines(in)
 				if err != nil {
 					handleError(err, 1)

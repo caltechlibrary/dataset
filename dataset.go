@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = "v0.0.7"
+	Version = `v0.0.8-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -192,6 +192,11 @@ func getStore(name string) (*storage.Store, string, error) {
 	}
 
 	return store, collectionName, nil
+}
+
+// InitCollection - creates a new collection with default alphabet and names of length 2.
+func InitCollection(name string) (*Collection, error) {
+	return Create(name, DefaultBucketNames)
 }
 
 // Create - create a new collection structure on disc

@@ -13,22 +13,37 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="./">dsfind</a></li>
+<li><a href="./">dataset</a></li>
+<li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
 
 <section>
+<h1>list</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset list JSON_RECORD_IDS
+</code></pre>
+
 <h2>Description</h2>
 
-<p>dsfind is a command line tool for querying a Bleve indexes based on the records in a
-dataset collection. By default dsfind is assumed there is an index named after the
-collection. An option lets you choose different indexes to query. Results are
-written to standard out and are paged. The query syntax supported is described
-at <a href="http://www.blevesearch.com/docs/Query-String-Query/">http://www.blevesearch.com/docs/Query-String-Query/</a>.</p>
+<p>The writes a JSON array to standard out (unless you&rsquo;ve specific an alternative location with the &ldquo;-output&rdquo; option) for the provided JSON_RECORD_IDS
+for each ID found. If no ids are provided (or none are found) then an
+empty JSON array is return.</p>
 
-<p>Options can be used to modify the type of indexes queried as well as how results
-are output.</p>
+<h2>Usage</h2>
+
+<p>An example we&rsquo;re assuming there is a JSON document with a JSON_RECORD_ID of &ldquo;r1&rdquo;.</p>
+
+<pre><code class="language-shell">    dataset list r1
+</code></pre>
+
+<p>If &ldquo;r1&rdquo; was &lsquo;{&ldquo;one&rdquo;:1}&rsquo; then the output would be</p>
+
+<pre><code class="language-json">    [{&quot;one&quot;:1}]
+</code></pre>
 
 </section>
 
