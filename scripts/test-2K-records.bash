@@ -75,12 +75,14 @@ unset DATASET
 #
 echo "Comparing records between $COLLECTION_1 and $COLLECTION_2"
 bin/dataset -c "${COLLECTION_1}" keys | while read K; do
+    echo -n "Comparing records for key $K"
 	REC_1=$(bin/dataset -c "${COLLECTION_1}" "read" "$K")
 	REC_2=$(bin/dataset -c "${COLLECTION_2}" "read" "$K")
 	if [ "${REC_1}" != "${REC_2}" ]; then
 		echo "Comparing records $K, expected ${REC_1} got ${REC_2}"
 		exit 1
 	fi
+    echo " OK"
 done
 
 if [ -d "$COLLECTION_1" ]; then
