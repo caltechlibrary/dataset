@@ -94,11 +94,13 @@ done
 #
 # Test list functionality
 #
-range 10 210 10 | tr " " "\n"  | dataset -i - -c "${COLLECTION_2}" list | jq .
-if [ "$?" != "0" ]; then
-    echo "JSON array doesn't validate with jq"
+echo -n "Testing 'dataset list' for keys coming from stdin "
+C1=$(range 1 11 | tr " " "\n" | bin/dataset -i - -c "${COLLECTION_2}" list | jq '. | length')
+if [ "$C1" != "10" ]; then
+    echo "List should return 10 items, got $C1"
     exit 1
-fi 
+fi
+echo " OK"
 
 
 if [ -d "$COLLECTION_1" ]; then
