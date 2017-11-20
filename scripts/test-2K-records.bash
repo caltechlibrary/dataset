@@ -1,5 +1,11 @@
 #!/bin/bash
 
+TEST_SIZE=2000
+
+if [ "$1" != "" ]; then
+    TEST_SIZE="$1"
+fi
+
 function mkRec() {
 	K="${1}"
 	T="${2}"
@@ -22,7 +28,7 @@ fi
 export DATASET="${COLLECTION_1}"
 
 echo "Creating 2K records in ${DATASET}"
-for I in $(range 1 2000); do
+for I in $(range 1 "$TEST_SIZE"); do
 	T="$(date)"
 	REC="$(mkRec "${I}" "${T}")"
 	echo -n "Create $I -> ${REC} "
@@ -84,6 +90,16 @@ bin/dataset -c "${COLLECTION_1}" keys | while read K; do
 	fi
     echo " OK"
 done
+
+#
+# Test list functionality
+#
+range 10 210 10 | tr " " "\n"  | dataset -i - -c "${COLLECTION_2}" list | jq .
+if [ "$?" != "0" ]; then
+    echo "JSON array doesn't validate with jq"
+    exit 1
+fi 
+
 
 if [ -d "$COLLECTION_1" ]; then
 	rm -fR "${COLLECTION_1}"

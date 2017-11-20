@@ -249,11 +249,8 @@ func readJSONDocs(args ...string) (string, error) {
 // listJSONDocs returns a JSON array from a document in the collection
 // if not matching records returns an empty list
 func listJSONDocs(args ...string) (string, error) {
-	if len(args) < 1 {
-		return "", fmt.Errorf("Missing document name")
-	}
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+		return "", fmt.Errorf("Missing a collection name")
 	}
 	if len(args) == 0 {
 		return "[]", nil
@@ -943,7 +940,7 @@ func main() {
 			err   error
 		)
 
-		if (action == "create" || action == "read" || action == "update" || action == "keys" || action == "count") && inputFName != "" {
+		if (action == "create" || action == "read" || action == "update" || action == "list" || action == "keys" || action == "count") && inputFName != "" {
 			// Read the input if available
 			lines, err = cli.ReadLines(in)
 			if err != nil {
