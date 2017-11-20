@@ -8,7 +8,7 @@ the commands below --
 + [init](init.html) - initialize a new collection if none exists, requires a
   path to collection
 + [create](create.html) - creates a new JSON document or replace an existing
-  one in collection
+  one in collection 
 + [read](read.html) - displays a JSON document to stdout
 + [update](update.html) - updates a JSON document in collection
 + [delete](delete.html) - removes a JSON document from collection
@@ -35,3 +35,10 @@ the commands below --
 + [extract](extract.html) - will return a unique list of unique values based on
   the associated dot path described in the JSON docs
     + [dotpath](dotpath.html) - reach into an object to return a value(s)
+
+
+NOTE: The options create, update can read JSON documents piped from standard in
+if you use the '-i -' or '-include -' option. Likewise keys can be read from
+standard input with the '-i -' or '-include -' options for read, list,
+keys and count.
+
