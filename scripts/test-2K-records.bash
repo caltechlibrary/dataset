@@ -95,8 +95,8 @@ done
 # Test list functionality
 #
 echo -n "Testing 'dataset list' for keys coming from stdin "
-C1=$(range 1 11 | tr " " "\n" | bin/dataset -i - -c "${COLLECTION_2}" list | jq '. | length')
-if [ "$C1" != "10" ]; then
+C1=$(range 1 "$TEST_SIZE" | tr " " "\n" | bin/dataset -i - -c "${COLLECTION_2}" list | jq '. | length')
+if [ "$C1" != "$TEST_SIZE" ]; then
     echo "List should return 10 items, got $C1"
     exit 1
 fi
