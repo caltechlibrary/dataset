@@ -34,6 +34,11 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
    done
 </code></pre>
 
+<p>Notice that the command <code>dataset init testdata/friends</code> will emmit the <code>export DATASET=testdata/friends</code>
+line. You can cut and paste this into your terminal session to set the default
+dataset you&rsquo;re using. This will save you resorting to the <code>-c</code> or <code>-collection</code> option which makes
+the command quite long.</p>
+
 <p>Now check to see if the key, littlefreda, is in the collection</p>
 
 <pre><code class="language-shell">   dataset haskey littlefreda

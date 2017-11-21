@@ -50,6 +50,10 @@ you&rsquo;ve authenticated and have your environment setup correctly.</p>
     dataset init gs://stuff.example.org/data
 </code></pre>
 
+<p>NOTE: After each envocation of <code>dataset init</code> if all went well you will be
+shown an <code>export DATASET=...</code> line. This cut and pasted into your shell
+to save using the <code>-c</code> option explicitly indicating which dataset to operate on.</p>
+
 <h3>S3 environment example</h3>
 
 <p>You can refernce loading the environment for AWS S3 access previous setup with
