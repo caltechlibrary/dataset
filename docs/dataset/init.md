@@ -31,6 +31,10 @@ you've authenticated and have your environment setup correctly.
     dataset init gs://stuff.example.org/data
 ```
 
+NOTE: After each envocation of `dataset init` if all went well you will be
+shown an `export DATASET=...` line. This cut and pasted into your shell
+to save using the `-c` option explicitly indicating which dataset to operate on.
+
 ### S3 environment example
 
 You can refernce loading the environment for AWS S3 access previous setup with

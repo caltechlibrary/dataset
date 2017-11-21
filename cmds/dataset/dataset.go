@@ -29,7 +29,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"time"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
@@ -59,8 +58,6 @@ var (
 	showVerbose    bool
 	quietMode      bool
 	noNewLine      bool
-	timeout        string
-	waitForInput   bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -166,7 +163,6 @@ func createJSONDoc(args ...string) (string, error) {
 		name string
 		src  string
 	)
-
 	switch {
 	case useUUID == true:
 		name = uuid.New().String()
@@ -177,17 +173,17 @@ func createJSONDoc(args ...string) (string, error) {
 	case len(args) == 2:
 		name, src = args[0], args[1]
 	default:
-		return "", fmt.Errorf("Expected a doc name and JSON blob")
+		return "", fmt.Errorf("Expected a document name and a JSON document")
 	}
 
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
+		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
-		return "", fmt.Errorf("missing document name")
+		return "", fmt.Errorf("Missing document name")
 	}
 	if len(src) == 0 {
-		return "", fmt.Errorf("Can't create, no JSON source found in %s\n", name)
+		return "", fmt.Errorf("Missing JSON document %s\n", name)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -200,11 +196,7 @@ func createJSONDoc(args ...string) (string, error) {
 		if err := json.Unmarshal([]byte(src), &m); err != nil {
 			return "", err
 		}
-		if _, ok := m["uuid"]; ok == true {
-			m["_uuid"] = name
-		} else {
-			m["uuid"] = name
-		}
+		m["_uuid"] = name
 		if err := collection.Create(name, m); err != nil {
 			return "", err
 		}
@@ -257,11 +249,8 @@ func readJSONDocs(args ...string) (string, error) {
 // listJSONDocs returns a JSON array from a document in the collection
 // if not matching records returns an empty list
 func listJSONDocs(args ...string) (string, error) {
-	if len(args) < 1 {
-		return "", fmt.Errorf("Missing document name")
-	}
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+		return "", fmt.Errorf("Missing a collection name")
 	}
 	if len(args) == 0 {
 		return "[]", nil
@@ -864,8 +853,6 @@ func init() {
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
 	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
-	flag.StringVar(&timeout, "timeout", "", "timeout is a duration for waiting to read stdin before giving up")
-	flag.BoolVar(&waitForInput, "wait", false, "wait for data coming from stdin")
 }
 
 func main() {
@@ -948,79 +935,67 @@ func main() {
 
 	action, params := args[0], args[1:]
 	if fn, ok := voc[action]; ok == true {
-		// Handle case of piping in or reading JSON from a file.
-		if action == "create" || action == "update" || action == "read" || action == "keys" || action == "count" {
-			var (
-				lines []string
-				err   error
-			)
+		var (
+			lines []string
+			err   error
+		)
 
+		if (action == "create" || action == "read" || action == "update" || action == "list" || action == "keys" || action == "count") && inputFName != "" {
 			// Read the input if available
-			stat, err := in.Stat()
-			size := stat.Size()
-			if size == 0 && timeout != "" {
-				to, err := time.ParseDuration(timeout)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s%s", err, nl)
+			lines, err = cli.ReadLines(in)
+			if err != nil {
+				handleError(err, 1)
+			}
+		}
+
+		if (action == "create" || action == "update") && len(lines) > 0 {
+			params = append(params, strings.Join(lines, " "))
+		}
+
+		if (action == "read" || action == "list") && len(lines) > 0 {
+			for _, key := range lines {
+				params = append(params, key)
+			}
+		}
+
+		if (action == "keys" || action == "count") && len(lines) > 0 {
+			// If filter we want to output the ids as a stream as they are found
+			filterExpr := "true"
+			sortExpr := ""
+			keyList := []string{}
+
+			if len(params) > 0 {
+				filterExpr = params[0]
+			}
+			if len(params) > 1 {
+				sortExpr = params[1]
+			}
+
+			// Get any key list that might be passed in (either via cli or stdin)
+			if len(params) > 3 {
+				keyList = params[2:]
+			} else if len(lines) > 0 {
+				for _, line := range lines {
+					keyList = append(keyList, line)
+				}
+			}
+
+			// If we are NOT sorting we can just filter the output now and be done.
+			if len(sortExpr) == 0 {
+				if err := streamFilterResults(out, keyList, filterExpr); err != nil {
+					fmt.Fprintf(out, "%s%s", err, nl)
 					os.Exit(1)
 				}
-				time.Sleep(to)
-				stat, err = in.Stat()
-				size = stat.Size()
-			}
-			if size > 0 || waitForInput == true {
-				lines, err = cli.ReadLines(in)
-				if err != nil {
-					handleError(err, 1)
-				}
+				os.Exit(0)
 			}
 
-			if action == "keys" {
-				// If filter we want to output the ids as a stream as they are found
-				filterExpr := "true"
-				sortExpr := ""
-				keyList := []string{}
-
-				if len(params) > 0 {
-					filterExpr = params[0]
-				}
-				if len(params) > 1 {
-					sortExpr = params[1]
-				}
-
-				// Get any key list that might be passed in (either via cli or stdin)
-				if len(params) > 3 {
-					keyList = params[2:]
-				}
-				if len(lines) > 0 {
-					for _, line := range lines {
-						keyList = append(keyList, line)
-					}
-				}
-
-				// If we are NOT sorting we can just filter the output now and be done.
-				if len(sortExpr) == 0 {
-					if err := streamFilterResults(out, keyList, filterExpr); err != nil {
-						fmt.Fprintf(out, "%s%s", err, nl)
-						os.Exit(1)
-					}
-					os.Exit(0)
-				}
-
-				// We need to make sure our params are setup with sane defaults for keys
-				params = []string{
-					filterExpr,
-					sortExpr,
-				}
-				for _, k := range keyList {
-					params = append(params, k)
-				}
-			} else if (action == "create" || action == "update") && len(lines) > 0 {
-				params = append(params, strings.Join(lines, "\n"))
-			} else {
-				for _, line := range lines {
-					params = append(params, line)
-				}
+			// We need to make sure our params are setup with sane defaults for keys and count
+			params = []string{
+				filterExpr,
+				sortExpr,
+			}
+			for _, k := range keyList {
+				params = append(params, k)
 			}
 		}
 

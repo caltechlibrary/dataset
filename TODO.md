@@ -6,7 +6,9 @@
 + [ ] Memory consumption is high, figure out how to improve memory usage
 + [ ] Attachment listings are slow
     + idea: assume all collection documents are an object, attach a `._attachments` to each document with attachment metadata, this would allow retrieval at same spead as document
++ [ ] Behavior of -timeout, -wait seem wrong in practice, on some cli when you want to explicitly read from stdin you pass a hyphen to -input or -i.
 + [ ] `dataset list` should return a list of keys, missing keys should be ignore, if no keys then an empty list should be returned
++ [ ] Migrate cli functions in cmds to package level and convert from exported to private functions used only to support cmds cli
 
 
 ## Next (v0.1.x)
