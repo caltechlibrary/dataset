@@ -33,6 +33,6 @@ dist/*
 dataset/*
 testdata/*
 bin/*
-demo/*
+demos/*
 *.swp
 *.bleve
