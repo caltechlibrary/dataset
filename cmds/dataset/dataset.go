@@ -328,11 +328,11 @@ func deleteJSONDoc(args ...string) (string, error) {
 // joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
 func joinJSONDoc(args ...string) (string, error) {
 	if len(args) < 3 {
-		return "", fmt.Errorf("either update or overwrite, collection key, one or more JSON document names")
+		return "", fmt.Errorf("expected update or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(args, ", "))
 	}
 	action := strings.ToLower(args[0])
 	key := args[1]
-	args = args[2:]
+	objects_src := args[2:]
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -346,12 +346,8 @@ func joinJSONDoc(args ...string) (string, error) {
 	if err := collection.Read(key, &outObject); err != nil {
 		return "", err
 	}
-	for _, arg := range args {
-		src, err := ioutil.ReadFile(arg)
-		if err != nil {
-			return "", err
-		}
-		if err := json.Unmarshal(src, &newObject); err != nil {
+	for _, src := range objects_src {
+		if err := json.Unmarshal([]byte(src), &newObject); err != nil {
 			return "", err
 		}
 		switch action {
@@ -920,32 +916,34 @@ func main() {
 	defer cli.CloseFile(outputFName, out)
 
 	action, params := args[0], args[1:]
+
+	var data string
+	if inputFName != "" {
+		src, err := ioutil.ReadAll(in)
+		cli.ExitOnError(os.Stderr, err, quiet)
+		data = string(src)
+	}
+
 	fn, ok := voc[action]
 	if ok == false {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("do not understand %s", action), quiet)
 	}
 
-	var (
-		lines []string
-	)
-
-	if (action == "create" || action == "read" || action == "update" || action == "list" || action == "keys" || action == "count") && inputFName != "" {
-		// Read the input if available
-		lines, err = cli.ReadLines(in)
-		cli.ExitOnError(os.Stderr, err, quiet)
+	if (action == "create" || action == "update" || action == "join") && len(data) > 0 {
+		params = append(params, data)
 	}
 
-	if (action == "create" || action == "update") && len(lines) > 0 {
-		params = append(params, strings.Join(lines, " "))
-	}
-
-	if (action == "read" || action == "list") && len(lines) > 0 {
+	if (action == "read" || action == "list") && len(data) > 0 {
+		// Split the input if available
+		lines := strings.Split(data, "\n")
 		for _, key := range lines {
 			params = append(params, key)
 		}
 	}
 
-	if (action == "keys" || action == "count") && len(lines) > 0 {
+	if (action == "keys" || action == "count") && len(data) > 0 {
+		// Split the input if available
+		lines := strings.Split(data, "\n")
 		// If filter we want to output the ids as a stream as they are found
 		filterExpr := "true"
 		sortExpr := ""
@@ -988,7 +986,7 @@ func main() {
 
 	output, err := fn(params...)
 	cli.ExitOnError(os.Stderr, err, quiet)
-	if quiet == false || showVerbose == true {
+	if quiet == false || showVerbose == true && output != "" {
 		fmt.Fprintf(out, "%s%s", output, nl)
 	}
 }
