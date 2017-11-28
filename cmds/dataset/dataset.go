@@ -57,7 +57,7 @@ var (
 	useHeaderRow   bool
 	useUUID        bool
 	showVerbose    bool
-	noNewLine      bool
+	newLine        bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -839,7 +839,9 @@ func init() {
 	flag.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
-	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
+	flag.BoolVar(&newLine, "no-newline", false, "exclude trailing newline in output")
+	flag.BoolVar(&newLine, "nl", true, "include trailing newline in output")
+	flag.BoolVar(&newLine, "newline", true, "include trailing newline in output")
 }
 
 func main() {
@@ -903,7 +905,7 @@ func main() {
 
 	// Handle trailing nl
 	nl := "\n"
-	if noNewLine == true {
+	if newLine == false {
 		nl = ""
 	}
 
