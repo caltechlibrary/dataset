@@ -42,6 +42,7 @@ var (
 	showLicense  bool
 	showVersion  bool
 	showExamples bool
+	quiet        bool
 
 	// App Specific Options
 	collectionName string
@@ -61,6 +62,7 @@ func init() {
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.BoolVar(&showExamples, "example", false, "display example(s)")
+	flag.BoolVar(&quiet, "quiet", false, "suppress error messages")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -151,43 +153,34 @@ func main() {
 	} else if len(args) == 2 {
 		definitionFName, indexName = args[0], args[1]
 	} else {
-		fmt.Println(cfg.Usage())
-		os.Exit(1)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help", appName), quiet)
 	}
 
 	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't open dataset collection %s, %s\n", collectionName, err)
-		os.Exit(1)
-	}
+	cli.ExitOnError(os.Stderr, err, quiet)
 	defer collection.Close()
 
 	// Abort index build if it exists and updateIndex is false
 	if updateIndex == false {
 		if _, err := os.Stat(indexName); os.IsNotExist(err) == false {
-			fmt.Fprintf(os.Stderr, "Index exists, updating requires -update option (can be very slow)\n")
-			os.Exit(1)
+			cli.ExitOnError(os.Stderr, fmt.Errorf("Index exists, updating requires -update option (can be very slow)"), quiet)
 		}
 	}
 
 	// NOTE: If a list of ids is provided create/update the index for those ids only
 	var keys []string
 	if idListFName != "" {
-		if src, err := ioutil.ReadFile(idListFName); err == nil {
-			klist := bytes.Split(src, []byte("\n"))
-			for _, k := range klist {
-				if len(k) > 0 {
-					keys = append(keys, fmt.Sprintf("%s", k))
-				}
+		src, err := ioutil.ReadFile(idListFName)
+		cli.ExitOnError(os.Stderr, err, quiet)
+
+		klist := bytes.Split(src, []byte("\n"))
+		for _, k := range klist {
+			if len(k) > 0 {
+				keys = append(keys, fmt.Sprintf("%s", k))
 			}
-		} else {
-			fmt.Fprintf(os.Stderr, "Can't read %s, %s", idListFName, err)
-			os.Exit(1)
 		}
 	}
 
-	if err = collection.Indexer(indexName, definitionFName, batchSize, keys); err != nil {
-		fmt.Fprintf(os.Stderr, "Can't build index %s, %s\n", indexName, err)
-		os.Exit(1)
-	}
+	err = collection.Indexer(indexName, definitionFName, batchSize, keys)
+	cli.ExitOnError(os.Stderr, err, quiet)
 }

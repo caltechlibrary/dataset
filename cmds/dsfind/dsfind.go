@@ -38,6 +38,9 @@ var (
 	showLicense  bool
 	showVersion  bool
 	showExamples bool
+	inputFName   string
+	outputFName  string
+	quiet        bool
 
 	// App Specific Options
 	indexList      string
@@ -63,6 +66,11 @@ func init() {
 	flag.BoolVar(&showVersion, "v", false, "display version")
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.BoolVar(&showExamples, "example", false, "display example(s)")
+	flag.StringVar(&inputFName, "i", "", "set input file name, use '- ' for stadard in")
+	flag.StringVar(&inputFName, "input", "", "set input file name, use '- ' for stadard in")
+	flag.StringVar(&outputFName, "o", "", "set output file name")
+	flag.StringVar(&outputFName, "output", "", "set output file name")
+	flag.BoolVar(&quiet, "quiet", false, "suppress error messages")
 
 	// Application Options
 	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
@@ -113,13 +121,6 @@ func main() {
 	}
 
 	if showExamples == true {
-		/*
-			if len(args) > 0 {
-				fmt.Println(cfg.Example(args...))
-			} else {
-				fmt.Printf("\n%s", cfg.Example())
-			}
-		*/
 		fmt.Println(cfg.ExampleText)
 		os.Exit(0)
 	}
@@ -133,10 +134,17 @@ func main() {
 		os.Exit(0)
 	}
 
+	in, err := cli.Open(inputFName, os.Stdin)
+	cli.ExitOnError(os.Stderr, err, quiet)
+	defer cli.CloseFile(inputFName, in)
+
+	out, err := cli.Create(outputFName, os.Stdout)
+	cli.ExitOnError(os.Stderr, err, quiet)
+	defer cli.CloseFile(outputFName, out)
+
 	// We expect at least one arg, the search string
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, cfg.Usage())
-		os.Exit(1)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help", appName), quiet)
 	}
 
 	// Handle the case where indexes were listed with the -indexes option like dsfind
@@ -156,8 +164,7 @@ func main() {
 		}
 	}
 	if len(indexNames) == 0 {
-		fmt.Fprintln(os.Stderr, "Do not know what index to use")
-		os.Exit(1)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("Do not know what index to use"), quiet)
 	}
 
 	options := map[string]string{}
@@ -192,15 +199,13 @@ func main() {
 
 	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't open index %s, %s\n", strings.Join(indexNames, ", "), err)
-		os.Exit(1)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}
 	defer idxAlias.Close()
 
-	results, err := dataset.Find(os.Stdout, idxAlias, args, options)
+	results, err := dataset.Find(out, idxAlias, args, options)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't search index %s, %s\n", strings.Join(indexNames, ", "), err)
-		os.Exit(1)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't search index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}
 
 	//
@@ -208,10 +213,8 @@ func main() {
 	//
 	switch {
 	case jsonFormat == true:
-		if err := dataset.JSONFormatter(os.Stdout, results); err != nil {
-			fmt.Fprintf(os.Stderr, "JSON formatting error, %s\n", err)
-			os.Exit(1)
-		}
+		err := dataset.JSONFormatter(out, results)
+		cli.ExitOnError(os.Stderr, err, quiet)
 	case csvFormat == true:
 		var fields []string
 		if resultFields == "" {
@@ -219,15 +222,13 @@ func main() {
 		} else {
 			fields = strings.Split(resultFields, ",")
 		}
-		if err := dataset.CSVFormatter(os.Stdout, results, fields, csvSkipHeader); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(1)
-		}
+		err := dataset.CSVFormatter(out, results, fields, csvSkipHeader)
+		cli.ExitOnError(os.Stderr, err, quiet)
 	case idsOnly == true:
 		for _, hit := range results.Hits {
-			fmt.Fprintf(os.Stdout, "%s\n", hit.ID)
+			fmt.Fprintf(out, "%s\n", hit.ID)
 		}
 	default:
-		fmt.Fprintf(os.Stdout, "%s\n", results)
+		fmt.Fprintf(out, "%s\n", results)
 	}
 }
