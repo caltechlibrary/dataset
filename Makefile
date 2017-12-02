@@ -19,7 +19,7 @@ ifeq ($(OS), Windows)
 endif
 
 
-dataset: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXXT)
+dataset$(EXT): bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 
 cmds/dataset/assets.go:
 	pkgassets -o cmds/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset

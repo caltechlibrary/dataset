@@ -1,28 +1,55 @@
 /*
-Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
-It provides a common approach of storing JSON documents and related attachments systematically
-and predictably on the file systems. The driving usecase behind dataset is creating a unified approach to
-harvesting metadata from various hetrogenious systems using in Caltech Library (e.g. EPrints, ArchivesSpace,
-Islandora and outside API like ORCID, CrossRef, OCLC). This suggests that dataset as a go package and command
-line tool may have more general applications where a database sytems might be more than you need and ad-hoc
-collections on disc maybe inconvient to evolve as your data explortion takes you in different directions in
-analysis.  The dataset command line tool is in intended to be easy to script both in Bash as well as more featureful
-languages like Python.
+Package dataset provides a common approach for storing JSON object documents
+on local disc or on S3 and Google Cloud Storage. It is intended as a
+single user system for intermediate processing of JSON content for analysis
+or batch processing.  It is not a database management system (if you need
+a JSON database system I would suggest looking at Couchdb, Mongo and Redis
+as a starting point).
 
-Dataset is not a good choice if you need a fast key/value store or actual database features. It doesn't support
-multiple users, record locking or a query language interface. It is targeting the sweet spot between ad-hoc
-JSON document storage on disc and needing a more complete system like Couch, Solr, or Fedora4 for managing JSON
-docs.
+The approach dataset takes to storing buckets is to maintain a JSON document
+with keys (document names) and bucket assignments. JSON documents (and
+possibly their attachments) are then stored based on that assignment.
+Conversely the collection.json document is used to find and retrieve
+documents from the collection. The layout of the metadata is as follows
 
++ Collection
+	+ Collection/collection.json - metadata for retrieval
+	+ Collection/[Buckets] - usually an "aa" to "zz" list of buckets
+	+ Collection/[Bucket]/[Document]
 
-Use case
+A key feature of dataset is to be Posix shell friendly. This has
+lead to storing the JSON documents in a directory structure that
+standard Posix tooling can traverse. It has also mean that the JSON
+documents themselves remain on "disc" as plain text. This has facilitated
+integration with many other applications, programming langauages and
+systems.
 
-Caltech Library has many repository, catelog and record management systems (e.g. EPrints, Invenion, ArchivesSpace,
-Islandora, Invenio). It is common practice to harvest data from these systems for analysis or processing.
-Harvested records typically come in XML or JSON format. JSON has proven a flexibly way for working with
-the data and in our more modern tools the common format we use to move data around. We needed a way to standardize
-how we stored these JSON records for intermediate processing to allow us to use the growing ecosystem of JSON related
-tooling available under Posix/Unix compatible systems.
+Attachments are non-JSON documents explicitly "attached" that share the
+same basename but are placed in a tar ball (e.g. document Jane.Doe.json
+attachements would be stored in Jane.Doe.tar).
+
+Additional operations beside storing and reading JSON documents are also
+supported. These include creating lists (arrays) of JSON documents from
+a list of keys, listing keys in the collection, counting documents in the
+collection, indexing and searching by indexes.
+
+The primary use case driving the development of dataset is harvesting
+API content for library systems (e.g. EPrints, Invenio, ArchivesSpace,
+ORCID, CrossRef, OCLC). The harvesting needed to be done in such a
+way as to leverage existing Posix tooling (e.g. grep, sed, etc) for
+processing and analysis.
+
+Initial use case:
+
+Caltech Library has many repository, catelog and record management systems
+(e.g. EPrints, Invenion, ArchivesSpace, Islandora, Invenio). It is common
+practice to harvest data from these systems for analysis or processing.
+Harvested records typically come in XML or JSON format. JSON has proven a
+flexibly way for working with the data and in our more modern tools the
+common format we use to move data around. We needed a way to standardize
+how we stored these JSON records for intermediate processing to allow us
+to use the growing ecosystem of JSON related tooling available under
+Posix/Unix compatible systems.
 
 Aproach to file system layout
 
@@ -38,22 +65,19 @@ Aproach to file system layout
             + the default select list is "keys", it is not mutable by Push, Pop, Shift and Unshift
             + select lists cannot be named "keys" or "collection"
 
-BUCKETS are names without meaning normally using Alphabetic characters. A dataset defined with four buckets
-might looks like aa, ab, ba, bb. These directories will contains JSON documents and a tar file if the document
+BUCKETS are names without meaning normally using Alphabetic characters. A
+dataset defined with four buckets might looks like aa, ab, ba, bb. These
+directories will contains JSON documents and a tar file if the document
 has attachments.
 
 
 Operations
 
 + Collection level
-    + Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
+    + Initialize (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
     + Open (collection) - opens an existing collections and reads collection.json into memory
     + Close (collection) - writes changes to collection.json to disc if dirty
-    + Delete (collection) - removes a collection from disc
     + Keys (collection) - list of keys in the collection
-    + Select (collection) - returns the request select list, will create the list if not exist, append keys if provided
-    + Clear (collection) - Removes a select list from a collection and disc
-    + Lists (collection) - returns the names of the available select lists
 + JSON document level
     + Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed
     + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
@@ -61,17 +85,7 @@ Operations
     + Delete (JSON document) - removes a JSON blob from its disc
     + Path (JSON document) - returns the path to the JSON document
 + Select list level
-    + First (select list) - returns the value of the first key in the select list (non-distructively)
-    + Last (select list) - returns the value of the last key in the select list (non-distructively)
-    + Rest (select list) - returns values of all keys in the select list except the first (non-destructively)
-    + List (select list) - returns values of all keys in the select list (non-destructively)
-    + Length (select list) - returns the number of keys in a select list
-    + Push (select list) - appends one or more keys to an existing select list
-    + Pop (select list) - returns the last key in select list and removes it
-    + Unshift (select list) - inserts one or more new keys at the beginning of the select list
-    + Shift (select list) - returns the first key in a select list and removes it
-    + Sort (select list) - orders the select lists' keys in ascending or descending alphabetical order
-    + Reverse (select list) - flips the order of the keys in the select list
+    + Count (select list) - returns the number of keys in a select list
 
 Example
 

@@ -50,14 +50,14 @@ var (
 	showExamples bool
 	inputFName   string
 	outputFName  string
+	quiet        bool
 
 	// App Specific Options
 	collectionName string
 	useHeaderRow   bool
 	useUUID        bool
 	showVerbose    bool
-	quietMode      bool
-	noNewLine      bool
+	newLine        bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -328,11 +328,11 @@ func deleteJSONDoc(args ...string) (string, error) {
 // joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
 func joinJSONDoc(args ...string) (string, error) {
 	if len(args) < 3 {
-		return "", fmt.Errorf("either update or overwrite, collection key, one or more JSON document names")
+		return "", fmt.Errorf("expected update or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(args, ", "))
 	}
 	action := strings.ToLower(args[0])
 	key := args[1]
-	args = args[2:]
+	objects_src := args[2:]
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -346,12 +346,8 @@ func joinJSONDoc(args ...string) (string, error) {
 	if err := collection.Read(key, &outObject); err != nil {
 		return "", err
 	}
-	for _, arg := range args {
-		src, err := ioutil.ReadFile(arg)
-		if err != nil {
-			return "", err
-		}
-		if err := json.Unmarshal(src, &newObject); err != nil {
+	for _, src := range objects_src {
+		if err := json.Unmarshal([]byte(src), &newObject); err != nil {
 			return "", err
 		}
 		switch action {
@@ -822,15 +818,6 @@ func extract(params ...string) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
-func handleError(err error, exitCode int) {
-	if quietMode == false {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-	}
-	if exitCode >= 0 {
-		os.Exit(exitCode)
-	}
-}
-
 func init() {
 	// Standard Options
 	flag.BoolVar(&showHelp, "h", false, "display help")
@@ -844,6 +831,7 @@ func init() {
 	flag.StringVar(&inputFName, "input", "", "input filename")
 	flag.StringVar(&outputFName, "o", "", "output filename")
 	flag.StringVar(&outputFName, "output", "", "output filename")
+	flag.BoolVar(&quiet, "quiet", false, "suppres error messages and status output")
 
 	// Application Options
 	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
@@ -851,8 +839,9 @@ func init() {
 	flag.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
 	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
-	flag.BoolVar(&quietMode, "quiet", false, "suppress error and status output")
-	flag.BoolVar(&noNewLine, "no-newline", false, "suppress a trailing newline on output")
+	flag.BoolVar(&newLine, "no-newline", false, "exclude trailing newline in output")
+	flag.BoolVar(&newLine, "nl", true, "include trailing newline in output")
+	flag.BoolVar(&newLine, "newline", true, "include trailing newline in output")
 }
 
 func main() {
@@ -911,102 +900,95 @@ func main() {
 	}
 
 	if len(args) == 0 {
-		fmt.Println(cfg.Usage())
-		os.Exit(1)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
 	}
 
 	// Handle trailing nl
 	nl := "\n"
-	if noNewLine == true {
+	if newLine == false {
 		nl = ""
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)
-	if err != nil {
-		handleError(err, 1)
-	}
+	cli.ExitOnError(os.Stderr, err, quiet)
 	defer cli.CloseFile(inputFName, in)
 
 	out, err := cli.Create(outputFName, os.Stdout)
-	if err != nil {
-		handleError(err, 1)
-	}
+	cli.ExitOnError(os.Stderr, err, quiet)
 	defer cli.CloseFile(outputFName, out)
 
 	action, params := args[0], args[1:]
-	if fn, ok := voc[action]; ok == true {
-		var (
-			lines []string
-			err   error
-		)
 
-		if (action == "create" || action == "read" || action == "update" || action == "list" || action == "keys" || action == "count") && inputFName != "" {
-			// Read the input if available
-			lines, err = cli.ReadLines(in)
-			if err != nil {
-				handleError(err, 1)
+	var data string
+	if inputFName != "" {
+		src, err := ioutil.ReadAll(in)
+		cli.ExitOnError(os.Stderr, err, quiet)
+		data = string(src)
+	}
+
+	fn, ok := voc[action]
+	if ok == false {
+		cli.ExitOnError(os.Stderr, fmt.Errorf("do not understand %s", action), quiet)
+	}
+
+	if (action == "create" || action == "update" || action == "join") && len(data) > 0 {
+		params = append(params, data)
+	}
+
+	if (action == "read" || action == "list") && len(data) > 0 {
+		// Split the input if available
+		lines := strings.Split(data, "\n")
+		for _, key := range lines {
+			params = append(params, key)
+		}
+	}
+
+	if (action == "keys" || action == "count") && len(data) > 0 {
+		// Split the input if available
+		lines := strings.Split(data, "\n")
+		// If filter we want to output the ids as a stream as they are found
+		filterExpr := "true"
+		sortExpr := ""
+		keyList := []string{}
+
+		if len(params) > 0 {
+			filterExpr = params[0]
+		}
+		if len(params) > 1 {
+			sortExpr = params[1]
+		}
+
+		// Get any key list that might be passed in (either via cli or stdin)
+		if len(params) > 3 {
+			keyList = params[2:]
+		} else if len(lines) > 0 {
+			for _, line := range lines {
+				keyList = append(keyList, line)
 			}
 		}
 
-		if (action == "create" || action == "update") && len(lines) > 0 {
-			params = append(params, strings.Join(lines, " "))
+		// If we are NOT sorting we can just filter the output now and be done.
+		if len(sortExpr) == 0 {
+			if err := streamFilterResults(out, keyList, filterExpr); err != nil {
+				fmt.Fprintf(out, "%s%s", err, nl)
+				os.Exit(1)
+			}
+			os.Exit(0)
 		}
 
-		if (action == "read" || action == "list") && len(lines) > 0 {
-			for _, key := range lines {
-				params = append(params, key)
-			}
+		// We need to make sure our params are setup with sane defaults for keys and count
+		params = []string{
+			filterExpr,
+			sortExpr,
 		}
-
-		if (action == "keys" || action == "count") && len(lines) > 0 {
-			// If filter we want to output the ids as a stream as they are found
-			filterExpr := "true"
-			sortExpr := ""
-			keyList := []string{}
-
-			if len(params) > 0 {
-				filterExpr = params[0]
-			}
-			if len(params) > 1 {
-				sortExpr = params[1]
-			}
-
-			// Get any key list that might be passed in (either via cli or stdin)
-			if len(params) > 3 {
-				keyList = params[2:]
-			} else if len(lines) > 0 {
-				for _, line := range lines {
-					keyList = append(keyList, line)
-				}
-			}
-
-			// If we are NOT sorting we can just filter the output now and be done.
-			if len(sortExpr) == 0 {
-				if err := streamFilterResults(out, keyList, filterExpr); err != nil {
-					fmt.Fprintf(out, "%s%s", err, nl)
-					os.Exit(1)
-				}
-				os.Exit(0)
-			}
-
-			// We need to make sure our params are setup with sane defaults for keys and count
-			params = []string{
-				filterExpr,
-				sortExpr,
-			}
-			for _, k := range keyList {
-				params = append(params, k)
-			}
+		for _, k := range keyList {
+			params = append(params, k)
 		}
+	}
 
-		output, err := fn(params...)
-		if err != nil {
-			handleError(err, 1)
-		}
-		if quietMode == false || showVerbose == true {
-			fmt.Fprintf(out, "%s%s", output, nl)
-		}
-	} else {
-		handleError(fmt.Errorf("Don't understand %q%s", action, nl), 1)
+	output, err := fn(params...)
+	cli.ExitOnError(os.Stderr, err, quiet)
+	if quiet == false || showVerbose == true && output != "" {
+		fmt.Fprintf(out, "%s%s", output, nl)
 	}
 }
