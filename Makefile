@@ -64,9 +64,10 @@ install:
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	./mk-website.bash
 
-test:
+test: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 	go test
 	cd gsheets && go test
+	bash test_cmds.bash
 
 format:
 	gofmt -w dataset.go
