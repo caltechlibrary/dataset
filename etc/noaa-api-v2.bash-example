@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# NOAA v2 API requires an Access Token. To get an access token
+# follow step one at: https://www.ncdc.noaa.gov/cdo-web/webservices/v2#gettingStarted
+export NOAA_ACCESS_TOKEN="YOUR_ACCESS_TOKEN_STRING_GOES_HERE"
+
