@@ -119,6 +119,9 @@ func Analyzer(collectionName string) error {
 
 	// Check of collections.json and keys.json exist
 	for _, fname := range []string{"collection.json", "keys.json"} {
+		if _, exists := checkFileExists(collectionName); exists == false {
+			return fmt.Errorf("%q does not exist", collectionName)
+		}
 		if docPath, exists := checkFileExists(path.Join(collectionName, fname)); exists == false {
 			log.Printf("Missing %s", docPath)
 			eCnt++
