@@ -20,7 +20,7 @@
 </nav>
 
 <section>
-<h1>export-gsheets</h1>
+<h1>export-gsheet</h1>
 
 <h2>Syntax</h2>
 
@@ -29,7 +29,7 @@
 
 <h2>Description</h2>
 
-<p>export-sheets will write the exported records and exported fields to a Google Sheets sheet in the given cell range.</p>
+<p>export-gsheet will write the exported records and exported fields to a Google Sheets sheet in the given cell range.</p>
 
 <p>SHEET_ID is the google sheet id, usually a very long alpha numeric string. If your URL looks like</p>
 
@@ -59,10 +59,10 @@ in the collection (see <code>dataset -help dotpath</code> for more explanation)<
 The following fields are being exported - .name and .contact with the following headings &ndash;
 Name, Contact.</p>
 
-<pre><code class="language-shell">	dataset export-gsheets &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; Sheet1 &quot;A1:Z&quot; true '.name,.contact' 'Name,Contact'
+<pre><code class="language-shell">	dataset export-gsheet &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; Sheet1 &quot;A1:Z&quot; true '.name,.contact' 'Name,Contact'
 </code></pre>
 
-<p>Related topics: extract, import, import-gsheets</p>
+<p>Related topics: extract, import, import-gsheet</p>
 
 </section>
 
