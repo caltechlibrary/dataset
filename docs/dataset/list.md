@@ -9,9 +9,9 @@
 
 ## Description
 
-The writes a JSON array to standard out (unless you've specific an alternative location with the "-output" option) for the provided JSON_RECORD_IDS 
-for each ID found. If no ids are provided (or none are found) then an 
-empty JSON array is return.
+Write a JSON array to standard out (unless you've specific an alternative 
+location with the "-output" option) for the provided JSON_RECORD_IDS.
+If no ids are provided (or none are found) then an empty JSON array is return.
 
 ## Usage
 
