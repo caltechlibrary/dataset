@@ -1,5 +1,5 @@
 
-# export-gsheets
+# export-gsheet
 
 ## Syntax
 
@@ -9,7 +9,7 @@
 
 ## Description
 
-export-sheets will write the exported records and exported fields to a Google Sheets sheet in the given cell range.
+export-gsheet will write the exported records and exported fields to a Google Sheets sheet in the given cell range.
 
 SHEET_ID is the google sheet id, usually a very long alpha numeric string. If your URL looks like
 
@@ -42,8 +42,8 @@ The following fields are being exported - .name and .contact with the following 
 Name, Contact.
 
 ```shell
-	dataset export-gsheets "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
+	dataset export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
 ```
 
-Related topics: extract, import, import-gsheets
+Related topics: extract, import, import-gsheet
 
