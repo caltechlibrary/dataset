@@ -41,7 +41,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.11-pre`
+	Version = `v0.0.12-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -603,7 +603,7 @@ func colToString(cell interface{}) string {
 }
 
 // ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
-func (c *Collection) ExportCSV(fp io.Writer, filterExpr string, dotPaths []string, colNames []string, verboseLog bool) (int, error) {
+func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotPaths []string, colNames []string, verboseLog bool) (int, error) {
 	keys := c.Keys()
 	f, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
@@ -617,9 +617,10 @@ func (c *Collection) ExportCSV(fp io.Writer, filterExpr string, dotPaths []strin
 	}
 
 	var (
-		data interface{}
-		cnt  int
-		row  []string
+		data       interface{}
+		cnt        int
+		row        []string
+		readErrors int
 	)
 	for _, key := range keys {
 		if err := c.Read(key, &data); err == nil {
@@ -639,7 +640,13 @@ func (c *Collection) ExportCSV(fp io.Writer, filterExpr string, dotPaths []strin
 				}
 				data = nil
 			}
+		} else {
+			fmt.Fprintf(os.Stderr, "error reading %q, %s\n", key, err)
+			readErrors += 1
 		}
+	}
+	if readErrors > 0 {
+		return cnt, fmt.Errorf("%d read errors encountered", readErrors)
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
