@@ -700,7 +700,7 @@ func exportGSheet(params ...string) (string, error) {
 	filterExpr := params[3]
 	dotPaths := strings.Split(params[4], ",")
 	colNames := []string{}
-	if len(params) >= 5 {
+	if len(params) > 5 {
 		colNames = strings.Split(params[5], ",")
 	} else {
 		for _, val := range dotPaths {
