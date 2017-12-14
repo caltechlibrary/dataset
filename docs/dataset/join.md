@@ -37,7 +37,7 @@ You can merge the unique fields in profile.json with your existing jane.doe reco
 (where the existing record id is "jane.doe").
 
 ```shell
-    dataset join update jane.doe profile.json
+    dataset -i profile.json join update jane.doe
 ```
 
 The result would look like
@@ -49,7 +49,7 @@ The result would look like
 If you wanted to overwrite the common fields you would use 'join overwrite'
 
 ```shell
-    dataset join overwrite jane.doe profile.json
+    dataset -i profile.json join overwrite jane.doe
 ```
 
 Which would result in a record like
