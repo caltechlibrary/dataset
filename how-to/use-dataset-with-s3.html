@@ -37,7 +37,7 @@ with your dataset stored at S3.</p>
 <h2>Basic steps</h2>
 
 <ol>
-<li>Set AWS_LOAD_CONFIG_SDK environment variable</li>
+<li>Set AWS_SDK__LOAD_CONFIG environment variable</li>
 <li>Envoke the dataaset init command with your &ldquo;s3://&rdquo; URL appended with your collectio name</li>
 <li>Set DATASET environment variable</li>
 </ol>
@@ -45,7 +45,7 @@ with your dataset stored at S3.</p>
 <p>In the following shell example our bucket is called &ldquo;dataset.library.exampl.edu&rdquo; and our dataset
 collection is called &ldquo;mycollection&rdquo;.</p>
 
-<pre><code class="language-shell">    export AWS_LOAD_CONFIG_SDK=1
+<pre><code class="language-shell">    export AWS_SDK_LOAD_CONFIG=1
     dataset init s3://dataset.library.example.edu/mycollection
     export DATASET=s3://dataset.library.example.edu/mycollection
 </code></pre>

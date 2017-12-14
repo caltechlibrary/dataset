@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="../examples/">Examples</a></li>
+<li><a href="./">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Reshape JSON collections</h1>
+
+<h2>Problem</h2>
+
+<p>You have a <em>dataset</em> collection of JSON documents but the fields you&rsquo;re interested in are nested.  Using <em>dataset</em> and
+<a href="https://github.com/caltechlibrary/datatools/releases/latest">datatools</a>&rsquo;s <em>jsonmunge</em> you can reshape your existing
+collection&rsquo;s record to the shape you prefer.</p>
+
+<p>In this how to we will look at mondify a single record then once we have
+the record looking the way we want apply that transformation to the whole collection.</p>
+
+<h2>Example</h2>
+
+<p>In our collection we have record with an id of 12345. Running <code>dataset read 12345</code> we can see our record
+looks like&ndash;</p>
+
+<pre><code class="language-json">    {
+        &quot;title&quot;: &quot;The wonderful world of data collecting&quot;,
+        &quot;authors&quot;: [
+            {&quot;family&quot;: &quot;Brown&quot;, &quot;given&quot;: &quot;Jules&quot;},
+            {&quot;family&quot;: &quot;Brown&quot;, &quot;given&quot;: &quot;Verne&quot;}
+        ]
+    }
+</code></pre>
+
+<p>What we&rsquo;d like is a flattened version of  the author names.</p>
+
+<pre><code class="language-json">    {
+        &quot;title&quot;: &quot;The wonderful world of data collecting&quot;,
+        &quot;author_display_names&quot;: &quot;Jules Brown and Verne Brown&quot;,
+        ...
+    }
+</code></pre>
+
+<p>We&rsquo;re going to pull out each others name object and then format them the way we prefer. <em>jsonmunge</em> lets us apply a Go text template
+to our JSON data and then output something. In our case our formatted names.</p>
+
+<h3>Building up a template</h3>
+
+<p>Generating our <code>.author_display_names</code> field can be broken down into simpler parts. First we are going to look at formatting a single name
+and then look at how to format both names and finally format an number of names.  Inside <code>.authors</code> array we have a name object. It has
+<code>.family</code> and <code>.given</code> attributes.  A simple template would reach in to the <code>.authors</code> array by index and then order the <code>.given</code> and
+<code>.family</code> attributes as desired. Array indexes count from zero so the first author&rsquo;s index is zero. The template function <em>dotpath</em> lets
+us reach inside the array.</p>
+
+<p>Try this</p>
+
+<pre><code class="language-shell">    dataset read 12345 | jsonmunge -i - -E '{{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }}'
+</code></pre>
+
+<p>Let&rsquo;s take this command pipeline apart.  We retrieved our dataset record 12345 with <code>dataset read 12345</code>. We send
+that record to <em>jsonmunge</em> (<code>-i -</code> is idiomatic of datatool commands for saying read from standard input since the record
+should be coming from <em>dataset</em>&rsquo;s standard output) and the <code>-E</code> to
+evaluate a simple template ordering out first author name.</p>
+
+<pre><code>    Jules Brown
+</code></pre>
+
+<p>It&rsquo;s a bit ugly (and long) but we can adapt that to display both names.</p>
+
+<pre><code class="language-shell">    dataset read 12345 | jsonmunge -i - -E '{{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }} and {{ dotpath . &quot;.authors[1].given&quot; &quot;&quot; }} {{ dotpath . &quot;authors[1].family&quot; &quot;&quot; }}'
+</code></pre>
+
+<p>getting</p>
+
+<pre><code>    Jules Brown and Verne Brown
+</code></pre>
+
+<p>That command line is getting pretty long. Let&rsquo;s take that expression and put it in a template file called &ldquo;flatten.tmpl&rdquo;.</p>
+
+<pre><code>    {{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }} and {{ dotpath . &quot;.authors[1].given&quot; &quot;&quot; }} {{ dotpath . &quot;authors[1].family&quot; &quot;&quot; }}
+</code></pre>
+
+<p>Run the template and see the results with</p>
+
+<pre><code class="language-shell">    dataset read 12345 | jsonmunge -i - flatten.tmpl
+</code></pre>
+
+<p>We should again see</p>
+
+<pre><code>    Jules Brown and Verne Brown
+</code></pre>
+
+<p>What happens for the next record where the number of authors is different? Looking at our original data we see that <code>.authors</code> is an
+array of objects. Go&rsquo;s text templates have a function called <em>range</em> which makes it easy to iterate over arrays.
+<em>range</em> can return the index value as well as the object at that index.  Applying the <em>range</em> function would look like this
+version of &ldquo;flatten.tmpl&rdquo;.</p>
+
+<pre><code>    {{ range $i,$author := .authors }}
+        {{ if (gt $i 0) }} and {{ end }}
+        {{ $author.given }} {{ $author.family }}
+    {{ end }}
+</code></pre>
+
+<p>Running</p>
+
+<pre><code class="language-shell">    dataset read 12345 | jsonmunge -i - flatten.tmpl
+</code></pre>
+
+<p>we get</p>
+
+<pre><code>       Jules Brown
+
+        and
+       Verne Brown
+</code></pre>
+
+<p>That sorta gives us what we wanted but the spacing is all wrong and we have some extra line breaks. We could put all the template parts in
+one line but that would make it hard to read and debug. Fortunately Go templates elements and indicate if leading or trailing whitespace should
+be trimmed. You do that by using <code>{{-</code> and <code>-}}</code> for trimming leading and trailing whitespace. The revised template will look like</p>
+
+<pre><code>    {{- range $i,$author := .authors }}
+        {{- if (gt $i 0) }} and {{ end -}}
+        {{- $author.given }} {{ $author.family -}}
+    {{- end -}}
+</code></pre>
+
+<p>and a running that through <code>dataset read 12345 | jsonmunge -i - flatten.tmpl</code> gives us</p>
+
+<pre><code>    Jules Brown and Verne Brown
+</code></pre>
+
+<p>Ok, so how does this help us reshape our origin 12345 record?  Well first we need to turn our string &ldquo;Jules Brown and Verne Brown&rdquo;
+into an object. Updating our template the curly brackets and attribute nations gives us</p>
+
+<pre><code>    {
+        &quot;author_display_names&quot;: &quot;{{- range $i,$author := .authors }}
+            {{- if (gt $i 0) }} and {{ end -}}
+            {{- $author.given }} {{ $author.family -}}
+        {{- end -}}&quot;
+    }
+</code></pre>
+
+<p>Now running <code>dataset read 12345 | jsonmunge -i - flatten.tmpl</code> gives us our new object.</p>
+
+<pre><code>    {
+        &quot;author_display_names&quot;: &quot;Jules Brown and Verne Brown&quot;
+    }
+</code></pre>
+
+<p>Now we ready to &ldquo;join&rdquo; our new object with the 12345 record. We can do that by extending our pipe line.</p>
+
+<pre><code class="language-shell">    dataset read 12345 | jsonmunge -i - flatten.tmpl | dataset -i - join update 12345
+</code></pre>
+
+<p>We can check to make sure it worked with <code>dataset read 12345</code>. You should see something like (order of attributes may vary)</p>
+
+<pre><code class="language-json">    {
+      &quot;author_display_names&quot;: &quot;Jules Brown and Verne Brown&quot;,
+      &quot;authors&quot;: [
+        { &quot;family&quot;: &quot;Brown&quot;, &quot;given&quot;: &quot;Jules&quot; },
+        { &quot;family&quot;: &quot;Brown&quot;, &quot;given&quot;: &quot;Verne&quot; }
+      ],
+      &quot;title&quot;: &quot;The wonderful world of data collecting&quot;
+    }
+</code></pre>
+
+<p>Notice we now have a new <code>.author_display_names</code> attribute in our object. We still see our old <code>.authors</code>. The <em>join update</em> function
+will not overwriting fields nor trim others.  It adds the attributes of one object to the other.</p>
+
+<p>Now let&rsquo;s say you decide you&rsquo;d rather have the names in &ldquo;family, given&rdquo; order for the individual names.
+Using <em>join overwrite</em> we can replace the value in <code>.author_display_names</code> with a new one.</p>
+
+<p><strong>flatten.tmpl</strong> should now look like</p>
+
+<pre><code>    {
+        &quot;author_display_names&quot;: &quot;{{- range $i,$author := .authors }}
+            {{- if (gt $i 0) }} and {{ end -}}
+            {{- $author.family -}}, {{ $author.given -}}
+        {{- end -}}&quot;
+    }
+</code></pre>
+
+<p>Running <code>dataset read 12345 | jsonmunge -i - flatten.tmpl | dataset -i - join overwrite 12345</code> yields our new results</p>
+
+<pre><code class="language-json">    {
+        &quot;title&quot;: &quot;The wonderful world of data collecting&quot;,
+        &quot;authors&quot;: [
+            {&quot;family&quot;: &quot;Brown&quot;, &quot;given&quot;: &quot;Jules&quot;},
+            {&quot;family&quot;: &quot;Brown&quot;, &quot;given&quot;: &quot;Verne&quot;}
+        ],
+        &quot;author_display_names&quot;: &quot;Brown, Jules and Brown, Verne&quot;
+    }
+</code></pre>
+
+<h3>Putting it together</h3>
+
+<p>We can transform a single record but how about transforming the entire collction?  That turns out to be easy
+we just loop over each key in the collection applying our pipeline.</p>
+
+<pre><code class="language-shell">    dataset keys | while read K; do
+        dataset read &quot;$K&quot; | jsonmunge -i - flatten.tmpl | dataset join overwrite &quot;$K&quot;
+    done
+</code></pre>
+
+<p>Where we had &ldquo;12345&rdquo; before we now have <code>&quot;$K&quot;</code>. The rest is just waiting on the computer to finish.</p>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
