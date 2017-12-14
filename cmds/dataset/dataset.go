@@ -700,12 +700,12 @@ func exportGSheet(params ...string) (string, error) {
 	filterExpr := params[3]
 	dotPaths := strings.Split(params[4], ",")
 	colNames := []string{}
-	if len(params) >= 5 {
-		colNames = strings.Split(params[5], ",")
-	} else {
+	if len(params) < 5 {
 		for _, val := range dotPaths {
 			colNames = append(colNames, val)
 		}
+	} else {
+		colNames = strings.Split(params[5], ",")
 	}
 	// Trim the any spaces for paths and column names
 	for i, val := range dotPaths {
@@ -769,12 +769,12 @@ func exportCSV(params ...string) (string, error) {
 	filterExpr := params[1]
 	dotPaths := strings.Split(params[2], ",")
 	colNames := []string{}
-	if len(params) == 4 {
-		colNames = strings.Split(params[3], ",")
-	} else {
+	if len(params) < 4 {
 		for _, val := range dotPaths {
 			colNames = append(colNames, val)
 		}
+	} else {
+		colNames = strings.Split(params[3], ",")
 	}
 	// Trim the any spaces for paths and column names
 	for i, val := range dotPaths {
@@ -790,7 +790,7 @@ func exportCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ExportCSV(fp, filterExpr, dotPaths, colNames, showVerbose); err != nil {
+	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotPaths, colNames, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't export CSV, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)

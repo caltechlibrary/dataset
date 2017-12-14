@@ -54,7 +54,7 @@ three fields - name, email, age.</p>
 <p>You can merge the unique fields in profile.json with your existing jane.doe record
 (where the existing record id is &ldquo;jane.doe&rdquo;).</p>
 
-<pre><code class="language-shell">    dataset join update jane.doe profile.json
+<pre><code class="language-shell">    dataset -i profile.json join update jane.doe
 </code></pre>
 
 <p>The result would look like</p>
@@ -64,7 +64,7 @@ three fields - name, email, age.</p>
 
 <p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
 
-<pre><code class="language-shell">    dataset join overwrite jane.doe profile.json
+<pre><code class="language-shell">    dataset -i profile.json join overwrite jane.doe
 </code></pre>
 
 <p>Which would result in a record like</p>
