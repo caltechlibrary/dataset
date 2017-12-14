@@ -1,0 +1,6 @@
+{
+    "author_display_names": "{{- range $i,$author := .authors }}
+        {{- if (gt $i 0) }} and {{ end -}}
+        {{- $author.family -}}, {{ $author.given -}}
+    {{- end -}}"
+}
