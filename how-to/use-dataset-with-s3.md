@@ -10,7 +10,7 @@ with your dataset stored at S3.
 
 ## Basic steps
 
-1. Set AWS_LOAD_CONFIG_SDK environment variable
+1. Set AWS_SDK__LOAD_CONFIG environment variable
 2. Envoke the dataaset init command with your "s3://" URL appended with your collectio name
 3. Set DATASET environment variable
 
@@ -19,7 +19,7 @@ In the following shell example our bucket is called "dataset.library.exampl.edu"
 collection is called "mycollection".
 
 ```shell
-    export AWS_LOAD_CONFIG_SDK=1
+    export AWS_SDK_LOAD_CONFIG=1
     dataset init s3://dataset.library.example.edu/mycollection
     export DATASET=s3://dataset.library.example.edu/mycollection
 ```
