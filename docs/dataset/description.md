@@ -1,6 +1,4 @@
 
-# Description
-
 dataset is a command line tool demonstrating dataset package for managing 
 JSON documents stored on disc. A dataset is organized around collections,
 collections contain buckets holding specific JSON documents and related content.

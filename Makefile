@@ -21,45 +21,45 @@ endif
 
 dataset$(EXT): bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 
-cmds/dataset/assets.go:
-	pkgassets -o cmds/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
-	git add cmds/dataset/assets.go
+cmd/dataset/assets.go:
+	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
+	git add cmd/dataset/assets.go
 
-cmds/dsindexer/assets.go:
-	pkgassets -o cmds/dsindexer/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsindexer Help docs/dsindexer
-	git add cmds/dsindexer/assets.go
+cmd/dsindexer/assets.go:
+	pkgassets -o cmd/dsindexer/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsindexer Help docs/dsindexer
+	git add cmd/dsindexer/assets.go
 
-cmds/dsfind/assets.go:
-	pkgassets -o cmds/dsfind/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsfind Help docs/dsfind
-	git add cmds/dsfind/assets.go
+cmd/dsfind/assets.go:
+	pkgassets -o cmd/dsfind/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsfind Help docs/dsfind
+	git add cmd/dsfind/assets.go
 
-cmds/dsws/assets.go:
-	pkgassets -o cmds/dsws/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsws Help docs/dsws 
-	git add cmds/dsws/assets.go
+cmd/dsws/assets.go:
+	pkgassets -o cmd/dsws/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsws Help docs/dsws 
+	git add cmd/dsws/assets.go
 
-cmds/dsws/templates.go:
-	pkgassets -o cmds/dsws/templates.go -p main Defaults defaults
-	git add cmds/dsws/templates.go
+cmd/dsws/templates.go:
+	pkgassets -o cmd/dsws/templates.go -p main Defaults defaults
+	git add cmd/dsws/templates.go
 
-bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheets/gsheets.go cmds/dataset/dataset.go cmds/dataset/assets.go
-	go build -o bin/dataset$(EXT) cmds/dataset/dataset.go cmds/dataset/assets.go
+bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
+	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
-bin/dsindexer$(EXT): dataset.go search.go cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	go build -o bin/dsindexer$(EXT) cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
+bin/dsindexer$(EXT): dataset.go search.go cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
+	go build -o bin/dsindexer$(EXT) cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
 
-bin/dsfind$(EXT): dataset.go search.go formats.go cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	go build -o bin/dsfind$(EXT) cmds/dsfind/dsfind.go cmds/dsfind/assets.go
+bin/dsfind$(EXT): dataset.go search.go formats.go cmd/dsfind/dsfind.go cmd/dsfind/assets.go
+	go build -o bin/dsfind$(EXT) cmd/dsfind/dsfind.go cmd/dsfind/assets.go
 	
-bin/dsws$(EXT): dataset.go search.go formats.go cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
-	go build -o bin/dsws$(EXT) cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+bin/dsws$(EXT): dataset.go search.go formats.go cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
+	go build -o bin/dsws$(EXT) cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
 build: $(PROJECT_LIST)
 
 install: 
-	env GOBIN=$(GOPATH)/bin go install cmds/dataset/dataset.go cmds/dataset/assets.go
-	env GOBIN=$(GOPATH)/bin go install cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	env GOBIN=$(GOPATH)/bin go install cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	env GOBIN=$(GOPATH)/bin go install cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
+	env GOBIN=$(GOPATH)/bin go install cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
+	env GOBIN=$(GOPATH)/bin go install cmd/dsfind/dsfind.go cmd/dsfind/assets.go
+	env GOBIN=$(GOPATH)/bin go install cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	./mk-website.bash
@@ -67,7 +67,7 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 test: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 	go test
 	cd gsheets && go test
-	bash test_cmds.bash
+	bash test_cmd.bash
 
 format:
 	gofmt -w dataset.go
@@ -77,9 +77,9 @@ format:
 	gofmt -w search.go
 	gofmt -w search_test.go
 	gofmt -w formats.go
-	gofmt -w cmds/dataset/dataset.go
-	gofmt -w cmds/dsindexer/dsindexer.go
-	gofmt -w cmds/dsfind/dsfind.go
+	gofmt -w cmd/dataset/dataset.go
+	gofmt -w cmd/dsindexer/dsindexer.go
+	gofmt -w cmd/dsfind/dsfind.go
 
 lint:
 	golint dataset.go
@@ -89,9 +89,9 @@ lint:
 	golint search.go
 	golint search_test.go
 	golint formats.go
-	golint cmds/dataset/dataset.go
-	golint cmds/dsindexer/dsindexer.go
-	golint cmds/dsfind/dsfind.go
+	golint cmd/dataset/dataset.go
+	golint cmd/dsindexer/dsindexer.go
+	golint cmd/dsfind/dsfind.go
 
 clean: 
 	if [ "$(PKGASSETS)" != "" ]; then ./rebuild-assets.bash; fi
@@ -101,37 +101,37 @@ clean:
 
 dist/linux-amd64:
 	mkdir -p dist/bin
-	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dataset cmds/dataset/dataset.go cmds/dataset/assets.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsindexer cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsfind cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsws cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsindexer cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsfind cmd/dsfind/dsfind.go cmd/dsfind/assets.go
+	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsws cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
 	rm -fR dist/bin
 
 dist/windows-amd64:
 	mkdir -p dist/bin
-	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dataset.exe cmds/dataset/dataset.go cmds/dataset/assets.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsindexer.exe cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsfind.exe cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsws.exe cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dataset.exe cmd/dataset/dataset.go cmd/dataset/assets.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsindexer.exe cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsfind.exe cmd/dsfind/dsfind.go cmd/dsfind/assets.go
+	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsws.exe cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
 	rm -fR dist/bin
 
 dist/macosx-amd64:
 	mkdir -p dist/bin
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dataset cmds/dataset/dataset.go cmds/dataset/assets.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsindexer cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsfind cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsws cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsindexer cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsfind cmd/dsfind/dsfind.go cmd/dsfind/assets.go
+	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsws cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-macosx-amd64.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
 	rm -fR dist/bin
 
 dist/raspbian-arm7:
 	mkdir -p dist/bin
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dataset cmds/dataset/dataset.go cmds/dataset/assets.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsindexer cmds/dsindexer/dsindexer.go cmds/dsindexer/assets.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsfind cmds/dsfind/dsfind.go cmds/dsfind/assets.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsws cmds/dsws/dsws.go cmds/dsws/assets.go cmds/dsws/templates.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsindexer cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsfind cmd/dsfind/dsfind.go cmd/dsfind/assets.go
+	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsws cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip README.md LICENSE INSTALL.md bin/* docs/* how-to/* demos/*
 	rm -fR dist/bin
 

@@ -421,8 +421,16 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 		explain          bool
 		includeLocations bool
 		err              error
+		sampleSize       int
 	)
 	// Normalize option values
+	if sVal, ok := options["sample"]; ok == true {
+		sampleSize, err = strconv.Atoi(sVal)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if sVal, ok := options["from"]; ok == true {
 		from, err = strconv.Atoi(sVal)
 		if err != nil {

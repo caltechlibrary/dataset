@@ -4,7 +4,7 @@
 // @author R. S. Doiel, <rsdoiel@caltech.edu>
 //
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,14 +21,14 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
-	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
@@ -44,20 +44,23 @@ import (
 
 var (
 	// Standard Options
-	showHelp     bool
-	showLicense  bool
-	showVersion  bool
-	showExamples bool
-	inputFName   string
-	outputFName  string
-	quiet        bool
+	showHelp             bool
+	showLicense          bool
+	showVersion          bool
+	showExamples         bool
+	inputFName           string
+	outputFName          string
+	newLine              bool
+	quiet                bool
+	prettyPrint          bool
+	generateMarkdownDocs bool
 
 	// App Specific Options
 	collectionName string
 	useHeaderRow   bool
 	useUUID        bool
 	showVerbose    bool
-	newLine        bool
+	sampleSize     int
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -242,6 +245,10 @@ func readJSONDocs(args ...string) (string, error) {
 		}
 		recs = append(recs, rec)
 	}
+	if prettyPrint {
+		src, err := json.MarshalIndent(recs, "", "    ")
+		return string(src), err
+	}
 	src, err := json.Marshal(recs)
 	return string(src), err
 }
@@ -270,6 +277,10 @@ func listJSONDocs(args ...string) (string, error) {
 		}
 		recs = append(recs, rec)
 	}
+	if prettyPrint {
+		src, err := json.MarshalIndent(recs, "", "    ")
+		return string(src), err
+	}
 	src, err := json.Marshal(recs)
 	return string(src), err
 }
@@ -281,10 +292,10 @@ func updateJSONDoc(args ...string) (string, error) {
 	}
 	name, src := args[0], args[1]
 	if len(collectionName) == 0 {
-		return "", fmt.Errorf("missing a collection name, set DATASET in the environment variable or use -c option")
+		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
 	if len(name) == 0 {
-		return "", fmt.Errorf("missing document name")
+		return "", fmt.Errorf("Missing document name")
 	}
 	if len(src) == 0 {
 		return "", fmt.Errorf("Can't update, no JSON source found in %s", name)
@@ -395,6 +406,16 @@ func collectionKeys(args ...string) (string, error) {
 
 	// Trivial case of return all keys
 	if len(args) == 0 || (len(args) == 1 && args[0] == "true") {
+		if sampleSize == 0 {
+			return strings.Join(collection.Keys(), "\n"), nil
+		}
+		keys := collection.Keys()
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		dataset.ShuffleStrings(keys, random)
+		if sampleSize <= len(keys) {
+
+			return strings.Join(keys[0:sampleSize], "\n"), nil
+		}
 		return strings.Join(collection.Keys(), "\n"), nil
 	}
 
@@ -428,6 +449,16 @@ func collectionKeys(args ...string) (string, error) {
 			}
 		}
 	}
+
+	// Apply Sample Size
+	if sampleSize > 0 {
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		dataset.ShuffleStrings(keys, random)
+		if sampleSize <= len(keys) {
+			keys = keys[0:sampleSize]
+		}
+	}
+
 	// If now sort we're done
 	if len(sortExpr) == 0 {
 		return strings.Join(keys, "\n"), nil
@@ -501,7 +532,7 @@ func collectionCount(args ...string) (string, error) {
 }
 
 // streamFilterResults works like filter but outputs the results as it find them
-func streamFilterResults(w *os.File, keyList []string, filterExp string) error {
+func streamFilterResults(w *os.File, keyList []string, filterExp string, sampleSize int) error {
 	f, err := tmplfn.ParseFilter(filterExp)
 	if err != nil {
 		return err
@@ -518,6 +549,11 @@ func streamFilterResults(w *os.File, keyList []string, filterExp string) error {
 
 	if len(keyList) == 0 {
 		keyList = collection.Keys()
+		if sampleSize > 0 {
+			random := rand.New(rand.NewSource(time.Now().UnixNano()))
+			dataset.ShuffleStrings(keyList, random)
+			keyList = keyList[0:sampleSize]
+		}
 	}
 	for _, key := range keyList {
 		data := map[string]interface{}{}
@@ -818,80 +854,82 @@ func extract(params ...string) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
-func init() {
-	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "display help")
-	flag.BoolVar(&showHelp, "help", false, "display help")
-	flag.BoolVar(&showLicense, "l", false, "display license")
-	flag.BoolVar(&showLicense, "license", false, "display license")
-	flag.BoolVar(&showVersion, "v", false, "display version")
-	flag.BoolVar(&showVersion, "version", false, "display version")
-	flag.BoolVar(&showExamples, "example", false, "display example(s)")
-	flag.StringVar(&inputFName, "i", "", "input filename")
-	flag.StringVar(&inputFName, "input", "", "input filename")
-	flag.StringVar(&outputFName, "o", "", "output filename")
-	flag.StringVar(&outputFName, "output", "", "output filename")
-	flag.BoolVar(&quiet, "quiet", false, "suppres error messages and status output")
-
-	// Application Options
-	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
-	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
-	flag.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
-	flag.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
-	flag.BoolVar(&newLine, "no-newline", false, "exclude trailing newline in output")
-	flag.BoolVar(&newLine, "nl", true, "include trailing newline in output")
-	flag.BoolVar(&newLine, "newline", true, "include trailing newline in output")
-}
-
 func main() {
-	appName := path.Base(os.Args[0])
-	flag.Parse()
-	args := flag.Args()
+	app := cli.NewCli(dataset.Version)
+	appName := app.AppName()
 
-	cfg := cli.New(appName, strings.ToUpper(appName), dataset.Version)
-	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
-	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
-	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", Examples["examples"])
-
-	// Add help and example pages
+	// Add Help Docs
 	for k, v := range Help {
-		if k != "nav" {
-			cfg.AddHelp(k, fmt.Sprintf("%s", v))
-		}
+		app.AddHelp(k, v)
 	}
 	for k, v := range Examples {
-		if k != "nav" {
-			cfg.AddExample(k, fmt.Sprintf("%s\n", v))
-		}
+		app.AddHelp(k, v)
 	}
 
-	if showHelp == true {
+	// Add Environment options
+	app.EnvStringVar(&collectionName, "DATASET", "", "Set the working path to your dataset collection")
+
+	// Standard Options
+	app.BoolVar(&showHelp, "h,help", false, "display help")
+	app.BoolVar(&showLicense, "l,license", false, "display license")
+	app.BoolVar(&showVersion, "v,version", false, "display version")
+	app.BoolVar(&showExamples, "e,examples", false, "display examples")
+	app.StringVar(&inputFName, "i,input", "", "input file name")
+	app.StringVar(&outputFName, "o,output", "", "output file name")
+	app.BoolVar(&newLine, "nl,newline", false, "if true add a trailing newline")
+	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
+	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
+
+	// Application Options
+	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
+	app.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
+	app.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
+	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
+	app.IntVar(&sampleSize, "sample", 0, "set the sample size")
+
+	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
+	// NOTE: Sense this pre-existed cli v0.0.6 we're going to stick with what we evolved.
+
+	// We're ready to process args
+	app.Parse()
+	args := app.Args()
+
+	// Setup IO
+	var err error
+
+	app.Eout = os.Stderr
+	app.In, err = cli.Open(inputFName, os.Stdin)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(inputFName, app.In)
+
+	app.Out, err = cli.Create(outputFName, os.Stdout)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(outputFName, app.Out)
+
+	// Handle options
+	if generateMarkdownDocs {
+		app.GenerateMarkdownDocs(app.Out)
+		os.Exit(0)
+	}
+	if showHelp || showExamples {
 		if len(args) > 0 {
-			fmt.Println(cfg.Help(args...))
+			fmt.Fprintf(app.Out, app.Help(args...))
 		} else {
-			fmt.Println(cfg.Usage())
+			app.Usage(app.Out)
 		}
 		os.Exit(0)
 	}
-	if showExamples == true {
-		if len(args) > 0 {
-			fmt.Println(cfg.Example(args...))
-		} else {
-			fmt.Printf("\n%s", cfg.Example())
-		}
+	if showLicense {
+		fmt.Fprintln(app.Out, app.License())
 		os.Exit(0)
 	}
-	if showLicense == true {
-		fmt.Println(cfg.License())
+	if showVersion {
+		fmt.Fprintln(app.Out, app.Version())
 		os.Exit(0)
 	}
-	if showVersion == true {
-		fmt.Println(cfg.Version())
-		os.Exit(0)
-	}
+
+	// Application Option's processing
 
 	// Merge environment
 	datasetEnv := os.Getenv("DATASET")
@@ -901,12 +939,6 @@ func main() {
 
 	if len(args) == 0 {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
-	}
-
-	// Handle trailing nl
-	nl := "\n"
-	if newLine == false {
-		nl = ""
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)
@@ -969,8 +1001,8 @@ func main() {
 
 		// If we are NOT sorting we can just filter the output now and be done.
 		if len(sortExpr) == 0 {
-			if err := streamFilterResults(out, keyList, filterExpr); err != nil {
-				fmt.Fprintf(out, "%s%s", err, nl)
+			if err := streamFilterResults(app.Out, keyList, filterExpr, sampleSize); err != nil {
+				fmt.Fprintf(app.Out, "%s\n", err)
 				os.Exit(1)
 			}
 			os.Exit(0)
@@ -989,6 +1021,9 @@ func main() {
 	output, err := fn(params...)
 	cli.ExitOnError(os.Stderr, err, quiet)
 	if quiet == false || showVerbose == true && output != "" {
-		fmt.Fprintf(out, "%s%s", output, nl)
+		fmt.Fprintf(app.Out, "%s", output)
+	}
+	if newLine {
+		fmt.Fprintln(app.Out, "")
 	}
 }

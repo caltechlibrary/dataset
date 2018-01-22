@@ -14,11 +14,11 @@ fi
 
 function buildHelp() {
     PROG="$1"
-    pkgassets -o "cmds/${PROG}/assets.go" -p main \
+    pkgassets -o "cmd/${PROG}/assets.go" -p main \
         -ext=".md" -strip-prefix="/" -strip-suffix=".md" \
         Examples "examples/${PROG}" \
         Help "docs/${PROG}"
-    git add "cmds/${PROG}/assets.go"
+    git add "cmd/${PROG}/assets.go"
 }
 
 # build Help assets 
@@ -28,6 +28,6 @@ buildHelp dsfind
 buildHelp dsws
 
 # build Template assets
-pkgassets -o cmds/dsws/templates.go -p main Defaults defaults
-git add cmds/dsws/templates.go
+pkgassets -o cmd/dsws/templates.go -p main Defaults defaults
+git add cmd/dsws/templates.go
 

@@ -37,8 +37,16 @@ import (
 )
 
 // JSONFormatter writes out JSON representation using encoding/json
-func JSONFormatter(out io.Writer, results *bleve.SearchResult) error {
-	src, err := json.Marshal(results)
+func JSONFormatter(out io.Writer, results *bleve.SearchResult, prettyPrint bool) error {
+	var (
+		src []byte
+		err error
+	)
+	if prettyPrint {
+		src, err = json.MarshalIndent(results, "", "    ")
+	} else {
+		src, err = json.Marshal(results)
+	}
 	if err != nil {
 		return err
 	}
