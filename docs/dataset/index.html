@@ -22,10 +22,10 @@
 <section>
 <h1>USAGE</h1>
 
-<pre><code>    dataset [OPTIONS] COMMAND_AND_PARAMETERS
+<pre><code>dataset [OPTIONS]
 </code></pre>
 
-<h1>Description</h1>
+<h2>SYNOPSIS</h2>
 
 <p>dataset is a command line tool demonstrating dataset package for managing
 JSON documents stored on disc. A dataset is organized around collections,
@@ -34,74 +34,176 @@ In addition to the JSON documents dataset maintains metadata for management
 of the documents, their attachments as well as a ability to generate select lists
 based JSON document keys (aka JSON document names).</p>
 
+<h2>ENVIRONMENT</h2>
+
+<p>Environment variables can be overridden by corresponding options</p>
+
+<pre><code>    DATASET   # Set the working path to your dataset collection
+</code></pre>
+
 <h2>OPTIONS</h2>
 
-<pre><code>	-c	sets the collection to be used
-	-collection	sets the collection to be used
-	-example	display example(s)
-	-h	display help
-	-help	display help
-	-i	input filename
-	-input	input filename
-	-l	display license
-	-license	display license
-	-no-newline	suppress a trailing newline on output
-	-o	output filename
-	-output	output filename
-	-quiet	suppress error and status output
-	-use-header-row	use the header row as attribute names in the JSON document
-	-uuid	generate a UUID for a new JSON document name
-	-v	display version
-	-verbose	output rows processed on importing from CSV
-	-version	display version
+<p>Options will override any corresponding environment settings.</p>
+
+<pre><code>    -c, -collection           sets the collection to be used
+    -e, -examples             display examples
+    -generate-markdown-docs   output documentation in Markdown
+    -h, -help                 display help
+    -i, -input                input file name
+    -l, -license              display license
+    -nl, -newline             if true add a trailing newline
+    -o, -output               output file name
+    -p, -pretty               pretty print output
+    -quiet                    suppress error messages
+    -sample                   set the sample size
+    -use-header-row           use the header row as attribute names in the JSON document
+    -uuid                     generate a UUID for a new JSON document name
+    -v, -version              display version
+    -verbose                  output rows processed on importing from CSV
 </code></pre>
 
-<h1>Help</h1>
+<h2>EXAMPLES</h2>
 
-<p>The following topics are available by specifying the name after the &ldquo;-help&rdquo; option.
-E.g. to get help on the &ldquo;init&rdquo; command.</p>
+<h2>EXAMPLES</h2>
 
-<pre><code>    dataset -help init
+<p>This is an example of creating a dataset called testdata/friends, saving
+a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
+
+<pre><code class="language-shell">   dataset init testdata/friends
+   export DATASET=testdata/friends
+   dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
 </code></pre>
 
-<h2>Topics</h2>
+<p>Now check to see if the key, littlefreda, is in the collection</p>
 
-<ul>
-<li><a href="init.html">init</a> - initialize a new collection if none exists, requires a path to collection</li>
-<li><a href="create.html">create</a> - creates a new JSON document or replace an existing one in collection</li>
-<li><a href="read.html">read</a> - displays a JSON document to stdout</li>
-<li><a href="list.html">list</a> - displays an array of JSON docs to stdout</li>
-<li><a href="update.html">update</a> - updates a JSON document in collection</li>
-<li><a href="delete.html">delete</a> - removes a JSON document from collection</li>
-<li><a href="join.html">join</a> - brings the functionality of jsonjoin to the dataset command.</li>
-<li><a href="keys.html">keys</a> - returns the keys to stdout, one key per line
+<pre><code class="language-shell">   dataset haskey littlefreda
+</code></pre>
 
-<ul>
-<li><a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)</li>
-</ul></li>
-<li><a href="haskeys.html">haskey</a> - returns true is key is in collection, false otherwise</li>
-<li><a href="count.html">count</a> - returns a count of keys in a collection</li>
-<li><a href="path.html">path</a> - given a document name return the full path to document</li>
-<li><a href="attach.html">attach</a> - attaches a non-JSON content to a JSON record</li>
-<li><a href="attachments.html">attachments</a> - lists any attached content for JSON document</li>
-<li><a href="attached.html">attached</a> - returns attachments for a JSON document</li>
-<li><a href="detach.html">detach</a> - remove attachments to a JSON document</li>
-<li><a href="import.html">import</a> - import a CSV file&rsquo;s rows as JSON documents
+<p>You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends</p>
 
-<ul>
-<li><a href="import-gsheet.html">import-gsheet</a> - import a Google Sheets sheet rows as JSON documents</li>
-</ul></li>
-<li><a href="export.html">export</a> - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
+<pre><code class="language-shell">   dataset -i mojosam.json create mojosam
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
 
-<ul>
-<li><a href="export-gsheet.html">export-gsheet</a> - export a Collection of JSON documents to Google Sheets sheet rows</li>
-</ul></li>
-<li><a href="extract.html">extract</a> - will return a unique list of unique values based on the associated dot path described in the JSON docs
+<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
 
-<ul>
-<li><a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)</li>
-</ul></li>
-</ul>
+<pre><code class="language-shell">   cat capt-jack.json | dataset create capt-jack
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
+   dataset attach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>List attachments for &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset attachments capt-jack
+</code></pre>
+
+<p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
+
+<pre><code class="language-shell">   dataset attached capt-jack
+</code></pre>
+
+<p>Remove high-capt-jack.txt from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">    dataset detach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>Remove all attachments from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset detach capt-jack
+</code></pre>
+
+<p>Filter can be used to return only the record keys that return true for a given
+expression. Here&rsquo;s is a simple case for match records where name is equal to
+&ldquo;Mojo Sam&rdquo;.</p>
+
+<pre><code class="language-shell">   dataset filter '(eq .name &quot;Mojo Sam&quot;)'
+</code></pre>
+
+<p>If you are using a complex filter it can read a file in and apply it as a filter.</p>
+
+<pre><code class="language-shell">   dataset filter &lt; myfilter.txt
+</code></pre>
+
+<p>Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we&rsquo;re generating a UUID for the key name of each row</p>
+
+<pre><code class="language-shell">   dataset -uuid import my-data.csv
+</code></pre>
+
+<p>You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.</p>
+
+<pre><code class="language-shell">   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
+
+<pre><code class="language-shell">   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If wanted to extract a unqie list of all ORCIDs from a collection</p>
+
+<pre><code class="language-shell">   dataset extract true .authors[:].orcid
+</code></pre>
+
+<p>If you wanted to extract a list of ORCIDs from publications in 2016.</p>
+
+<pre><code class="language-shell">   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+</code></pre>
+
+<p>You can augement JSON key/value pairs for a JSON document in your collection
+using the join operation. This works similar to the datatools cli called jsonjoin.</p>
+
+<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
+three fields - name, email, age.</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, age: 42}
+</code></pre>
+
+<p>You also have an external JSON document called profile.json. It looks like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;: &quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;bio&quot;: &quot;world renowned geophysist&quot;}
+</code></pre>
+
+<p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
+
+<pre><code class="language-shell">    dataset join update jane.doe profile.json
+</code></pre>
+
+<p>The result would look like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+<p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
+
+<pre><code class="language-shell">    dataset join overwrite jane.doe profile.json
+</code></pre>
+
+<p>Which would result in a record like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+<p>dataset v0.0.13-dev</p>
 
 </section>
 

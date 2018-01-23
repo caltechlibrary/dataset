@@ -1,5 +1,5 @@
 
-# examples
+# Examples
 
 + [dataset](dataset/)
 + [dsfind](dsfind/)

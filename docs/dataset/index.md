@@ -49,8 +49,6 @@ Options will override any corresponding environment settings.
 ## EXAMPLES
 
 
-## EXAMPLES
-
 This is an example of creating a dataset called testdata/friends, saving
 a record called "littlefreda.json" and reading it back.
 
