@@ -8,8 +8,7 @@
     + idea: assume all collection documents are an object, attach a `._attachments` to each document with attachment metadata, this would allow retrieval at same spead as document
     + look at tarfs package and see if they is helpful
 + [ ] Migrate cli functions in cmds to package level and convert from exported to private functions used only to support cmds cli
-+ [ ] 'dataset keys FILTER' should emit keys as they are found to match rather then be processed as a group (unless we're sorting)
-
++ [ ] -help isn't showing help topics, -help sample isn't showing the sample help page.
 
 ## Next (v0.1.x)
 
@@ -17,6 +16,7 @@
 + [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
 + [ ] Provide a mechanism to synchronize (only update matching rows, appending new rows) a Google Sheet with dataset collection.
++ [ ] Add `-sample N` option for *dataset keys* and *dsfind*
 
 ## Roadmap (v0.2.x)
 
@@ -63,6 +63,7 @@
 
 ## Completed
 
++ [x] 'dataset keys FILTER' should emit keys as they are found to match rather then be processed as a group (unless we're sorting)
 + [x] `dataset list` should return a list (JSON array) of keys, missing keys should be ignore, if no keys then an empty list should be returned
 + [x] Behavior of -timeout, -wait seem wrong in practice, on some cli when you want to explicitly read from stdin you pass a hyphen to -input or -i.
 + [x] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error
