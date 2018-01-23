@@ -886,7 +886,7 @@ func main() {
 	app.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
 	app.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
-	app.IntVar(&sampleSize, "sample", 0, "set the sample size")
+	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	// NOTE: Sense this pre-existed cli v0.0.6 we're going to stick with what we evolved.
