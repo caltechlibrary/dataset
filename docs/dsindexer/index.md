@@ -1,9 +1,9 @@
 
 # USAGE
 
-```
-	dsindexer [OPTIONS] INDEX_DEFINITION [INDEX_NAME]
-```
+	dsindexer [OPTIONS]
+
+## SYNOPSIS
 
 
 ## Description
@@ -39,36 +39,38 @@ look like
 
 Based on this definition the "id" and "dob" fields would not be included in the index.
 
+
+
+## ENVIRONMENT
+
+Environment variables can be overridden by corresponding options
+
+```
+    DATASET   # Set the dataset collection you're working with
+```
+
 ## OPTIONS
 
-```
-	-batch	Set the size index batch, default is 100
-	-c	sets the collection to be used
-	-collection	sets the collection to be used
-	-example	display example(s)
-	-h	display help
-	-help	display help
-	-id-file	Create/Update an index for the ids in file
-	-l	display license
-	-license	display license
-	-max-procs	Change the maximum number of CPUs that can executing simultaniously
-	-t	the label of the type of document you are indexing, e.g. accession, agent/person
-	-update	updating is slow, use this flag if you want to update an exists
-	-v	display version
-	-version	display version
-```
-
-
-## EXAMPLES
-
-In the example the index will be created for a collection called "characters".
+Options will override any corresponding environment settings.
 
 ```
-    dsindexer -c characters email-mapping.json email-index
+    -batch                    Set the size index batch, default is 100
+    -c, -collection           sets the collection to be used
+    -e, -examples             display examples
+    -generate-markdown-docs   output documentation in Markdown
+    -h, -help                 display help
+    -i, -input                input file name
+    -id-file                  Create/Update an index for the ids in file
+    -l, -license              display license
+    -max-procs                Change the maximum number of CPUs that can executing simultaneously
+    -nl, -newline             if true add a trailing newline
+    -o, -output               output file name
+    -p, -pretty               pretty print output
+    -quiet                    suppress error messages
+    -t                        the label of the type of document you are indexing, e.g. accession, agent/person
+    -update                   updating is slow, use this app if you want to update an exists
+    -v, -version              display version
 ```
 
-This will build a Bleve index called "email-index" based on the index defined
-in "email-mapping.json".
 
-
-
+dsindexer v0.0.13-dev
