@@ -25,8 +25,10 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -56,6 +58,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/lang/pt"
 	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
+	SearchType "github.com/blevesearch/bleve/search"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
 )
@@ -411,6 +414,16 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 	return idxAlias, allFields, nil
 }
 
+func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {
+	result := []int{}
+	for i := 0; i < size; i++ {
+		v := random.Intn(MaxSize)
+		result = append(result, v)
+	}
+	sort.Ints(result)
+	return result
+}
+
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
 func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
@@ -509,6 +522,48 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 	results, err := idxAlias.Search(search)
 	if err != nil {
 		return nil, err
+	}
+	// DEBUG
+	/*
+		{
+			"status":{
+				"total":1,"failed":0,"successful":1
+			},
+			"request":{
+					"query":{"query":"600622"},
+					"size":12,
+					"from":0,
+					"highlight":null,
+					"fields":null,
+					"facets":null,
+					"explain":false,
+					"sort":["-_score"],
+					"includeLocations":false
+			},
+			"hits":[
+				{"index":"testdata/search-test.bleve",
+				"id":"5061d597-7973-4804-8ecb-88b28ebdcc4e",
+				"score":0.3626164669331295,
+				"sort":["_score"]}
+			],
+			"total_hits":1,
+			"max_score":0.3626164669331295,
+			"took":145693,
+			"facets":{}
+			}
+	*/
+
+	if sampleSize > 0 {
+		if len(results.Hits) > sampleSize {
+			hits := results.Hits
+			rHits := []*SearchType.DocumentMatch{}
+			intA := randomXsOfNInts(sampleSize, len(results.Hits), rand.New(rand.NewSource(time.Now().UnixNano())))
+			for _, pos := range intA {
+				hit := hits[pos]
+				rHits = append(rHits, hit)
+			}
+			results.Hits = rHits
+		}
 	}
 	return results, nil
 }
