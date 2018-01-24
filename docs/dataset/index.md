@@ -38,7 +38,7 @@ Options will override any corresponding environment settings.
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
-    -sample                   set the sample size
+    -sample                   set the sample size when listing keys
     -use-header-row           use the header row as attribute names in the JSON document
     -uuid                     generate a UUID for a new JSON document name
     -v, -version              display version

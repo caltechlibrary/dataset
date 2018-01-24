@@ -62,7 +62,7 @@ install:
 	env GOBIN=$(GOPATH)/bin go install cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
-	./mk-website.bash
+	bash mk-website.bash
 
 test: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 	go test
@@ -94,7 +94,7 @@ lint:
 	golint cmd/dsfind/dsfind.go
 
 clean: 
-	if [ "$(PKGASSETS)" != "" ]; then ./rebuild-assets.bash; fi
+	if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
@@ -148,7 +148,7 @@ distribute_docs:
 	cp -v how-to/*.md dist/how-to/
 	cp -v examples/*.md dist/examples/
 	cp -vR demos dist/
-	./package-versions.bash > dist/package-versions.txt
+	bash package-versions.bash > dist/package-versions.txt
 
 release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 
@@ -160,6 +160,6 @@ save:
 	git push origin $(BRANCH)
 
 publish:
-	./mk-website.bash NO
-	./publish.bash
+	bash mk-website.bash
+	bash publish.bash
 

@@ -1,7 +1,7 @@
 
 # USAGE
 
-	dsindexer [OPTIONS]
+	dsindexer [OPTIONS] INDEX_DEF_JSON INDEX_NAME
 
 ## SYNOPSIS
 
