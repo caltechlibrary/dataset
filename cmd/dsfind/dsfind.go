@@ -4,8 +4,7 @@
 //
 // @author R. S. Doiel, <rsdoiel@caltech.edu>
 //
-//
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,7 +20,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path"
@@ -33,16 +31,22 @@ import (
 )
 
 var (
-	// Standard Options
-	showHelp     bool
-	showLicense  bool
-	showVersion  bool
-	showExamples bool
-	inputFName   string
-	outputFName  string
-	quiet        bool
+	description = `uses a Bleve index to search a dataset returning results to the command line
+`
 
-	// App Specific Options
+	// Standard Options
+	showHelp             bool
+	showLicense          bool
+	showVersion          bool
+	showExamples         bool
+	inputFName           string
+	outputFName          string
+	newLine              bool
+	quiet                bool
+	prettyPrint          bool
+	generateMarkdownDocs bool
+
+	// Application Options
 	indexList      string
 	showHighlight  bool
 	setHighlighter string
@@ -55,92 +59,88 @@ var (
 	size           int
 	from           int
 	explain        string // Note: will be converted to boolean so expecting 1,0,T,F,true,false, etc.
+	sampleSize     int
 )
 
-func init() {
-	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "display help")
-	flag.BoolVar(&showHelp, "help", false, "display help")
-	flag.BoolVar(&showLicense, "l", false, "display license")
-	flag.BoolVar(&showLicense, "license", false, "display license")
-	flag.BoolVar(&showVersion, "v", false, "display version")
-	flag.BoolVar(&showVersion, "version", false, "display version")
-	flag.BoolVar(&showExamples, "example", false, "display example(s)")
-	flag.StringVar(&inputFName, "i", "", "set input file name, use '- ' for stadard in")
-	flag.StringVar(&inputFName, "input", "", "set input file name, use '- ' for stadard in")
-	flag.StringVar(&outputFName, "o", "", "set output file name")
-	flag.StringVar(&outputFName, "output", "", "set output file name")
-	flag.BoolVar(&quiet, "quiet", false, "suppress error messages")
-
-	// Application Options
-	flag.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
-	flag.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
-	flag.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
-	flag.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
-	flag.StringVar(&resultFields, "fields", "", "comma delimited list of fields to display in the results")
-	flag.BoolVar(&jsonFormat, "json", false, "format results as a JSON document")
-	flag.BoolVar(&csvFormat, "csv", false, "format results as a CSV document, used with fields option")
-	flag.BoolVar(&csvSkipHeader, "csv-skip-header", false, "don't output a header row, only values for csv output")
-	flag.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
-	flag.IntVar(&size, "size", 0, "number of results returned for request")
-	flag.IntVar(&from, "from", 0, "return the result starting with this result number")
-	flag.StringVar(&explain, "explain", "", "explain results in a verbose JSON document")
-}
-
 func main() {
-	appName := path.Base(os.Args[0])
-	flag.Parse()
-	args := flag.Args()
+	app := cli.NewCli(dataset.Version)
+	appName := app.AppName()
 
-	cfg := cli.New(appName, appName, dataset.Version)
-	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
-	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
-	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
-
-	// Add help and examples
+	// Add Help Docs
+	app.AddHelp("description", []byte(description))
 	for k, v := range Help {
-		if k != "nav" {
-			cfg.AddHelp(k, fmt.Sprintf("%s", v))
-		}
+		app.AddHelp(k, v)
 	}
 	for k, v := range Examples {
-		if k != "nav" {
-			cfg.AddExample(k, fmt.Sprintf("%s", v))
-		}
+		app.AddHelp(k, v)
 	}
 
-	if showHelp == true {
+	// Standard Options
+	app.BoolVar(&showHelp, "h,help", false, "display help")
+	app.BoolVar(&showLicense, "l,license", false, "display license")
+	app.BoolVar(&showVersion, "v,version", false, "display version")
+	app.BoolVar(&showExamples, "e,examples", false, "display examples")
+	app.StringVar(&inputFName, "i,input", "", "input file name")
+	app.StringVar(&outputFName, "o,output", "", "output file name")
+	app.BoolVar(&newLine, "nl,newline", false, "if true add a trailing newline")
+	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
+	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
+
+	// Application Options
+	app.StringVar(&indexList, "indexes", "", "colon or comma delimited list of index names")
+	app.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
+	app.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
+	app.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
+	app.StringVar(&resultFields, "fields", "", "comma delimited list of fields to display in the results")
+	app.BoolVar(&jsonFormat, "json", false, "format results as a JSON document")
+	app.BoolVar(&csvFormat, "csv", false, "format results as a CSV document, used with fields option")
+	app.BoolVar(&csvSkipHeader, "csv-skip-header", false, "don't output a header row, only values for csv output")
+	app.BoolVar(&idsOnly, "ids", false, "output only a list of ids from results")
+	app.IntVar(&size, "size", 0, "number of results returned for request")
+	app.IntVar(&from, "from", 0, "return the result starting with this result number")
+	app.StringVar(&explain, "explain", "", "explain results in a verbose JSON document")
+	app.IntVar(&sampleSize, "sample", 0, "return a sample of size N of results")
+
+	// We're ready to process args
+	app.Parse()
+	args := app.Args()
+
+	// Setup IO
+	var err error
+
+	app.Eout = os.Stderr
+	app.In, err = cli.Open(inputFName, os.Stdin)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(inputFName, app.In)
+
+	app.Out, err = cli.Create(outputFName, os.Stdout)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(outputFName, app.Out)
+
+	// Handle options
+	if generateMarkdownDocs {
+		app.GenerateMarkdownDocs(app.Out)
+		os.Exit(0)
+	}
+	if showHelp || showExamples {
 		if len(args) > 0 {
-			fmt.Println(cfg.Help(args...))
+			fmt.Fprintf(app.Out, app.Help(args...))
 		} else {
-			fmt.Println(cfg.Usage())
+			app.Usage(app.Out)
 		}
 		os.Exit(0)
 	}
-
-	if showExamples == true {
-		fmt.Println(cfg.ExampleText)
+	if showLicense {
+		fmt.Fprintln(app.Out, app.License())
+		os.Exit(0)
+	}
+	if showVersion {
+		fmt.Fprintln(app.Out, app.Version())
 		os.Exit(0)
 	}
 
-	if showLicense == true {
-		fmt.Println(cfg.License())
-		os.Exit(0)
-	}
-	if showVersion == true {
-		fmt.Println(cfg.Version())
-		os.Exit(0)
-	}
-
-	in, err := cli.Open(inputFName, os.Stdin)
-	cli.ExitOnError(os.Stderr, err, quiet)
-	defer cli.CloseFile(inputFName, in)
-
-	out, err := cli.Create(outputFName, os.Stdout)
-	cli.ExitOnError(os.Stderr, err, quiet)
-	defer cli.CloseFile(outputFName, out)
+	// Application Option's processing
 
 	// We expect at least one arg, the search string
 	if len(args) == 0 {
@@ -173,6 +173,9 @@ func main() {
 		jsonFormat = true
 	}
 
+	if sampleSize > 0 {
+		options["sample"] = fmt.Sprintf("%d", sampleSize)
+	}
 	if from != 0 {
 		options["from"] = fmt.Sprintf("%d", from)
 	}
@@ -203,7 +206,7 @@ func main() {
 	}
 	defer idxAlias.Close()
 
-	results, err := dataset.Find(out, idxAlias, args, options)
+	results, err := dataset.Find(app.Out, idxAlias, args, options)
 	if err != nil {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't search index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}
@@ -213,7 +216,7 @@ func main() {
 	//
 	switch {
 	case jsonFormat == true:
-		err := dataset.JSONFormatter(out, results)
+		err := dataset.JSONFormatter(app.Out, results, prettyPrint)
 		cli.ExitOnError(os.Stderr, err, quiet)
 	case csvFormat == true:
 		var fields []string
@@ -222,13 +225,17 @@ func main() {
 		} else {
 			fields = strings.Split(resultFields, ",")
 		}
-		err := dataset.CSVFormatter(out, results, fields, csvSkipHeader)
+		err := dataset.CSVFormatter(app.Out, results, fields, csvSkipHeader)
 		cli.ExitOnError(os.Stderr, err, quiet)
 	case idsOnly == true:
 		for _, hit := range results.Hits {
-			fmt.Fprintf(out, "%s\n", hit.ID)
+			fmt.Fprintf(app.Out, "%s", hit.ID)
 		}
 	default:
-		fmt.Fprintf(out, "%s\n", results)
+		fmt.Fprintf(app.Out, "%s", results)
+	}
+
+	if newLine {
+		fmt.Fprintln(app.Out, "")
 	}
 }

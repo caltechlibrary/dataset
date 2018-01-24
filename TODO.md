@@ -3,20 +3,29 @@
 
 ## Bugs
 
++ [ ] dataset -p read ... doesn't indent JSON output
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
+    + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
 + [ ] Attachment listings are slow
     + idea: assume all collection documents are an object, attach a `._attachments` to each document with attachment metadata, this would allow retrieval at same spead as document
     + look at tarfs package and see if they is helpful
-+ [ ] Migrate cli functions in cmds to package level and convert from exported to private functions used only to support cmds cli
-+ [ ] 'dataset keys FILTER' should emit keys as they are found to match rather then be processed as a group (unless we're sorting)
-
++ [ ] Migrate cli functions in _dataset_ to package level
++ [ ] Migrate the cli funciton in _dsindexer_ to package level
++ [ ] Migrate cli functions in _dsfind_ to package level
++ [ ] Migrate export functions into an appropriate package (e.g. are they part of _dataset_ command or something more general like storage?)
 
 ## Next (v0.1.x)
 
-+ [ ] Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
-+ [ ] Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
-+ [ ] Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
-+ [ ] Provide a mechanism to synchronize (only update matching rows, appending new rows) a Google Sheet with dataset collection.
++ [ ] In _dsfind_ Add `-sample N` option
++ [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
++ [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
++ [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
++ [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
++ [ ] In _dsws_ Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
++ [ ] In _dsindexer_ add a record to an existing index using an index def and record id
++ [ ] In _dsindexer_ update a record in an existing index using an index def and record id
++ [ ] In _dsindexer_ delete a record from an index using based on record id
++ [ ] Create an experimental Python native module for dataset package exported functions
 
 ## Roadmap (v0.2.x)
 
@@ -24,14 +33,17 @@
     + Browser based for UI, localhost restrict server for interacting with file system
     + Interactively build up of command strings, display results and saving off commands to runnable Bash scripts
     + Support importing datasets from s3:// and gs:// to local disc for interactive work
++ [ ] Merge _dsfind_ and _dsindexer_ into _dataset_ command
+    + Assumes Bleve's native commands do not supercede datasets' custom Bleve integration
 + [ ] sparql cli interface for searching collection
     + support JSON-LD for cross collection integration
 + [ ] Add faceted support to search (dsfind, dsws)
 + [ ] Add Fast CGI support in _dsws_ to allow custom development in Python, PHP or R
-+ [ ] Python3 native dataset module for scripting collection management in Python3
-+ [ ] R native dataset module for scripting collection management in R
-+ [ ] PHP native dataset module for script collection management in PHP 
++ [ ] Normalize Python3 native dataset module for scripting collection management in Python3
++ [ ] Add Experimental R native dataset module for scripting collection management in R
++ [ ] Add Experimental PHP native dataset module for script collection management in PHP 
 + [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
++ [ ] Implement cross compilation for Python wrapper of dataset package
 
 ## Someday, Maybe
 
@@ -63,6 +75,9 @@
 
 ## Completed
 
++ [x] In _dataset keys_ Add `-sample N` option
++ [x] -help isn't showing help topics, -help sample isn't showing the sample help page.
++ [x] 'dataset keys FILTER' should emit keys as they are found to match rather then be processed as a group (unless we're sorting)
 + [x] `dataset list` should return a list (JSON array) of keys, missing keys should be ignore, if no keys then an empty list should be returned
 + [x] Behavior of -timeout, -wait seem wrong in practice, on some cli when you want to explicitly read from stdin you pass a hyphen to -input or -i.
 + [x] dataset attachements error:  Renaming can produce a cross device link error for the tarballs, the code uses a rename to "move" the file, need to implement it as copy and delete if we have this error

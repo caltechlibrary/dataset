@@ -22,7 +22,7 @@ cleanUpHTML
 # Look through files and build new site
 mkpage "nav=nav.md" "content=markdown:$(cat LICENSE)" page.tmpl >license.html
 mkpage "nav=nav.md" "content=markdown:$(cat INSTALL.md)" page.tmpl >install.html
-git add -f license.html
+git add -f license.html install.html
 findfile -s ".md" . | while read P; do
 	DNAME=$(dirname "$P")
 	FNAME=$(basename "$P")

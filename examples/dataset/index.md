@@ -1,6 +1,4 @@
 
-# EXAMPLES
-
 The following topics are available in examples
 
 + [basics](basics.html) - getting started scripting _dataset_

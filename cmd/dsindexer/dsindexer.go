@@ -22,13 +22,10 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
-	"runtime"
 	"strings"
 
 	// CaltechLibrary Packages
@@ -38,11 +35,16 @@ import (
 
 var (
 	// Standard Options
-	showHelp     bool
-	showLicense  bool
-	showVersion  bool
-	showExamples bool
-	quiet        bool
+	showHelp             bool
+	showLicense          bool
+	showVersion          bool
+	showExamples         bool
+	inputFName           string
+	outputFName          string
+	newLine              bool
+	quiet                bool
+	prettyPrint          bool
+	generateMarkdownDocs bool
 
 	// App Specific Options
 	collectionName string
@@ -54,85 +56,94 @@ var (
 )
 
 func init() {
-	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "display help")
-	flag.BoolVar(&showHelp, "help", false, "display help")
-	flag.BoolVar(&showLicense, "l", false, "display license")
-	flag.BoolVar(&showLicense, "license", false, "display license")
-	flag.BoolVar(&showVersion, "v", false, "display version")
-	flag.BoolVar(&showVersion, "version", false, "display version")
-	flag.BoolVar(&showExamples, "example", false, "display example(s)")
-	flag.BoolVar(&quiet, "quiet", false, "suppress error messages")
 
 	// Application Options
-	flag.StringVar(&collectionName, "c", "", "sets the collection to be used")
-	flag.StringVar(&collectionName, "collection", "", "sets the collection to be used")
-	flag.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
-	flag.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
-	flag.BoolVar(&updateIndex, "update", false, "updating is slow, use this flag if you want to update an exists")
-	flag.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
-	flag.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaneously")
 }
 
 func main() {
-	appName := path.Base(os.Args[0])
-	flag.Parse()
-	args := flag.Args()
+	app := cli.NewCli(dataset.Version)
+	appName := app.AppName()
 
-	cfg := cli.New(appName, appName, dataset.Version)
-	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
-	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
-	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
+	// Add Non-options docs
+	app.AddParams("INDEX_DEF_JSON", "INDEX_NAME")
 
-	// Add help and examples
+	// Add Help Docs
 	for k, v := range Help {
 		if k != "nav" {
-			cfg.AddHelp(k, fmt.Sprintf("%s", v))
+			app.AddHelp(k, v)
 		}
 	}
 	for k, v := range Examples {
 		if k != "nav" {
-			cfg.AddExample(k, fmt.Sprintf("%s", v))
+			app.AddHelp(k, v)
 		}
 	}
 
-	if showHelp == true {
+	// Environment Options
+	app.EnvStringVar(&collectionName, "DATASET", "", "Set the dataset collection you're working with")
+
+	// Standard Options
+	app.BoolVar(&showHelp, "h,help", false, "display help")
+	app.BoolVar(&showLicense, "l,license", false, "display license")
+	app.BoolVar(&showVersion, "v,version", false, "display version")
+	app.BoolVar(&showExamples, "e,examples", false, "display examples")
+	app.StringVar(&inputFName, "i,input", "", "input file name")
+	app.StringVar(&outputFName, "o,output", "", "output file name")
+	app.BoolVar(&newLine, "nl,newline", false, "if true add a trailing newline")
+	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
+	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
+
+	// Application Options
+	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
+	app.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
+	app.IntVar(&batchSize, "batch", 0, "Set the size index batch, default is 100")
+	app.BoolVar(&updateIndex, "update", false, "updating is slow, use this app if you want to update an exists")
+	app.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
+	app.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaneously")
+
+	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
+	//FIXME: If the application is verb based add your verbs here
+
+	// We're ready to process args
+	app.Parse()
+	args := app.Args()
+
+	// Setup IO
+	var err error
+
+	app.Eout = os.Stderr
+	app.In, err = cli.Open(inputFName, os.Stdin)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(inputFName, app.In)
+
+	app.Out, err = cli.Create(outputFName, os.Stdout)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(outputFName, app.Out)
+
+	// Handle options
+	if generateMarkdownDocs {
+		app.GenerateMarkdownDocs(app.Out)
+		os.Exit(0)
+	}
+	if showHelp || showExamples {
 		if len(args) > 0 {
-			fmt.Println(cfg.Help(args...))
+			fmt.Fprintf(app.Out, app.Help(args...))
 		} else {
-			fmt.Println(cfg.Usage())
+			app.Usage(app.Out)
 		}
 		os.Exit(0)
 	}
-
-	if showExamples == true {
-		/*
-			if len(args) > 0 {
-				fmt.Println(cfg.Example(args...))
-			} else {
-				fmt.Printf("\n%s", cfg.Example())
-			}
-		*/
-		fmt.Println(cfg.ExampleText)
+	if showLicense {
+		fmt.Fprintln(app.Out, app.License())
+		os.Exit(0)
+	}
+	if showVersion {
+		fmt.Fprintln(app.Out, app.Version())
 		os.Exit(0)
 	}
 
-	if showLicense == true {
-		fmt.Println(cfg.License())
-		os.Exit(0)
-	}
-
-	if showVersion == true {
-		fmt.Println(cfg.Version())
-		os.Exit(0)
-	}
-
-	if goMaxProcs > 0 {
-		availableProcs := runtime.GOMAXPROCS(goMaxProcs)
-		log.Printf("Using %d of %d CPU", goMaxProcs, availableProcs)
-	}
+	// Application Option's processing
 
 	// Merge environment
 	datasetEnv := os.Getenv("DATASET")
@@ -153,17 +164,17 @@ func main() {
 	} else if len(args) == 2 {
 		definitionFName, indexName = args[0], args[1]
 	} else {
-		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help", appName), quiet)
+		cli.ExitOnError(app.Eout, fmt.Errorf("See %s --help", appName), quiet)
 	}
 
 	collection, err := dataset.Open(collectionName)
-	cli.ExitOnError(os.Stderr, err, quiet)
+	cli.ExitOnError(app.Eout, err, quiet)
 	defer collection.Close()
 
 	// Abort index build if it exists and updateIndex is false
 	if updateIndex == false {
 		if _, err := os.Stat(indexName); os.IsNotExist(err) == false {
-			cli.ExitOnError(os.Stderr, fmt.Errorf("Index exists, updating requires -update option (can be very slow)"), quiet)
+			cli.ExitOnError(app.Eout, fmt.Errorf("Index exists, updating requires -update option (can be very slow)"), quiet)
 		}
 	}
 
@@ -171,7 +182,7 @@ func main() {
 	var keys []string
 	if idListFName != "" {
 		src, err := ioutil.ReadFile(idListFName)
-		cli.ExitOnError(os.Stderr, err, quiet)
+		cli.ExitOnError(app.Eout, err, quiet)
 
 		klist := bytes.Split(src, []byte("\n"))
 		for _, k := range klist {
@@ -179,8 +190,22 @@ func main() {
 				keys = append(keys, fmt.Sprintf("%s", k))
 			}
 		}
+	} else {
+		keys = collection.Keys()
+	}
+
+	if batchSize == 0 {
+		if len(keys) > 10000 {
+			batchSize = len(keys) / 100
+		} else {
+			batchSize = 100
+		}
 	}
 
 	err = collection.Indexer(indexName, definitionFName, batchSize, keys)
-	cli.ExitOnError(os.Stderr, err, quiet)
+	cli.ExitOnError(app.Eout, err, quiet)
+
+	if newLine {
+		fmt.Fprintln(app.Out, "")
+	}
 }

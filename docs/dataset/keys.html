@@ -119,6 +119,14 @@ practice you can omit a leading &ldquo;+&rdquo;.</p>
 <pre><code>    dataset keys '(eq &quot;Smith&quot; .family_name)' '-.given_name'
 </code></pre>
 
+<h2>Getting a &ldquo;sample&rdquo; of keys</h2>
+
+<p>The <em>dataset</em> command respects an option named <code>-sample N</code> where N is the size
+(number) of the keys to include in the sample. The sample is taken after any
+filters are applied but may be less than requested size if the the filtered
+results are few than the sample size.  The basic process is to get a set of
+keys, randomly sort the keys, then return the top N number of those keys.</p>
+
 <p>Related topics: extract and export</p>
 
 </section>

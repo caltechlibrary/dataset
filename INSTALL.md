@@ -124,7 +124,8 @@ downloading the zip file.
 ## Compiling from source
 
 _dataset_ is "go gettable".  Use the "go get" command to download the dependant packages
-as well as _dataset_'s source code.
+as well as _dataset_'s source code. 
+
 
 ```shell
     go get -u github.com/caltechlibrary/dataset/...
@@ -141,4 +142,5 @@ Or clone the repstory and then compile
     make install
 ```
 
+Compilation assumes [go](https://github.com/golang/go) v1.9.3 and [bleve](https://blevesearh.com) v0.6.0.
 

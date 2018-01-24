@@ -1,6 +1,16 @@
 
 # Developer notes
 
+## Requirements
+
+Compiler requirements
+
++ go1.9.3
+
+Package assumptions
+
++ blevesearch v0.6.0
+
 ## Using the _dataset_ package
 
 + create/initialize collection

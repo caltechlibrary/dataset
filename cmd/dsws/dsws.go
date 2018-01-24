@@ -21,7 +21,6 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -44,13 +43,19 @@ import (
 // Flag options
 var (
 	// Standard options
-	showHelp     bool
-	showVersion  bool
-	showLicense  bool
-	showExamples bool
+	showHelp             bool
+	showLicense          bool
+	showVersion          bool
+	showExamples         bool
+	inputFName           string
+	outputFName          string
+	newLine              bool
+	quiet                bool
+	prettyPrint          bool
+	generateMarkdownDocs bool
 
 	// local app options
-	uri           string
+	URL           string
 	sslKey        string
 	sslCert       string
 	searchTName   string
@@ -81,92 +86,83 @@ func redirectToApi(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 }
 
-func init() {
-	defaultURL := "http://localhost:8011"
-
-	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "display help")
-	flag.BoolVar(&showHelp, "help", false, "display help")
-	flag.BoolVar(&showLicense, "l", false, "display license")
-	flag.BoolVar(&showLicense, "license", false, "display license")
-	flag.BoolVar(&showVersion, "v", false, "display version")
-	flag.BoolVar(&showVersion, "version", false, "display version")
-	flag.BoolVar(&showExamples, "example", false, "display example(s)")
-
-	// App Options
-	flag.StringVar(&uri, "u", defaultURL, "The protocol and hostname listen for as a URL")
-	flag.StringVar(&uri, "url", defaultURL, "The protocol and hostname listen for as a URL")
-	flag.StringVar(&sslKey, "k", "", "Set the path for the SSL Key")
-	flag.StringVar(&sslKey, "key", "", "Set the path for the SSL Key")
-	flag.StringVar(&sslCert, "c", "", "Set the path for the SSL Cert")
-	flag.StringVar(&sslCert, "cert", "", "Set the path for the SSL Cert")
-	flag.StringVar(&searchTName, "template", "", "the path to the search result template(s) (colon delimited)")
-	flag.StringVar(&searchTName, "t", "", "the path to the search result template(s) (colon delimited)")
-	flag.BoolVar(&showTemplates, "show-templates", false, "display the source code of the template(s)")
-	flag.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
-	flag.StringVar(&indexList, "indexes", "", "comma or colon delimited list of index names")
-	flag.BoolVar(&letsEncrypt, "acme", false, "Enable Let's Encypt ACME TLS support")
-	flag.StringVar(&corsOrigin, "cors-origin", "*", "Set the restriction for CORS origin headers")
-}
-
 func main() {
-	appName := path.Base(os.Args[0])
-	flag.Parse()
-	args := flag.Args()
+	app := cli.NewCli(dataset.Version)
+	//appName := app.AppName()
 
-	// Configuration and command line interation
-	cfg := cli.New(appName, "DATASET", dataset.Version)
-	cfg.LicenseText = fmt.Sprintf(dataset.License, appName, dataset.Version)
-	cfg.UsageText = fmt.Sprintf("%s", Help["usage"])
-	cfg.DescriptionText = fmt.Sprintf("%s", Help["description"])
-	cfg.OptionText = "## OPTIONS\n\n"
-	cfg.ExampleText = fmt.Sprintf("%s", Examples["index"])
-
-	// Add help and examples
+	// Add Help Docs
 	for k, v := range Help {
-		if k != "nav" {
-			cfg.AddHelp(k, fmt.Sprintf("%s", v))
-		}
+		app.AddHelp(k, v)
 	}
 	for k, v := range Examples {
-		if k != "nav" {
-			cfg.AddExample(k, fmt.Sprintf("%s", v))
-		}
+		app.AddHelp(k, v)
 	}
 
-	// Process flags and update the environment as needed.
-	if showHelp == true {
+	// Standard Options
+	app.BoolVar(&showHelp, "h,help", false, "display help")
+	app.BoolVar(&showLicense, "l,license", false, "display license")
+	app.BoolVar(&showVersion, "v,version", false, "display version")
+	app.BoolVar(&showExamples, "e,examples", false, "display examples")
+	app.StringVar(&inputFName, "i,input", "", "input file name")
+	app.StringVar(&outputFName, "o,output", "", "output file name")
+	app.BoolVar(&newLine, "nl,newline", false, "if true add a trailing newline")
+	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
+	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
+
+	// Application Options
+	defaultURL := "http://localhost:8011"
+	app.StringVar(&URL, "u,url", defaultURL, "The protocol and hostname listen for as a URL")
+	app.StringVar(&sslKey, "k,key", "", "Set the path for the SSL Key")
+	app.StringVar(&sslCert, "c,cert", "", "Set the path for the SSL Cert")
+	app.StringVar(&searchTName, "t,template", "", "the path to the search result template(s) (colon delimited)")
+	app.BoolVar(&showTemplates, "show-templates", false, "display the source code of the template(s)")
+	app.BoolVar(&devMode, "dev-mode", false, "reload templates on each page request")
+	app.StringVar(&indexList, "indexes", "", "comma or colon delimited list of index names")
+	app.BoolVar(&letsEncrypt, "acme", false, "Enable Let's Encypt ACME TLS support")
+	app.StringVar(&corsOrigin, "cors-origin", "*", "Set the restriction for CORS origin headers")
+
+	// We're ready to process args
+	app.Parse()
+	args := app.Args()
+
+	// Setup IO
+	var err error
+
+	app.Eout = os.Stderr
+	app.In, err = cli.Open(inputFName, os.Stdin)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(inputFName, app.In)
+
+	app.Out, err = cli.Create(outputFName, os.Stdout)
+	cli.ExitOnError(app.Eout, err, quiet)
+	defer cli.CloseFile(outputFName, app.Out)
+
+	// Handle options
+	if generateMarkdownDocs {
+		app.GenerateMarkdownDocs(app.Out)
+		os.Exit(0)
+	}
+	if showHelp || showExamples {
 		if len(args) > 0 {
-			fmt.Println(cfg.Help(args...))
+			fmt.Fprintf(app.Out, app.Help(args...))
 		} else {
-			fmt.Println(cfg.Usage())
+			app.Usage(app.Out)
 		}
 		os.Exit(0)
 	}
-
-	if showExamples == true {
-		/*
-			if len(args) > 0 {
-				fmt.Println(cfg.Example(args...))
-			} else {
-				fmt.Printf("\n%s", cfg.Example())
-			}
-		*/
-		fmt.Println(cfg.ExampleText)
+	if showLicense {
+		fmt.Fprintln(app.Out, app.License())
+		os.Exit(0)
+	}
+	if showVersion {
+		fmt.Fprintln(app.Out, app.Version())
 		os.Exit(0)
 	}
 
-	if showLicense == true {
-		fmt.Println(cfg.License())
-		os.Exit(0)
-	}
-	if showVersion == true {
-		fmt.Println(cfg.Version())
-		os.Exit(0)
-	}
+	// Applicatin option's processing
 
 	// Load and validate the templates for using in the searchHandler
-	searchTName = cfg.CheckOption("template", cfg.MergeEnv("template", searchTName), false)
 	templateNames := []string{}
 	if searchTName != "" {
 		templateNames = strings.Split(searchTName, ":")
@@ -238,8 +234,7 @@ func main() {
 		}
 	}
 	if len(indexNames) < 1 {
-		fmt.Fprintln(os.Stderr, cfg.UsageText)
-		fmt.Fprintf(os.Stderr, "error: one or more Bleve index is required\n")
+		app.Usage(app.Eout)
 		os.Exit(1)
 	}
 
@@ -252,10 +247,9 @@ func main() {
 		log.Printf("Indexes %s", strings.Join(indexNames, ", "))
 	}
 
-	uri = cfg.CheckOption("url", cfg.MergeEnv("url", uri), true)
-	u, err := url.Parse(uri)
+	u, err := url.Parse(URL)
 	if err != nil {
-		log.Fatalf("Can't parse %q, %s", uri, err)
+		log.Fatalf("Can't parse %q, %s", URL, err)
 	}
 
 	// if the URL starts with http:// then turn off letsEncrypt...
@@ -264,8 +258,10 @@ func main() {
 	}
 
 	if u.Scheme == "https" && letsEncrypt == false {
-		sslKey = cfg.CheckOption("ssl_key", cfg.MergeEnv("ssl_key", sslKey), true)
-		sslCert = cfg.CheckOption("ssl_cert", cfg.MergeEnv("ssl_cert", sslCert), true)
+		if sslKey == "" || sslCert == "" {
+			fmt.Fprintf(app.Eout, "Missing ssl keys/cert\n")
+			os.Exit(1)
+		}
 		log.Printf("SSL Key %s", sslKey)
 		log.Printf("SSL Cert %s", sslCert)
 	}
@@ -273,7 +269,8 @@ func main() {
 	// Open the indexes for reading
 	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
-		log.Fatalf("Can't open indexes, %s", err)
+		fmt.Fprintf(app.Eout, "Can't open indexes, %s", err)
+		os.Exit(1)
 	}
 	defer idxAlias.Close()
 
@@ -340,7 +337,7 @@ func main() {
 			return
 		case "json":
 			w.Header().Set("Content-Type", "application/json")
-			if err := dataset.JSONFormatter(w, results); err != nil {
+			if err := dataset.JSONFormatter(w, results, prettyPrint); err != nil {
 				http.Error(w, fmt.Sprintf("%s", err), 500)
 			}
 			return
@@ -396,10 +393,12 @@ func main() {
 		// this is where cached certificates are stored
 		cwd, err := os.Getwd()
 		if err != nil {
-			log.Fatal("Can't determine current working directory where I need to create etc/acme")
+			fmt.Fprintf(app.Eout, "Can't determine current working directory where I need to create etc/acme\n")
+			os.Exit(1)
 		}
 		if docRoot == "." || docRoot == cwd {
-			log.Fatal("Can't create etc/acme in your shared document root")
+			fmt.Fprintf(app.Eout, "Can't create etc/acme in your shared document root\n")
+			os.Exit(1)
 		}
 		cacheDir := "etc/acme"
 		os.MkdirAll(cacheDir, 0700)
@@ -453,5 +452,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
+	}
+
+	if newLine {
+		fmt.Fprintln(app.Out, "")
 	}
 }

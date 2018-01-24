@@ -40,14 +40,14 @@ function test_dataset() {
         EXT=""
     fi
     echo "Testing for bin/dataset${EXT}"
-    if [[ ! -f "bin/dataset${EXT}" || ! -f "cmds/dataset/assets.go" ]]; then
+    if [[ ! -f "bin/dataset${EXT}" || ! -f "cmd/dataset/assets.go" ]]; then
         # We need to build
-	    pkgassets -o cmds/dataset/assets.go \
+	    pkgassets -o cmd/dataset/assets.go \
             -p main -ext=".md" -strip-prefix="/" \
             -strip-suffix=".md" \
             Examples examples/dataset \
             Help docs/dataset
-        go build -o "bin/dataset${EXT}" cmds/dataset/dataset.go cmds/dataset/assets.go
+        go build -o "bin/dataset${EXT}" cmd/dataset/dataset.go cmd/dataset/assets.go
     fi
 
     # Test init

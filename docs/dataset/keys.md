@@ -106,6 +106,14 @@ In this example we list last anes of "Smith" sorted by descending given name.
     dataset keys '(eq "Smith" .family_name)' '-.given_name'
 ```
 
+## Getting a "sample" of keys
+
+The _dataset_ command respects an option named `-sample N` where N is the size
+(number) of the keys to include in the sample. The sample is taken after any
+filters are applied but may be less than requested size if the the filtered
+results are few than the sample size.  The basic process is to get a set of
+keys, randomly sort the keys, then return the top N number of those keys.
+
 
 Related topics: extract and export
 

@@ -25,8 +25,10 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -56,6 +58,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/lang/pt"
 	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
+	SearchType "github.com/blevesearch/bleve/search"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/ansi"
 	"github.com/blevesearch/bleve/search/highlight/highlighter/html"
 )
@@ -332,8 +335,9 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	if len(keys) == 0 {
 		keys = c.Keys()
 	}
+	tot := len(keys)
 	cnt := 0
-	log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
 		if src, err := c.ReadAsJSON(key); err == nil {
 			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
@@ -344,7 +348,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 					if err := idx.Batch(batchIdx); err != nil {
 						log.Fatal(err)
 					}
-					log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+					log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 					// Force release of memory
 					batchIdx = nil
 					batchIdx = idx.NewBatch()
@@ -359,11 +363,11 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 		if err := idx.Batch(batchIdx); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+		log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 		// force release of memory fo rlast batchIdx
 		batchIdx = nil
 	}
-	log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
+	log.Printf("%d/%d records indexed, running time %s", cnt, tot, time.Now().Sub(startT))
 	return nil
 }
 
@@ -411,6 +415,16 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 	return idxAlias, allFields, nil
 }
 
+func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {
+	result := []int{}
+	for i := 0; i < size; i++ {
+		v := random.Intn(MaxSize)
+		result = append(result, v)
+	}
+	sort.Ints(result)
+	return result
+}
+
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
 func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
@@ -421,8 +435,16 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 		explain          bool
 		includeLocations bool
 		err              error
+		sampleSize       int
 	)
 	// Normalize option values
+	if sVal, ok := options["sample"]; ok == true {
+		sampleSize, err = strconv.Atoi(sVal)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if sVal, ok := options["from"]; ok == true {
 		from, err = strconv.Atoi(sVal)
 		if err != nil {
@@ -501,6 +523,48 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 	results, err := idxAlias.Search(search)
 	if err != nil {
 		return nil, err
+	}
+	// DEBUG
+	/*
+		{
+			"status":{
+				"total":1,"failed":0,"successful":1
+			},
+			"request":{
+					"query":{"query":"600622"},
+					"size":12,
+					"from":0,
+					"highlight":null,
+					"fields":null,
+					"facets":null,
+					"explain":false,
+					"sort":["-_score"],
+					"includeLocations":false
+			},
+			"hits":[
+				{"index":"testdata/search-test.bleve",
+				"id":"5061d597-7973-4804-8ecb-88b28ebdcc4e",
+				"score":0.3626164669331295,
+				"sort":["_score"]}
+			],
+			"total_hits":1,
+			"max_score":0.3626164669331295,
+			"took":145693,
+			"facets":{}
+			}
+	*/
+
+	if sampleSize > 0 {
+		if len(results.Hits) > sampleSize {
+			hits := results.Hits
+			rHits := []*SearchType.DocumentMatch{}
+			intA := randomXsOfNInts(sampleSize, len(results.Hits), rand.New(rand.NewSource(time.Now().UnixNano())))
+			for _, pos := range intA {
+				hit := hits[pos]
+				rHits = append(rHits, hit)
+			}
+			results.Hits = rHits
+		}
 	}
 	return results, nil
 }
