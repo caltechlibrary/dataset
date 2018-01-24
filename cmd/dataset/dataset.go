@@ -233,6 +233,18 @@ func readJSONDocs(args ...string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		if prettyPrint {
+			data := map[string]interface{}{}
+			err := json.Unmarshal(src, &data)
+			if err != nil {
+				return string(src), err
+			}
+			src2, err := json.MarshalIndent(data, "", "    ")
+			if err != nil {
+				return string(src), err
+			}
+			return string(src2), nil
+		}
 		return string(src), nil
 	}
 

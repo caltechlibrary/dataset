@@ -64,6 +64,9 @@ func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
 
+	// Add Non-options docs
+	app.AddParams("INDEX_DEF_JSON", "INDEX_NAME")
+
 	// Add Help Docs
 	for k, v := range Help {
 		if k != "nav" {
@@ -94,7 +97,7 @@ func main() {
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
 	app.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
-	app.IntVar(&batchSize, "batch", 100, "Set the size index batch, default is 100")
+	app.IntVar(&batchSize, "batch", 0, "Set the size index batch, default is 100")
 	app.BoolVar(&updateIndex, "update", false, "updating is slow, use this app if you want to update an exists")
 	app.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
 	app.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaneously")
@@ -186,6 +189,16 @@ func main() {
 			if len(k) > 0 {
 				keys = append(keys, fmt.Sprintf("%s", k))
 			}
+		}
+	} else {
+		keys = collection.Keys()
+	}
+
+	if batchSize == 0 {
+		if len(keys) > 10000 {
+			batchSize = len(keys) / 100
+		} else {
+			batchSize = 100
 		}
 	}
 

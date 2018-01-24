@@ -335,8 +335,9 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	if len(keys) == 0 {
 		keys = c.Keys()
 	}
+	tot := len(keys)
 	cnt := 0
-	log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
 		if src, err := c.ReadAsJSON(key); err == nil {
 			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
@@ -347,7 +348,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 					if err := idx.Batch(batchIdx); err != nil {
 						log.Fatal(err)
 					}
-					log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+					log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 					// Force release of memory
 					batchIdx = nil
 					batchIdx = idx.NewBatch()
@@ -362,11 +363,11 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 		if err := idx.Batch(batchIdx); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("%d records indexed, batch time %s, running time %s", cnt, time.Now().Sub(batchT), time.Now().Sub(startT))
+		log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 		// force release of memory fo rlast batchIdx
 		batchIdx = nil
 	}
-	log.Printf("%d records indexed, running time %s", cnt, time.Now().Sub(startT))
+	log.Printf("%d/%d records indexed, running time %s", cnt, tot, time.Now().Sub(startT))
 	return nil
 }
 

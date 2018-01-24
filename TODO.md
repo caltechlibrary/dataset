@@ -3,6 +3,7 @@
 
 ## Bugs
 
++ [ ] dataset -p read ... doesn't indent JSON output
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
 + [ ] Attachment listings are slow
