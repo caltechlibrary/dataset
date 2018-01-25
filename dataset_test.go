@@ -61,9 +61,9 @@ func TestCollection(t *testing.T) {
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	collection, err := Create(colName, buckets)
+	collection, err := create(colName, buckets)
 	if err != nil {
-		t.Errorf("error Create() a collection %q", err)
+		t.Errorf("error create() a collection %q", err)
 		t.FailNow()
 	}
 	// Make sure directories were create for col1
@@ -238,7 +238,7 @@ func TestComplexKeys(t *testing.T) {
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	collection, err := Create(colName, buckets)
+	collection, err := create(colName, buckets)
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()

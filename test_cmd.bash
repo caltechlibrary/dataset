@@ -66,10 +66,10 @@ function test_dataset() {
     assert_equal "create 2:" "$EXPECTED" "$RESULT" 
 
     # Test read
-    EXPECTED='{"one":1}'
+    EXPECTED='{"_Key":"1","one":1}'
     RESULT=$(bin/dataset read 1)
     assert_equal "read 1:" "$EXPECTED" "$RESULT"
-    EXPECTED='{"two":2}'
+    EXPECTED='{"_Key":"2","two":2}'
     RESULT=$(echo -n '2' | bin/dataset -i - read)
     assert_equal "read 1:" "$EXPECTED" "$RESULT"
 

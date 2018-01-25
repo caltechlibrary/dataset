@@ -32,7 +32,7 @@ func TestAttachments(t *testing.T) {
 
 	os.RemoveAll(colName)
 
-	collection, err := Create(colName, buckets)
+	collection, err := create(colName, buckets)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -51,7 +51,7 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	if err := collection.Attach("freda", data); err != nil {
+	if err := collection.attach("freda", data); err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
@@ -68,7 +68,7 @@ func TestAttachments(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	if attachments, err := collection.GetAttached("freda"); err != nil {
+	if attachments, err := collection.getAttached("freda"); err != nil {
 		t.Errorf("Expected attachments, %s", err)
 		t.FailNow()
 	} else {
@@ -84,7 +84,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if attachments, err := collection.GetAttached("freda", "impressed.txt"); err != nil {
+	if attachments, err := collection.getAttached("freda", "impressed.txt"); err != nil {
 		t.Errorf("Expected attachments, %s", err)
 		t.FailNow()
 	} else {
@@ -100,7 +100,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if err := collection.Attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
+	if err := collection.attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
 		t.Errorf("Appending attachment, %s", err)
 		t.FailNow()
 	}
@@ -119,7 +119,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if attachments, err := collection.GetAttached("freda", "what/she/smokes.txt"); err != nil {
+	if attachments, err := collection.getAttached("freda", "what/she/smokes.txt"); err != nil {
 		t.Errorf("Expected attachments, %s", err)
 		t.FailNow()
 	} else {
