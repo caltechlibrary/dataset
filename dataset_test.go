@@ -24,8 +24,8 @@ import (
 	"testing"
 )
 
-func TestGenerateBucketNames(t *testing.T) {
-	buckets := GenerateBucketNames(DefaultAlphabet, 3)
+func TestBucketNames(t *testing.T) {
+	buckets := generateBucketNames(DefaultAlphabet, 3)
 	for _, val := range buckets {
 		if len(val) != 3 {
 			t.Errorf("Should have a name of length 3. %q", val)
@@ -35,7 +35,7 @@ func TestGenerateBucketNames(t *testing.T) {
 
 func TestPickBucketName(t *testing.T) {
 	alphabet := "ab"
-	buckets := GenerateBucketNames(alphabet, 2)
+	buckets := generateBucketNames(alphabet, 2)
 	expected := []string{"aa", "ab", "ba", "bb"}
 
 	for i, expect := range expected {
@@ -51,7 +51,7 @@ func TestPickBucketName(t *testing.T) {
 func TestCollection(t *testing.T) {
 	colName := "testdata/col1"
 	alphabet := "ab"
-	buckets := GenerateBucketNames(alphabet, 2)
+	buckets := generateBucketNames(alphabet, 2)
 	if len(buckets) != 4 {
 		t.Errorf("Should have four buckets %+v", buckets)
 		t.FailNow()
@@ -90,7 +90,7 @@ func TestCollection(t *testing.T) {
 	if len(collection.KeyMap) > 0 {
 		t.Errorf("expected 0 keys, got %d", len(collection.KeyMap))
 	}
-	testData := []map[string]string{}
+	testData := []map[string]interface{}{}
 	src := `[
 		{
 			"id": "Kahlo-F",
@@ -117,7 +117,8 @@ func TestCollection(t *testing.T) {
 	}
 
 	for _, rec := range testData {
-		if id, ok := rec["id"]; ok == true {
+		if k, ok := rec["id"]; ok == true {
+			id := k.(string)
 			err = collection.Create(id, rec)
 			if err != nil {
 				t.Errorf("collection.Create(), %s", err)
@@ -146,8 +147,9 @@ func TestCollection(t *testing.T) {
 	}
 
 	// Create an empty record, then read it again to compare
-	var rec2 map[string]string
-	err = collection.Read("Kahlo-F", &rec2)
+	keyName := "Kahlo-F"
+	rec2 := map[string]interface{}{}
+	err = collection.Read(keyName, rec2)
 	if err != nil {
 		t.Errorf("Read(), %s", err)
 		t.FailNow()
@@ -165,14 +167,14 @@ func TestCollection(t *testing.T) {
 		}
 	}
 	// Should trigger update if a duplicate record
-	err = collection.Create("Kahlo-F", rec2)
-	if err != nil {
-		t.Errorf("Create on an existing record should just update it %+v", rec2)
+	err = collection.Create(keyName, rec2)
+	if err == nil {
+		t.Errorf("Create not allow creationg on an existing record, %s --> %+v", keyName, rec2)
 		t.FailNow()
 	}
 
-	rec3 := map[string]string{}
-	if err := collection.Read("Kahlo-F", &rec3); err != nil {
+	rec3 := map[string]interface{}{}
+	if err := collection.Read(keyName, rec3); err != nil {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
@@ -187,14 +189,14 @@ func TestCollection(t *testing.T) {
 	}
 
 	rec2["email"] = "freda@collectivo.example.org"
-	err = collection.Update("Kahlo-F", rec2)
+	err = collection.Update(keyName, rec2)
 	if err != nil {
 		t.Errorf("Could not update %s, %s", "freda", err)
 		t.FailNow()
 	}
 
-	rec4 := map[string]string{}
-	if err := collection.Read("Kahlo-F", &rec4); err != nil {
+	rec4 := map[string]interface{}{}
+	if err := collection.Read(keyName, rec4); err != nil {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
@@ -208,12 +210,12 @@ func TestCollection(t *testing.T) {
 		}
 	}
 
-	err = collection.Delete("Kahlo-F")
+	err = collection.Delete(keyName)
 	if err != nil {
 		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
 		t.FailNow()
 	}
-	err = collection.Read("Kahlo-F", &rec2)
+	err = collection.Read(keyName, rec2)
 	if err == nil {
 		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
 	}
@@ -226,11 +228,14 @@ func TestCollection(t *testing.T) {
 
 func TestComplexKeys(t *testing.T) {
 	colName := "testdata/col2"
-	buckets := GenerateBucketNames("ab", 2)
+	buckets := generateBucketNames("ab", 2)
 	if len(buckets) != 4 {
 		t.Errorf("Should have four buckets %+v", buckets)
 		t.FailNow()
 	}
+
+	// remove any stale test collection collection first...
+	os.RemoveAll(colName)
 
 	// Create a new collection
 	collection, err := Create(colName, buckets)
@@ -238,7 +243,7 @@ func TestComplexKeys(t *testing.T) {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
 	}
-	testRecords := map[string]interface{}{
+	testRecords := map[string]map[string]interface{}{
 		"agent:person:1": map[string]interface{}{
 			"name": "George",
 			"id":   25,
@@ -272,7 +277,7 @@ func TestComplexKeys(t *testing.T) {
 	for k, v := range testRecords {
 		err := collection.Create(k, v)
 		if err != nil {
-			t.Errorf("Can't create %s <-- %s", k, v)
+			t.Errorf("Can't create %s <-- %s : %s", k, v, err)
 		}
 	}
 }

@@ -21,6 +21,7 @@ package dataset
 import (
 	"archive/tar"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -34,9 +35,11 @@ import (
 // Attachment is a structure for holding non-JSON content you wish to store alongside a JSON document in a collection
 type Attachment struct {
 	// Name is the filename and path to be used inside the generated tar file
-	Name string
+	Name string `json:"name"`
 	// Body is a byte array for storing the content associated with Name
-	Body []byte
+	Body []byte `json:"-"`
+	// Size
+	Size int64 `json:"size"`
 }
 
 // tarballName trims any .json from the record name.
@@ -47,10 +50,10 @@ func tarballName(docPath string) string {
 	return docPath + ".tar"
 }
 
-// Attach a non-JSON document to a JSON document in the collection.
+// attach non-JSON documents to a JSON document in the collection.
 // Attachments are stored in a tar file, if tar file exits then attachment(s)
 // are appended to tar file.
-func (c *Collection) Attach(name string, attachments ...*Attachment) error {
+func (c *Collection) attach(name string, attachments ...*Attachment) error {
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then generate a new tarball
 	// from attachments.
@@ -60,6 +63,7 @@ func (c *Collection) Attach(name string, attachments ...*Attachment) error {
 	}
 
 	// this is the name we will move two, we build the tarball as a tmp file.
+	info := []map[string]interface{}{}
 	docPath = tarballName(docPath)
 	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
 		tw := tar.NewWriter(fp)
@@ -76,13 +80,27 @@ func (c *Collection) Attach(name string, attachments ...*Attachment) error {
 			if _, err := tw.Write(attachment.Body); err != nil {
 				return err
 			}
+			m := map[string]interface{}{
+				"name": attachment.Name,
+				"size": int64(len(attachment.Body)),
+			}
+			info = append(info, m)
 		}
 		return tw.Close()
 	})
+	// Now update the _Attachment attribute in the JSON document.
+	keyName, _ := keyAndFName(name)
+	rec := make(map[string]interface{})
+	err = c.Read(keyName, rec)
+	if err != nil {
+		return err
+	}
+	rec["_Attachments"] = info
+	err = c.Update(name, rec)
 	return err
 }
 
-// AttachFiles a non-JSON documents to a JSON document in the collection.
+// AttachFiles attaches non-JSON documents to a JSON document in the collection.
 // Attachments are stored in a tar file, if tar file exits then attachment(s)
 // are appended to tar file.
 func (c *Collection) AttachFiles(name string, fileNames ...string) error {
@@ -94,6 +112,7 @@ func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 		return err
 	}
 
+	info := []*Attachment{}
 	docPath = tarballName(docPath)
 	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
 		tw := tar.NewWriter(fp)
@@ -106,23 +125,64 @@ func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 			if err != nil {
 				return err
 			}
-			hdr.Name = localName
-			hdr.Size = int64(len(data))
+			hdr := &tar.Header{
+				Name: localName,
+				Mode: 0664,
+				Size: int64(len(data)),
+			}
 			if err := tw.WriteHeader(hdr); err != nil {
 				return err
 			}
 			if _, err := tw.Write(data); err != nil {
 				return err
 			}
+			info = append(info, &Attachment{
+				Name: localName,
+				Size: int64(len(data)),
+			})
 		}
 		return tw.Close()
 	})
+	// Now update the _Attachment attribute in the JSON document.
+	keyName, _ := keyAndFName(name)
+	rec := map[string]interface{}{}
+	err = c.Read(keyName, rec)
+	if err != nil {
+		return err
+	}
+	rec["_Attachments"] = info
+	err = c.Update(keyName, rec)
 	return err
 }
 
 // Attachments returns a list of files in the attached tarball for a given name in the collection
 func (c *Collection) Attachments(name string) ([]string, error) {
+	keyName, _ := keyAndFName(name)
+	rec := map[string]interface{}{}
+	err := c.Read(keyName, rec)
+	if err != nil {
+		return nil, fmt.Errorf("Can't find %s", name)
+	}
 	fileNames := []string{}
+	if l, ok := rec["_Attachments"]; ok == true {
+		var (
+			size  json.Number
+			fname string
+		)
+		for _, valL := range l.([]interface{}) {
+			m := valL.(map[string]interface{})
+			fname = ""
+			if s, ok := m["name"]; ok == true {
+				fname = s.(string)
+			}
+			if i, ok := m["size"]; ok == true && fname != "" {
+				size = i.(json.Number)
+			}
+			fileNames = append(fileNames, fmt.Sprintf("%s %s", fname, size))
+		}
+		return fileNames, nil
+	}
+
 	docPath, err := c.DocPath(name)
 	if err != nil {
 		return nil, err
@@ -132,6 +192,7 @@ func (c *Collection) Attachments(name string) ([]string, error) {
 	// Get the file and read into memory
 	buf, err := c.Store.ReadFile(docPath)
 	if err != nil {
+		// FIXME: If no tarball, then return error "no attachments found"
 		return nil, err
 	}
 	fp := bytes.NewBuffer(buf)
@@ -147,7 +208,8 @@ func (c *Collection) Attachments(name string) ([]string, error) {
 			// error reading tarball
 			return fileNames, err
 		}
-		fileNames = append(fileNames, hdr.Name)
+		s := fmt.Sprintf("%s %d", hdr.Name, hdr.Size)
+		fileNames = append(fileNames, s)
 	}
 	return fileNames, nil
 }
@@ -164,9 +226,9 @@ func filterNameFound(a []string, target string) bool {
 	return false
 }
 
-// GetAttached returns an Attachment array or error
+// getAttached returns an Attachment array or error
 // If no filterNames provided then return all attachments or error
-func (c *Collection) GetAttached(name string, filterNames ...string) ([]Attachment, error) {
+func (c *Collection) getAttached(name string, filterNames ...string) ([]Attachment, error) {
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then remove any tarball
 	docPath, err := c.DocPath(name)
@@ -267,8 +329,6 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 
 	// NOTE: If we're removing everything then just call Removeall on store for that tarball name
 	if len(filterNames) == 0 {
-		//fmt.Printf("DEBUG c.Store.RemoveAll(%q)", docPath) // DEBUG
-		//return nil                                         // DEBUG
 		return c.Store.RemoveAll(docPath)
 	}
 

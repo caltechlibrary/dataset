@@ -1,7 +1,7 @@
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
-_dataset_ is a small collection of command line tools for working with JSON documents stored as 
+_dataset_ is a small collection of command line tools for working with JSON (object) documents stored as 
 collections.  [This](docs/dataset/) include basic storage actions (e.g. CRUD operations, filtering
 and extraction) as well as [indexing](docs/dsindexer/), [searching](docs/dsfind/) and even 
 [web hosting](docs/dsws/).  A project goal of _dataset_ is to "play nice" with shell scripts and other 

@@ -28,7 +28,7 @@ import (
 func TestAttachments(t *testing.T) {
 	colName := "testdata/col3"
 	alphabet := "ab"
-	buckets := GenerateBucketNames(alphabet, 2)
+	buckets := generateBucketNames(alphabet, 2)
 
 	os.RemoveAll(colName)
 
@@ -38,7 +38,7 @@ func TestAttachments(t *testing.T) {
 		t.FailNow()
 	}
 
-	record := map[string]string{
+	record := map[string]interface{}{
 		"name":  "freda",
 		"motto": "it's all about what you sense when you've have sense to sense it",
 	}
@@ -63,7 +63,7 @@ func TestAttachments(t *testing.T) {
 			t.Errorf("Expected one file attached, %+v", files)
 			t.FailNow()
 		}
-		if files[0] != "impressed.txt" {
+		if files[0] != "impressed.txt 12" {
 			t.Errorf("Expected files[0] to be impressed, got %+v", files)
 			t.FailNow()
 		}
@@ -100,7 +100,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if err := collection.Attach("freda", &Attachment{"what/she/smokes.txt", []byte("A Havana Cigar")}); err != nil {
+	if err := collection.Attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
 		t.Errorf("Appending attachment, %s", err)
 		t.FailNow()
 	}
@@ -113,7 +113,7 @@ func TestAttachments(t *testing.T) {
 			t.Errorf("Should have one file after appending an attachment (each call to attach should generate a fresh tarball)")
 		}
 		for _, s := range files {
-			if s != "impressed.txt" && s != "what/she/smokes.txt" {
+			if s != "impressed.txt" && s != "what/she/smokes.txt 14" {
 				t.Errorf("Unexpected file in list, %s", s)
 			}
 		}

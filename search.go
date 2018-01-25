@@ -339,7 +339,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	cnt := 0
 	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
-		if src, err := c.ReadAsJSON(key); err == nil {
+		if src, err := c.readAsJSON(key); err == nil {
 			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
 				//idx.Index(key, rec)
 				batchIdx.Index(key, rec)

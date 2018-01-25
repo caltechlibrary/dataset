@@ -80,7 +80,7 @@ func (c *Collection) sortBy(ids []string, dpath string, ascending bool) ([]strin
 	for _, id := range ids {
 		// Get the record for given id
 		rec := map[string]interface{}{}
-		if err := c.Read(id, &rec); err == nil {
+		if err := c.Read(id, rec); err == nil {
 			// if exist extract the value
 			if value, err := dotpath.Eval(dpath, rec); err == nil {
 				// Verify we have same type on data or return error

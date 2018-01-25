@@ -74,7 +74,7 @@ has attachments.
 Operations
 
 + Collection level
-    + Initialize (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
+    + InitCollection (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
     + Open (collection) - opens an existing collections and reads collection.json into memory
     + Close (collection) - writes changes to collection.json to disc if dirty
     + Keys (collection) - list of keys in the collection
@@ -138,7 +138,7 @@ Common operations shown in Golang
 Example Go code
 
     // Create a collection "mystuff" inside the directory called demo
-    collection, err := dataset.Create("demo/mystuff", dataset.GenerateBucketNames("ab", 2))
+    collection, err := dataset.InitCollection("demo/mystuff")
     if err != nil {
         log.Fatalf("%s", err)
     }

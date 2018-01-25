@@ -107,8 +107,8 @@ func TestIndexingSearch(t *testing.T) {
 	os.RemoveAll(cName)
 	os.RemoveAll(iName)
 
-	// Create the collection
-	c, err := Create(cName, GenerateBucketNames("ab", 2))
+	// create the collection
+	c, err := create(cName, generateBucketNames("ab", 2))
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
