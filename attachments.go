@@ -421,7 +421,7 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 		if err != nil {
 			return err
 		}
-		delete(rec, keyName)
+		delete(rec, "_Attachments")
 		err = c.Update(keyName, rec)
 		return err
 	}
@@ -457,7 +457,6 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 				if _, err := io.Copy(tw, tr); err != nil {
 					return err
 				}
-			} else {
 				//NOTE: Update the attachment list with remaining docs
 				docInfo := map[string]interface{}{}
 				docInfo["name"] = hdr.Name

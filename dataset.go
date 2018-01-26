@@ -405,12 +405,13 @@ func (c *Collection) Delete(name string) error {
 	}
 
 	//NOTE: Need to remove any stale tarball before removing our record!
-	tarball := path.Join(c.Name, bucketName, strings.TrimSuffix(FName, ".json")+".xml")
-	if err := c.Store.RemoveAll(tarball); err != nil {
+	tarball := keyName + ".xml"
+	p := path.Join(c.Name, bucketName, tarball)
+	fmt.Printf("DEBUG removing tar ball: %s -> %s", tarball, p)
+	if err := c.Store.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
 	}
-
-	p := path.Join(c.Name, bucketName, FName)
+	p = path.Join(c.Name, bucketName, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
