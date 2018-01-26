@@ -50,7 +50,7 @@ func tarballName(docPath string) string {
 	return docPath + ".tar"
 }
 
-// attach non-JSON documents to a JSON document in the collection.
+// (DEPRECIATE) attach non-JSON documents to a JSON document in the collection.
 // Attachments are stored in a tar file, if tar file exits then attachment(s)
 // are appended to tar file.
 func (c *Collection) attach(name string, attachments ...*Attachment) error {
@@ -100,35 +100,109 @@ func (c *Collection) attach(name string, attachments ...*Attachment) error {
 	return err
 }
 
-// AttachFiles attaches non-JSON documents to a JSON document in the collection.
-// Attachments are stored in a tar file, if tar file exits then attachment(s)
-// are appended to tar file.
-func (c *Collection) AttachFiles(name string, fileNames ...string) error {
+// AttachFile is for attaching a single non-JSON document to a dataset record. It will replace
+// ANY existing attached content (i.e. it creates an new tarball holding on this single document)
+// This is a limitation of our storage package supporting a minimal set of operation across all
+// storage environments (e.g. S3/Google Cloud Storage do not support append to file, only replacement).
+// It takes the document key, name and an io.Reader reading content in and appending the results to
+// the tar file updating the internal _Attributes metadata as needed.
+func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then generate a new tarball
 	// from attachments.
-	docPath, err := c.DocPath(name)
+	docPath, err := c.DocPath(keyName)
 	if err != nil {
 		return err
 	}
 
-	info := []*Attachment{}
+	// FIXME: might make smore sense to just be a single map[string]interface{} rather than an array of maps unless we're
+	// journalling the history of attachments.
+	docListing := []map[string]interface{}{}
+	docPath = tarballName(docPath)
+	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
+		// NOTE: we always overwrite an existing tarball before our storage module
+		// does can't assume an append operation is available for cloud storage.
+		tw := tar.NewWriter(fp)
+
+		// Read in our data
+		data, err := ioutil.ReadAll(buf)
+		if err != nil {
+			return err
+		}
+		fSize := int64(len(data))
+
+		// Save our doc info for our metadata
+		docInfo := map[string]interface{}{}
+		docInfo["name"] = fName
+		docInfo["size"] = fSize
+		docListing = append(docListing, docInfo)
+
+		// Add our data to the tar ball
+		hdr := &tar.Header{
+			Name: fName,
+			Mode: 0664,
+			Size: fSize,
+		}
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+		if _, err := tw.Write(data); err != nil {
+			return err
+		}
+		return tw.Close()
+	})
+
+	// Now update the _Attachment attribute in the JSON document.
+	rec := map[string]interface{}{}
+	err = c.Read(keyName, rec)
+	if err != nil {
+		return err
+	}
+
+	//NOTE: Because we're always replacing the tarball (can't append in a cloud environment)
+	// we must also always replace the attachments metadata.
+	rec["_Attachments"] = docListing
+	err = c.Update(keyName, rec)
+	return err
+}
+
+// AttachFiles attaches non-JSON documents to a JSON document in the collection.
+// Attachments are stored in a tar file, if tar file exits then attachment(s)
+// are appended to tar file.
+func (c *Collection) AttachFiles(name string, fileNames ...string) error {
+	keyName, _ := keyAndFName(name)
+	// NOTE: we normalize the keyName to omit a .json file extension,
+	// make sure we have an associated JSON record, then generate a new tarball
+	// from attachments.
+	docPath, err := c.DocPath(keyName)
+	if err != nil {
+		return err
+	}
+
+	docListing := []map[string]interface{}{}
 	docPath = tarballName(docPath)
 	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
 		tw := tar.NewWriter(fp)
-		hdr := &tar.Header{}
-		hdr.Mode = 0664
 
-		// For each attachtment add to the tar ball
-		for _, localName := range fileNames {
-			data, err := ioutil.ReadFile(localName)
+		// For each filename add the file to the tar ball
+		for _, fName := range fileNames {
+			// Read in our data
+			data, err := ioutil.ReadFile(fName)
 			if err != nil {
 				return err
 			}
+			fSize := int64(len(data))
+
+			// Save Our Doc info for our metadata
+			docInfo := map[string]interface{}{}
+			docInfo["name"] = fName
+			docInfo["size"] = fSize
+			docListing = append(docListing, docInfo)
+
 			hdr := &tar.Header{
-				Name: localName,
+				Name: fName,
 				Mode: 0664,
-				Size: int64(len(data)),
+				Size: fSize,
 			}
 			if err := tw.WriteHeader(hdr); err != nil {
 				return err
@@ -136,21 +210,17 @@ func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 			if _, err := tw.Write(data); err != nil {
 				return err
 			}
-			info = append(info, &Attachment{
-				Name: localName,
-				Size: int64(len(data)),
-			})
 		}
 		return tw.Close()
 	})
 	// Now update the _Attachment attribute in the JSON document.
-	keyName, _ := keyAndFName(name)
 	rec := map[string]interface{}{}
 	err = c.Read(keyName, rec)
 	if err != nil {
 		return err
 	}
-	rec["_Attachments"] = info
+	// Finally update our attachments metadata based on the new document(s) info
+	rec["_Attachments"] = docListing
 	err = c.Update(keyName, rec)
 	return err
 }
@@ -226,7 +296,7 @@ func filterNameFound(a []string, target string) bool {
 	return false
 }
 
-// getAttached returns an Attachment array or error
+// (DEPRECIATE) getAttached returns an Attachment array or error
 // If no filterNames provided then return all attachments or error
 func (c *Collection) getAttached(name string, filterNames ...string) ([]Attachment, error) {
 	// NOTE: we normalize the name to omit a .json file extension,

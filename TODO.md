@@ -5,32 +5,24 @@
 
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
-+ [ ] Attachment listings are slow
-    + Add an `_Attachments` attribute to _dataset_ document with metadata about the attached file
-+ [ ] Migrate cli functions in _dataset_ to package level
-+ [ ] Migrate the cli funciton in _dsindexer_ to package level
-+ [ ] Migrate cli functions in _dsfind_ to package level
-+ [ ] Migrate export functions into an appropriate package (e.g. are they part of _dataset_ command or something more general like storage?)
-+ [ ] -nl line should be defaulted to true in dataset
-+ [ ] -nl line should be defaulted to true in dsfind
-+ [ ] -nl line should be defaulted to true in dsindexer
-+ [ ] -nl line should be defaulted to true in dsws
+    + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
+    + for size info, call Stats first to get the filesize to include in tarball header
++ [ ] Migrate export functions into an appropriate sub-packages (e.g. like how subpackages work in Bleve)
 
-## Next (v0.1.x)
+## Next (prep for v0.1.0)
 
-+ [ ] _dataset_ collection records only store "objects" (e.g. start and end with curly brackets) rather than allow Arrays
-+ [x] Add automatic metadata fields for `_Key` when creating a new JSON document in a collection
++ [ ] Attachment metaphor still needs better alignment with idiomatic go
+    + [ ] AttachFiles should be implemented with an io.Writer interface
+    + [ ] GetAttachFiles should be implemented with an io.Reader interface{}
 + [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
-+ [ ] Add automatic metadata field for `_Attachments` when attaching a file to a JSON document
-+ [ ] Use automated metadata when asking for list of attached files, e.g. `_Attachments` for a JSON document
 + [ ] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
-+ [ ] In _dsfind_ Add `-sample N` option
 + [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
 + [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
 + [ ] In _dsindexer_ add a record to an existing index using an index def and record id
 + [ ] In _dsindexer_ update a record in an existing index using an index def and record id
 + [ ] In _dsindexer_ delete a record from an index using based on record id
 + [ ] Create an experimental Python native module for dataset package exported functions
++ [ ] Confirm consensus on the minor release version number bump
 
 ## Roadmap (v0.2.x)
 
@@ -83,6 +75,20 @@
 
 ## Completed
 
++ [x] _dataset_ collection records only store "objects" (e.g. start and end with curly brackets) rather than allow Arrays
++ [x] Add automatic metadata fields for `_Key` when creating a new JSON document in a collection
++ [x] Add automatic metadata field for `_Attachments` when attaching a file to a JSON document
++ [x] Use automated metadata when asking for list of attached files, e.g. `_Attachments` for a JSON document
++ [x] In _dsfind_ Add `-sample N` option
++ [x] -nl line should be defaulted to true in dataset
++ [x] -nl line should be defaulted to true in dsfind
++ [x] -nl line should be defaulted to true in dsindexer
++ [x] -nl line should be defaulted to true in dsws
++ [x] Migrate the cli funciton in _dsindexer_ to package level
++ [x] Migrate cli functions in _dsfind_ to package level
++ [x] Migrate cli functions in _dataset_ to package level
++ [x] Attachment listings are slow
+    + Add an `_Attachments` attribute to _dataset_ document with metadata about the attached file
 + [x] dataset -p read ... doesn't indent JSON output
 + [x] In _dataset keys_ Add `-sample N` option
 + [x] -help isn't showing help topics, -help sample isn't showing the sample help page.
