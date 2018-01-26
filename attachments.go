@@ -107,6 +107,15 @@ func (c *Collection) attach(name string, attachments ...*Attachment) error {
 // It takes the document key, name and an io.Reader reading content in and appending the results to
 // the tar file updating the internal _Attributes metadata as needed.
 func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
+	if c.HasKey(keyName) == false {
+		return fmt.Errorf("No key found for %q", keyName)
+	}
+	rec := map[string]interface{}{}
+	err := c.Read(keyName, rec)
+	if err != nil {
+		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
+	}
+
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then generate a new tarball
 	// from attachments.
@@ -153,15 +162,11 @@ func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
 	})
 
 	// Now update the _Attachment attribute in the JSON document.
-	rec := map[string]interface{}{}
-	err = c.Read(keyName, rec)
-	if err != nil {
-		return err
-	}
 
 	//NOTE: Because we're always replacing the tarball (can't append in a cloud environment)
 	// we must also always replace the attachments metadata.
 	rec["_Attachments"] = docListing
+	fmt.Printf("DEBUG updating _Attachments --> %+v\n", rec)
 	err = c.Update(keyName, rec)
 	return err
 }
@@ -171,6 +176,15 @@ func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
 // are appended to tar file.
 func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 	keyName, _ := keyAndFName(name)
+	if c.HasKey(keyName) == false {
+		return fmt.Errorf("No key found for %q", keyName)
+	}
+	rec := map[string]interface{}{}
+	err := c.Read(keyName, rec)
+	if err != nil {
+		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
+	}
+
 	// NOTE: we normalize the keyName to omit a .json file extension,
 	// make sure we have an associated JSON record, then generate a new tarball
 	// from attachments.
@@ -214,11 +228,7 @@ func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 		return tw.Close()
 	})
 	// Now update the _Attachment attribute in the JSON document.
-	rec := map[string]interface{}{}
-	err = c.Read(keyName, rec)
-	if err != nil {
-		return err
-	}
+
 	// Finally update our attachments metadata based on the new document(s) info
 	rec["_Attachments"] = docListing
 	err = c.Update(keyName, rec)
@@ -386,6 +396,15 @@ func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error 
 
 // Detach a non-JSON document from a JSON document in the collection.
 func (c *Collection) Detach(name string, filterNames ...string) error {
+	keyName, _ := keyAndFName(name)
+	if c.HasKey(keyName) == false {
+		return fmt.Errorf("No key found for %q", keyName)
+	}
+	rec := map[string]interface{}{}
+	err := c.Read(keyName, rec)
+	if err != nil {
+		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
+	}
 	// NOTE: we normalize the name to omit a .json file extension,
 	// make sure we have an associated JSON record, then remove any tarball
 	docPath, err := c.DocPath(name)
@@ -399,7 +418,13 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 
 	// NOTE: If we're removing everything then just call Removeall on store for that tarball name
 	if len(filterNames) == 0 {
-		return c.Store.RemoveAll(docPath)
+		err := c.Store.RemoveAll(docPath)
+		if err != nil {
+			return err
+		}
+		delete(rec, keyName)
+		err = c.Update(keyName, rec)
+		return err
 	}
 
 	// NOTE: If we're only removing some of the attached files then we need to re-write the tarball after reading it into memory
@@ -409,6 +434,8 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 	}
 	rd := bytes.NewBuffer(buf)
 	tr := tar.NewReader(rd)
+
+	docList := []map[string]interface{}{}
 
 	// Read in old tarball and only write out files that match filterNames
 	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
@@ -431,9 +458,20 @@ func (c *Collection) Detach(name string, filterNames ...string) error {
 				if _, err := io.Copy(tw, tr); err != nil {
 					return err
 				}
+			} else {
+				//NOTE: Update the attachment list with remaining docs
+				docInfo := map[string]interface{}{}
+				docInfo["name"] = hdr.Name
+				docInfo["size"] = hdr.Size
+				docList = append(docList, docInfo)
 			}
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	rec["_Attachments"] = docList
+	err = c.Update(keyName, rec)
 	return err
 }

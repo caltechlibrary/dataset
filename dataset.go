@@ -403,10 +403,18 @@ func (c *Collection) Delete(name string) error {
 	if ok != true {
 		return fmt.Errorf("%q key not found", keyName)
 	}
+
+	//NOTE: Need to remove any stale tarball before removing our record!
+	tarball := path.Join(c.Name, bucketName, strings.TrimSuffix(FName, ".json")+".xml")
+	if err := c.Store.RemoveAll(tarball); err != nil {
+		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
+	}
+
 	p := path.Join(c.Name, bucketName, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
+
 	delete(c.KeyMap, keyName)
 	return c.saveMetadata()
 }
