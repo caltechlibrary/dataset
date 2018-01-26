@@ -3,6 +3,8 @@
 
 ## Bugs
 
++ [ ] If you _dataset delete KEY_ it fails to remove any attachments before deleting the JSON file
++ [ ] if you _dataset detach KEY_ a stale _Attachments remain
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
     + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
