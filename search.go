@@ -524,35 +524,6 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 	if err != nil {
 		return nil, err
 	}
-	// DEBUG
-	/*
-		{
-			"status":{
-				"total":1,"failed":0,"successful":1
-			},
-			"request":{
-					"query":{"query":"600622"},
-					"size":12,
-					"from":0,
-					"highlight":null,
-					"fields":null,
-					"facets":null,
-					"explain":false,
-					"sort":["-_score"],
-					"includeLocations":false
-			},
-			"hits":[
-				{"index":"testdata/search-test.bleve",
-				"id":"5061d597-7973-4804-8ecb-88b28ebdcc4e",
-				"score":0.3626164669331295,
-				"sort":["_score"]}
-			],
-			"total_hits":1,
-			"max_score":0.3626164669331295,
-			"took":145693,
-			"facets":{}
-			}
-	*/
 
 	if sampleSize > 0 {
 		if len(results.Hits) > sampleSize {

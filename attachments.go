@@ -166,7 +166,6 @@ func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
 	//NOTE: Because we're always replacing the tarball (can't append in a cloud environment)
 	// we must also always replace the attachments metadata.
 	rec["_Attachments"] = docListing
-	fmt.Printf("DEBUG updating _Attachments --> %+v\n", rec)
 	err = c.Update(keyName, rec)
 	return err
 }
