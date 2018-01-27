@@ -42,7 +42,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.15-dev`
+	Version = `v0.0.16-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -343,6 +343,20 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 	return c.saveMetadata()
 }
 
+// CreateFrom is a convienence function that takes an interface, converts it to a map[string]interface{} then calls Create.
+func (c *Collection) CreateFrom(name string, obj interface{}) error {
+	src, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	data := map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		return err
+	}
+	return c.Create(name, data)
+}
+
 // readAsJSON finds a the record in the collection and returns the JSON source, it is used in search.go
 func (c *Collection) readAsJSON(name string) ([]byte, error) {
 	// Handle potentially URL encoded names
@@ -375,6 +389,25 @@ func (c *Collection) Read(name string, data map[string]interface{}) error {
 	return nil
 }
 
+// ReadInto is a convienence function where a Go stuct is converted into a map[string]interface{} then
+// passed to Read.
+func (c *Collection) ReadInto(name string, obj interface{}) error {
+	m := map[string]interface{}{}
+	err := c.Read(name, m)
+	if err != nil {
+		return err
+	}
+	src, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(src, &obj)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
 func (c *Collection) Update(name string, data map[string]interface{}) error {
 	src, err := json.Marshal(data)
@@ -393,6 +426,21 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 		return fmt.Errorf("WriteJSON() mkdir %s %s", p, err)
 	}
 	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
+}
+
+// UpdateFrom is a convience function that converts an interface{} into a map[string]interface{}
+// before calling update.
+func (c *Collection) UpdateFrom(name string, obj interface{}) error {
+	src, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	data := map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		return nil
+	}
+	return c.Update(name, data)
 }
 
 // Delete removes a JSON doc from a collection
@@ -615,12 +663,12 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	}
 
 	var (
-		data       map[string]interface{}
 		cnt        int
 		row        []string
 		readErrors int
 	)
 	for _, key := range keys {
+		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				// write row out.

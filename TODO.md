@@ -3,21 +3,9 @@
 
 ## Bugs
 
-+ [x] If you _dataset delete KEY_ it fails to remove any attachments before deleting the JSON file
-+ [ ] if you _dataset detach KEY_ a stale _Attachments remain
-+ [ ] Memory consumption is high for attaching, figure out how to improve memory usage
-    + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
-    + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
-    + for size info, call Stats first to get the filesize to include in tarball header
-+ [ ] Migrate export functions into an appropriate sub-packages (e.g. like how subpackages work in Bleve)
-
 ## Next (prep for v0.1.0)
 
-+ [ ] Attachment metaphor still needs better alignment with idiomatic go
-    + [ ] AttachFiles should be implemented with an io.Writer interface
-    + [ ] GetAttachFiles should be implemented with an io.Reader interface{}
 + [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
-+ [ ] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
 + [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
 + [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
 + [ ] In _dsindexer_ add a record to an existing index using an index def and record id
@@ -49,6 +37,11 @@
 
 ## Someday, Maybe
 
++ [ ] Memory consumption is high for attaching, figure out how to improve memory usage
+    + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
+    + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
+    + for size info, call Stats first to get the filesize to include in tarball header
++ [ ] Migrate export functions into an appropriate sub-packages (e.g. like how subpackages work in Bleve)
 + [ ] Move indexes and definitions into folder with collection.json
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
@@ -77,6 +70,11 @@
 
 ## Completed
 
++ [x] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
++ [x] Attachment metaphor still needs better alignment with idiomatic go
+    + [x] AttachFile should be implemented with an io.Writer interface
++ [x] If you _dataset delete KEY_ it fails to remove any attachments before deleting the JSON file
++ [x] if you _dataset detach KEY_ a stale _Attachments remain
 + [x] _dataset_ collection records only store "objects" (e.g. start and end with curly brackets) rather than allow Arrays
 + [x] Add automatic metadata fields for `_Key` when creating a new JSON document in a collection
 + [x] Add automatic metadata field for `_Attachments` when attaching a file to a JSON document
