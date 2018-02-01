@@ -3,15 +3,18 @@
 
 ## Bugs
 
++ [ ] Document creating/managing indexes using the Bleve native cli
+
 ## Next (prep for v0.1.0)
 
-+ [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
-+ [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
-+ [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
++ [ ] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
 + [ ] In _dsindexer_ add a record to an existing index using an index def and record id
 + [ ] In _dsindexer_ update a record in an existing index using an index def and record id
 + [ ] In _dsindexer_ delete a record from an index using based on record id
 + [ ] Create an experimental Python native module for dataset package exported functions
++ [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
++ [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
++ [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
 + [ ] Confirm consensus on the minor release version number bump
 
 ## Roadmap (v0.2.x)
@@ -37,6 +40,7 @@
 
 ## Someday, Maybe
 
++ [ ] Depreciate _dsindexer_ in favor of Bleve native cli
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
     + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
