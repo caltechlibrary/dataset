@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Initialize the collection and set the DATASET environment variable
-echo "Initializing collection testdataset/noaaweather"
-E=$(dataset init testdataset/noaaweather)
+echo "Initializing collection testdataset/noaaweather.ds"
+E=$(dataset init testdataset/noaaweather.ds)
 $E
 if [ "$DATASET" = "" ]; then
 	echo "Something went wrong DATASET not set."

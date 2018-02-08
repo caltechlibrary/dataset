@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -d characters ]; then
-    rm -fR characters
+    rm -fR characters.ds
 fi
 if [ -d characters.bleve ]; then
     rm -fR characters.bleve
@@ -11,7 +11,7 @@ fi
 if [ -d titles.bleve ]; then
     rm -fR titles.bleve
 fi
-$(dataset init characters)
+$(dataset init characters.ds)
 echo "TESTING import csv file"
 dataset -uuid import htdocs/characters.csv
 echo ""

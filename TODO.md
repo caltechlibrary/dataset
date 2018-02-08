@@ -4,14 +4,16 @@
 ## Bugs
 
 + [ ] Document creating/managing indexes using the Bleve native cli
++ [ ] Update dataset documentation to use Bleve's JSON definitions for indexes
++ [ ] Update demos to use Bleve's JSON definitions for indexes
 
 ## Next (prep for v0.1.0)
 
++ [ ] Create an experimental Python native module for dataset package
 + [ ] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
 + [ ] In _dsindexer_ add a record to an existing index using an index def and record id
 + [ ] In _dsindexer_ update a record in an existing index using an index def and record id
 + [ ] In _dsindexer_ delete a record from an index using based on record id
-+ [ ] Create an experimental Python native module for dataset package exported functions
 + [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
 + [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
 + [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings

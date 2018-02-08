@@ -1,4 +1,6 @@
 
+FIXME: Need to complete the JSON index definition re-write
+
 # USAGE
 
 	dsindexer [OPTIONS] INDEX_DEF_JSON INDEX_NAME

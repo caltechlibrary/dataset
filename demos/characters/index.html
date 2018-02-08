@@ -39,10 +39,10 @@ exploring <em>dsindexer</em>, <em>dsfind</em> and <em>dsws</em> utilities.</p>
 <p>Try <em>demo.bash</em></p>
 
 <pre><code class="language-shell">    #!/bin/bash
-    if [ -d characters ]; then
-        rm -fR characters
+    if [ -d characters.ds ]; then
+        rm -fR characters.ds
     fi
-    $(dataset init characters)
+    $(dataset init characters.ds)
     dataset -uuid import characters.csv
     dsindexer characters.json
     dsindexer names.json
@@ -60,10 +60,10 @@ exploring <em>dsindexer</em>, <em>dsfind</em> and <em>dsws</em> utilities.</p>
 <p>Or try the website version (you&rsquo;ll need a web browser)</p>
 
 <pre><code class="language-shell">    #!/bin/bash
-    if [ -d characters ]; then
-        rm -fR characters
+    if [ -d characters.ds ]; then
+        rm -fR characters.ds
     fi
-    $(dataset init characters)
+    $(dataset init characters.ds)
     dataset -uuid import characters.csv
     dsindexer characters.json
     dsindexer names.json

@@ -1,7 +1,8 @@
 
 # Defining Indexes
 
-_dsindexer_ builds an index from an index definition file. The definition file is a JSON document.
+_dsindexer_ builds an index from an index definition file. The definition file is a JSON document. It is the same
+JSON structure as used by the [bleve](https://blevesearch.com) command line tool.
 
 ## A minimal index definition
 
@@ -30,17 +31,31 @@ You could create an index of last name and date of birth with the following defi
 
 ```json
     {
-        "last_name": {
-            "object_path": ".last_name"
-        },
-        "dob": {
-            "object_path": ".bio.date_of_birth"
+        "types": {
+            "default": {
+                "enabled": true,
+                "dynamic": true,
+                "fields": [
+                    {
+                        "name": "last_name",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    },
+                    {
+                        "name": "dob",
+                        "type": "datetime",
+                        "store": true,
+                        "index": true
+                    }
+                ]
+            }
         }
     }
 ```
 
-The dotpath notation lets you reach into a nested JSON property and bring it out into a field that will
-be indexed. 
+FIXME: Need to complete the re-write of the JSON index definition description for issue_8.
 
 ### Working with field mappings
 

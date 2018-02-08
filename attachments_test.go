@@ -135,7 +135,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if err := collection.Detach("freda", "what/she/smokes.txt"); err != nil {
+	if err := collection.Prune("freda", "what/she/smokes.txt"); err != nil {
 		t.Errorf("Delete one file, %s", err)
 	}
 	tarDocPath, err := collection.DocPath("freda")
@@ -150,7 +150,7 @@ func TestAttachments(t *testing.T) {
 		t.FailNow()
 	}
 
-	if err := collection.Detach("freda"); err != nil {
+	if err := collection.Prune("freda"); err != nil {
 		t.Errorf("Delete whole tarball, %s", err)
 		t.FailNow()
 	}

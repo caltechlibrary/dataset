@@ -27,23 +27,14 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"path"
 	"sort"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/dotpath"
-	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
-	"github.com/blevesearch/bleve/analysis/analyzer/standard"
-	"github.com/blevesearch/bleve/analysis/analyzer/web"
 	"github.com/blevesearch/bleve/analysis/lang/ar"
 	"github.com/blevesearch/bleve/analysis/lang/ca"
 	"github.com/blevesearch/bleve/analysis/lang/cjk"
@@ -131,105 +122,23 @@ func isTrueValue(val interface{}) bool {
 	return false
 }
 
-// readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
-func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *mapping.IndexMappingImpl, error) {
+// readIndexDefinition reads in a JSON document and converts it to a Bleve index mapping.
+func readIndexDefinition(mapName string) (*mapping.IndexMappingImpl, error) {
 	var (
 		src []byte
 		err error
 	)
-
 	if src, err = ioutil.ReadFile(mapName); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	definitions := map[string]map[string]interface{}{}
-	if err := json.Unmarshal(src, &definitions); err != nil {
-		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
-	}
-
 	indexMapping := bleve.NewIndexMapping()
-	indexMapping.DefaultAnalyzer = simple.Name
-
-	//NOTE: convert definition into an appropriate index mappings, analyzers and such
-	var fieldMap *mapping.FieldMapping
-
-	for fieldName, defn := range definitions {
-		if templateName, ok := defn["object_template"].(string); ok == true {
-			// NOTE: if we have an object_template, read it in, parse it and add it to the
-			// definitions.
-			tmpl, err := template.New(path.Base(templateName)).Funcs(tmplfn.AllFuncs()).ParseFiles(templateName)
-			if err != nil {
-				return definitions, indexMapping, fmt.Errorf("Can't parse template %s for %s,%s", templateName, fieldName, err)
-			}
-			definitions[fieldName]["object_tmpl"] = tmpl
-		}
-		if fieldType, ok := defn["field_mapping"]; ok == true {
-			switch fieldType.(string) {
-			case "numeric":
-				fieldMap = bleve.NewNumericFieldMapping()
-			case "datetime":
-				fieldMap = bleve.NewDateTimeFieldMapping()
-			case "boolean":
-				fieldMap = bleve.NewBooleanFieldMapping()
-			case "geopoint":
-				fieldMap = bleve.NewGeoPointFieldMapping()
-			case "text":
-				fieldMap = bleve.NewTextFieldMapping()
-			default:
-				fieldMap = bleve.NewTextFieldMapping()
-			}
-		} else {
-			fieldMap = bleve.NewTextFieldMapping()
-		}
-		if sVal, ok := defn["store"]; ok == true {
-			if isTrueValue(sVal) == true {
-				fieldMap.Store = true
-			} else {
-				fieldMap.Store = false
-			}
-		}
-		if analyzerType, ok := defn["analyzer"]; ok == true {
-			switch analyzerType.(string) {
-			case "keyword":
-				fieldMap.Analyzer = keyword.Name
-			case "simple":
-				fieldMap.Analyzer = simple.Name
-			case "standard":
-				fieldMap.Analyzer = standard.Name
-			case "web":
-				fieldMap.Analyzer = web.Name
-			case "lang":
-				if langCode, ok := defn["lang"]; ok == true {
-					if langAnalyzer, ok := languagesSupported[langCode.(string)]; ok == true {
-						fieldMap.Analyzer = langAnalyzer
-					}
-				}
-			}
-		}
-		if sVal, ok := defn["include_in_all"]; ok == true {
-			if isTrueValue(sVal) == true {
-				fieldMap.IncludeInAll = true
-			} else {
-				fieldMap.IncludeInAll = false
-			}
-		}
-		if sVal, ok := defn["include_term_vectors"]; ok == true {
-			if isTrueValue(sVal) == true {
-				fieldMap.IncludeTermVectors = true
-			} else {
-				fieldMap.IncludeTermVectors = false
-			}
-		}
-		if sVal, ok := defn["date_format"]; ok == true {
-			if fmt, ok := supportedNamedTimeFormats[strings.ToLower(strings.TrimSpace(sVal.(string)))]; ok == true {
-				fieldMap.DateFormat = fmt
-			} else {
-				fieldMap.DateFormat = strings.TrimSpace(sVal.(string))
-			}
-		}
-		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
+	if err := json.Unmarshal(src, &indexMapping); err != nil {
+		return nil, fmt.Errorf("error unpacking definition: %s", err)
 	}
-	return definitions, indexMapping, nil
+	if indexMapping.DefaultAnalyzer == "" {
+		indexMapping.DefaultAnalyzer = simple.Name
+	}
+	return indexMapping, nil
 }
 
 // stringToGeoPoint takes a lat,lng string and converts it into a map[string]float64
@@ -250,59 +159,16 @@ func stringToGeoPoint(s string) (map[string]float64, bool) {
 	return pt, true
 }
 
-// recordMapToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
+// recordToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
 // renders a new map[string]interface{} ready to be indexed.
-func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}, src []byte) (map[string]interface{}, error) {
-	idxMap := map[string]interface{}{}
-
-	raw, err := dotpath.JSONDecode(src)
-	if err != nil {
+func recordToIndexRecord(ky string, src []byte) (map[string]interface{}, error) {
+	var rec map[string]interface{}
+	d := json.NewDecoder(bytes.NewReader(src))
+	d.UseNumber()
+	if err := d.Decode(&rec); err != nil {
 		return nil, err
 	}
-	// Copy the dot path elements to new smaller map
-	for pName := range defnMap {
-		//FIXME: Need to handle both object_path and object_template
-		//dTemplate, _ := defnMap[pName]["object_template"].(string)
-		if dPath, ok := defnMap[pName]["object_path"].(string); ok == true {
-			if val, err := dotpath.Eval(dPath, raw); err == nil {
-				switch val.(type) {
-				case json.Number:
-					if i, err := (val.(json.Number)).Int64(); err == nil {
-						idxMap[pName] = i
-					} else if f, err := (val.(json.Number)).Float64(); err == nil {
-						idxMap[pName] = f
-					} else {
-						idxMap[pName] = (val.(json.Number)).String()
-					}
-				case string:
-					if dType, tOk := defnMap[pName]["field_mapping"].(string); tOk == true && dType == "geopoint" {
-						if pt, ok := stringToGeoPoint(val.(string)); ok == true {
-							idxMap[pName] = pt
-						}
-					} else {
-						idxMap[pName] = val.(string)
-					}
-				default:
-					idxMap[pName] = val
-				}
-			}
-		}
-		if tmpl, ok := defnMap[pName]["object_tmpl"].(*template.Template); ok == true {
-			//NOTE: the whole record is passed to the template for processing...
-			if rec, err := dotpath.Eval(".", raw); err == nil {
-				var (
-					buf bytes.Buffer
-				)
-				wr := io.Writer(&buf)
-				if err := tmpl.Execute(wr, rec); err == nil {
-					idxMap[pName] = buf.String()
-				} else {
-					log.Printf("key %s, %s", ky, err)
-				}
-			}
-		}
-	}
-	return idxMap, nil
+	return rec, nil
 }
 
 // Indexer ingests all the records of a collection applying the definition
@@ -312,7 +178,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 		idx bleve.Index
 		err error
 	)
-	recordMap, idxMap, err := readIndexDefinition(idxMapName)
+	idxMap, err := readIndexDefinition(idxMapName)
 	if err != nil {
 		return fmt.Errorf("failed to read index definition %s, %s", idxMapName, err)
 	}
@@ -340,8 +206,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
 		if src, err := c.readAsJSON(key); err == nil {
-			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
-				//idx.Index(key, rec)
+			if rec, err := recordToIndexRecord(key, src); err == nil {
 				batchIdx.Index(key, rec)
 				cnt++
 				if (cnt % batchSize) == 0 {

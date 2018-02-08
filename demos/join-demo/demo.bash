@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Setup our collection
-dataset init JoinDemo
-export DATASET=JoinDemo
+dataset init JoinDemo.ds
+export DATASET="JoinDemo.ds"
 
 cat <<EOF
 

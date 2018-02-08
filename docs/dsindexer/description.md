@@ -1,4 +1,6 @@
 
+FIXME: Need to complete the JSON index definition re-write
+
 ## Description
 
 dsindexer is a command line tool for creating a Bleve index based on records in a dataset 

@@ -21,9 +21,13 @@ package dataset
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
+
+	// 3rd Party Packages
+	"github.com/blevesearch/bleve"
 )
 
 var (
@@ -47,59 +51,7 @@ var (
 	mName = "testdata/search-test.json"
 	iName = "testdata/search-test.bleve"
 
-	defn1 = []byte(`{
-	"tind_id": {
-		"object_path": ".tind",
-		"field_mapping": "numeric",
-		"store": true
-	},
-	"issn": {
-		"object_path": ".issn",
-		"field_mapping": "keyword",
-		"store": true
-	},
-	"oclc": {
-		"object_path": ".oclc",
-		"field_mapping": "keyword",
-		"store": true
-	},
-	"title": {
-		"object_path": ".title",
-		"field_mapping": "text",
-		"analyzer": "lang",
-		"lang":"en",
-		"store": true
-	},
-	"title_simple": {
-		"object_path": ".title",
-		"field_mapping": "text",
-		"analyzer": "simple",
-		"store": true
-	},
-	"title_standard": {
-		"object_path": ".title",
-		"field_mapping": "text",
-		"analyzer": "standard",
-		"store": true
-	},
-	"title_keyword": {
-		"object_path": ".title",
-		"field_mapping": "text",
-		"analyzer": "keyword",
-		"store": true
-	},
-	"title_web": {
-		"object_path": ".title",
-		"field_mapping": "text",
-		"analyzer": "web",
-		"store": true
-	},
-	"year": {
-		"object_path": ".date",
-		"field_mapping": "numeric",
-		"store": true
-	}
-}`)
+	defn1 []byte
 )
 
 func TestIndexingSearch(t *testing.T) {
@@ -167,4 +119,47 @@ func TestSearch(t *testing.T) {
 		t.Errorf("unexpected results -> %s", src)
 		t.FailNow()
 	}
+}
+
+func TestMain(m *testing.M) {
+	idxMap := bleve.NewIndexMapping()
+	document := bleve.NewDocumentMapping()
+
+	fieldMapping := bleve.NewTextFieldMapping()
+	fieldMapping.Store = true
+	fieldMapping.Index = true
+
+	fieldMapping.Name = "tind"
+	fieldMapping.Analyzer = "simple"
+	document.AddFieldMapping(fieldMapping)
+
+	fieldMapping.Name = "issn"
+	fieldMapping.Analyzer = "keyword"
+	document.AddFieldMapping(fieldMapping)
+
+	fieldMapping.Name = "oclc"
+	fieldMapping.Analyzer = "keyword"
+	document.AddFieldMapping(fieldMapping)
+
+	fieldMapping.Name = "title"
+	fieldMapping.Analyzer = "en"
+	document.AddFieldMapping(fieldMapping)
+
+	fieldMapping.Name = "title"
+	fieldMapping.Analyzer = "standard"
+	document.AddFieldMapping(fieldMapping)
+
+	datetimeFieldMapping := bleve.NewDateTimeFieldMapping()
+	datetimeFieldMapping.Name = "year"
+	document.AddFieldMapping(datetimeFieldMapping)
+
+	idxMap.AddDocumentMapping("default", document)
+
+	var err error
+
+	defn1, err = json.MarshalIndent(idxMap, "", "    ")
+	if err != nil {
+		log.Fatal("Can't marshal mapping for tests")
+	}
+	os.Exit(m.Run())
 }
