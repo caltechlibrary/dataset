@@ -5,9 +5,9 @@ if [ "$DATASET" != "" ]; then
 fi
 
 # Create a collection "mystuff" inside the directory called demo
-dataset init demo/mystuff
+dataset init demo/mystuff.ds
 # if successful an expression to export the collection name is show
-export DATASET=demo/mystuff
+export DATASET=demo/mystuff.ds
 
 # Create a JSON document 
 dataset create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
