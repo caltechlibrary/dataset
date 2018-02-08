@@ -6,6 +6,10 @@
 + [ ] Document creating/managing indexes using the Bleve native cli
 + [ ] Update dataset documentation to use Bleve's JSON definitions for indexes
 + [ ] Update demos to use Bleve's JSON definitions for indexes
++ [ ] Re-write docs for JSON index definitions
++ [ ] Re-write demos for JSON index definitions
++ [ ] Re-write examples for JSON index definitions
++ [ ] Re-write how-to for JSON index definitions
 
 ## Next (prep for v0.1.0)
 
