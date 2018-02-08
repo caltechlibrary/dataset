@@ -26,7 +26,7 @@ import (
 )
 
 func TestAttachments(t *testing.T) {
-	colName := "testdata/col3"
+	colName := "testdata/col3.ds"
 	alphabet := "ab"
 	buckets := generateBucketNames(alphabet, 2)
 

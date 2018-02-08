@@ -227,7 +227,7 @@ func TestCollection(t *testing.T) {
 }
 
 func TestComplexKeys(t *testing.T) {
-	colName := "testdata/col2"
+	colName := "testdata/col2.ds"
 	buckets := generateBucketNames("ab", 2)
 	if len(buckets) != 4 {
 		t.Errorf("Should have four buckets %+v", buckets)
