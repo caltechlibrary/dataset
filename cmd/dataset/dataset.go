@@ -79,8 +79,8 @@ var (
 		"path":          docPath,
 		"attach":        addAttachments,
 		"attachments":   listAttachments,
-		"attached":      getAttachments,
-		"detach":        removeAttachments,
+		"detach":        getAttachments,
+		"prune":         removeAttachments,
 		"import":        importCSV,
 		"export":        exportCSV,
 		"extract":       extract,
@@ -600,6 +600,9 @@ func addAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	err = collection.AttachFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -617,6 +620,9 @@ func listAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attachments KEY", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	results, err := collection.Attachments(key)
 	if err != nil {
 		return "", err
@@ -631,9 +637,12 @@ func getAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s detach KEY [FILENAMES]", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	err = collection.GetAttachedFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -648,9 +657,9 @@ func removeAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
+		return "", fmt.Errorf("syntax: %s prune KEY", os.Args[0])
 	}
-	err = collection.Detach(params[0], params[1:]...)
+	err = collection.Prune(params[0], params[1:]...)
 	if err != nil {
 		return "", err
 	}
