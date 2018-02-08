@@ -114,17 +114,17 @@ of testdata/friends</p>
 
 <p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
 
-<pre><code class="language-shell">   dataset attached capt-jack
+<pre><code class="language-shell">   dataset detach capt-jack
 </code></pre>
 
 <p>Remove high-capt-jack.txt from &ldquo;capt-jack&rdquo;</p>
 
-<pre><code class="language-shell">    dataset detach capt-jack high-capt-jack.txt
+<pre><code class="language-shell">    dataset prune capt-jack high-capt-jack.txt
 </code></pre>
 
 <p>Remove all attachments from &ldquo;capt-jack&rdquo;</p>
 
-<pre><code class="language-shell">   dataset detach capt-jack
+<pre><code class="language-shell">   dataset prune capt-jack
 </code></pre>
 
 <p>Filter can be used to return only the record keys that return true for a given

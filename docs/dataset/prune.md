@@ -1,16 +1,16 @@
 
-# detach
+# prune
 
 ## Syntax
 
 ```
-    dataset detach JSON_RECORD_ID
-    dataset detach JSON_RECORD_ID ATTACHMENT_NAME
+    dataset prune JSON_RECORD_ID
+    dataset prune JSON_RECORD_ID ATTACHMENT_NAME
 ```
 
 ## Description
 
-detach removes all or specific attachments to a JSON document. If only
+prune removes all or specific attachments to a JSON document. If only
 the key is supplied then all attachments are removed if an attachment
 name is supplied then only the specific attachment is removed.
 
@@ -22,9 +22,9 @@ the second all attachments are removed.
 
 
 ```shell
-    dataset detach k1 stats.xlsx
-    dataset detach k1
+    dataset prune k1 stats.xlsx
+    dataset prune k1
 ```
 
-Related topics: attach, attached, and attachments
+Related topics: attach, detach, and attachments
 

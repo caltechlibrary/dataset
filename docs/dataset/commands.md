@@ -23,8 +23,8 @@ the commands below --
 + [path](path.html) - given a document name return the full path to document
 + [attach](attach.html) - attaches a non-JSON content to a JSON record
 + [attachments](attachments.html) - lists any attached content for JSON document
-+ [attached](attached.html) - returns attachments for a JSON document
-+ [detach](detach.html) - remove attachments to a JSON document
++ [detach](detach.html) - returns attachments for a JSON document
++ [prune](prune.html) - remove attachments to a JSON document
 + [import](import.html) - import a CSV file's rows as JSON documents
     + [import-gsheet](import-gsheet.html) - import a Google Sheets sheet rows
       as JSON documents

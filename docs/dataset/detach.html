@@ -24,8 +24,8 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset attached JSON_RECORD_ID
-    dataset attached JSON_RECORD_ID ATTACHMENT_NAME
+<pre><code>    dataset detach JSON_RECORD_ID
+    dataset detach JSON_RECORD_ID ATTACHMENT_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -37,15 +37,15 @@ the matching JSON_RECORD_ID</p>
 
 <p>Write out all the attached files for k1</p>
 
-<pre><code class="language-shell">    dataset attached k1
+<pre><code class="language-shell">    dataset detach k1
 </code></pre>
 
 <p>Write out only the <em>stats.xlsx</em> file attached to k1</p>
 
-<pre><code class="language-shell">    dataset attached k1 stats.xlsx
+<pre><code class="language-shell">    dataset detach k1 stats.xlsx
 </code></pre>
 
-<p>Related topics: attach, attachments, and detach</p>
+<p>Related topics: attach, attachments, and prune</p>
 
 </section>
 

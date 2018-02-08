@@ -32,9 +32,9 @@ collections.  <a href="docs/dataset/">This</a> include basic storage actions (e.
 and extraction) as well as <a href="docs/dsindexer/">indexing</a>, <a href="docs/dsfind/">searching</a> and even
 <a href="docs/dsws/">web hosting</a>.  A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other
 Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is
-easily scriptable via Bash shell or interpretted languages like Python.</p>
+easily scriptable via Bash, Posix shell or interpretted languages like Python.</p>
 
-<p><em>dataset</em> is also golang package for managing JSON documents and their attachments on disc or in cloud storage
+<p><em>dataset</em> is also a golang package for managing JSON documents and their attachments on disc or in cloud storage
 (e.g. Amazon S3, Google Cloud Storage). The command line utilities excersize this package extensively.</p>
 
 <p>The inspiration for creating <em>dataset</em> was the desire to process metadata as JSON document collections using
@@ -46,7 +46,7 @@ holding individual JSON documents and their attachments. The JSON documents in a
 bucket (and the bucket generated if necessary) automatically when the document is added to the collection.
 The assigment to the buckets is round robin determined by the order of addition. This avoids having too
 many documents assigned to a single path (e.g. on some Unix there is a limit to how many documents are held
-in a single directory). This means you can list and manipulate the JSON documents directly with with common
+in a single directory). This means you can list and manipulate the JSON documents directly with common
 Unix commands like ls, find, grep or their cloud counter parts.</p>
 
 <h3>Limitations of <em>dataset</em></h3>
@@ -83,7 +83,7 @@ Unix commands like ls, find, grep or their cloud counter parts.</p>
 <li>Update a JSON document in a collection</li>
 <li>Read back a JSON document in a collection</li>
 <li>Delete a JSON document in a collection</li>
-<li>Join a JSON document with a documents in a collection</li>
+<li>Join a JSON document with a document in a collection</li>
 </ul>
 
 <p>Additionally</p>

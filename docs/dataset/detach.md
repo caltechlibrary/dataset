@@ -1,11 +1,11 @@
 
-# attached
+# detach
 
 ## Syntax
 
 ```
-    dataset attached JSON_RECORD_ID
-    dataset attached JSON_RECORD_ID ATTACHMENT_NAME
+    dataset detach JSON_RECORD_ID
+    dataset detach JSON_RECORD_ID ATTACHMENT_NAME
 ```
 
 ## Description
@@ -18,14 +18,14 @@ the matching JSON_RECORD_ID
 Write out all the attached files for k1
 
 ```shell
-    dataset attached k1
+    dataset detach k1
 ```
 
 Write out only the *stats.xlsx* file attached to k1
 
 ```shell
-    dataset attached k1 stats.xlsx
+    dataset detach k1 stats.xlsx
 ```
 
-Related topics: attach, attachments, and detach
+Related topics: attach, attachments, and prune
 
