@@ -10,7 +10,7 @@
 
 ## Description
 
-Attached writes out (to local disc) the items that have been attached to a JSON record in the collection with
+detach writes out (to local disc) the items that have been attached to a JSON record in the collection with
 the matching JSON_RECORD_ID
 
 ## Usage
