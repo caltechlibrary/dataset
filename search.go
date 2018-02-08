@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -339,7 +339,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	cnt := 0
 	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
-		if src, err := c.ReadAsJSON(key); err == nil {
+		if src, err := c.readAsJSON(key); err == nil {
 			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
 				//idx.Index(key, rec)
 				batchIdx.Index(key, rec)
@@ -524,35 +524,6 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 	if err != nil {
 		return nil, err
 	}
-	// DEBUG
-	/*
-		{
-			"status":{
-				"total":1,"failed":0,"successful":1
-			},
-			"request":{
-					"query":{"query":"600622"},
-					"size":12,
-					"from":0,
-					"highlight":null,
-					"fields":null,
-					"facets":null,
-					"explain":false,
-					"sort":["-_score"],
-					"includeLocations":false
-			},
-			"hits":[
-				{"index":"testdata/search-test.bleve",
-				"id":"5061d597-7973-4804-8ecb-88b28ebdcc4e",
-				"score":0.3626164669331295,
-				"sort":["_score"]}
-			],
-			"total_hits":1,
-			"max_score":0.3626164669331295,
-			"took":145693,
-			"facets":{}
-			}
-	*/
 
 	if sampleSize > 0 {
 		if len(results.Hits) > sampleSize {

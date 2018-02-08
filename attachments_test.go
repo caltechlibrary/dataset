@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -28,17 +28,17 @@ import (
 func TestAttachments(t *testing.T) {
 	colName := "testdata/col3"
 	alphabet := "ab"
-	buckets := GenerateBucketNames(alphabet, 2)
+	buckets := generateBucketNames(alphabet, 2)
 
 	os.RemoveAll(colName)
 
-	collection, err := Create(colName, buckets)
+	collection, err := create(colName, buckets)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
 
-	record := map[string]string{
+	record := map[string]interface{}{
 		"name":  "freda",
 		"motto": "it's all about what you sense when you've have sense to sense it",
 	}
@@ -51,7 +51,7 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	if err := collection.Attach("freda", data); err != nil {
+	if err := collection.attach("freda", data); err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
@@ -63,12 +63,12 @@ func TestAttachments(t *testing.T) {
 			t.Errorf("Expected one file attached, %+v", files)
 			t.FailNow()
 		}
-		if files[0] != "impressed.txt" {
+		if files[0] != "impressed.txt 12" {
 			t.Errorf("Expected files[0] to be impressed, got %+v", files)
 			t.FailNow()
 		}
 	}
-	if attachments, err := collection.GetAttached("freda"); err != nil {
+	if attachments, err := collection.getAttached("freda"); err != nil {
 		t.Errorf("Expected attachments, %s", err)
 		t.FailNow()
 	} else {
@@ -84,7 +84,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if attachments, err := collection.GetAttached("freda", "impressed.txt"); err != nil {
+	if attachments, err := collection.getAttached("freda", "impressed.txt"); err != nil {
 		t.Errorf("Expected attachments, %s", err)
 		t.FailNow()
 	} else {
@@ -100,7 +100,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if err := collection.Attach("freda", &Attachment{"what/she/smokes.txt", []byte("A Havana Cigar")}); err != nil {
+	if err := collection.attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
 		t.Errorf("Appending attachment, %s", err)
 		t.FailNow()
 	}
@@ -113,13 +113,13 @@ func TestAttachments(t *testing.T) {
 			t.Errorf("Should have one file after appending an attachment (each call to attach should generate a fresh tarball)")
 		}
 		for _, s := range files {
-			if s != "impressed.txt" && s != "what/she/smokes.txt" {
+			if s != "impressed.txt" && s != "what/she/smokes.txt 14" {
 				t.Errorf("Unexpected file in list, %s", s)
 			}
 		}
 	}
 
-	if attachments, err := collection.GetAttached("freda", "what/she/smokes.txt"); err != nil {
+	if attachments, err := collection.getAttached("freda", "what/she/smokes.txt"); err != nil {
 		t.Errorf("Expected attachments, %s", err)
 		t.FailNow()
 	} else {

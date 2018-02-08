@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -80,7 +80,7 @@ func (c *Collection) sortBy(ids []string, dpath string, ascending bool) ([]strin
 	for _, id := range ids {
 		// Get the record for given id
 		rec := map[string]interface{}{}
-		if err := c.Read(id, &rec); err == nil {
+		if err := c.Read(id, rec); err == nil {
 			// if exist extract the value
 			if value, err := dotpath.Eval(dpath, rec); err == nil {
 				// Verify we have same type on data or return error

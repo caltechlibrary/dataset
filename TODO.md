@@ -3,32 +3,25 @@
 
 ## Bugs
 
-+ [ ] dataset -p read ... doesn't indent JSON output
-+ [ ] Memory consumption is high for attaching, figure out how to improve memory usage
-    + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
-+ [ ] Attachment listings are slow
-    + idea: assume all collection documents are an object, attach a `._attachments` to each document with attachment metadata, this would allow retrieval at same spead as document
-    + look at tarfs package and see if they is helpful
-+ [ ] Migrate cli functions in _dataset_ to package level
-+ [ ] Migrate the cli funciton in _dsindexer_ to package level
-+ [ ] Migrate cli functions in _dsfind_ to package level
-+ [ ] Migrate export functions into an appropriate package (e.g. are they part of _dataset_ command or something more general like storage?)
++ [ ] Document creating/managing indexes using the Bleve native cli
 
-## Next (v0.1.x)
+## Next (prep for v0.1.0)
 
-+ [ ] In _dsfind_ Add `-sample N` option
-+ [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
-+ [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
-+ [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
-+ [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
-+ [ ] In _dsws_ Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
++ [ ] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
 + [ ] In _dsindexer_ add a record to an existing index using an index def and record id
 + [ ] In _dsindexer_ update a record in an existing index using an index def and record id
 + [ ] In _dsindexer_ delete a record from an index using based on record id
 + [ ] Create an experimental Python native module for dataset package exported functions
++ [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
++ [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
++ [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
++ [ ] Confirm consensus on the minor release version number bump
 
 ## Roadmap (v0.2.x)
 
++ [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
++ [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
++ [ ] In _dsws_ Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
 + [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections
     + Browser based for UI, localhost restrict server for interacting with file system
     + Interactively build up of command strings, display results and saving off commands to runnable Bash scripts
@@ -47,6 +40,12 @@
 
 ## Someday, Maybe
 
++ [ ] Depreciate _dsindexer_ in favor of Bleve native cli
++ [ ] Memory consumption is high for attaching, figure out how to improve memory usage
+    + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
+    + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
+    + for size info, call Stats first to get the filesize to include in tarball header
++ [ ] Migrate export functions into an appropriate sub-packages (e.g. like how subpackages work in Bleve)
 + [ ] Move indexes and definitions into folder with collection.json
 + [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
@@ -75,6 +74,26 @@
 
 ## Completed
 
++ [x] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
++ [x] Attachment metaphor still needs better alignment with idiomatic go
+    + [x] AttachFile should be implemented with an io.Writer interface
++ [x] If you _dataset delete KEY_ it fails to remove any attachments before deleting the JSON file
++ [x] if you _dataset detach KEY_ a stale _Attachments remain
++ [x] _dataset_ collection records only store "objects" (e.g. start and end with curly brackets) rather than allow Arrays
++ [x] Add automatic metadata fields for `_Key` when creating a new JSON document in a collection
++ [x] Add automatic metadata field for `_Attachments` when attaching a file to a JSON document
++ [x] Use automated metadata when asking for list of attached files, e.g. `_Attachments` for a JSON document
++ [x] In _dsfind_ Add `-sample N` option
++ [x] -nl line should be defaulted to true in dataset
++ [x] -nl line should be defaulted to true in dsfind
++ [x] -nl line should be defaulted to true in dsindexer
++ [x] -nl line should be defaulted to true in dsws
++ [x] Migrate the cli funciton in _dsindexer_ to package level
++ [x] Migrate cli functions in _dsfind_ to package level
++ [x] Migrate cli functions in _dataset_ to package level
++ [x] Attachment listings are slow
+    + Add an `_Attachments` attribute to _dataset_ document with metadata about the attached file
++ [x] dataset -p read ... doesn't indent JSON output
 + [x] In _dataset keys_ Add `-sample N` option
 + [x] -help isn't showing help topics, -help sample isn't showing the sample help page.
 + [x] 'dataset keys FILTER' should emit keys as they are found to match rather then be processed as a group (unless we're sorting)

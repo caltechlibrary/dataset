@@ -35,6 +35,7 @@ import (
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -78,8 +79,8 @@ var (
 		"path":          docPath,
 		"attach":        addAttachments,
 		"attachments":   listAttachments,
-		"attached":      getAttachments,
-		"detach":        removeAttachments,
+		"detach":        getAttachments,
+		"prune":         removeAttachments,
 		"import":        importCSV,
 		"export":        exportCSV,
 		"extract":       extract,
@@ -88,9 +89,6 @@ var (
 		"import-gsheet": importGSheet,
 		"export-gsheet": exportGSheet,
 	}
-
-	// alphabet to use for buckets
-	alphabet = `abcdefghijklmnopqrstuvwxyz`
 )
 
 //
@@ -131,7 +129,7 @@ func collectionInit(args ...string) (string, error) {
 		return "", fmt.Errorf("missing a collection name")
 	}
 	name := args[0]
-	collection, err := dataset.Create(name, dataset.GenerateBucketNames(alphabet, 2))
+	collection, err := dataset.InitCollection(name)
 	if err != nil {
 		return "", err
 	}
@@ -194,19 +192,16 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
+	m := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(src), &m); err != nil {
+		return "", fmt.Errorf("%s must be a valid JSON Object", name)
+	}
 	if useUUID == true {
-		m := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(src), &m); err != nil {
-			return "", err
-		}
 		m["_uuid"] = name
-		if err := collection.Create(name, m); err != nil {
-			return "", err
-		}
-	} else if err := collection.CreateAsJSON(name, []byte(src)); err != nil {
+	}
+	if err := collection.Create(name, m); err != nil {
 		return "", err
 	}
-
 	return "OK", nil
 }
 
@@ -229,29 +224,26 @@ func readJSONDocs(args ...string) (string, error) {
 	defer collection.Close()
 
 	if len(args) == 1 {
-		src, err := collection.ReadAsJSON(args[0])
+		data := map[string]interface{}{}
+		err := collection.Read(args[0], data)
 		if err != nil {
 			return "", err
 		}
 		if prettyPrint {
-			data := map[string]interface{}{}
-			err := json.Unmarshal(src, &data)
+			src, err := json.MarshalIndent(data, "", "    ")
 			if err != nil {
-				return string(src), err
+				return "", err
 			}
-			src2, err := json.MarshalIndent(data, "", "    ")
-			if err != nil {
-				return string(src), err
-			}
-			return string(src2), nil
+			return string(src), nil
 		}
-		return string(src), nil
+		src, err := json.Marshal(data)
+		return string(src), err
 	}
 
-	var rec interface{}
-	recs := []interface{}{}
+	var rec map[string]interface{}
+	recs := []map[string]interface{}{}
 	for _, name := range args {
-		err := collection.Read(name, &rec)
+		err := collection.Read(name, rec)
 		if err != nil {
 			return "", err
 		}
@@ -280,10 +272,10 @@ func listJSONDocs(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	var rec interface{}
-	recs := []interface{}{}
+	var rec map[string]interface{}
+	recs := []map[string]interface{}{}
 	for _, name := range args {
-		err := collection.Read(name, &rec)
+		err := collection.Read(name, rec)
 		if err != nil {
 			return "", err
 		}
@@ -302,7 +294,7 @@ func updateJSONDoc(args ...string) (string, error) {
 	if len(args) != 2 {
 		return "", fmt.Errorf("Expected document name and JSON blob")
 	}
-	name, src := args[0], args[1]
+	name, src := args[0], []byte(args[1])
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
@@ -317,8 +309,11 @@ func updateJSONDoc(args ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-
-	if err := collection.UpdateAsJSON(name, []byte(src)); err != nil {
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(src, &data); err != nil {
+		return "", err
+	}
+	if err := collection.Update(name, data); err != nil {
 		return "", err
 	}
 	return "OK", nil
@@ -366,7 +361,7 @@ func joinJSONDoc(args ...string) (string, error) {
 	outObject := map[string]interface{}{}
 	newObject := map[string]interface{}{}
 
-	if err := collection.Read(key, &outObject); err != nil {
+	if err := collection.Read(key, outObject); err != nil {
 		return "", err
 	}
 	for _, src := range objects_src {
@@ -423,9 +418,8 @@ func collectionKeys(args ...string) (string, error) {
 		}
 		keys := collection.Keys()
 		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		dataset.ShuffleStrings(keys, random)
+		shuffle.Strings(keys, random)
 		if sampleSize <= len(keys) {
-
 			return strings.Join(keys[0:sampleSize], "\n"), nil
 		}
 		return strings.Join(collection.Keys(), "\n"), nil
@@ -455,7 +449,7 @@ func collectionKeys(args ...string) (string, error) {
 	// Process the filter
 	for _, key := range keyList {
 		data := map[string]interface{}{}
-		if err := collection.Read(key, &data); err == nil {
+		if err := collection.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				keys = append(keys, key)
 			}
@@ -465,7 +459,7 @@ func collectionKeys(args ...string) (string, error) {
 	// Apply Sample Size
 	if sampleSize > 0 {
 		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		dataset.ShuffleStrings(keys, random)
+		shuffle.Strings(keys, random)
 		if sampleSize <= len(keys) {
 			keys = keys[0:sampleSize]
 		}
@@ -534,7 +528,7 @@ func collectionCount(args ...string) (string, error) {
 	cnt := 0
 	for _, key := range keyList {
 		data := map[string]interface{}{}
-		if err := collection.Read(key, &data); err == nil {
+		if err := collection.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				cnt++
 			}
@@ -563,13 +557,13 @@ func streamFilterResults(w *os.File, keyList []string, filterExp string, sampleS
 		keyList = collection.Keys()
 		if sampleSize > 0 {
 			random := rand.New(rand.NewSource(time.Now().UnixNano()))
-			dataset.ShuffleStrings(keyList, random)
+			shuffle.Strings(keyList, random)
 			keyList = keyList[0:sampleSize]
 		}
 	}
 	for _, key := range keyList {
 		data := map[string]interface{}{}
-		if err := collection.Read(key, &data); err == nil {
+		if err := collection.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				fmt.Fprintln(w, key)
 			}
@@ -606,6 +600,9 @@ func addAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	err = collection.AttachFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -623,6 +620,9 @@ func listAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attachments KEY", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	results, err := collection.Attachments(key)
 	if err != nil {
 		return "", err
@@ -637,9 +637,12 @@ func getAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s detach KEY [FILENAMES]", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	err = collection.GetAttachedFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -654,9 +657,9 @@ func removeAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
+		return "", fmt.Errorf("syntax: %s prune KEY", os.Args[0])
 	}
-	err = collection.Detach(params[0], params[1:]...)
+	err = collection.Prune(params[0], params[1:]...)
 	if err != nil {
 		return "", err
 	}
@@ -770,7 +773,7 @@ func exportGSheet(params ...string) (string, error) {
 	}
 
 	var (
-		data interface{}
+		data map[string]interface{}
 	)
 
 	table := [][]interface{}{}
@@ -782,7 +785,7 @@ func exportGSheet(params ...string) (string, error) {
 		table = append(table, row)
 	}
 	for _, key := range keys {
-		if err := collection.Read(key, &data); err == nil {
+		if err := collection.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				// save row out.
 				row := []interface{}{}
@@ -888,7 +891,7 @@ func main() {
 	app.BoolVar(&showExamples, "e,examples", false, "display examples")
 	app.StringVar(&inputFName, "i,input", "", "input file name")
 	app.StringVar(&outputFName, "o,output", "", "output file name")
-	app.BoolVar(&newLine, "nl,newline", false, "if true add a trailing newline")
+	app.BoolVar(&newLine, "nl,newline", true, "if set to false to suppress a trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")

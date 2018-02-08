@@ -3,7 +3,7 @@
 //
 // @author R. S. Doiel, <rsdoiel@caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -105,7 +105,7 @@ func main() {
 	app.BoolVar(&showExamples, "e,examples", false, "display examples")
 	app.StringVar(&inputFName, "i,input", "", "input file name")
 	app.StringVar(&outputFName, "o,output", "", "output file name")
-	app.BoolVar(&newLine, "nl,newline", false, "if true add a trailing newline")
+	app.BoolVar(&newLine, "nl,newline", true, "if set to false to suppress a trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")

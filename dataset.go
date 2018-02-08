@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,6 +19,7 @@
 package dataset
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -41,7 +42,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.13-dev`
+	Version = `v0.0.17-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -119,8 +120,8 @@ func pickBucket(buckets []string, docNo int) string {
 	return buckets[(docNo % bucketCount)]
 }
 
-// GenerateBucketNames provides a list of permutations of requested length to use as bucket names
-func GenerateBucketNames(alphabet string, length int) []string {
+// generateBucketNames provides a list of permutations of requested length to use as bucket names
+func generateBucketNames(alphabet string, length int) []string {
 	l := []string{}
 	for combo := range generateCombinations(alphabet, length) {
 		if len(combo) == length {
@@ -196,12 +197,12 @@ func getStore(name string) (*storage.Store, string, error) {
 
 // InitCollection - creates a new collection with default alphabet and names of length 2.
 func InitCollection(name string) (*Collection, error) {
-	return Create(name, DefaultBucketNames)
+	return create(name, DefaultBucketNames)
 }
 
-// Create - create a new collection structure on disc
+// create - create a new collection structure on disc
 // name should be filesystem friendly
-func Create(name string, bucketNames []string) (*Collection, error) {
+func create(name string, bucketNames []string) (*Collection, error) {
 	if len(name) == 0 {
 		return nil, fmt.Errorf("missing a collection name")
 	}
@@ -299,63 +300,74 @@ func (c *Collection) Close() error {
 	return nil
 }
 
-// CreateAsJSON adds or replaces a JSON doc to a collection, if problem returns an error
-// name must be unique (treated like a key in a key/value store)
-func (c *Collection) CreateAsJSON(name string, src []byte) error {
-	keyName, name := keyAndFName(name)
-
-	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
-		return c.UpdateAsJSON(name, src)
+// keyAndFName converts a key (which may have things like slashes) into a disc friendly name and key value
+func keyAndFName(name string) (string, string) {
+	var keyName string
+	if strings.HasSuffix(name, ".json") == true {
+		return keyName, name
 	}
+	return name, url.QueryEscape(name) + ".json"
+}
+
+// Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
+// name must be unique. Document must be an JSON object (not an array).
+func (c *Collection) Create(name string, data map[string]interface{}) error {
+	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection is not valid, zero buckets")
 	}
+	// Enforce the _Key attribute
+	keyName, FName := keyAndFName(name)
+	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
+		return fmt.Errorf("%s already exists in collection", name)
+	}
+
+	data["_Key"] = keyName
+	src, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("%s, %s", name, err)
+	}
+
 	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
 	p := path.Join(c.Name, bucketName)
-	err := c.Store.MkdirAll(p, 0770)
+	err = c.Store.MkdirAll(p, 0770)
 	if err != nil {
 		return fmt.Errorf("mkdir %s %s", p, err)
 	}
 	// We've almost made it, save the key's bucket name and write the blob to bucket
 	c.KeyMap[keyName] = path.Join(bucketName)
-	err = c.Store.WriteFile(path.Join(p, name), src, 0664)
+	err = c.Store.WriteFile(path.Join(p, FName), src, 0664)
 	if err != nil {
 		return err
 	}
 	return c.saveMetadata()
 }
 
-// Create a JSON doc from an interface{} and adds it  to a collection, if problem returns an error
-// name must be unique
-func (c *Collection) Create(name string, data interface{}) error {
-	src, err := json.Marshal(data)
+// CreateFrom is a convienence function that takes an interface, converts it to a map[string]interface{} then calls Create.
+func (c *Collection) CreateFrom(name string, obj interface{}) error {
+	src, err := json.Marshal(obj)
 	if err != nil {
-		return fmt.Errorf("%s, %s", name, err)
+		return err
 	}
-	return c.CreateAsJSON(name, src)
+	data := map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		return err
+	}
+	return c.Create(name, data)
 }
 
-func keyAndFName(name string) (string, string) {
-	var keyName string
-	if strings.HasSuffix(name, ".json") == true {
-		keyName = strings.TrimSuffix(name, ".json")
-		return keyName, name
-	}
-	return name, name + ".json"
-}
-
-// ReadAsJSON finds a the record in the collection and returns the JSON source
-func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
-	var keyName string
-
-	keyName, name = keyAndFName(name)
+// readAsJSON finds a the record in the collection and returns the JSON source, it is used in search.go
+func (c *Collection) readAsJSON(name string) ([]byte, error) {
+	// Handle potentially URL encoded names
+	keyName, FName := keyAndFName(name)
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
-		return nil, fmt.Errorf("%q does not exist in %s", name, c.Name)
+		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, name))
+	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -364,59 +376,93 @@ func (c *Collection) ReadAsJSON(name string) ([]byte, error) {
 
 // Read finds the record in a collection, updates the data interface provide and if problem returns an error
 // name must exist or an error is returned
-func (c *Collection) Read(name string, data interface{}) error {
-	src, err := c.ReadAsJSON(name)
+func (c *Collection) Read(name string, data map[string]interface{}) error {
+	src, err := c.readAsJSON(name)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(src, &data)
-	if err != nil {
-		return fmt.Errorf("json.Unmarshal() failed for %s, %s", name, err)
+	decoder := json.NewDecoder(bytes.NewReader(src))
+	decoder.UseNumber()
+	if err := decoder.Decode(&data); err != nil {
+		return err
 	}
 	return nil
 }
 
-// UpdateAsJSON takes a JSON doc and writes it to a collection (note: Record must exist or returns an error)
-func (c *Collection) UpdateAsJSON(name string, src []byte) error {
-	var keyName string
-
-	keyName, name = keyAndFName(name)
-
-	bucketName, ok := c.KeyMap[keyName]
-	if ok != true {
-		return fmt.Errorf("%q does not exist", name)
-	}
-	p := path.Join(c.Name, bucketName)
-	err := c.Store.MkdirAll(p, 0770)
+// ReadInto is a convienence function where a Go stuct is converted into a map[string]interface{} then
+// passed to Read.
+func (c *Collection) ReadInto(name string, obj interface{}) error {
+	m := map[string]interface{}{}
+	err := c.Read(name, m)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() mkdir %s %s", p, err)
+		return err
 	}
-	return c.Store.WriteFile(path.Join(p, name), src, 0664)
+	src, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(src, &obj)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
-func (c *Collection) Update(name string, data interface{}) error {
+func (c *Collection) Update(name string, data map[string]interface{}) error {
 	src, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("WriteJSON() JSON encode %s, %s", name, err)
 	}
-	return c.UpdateAsJSON(name, src)
+	keyName, FName := keyAndFName(name)
+
+	bucketName, ok := c.KeyMap[keyName]
+	if ok != true {
+		return fmt.Errorf("%q does not exist", keyName)
+	}
+	p := path.Join(c.Name, bucketName)
+	err = c.Store.MkdirAll(p, 0770)
+	if err != nil {
+		return fmt.Errorf("WriteJSON() mkdir %s %s", p, err)
+	}
+	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
+}
+
+// UpdateFrom is a convience function that converts an interface{} into a map[string]interface{}
+// before calling update.
+func (c *Collection) UpdateFrom(name string, obj interface{}) error {
+	src, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	data := map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		return nil
+	}
+	return c.Update(name, data)
 }
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	var keyName string
-
-	keyName, name = keyAndFName(name)
+	keyName, FName := keyAndFName(name)
 
 	bucketName, ok := c.KeyMap[keyName]
 	if ok != true {
-		return fmt.Errorf("%q key not found", name)
+		return fmt.Errorf("%q key not found", keyName)
 	}
-	p := path.Join(c.Name, bucketName, name)
+
+	//NOTE: Need to remove any stale tarball before removing our record!
+	tarball := keyName + ".xml"
+	p := path.Join(c.Name, bucketName, tarball)
+	if err := c.Store.RemoveAll(p); err != nil {
+		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
+	}
+	p = path.Join(c.Name, bucketName, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
+
 	delete(c.KeyMap, keyName)
 	return c.saveMetadata()
 }
@@ -617,13 +663,13 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	}
 
 	var (
-		data       interface{}
 		cnt        int
 		row        []string
 		readErrors int
 	)
 	for _, key := range keys {
-		if err := c.Read(key, &data); err == nil {
+		data := map[string]interface{}{}
+		if err := c.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				// write row out.
 				row = []string{}
@@ -665,12 +711,12 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 	}
 
 	var (
-		data interface{}
+		data map[string]interface{}
 		rows []string
 	)
 	hash := make(map[string]bool)
 	for _, key := range keys {
-		if err := c.Read(key, &data); err == nil {
+		if err := c.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				col, err := dotpath.Eval(dotPath, data)
 				if err == nil {

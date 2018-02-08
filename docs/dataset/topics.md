@@ -2,12 +2,12 @@
 # Topics
 
 + [attach](attach.html)
-+ [attached](attached.html)
++ [detach](detach.html)
 + [attachments](attachments.html)
 + [count](count.html)
 + [create](create.html)
 + [delete](delete.html)
-+ [detach](detach.html)
++ [prune](prune.html)
 + [dotpath](dotpath.html)
 + [export-gsheets](export-gsheets.html)
 + [export](export.html)

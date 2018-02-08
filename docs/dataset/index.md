@@ -106,19 +106,19 @@ List attachments for "capt-jack"
 Get the attachments for "capt-jack" (this will untar in your current directory)
 
 ```shell
-   dataset attached capt-jack
+   dataset detach capt-jack
 ```
 
 Remove high-capt-jack.txt from "capt-jack"
 
 ```shell
-    dataset detach capt-jack high-capt-jack.txt
+    dataset prune capt-jack high-capt-jack.txt
 ```
 
 Remove all attachments from "capt-jack"
 
 ```shell
-   dataset detach capt-jack
+   dataset prune capt-jack
 ```
 
 Filter can be used to return only the record keys that return true for a given

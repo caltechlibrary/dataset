@@ -20,32 +20,31 @@
 </nav>
 
 <section>
-<h1>attached</h1>
+<h1>prune</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset attached JSON_RECORD_ID
-    dataset attached JSON_RECORD_ID ATTACHMENT_NAME
+<pre><code>    dataset prune JSON_RECORD_ID
+    dataset prune JSON_RECORD_ID ATTACHMENT_NAME
 </code></pre>
 
 <h2>Description</h2>
 
-<p>Attached writes out (to local disc) the items that have been attached to a JSON record in the collection with
-the matching JSON_RECORD_ID</p>
+<p>prune removes all or specific attachments to a JSON document. If only
+the key is supplied then all attachments are removed if an attachment
+name is supplied then only the specific attachment is removed.</p>
 
 <h2>Usage</h2>
 
-<p>Write out all the attached files for k1</p>
+<p>In the following examples <em>r1</em> is the JSON_RECORD_ID, <em>stats.xlsx</em> is the
+attached file. In the first example only <em>stats.xlsx</em> is removed in
+the second all attachments are removed.</p>
 
-<pre><code class="language-shell">    dataset attached k1
+<pre><code class="language-shell">    dataset prune k1 stats.xlsx
+    dataset prune k1
 </code></pre>
 
-<p>Write out only the <em>stats.xlsx</em> file attached to k1</p>
-
-<pre><code class="language-shell">    dataset attached k1 stats.xlsx
-</code></pre>
-
-<p>Related topics: attach, attachments, and detach</p>
+<p>Related topics: attach, detach, and attachments</p>
 
 </section>
 
