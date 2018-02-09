@@ -63,7 +63,7 @@ Options will override any corresponding environment settings.
     -id-file                  Create/Update an index for the ids in file
     -l, -license              display license
     -max-procs                Change the maximum number of CPUs that can executing simultaneously
-    -nl, -newline             if true add a trailing newline
+    -nl, -newline             if set to false to suppress a trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -73,4 +73,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.13-dev
+dsindexer v0.0.18-dev

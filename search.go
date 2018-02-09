@@ -40,22 +40,32 @@ import (
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/analysis/analyzer/custom"
 	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
 	"github.com/blevesearch/bleve/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/analysis/analyzer/web"
 	"github.com/blevesearch/bleve/analysis/lang/ar"
-	"github.com/blevesearch/bleve/analysis/lang/ca"
 	"github.com/blevesearch/bleve/analysis/lang/cjk"
 	"github.com/blevesearch/bleve/analysis/lang/ckb"
+	"github.com/blevesearch/bleve/analysis/lang/da"
 	"github.com/blevesearch/bleve/analysis/lang/de"
 	"github.com/blevesearch/bleve/analysis/lang/en"
 	"github.com/blevesearch/bleve/analysis/lang/es"
 	"github.com/blevesearch/bleve/analysis/lang/fa"
+	"github.com/blevesearch/bleve/analysis/lang/fi"
 	"github.com/blevesearch/bleve/analysis/lang/fr"
 	"github.com/blevesearch/bleve/analysis/lang/hi"
+	"github.com/blevesearch/bleve/analysis/lang/hu"
 	"github.com/blevesearch/bleve/analysis/lang/it"
+	"github.com/blevesearch/bleve/analysis/lang/nl"
+	"github.com/blevesearch/bleve/analysis/lang/no"
 	"github.com/blevesearch/bleve/analysis/lang/pt"
+	"github.com/blevesearch/bleve/analysis/lang/ro"
+	"github.com/blevesearch/bleve/analysis/lang/ru"
+	"github.com/blevesearch/bleve/analysis/lang/sv"
+	"github.com/blevesearch/bleve/analysis/lang/tr"
+
 	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
 	SearchType "github.com/blevesearch/bleve/search"
@@ -64,20 +74,37 @@ import (
 )
 
 var (
+	// analyzerNames
+	analyzerNames = []string{
+		custom.Name,
+		keyword.Name,
+		simple.Name,
+		standard.Name,
+		web.Name,
+	}
+
 	// languagesSupported by Analyzer
 	languagesSupported = map[string]string{
 		"ar":  ar.AnalyzerName,
-		"ca":  ca.ArticlesName,
 		"cjk": cjk.AnalyzerName,
 		"ckb": ckb.AnalyzerName,
+		"da":  da.AnalyzerName,
 		"de":  de.AnalyzerName,
 		"en":  en.AnalyzerName,
 		"es":  es.AnalyzerName,
 		"fa":  fa.AnalyzerName,
+		"fi":  fi.AnalyzerName,
 		"fr":  fr.AnalyzerName,
 		"hi":  hi.AnalyzerName,
+		"hu":  hu.AnalyzerName,
 		"it":  it.AnalyzerName,
+		"nl":  nl.AnalyzerName,
+		"no":  no.AnalyzerName,
 		"pt":  pt.AnalyzerName,
+		"ro":  ro.AnalyzerName,
+		"ru":  ru.AnalyzerName,
+		"sv":  sv.AnalyzerName,
+		"tr":  tr.AnalyzerName,
 	}
 
 	// supportedNamedTimeFormats for named Golang time strings (e.g. RFC3339) plus

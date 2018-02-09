@@ -37,3 +37,4 @@ bin/*
 demos/*
 *.swp
 *.bleve
+*.ds
