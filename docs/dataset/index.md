@@ -34,7 +34,7 @@ Options will override any corresponding environment settings.
     -h, -help                 display help
     -i, -input                input file name
     -l, -license              display license
-    -nl, -newline             if true add a trailing newline
+    -nl, -newline             if set to false suppress a trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -106,19 +106,19 @@ List attachments for "capt-jack"
 Get the attachments for "capt-jack" (this will untar in your current directory)
 
 ```shell
-   dataset detach capt-jack
+   dataset attached capt-jack
 ```
 
 Remove high-capt-jack.txt from "capt-jack"
 
 ```shell
-    dataset prune capt-jack high-capt-jack.txt
+    dataset detach capt-jack high-capt-jack.txt
 ```
 
 Remove all attachments from "capt-jack"
 
 ```shell
-   dataset prune capt-jack
+   dataset detach capt-jack
 ```
 
 Filter can be used to return only the record keys that return true for a given
@@ -211,4 +211,4 @@ Which would result in a record like
 
 
 
-dataset v0.0.13-dev
+dataset v0.0.17-dev

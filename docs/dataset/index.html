@@ -51,7 +51,7 @@ based JSON document keys (aka JSON document names).</p>
     -h, -help                 display help
     -i, -input                input file name
     -l, -license              display license
-    -nl, -newline             if true add a trailing newline
+    -nl, -newline             if set to false suppress a trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -114,17 +114,17 @@ of testdata/friends</p>
 
 <p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
 
-<pre><code class="language-shell">   dataset detach capt-jack
+<pre><code class="language-shell">   dataset attached capt-jack
 </code></pre>
 
 <p>Remove high-capt-jack.txt from &ldquo;capt-jack&rdquo;</p>
 
-<pre><code class="language-shell">    dataset prune capt-jack high-capt-jack.txt
+<pre><code class="language-shell">    dataset detach capt-jack high-capt-jack.txt
 </code></pre>
 
 <p>Remove all attachments from &ldquo;capt-jack&rdquo;</p>
 
-<pre><code class="language-shell">   dataset prune capt-jack
+<pre><code class="language-shell">   dataset detach capt-jack
 </code></pre>
 
 <p>Filter can be used to return only the record keys that return true for a given
@@ -201,7 +201,7 @@ three fields - name, email, age.</p>
 <pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
 </code></pre>
 
-<p>dataset v0.0.13-dev</p>
+<p>dataset v0.0.17-dev</p>
 
 </section>
 
