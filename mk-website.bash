@@ -25,7 +25,7 @@ mkpage "nav=nav.md" "content=markdown:$(cat INSTALL.md)" page.tmpl >install.html
 git add -f license.html install.html
 findfile -s ".md" . | while read P; do
 	DNAME=$(dirname "$P")
-	if [[ "${DNAME}" == "etc" ]]; then
+	if [[ "${DNAME}" = "etc" || "${DNAME:0:5}" = "demos" || "${DNAME:0:8}" = "examples" ]]; then
 		echo "Skipping $DNAME"
 	else
 		FNAME=$(basename "$P")

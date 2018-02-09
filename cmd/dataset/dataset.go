@@ -603,6 +603,11 @@ func addAttachments(params ...string) (string, error) {
 	if collection.HasKey(key) == false {
 		return "", fmt.Errorf("%q is not in collection", key)
 	}
+	for _, fname := range params[1:] {
+		if _, err := os.Stat(fname); os.IsNotExist(err) {
+			return "", fmt.Errorf("%s does not exist", fname)
+		}
+	}
 	err = collection.AttachFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -891,7 +896,7 @@ func main() {
 	app.BoolVar(&showExamples, "e,examples", false, "display examples")
 	app.StringVar(&inputFName, "i,input", "", "input file name")
 	app.StringVar(&outputFName, "o,output", "", "output file name")
-	app.BoolVar(&newLine, "nl,newline", true, "if set to false to suppress a trailing newline")
+	app.BoolVar(&newLine, "nl,newline", true, "if set to false suppress the trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")

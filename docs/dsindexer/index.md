@@ -1,12 +1,12 @@
 
-FIXME: Need to complete the JSON index definition re-write
-
 # USAGE
 
-	dsindexer [OPTIONS] INDEX_DEF_JSON INDEX_NAME
+    dsindexer [OPTIONS] INDEX_DEF_JSON INDEX_NAME
 
 ## SYNOPSIS
 
+
+FIXME: Need to complete the JSON index definition re-write
 
 ## Description
 
@@ -29,14 +29,30 @@ and your wanted an index of names and occupation then your index definition file
 look like
 
 ```json
-   {
-	   "name":{
-		   "object_path": ".name"
-	   },
-	   "occupation": {
-		   "object_path":".occupation"
-	   }
-   }
+    {
+        "type": {
+            "default": {
+                "enabled": true,
+                "dynamic": true,
+                "fields": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    },
+                    {
+                        "name": "occupation",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    }
+                ]
+            }
+        }
+    }
 ```
 
 Based on this definition the "id" and "dob" fields would not be included in the index.
@@ -65,7 +81,7 @@ Options will override any corresponding environment settings.
     -id-file                  Create/Update an index for the ids in file
     -l, -license              display license
     -max-procs                Change the maximum number of CPUs that can executing simultaneously
-    -nl, -newline             if true add a trailing newline
+    -nl, -newline             if set to false to suppress a trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -75,4 +91,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.13-dev
+dsindexer v0.0.18-dev

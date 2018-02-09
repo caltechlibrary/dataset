@@ -22,7 +22,8 @@
 <section>
 <h1>Defining Indexes</h1>
 
-<p><em>dsindexer</em> builds an index from an index definition file. The definition file is a JSON document.</p>
+<p><em>dsindexer</em> builds an index from an index definition file. The definition file is a JSON document. It is the same
+JSON structure as used by the <a href="https://blevesearch.com">bleve</a> command line tool.</p>
 
 <h2>A minimal index definition</h2>
 
@@ -49,17 +50,31 @@ with a field name in the index.</p>
 <p>You could create an index of last name and date of birth with the following definition</p>
 
 <pre><code class="language-json">    {
-        &quot;last_name&quot;: {
-            &quot;object_path&quot;: &quot;.last_name&quot;
-        },
-        &quot;dob&quot;: {
-            &quot;object_path&quot;: &quot;.bio.date_of_birth&quot;
+        &quot;types&quot;: {
+            &quot;default&quot;: {
+                &quot;enabled&quot;: true,
+                &quot;dynamic&quot;: true,
+                &quot;fields&quot;: [
+                    {
+                        &quot;name&quot;: &quot;last_name&quot;,
+                        &quot;type&quot;: &quot;text&quot;,
+                        &quot;analyzer&quot;: &quot;standard&quot;,
+                        &quot;store&quot;: true,
+                        &quot;index&quot;: true
+                    },
+                    {
+                        &quot;name&quot;: &quot;dob&quot;,
+                        &quot;type&quot;: &quot;datetime&quot;,
+                        &quot;store&quot;: true,
+                        &quot;index&quot;: true
+                    }
+                ]
+            }
         }
     }
 </code></pre>
 
-<p>The dotpath notation lets you reach into a nested JSON property and bring it out into a field that will
-be indexed.</p>
+<p>FIXME: Need to complete the re-write of the JSON index definition description for issue_8.</p>
 
 <h3>Working with field mappings</h3>
 

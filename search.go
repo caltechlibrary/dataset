@@ -69,6 +69,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/lang/ru"
 	"github.com/blevesearch/bleve/analysis/lang/sv"
 	"github.com/blevesearch/bleve/analysis/lang/tr"
+
 	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
 	SearchType "github.com/blevesearch/bleve/search"
