@@ -44,7 +44,7 @@ Or try the website version (you'll need a web browser)
     dsindexer characters.json
     dsindexer names.json
     dsindexer emails.json
-    dsws htdocs characters.bleve names.bleve emails.bleve
+    dsws . characters.bleve names.bleve emails.bleve
 ```
 
 ## the files

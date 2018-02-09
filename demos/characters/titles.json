@@ -1,0 +1,40 @@
+{
+    "type": {
+        "default": {
+            "enabled": true,
+            "dynamic": true,
+            "fields": [
+                {
+                    "name": "title",
+                    "type": "text",
+                    "anlyzer": "standard",
+                    "include_in_all": true,
+                    "index": true,
+                    "store": true
+                },
+                {
+                    "name": "year",
+                    "type": "datetime",
+                    "include_in_all": true,
+                    "index": true,
+                    "store": true
+                }
+            ],
+            "default_analyzer": ""
+        }
+    },
+    "default_mapping": {
+        "enabled": true,
+        "dynamic": true,
+        "default_analyzer": ""
+    },
+    "type_field": "_type",
+    "default_type": "_default",
+    "default_analyzer": "standard",
+    "default_datetime_parser": "dateTimeOptional",
+    "default_field": "_all",
+    "store_dynamic": true,
+    "index_dynamic": true,
+    "docvalues_dynamic": true,
+    "analysis": {}
+}

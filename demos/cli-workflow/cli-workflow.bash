@@ -76,50 +76,21 @@ cat<<DEF1 > characters.json
                 {
                     "name": "uuid",
                     "type": "text",
-                    "analyzer": "keyword",
-                    "store": true,
-                    "index": true,
-                    "include_term_vectors": true,
-                    "include_in_all": true,
-                    "docvalues": true
+                    "analyzer": "keyword"
                 },
                 {
                     "name": "name",
                     "type": "text",
-                    "analyzer": "simple",
-                    "store": true,
-                    "index": true,
-                    "include_term_vectors": true,
-                    "include_in_all": true,
-                    "docvalues": true
+                    "analyzer": "standard"
                 },
                 { 
                     "name": "email",
                     "type": "text",
-                    "analyzer": "simple",
-                    "store": true,
-                    "index": true,
-                    "include_term_vectors": true,
-                    "include_in_all": true,
-                    "docvalues": true
+                    "analyzer": "simple"
                 }
             ]
         }
-    },
-    "default_mapping": {
-        "enabled": true,
-        "dynamic": true,
-        "default_analyzer": ""
-    },
-    "type_field": "_type",
-    "default_type": "_default",
-    "default_analyzer": "standard",
-    "default_datetime_parser": "dateTimeOptional",
-    "default_field": "_all",
-    "store_dynamic": true,
-    "index_dynamic": true,
-    "docvalues_dynamic": true,
-    "analysis": {}
+    }
 }
 DEF1
 

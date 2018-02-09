@@ -1,12 +1,12 @@
 #!/bin/bash
-if [ -d characters ]; then
-    rm -fR characters.ds
+if [ -d "characters.ds" ]; then
+    rm -fR "characters.ds"
 fi
-if [ -d characters.bleve ]; then
-    rm -fR characters.bleve
+if [ -d "characters.bleve" ]; then
+    rm -fR "characters.bleve"
 fi
-$(dataset init characters.ds)
-dataset import htdocs/characters.csv
-dsindexer htdocs/characters.json characters.bleve
+$(dataset init "characters.ds")
+dataset import "characters.csv"
+dsindexer "characters.json" "characters.bleve"
 echo "Open your web browser and go to http://localhost:8011"
-dsws -dev-mode=true -t htdocs/search.tmpl htdocs characters.bleve
+dsws -dev-mode=true -t "search.tmpl" "." "characters.bleve"

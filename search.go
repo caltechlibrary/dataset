@@ -34,19 +34,41 @@ import (
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/analysis/analyzer/custom"
+	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
+	"github.com/blevesearch/bleve/analysis/analyzer/standard"
+	"github.com/blevesearch/bleve/analysis/analyzer/web"
 	"github.com/blevesearch/bleve/analysis/lang/ar"
-	"github.com/blevesearch/bleve/analysis/lang/ca"
+	//"github.com/blevesearch/bleve/analysis/lang/bg"
+	//"github.com/blevesearch/bleve/analysis/lang/ca"
 	"github.com/blevesearch/bleve/analysis/lang/cjk"
 	"github.com/blevesearch/bleve/analysis/lang/ckb"
+	//"github.com/blevesearch/bleve/analysis/lang/cs"
+	"github.com/blevesearch/bleve/analysis/lang/da"
 	"github.com/blevesearch/bleve/analysis/lang/de"
+	//"github.com/blevesearch/bleve/analysis/lang/el"
 	"github.com/blevesearch/bleve/analysis/lang/en"
 	"github.com/blevesearch/bleve/analysis/lang/es"
+	//"github.com/blevesearch/bleve/analysis/lang/eu"
 	"github.com/blevesearch/bleve/analysis/lang/fa"
+	"github.com/blevesearch/bleve/analysis/lang/fi"
 	"github.com/blevesearch/bleve/analysis/lang/fr"
+	//"github.com/blevesearch/bleve/analysis/lang/ga"
+	//"github.com/blevesearch/bleve/analysis/lang/gl"
 	"github.com/blevesearch/bleve/analysis/lang/hi"
+	"github.com/blevesearch/bleve/analysis/lang/hu"
+	//"github.com/blevesearch/bleve/analysis/lang/hy"
+	//"github.com/blevesearch/bleve/analysis/lang/id"
+	//"github.com/blevesearch/bleve/analysis/lang/in"
 	"github.com/blevesearch/bleve/analysis/lang/it"
+	"github.com/blevesearch/bleve/analysis/lang/nl"
+	"github.com/blevesearch/bleve/analysis/lang/no"
 	"github.com/blevesearch/bleve/analysis/lang/pt"
+	"github.com/blevesearch/bleve/analysis/lang/ro"
+	"github.com/blevesearch/bleve/analysis/lang/ru"
+	"github.com/blevesearch/bleve/analysis/lang/sv"
+	"github.com/blevesearch/bleve/analysis/lang/tr"
 	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
 	SearchType "github.com/blevesearch/bleve/search"
@@ -55,20 +77,47 @@ import (
 )
 
 var (
+	// analyzersSupperted by Analyzer in bleve v0.6.x
+	analyzerNames = []string{
+		simple.Name,
+		web.Name,
+		keyword.Name,
+		standard.Name,
+		custom.Name,
+	}
+
 	// languagesSupported by Analyzer
 	languagesSupported = map[string]string{
-		"ar":  ar.AnalyzerName,
-		"ca":  ca.ArticlesName,
+		"ar": ar.AnalyzerName,
+		//"bg":  bg.AnalyzerName,
+		//"ca":  ca.AnalyzerName,
 		"cjk": cjk.AnalyzerName,
 		"ckb": ckb.AnalyzerName,
-		"de":  de.AnalyzerName,
-		"en":  en.AnalyzerName,
-		"es":  es.AnalyzerName,
-		"fa":  fa.AnalyzerName,
-		"fr":  fr.AnalyzerName,
-		"hi":  hi.AnalyzerName,
-		"it":  it.AnalyzerName,
-		"pt":  pt.AnalyzerName,
+		//"cs":  cs.AnalyzerName,
+		"da": da.AnalyzerName,
+		"de": de.AnalyzerName,
+		//"el": el.AnalyzerName,
+		"en": en.AnalyzerName,
+		"es": es.AnalyzerName,
+		//"eu": eu.AnalyzerName,
+		"fa": fa.AnalyzerName,
+		"fi": fi.AnalyzerName,
+		"fr": fr.AnalyzerName,
+		//"ga": ga.AnalyzerName,
+		//"gl": gl.AnalyzerName,
+		"hi": hi.AnalyzerName,
+		"hu": hu.AnalyzerName,
+		//"hy": hy.AnalyzerName,
+		//"id": id.AnalyzerName,
+		//"in": in.AnalyzerName,
+		"it": it.AnalyzerName,
+		"nl": nl.AnalyzerName,
+		"no": no.AnalyzerName,
+		"pt": pt.AnalyzerName,
+		"ro": ro.AnalyzerName,
+		"ru": ru.AnalyzerName,
+		"sv": sv.AnalyzerName,
+		"tr": tr.AnalyzerName,
 	}
 
 	// supportedNamedTimeFormats for named Golang time strings (e.g. RFC3339) plus
@@ -133,10 +182,7 @@ func readIndexDefinition(mapName string) (*mapping.IndexMappingImpl, error) {
 	}
 	indexMapping := bleve.NewIndexMapping()
 	if err := json.Unmarshal(src, &indexMapping); err != nil {
-		return nil, fmt.Errorf("error unpacking definition: %s", err)
-	}
-	if indexMapping.DefaultAnalyzer == "" {
-		indexMapping.DefaultAnalyzer = simple.Name
+		return nil, err
 	}
 	return indexMapping, nil
 }
