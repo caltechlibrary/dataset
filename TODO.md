@@ -3,21 +3,10 @@
 
 ## Bugs
 
-+ [ ] Document creating/managing indexes using the Bleve native cli
-+ [ ] Update dataset documentation to use Bleve's JSON definitions for indexes
-+ [ ] Update demos to use Bleve's JSON definitions for indexes
-+ [ ] Re-write docs for JSON index definitions
-+ [ ] Re-write demos for JSON index definitions
-+ [ ] Re-write examples for JSON index definitions
-+ [ ] Re-write how-to for JSON index definitions
-+ [ ] Evaluate adding automatic Lunrjs index support for collections
 
 ## Next (prep for v0.1.0)
 
 + [ ] Create an experimental Python native module for dataset package
-+ [ ] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
-+ [ ] In _dsindexer_ 'add' to add/update one or more records in an existing index
-    + An array of objects should work as a Batch update
 + [ ] In _dsindexer_ 'delete' remove one or more records from an index using record ids
     + An array of ids should work as a batch delete
 + [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
@@ -83,6 +72,17 @@
 
 ## Completed
 
++ [x] Document creating/managing indexes using the Bleve native cli
++ [x] Update dataset documentation to use Bleve's JSON definitions for indexes
++ [x] Update demos to use Bleve's JSON definitions for indexes
++ [x] Re-write docs for JSON index definitions
++ [x] Re-write demos for JSON index definitions
++ [x] Re-write examples for JSON index definitions
++ [x] Re-write how-to for JSON index definitions
++ [x] Evaluate adding automatic Lunrjs index support for collections
++ [x] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
++ [x] In _dsindexer_ 'add' to add/update one or more records in an existing index
+    + An array of objects should work as a Batch update
 + [x] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
 + [x] Attachment metaphor still needs better alignment with idiomatic go
     + [x] AttachFile should be implemented with an io.Writer interface
