@@ -172,6 +172,7 @@ func createJSONDoc(args ...string) (string, error) {
 		}
 		src = args[0]
 	case len(args) == 2:
+		//FIXME: string spaces, URL Encode
 		name, src = args[0], args[1]
 	default:
 		return "", fmt.Errorf("Expected a document name and a JSON document")

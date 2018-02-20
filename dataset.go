@@ -42,7 +42,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.20-dev`
+	Version = `v0.0.21-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -195,6 +195,11 @@ func getStore(name string) (*storage.Store, string, error) {
 	return store, collectionName, nil
 }
 
+// normalizeKeyName() trims leading and trailing spaces
+func normalizeKeyName(s string) string {
+	return strings.TrimSpace(s)
+}
+
 // InitCollection - creates a new collection with default alphabet and names of length 2.
 func InitCollection(name string) (*Collection, error) {
 	return create(name, DefaultBucketNames)
@@ -316,6 +321,7 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection is not valid, zero buckets")
 	}
+	name = normalizeKeyName(name)
 	// Enforce the _Key attribute
 	keyName, FName := keyAndFName(name)
 	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
@@ -345,6 +351,7 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 
 // CreateFrom is a convienence function that takes an interface, converts it to a map[string]interface{} then calls Create.
 func (c *Collection) CreateFrom(name string, obj interface{}) error {
+	name = normalizeKeyName(name)
 	src, err := json.Marshal(obj)
 	if err != nil {
 		return err
@@ -359,6 +366,7 @@ func (c *Collection) CreateFrom(name string, obj interface{}) error {
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
+	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
 	bucketName, ok := c.KeyMap[keyName]
@@ -377,6 +385,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 // Read finds the record in a collection, updates the data interface provide and if problem returns an error
 // name must exist or an error is returned
 func (c *Collection) Read(name string, data map[string]interface{}) error {
+	name = normalizeKeyName(name)
 	src, err := c.ReadJSON(name)
 	if err != nil {
 		return err
@@ -392,6 +401,7 @@ func (c *Collection) Read(name string, data map[string]interface{}) error {
 // ReadInto is a convienence function where a Go stuct is converted into a map[string]interface{} then
 // passed to Read.
 func (c *Collection) ReadInto(name string, obj interface{}) error {
+	name = normalizeKeyName(name)
 	m := map[string]interface{}{}
 	err := c.Read(name, m)
 	if err != nil {
@@ -410,6 +420,7 @@ func (c *Collection) ReadInto(name string, obj interface{}) error {
 
 // Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
 func (c *Collection) Update(name string, data map[string]interface{}) error {
+	name = normalizeKeyName(name)
 	src, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("Update (JSON Marshal) %s, %s", name, err)
@@ -431,6 +442,7 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 // UpdateFrom is a convience function that converts an interface{} into a map[string]interface{}
 // before calling update.
 func (c *Collection) UpdateFrom(name string, obj interface{}) error {
+	name = normalizeKeyName(name)
 	src, err := json.Marshal(obj)
 	if err != nil {
 		return err
@@ -445,6 +457,7 @@ func (c *Collection) UpdateFrom(name string, obj interface{}) error {
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
+	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
 
 	bucketName, ok := c.KeyMap[keyName]
