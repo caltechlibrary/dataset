@@ -357,8 +357,8 @@ func (c *Collection) CreateFrom(name string, obj interface{}) error {
 	return c.Create(name, data)
 }
 
-// readAsJSON finds a the record in the collection and returns the JSON source, it is used in search.go
-func (c *Collection) readAsJSON(name string) ([]byte, error) {
+// ReadJSON finds a the record in the collection and returns the JSON source
+func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
 	bucketName, ok := c.KeyMap[keyName]
@@ -377,7 +377,7 @@ func (c *Collection) readAsJSON(name string) ([]byte, error) {
 // Read finds the record in a collection, updates the data interface provide and if problem returns an error
 // name must exist or an error is returned
 func (c *Collection) Read(name string, data map[string]interface{}) error {
-	src, err := c.readAsJSON(name)
+	src, err := c.ReadJSON(name)
 	if err != nil {
 		return err
 	}
@@ -412,7 +412,7 @@ func (c *Collection) ReadInto(name string, obj interface{}) error {
 func (c *Collection) Update(name string, data map[string]interface{}) error {
 	src, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() JSON encode %s, %s", name, err)
+		return fmt.Errorf("Update (JSON Marshal) %s, %s", name, err)
 	}
 	keyName, FName := keyAndFName(name)
 
@@ -423,7 +423,7 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 	p := path.Join(c.Name, bucketName)
 	err = c.Store.MkdirAll(p, 0770)
 	if err != nil {
-		return fmt.Errorf("WriteJSON() mkdir %s %s", p, err)
+		return fmt.Errorf("Update (mkdir) %s %s", p, err)
 	}
 	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
 }

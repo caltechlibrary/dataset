@@ -10,15 +10,17 @@
 + [ ] Re-write demos for JSON index definitions
 + [ ] Re-write examples for JSON index definitions
 + [ ] Re-write how-to for JSON index definitions
++ [ ] Evaluate adding automatic Lunrjs index support for collections
 
 ## Next (prep for v0.1.0)
 
 + [ ] Create an experimental Python native module for dataset package
 + [ ] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
-+ [ ] In _dsindexer_ add a record to an existing index using an index def and record id
-+ [ ] In _dsindexer_ update a record in an existing index using an index def and record id
-+ [ ] In _dsindexer_ delete a record from an index using based on record id
-+ [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
++ [ ] In _dsindexer_ 'add' to add/update one or more records in an existing index
+    + An array of objects should work as a Batch update
++ [ ] In _dsindexer_ 'delete' remove one or more records from an index using record ids
+    + An array of ids should work as a batch delete
++ [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
 + [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
 + [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
 + [ ] Confirm consensus on the minor release version number bump
@@ -46,6 +48,7 @@
 
 ## Someday, Maybe
 
++ [ ] Integrate lunrjs and an index.html file into the root folder of a collection, this could be used to provide a web browser read interface to the collection without installing dataset itself.
 + [ ] Depreciate _dsindexer_ in favor of Bleve native cli
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
