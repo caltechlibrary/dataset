@@ -27,8 +27,6 @@
 
 <h2>SYNOPSIS</h2>
 
-<p>FIXME: Need to complete the JSON index definition re-write</p>
-
 <h2>Description</h2>
 
 <p>dsindexer is a command line tool for creating a Bleve index based on records in a dataset
@@ -49,7 +47,7 @@ along with dot paths into the JSON collection record being indexed.</p>
 look like</p>
 
 <pre><code class="language-json">    {
-        &quot;type&quot;: {
+        &quot;types&quot;: {
             &quot;default&quot;: {
                 &quot;enabled&quot;: true,
                 &quot;dynamic&quot;: true,
@@ -95,8 +93,7 @@ look like</p>
     -i, -input                input file name
     -id-file                  Create/Update an index for the ids in file
     -l, -license              display license
-    -max-procs                Change the maximum number of CPUs that can executing simultaneously
-    -nl, -newline             if set to false to suppress a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -105,7 +102,7 @@ look like</p>
     -v, -version              display version
 </code></pre>
 
-<p>dsindexer v0.0.19-dev</p>
+<p>dsindexer v0.0.20-dev</p>
 
 </section>
 

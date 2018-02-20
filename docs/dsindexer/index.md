@@ -1,12 +1,10 @@
 
 # USAGE
 
-    dsindexer [OPTIONS] INDEX_DEF_JSON INDEX_NAME
+	dsindexer [OPTIONS] INDEX_DEF_JSON INDEX_NAME
 
 ## SYNOPSIS
 
-
-FIXME: Need to complete the JSON index definition re-write
 
 ## Description
 
@@ -30,7 +28,7 @@ look like
 
 ```json
     {
-        "type": {
+        "types": {
             "default": {
                 "enabled": true,
                 "dynamic": true,
@@ -80,8 +78,7 @@ Options will override any corresponding environment settings.
     -i, -input                input file name
     -id-file                  Create/Update an index for the ids in file
     -l, -license              display license
-    -max-procs                Change the maximum number of CPUs that can executing simultaneously
-    -nl, -newline             if set to false to suppress a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -91,4 +88,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.19-dev
+dsindexer v0.0.20-dev

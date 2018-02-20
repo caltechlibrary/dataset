@@ -37,7 +37,7 @@ supported.
     -indexes                  comma or colon delimited list of index names
     -k, -key                  Set the path for the SSL Key
     -l, -license              display license
-    -nl, -newline             if set to false to suppress a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -48,4 +48,4 @@ supported.
 ```
 
 
-dsws v0.0.19-dev
+dsws v0.0.20-dev
