@@ -756,7 +756,7 @@ func exportGSheet(params ...string) (string, error) {
 	filterExpr := params[3]
 	dotPaths := strings.Split(params[4], ",")
 	colNames := []string{}
-	if len(params) < 5 {
+	if len(params) <= 5 {
 		for _, val := range dotPaths {
 			colNames = append(colNames, val)
 		}
@@ -896,7 +896,7 @@ func main() {
 	app.BoolVar(&showExamples, "e,examples", false, "display examples")
 	app.StringVar(&inputFName, "i,input", "", "input file name")
 	app.StringVar(&outputFName, "o,output", "", "output file name")
-	app.BoolVar(&newLine, "nl,newline", true, "if set to false suppress a trailing newline")
+	app.BoolVar(&newLine, "nl,newline", true, "if set to false suppress the trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")

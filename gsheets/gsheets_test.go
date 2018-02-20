@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"testing"
 )
 
@@ -14,6 +15,7 @@ func TestReadSheet(t *testing.T) {
 		fmt.Fprintf(os.Stderr, "Skipping TestReadSheet, GOOGLE_CLIENT_SECRET_JOSN environment variable not set\n")
 		return
 	}
+	clientSecretJSON = path.Join("..", clientSecretJSON)
 	spreadSheetId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
 	sheetName := "Class Data"
 	cellRange := "A2:E"

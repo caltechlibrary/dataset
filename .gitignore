@@ -38,3 +38,4 @@ demos/*
 *.swp
 *.bleve
 *.ds
+*.dataset

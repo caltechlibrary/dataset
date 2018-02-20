@@ -9,7 +9,7 @@
 + [delete](delete.html)
 + [prune](prune.html)
 + [dotpath](dotpath.html)
-+ [export-gsheets](export-gsheets.html)
++ [export-gsheet](export-gsheet.html)
 + [export](export.html)
 + [extract](extract.html)
 + [haskeys](haskeys.html)

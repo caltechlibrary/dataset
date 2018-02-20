@@ -20,14 +20,30 @@ and your wanted an index of names and occupation then your index definition file
 look like
 
 ```json
-   {
-	   "name":{
-		   "object_path": ".name"
-	   },
-	   "occupation": {
-		   "object_path":".occupation"
-	   }
-   }
+    {
+        "types": {
+            "default": {
+                "enabled": true,
+                "dynamic": true,
+                "fields": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    },
+                    {
+                        "name": "occupation",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    }
+                ]
+            }
+        }
+    }
 ```
 
 Based on this definition the "id" and "dob" fields would not be included in the index.

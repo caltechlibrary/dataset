@@ -15,8 +15,8 @@ EOF
 }
 
 echo "Setting up test collections"
-COLLECTION_1="TestCollection-01-$(date +%Y%m%d)"
-COLLECTION_2="TestCollection-02-$(date +%Y%m%d)"
+COLLECTION_1="TestCollection-01-$(date +%Y%m%d).ds"
+COLLECTION_2="TestCollection-02-$(date +%Y%m%d).ds"
 if [ ! -d "${COLLECTION_1}" ]; then
 	echo "Initializing $COLLECTION_1"
 	bin/dataset init "${COLLECTION_1}"

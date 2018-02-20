@@ -14,11 +14,11 @@ if [[ "${NOAA_ACCESS_TOKEN}" == "" ]]; then
 fi
 
 # Make sure we have a dataset collection, if not create the collection
-dataset status noaa-demoset
+dataset status noaa-demoset.ds
 if [[ "$?" != "0" ]]; then
-    dataset init noaa-demoset
+    dataset init noaa-demoset.ds
 fi
-export DATASET=noaa-demoset
+export DATASET="noaa-demoset.ds"
 
 NOAA_API_URL="https://www.ncdc.noaa.gov/cdo-web/api/v2"
 

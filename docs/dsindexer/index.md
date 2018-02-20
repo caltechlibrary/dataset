@@ -27,14 +27,30 @@ and your wanted an index of names and occupation then your index definition file
 look like
 
 ```json
-   {
-	   "name":{
-		   "object_path": ".name"
-	   },
-	   "occupation": {
-		   "object_path":".occupation"
-	   }
-   }
+    {
+        "types": {
+            "default": {
+                "enabled": true,
+                "dynamic": true,
+                "fields": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    },
+                    {
+                        "name": "occupation",
+                        "type": "text",
+                        "analyzer": "standard",
+                        "store": true,
+                        "index": true
+                    }
+                ]
+            }
+        }
+    }
 ```
 
 Based on this definition the "id" and "dob" fields would not be included in the index.
@@ -62,8 +78,7 @@ Options will override any corresponding environment settings.
     -i, -input                input file name
     -id-file                  Create/Update an index for the ids in file
     -l, -license              display license
-    -max-procs                Change the maximum number of CPUs that can executing simultaneously
-    -nl, -newline             if set to false to suppress a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -73,4 +88,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.18-dev
+dsindexer v0.0.20-dev

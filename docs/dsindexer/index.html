@@ -46,14 +46,30 @@ along with dot paths into the JSON collection record being indexed.</p>
 <p>and your wanted an index of names and occupation then your index definition file could
 look like</p>
 
-<pre><code class="language-json">   {
-	   &quot;name&quot;:{
-		   &quot;object_path&quot;: &quot;.name&quot;
-	   },
-	   &quot;occupation&quot;: {
-		   &quot;object_path&quot;:&quot;.occupation&quot;
-	   }
-   }
+<pre><code class="language-json">    {
+        &quot;types&quot;: {
+            &quot;default&quot;: {
+                &quot;enabled&quot;: true,
+                &quot;dynamic&quot;: true,
+                &quot;fields&quot;: [
+                    {
+                        &quot;name&quot;: &quot;name&quot;,
+                        &quot;type&quot;: &quot;text&quot;,
+                        &quot;analyzer&quot;: &quot;standard&quot;,
+                        &quot;store&quot;: true,
+                        &quot;index&quot;: true
+                    },
+                    {
+                        &quot;name&quot;: &quot;occupation&quot;,
+                        &quot;type&quot;: &quot;text&quot;,
+                        &quot;analyzer&quot;: &quot;standard&quot;,
+                        &quot;store&quot;: true,
+                        &quot;index&quot;: true
+                    }
+                ]
+            }
+        }
+    }
 </code></pre>
 
 <p>Based on this definition the &ldquo;id&rdquo; and &ldquo;dob&rdquo; fields would not be included in the index.</p>
@@ -77,8 +93,7 @@ look like</p>
     -i, -input                input file name
     -id-file                  Create/Update an index for the ids in file
     -l, -license              display license
-    -max-procs                Change the maximum number of CPUs that can executing simultaneously
-    -nl, -newline             if set to false to suppress a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -87,7 +102,7 @@ look like</p>
     -v, -version              display version
 </code></pre>
 
-<p>dsindexer v0.0.18-dev</p>
+<p>dsindexer v0.0.20-dev</p>
 
 </section>
 

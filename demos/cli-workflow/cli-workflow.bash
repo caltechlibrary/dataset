@@ -18,9 +18,9 @@ for NAME in characters plays datatypes; do
         rm "${NAME}.json"
     fi
     # Remove stale dataset
-    if [ -d "${NAME}" ]; then
-        echo "Removing stale ${NAME}"
-        rm -fR "${NAME}"
+    if [ -d "${NAME}.ds" ]; then
+        echo "Removing stale ${NAME}.ds"
+        rm -fR "${NAME}.ds"
     fi
     # Remove stale indexe
     if [ -d "${NAME}.bleve" ]; then
@@ -68,108 +68,193 @@ CSV3
 # Generate the index mapping (we're calling it characters.json)
 cat<<DEF1 > characters.json
 {
-    "uuid":{
-        "object_path":".uuid",
-        "field_mapping":"text",
-        "analyzer":"keyword",
-        "store":true
-    },
-    "name":{
-        "object_path":".name",
-        "field_mapping":"text",
-        "analyzer":"simple",
-        "store":true
-    },
-    "email":{
-        "object_path":".email",
-        "field_mapping":"text",
-        "analyzer":"simple",
-        "store":true
+    "types": {
+        "default": {
+            "enabled": true,
+            "dynamic": true,
+            "fields": [
+                {
+                    "name": "uuid",
+                    "type": "text",
+                    "analyzer": "keyword"
+                },
+                {
+                    "name": "name",
+                    "type": "text",
+                    "analyzer": "standard"
+                },
+                { 
+                    "name": "email",
+                    "type": "text",
+                    "analyzer": "simple"
+                }
+            ]
+        }
     }
 }
 DEF1
 
 cat<<DEF2 > plays.json
 {
-    "uuid":{
-        "object_path":".uuid",
-        "field_mapping":"text",
-        "analyzer":"keyword",
-        "store":true
+    "types": {
+        "default": {
+            "enabled": true,
+            "dynamic": true,
+            "fields": [
+                {
+                    "name": "uuid",
+                    "type":"text",
+                    "analyzer":"keyword",
+                    "store": true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "title",
+                    "type":"text",
+                    "analyzer":"standard",
+                    "store": true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "year",
+                    "type":"datetime",
+                    "store": true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "characters",
+                    "type": "text",
+                    "analyzer": "simple",
+                    "store": true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                }
+            ],
+            "default_analyzer": ""
+        }
     },
-    "title": {
-        "object_path":".title",
-        "field_mapping":"text",
-        "analyzer":"standard",
-        "store":true
-    },
-    "year": {
-        "object_path":".year",
-        "field_mapping":"numeric",
-        "store":true
-    },
-    "characters": {
-        "object_path":".characters",
-        "field_mapping":"text",
-        "analyzer":"simple",
-        "store":true
-    }
+    "type_field": "_type",
+    "default_type": "_default",
+    "default_analyzer": "standard",
+    "default_datetime_parser": "dateTimeOptional",
+    "default_field": "_all",
+    "store_dynamic": true,
+    "index_dynamic": true,
+    "docvalues_dynamic": true,
+    "analysis": {}
 }
 DEF2
 
 cat<<DEF3 > datatypes.json
 {
-    "uuid":{
-        "object_path":".uuid",
-        "field_mapping":"text",
-        "analyzer":"keyword",
-        "store":true
+    "types": {
+        "default": {
+            "enabled": true,
+            "dynamic": true,
+            "fields": [
+                {
+                    "name": "uuid",
+                    "type":"text",
+                    "analyzer":"keyword",
+                    "store":true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "string",
+                    "type":"text",
+                    "analyzer":"standard",
+                    "store":true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "year",
+                    "type":"numeric",
+                    "store":true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "int",
+                    "type":"numeric",
+                    "analyzer":"simple",
+                    "store":true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "float",
+                    "type":"numeric",
+                    "analyzer":"simple",
+                    "store":true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name: "date",
+                    "type":"datetime",
+                    "store":true,
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                },
+                {
+                    "name": "geo",
+                    "type":"geo",
+                    "store":true
+                    "index": true,
+                    "include_term_vectors": true,
+                    "include_in_all": true,
+                    "docvalues": true
+                }
+          ],
+          "default_analyzer": ""
     },
-    "string": {
-        "object_path":".string",
-        "field_mapping":"text",
-        "analyzer":"standard",
-        "store":true
-    },
-    "year": {
-        "object_path":".year",
-        "field_mapping":"numeric",
-        "store":true
-    },
-    "int": {
-        "object_path":".int",
-        "field_mapping":"numeric",
-        "analyzer":"simple",
-        "store":true
-    },
-    "float": {
-        "object_path":".float",
-        "field_mapping":"numeric",
-        "analyzer":"simple",
-        "store":true
-    },
-    "date": {
-        "object_path":".date",
-        "field_mapping":"datetime",
-        "store":true
-    },
-    "geo": {
-        "object_path":".geo",
-        "field_mapping":"geopoint",
-        "store":true
-    }
+    "type_field": "_type",
+    "default_type": "_default",
+    "default_analyzer": "standard",
+    "default_datetime_parser": "dateTimeOptional",
+    "default_field": "_all",
+    "store_dynamic": true,
+    "index_dynamic": true,
+    "docvalues_dynamic": true,
+    "analysis": {}
+
 }
 DEF3
 
 # Initialize an empty repository
-$(dataset init characters)
+$(dataset init characters.ds)
 # Load the data
 dataset -uuid import characters.csv
 dsindexer characters.json
-$(dataset init plays)
+$(dataset init plays.ds)
 dataset -uuid import plays.csv
 dsindexer plays.json
-$(dataset init datatypes)
+$(dataset init datatypes.ds)
 dataset -uuid import datatypes.csv
 dsindexer datatypes.json
 unset DATASET
