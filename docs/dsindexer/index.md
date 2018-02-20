@@ -91,4 +91,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.18-dev
+dsindexer v0.0.19-dev
