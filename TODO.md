@@ -6,6 +6,7 @@
 
 ## Next (prep for v0.1.0)
 
++ [ ] Normalize Create, Read, Update to have CreateJSON, ReadJSON, UpdateJSON counter parts for working with non-map[string]interface{} objects
 + [ ] Create an experimental Python native module for dataset package
 + [ ] In _dsindexer_ 'delete' remove one or more records from an index using record ids
     + An array of ids should work as a batch delete

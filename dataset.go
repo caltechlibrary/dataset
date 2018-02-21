@@ -314,32 +314,36 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
-// Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
-// name must be unique. Document must be an JSON object (not an array).
-func (c *Collection) Create(name string, data map[string]interface{}) error {
+// CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
+func (c *Collection) CreateJSON(name string, src []byte) error {
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection is not valid, zero buckets")
 	}
+
+	// Enforce the _Key attribute is unique and does not exist in collection already
 	name = normalizeKeyName(name)
-	// Enforce the _Key attribute
 	keyName, FName := keyAndFName(name)
 	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
 		return fmt.Errorf("%s already exists in collection", name)
 	}
 
-	data["_Key"] = keyName
-	src, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("%s, %s", name, err)
+	// Make sure we have an "object" not an array object in JSON notation
+	if bytes.HasPrefix(src, []byte(`{`)) == false {
+		return fmt.Errorf("dataset can only stores JSON objects")
+	}
+	// Add a _Key value if needed in the JSON source
+	if bytes.Contains(src, []byte(`"_Key"`)) == false {
+		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
 	}
 
 	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
 	p := path.Join(c.Name, bucketName)
-	err = c.Store.MkdirAll(p, 0770)
+	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
 		return fmt.Errorf("mkdir %s %s", p, err)
 	}
+
 	// We've almost made it, save the key's bucket name and write the blob to bucket
 	c.KeyMap[keyName] = path.Join(bucketName)
 	err = c.Store.WriteFile(path.Join(p, FName), src, 0664)
@@ -347,21 +351,6 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 		return err
 	}
 	return c.saveMetadata()
-}
-
-// CreateFrom is a convienence function that takes an interface, converts it to a map[string]interface{} then calls Create.
-func (c *Collection) CreateFrom(name string, obj interface{}) error {
-	name = normalizeKeyName(name)
-	src, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-	data := map[string]interface{}{}
-	err = json.Unmarshal(src, &data)
-	if err != nil {
-		return err
-	}
-	return c.Create(name, data)
 }
 
 // ReadJSON finds a the record in the collection and returns the JSON source
@@ -382,10 +371,51 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	return src, nil
 }
 
+// UpdateJSON a JSON doc in a collection, returns an error if there is a problem
+func (c *Collection) UpdateJSON(name string, src []byte) error {
+	// NOTE: Make sure collection exists before doing anything else!!
+	if len(c.Buckets) == 0 {
+		return fmt.Errorf("collection is not valid, zero buckets")
+	}
+
+	// Make sure Key exists before proceeding with update
+	name = normalizeKeyName(name)
+	keyName, FName := keyAndFName(name)
+	bucketName, ok := c.KeyMap[keyName]
+	if ok != true {
+		return fmt.Errorf("%q does not exist", keyName)
+	}
+
+	// Make sure we have an "object" not an array object in JSON notation
+	if bytes.HasPrefix(src, []byte(`{`)) == false {
+		return fmt.Errorf("dataset can only stores JSON objects")
+	}
+	// Add a _Key value if needed in the JSON source
+	if bytes.Contains(src, []byte(`"_Key"`)) == false {
+		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
+	}
+
+	p := path.Join(c.Name, bucketName)
+	err := c.Store.MkdirAll(p, 0770)
+	if err != nil {
+		return fmt.Errorf("Update (mkdir) %s %s", p, err)
+	}
+	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
+}
+
+// Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
+// name must be unique. Document must be an JSON object (not an array).
+func (c *Collection) Create(name string, data map[string]interface{}) error {
+	src, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("%s, %s", name, err)
+	}
+	return c.CreateJSON(name, src)
+}
+
 // Read finds the record in a collection, updates the data interface provide and if problem returns an error
 // name must exist or an error is returned
 func (c *Collection) Read(name string, data map[string]interface{}) error {
-	name = normalizeKeyName(name)
 	src, err := c.ReadJSON(name)
 	if err != nil {
 		return err
@@ -398,61 +428,13 @@ func (c *Collection) Read(name string, data map[string]interface{}) error {
 	return nil
 }
 
-// ReadInto is a convienence function where a Go stuct is converted into a map[string]interface{} then
-// passed to Read.
-func (c *Collection) ReadInto(name string, obj interface{}) error {
-	name = normalizeKeyName(name)
-	m := map[string]interface{}{}
-	err := c.Read(name, m)
-	if err != nil {
-		return err
-	}
-	src, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(src, &obj)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
 func (c *Collection) Update(name string, data map[string]interface{}) error {
-	name = normalizeKeyName(name)
 	src, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("Update (JSON Marshal) %s, %s", name, err)
+		return fmt.Errorf("Update can't marshal into JSON %s, %s", name, err)
 	}
-	keyName, FName := keyAndFName(name)
-
-	bucketName, ok := c.KeyMap[keyName]
-	if ok != true {
-		return fmt.Errorf("%q does not exist", keyName)
-	}
-	p := path.Join(c.Name, bucketName)
-	err = c.Store.MkdirAll(p, 0770)
-	if err != nil {
-		return fmt.Errorf("Update (mkdir) %s %s", p, err)
-	}
-	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
-}
-
-// UpdateFrom is a convience function that converts an interface{} into a map[string]interface{}
-// before calling update.
-func (c *Collection) UpdateFrom(name string, obj interface{}) error {
-	name = normalizeKeyName(name)
-	src, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-	data := map[string]interface{}{}
-	err = json.Unmarshal(src, &data)
-	if err != nil {
-		return nil
-	}
-	return c.Update(name, data)
+	return c.UpdateJSON(name, src)
 }
 
 // Delete removes a JSON doc from a collection
@@ -466,7 +448,7 @@ func (c *Collection) Delete(name string) error {
 	}
 
 	//NOTE: Need to remove any stale tarball before removing our record!
-	tarball := keyName + ".xml"
+	tarball := keyName + ".tar"
 	p := path.Join(c.Name, bucketName, tarball)
 	if err := c.Store.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
