@@ -49,4 +49,8 @@ like a k/v store where the operations are on files not within them.
     + [Golang Quickstart docs](https://developers.google.com/sheets/api/quickstart/go)
         + where to go to setup credentials and project specifics, we're using Go for our project
 
+## Extending Data set reach with shared libraries
 
+### R
+
++ [Writing R Extensions](https://cran.r-project.org/doc/manuals/R-exts.html)
