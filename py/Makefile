@@ -17,14 +17,17 @@ EXT = .so
 ifeq ($(OS), Windows)
 	EXT = .dll
 	ARCH = x86_64
+	os = windows
 endif
 ifeq ($(OS), Darwin)
 	EXT = .dylib
 	ARCH = $(shell arch)
+	OS = maxosx
 endif
 ifeq ($(OS), Linux)
 	EXT = .so
 	ARCH = $(shell arch)
+	OS = linux
 endif
 ifeq ($(ARCH), i386)
 	ARCH = amd64
@@ -45,11 +48,11 @@ clean:
 	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
 	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
 	if [ -d "TestCollection.ds" ]; then rm -fR "TestCollection.ds"; fi	
-	if [ -f "py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" ]; then rm "py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip"; fi
 
 release:
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
-	zip -r "py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" "$(LIB_NAME).py" "$(LIB_NAME)$(EXT)" "README.md"
+	mkdir -p ../dist
+	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" "$(LIB_NAME).py" "$(LIB_NAME)$(EXT)" "README.md"
 
 status:
 	git status
