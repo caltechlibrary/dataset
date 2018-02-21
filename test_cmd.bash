@@ -64,6 +64,9 @@ function test_dataset() {
     assert_equal "create 1:" "$EXPECTED" "$RESULT" 
     RESULT=$(echo -n '{"two":2}' | bin/dataset -i - create 2)
     assert_equal "create 2:" "$EXPECTED" "$RESULT" 
+    echo '{"three":3}' >"testdata/test3.json"
+    RESULT=$(bin/dataset -i testdata/test3.json create 3)
+    assert_equal "create 3:" "$EXPECTED" "$RESULT" 
 
     # Test read
     EXPECTED='{"_Key":"1","one":1}'
@@ -74,7 +77,7 @@ function test_dataset() {
     assert_equal "read 1:" "$EXPECTED" "$RESULT"
 
     # Test keys
-    EXPECTED="1 2 "
+    EXPECTED="1 2 3 "
     RESULT=$(bin/dataset keys | sort | tr "\n" " ")
     assert_equal "keys:" "$EXPECTED" "$RESULT"
     EXPECTED="1 "

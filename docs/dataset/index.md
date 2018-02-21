@@ -34,7 +34,7 @@ Options will override any corresponding environment settings.
     -h, -help                 display help
     -i, -input                input file name
     -l, -license              display license
-    -nl, -newline             if true add a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -211,4 +211,4 @@ Which would result in a record like
 
 
 
-dataset v0.0.13-dev
+dataset v0.0.20-dev

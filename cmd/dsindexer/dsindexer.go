@@ -5,7 +5,7 @@
 // @author R. S. Doiel, <rsdoiel@caltech.edu>
 //
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -52,7 +52,6 @@ var (
 	batchSize      int
 	updateIndex    bool
 	idListFName    string
-	goMaxProcs     int
 )
 
 func init() {
@@ -89,7 +88,7 @@ func main() {
 	app.BoolVar(&showExamples, "e,examples", false, "display examples")
 	app.StringVar(&inputFName, "i,input", "", "input file name")
 	app.StringVar(&outputFName, "o,output", "", "output file name")
-	app.BoolVar(&newLine, "nl,newline", true, "if set to false to suppress a trailing newline")
+	app.BoolVar(&newLine, "nl,newline", true, "if set to false suppress the trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
@@ -100,7 +99,6 @@ func main() {
 	app.IntVar(&batchSize, "batch", 0, "Set the size index batch, default is 100")
 	app.BoolVar(&updateIndex, "update", false, "updating is slow, use this app if you want to update an exists")
 	app.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
-	app.IntVar(&goMaxProcs, "max-procs", -1, "Change the maximum number of CPUs that can executing simultaneously")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	//FIXME: If the application is verb based add your verbs here

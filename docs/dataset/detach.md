@@ -10,21 +10,22 @@
 
 ## Description
 
-detach removes all or specific attachments to a JSON document. If only
-the key is supplied then all attachments are removed if an attachment
-name is supplied then only the specific attachment is removed.
+detach writes out (to local disc) the items that have been attached to a JSON record in the collection with
+the matching JSON_RECORD_ID
 
 ## Usage
 
-In the following examples _r1_ is the JSON_RECORD_ID, *stats.xlsx* is the 
-attached file. In the first example only *stats.xlsx* is removed in
-the second all attachments are removed.
-
+Write out all the attached files for k1
 
 ```shell
-    dataset detach k1 stats.xlsx
     dataset detach k1
 ```
 
-Related topics: attach, attached, and attachments
+Write out only the *stats.xlsx* file attached to k1
+
+```shell
+    dataset detach k1 stats.xlsx
+```
+
+Related topics: attach, attachments, and prune
 

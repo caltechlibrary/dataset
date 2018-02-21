@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -227,7 +227,7 @@ func TestCollection(t *testing.T) {
 }
 
 func TestComplexKeys(t *testing.T) {
-	colName := "testdata/col2"
+	colName := "testdata/col2.ds"
 	buckets := generateBucketNames("ab", 2)
 	if len(buckets) != 4 {
 		t.Errorf("Should have four buckets %+v", buckets)

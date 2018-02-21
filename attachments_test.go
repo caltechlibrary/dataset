@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -26,7 +26,7 @@ import (
 )
 
 func TestAttachments(t *testing.T) {
-	colName := "testdata/col3"
+	colName := "testdata/col3.ds"
 	alphabet := "ab"
 	buckets := generateBucketNames(alphabet, 2)
 
@@ -135,7 +135,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if err := collection.Detach("freda", "what/she/smokes.txt"); err != nil {
+	if err := collection.Prune("freda", "what/she/smokes.txt"); err != nil {
 		t.Errorf("Delete one file, %s", err)
 	}
 	tarDocPath, err := collection.DocPath("freda")
@@ -150,7 +150,7 @@ func TestAttachments(t *testing.T) {
 		t.FailNow()
 	}
 
-	if err := collection.Detach("freda"); err != nil {
+	if err := collection.Prune("freda"); err != nil {
 		t.Errorf("Delete whole tarball, %s", err)
 		t.FailNow()
 	}

@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -27,35 +27,49 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"path"
 	"sort"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/dotpath"
-	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/analysis/analyzer/custom"
 	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/analysis/analyzer/simple"
 	"github.com/blevesearch/bleve/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/analysis/analyzer/web"
 	"github.com/blevesearch/bleve/analysis/lang/ar"
-	"github.com/blevesearch/bleve/analysis/lang/ca"
+	//"github.com/blevesearch/bleve/analysis/lang/bg"
+	//"github.com/blevesearch/bleve/analysis/lang/ca"
 	"github.com/blevesearch/bleve/analysis/lang/cjk"
 	"github.com/blevesearch/bleve/analysis/lang/ckb"
+	//"github.com/blevesearch/bleve/analysis/lang/cs"
+	"github.com/blevesearch/bleve/analysis/lang/da"
 	"github.com/blevesearch/bleve/analysis/lang/de"
+	//"github.com/blevesearch/bleve/analysis/lang/el"
 	"github.com/blevesearch/bleve/analysis/lang/en"
 	"github.com/blevesearch/bleve/analysis/lang/es"
+	//"github.com/blevesearch/bleve/analysis/lang/eu"
 	"github.com/blevesearch/bleve/analysis/lang/fa"
+	"github.com/blevesearch/bleve/analysis/lang/fi"
 	"github.com/blevesearch/bleve/analysis/lang/fr"
+	//"github.com/blevesearch/bleve/analysis/lang/ga"
+	//"github.com/blevesearch/bleve/analysis/lang/gl"
 	"github.com/blevesearch/bleve/analysis/lang/hi"
+	"github.com/blevesearch/bleve/analysis/lang/hu"
+	//"github.com/blevesearch/bleve/analysis/lang/hy"
+	//"github.com/blevesearch/bleve/analysis/lang/id"
+	//"github.com/blevesearch/bleve/analysis/lang/in"
 	"github.com/blevesearch/bleve/analysis/lang/it"
+	"github.com/blevesearch/bleve/analysis/lang/nl"
+	"github.com/blevesearch/bleve/analysis/lang/no"
 	"github.com/blevesearch/bleve/analysis/lang/pt"
+	"github.com/blevesearch/bleve/analysis/lang/ro"
+	"github.com/blevesearch/bleve/analysis/lang/ru"
+	"github.com/blevesearch/bleve/analysis/lang/sv"
+	"github.com/blevesearch/bleve/analysis/lang/tr"
+
 	//"github.com/blevesearch/bleve/geo"
 	"github.com/blevesearch/bleve/mapping"
 	SearchType "github.com/blevesearch/bleve/search"
@@ -64,20 +78,47 @@ import (
 )
 
 var (
+	// analyzersSupperted by Analyzer in bleve v0.6.x
+	analyzerNames = []string{
+		simple.Name,
+		web.Name,
+		keyword.Name,
+		standard.Name,
+		custom.Name,
+	}
+
 	// languagesSupported by Analyzer
 	languagesSupported = map[string]string{
-		"ar":  ar.AnalyzerName,
-		"ca":  ca.ArticlesName,
+		"ar": ar.AnalyzerName,
+		//"bg":  bg.AnalyzerName,
+		//"ca":  ca.AnalyzerName,
 		"cjk": cjk.AnalyzerName,
 		"ckb": ckb.AnalyzerName,
-		"de":  de.AnalyzerName,
-		"en":  en.AnalyzerName,
-		"es":  es.AnalyzerName,
-		"fa":  fa.AnalyzerName,
-		"fr":  fr.AnalyzerName,
-		"hi":  hi.AnalyzerName,
-		"it":  it.AnalyzerName,
-		"pt":  pt.AnalyzerName,
+		//"cs":  cs.AnalyzerName,
+		"da": da.AnalyzerName,
+		"de": de.AnalyzerName,
+		//"el": el.AnalyzerName,
+		"en": en.AnalyzerName,
+		"es": es.AnalyzerName,
+		//"eu": eu.AnalyzerName,
+		"fa": fa.AnalyzerName,
+		"fi": fi.AnalyzerName,
+		"fr": fr.AnalyzerName,
+		//"ga": ga.AnalyzerName,
+		//"gl": gl.AnalyzerName,
+		"hi": hi.AnalyzerName,
+		"hu": hu.AnalyzerName,
+		//"hy": hy.AnalyzerName,
+		//"id": id.AnalyzerName,
+		//"in": in.AnalyzerName,
+		"it": it.AnalyzerName,
+		"nl": nl.AnalyzerName,
+		"no": no.AnalyzerName,
+		"pt": pt.AnalyzerName,
+		"ro": ro.AnalyzerName,
+		"ru": ru.AnalyzerName,
+		"sv": sv.AnalyzerName,
+		"tr": tr.AnalyzerName,
 	}
 
 	// supportedNamedTimeFormats for named Golang time strings (e.g. RFC3339) plus
@@ -131,105 +172,20 @@ func isTrueValue(val interface{}) bool {
 	return false
 }
 
-// readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
-func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *mapping.IndexMappingImpl, error) {
+// readIndexDefinition reads in a JSON document and converts it to a Bleve index mapping.
+func readIndexDefinition(mapName string) (*mapping.IndexMappingImpl, error) {
 	var (
 		src []byte
 		err error
 	)
-
 	if src, err = ioutil.ReadFile(mapName); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	definitions := map[string]map[string]interface{}{}
-	if err := json.Unmarshal(src, &definitions); err != nil {
-		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
-	}
-
 	indexMapping := bleve.NewIndexMapping()
-	indexMapping.DefaultAnalyzer = simple.Name
-
-	//NOTE: convert definition into an appropriate index mappings, analyzers and such
-	var fieldMap *mapping.FieldMapping
-
-	for fieldName, defn := range definitions {
-		if templateName, ok := defn["object_template"].(string); ok == true {
-			// NOTE: if we have an object_template, read it in, parse it and add it to the
-			// definitions.
-			tmpl, err := template.New(path.Base(templateName)).Funcs(tmplfn.AllFuncs()).ParseFiles(templateName)
-			if err != nil {
-				return definitions, indexMapping, fmt.Errorf("Can't parse template %s for %s,%s", templateName, fieldName, err)
-			}
-			definitions[fieldName]["object_tmpl"] = tmpl
-		}
-		if fieldType, ok := defn["field_mapping"]; ok == true {
-			switch fieldType.(string) {
-			case "numeric":
-				fieldMap = bleve.NewNumericFieldMapping()
-			case "datetime":
-				fieldMap = bleve.NewDateTimeFieldMapping()
-			case "boolean":
-				fieldMap = bleve.NewBooleanFieldMapping()
-			case "geopoint":
-				fieldMap = bleve.NewGeoPointFieldMapping()
-			case "text":
-				fieldMap = bleve.NewTextFieldMapping()
-			default:
-				fieldMap = bleve.NewTextFieldMapping()
-			}
-		} else {
-			fieldMap = bleve.NewTextFieldMapping()
-		}
-		if sVal, ok := defn["store"]; ok == true {
-			if isTrueValue(sVal) == true {
-				fieldMap.Store = true
-			} else {
-				fieldMap.Store = false
-			}
-		}
-		if analyzerType, ok := defn["analyzer"]; ok == true {
-			switch analyzerType.(string) {
-			case "keyword":
-				fieldMap.Analyzer = keyword.Name
-			case "simple":
-				fieldMap.Analyzer = simple.Name
-			case "standard":
-				fieldMap.Analyzer = standard.Name
-			case "web":
-				fieldMap.Analyzer = web.Name
-			case "lang":
-				if langCode, ok := defn["lang"]; ok == true {
-					if langAnalyzer, ok := languagesSupported[langCode.(string)]; ok == true {
-						fieldMap.Analyzer = langAnalyzer
-					}
-				}
-			}
-		}
-		if sVal, ok := defn["include_in_all"]; ok == true {
-			if isTrueValue(sVal) == true {
-				fieldMap.IncludeInAll = true
-			} else {
-				fieldMap.IncludeInAll = false
-			}
-		}
-		if sVal, ok := defn["include_term_vectors"]; ok == true {
-			if isTrueValue(sVal) == true {
-				fieldMap.IncludeTermVectors = true
-			} else {
-				fieldMap.IncludeTermVectors = false
-			}
-		}
-		if sVal, ok := defn["date_format"]; ok == true {
-			if fmt, ok := supportedNamedTimeFormats[strings.ToLower(strings.TrimSpace(sVal.(string)))]; ok == true {
-				fieldMap.DateFormat = fmt
-			} else {
-				fieldMap.DateFormat = strings.TrimSpace(sVal.(string))
-			}
-		}
-		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
+	if err := json.Unmarshal(src, &indexMapping); err != nil {
+		return nil, err
 	}
-	return definitions, indexMapping, nil
+	return indexMapping, nil
 }
 
 // stringToGeoPoint takes a lat,lng string and converts it into a map[string]float64
@@ -250,59 +206,16 @@ func stringToGeoPoint(s string) (map[string]float64, bool) {
 	return pt, true
 }
 
-// recordMapToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
+// recordToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
 // renders a new map[string]interface{} ready to be indexed.
-func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}, src []byte) (map[string]interface{}, error) {
-	idxMap := map[string]interface{}{}
-
-	raw, err := dotpath.JSONDecode(src)
-	if err != nil {
+func recordToIndexRecord(ky string, src []byte) (map[string]interface{}, error) {
+	var rec map[string]interface{}
+	d := json.NewDecoder(bytes.NewReader(src))
+	d.UseNumber()
+	if err := d.Decode(&rec); err != nil {
 		return nil, err
 	}
-	// Copy the dot path elements to new smaller map
-	for pName := range defnMap {
-		//FIXME: Need to handle both object_path and object_template
-		//dTemplate, _ := defnMap[pName]["object_template"].(string)
-		if dPath, ok := defnMap[pName]["object_path"].(string); ok == true {
-			if val, err := dotpath.Eval(dPath, raw); err == nil {
-				switch val.(type) {
-				case json.Number:
-					if i, err := (val.(json.Number)).Int64(); err == nil {
-						idxMap[pName] = i
-					} else if f, err := (val.(json.Number)).Float64(); err == nil {
-						idxMap[pName] = f
-					} else {
-						idxMap[pName] = (val.(json.Number)).String()
-					}
-				case string:
-					if dType, tOk := defnMap[pName]["field_mapping"].(string); tOk == true && dType == "geopoint" {
-						if pt, ok := stringToGeoPoint(val.(string)); ok == true {
-							idxMap[pName] = pt
-						}
-					} else {
-						idxMap[pName] = val.(string)
-					}
-				default:
-					idxMap[pName] = val
-				}
-			}
-		}
-		if tmpl, ok := defnMap[pName]["object_tmpl"].(*template.Template); ok == true {
-			//NOTE: the whole record is passed to the template for processing...
-			if rec, err := dotpath.Eval(".", raw); err == nil {
-				var (
-					buf bytes.Buffer
-				)
-				wr := io.Writer(&buf)
-				if err := tmpl.Execute(wr, rec); err == nil {
-					idxMap[pName] = buf.String()
-				} else {
-					log.Printf("key %s, %s", ky, err)
-				}
-			}
-		}
-	}
-	return idxMap, nil
+	return rec, nil
 }
 
 // Indexer ingests all the records of a collection applying the definition
@@ -312,7 +225,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 		idx bleve.Index
 		err error
 	)
-	recordMap, idxMap, err := readIndexDefinition(idxMapName)
+	idxMap, err := readIndexDefinition(idxMapName)
 	if err != nil {
 		return fmt.Errorf("failed to read index definition %s, %s", idxMapName, err)
 	}
@@ -339,9 +252,8 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	cnt := 0
 	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
-		if src, err := c.readAsJSON(key); err == nil {
-			if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
-				//idx.Index(key, rec)
+		if src, err := c.ReadJSON(key); err == nil {
+			if rec, err := recordToIndexRecord(key, src); err == nil {
 				batchIdx.Index(key, rec)
 				cnt++
 				if (cnt % batchSize) == 0 {

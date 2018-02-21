@@ -3,15 +3,16 @@
 
 ## Bugs
 
+
 ## Next (prep for v0.1.0)
 
-+ [ ] Add automatic metadata fields for `_KeyColumn` for improving GSheet import/export
++ [ ] Normalize Create, Read, Update to have CreateJSON, ReadJSON, UpdateJSON counter parts for working with non-map[string]interface{} objects
++ [ ] Create an experimental Python native module for dataset package
++ [ ] In _dsindexer_ 'delete' remove one or more records from an index using record ids
+    + An array of ids should work as a batch delete
++ [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
 + [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
 + [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
-+ [ ] In _dsindexer_ add a record to an existing index using an index def and record id
-+ [ ] In _dsindexer_ update a record in an existing index using an index def and record id
-+ [ ] In _dsindexer_ delete a record from an index using based on record id
-+ [ ] Create an experimental Python native module for dataset package exported functions
 + [ ] Confirm consensus on the minor release version number bump
 
 ## Roadmap (v0.2.x)
@@ -37,6 +38,8 @@
 
 ## Someday, Maybe
 
++ [ ] Integrate lunrjs and an index.html file into the root folder of a collection, this could be used to provide a web browser read interface to the collection without installing dataset itself.
++ [ ] Depreciate _dsindexer_ in favor of Bleve native cli
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     + Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
     + for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
@@ -70,6 +73,17 @@
 
 ## Completed
 
++ [x] Document creating/managing indexes using the Bleve native cli
++ [x] Update dataset documentation to use Bleve's JSON definitions for indexes
++ [x] Update demos to use Bleve's JSON definitions for indexes
++ [x] Re-write docs for JSON index definitions
++ [x] Re-write demos for JSON index definitions
++ [x] Re-write examples for JSON index definitions
++ [x] Re-write how-to for JSON index definitions
++ [x] Evaluate adding automatic Lunrjs index support for collections
++ [x] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
++ [x] In _dsindexer_ 'add' to add/update one or more records in an existing index
+    + An array of objects should work as a Batch update
 + [x] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
 + [x] Attachment metaphor still needs better alignment with idiomatic go
     + [x] AttachFile should be implemented with an io.Writer interface

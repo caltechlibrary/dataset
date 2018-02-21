@@ -3,7 +3,7 @@
 #
 # Local Disc setup
 #
-export DATASET="my-test-bucket"
+export DATASET="my-test-bucket.ds"
 
 #
 # S3 test setup example

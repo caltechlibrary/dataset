@@ -79,8 +79,8 @@ var (
 		"path":          docPath,
 		"attach":        addAttachments,
 		"attachments":   listAttachments,
-		"attached":      getAttachments,
-		"detach":        removeAttachments,
+		"detach":        getAttachments,
+		"prune":         removeAttachments,
 		"import":        importCSV,
 		"export":        exportCSV,
 		"extract":       extract,
@@ -172,6 +172,7 @@ func createJSONDoc(args ...string) (string, error) {
 		}
 		src = args[0]
 	case len(args) == 2:
+		//FIXME: string spaces, URL Encode
 		name, src = args[0], args[1]
 	default:
 		return "", fmt.Errorf("Expected a document name and a JSON document")
@@ -600,6 +601,14 @@ func addAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
+	for _, fname := range params[1:] {
+		if _, err := os.Stat(fname); os.IsNotExist(err) {
+			return "", fmt.Errorf("%s does not exist", fname)
+		}
+	}
 	err = collection.AttachFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -617,6 +626,9 @@ func listAttachments(params ...string) (string, error) {
 		return "", fmt.Errorf("syntax: %s attachments KEY", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	results, err := collection.Attachments(key)
 	if err != nil {
 		return "", err
@@ -631,9 +643,12 @@ func getAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s attached KEY [FILENAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s detach KEY [FILENAMES]", os.Args[0])
 	}
 	key := params[0]
+	if collection.HasKey(key) == false {
+		return "", fmt.Errorf("%q is not in collection", key)
+	}
 	err = collection.GetAttachedFiles(key, params[1:]...)
 	if err != nil {
 		return "", err
@@ -648,9 +663,9 @@ func removeAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s detach KEY", os.Args[0])
+		return "", fmt.Errorf("syntax: %s prune KEY", os.Args[0])
 	}
-	err = collection.Detach(params[0], params[1:]...)
+	err = collection.Prune(params[0], params[1:]...)
 	if err != nil {
 		return "", err
 	}
@@ -742,7 +757,7 @@ func exportGSheet(params ...string) (string, error) {
 	filterExpr := params[3]
 	dotPaths := strings.Split(params[4], ",")
 	colNames := []string{}
-	if len(params) < 5 {
+	if len(params) <= 5 {
 		for _, val := range dotPaths {
 			colNames = append(colNames, val)
 		}
@@ -882,7 +897,7 @@ func main() {
 	app.BoolVar(&showExamples, "e,examples", false, "display examples")
 	app.StringVar(&inputFName, "i,input", "", "input file name")
 	app.StringVar(&outputFName, "o,output", "", "output file name")
-	app.BoolVar(&newLine, "nl,newline", true, "if set to false to suppress a trailing newline")
+	app.BoolVar(&newLine, "nl,newline", true, "if set to false suppress the trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")

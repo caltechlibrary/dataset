@@ -25,26 +25,30 @@ mkpage "nav=nav.md" "content=markdown:$(cat INSTALL.md)" page.tmpl >install.html
 git add -f license.html install.html
 findfile -s ".md" . | while read P; do
 	DNAME=$(dirname "$P")
-	FNAME=$(basename "$P")
-	case "$FNAME" in
-	"README.md")
-		if [ ! -f "${DNAME}/index.md" ]; then
-			HTML_NAME="${DNAME}/index.html"
-		else
-			HTML_NAME="${DNAME}/README.html"
-		fi
-		;;
-	*)
-		HTML_NAME=$(echo "$P" | sed -E 's/.md$/.html/g')
-		;;
-	esac
-	if [ "${DNAME:0:4}" != "dist" ] && [ "${FNAME}" != "nav.md" ]; then
-		NAV=$(FindNavMD "$DNAME")
-		echo "Building $HTML_NAME from $DNAME/$FNAME and $NAV"
-		mkpage "nav=$NAV" "content=${DNAME}/${FNAME}" page.tmpl >"${HTML_NAME}"
-		git add -f "${HTML_NAME}"
+	if [[ "${DNAME}" = "etc" || "${DNAME:0:5}" = "demos" || "${DNAME:0:8}" = "examples" ]]; then
+		echo "Skipping $DNAME"
 	else
-		echo "Skipping $P"
+		FNAME=$(basename "$P")
+		case "$FNAME" in
+		"README.md")
+			if [ ! -f "${DNAME}/index.md" ]; then
+				HTML_NAME="${DNAME}/index.html"
+			else
+				HTML_NAME="${DNAME}/README.html"
+			fi
+			;;
+		*)
+			HTML_NAME=$(echo "$P" | sed -E 's/.md$/.html/g')
+			;;
+		esac
+		if [ "${DNAME:0:4}" != "dist" ] && [ "${FNAME}" != "nav.md" ]; then
+			NAV=$(FindNavMD "$DNAME")
+			echo "Building $HTML_NAME from $DNAME/$FNAME and $NAV"
+			mkpage "nav=$NAV" "content=${DNAME}/${FNAME}" page.tmpl >"${HTML_NAME}"
+			git add -f "${HTML_NAME}"
+		else
+			echo "Skipping $P"
+		fi
 	fi
 done
 

@@ -3,7 +3,7 @@
 //
 // Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2017, Caltech
+// Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -272,7 +272,7 @@ func (c *Collection) Attachments(name string) ([]string, error) {
 	buf, err := c.Store.ReadFile(docPath)
 	if err != nil {
 		// FIXME: If no tarball, then return error "no attachments found"
-		return nil, err
+		return nil, fmt.Errorf("no attachments found")
 	}
 	fp := bytes.NewBuffer(buf)
 
@@ -393,8 +393,8 @@ func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error 
 	return nil
 }
 
-// Detach a non-JSON document from a JSON document in the collection.
-func (c *Collection) Detach(name string, filterNames ...string) error {
+// Prune a non-JSON document from a JSON document in the collection.
+func (c *Collection) Prune(name string, filterNames ...string) error {
 	keyName, _ := keyAndFName(name)
 	if c.HasKey(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)

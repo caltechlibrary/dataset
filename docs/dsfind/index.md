@@ -37,7 +37,7 @@ are output.
     -indexes                  colon or comma delimited list of index names
     -json                     format results as a JSON document
     -l, -license              display license
-    -nl, -newline             if true add a trailing newline
+    -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
@@ -48,4 +48,4 @@ are output.
 ```
 
 
-dsfind v0.0.13-dev
+dsfind v0.0.20-dev
