@@ -226,30 +226,30 @@ func readJSONDocs(args ...string) (string, error) {
 	defer collection.Close()
 
 	if len(args) == 1 {
-		data := map[string]interface{}{}
-		err := collection.Read(args[0], data)
+		m := map[string]interface{}{}
+		err := collection.Read(args[0], m)
 		if err != nil {
 			return "", err
 		}
 		if prettyPrint {
-			src, err := json.MarshalIndent(data, "", "    ")
+			src, err := json.MarshalIndent(m, "", "    ")
 			if err != nil {
 				return "", err
 			}
 			return string(src), nil
 		}
-		src, err := json.Marshal(data)
+		src, err := json.Marshal(m)
 		return string(src), err
 	}
 
-	var rec map[string]interface{}
 	recs := []map[string]interface{}{}
 	for _, name := range args {
-		err := collection.Read(name, rec)
+		m := map[string]interface{}{}
+		err := collection.Read(name, m)
 		if err != nil {
 			return "", err
 		}
-		recs = append(recs, rec)
+		recs = append(recs, m)
 	}
 	if prettyPrint {
 		src, err := json.MarshalIndent(recs, "", "    ")
@@ -274,14 +274,14 @@ func listJSONDocs(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	var rec map[string]interface{}
 	recs := []map[string]interface{}{}
 	for _, name := range args {
-		err := collection.Read(name, rec)
+		m := map[string]interface{}{}
+		err := collection.Read(name, m)
 		if err != nil {
 			return "", err
 		}
-		recs = append(recs, rec)
+		recs = append(recs, m)
 	}
 	if prettyPrint {
 		src, err := json.MarshalIndent(recs, "", "    ")
@@ -450,9 +450,9 @@ func collectionKeys(args ...string) (string, error) {
 
 	// Process the filter
 	for _, key := range keyList {
-		data := map[string]interface{}{}
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
+		m := map[string]interface{}{}
+		if err := collection.Read(key, m); err == nil {
+			if ok, err := f.Apply(m); err == nil && ok == true {
 				keys = append(keys, key)
 			}
 		}
@@ -529,9 +529,9 @@ func collectionCount(args ...string) (string, error) {
 	}
 	cnt := 0
 	for _, key := range keyList {
-		data := map[string]interface{}{}
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
+		m := map[string]interface{}{}
+		if err := collection.Read(key, m); err == nil {
+			if ok, err := f.Apply(m); err == nil && ok == true {
 				cnt++
 			}
 		}
@@ -564,9 +564,9 @@ func streamFilterResults(w *os.File, keyList []string, filterExp string, sampleS
 		}
 	}
 	for _, key := range keyList {
-		data := map[string]interface{}{}
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
+		m := map[string]interface{}{}
+		if err := collection.Read(key, m); err == nil {
+			if ok, err := f.Apply(m); err == nil && ok == true {
 				fmt.Fprintln(w, key)
 			}
 		}
@@ -783,16 +783,6 @@ func exportGSheet(params ...string) (string, error) {
 		colNames[i] = strings.TrimSpace(val)
 	}
 
-	keys := collection.Keys()
-	f, err := tmplfn.ParseFilter(filterExpr)
-	if err != nil {
-		return "", err
-	}
-
-	var (
-		data map[string]interface{}
-	)
-
 	table := [][]interface{}{}
 	if len(colNames) > 0 {
 		row := []interface{}{}
@@ -801,13 +791,15 @@ func exportGSheet(params ...string) (string, error) {
 		}
 		table = append(table, row)
 	}
-	for _, key := range keys {
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
-				// save row out.
+	keys := collection.Keys()
+
+	if strings.ToLower(filterExpr) == "true" {
+		for _, key := range keys {
+			m := map[string]interface{}{}
+			if err := collection.Read(key, m); err == nil {
 				row := []interface{}{}
 				for _, colPath := range dotPaths {
-					col, err := dotpath.Eval(colPath, data)
+					col, err := dotpath.Eval(colPath, m)
 					if err == nil {
 						row = append(row, col)
 					} else {
@@ -815,6 +807,30 @@ func exportGSheet(params ...string) (string, error) {
 					}
 				}
 				table = append(table, row)
+			}
+		}
+	} else {
+		f, err := tmplfn.ParseFilter(filterExpr)
+		if err != nil {
+			return "", err
+		}
+
+		for _, key := range keys {
+			m := map[string]interface{}{}
+			if err := collection.Read(key, m); err == nil {
+				if ok, err := f.Apply(m); err == nil && ok == true {
+					// save row out.
+					row := []interface{}{}
+					for _, colPath := range dotPaths {
+						col, err := dotpath.Eval(colPath, m)
+						if err == nil {
+							row = append(row, col)
+						} else {
+							row = append(row, "")
+						}
+					}
+					table = append(table, row)
+				}
 			}
 		}
 	}

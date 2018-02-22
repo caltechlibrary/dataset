@@ -128,7 +128,7 @@ function test_gsheet() {
 
     bin/dataset -client-secret "${CLIENT_SECRET_JSON}" export-gsheet "${SPREADSHEET_ID}" 'Sheet1' 'A1:CZ' true \
         '.done,.key,.resolver,.subjects,.additional,.identifier_1,.description_1' \
-        'done,key,resolver,subjects,additional,identifier_1,description_1'
+        'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
     if [[ "$?" != "0" ]]; then
         echo "Count not export-gsheet"
         exit 1
