@@ -1,7 +1,7 @@
 //
 // dsws.go - A web server/service for hosting dataset search and related static pages.
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech

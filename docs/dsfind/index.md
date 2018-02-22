@@ -48,4 +48,4 @@ are output.
 ```
 
 
-dsfind v0.0.20-dev
+dsfind v0.0.21-dev

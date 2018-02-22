@@ -2,7 +2,7 @@
 // dsindexer creates Blevesearch indexes for a dataset collection. These can be used by
 // both dsfind and dsws (web server).
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 //
 // Copyright (c) 2018, Caltech

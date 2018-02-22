@@ -13,7 +13,8 @@ Package assumptions
 
 ## Recommend
 
-For Google Sheets support docs see https://developers.google.com/sheets/api/quickstart/go
++ Google Sheets support docs see https://developers.google.com/sheets/api/quickstart/go
++ Setup Credentials Wizard: https://console.developers.google.com/start/api?id=sheets.googleapis.com
 
 Run the following to confirm setup
 
@@ -21,6 +22,8 @@ Run the following to confirm setup
     go get -u google.golang.org/api/sheets/v4
     go get -u golang.org/x/oauth2/...
 ```
+
+Per the docs you can test a working connect with the _quickstart.go_ program below.
 
 ```go
     package main

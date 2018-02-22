@@ -89,19 +89,19 @@ function test_dataset() {
     echo "Test dataset successful"
 }
 
-function test_gsheets() {
-    if [[ -f "etc/test_gsheets.bash" ]]; then
-        . "etc/test_gsheets.bash"
+function test_gsheet() {
+    if [[ -f "etc/test_gsheet.bash" ]]; then
+        . "etc/test_gsheet.bash"
     else
-        echo "Skipping Google Sheets test, no /etc/test_gsheets.bash found"
+        echo "Skipping Google Sheets test, no /etc/test_gsheet.bash found"
         exit 1
     fi
-    if [[ ! -s "${GOOGLE_CLIENT_SECRET_JSON}" ]]; then
-        echo "Missing GOOGLE_CLIENT_SECRET_JSON"
+    if [[ ! -s "${CLIENT_SECRET_JSON}" ]]; then
+        echo "Missing environment varaiable for CLIENT_SECRET_JSON"
         exit 1
     fi
-    if [[ "${TEST_GOOGLE_SHEET_ID}" = "" ]]; then
-        echo "Missing TEST_GOOGLE_SHEET_ID"
+    if [[ "${SPREADSHEET_ID}" = "" ]]; then
+        echo "Missing environment variable for SPREADSHEET_ID"
         exit 1
     fi
     echo "Testing Google Sheets support"
@@ -117,11 +117,16 @@ function test_gsheets() {
 
     bin/dataset create test '{"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"}'
     if [[ "$?" != "0" ]]; then
-        echo "Count not create test record in test_gsheet.ds"
+        echo "Could not create test record in test_gsheet.ds"
+        exit 1
+    fi
+    CNT=$(bin/dataset count)
+    if [[ "${CNT}" != "1" ]]; then
+        echo "Should have one record to export"
         exit 1
     fi
 
-    dataset export-gsheet "${TEST_GOOGLE_SHEET_ID}" Sheet1 A1:CZ true .done,.key,.resolver,.additional,.identifier_1,.description_1 done,key,resolver,subjects,additional,identifier_1,description_1
+    bin/dataset -client-secret "${CLIENT_SECRET_JSON}" export-gsheet "${SPREADSHEET_ID}" Sheet1 A1:CZ true ".done,.key,.resolver,.additional,.identifier_1,.description_1" "done,key,resolver,subjects,additional,identifier_1,description_1"
     if [[ "$?" != "0" ]]; then
         echo "Count not export-gsheet"
         exit 1
@@ -132,5 +137,5 @@ function test_gsheets() {
 
 echo "Testing command line tools"
 test_dataset
-test_gsheets
+test_gsheet
 echo 'Success!'

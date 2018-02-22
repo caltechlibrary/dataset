@@ -41,7 +41,7 @@ cmd/dsws/templates.go:
 	pkgassets -o cmd/dsws/templates.go -p main Defaults defaults
 	git add cmd/dsws/templates.go
 
-bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
 bin/dsindexer$(EXT): dataset.go search.go cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
@@ -66,7 +66,7 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 
 test: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 	go test
-	cd gsheets && go test
+	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
 
 format:

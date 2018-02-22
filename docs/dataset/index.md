@@ -29,6 +29,7 @@ Options will override any corresponding environment settings.
 
 ```
     -c, -collection           sets the collection to be used
+    -client-secret            set the client secret path and filename for GSheet access
     -e, -examples             display examples
     -generate-markdown-docs   output documentation in Markdown
     -h, -help                 display help
@@ -211,4 +212,4 @@ Which would result in a record like
 
 
 
-dataset v0.0.20-dev
+dataset v0.0.21-dev

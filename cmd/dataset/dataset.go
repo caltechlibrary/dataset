@@ -1,7 +1,7 @@
 //
 // dataset is a command line utility to manage content stored in a dataset collection.
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 //
 // Copyright (c) 2018, Caltech
@@ -33,7 +33,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/gsheets"
+	"github.com/caltechlibrary/dataset/gsheet"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
@@ -57,11 +57,12 @@ var (
 	generateMarkdownDocs bool
 
 	// App Specific Options
-	collectionName string
-	useHeaderRow   bool
-	useUUID        bool
-	showVerbose    bool
-	sampleSize     int
+	collectionName    string
+	useHeaderRow      bool
+	useUUID           bool
+	showVerbose       bool
+	sampleSize        int
+	clientSecretFName string
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -707,6 +708,11 @@ func importCSV(params ...string) (string, error) {
 
 func importGSheet(params ...string) (string, error) {
 	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretFName == "" {
+		clientSecretJSON = clientSecretFName
+	} else if clientSecretJSON == "" {
+		clientSecretJSON = "client_secret.json"
+	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -743,6 +749,11 @@ func importGSheet(params ...string) (string, error) {
 
 func exportGSheet(params ...string) (string, error) {
 	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretFName != "" {
+		clientSecretJSON = clientSecretFName
+	} else if clientSecretJSON == "" {
+		clientSecretJSON = "client_secret.json"
+	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -908,6 +919,7 @@ func main() {
 	app.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
+	app.StringVar(&clientSecretFName, "client-secret", "", "set the client secret path and filename for GSheet access")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	// NOTE: Sense this pre-existed cli v0.0.6 we're going to stick with what we evolved.
