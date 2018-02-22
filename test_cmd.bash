@@ -31,8 +31,8 @@ function assert_equal() {
 #
 
 function test_dataset() {
-    if [ -f "test1/collection.json" ]; then
-        rm -fR test1
+    if [ -f "test1.ds/collection.json" ]; then
+        rm -fR test1.ds
     fi
     EXT=".exe"
     OS=$(uname)
@@ -51,12 +51,12 @@ function test_dataset() {
     fi
 
     # Test init
-    EXPECTED='export DATASET=test1'
-    RESULT=$(bin/dataset init test1)
-    assert_equal "init test1" "$EXPECTED" "$RESULT"
-    assert_exists "collection create" "test1"
-    assert_exists "collection created metadata" "test1/collection.json"
-    export DATASET="test1"
+    EXPECTED='export DATASET=test1.ds'
+    RESULT=$(bin/dataset init test1.ds)
+    assert_equal "init test1.ds" "$EXPECTED" "$RESULT"
+    assert_exists "collection create" "test1.ds"
+    assert_exists "collection created metadata" "test1.ds/collection.json"
+    export DATASET="test1.ds"
 
     # Test create 
     EXPECTED="OK"
@@ -83,12 +83,54 @@ function test_dataset() {
     EXPECTED="1 "
     RESULT=$(bin/dataset keys '(eq .one 1)' | sort | tr "\n" " ")
 
-    if [ -f "test1/collection.json" ]; then
-        rm -fR test1
+    if [ -f "test1.ds/collection.json" ]; then
+        rm -fR test1.ds
     fi
     echo "Test dataset successful"
 }
 
+function test_gsheets() {
+    if [[ -f "etc/test_gsheets.bash" ]]; then
+        . "etc/test_gsheets.bash"
+    else
+        echo "Skipping Google Sheets test, no /etc/test_gsheets.bash found"
+        exit 1
+    fi
+    if [[ ! -s "${GOOGLE_CLIENT_SECRET_JSON}" ]]; then
+        echo "Missing GOOGLE_CLIENT_SECRET_JSON"
+        exit 1
+    fi
+    if [[ "${TEST_GOOGLE_SHEET_ID}" = "" ]]; then
+        echo "Missing TEST_GOOGLE_SHEET_ID"
+        exit 1
+    fi
+    echo "Testing Google Sheets support"
+    if [[ -d "test_gsheet.ds" ]]; then
+        rm -fR test_gsheet.ds
+    fi
+    bin/dataset init "test_gsheet.ds"
+    if [[ "$?" != "0" ]]; then
+        echo "Count not initialize test_gsheet.ds"
+        exit 1
+    fi
+    export DATASET="test_gsheet.ds"
+
+    bin/dataset create test '{"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"}'
+    if [[ "$?" != "0" ]]; then
+        echo "Count not create test record in test_gsheet.ds"
+        exit 1
+    fi
+
+    dataset export-gsheet "${TEST_GOOGLE_SHEET_ID}" Sheet1 A1:CZ true .done,.key,.resolver,.additional,.identifier_1,.description_1 done,key,resolver,subjects,additional,identifier_1,description_1
+    if [[ "$?" != "0" ]]; then
+        echo "Count not export-gsheet"
+        exit 1
+    fi
+
+    echo "Test dataset gsheet support successful"
+}
+
 echo "Testing command line tools"
 test_dataset
+test_gsheets
 echo 'Success!'
