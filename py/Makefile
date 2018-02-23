@@ -41,8 +41,10 @@ $(LIB_NAME)$(EXT): $(LIB_NAME).go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 test:
-	if [[ -d "TestCollection.ds" ]]; then rm -fR "TestCollection.ds"; fi
-	python3 dataset.py "TestCollection.ds"
+	if [[ -d "test_collection1.ds" ]]; then rm -fR "test_collection1.ds"; fi
+	if [[ -d "test_collection2.ds" ]]; then rm -fR "test_collection2.ds"; fi
+	python3 dataset.py "test_collection1.ds"
+	python3 dataset_import_test.py "test_collection2.ds"
 
 clean:
 	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
