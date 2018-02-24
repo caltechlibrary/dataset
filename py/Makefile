@@ -3,13 +3,13 @@
 #
 PROJECT = dataset
 
-LIB_NAME = dataset
+LIB_NAME = libdataset
 
 VERSION = $(shell grep -m 1 'Version =' ../$(PROJECT).go | cut -d\`  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-ARCH = amd64
+ARCH = x86_64
 
 OS = $(shell uname)
 
@@ -29,9 +29,9 @@ ifeq ($(OS), Linux)
 	ARCH = $(shell arch)
 	OS = linux
 endif
-ifeq ($(ARCH), i386)
-	ARCH = amd64
-endif
+#ifeq ($(ARCH), i386)
+#	ARCH = amd64
+#endif
 ifeq ($(ARCH), x86_64)
 	ARCH = amd64
 endif

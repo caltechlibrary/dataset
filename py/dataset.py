@@ -22,7 +22,7 @@ import os
 import json
 
 # Figure out shared library extension
-go_basename = 'dataset'
+go_basename = 'libdataset'
 uname = os.uname().sysname
 ext = '.so'
 if uname == 'Darwin':
