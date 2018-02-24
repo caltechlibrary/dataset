@@ -41,3 +41,4 @@ demos/*
 *.dataset
 *.dylib
 *.h
+__pycache__
