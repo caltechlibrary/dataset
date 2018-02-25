@@ -699,17 +699,32 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error) {
+	rows := []string{}
+	data := make(map[string]interface{})
+	hash := make(map[string]bool)
+
 	keys := c.Keys()
+
+	if filterExpr == "true" {
+		for _, key := range keys {
+			if err := c.Read(key, data); err == nil {
+				col, err := dotpath.Eval(dotPath, data)
+				if err == nil {
+					hash[colToString(col)] = true
+				}
+				data = nil
+			}
+		}
+		for ky := range hash {
+			rows = append(rows, ky)
+		}
+		return rows, nil
+	}
 	f, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
 		return nil, err
 	}
 
-	var (
-		data map[string]interface{}
-		rows []string
-	)
-	hash := make(map[string]bool)
 	for _, key := range keys {
 		if err := c.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {

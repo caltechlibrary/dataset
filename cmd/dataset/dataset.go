@@ -899,7 +899,7 @@ func extract(params ...string) (string, error) {
 	dotPaths := strings.TrimSpace(params[1])
 	lines, err := collection.Extract(filterExpr, dotPaths)
 	if err != nil {
-		return "", fmt.Errorf("Can't export CSV, %s", err)
+		return "", fmt.Errorf("Can't extract %s, %s", dotPaths, err)
 	}
 	return strings.Join(lines, "\n"), nil
 }
