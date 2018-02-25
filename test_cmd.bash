@@ -137,7 +137,34 @@ function test_gsheet() {
     echo "Test dataset gsheet support successful"
 }
 
+function test_issue15() {
+
+    if [[ -d "test_issue15.ds" ]]; then
+        rm -fR test_issue15.ds
+    fi
+    bin/dataset init "test_issue15.ds"
+    dataset -c test_issue15.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
+    I=$(dataset -c test_issue15.ds count)
+    if [[ "$I" != "1" ]]; then
+        echo "Failed to add freda record test_issue15.ds"
+        exit 1
+    fi
+    K=$(dataset -nl=false -c test_issue15.ds keys '(eq "freda" .name)')
+    if [[ "$K" != "freda" ]]; then
+        echo "Should have one key, freda, in test_issue15.ds"
+        exit 1
+    fi
+    V=$(dataset -nl=false -c test_issue15.ds extract 'true' '.name')
+    if [[ "$V" != "freda" ]]; then
+        echo "Should extract one name, freda, in test_issue15.ds $V"
+        exit 1
+    fi
+    echo "Test issue 15 fix completed"
+    rm -fR "test_issue15.ds"
+}
+
 echo "Testing command line tools"
 test_dataset
 test_gsheet
+test_issue15
 echo 'Success!'
