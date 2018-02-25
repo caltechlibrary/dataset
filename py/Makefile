@@ -49,7 +49,8 @@ test:
 clean:
 	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
 	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
-	if [ -d "TestCollection.ds" ]; then rm -fR "TestCollection.ds"; fi	
+	if [ -d "test_collection1.ds" ]; then rm -fR "test_collection1.ds"; fi	
+	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
 
 release:
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
