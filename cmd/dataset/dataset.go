@@ -708,9 +708,10 @@ func importCSV(params ...string) (string, error) {
 
 func importGSheet(params ...string) (string, error) {
 	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
-	if clientSecretFName == "" {
+	if clientSecretFName != "" {
 		clientSecretJSON = clientSecretFName
-	} else if clientSecretJSON == "" {
+	}
+	if clientSecretJSON == "" {
 		clientSecretJSON = "client_secret.json"
 	}
 	collection, err := dataset.Open(collectionName)
@@ -751,7 +752,8 @@ func exportGSheet(params ...string) (string, error) {
 	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
 	if clientSecretFName != "" {
 		clientSecretJSON = clientSecretFName
-	} else if clientSecretJSON == "" {
+	}
+	if clientSecretJSON == "" {
 		clientSecretJSON = "client_secret.json"
 	}
 	collection, err := dataset.Open(collectionName)
