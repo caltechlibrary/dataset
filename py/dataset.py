@@ -22,7 +22,7 @@ import os
 import json
 
 # Figure out shared library extension
-go_basename = 'dataset'
+go_basename = 'libdataset'
 uname = os.uname().sysname
 ext = '.so'
 if uname == 'Darwin':
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         print(init_collection(sys.argv[1]))
         collection_name = sys.argv[1]
     else:
-        print("To run tests provide a collection name for testing,", sys.argv[0], '"TestCollection"')
+        print("To run tests provide a collection name for testing,", sys.argv[0], '"test_collection1.ds"')
         exit(1)
     verbose_on()
     key = "2488"
