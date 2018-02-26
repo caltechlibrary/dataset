@@ -29,9 +29,9 @@ ifeq ($(OS), Linux)
 	ARCH = $(shell arch)
 	OS = linux
 endif
-#ifeq ($(ARCH), i386)
-#	ARCH = amd64
-#endif
+ifeq ($(ARCH), i386)
+	ARCH = amd64
+endif
 ifeq ($(ARCH), x86_64)
 	ARCH = amd64
 endif
