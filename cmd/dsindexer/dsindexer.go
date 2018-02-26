@@ -47,11 +47,12 @@ var (
 	generateMarkdownDocs bool
 
 	// App Specific Options
-	collectionName string
-	documentType   string
-	batchSize      int
-	updateIndex    bool
-	idListFName    string
+	collectionName  string
+	documentType    string
+	batchSize       int
+	updateIndex     bool
+	idListFName     string
+	deleteFromIndex bool
 )
 
 func init() {
@@ -98,7 +99,8 @@ func main() {
 	app.StringVar(&documentType, "t", "", "the label of the type of document you are indexing, e.g. accession, agent/person")
 	app.IntVar(&batchSize, "batch", 0, "Set the size index batch, default is 100")
 	app.BoolVar(&updateIndex, "update", false, "updating is slow, use this app if you want to update an exists")
-	app.StringVar(&idListFName, "id-file", "", "Create/Update an index for the ids in file")
+	app.StringVar(&idListFName, "key-file", "", "Create/Update an index based on the keys provided in the file")
+	app.BoolVar(&deleteFromIndex, "delete", false, "this will cause records to be deleted from an index, use with -key-file")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	//FIXME: If the application is verb based add your verbs here

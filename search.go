@@ -326,6 +326,59 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	return nil
 }
 
+// Deindexer deletes the keys from an index. Returns an error if a problem occurs.
+func (c *Collection) Deindexer(idxName string, batchSize int, keys []string) error {
+	var (
+		idx bleve.Index
+		err error
+	)
+
+	//NOTE: if indexName exists use bleve.Open() instead of bleve.New()
+	if _, e := os.Stat(idxName); os.IsNotExist(e) {
+		return fmt.Errorf("%s does not exist", idxName)
+	}
+	idx, err = bleve.Open(idxName)
+	if err != nil {
+		return err
+	}
+	defer idx.Close()
+
+	// Get all the keys and index each record
+	startT := time.Now()
+	batchT := time.Now()
+	batchIdx := idx.NewBatch()
+	if len(keys) == 0 {
+		keys = c.Keys()
+	}
+	tot := len(keys)
+	cnt := 0
+	log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+	for _, key := range keys {
+		batchIdx.Delete(key)
+		cnt++
+		if (cnt % batchSize) == 0 {
+			if err := idx.Batch(batchIdx); err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+			// Force release of memory
+			batchIdx = nil
+			batchIdx = idx.NewBatch()
+			batchT = time.Now()
+		}
+	}
+	if batchIdx.Size() > 0 {
+		if err := idx.Batch(batchIdx); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+		// force release of memory fo rlast batchIdx
+		batchIdx = nil
+	}
+	log.Printf("%d/%d records de-indexed, running time %s", cnt, tot, time.Now().Sub(startT))
+	return nil
+}
+
 // OpenIndexes opens a list of index names and returns an index alias, a combined list of fields and error
 func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 	var (
