@@ -36,7 +36,7 @@ var (
 644902,,,California counts,1999
 601242,,,"Manual of rules of the Committee on Ways and Means for the ... Congress, adopted January ...",
 600949,0741-2665,,Annual report,1981
-00622,0083-1565,,Annual report of the Librarian of Congress for the fiscal year ended ..,1939
+600622,0083-1565,,Annual report of the Librarian of Congress for the fiscal year ended ..,1939
 598403,0161-4274,,National food review,1978
 585896,,,Fiscal Year 1994 budget resolution : pros & cons,1993
 545036,,,Symposium on the U.S. Office of Technology Assessment report : informing the nation : federal information dissemination in an electronic age,1989
@@ -47,12 +47,17 @@ var (
 418925,,,National food situation,
 415750,0007-6597,,BCD : business conditions digest,
 `
-	cName = "testdata/search-test.ds"
-	mName = "testdata/search-test.bmap"
-	iName = "testdata/search-test.bleve"
+	cName  = "testdata/search-test.ds"
+	mbName = "testdata/search-test.bmap"
+	mName  = "testdata/search-test.json"
+	iName  = "testdata/search-test.bleve"
 )
 
-func TestIndexingSearch(t *testing.T) {
+func TestBleveMapIndexingSearch(t *testing.T) {
+	// Remove stale collection and index
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
+
 	// create the collection
 	c, err := create(cName, generateBucketNames("ab", 2))
 	if err != nil {
@@ -69,7 +74,7 @@ func TestIndexingSearch(t *testing.T) {
 		t.Errorf("Expected to import 16 rows, got %d", lines)
 		t.FailNow()
 	}
-	if err := c.Indexer(iName, mName, 100, []string{}); err != nil {
+	if err := c.Indexer(iName, mbName, 100, []string{}); err != nil {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}
@@ -77,10 +82,68 @@ func TestIndexingSearch(t *testing.T) {
 		t.Errorf("Can't close index, %s", err)
 		t.FailNow()
 	}
+
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	// Run queries and test results
+	opts := map[string]string{
+		"result_fields": "*",
+	}
+
+	idx, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", iName, err)
+		t.FailNow()
+	}
+
+	results, err := Find(os.Stderr, idx, []string{"600622"}, opts)
+	if err != nil {
+		t.Errorf("Find returned an error, %s", err)
+		t.FailNow()
+	}
+	src, _ := json.Marshal(results)
+	if len(results.Hits) != 1 {
+		t.Errorf("unexpected results -> %s", src)
+		t.FailNow()
+	}
 }
 
-func TestSearch(t *testing.T) {
-	c, err := Open(cName)
+func TestIndexingSearch(t *testing.T) {
+	// Remove stale collection and index
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
+
+	// create the collection
+	c, err := create(cName, generateBucketNames("ab", 2))
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
+	if err != nil {
+		t.Errorf("Error import csvtable, %s", err)
+		t.FailNow()
+	}
+	if lines != 16 {
+		t.Errorf("Expected to import 16 rows, got %d", lines)
+		t.FailNow()
+	}
+	if err = c.Indexer(iName, mName, 100, []string{}); err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
+	if err = c.Close(); err != nil {
+		t.Errorf("Can't close index, %s", err)
+		t.FailNow()
+	}
+
+	c, err = Open(cName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -111,6 +174,16 @@ func TestSearch(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
+	var (
+		err          error
+		defn1, defn2 []byte
+	)
+
+	// Remove stale collection and index
+	os.RemoveAll(mName)
+	os.RemoveAll(mbName)
+
+	// Build an Bleve index map to test with
 	idxMap := bleve.NewIndexMapping()
 	document := bleve.NewDocumentMapping()
 
@@ -144,23 +217,74 @@ func TestMain(m *testing.M) {
 
 	idxMap.AddDocumentMapping("default", document)
 
-	var (
-		err   error
-		defn1 []byte
-	)
-	// Remove stale collection and index
-	os.RemoveAll(cName)
-	os.RemoveAll(iName)
-	os.RemoveAll(mName)
-
 	defn1, err = json.MarshalIndent(idxMap, "", "    ")
 	if err != nil {
 		log.Fatal("Can't marshal mapping for tests")
 	}
-	// Build an index map to test with
-	err = ioutil.WriteFile(mName, defn1, 0666)
+	err = ioutil.WriteFile(mbName, defn1, 0666)
+	if err != nil {
+		log.Fatalf("Can't write %q, %s", mbName, err)
+	}
+
+	// Build an Simple index map to test with
+	defn2 = []byte(`{
+	"tind_id": {
+		"object_path": ".tind",
+		"field_mapping": "numeric",
+		"store": true
+	},
+	"issn": {
+		"object_path": ".issn",
+		"field_mapping": "keyword",
+		"store": true
+	},
+	"oclc": {
+		"object_path": ".oclc",
+		"field_mapping": "keyword",
+		"store": true
+	},
+	"title": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "lang",
+		"lang":"en",
+		"store": true
+	},
+	"title_simple": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "simple",
+		"store": true
+	},
+	"title_standard": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "standard",
+		"store": true
+	},
+	"title_keyword": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "keyword",
+		"store": true
+	},
+	"title_web": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "web",
+		"store": true
+	},
+	"year": {
+		"object_path": ".date",
+		"field_mapping": "numeric",
+		"store": true
+	}
+}`)
+
+	err = ioutil.WriteFile(mName, defn2, 0666)
 	if err != nil {
 		log.Fatalf("Can't write %q, %s", mName, err)
 	}
+
 	os.Exit(m.Run())
 }

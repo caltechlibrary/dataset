@@ -212,14 +212,17 @@ func stringToGeoPoint(s string) (map[string]float64, bool) {
 	return pt, true
 }
 
-// recordToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
-// renders a new map[string]interface{} ready to be indexed.
+// recordToIndexRecord takes the JSON srouce and Key and converts Unmarhals it into
+// a new map[string]interface{} ready to be indexed.
 func recordToIndexRecord(ky string, src []byte) (map[string]interface{}, error) {
-	var rec map[string]interface{}
+	rec := map[string]interface{}{}
 	d := json.NewDecoder(bytes.NewReader(src))
 	d.UseNumber()
 	if err := d.Decode(&rec); err != nil {
 		return nil, err
+	}
+	if len(rec) == 0 {
+		return nil, fmt.Errorf("%s has nothing to index", ky)
 	}
 	return rec, nil
 }
@@ -231,10 +234,10 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 		idx              bleve.Index
 		idxMap           *mapping.IndexMappingImpl
 		err              error
-		recordMap        map[string]map[string]interface{}
 		isSimpleIndexMap bool
 	)
 	// FIXME: this is a kludge, need to clean this up in a the long run
+	recordMap := map[string]map[string]interface{}{}
 	if strings.HasSuffix(idxMapName, ".bmap") == true {
 		// We are using a Bleve native index def here.
 		idxMap, err = readBleveIndexDefinition(idxMapName)
@@ -280,25 +283,33 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 						if err := idx.Batch(batchIdx); err != nil {
 							log.Fatal(err)
 						}
+						log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+						// Force release of memory
+						batchIdx = nil
+						batchIdx = idx.NewBatch()
+						batchT = time.Now()
 					}
+				} else {
+					log.Printf("%d, %s", i, err)
 				}
 			} else {
 				if rec, err := recordToIndexRecord(key, src); err == nil {
-					log.Printf("DEBUG rec: %+v\n", rec)
 					batchIdx.Index(key, rec)
 					cnt++
 					if (cnt % batchSize) == 0 {
 						if err := idx.Batch(batchIdx); err != nil {
 							log.Fatal(err)
 						}
+						log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+						// Force release of memory
+						batchIdx = nil
+						batchIdx = idx.NewBatch()
+						batchT = time.Now()
 					}
+				} else {
+					log.Printf("%d, %s", i, err)
 				}
 			}
-			log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
-			// Force release of memory
-			batchIdx = nil
-			batchIdx = idx.NewBatch()
-			batchT = time.Now()
 		} else {
 			log.Printf("%d, can't index %s, %s", i, key, err)
 		}

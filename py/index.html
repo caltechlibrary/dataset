@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">README</a></li>
+<li><a href="license.html">LICENSE</a></li>
+<li><a href="install.html">INSTALL</a></li>
+<li><a href="docs/">Documentation</a></li>
+<li><a href="how-to/">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Python3 Module for Dataset</h1>
+
+<p>This directory includes code to build a Go C-Shared library to use from
+Python 3.  The makefile is used to compile the Go code to a shared library
+format needed to take advantage of Python 3&rsquo;s <code>ctypes</code> package.</p>
+
+<h2>Compiling</h2>
+
+<p>You need to have Go v1.10 or better installed and Python3.5 with <code>ctypes</code>i
+installed.  If those are installed running <em>make</em> in this directory should
+build the modules.  You can test the compiled version with <em>make test</em> and
+build a release zip file with <em>make release</em>.</p>
+
+<h2>Installation</h2>
+
+<p>The shared library (i.e. <code>libdataset.so</code>, <code>libdataset.dll</code> or <code>libdataset.dylib</code>) needs to be in the same directory as <code>dataset.py</code> which in turn
+needs to be in your Python environment&rsquo;s search path.</p>
+
+<h2>Usage</h2>
+
+<p>The file <code>dataset_test.py</code> shows you how to use the basic functions
+in Python via importing the module <code>dataset</code>.</p>
+
+<pre><code class="language-python">    #!/usr/bin/env python3
+    import sys
+    
+    print(&quot;Starting import test&quot;)
+    import dataset
+    
+    if len(sys.argv) &gt; 1:
+        collection_name = sys.argv[1]
+        print(&quot;Initializing&quot;, collection_name)
+        print(dataset.init_collection(collection_name))
+    else:
+        print(&quot;To run tests provide a collection name for testing,&quot;, sys.argv[0], '&quot;test_collection2.ds&quot;')
+        exit(1)
+    dataset.verbose_on()
+    key = &quot;2488&quot;
+    value = { &quot;title&quot;: &quot;Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World&quot;, &quot;formats&quot;: [&quot;epub&quot;,&quot;kindle&quot;,&quot;plain text&quot;], &quot;authors&quot;: [{ &quot;given&quot;: &quot;Jules&quot;, &quot;family&quot;: &quot;Verne&quot; }], &quot;url&quot;: &quot;https://www.gutenberg.org/ebooks/2488&quot;}
+    
+    print(&quot;Populating collection&quot;)
+    if dataset.has_key(collection_name, key) == True:
+        print(&quot;updating record&quot;, key)
+        err = dataset.update_record(collection_name, key, value)
+        if err == False:
+            print(&quot;Could not update record&quot;,key)
+    else:
+       print(&quot;creating record&quot;, key)
+       err = dataset.create_record(collection_name, key, value)
+       if err == False:
+           print(&quot;Could not create record&quot;,key)
+    
+    keyCount = dataset.count(collection_name)
+    print(&quot;Record Count&quot;, keyCount)
+    keyList = dataset.keys(collection_name)
+    print(&quot;Keys&quot;, keyList)
+    rec = dataset.read_record(collection_name, key)
+    print(&quot;original record&quot;, rec)
+    for k, v in value.items():
+       if not isinstance(v, list):
+            if k in rec and rec[k] == v:
+                print(&quot;found&quot;, k, &quot; -&gt; &quot;, v)
+       else:
+            print(&quot;Error, expected&quot;, k, &quot;with v&quot;,v)
+    value[&quot;verified&quot;] = True
+    err = dataset.update_record(collection_name, key, value)
+    if err == False:
+       print(&quot;Count not update record&quot;, key, value)
+    rec = dataset.read_record(collection_name, key)
+    print(&quot;updated record&quot;, rec)
+    for k, v in value.items():
+       if not isinstance(v, list):
+           if k in rec and rec[k] == v:
+               print(&quot;found&quot;, k, &quot; -&gt; &quot;, v)
+       else:
+           print(&quot;Error, expected&quot;, k, &quot;with v&quot;,v)
+    err = dataset.delete_record(collection_name, key)
+    if err == False:
+        print(&quot;could not delete record&quot;, key)
+    cnt = dataset.count(collection_name)
+    if cnt != 0:
+        print(&quot;expected zero records, got&quot;, cnt)
+    print(&quot;All Done!&quot;)
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
