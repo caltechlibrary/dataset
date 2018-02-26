@@ -36,7 +36,7 @@ var (
 644902,,,California counts,1999
 601242,,,"Manual of rules of the Committee on Ways and Means for the ... Congress, adopted January ...",
 600949,0741-2665,,Annual report,1981
-600622,0083-1565,,Annual report of the Librarian of Congress for the fiscal year ended ..,1939
+00622,0083-1565,,Annual report of the Librarian of Congress for the fiscal year ended ..,1939
 598403,0161-4274,,National food review,1978
 585896,,,Fiscal Year 1994 budget resolution : pros & cons,1993
 545036,,,Symposium on the U.S. Office of Technology Assessment report : informing the nation : federal information dissemination in an electronic age,1989
@@ -47,18 +47,12 @@ var (
 418925,,,National food situation,
 415750,0007-6597,,BCD : business conditions digest,
 `
-	cName = "testdata/search-test"
-	mName = "testdata/search-test.json"
+	cName = "testdata/search-test.ds"
+	mName = "testdata/search-test.bmap"
 	iName = "testdata/search-test.bleve"
-
-	defn1 []byte
 )
 
 func TestIndexingSearch(t *testing.T) {
-	// Remove stale collection and index
-	os.RemoveAll(cName)
-	os.RemoveAll(iName)
-
 	// create the collection
 	c, err := create(cName, generateBucketNames("ab", 2))
 	if err != nil {
@@ -73,11 +67,6 @@ func TestIndexingSearch(t *testing.T) {
 	}
 	if lines != 16 {
 		t.Errorf("Expected to import 16 rows, got %d", lines)
-		t.FailNow()
-	}
-	// Build an index to test with
-	if err := ioutil.WriteFile(mName, defn1, 0666); err != nil {
-		t.Errorf("Can't write %q, %s", mName, err)
 		t.FailNow()
 	}
 	if err := c.Indexer(iName, mName, 100, []string{}); err != nil {
@@ -155,11 +144,23 @@ func TestMain(m *testing.M) {
 
 	idxMap.AddDocumentMapping("default", document)
 
-	var err error
+	var (
+		err   error
+		defn1 []byte
+	)
+	// Remove stale collection and index
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
+	os.RemoveAll(mName)
 
 	defn1, err = json.MarshalIndent(idxMap, "", "    ")
 	if err != nil {
 		log.Fatal("Can't marshal mapping for tests")
+	}
+	// Build an index map to test with
+	err = ioutil.WriteFile(mName, defn1, 0666)
+	if err != nil {
+		log.Fatalf("Can't write %q, %s", mName, err)
 	}
 	os.Exit(m.Run())
 }
