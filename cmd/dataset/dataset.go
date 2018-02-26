@@ -63,6 +63,7 @@ var (
 	showVerbose       bool
 	sampleSize        int
 	clientSecretFName string
+	overwrite         bool
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -200,6 +201,12 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	if useUUID == true {
 		m["_uuid"] = name
+	}
+	if overwrite == true && collection.HasKey(name) == true {
+		if err := collection.Update(name, m); err != nil {
+			return "", err
+		}
+		return "OK", nil
 	}
 	if err := collection.Create(name, m); err != nil {
 		return "", err
@@ -740,7 +747,7 @@ func importGSheet(params ...string) (string, error) {
 		return "", err
 	}
 
-	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
+	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
@@ -938,6 +945,7 @@ func main() {
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
 	app.StringVar(&clientSecretFName, "client-secret", "", "set the client secret path and filename for GSheet access")
+	app.BoolVar(&overwrite, "overwrite", false, "overwrite will treat a create as update if the record exists")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	// NOTE: Sense this pre-existed cli v0.0.6 we're going to stick with what we evolved.

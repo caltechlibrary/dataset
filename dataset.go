@@ -551,7 +551,7 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 
 // ImportTable takes a [][]string and iterates over the rows and imports them as
 // a JSON records into dataset.
-func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
+func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID, overwrite, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
 		jsonFName  string
@@ -614,9 +614,16 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 				record[fieldName] = val
 			}
 		}
-		err = c.Create(jsonFName, record)
-		if err != nil {
-			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		if overwrite == true && c.HasKey(jsonFName) == true {
+			err = c.Update(jsonFName, record)
+			if err != nil {
+				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+			}
+		} else {
+			err = c.Create(jsonFName, record)
+			if err != nil {
+				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+			}
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
 			log.Printf("%d rows processed", lineNo)
