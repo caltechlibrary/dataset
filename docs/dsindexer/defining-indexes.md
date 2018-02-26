@@ -349,10 +349,11 @@ a numeric value and a string you're out of luck or you'll need to index each typ
 ## The Bleve native index map
 
 _dsindexer_ works from a index definition expressed as a JSON document. It is the same format as Bleve's native
-index definition in JSON.  Bleve supports complex indexing but in this initial one we will index two fields
-specifically - last_name ad date_of_birth.
+index definition in JSON. Bleve native indexes are distinguished by the file extension `.bmap`.  Bleve supports complex 
+including things like facetted search.  In our example we'll keep it simple indexing only two specfic fields -- 
+last_name ad date_of_birth.
 
-If your JSON document looks like
+If your JSON data document looks like
 
 ```json
     {
@@ -369,7 +370,8 @@ If your JSON document looks like
     }
 ```
 
-You could create an index of last name and date of birth with the following definition
+You could create an index of last name and date of birth (e.g. `last_name-dob.bmap`)  
+with the following definition
 
 ```json
     {
