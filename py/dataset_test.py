@@ -38,7 +38,10 @@ for k, v in value.items():
         if k in rec and rec[k] == v:
             print("found", k, " -> ", v)
    else:
-        print("Error, expected", k, "with v",v)
+        if k == "formats" or k == "authors":
+            print("OK, expected lists for", k, " -> ", v)
+        else:
+            print("Error, expected", k, "with v",v)
 value["verified"] = True
 err = dataset.update_record(collection_name, key, value)
 if err == False:
@@ -50,7 +53,10 @@ for k, v in value.items():
        if k in rec and rec[k] == v:
            print("found", k, " -> ", v)
    else:
-       print("Error, expected", k, "with v",v)
+       if k == "formats" or k == "authors":
+           print("OK, expected lists for", k, " -> ", v)
+       else:
+           print("Error, expected", k, "with v",v)
 err = dataset.delete_record(collection_name, key)
 if err == False:
     print("could not delete record", key)
