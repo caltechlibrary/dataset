@@ -108,29 +108,37 @@ function test_gsheet() {
     if [[ -d "test_gsheet.ds" ]]; then
         rm -fR test_gsheet.ds
     fi
-    bin/dataset -quiet init "test_gsheet.ds"
+    bin/dataset -nl=false -quiet init "test_gsheet.ds"
     if [[ "$?" != "0" ]]; then
         echo "Count not initialize test_gsheet.ds"
         exit 1
     fi
     export DATASET="test_gsheet.ds"
 
-    bin/dataset -quiet create test '{"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"}'
+    bin/dataset -nl=false -quiet create test '{"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"}'
     if [[ "$?" != "0" ]]; then
         echo "Could not create test record in test_gsheet.ds"
         exit 1
     fi
-    CNT=$(bin/dataset count)
+    CNT=$(bin/dataset -nl=false count)
     if [[ "${CNT}" != "1" ]]; then
         echo "Should have one record to export"
         exit 1
     fi
 
-    bin/dataset -quiet -client-secret "${CLIENT_SECRET_JSON}" export-gsheet "${SPREADSHEET_ID}" 'Sheet1' 'A1:CZ' true \
+    bin/dataset -nl=false -quiet -client-secret "${CLIENT_SECRET_JSON}" export-gsheet "${SPREADSHEET_ID}" 'Sheet1' 'A1:CZ' true \
         '.done,.key,.resolver,.subjects,.additional,.identifier_1,.description_1' \
         'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
     if [[ "$?" != "0" ]]; then
         echo "Count not export-gsheet"
+        exit 1
+    fi
+
+
+    # Since our collection exists already and we haven't used the -overwrite option we should get an error
+    bin/dataset -nl=false -client-secret "${CLIENT_SECRET_JSON}" import-gsheet "${SPREADSHEET_ID}" "Sheet1" 'A1:CZ'
+    if [[ "$?" = "0" ]]; then
+        echo "Expected an error since we didn't include -overwrite for our existing collection"
         exit 1
     fi
 
@@ -141,9 +149,9 @@ function test_issue15() {
     if [[ -d "test_issue15.ds" ]]; then
         rm -fR test_issue15.ds
     fi
-    bin/dataset -quiet init "test_issue15.ds"
-    bin/dataset -quiet -c test_issue15.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
-    I=$(bin/dataset -c test_issue15.ds count)
+    bin/dataset -nl=false -quiet init "test_issue15.ds"
+    bin/dataset -nl=false -quiet -c test_issue15.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
+    I=$(bin/dataset -nl=false -c test_issue15.ds count)
     if [[ "$I" != "1" ]]; then
         echo "Failed to add freda record test_issue15.ds"
         exit 1
@@ -163,7 +171,7 @@ function test_issue15() {
 }
 
 echo "Testing command line tools"
-test_dataset
+#test_dataset
 test_gsheet
-test_issue15
+#test_issue15
 echo 'Success!'
