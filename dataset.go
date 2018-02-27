@@ -554,7 +554,7 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID, overwrite, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
-		jsonFName  string
+		key        string
 		err        error
 	)
 	if len(table) == 0 {
@@ -583,20 +583,20 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 && useUUID == false {
-			jsonFName = fmt.Sprintf("%d", lineNo)
+			key = fmt.Sprintf("%d", lineNo)
 		} else if useUUID == true {
-			jsonFName = uuid.New().String()
+			key = uuid.New().String()
 			if _, ok := record["uuid"]; ok == true {
-				record["_uuid"] = jsonFName
+				record["_uuid"] = key
 			} else {
-				record["uuid"] = jsonFName
+				record["uuid"] = key
 			}
 		}
 		for i, val := range row {
 			if i < len(fieldNames) {
 				fieldName = fieldNames[i]
 				if idCol == i {
-					jsonFName = val
+					key = val
 				}
 			} else {
 				fieldName = fmt.Sprintf("column_%03d", i+1)
@@ -614,15 +614,15 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 				record[fieldName] = val
 			}
 		}
-		if overwrite == true && c.HasKey(jsonFName) == true {
-			err = c.Update(jsonFName, record)
+		if overwrite == true && c.HasKey(key) == true {
+			err = c.Update(key, record)
 			if err != nil {
-				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, key, err)
 			}
 		} else {
-			err = c.Create(jsonFName, record)
+			err = c.Create(key, record)
 			if err != nil {
-				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, key, err)
 			}
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
