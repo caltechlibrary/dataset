@@ -72,11 +72,12 @@ Options will override any corresponding environment settings.
 ```
     -batch                    Set the size index batch, default is 100
     -c, -collection           sets the collection to be used
+    -delete                   this will cause records to be deleted from an index, use with -key-file
     -e, -examples             display examples
     -generate-markdown-docs   output documentation in Markdown
     -h, -help                 display help
     -i, -input                input file name
-    -id-file                  Create/Update an index for the ids in file
+    -key-file                 Create/Update an index based on the keys provided in the file
     -l, -license              display license
     -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
@@ -88,4 +89,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.21-dev
+dsindexer v0.0.26-dev

@@ -37,6 +37,7 @@ Options will override any corresponding environment settings.
     -l, -license              display license
     -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
+    -overwrite                overwrite will treat a create as update if the record exists
     -p, -pretty               pretty print output
     -quiet                    suppress error messages
     -sample                   set the sample size when listing keys
@@ -212,4 +213,4 @@ Which would result in a record like
 
 
 
-dataset v0.0.21-dev
+dataset v0.0.26-dev

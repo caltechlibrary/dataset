@@ -66,6 +66,9 @@ func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
 
+	// Add Params
+	app.AddParams("[INDEX_LIST]", "QUERY_STRING")
+
 	// Add Help Docs
 	app.AddHelp("description", []byte(description))
 	for k, v := range Help {

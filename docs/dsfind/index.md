@@ -1,7 +1,7 @@
 
 # USAGE
 
-	dsfind [OPTIONS]
+	dsfind [OPTIONS] [INDEX_LIST] QUERY_STRING
 
 ## SYNOPSIS
 
@@ -48,4 +48,4 @@ are output.
 ```
 
 
-dsfind v0.0.21-dev
+dsfind v0.0.26-dev

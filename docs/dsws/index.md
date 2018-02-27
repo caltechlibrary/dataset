@@ -48,4 +48,4 @@ supported.
 ```
 
 
-dsws v0.0.21-dev
+dsws v0.0.26-dev
