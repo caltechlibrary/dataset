@@ -41,14 +41,14 @@ $(LIB_NAME)$(EXT): $(LIB_NAME).go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 test: $(LIB_NAME)$(EXT)
-	if [[ -d "test_collection.ds" ]]; then rm -fR "test_collection.ds"; fi
+	if [ -d "test_collection.ds" ]; then rm -fR "test_collection.ds"; fi
 	python3 dataset_test.py "test_collection.ds"
 
 clean:
-	if [[ -f "$(LIB_NAME)$(EXT)" ]]; then rm "$(LIB_NAME)$(EXT)"; fi
-	if [[ -f "$(LIB_NAME).h" ]]; then rm "$(LIB_NAME).h"; fi
-	if [[ -d "test_collection.ds" ]]; then rm -fR "test_collection.ds"; fi	
-	if [[ -d "__pycache__" ]]; then rm -fR "__pycache__"; fi	
+	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
+	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	if [ -d "test_collection.ds" ]; then rm -fR "test_collection.ds"; fi	
+	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
 
 release: $(LIB_NAME)$(EXT)
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
