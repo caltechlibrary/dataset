@@ -68,6 +68,7 @@ test: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 	go test
 	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
+	cd py && $(MAKE) test
 
 format:
 	gofmt -w dataset.go
@@ -98,6 +99,7 @@ clean:
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
+	cd py && $(MAKE) clean
 
 dist/linux-amd64:
 	mkdir -p dist/bin
@@ -151,6 +153,7 @@ distribute_docs:
 	bash package-versions.bash > dist/package-versions.txt
 
 release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+	cd py && $(MAKE) release
 
 status:
 	git status

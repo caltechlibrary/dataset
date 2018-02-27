@@ -40,22 +40,20 @@ endif
 $(LIB_NAME)$(EXT): $(LIB_NAME).go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
-test:
-	if [[ -d "test_collection1.ds" ]]; then rm -fR "test_collection1.ds"; fi
-	if [[ -d "test_collection2.ds" ]]; then rm -fR "test_collection2.ds"; fi
-	python3 dataset.py "test_collection1.ds"
-	python3 dataset_test.py "test_collection2.ds"
+test: $(LIB_NAME)$(EXT)
+	if [[ -d "test_collection.ds" ]]; then rm -fR "test_collection.ds"; fi
+	python3 dataset_test.py "test_collection.ds"
 
 clean:
-	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
-	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
-	if [ -d "test_collection1.ds" ]; then rm -fR "test_collection1.ds"; fi	
-	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
+	if [[ -f "$(LIB_NAME)$(EXT)" ]]; then rm "$(LIB_NAME)$(EXT)"; fi
+	if [[ -f "$(LIB_NAME).h" ]]; then rm "$(LIB_NAME).h"; fi
+	if [[ -d "test_collection.ds" ]]; then rm -fR "test_collection.ds"; fi	
+	if [[ -d "__pycache__" ]]; then rm -fR "__pycache__"; fi	
 
-release:
+release: $(LIB_NAME)$(EXT)
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	mkdir -p ../dist
-	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" "$(LIB_NAME).py" "$(LIB_NAME)$(EXT)" "README.md"
+	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" "$(PROJECT).py" "$(LIB_NAME)$(EXT)" "README.md"
 
 status:
 	git status
