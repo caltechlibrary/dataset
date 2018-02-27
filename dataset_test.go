@@ -226,6 +226,65 @@ func TestCollection(t *testing.T) {
 	}
 }
 
+func TestExtract(t *testing.T) {
+	colName := "testdata/test_extract.ds"
+	os.RemoveAll(colName)
+	c, err := InitCollection(colName)
+	if err != nil {
+		t.Errorf("failed to create %s, %s", colName, err)
+		t.FailNow()
+	}
+	if err := c.CreateJSON("gutenberg:21489", []byte(`{"title": "The Secret of the Island", "formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": "Jules", "family": "Verne"}], "url": "http://www.gutenberg.org/ebooks/21489"}`)); err != nil {
+		t.Errorf("Can't add record %s", err)
+		t.FailNow()
+	}
+	if err := c.CreateJSON("gutenberg:2488", []byte(`{"title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}`)); err != nil {
+		t.Errorf("Can't add record %s", err)
+		t.FailNow()
+	}
+	if err := c.CreateJSON("gutenberg:21839", []byte(`{ "title": "Sense and Sensibility", "formats": ["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": "Austin"}], "url": "http://www.gutenberg.org/ebooks/21839" }`)); err != nil {
+		t.Errorf("Can't add record %s", err)
+		t.FailNow()
+	}
+	if err := c.CreateJSON("gutenberg:3186", []byte(`{"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186"}`)); err != nil {
+		t.Errorf("Can't add record %s", err)
+		t.FailNow()
+	}
+	if err := c.CreateJSON("hathi:uc1321060001561131", []byte(`{ "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9" }`)); err != nil {
+		t.Errorf("Can't add record %s", err)
+		t.FailNow()
+	}
+	if i := c.Length(); i != 5 {
+		t.Errorf("Expected 5 records, got %d", i)
+		t.FailNow()
+	}
+	keys := c.Keys()
+	if len(keys) != 5 {
+		t.Errorf("Expected 5 keys, got %+v\n", keys)
+		t.FailNow()
+	}
+
+	l, err := c.Extract("true", ".authors[:].family")
+	if err != nil {
+		t.Errorf("Can't extract values, %s", err)
+	}
+	if len(l) != 4 {
+		t.Errorf("expected four author last names, %+v", l)
+	}
+	for _, target := range []string{"Verne", "Austin", "Twain", "Fremont"} {
+		found := false
+		for _, v := range l {
+			if v == target {
+				found = true
+				break
+			}
+		}
+		if found == false {
+			t.Errorf("Could not find %s in list %+v", target, l)
+		}
+	}
+}
+
 func TestComplexKeys(t *testing.T) {
 	colName := "testdata/col2.ds"
 	buckets := generateBucketNames("ab", 2)

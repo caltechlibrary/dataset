@@ -60,7 +60,7 @@ go_has_key.argtypes = [ctypes.c_char_p,ctypes.c_char_p]
 go_has_key.restype = ctypes.c_int
 
 go_keys = lib.keys
-go_keys.argtypes = [ctypes.c_char_p]
+go_keys.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_keys.restype = ctypes.c_char_p
 
 go_count = lib.count
@@ -70,7 +70,6 @@ go_count.restype = ctypes.c_int
 go_extract = lib.extract
 go_extract.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_extract.restype = ctypes.c_char_p
-
 
 verbose_on = lib.verbose_on
 verbose_off = lib.verbose_off
@@ -129,10 +128,10 @@ def delete_record(name, key):
     return False
     
 
-# Keys returns a list of keys from a collection
-def keys(name):
-    '''keys returns a list of keys'''
-    value = go_keys(ctypes.c_char_p(name.encode('utf8')))
+# Keys returns a list of keys from a collection optionally applying a filter or sort expression
+def keys(name, filter_expr = "", sort_expr = ""):
+    '''keys returns a list of keys, optionally apply a filter and sort expression'''
+    value = go_keys(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(sort_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
     return json.loads(value.decode())

@@ -28,6 +28,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -732,59 +733,57 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
-	rows := []string{}
-	data := make(map[string]interface{})
-	hash := make(map[string]bool)
-
 	keys := c.Keys()
-
-	if filterExpr == "true" {
-		for _, key := range keys {
-			if err := c.Read(key, data); err == nil {
-				cell, err := dotpath.Eval(dotExpr, data)
-				if err == nil {
-					switch cell.(type) {
-					case []interface{}:
-						l := cell.([]interface{})
-						for _, v := range l {
-							hash[colToString(v)] = true
-						}
-					case []string:
-						l := cell.([]string)
-						for _, v := range l {
-							hash[v] = true
-						}
-					default:
-						hash[colToString(cell)] = true
-					}
-				}
-				data = nil
-			}
-		}
-		for ky := range hash {
-			rows = append(rows, ky)
-		}
-		return rows, nil
-	}
-
+	uniqueStrings := map[string]bool{}
+	hKey := ""
 	f, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
 		return nil, err
 	}
-
 	for _, key := range keys {
+		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
-				col, err := dotpath.Eval(dotExpr, data)
-				if err == nil {
-					hash[colToString(col)] = true
+				if cell, err := dotpath.Eval(dotExpr, data); err == nil {
+					switch cell.(type) {
+					case []interface{}:
+						for _, v := range cell.([]interface{}) {
+							hKey = colToString(v)
+							uniqueStrings[hKey] = true
+						}
+					case map[string]interface{}:
+						for _, v := range cell.([]interface{}) {
+							hKey = colToString(v)
+							uniqueStrings[hKey] = true
+						}
+					case map[string]string:
+						for _, v := range cell.([]string) {
+							hKey = v
+							uniqueStrings[hKey] = true
+						}
+					case []string:
+						for _, v := range cell.([]string) {
+							hKey = v
+							uniqueStrings[hKey] = true
+						}
+					default:
+						hKey = colToString(cell)
+						uniqueStrings[hKey] = true
+					}
+				} else if err != nil {
+					return nil, fmt.Errorf("can't parse dotExpr %q", err)
 				}
-				data = nil
+			} else {
+				return nil, err
 			}
+		} else {
+			return nil, fmt.Errorf("c.Read() error, %s, %s", key, err)
 		}
 	}
-	for ky := range hash {
+	rows := []string{}
+	for ky, _ := range uniqueStrings {
 		rows = append(rows, ky)
 	}
+	sort.Strings(rows)
 	return rows, nil
 }

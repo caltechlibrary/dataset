@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+import os
+import shutil
 
 print("Starting dataset_test.py")
 import dataset
@@ -8,11 +10,11 @@ import dataset
 error_count = 0
 ok = True
 dataset.verbose_off()
-#dataset.verbose_on() # DEBUG
 
 if len(sys.argv) > 1:
     collection_name = sys.argv[1]
-    #print("Initializing", collection_name)
+    if os.path.exists(collection_name):
+        shutil.rmtree(collection_name)
     ok = dataset.init_collection(collection_name)
     if ok == False:
         print("Failed, could not create collection")
@@ -74,6 +76,38 @@ for k, v in value.items():
            print("Failed, expected", k, "with v",v)
            error_count += 1
 
+# test deleting a record
+ok = dataset.delete_record(collection_name, key)
+if ok == False:
+    print("Failed, could not delete record", key)
+    error_count += 1
+
+# Test count after delete
+key_list = dataset.keys(collection_name)
+cnt = dataset.count(collection_name)
+if cnt != 0:
+    print("Failed, expected zero records, got", cnt, key_list)
+    error_count += 1
+
+#
+# Generate multiple records for collection for testing keys and extract
+#
+test_records = {
+    "gutenberg:2488": { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"},
+    "gutenberg:21839": { "title": "Sense and Sensibility", "formats": ["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": "Austin"}], "url": "http://www.gutenberg.org/ebooks/21839" },
+    "gutenberg:gutenberg:3186": {"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186"},
+    "hathi:uc1321060001561131": { "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9" }
+}
+
+for k in test_records:
+    v = test_records[k]
+    ok = dataset.create_record(collection_name, k, v)
+    if ok == False:
+        print("Failed, could not add", k, "to", collection_name)
+        error_count += 1
+
+# Test keys, filtering keys and sorting keys
+
 # Test extracting the family names
 v = dataset.extract(collection_name, 'true', '.authors[:].family')
 if not isinstance(v, list):
@@ -81,28 +115,17 @@ if not isinstance(v, list):
     error_count += 1
     sys.exit(1)
 
-if len(v) != 1:
-    printf("Failed expected list to be of length 1, got", len(v))
-    error_count += 1
-    sys.exit(1)
-
-if "Verne" not in v:
-    print("Failed, expected a list of family_names with Verne", v)
-    error_count += 1
-    sys.exit(1)
-print("OK, extract works for true .authors[:].family", v)
-
-# Finally test deleting a record
-ok = dataset.delete_record(collection_name, key)
-if ok == False:
-    print("Failed, could not delete record", key)
+if len(v) != 4:
+    print("Failed expected list to be of length 4, got", len(v))
     error_count += 1
 
-# Test count after delete
-cnt = dataset.count(collection_name)
-if cnt != 0:
-    print("Failed, expected zero records, got", cnt)
+targets = [ "Austin", "Fremont", "Twain", "Verne" ]
+for s in targets:
+    if s not in v:
+        print("Failed, expected to find", s, "in", v)
+        error_count += 1
 
+# Wrap up tests
 if error_count > 0:
     print("Failed", error_count, "tests")
     sys.exit(1)
