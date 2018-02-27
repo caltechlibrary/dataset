@@ -703,6 +703,32 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	return cnt, nil
 }
 
+// KeyFilter takes a list of keys and  filter expression and returns the list of keys passing
+// through the filter or an error
+func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
+	// Handle the trivial case of filter == "true"
+	if filterExpr == "true" {
+		return keyList, nil
+	}
+
+	// Some sort of filter is involved
+	f, err := tmplfn.ParseFilter(filterExpr)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := []string{}
+	for _, key := range keyList {
+		m := map[string]interface{}{}
+		if err := c.Read(key, m); err == nil {
+			if ok, err := f.Apply(m); err == nil && ok == true {
+				keys = append(keys, key)
+			}
+		}
+	}
+	return keys, nil
+}
+
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {

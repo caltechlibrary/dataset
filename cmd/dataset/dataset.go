@@ -420,24 +420,10 @@ func collectionKeys(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	// Trivial case of return all keys
-	if len(args) == 0 || (len(args) == 1 && args[0] == "true") {
-		if sampleSize == 0 {
-			return strings.Join(collection.Keys(), "\n"), nil
-		}
-		keys := collection.Keys()
-		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		shuffle.Strings(keys, random)
-		if sampleSize <= len(keys) {
-			return strings.Join(keys[0:sampleSize], "\n"), nil
-		}
-		return strings.Join(collection.Keys(), "\n"), nil
-	}
-
-	// Some sort of filter is involved
-	f, err := tmplfn.ParseFilter(args[0])
-	if err != nil {
-		return "", err
+	// Set our filter
+	filterExpr := "true"
+	if len(args) > 0 {
+		filterExpr = args[0]
 	}
 
 	// Some sort of Sort is involved
@@ -456,13 +442,9 @@ func collectionKeys(args ...string) (string, error) {
 	keys := []string{}
 
 	// Process the filter
-	for _, key := range keyList {
-		m := map[string]interface{}{}
-		if err := collection.Read(key, m); err == nil {
-			if ok, err := f.Apply(m); err == nil && ok == true {
-				keys = append(keys, key)
-			}
-		}
+	keys, err = collection.KeyFilter(keyList, filterExpr)
+	if err != nil {
+		return "", err
 	}
 
 	// Apply Sample Size
