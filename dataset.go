@@ -651,7 +651,7 @@ func colToString(cell interface{}) string {
 }
 
 // ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
-func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotPaths []string, colNames []string, verboseLog bool) (int, error) {
+func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
 	keys := c.Keys()
 	f, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
@@ -675,7 +675,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 			if ok, err := f.Apply(data); err == nil && ok == true {
 				// write row out.
 				row = []string{}
-				for _, colPath := range dotPaths {
+				for _, colPath := range dotExpr {
 					col, err := dotpath.Eval(colPath, data)
 					if err == nil {
 						row = append(row, colToString(col))
@@ -705,7 +705,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
-func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error) {
+func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
 	rows := []string{}
 	data := make(map[string]interface{})
 	hash := make(map[string]bool)
@@ -715,9 +715,22 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 	if filterExpr == "true" {
 		for _, key := range keys {
 			if err := c.Read(key, data); err == nil {
-				col, err := dotpath.Eval(dotPath, data)
+				cell, err := dotpath.Eval(dotExpr, data)
 				if err == nil {
-					hash[colToString(col)] = true
+					switch cell.(type) {
+					case []interface{}:
+						l := cell.([]interface{})
+						for _, v := range l {
+							hash[colToString(v)] = true
+						}
+					case []string:
+						l := cell.([]string)
+						for _, v := range l {
+							hash[v] = true
+						}
+					default:
+						hash[colToString(cell)] = true
+					}
 				}
 				data = nil
 			}
@@ -727,6 +740,7 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 		}
 		return rows, nil
 	}
+
 	f, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
 		return nil, err
@@ -735,7 +749,7 @@ func (c *Collection) Extract(filterExpr string, dotPath string) ([]string, error
 	for _, key := range keys {
 		if err := c.Read(key, data); err == nil {
 			if ok, err := f.Apply(data); err == nil && ok == true {
-				col, err := dotpath.Eval(dotPath, data)
+				col, err := dotpath.Eval(dotExpr, data)
 				if err == nil {
 					hash[colToString(col)] = true
 				}

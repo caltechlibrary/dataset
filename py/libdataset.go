@@ -196,4 +196,27 @@ func count(name, key, filter *C.char) C.int {
 	return C.int(i)
 }
 
+//export extract
+func extract(name, filterExpr, dotExpr *C.char) *C.char {
+	collectionName := C.GoString(name)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("Cannot open collection %s, %s", collectionName, err)
+		return C.CString("")
+	}
+	defer c.Close()
+	values, err := c.Extract(C.GoString(filterExpr), C.GoString(dotExpr))
+	if err != nil {
+		messagef("Extract failed for %s, %q, %q:  %s", collectionName, filterExpr, dotExpr, err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(values)
+	if err != nil {
+		messagef("Can't marshal extracted values for %s, %s", collectionName, err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
 func main() {}

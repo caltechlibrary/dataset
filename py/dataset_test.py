@@ -73,10 +73,32 @@ for k, v in value.items():
        else:
            print("Failed, expected", k, "with v",v)
            error_count += 1
+
+# Test extracting the family names
+v = dataset.extract(collection_name, 'true', '.authors[:].family')
+if not isinstance(v, list):
+    print("Failed, expected a list, got", type(v), v)
+    error_count += 1
+    sys.exit(1)
+
+if len(v) != 1:
+    printf("Failed expected list to be of length 1, got", len(v))
+    error_count += 1
+    sys.exit(1)
+
+if "Verne" not in v:
+    print("Failed, expected a list of family_names with Verne", v)
+    error_count += 1
+    sys.exit(1)
+print("OK, extract works for true .authors[:].family", v)
+
+# Finally test deleting a record
 ok = dataset.delete_record(collection_name, key)
 if ok == False:
     print("Failed, could not delete record", key)
     error_count += 1
+
+# Test count after delete
 cnt = dataset.count(collection_name)
 if cnt != 0:
     print("Failed, expected zero records, got", cnt)

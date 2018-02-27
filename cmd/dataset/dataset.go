@@ -900,13 +900,13 @@ func extract(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH", os.Args[0])
+		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH_EXPR", os.Args[0])
 	}
 	filterExpr := strings.TrimSpace(params[0])
-	dotPaths := strings.TrimSpace(params[1])
-	lines, err := collection.Extract(filterExpr, dotPaths)
+	dotExpr := strings.TrimSpace(params[1])
+	lines, err := collection.Extract(filterExpr, dotExpr)
 	if err != nil {
-		return "", fmt.Errorf("Can't extract %s, %s", dotPaths, err)
+		return "", fmt.Errorf("Can't extract %s, %s", dotExpr, err)
 	}
 	return strings.Join(lines, "\n"), nil
 }

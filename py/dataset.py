@@ -67,6 +67,11 @@ go_count = lib.count
 go_count.argtypes = [ctypes.c_char_p]
 go_count.restype = ctypes.c_int
 
+go_extract = lib.extract
+go_extract.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_extract.restype = ctypes.c_char_p
+
+
 verbose_on = lib.verbose_on
 verbose_off = lib.verbose_off
 
@@ -139,3 +144,13 @@ def count(name, filter = ''):
     value = go_count(ctypes.c_char_p(name.encode('utf8')))
     return value
 
+# Extract unique values from the JSON records in a collection given a filter expression and dot path
+def extract(name, filter_expr, dot_expr):
+    '''extract unique values from the JSON records in a collection given a filter expression and dot path'''
+    value = go_extract(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(dot_expr.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    if value.decode() == "":
+        return [] 
+    return json.loads(value.decode())
+    
