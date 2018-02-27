@@ -748,7 +748,7 @@ func importGSheet(params ...string) (string, error) {
 	}
 
 	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, showVerbose); err != nil {
-		return "", fmt.Errorf("Errors importing gsheet, %s", err)
+		return "", fmt.Errorf("Errors importing %s, %s", sheetName, err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
 	}

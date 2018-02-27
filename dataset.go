@@ -617,12 +617,12 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 		if overwrite == true && c.HasKey(key) == true {
 			err = c.Update(key, record)
 			if err != nil {
-				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, key, err)
+				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
 			}
 		} else {
 			err = c.Create(key, record)
 			if err != nil {
-				return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, key, err)
+				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
 			}
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
