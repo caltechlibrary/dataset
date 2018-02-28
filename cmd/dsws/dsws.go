@@ -303,8 +303,8 @@ func main() {
 				opts["highlighter"] = "html"
 			}
 		}
-		buf := bytes.NewBufferString("")
-		results, err := dataset.Find(buf, idxAlias, []string{qString}, opts)
+
+		results, err := dataset.Find(idxAlias, []string{qString}, opts)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%s", err), 500)
 		}

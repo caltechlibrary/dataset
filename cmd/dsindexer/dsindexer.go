@@ -195,14 +195,25 @@ func main() {
 	}
 
 	if batchSize == 0 {
-		if len(keys) > 10000 {
+		if len(keys) > 100000 {
+			batchSize = 1000
+		} else if len(keys) > 10000 {
 			batchSize = len(keys) / 100
+		} else if len(keys) > 1000 {
+			batchSize = len(keys) / 10
 		} else {
 			batchSize = 100
 		}
 	}
 
-	err = collection.Indexer(indexName, definitionFName, batchSize, keys)
+	if deleteFromIndex == true {
+		if len(keys) == 0 {
+			cli.ExitOnError(app.Eout, fmt.Errorf("No keys to deindex"), quiet)
+		}
+		err = collection.Deindexer(indexName, keys, batchSize)
+	} else {
+		err = collection.Indexer(indexName, definitionFName, keys, batchSize)
+	}
 	cli.ExitOnError(app.Eout, err, quiet)
 
 	if newLine {

@@ -61,6 +61,9 @@ install:
 	env GOBIN=$(GOPATH)/bin go install cmd/dsfind/dsfind.go cmd/dsfind/assets.go
 	env GOBIN=$(GOPATH)/bin go install cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
+python:
+	cd py && $(MAKE)
+
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 

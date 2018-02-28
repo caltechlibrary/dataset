@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
@@ -264,8 +265,8 @@ func key_sort(cname, cKeyList, cSortExpr *C.char) *C.char {
 }
 
 //export count
-func count(name, key, filter *C.char) C.int {
-	collectionName := C.GoString(name)
+func count(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		messagef("Cannot open collection %s, %s", collectionName, err)
@@ -296,6 +297,131 @@ func extract(name, filterExpr, dotExpr *C.char) *C.char {
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+//export indexer
+func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.int) C.int {
+	collectionName := C.GoString(cName)
+	indexName := C.GoString(cIndexName)
+	indexMapName := C.GoString(cIndexMapName)
+	keyList := C.GoString(cKeyList)
+	batchSize := int(cBatchSize)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("Cannot open collection %s, %s", collectionName, err)
+		// return 0 (false)
+		return C.int(0)
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if keyList != "" {
+		err = json.Unmarshal([]byte(keyList), &keys)
+		if err != nil {
+			messagef("Can't unmarshal key list, %s", err)
+			// return 0 (false)
+			return C.int(0)
+		}
+	}
+
+	err = c.Indexer(indexName, indexMapName, keys, batchSize)
+	if err != nil {
+		messagef("Indexing error %s %s, %s", collectionName, indexName, err)
+		// return 0 (false)
+		return C.int(0)
+	}
+	// return 1 (true) for success
+	return C.int(1)
+}
+
+//export deindexer
+func deindexer(cName, cIndexName, cKeyList *C.char, cBatchSize C.int) C.int {
+	collectionName := C.GoString(cName)
+	indexName := C.GoString(cIndexName)
+	keyList := C.GoString(cKeyList)
+	batchSize := int(cBatchSize)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("Cannot open collection %s, %s", collectionName, err)
+		// return 0 (false), failed
+		return C.int(0)
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if keyList != "" {
+		err = json.Unmarshal([]byte(keyList), &keys)
+		if err != nil {
+			messagef("Can't unmarshal key list, %s", err)
+			// return 0 (false), failed
+			return C.int(0)
+		}
+	}
+
+	err = c.Deindexer(indexName, keys, batchSize)
+	if err != nil {
+		messagef("Deindexing error %s %s, %s", collectionName, indexName, err)
+		// return 0 (false), failed
+		return C.int(0)
+	}
+	// return 1 (true) for success
+	return C.int(1)
+}
+
+//export find
+func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
+	indexNamesSrc := C.GoString(cIndexNames)
+	queryString := C.GoString(cQueryString)
+	optionsSrc := C.GoString(cOptionsMap)
+
+	indexNames := []string{}
+	if strings.HasPrefix(indexNamesSrc, "[") {
+		err := json.Unmarshal([]byte(indexNamesSrc), &indexNames)
+		if err != nil {
+			messagef("Can't unmarshal index names, %s", err)
+			return C.CString("")
+		}
+	} else if strings.Contains(indexNamesSrc, ":") {
+		indexNames = strings.Split(indexNamesSrc, ":")
+	} else {
+		indexNames = []string{indexNamesSrc}
+	}
+	options := map[string]string{}
+	if optionsSrc != "" {
+		err := json.Unmarshal([]byte(optionsSrc), &options)
+		if err != nil {
+			messagef("Options error, %s", err)
+			// return "", failed
+			return C.CString("")
+		}
+	}
+
+	idxAlias, _, err := dataset.OpenIndexes(indexNames)
+	if err != nil {
+		messagef("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
+		return C.CString("")
+	}
+	defer idxAlias.Close()
+
+	result, err := dataset.Find(idxAlias, strings.Split(queryString, "\n"), options)
+	if err != nil {
+		messagef("Find error %s, %s", strings.Join(indexNames, ", "), err)
+		// return "", failed
+		return C.CString("")
+	}
+
+	src, err := json.Marshal(result)
+	if err != nil {
+		messagef("Can't marshal results, %s", err)
+		// return "", failed
+		return C.CString("")
+	}
+
+	txt := fmt.Sprintf("%s", src)
+	// return our encoded results, success
 	return C.CString(txt)
 }
 

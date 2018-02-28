@@ -74,7 +74,7 @@ func TestBleveMapIndexingSearch(t *testing.T) {
 		t.Errorf("Expected to import 16 rows, got %d", lines)
 		t.FailNow()
 	}
-	if err := c.Indexer(iName, mbName, 100, []string{}); err != nil {
+	if err := c.Indexer(iName, mbName, []string{}, 100); err != nil {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}
@@ -101,7 +101,7 @@ func TestBleveMapIndexingSearch(t *testing.T) {
 		t.FailNow()
 	}
 
-	results, err := Find(os.Stderr, idx, []string{"600622"}, opts)
+	results, err := Find(idx, []string{"600622"}, opts)
 	if err != nil {
 		t.Errorf("Find returned an error, %s", err)
 		t.FailNow()
@@ -134,7 +134,7 @@ func TestIndexingSearch(t *testing.T) {
 		t.Errorf("Expected to import 16 rows, got %d", lines)
 		t.FailNow()
 	}
-	if err = c.Indexer(iName, mName, 100, []string{}); err != nil {
+	if err = c.Indexer(iName, mName, []string{}, 100); err != nil {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}
@@ -161,7 +161,7 @@ func TestIndexingSearch(t *testing.T) {
 		t.FailNow()
 	}
 
-	results, err := Find(os.Stderr, idx, []string{"600622"}, opts)
+	results, err := Find(idx, []string{"600622"}, opts)
 	if err != nil {
 		t.Errorf("Find returned an error, %s", err)
 		t.FailNow()

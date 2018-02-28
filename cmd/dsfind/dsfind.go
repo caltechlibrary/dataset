@@ -209,7 +209,7 @@ func main() {
 	}
 	defer idxAlias.Close()
 
-	results, err := dataset.Find(app.Out, idxAlias, args, options)
+	results, err := dataset.Find(idxAlias, args, options)
 	if err != nil {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't search index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}

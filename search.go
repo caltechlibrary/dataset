@@ -227,9 +227,9 @@ func recordToIndexRecord(ky string, src []byte) (map[string]interface{}, error) 
 	return rec, nil
 }
 
-// Indexer ingests all the records of a collection applying the definition
-// creating or updating a Bleve index. Returns an error.
-func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, keys []string) error {
+// Indexer generates or updates and a Bleve index based on the index map filename provided, a list of keys
+// and batch size.
+func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, batchSize int) error {
 	var (
 		idx              bleve.Index
 		idxMap           *mapping.IndexMappingImpl
@@ -327,7 +327,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 }
 
 // Deindexer deletes the keys from an index. Returns an error if a problem occurs.
-func (c *Collection) Deindexer(idxName string, batchSize int, keys []string) error {
+func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) error {
 	var (
 		idx bleve.Index
 		err error
@@ -435,7 +435,7 @@ func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {
 
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
-func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
+func Find(idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
 	// Opening all our indexes
 	var (
 		size             int
