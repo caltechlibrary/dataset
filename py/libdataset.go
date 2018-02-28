@@ -163,8 +163,10 @@ func delete_record(name, key *C.char) C.int {
 }
 
 //export keys
-func keys(name *C.char) *C.char {
-	collectionName := C.GoString(name)
+func keys(cname, cFilterExpr, cSortExpr *C.char) *C.char {
+	collectionName := C.GoString(cname)
+	filterExpr := C.GoString(cFilterExpr)
+	sortExpr := C.GoString(cSortExpr)
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
@@ -173,10 +175,88 @@ func keys(name *C.char) *C.char {
 	}
 	defer c.Close()
 
-	keys := c.Keys()
+	keyList := c.Keys()
+	if filterExpr != "" {
+		keyList, err = c.KeyFilter(keyList, filterExpr)
+		if err != nil {
+			messagef("Filter error, %s", err)
+			return C.CString("")
+		}
+	}
+	if sortExpr != "" {
+		keyList, err = c.KeySortByExpression(keyList, sortExpr)
+		if err != nil {
+			messagef("Sort error, %s", err)
+			return C.CString("")
+		}
+	}
+	src, err := json.Marshal(keyList)
+	if err != nil {
+		messagef("Can't marshal key list, %s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+//export key_filter
+func key_filter(cname, cKeyListExpr, cFilterExpr *C.char) *C.char {
+	collectionName := C.GoString(cname)
+	keyListExpr := C.GoString(cKeyListExpr)
+	filterExpr := C.GoString(cFilterExpr)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("Cannot open collection %s, %s", collectionName, err)
+		return C.CString("")
+	}
+	defer c.Close()
+
+	keyList := []string{}
+	if err := json.Unmarshal([]byte(keyListExpr), &keyList); err != nil {
+		messagef("Unable to unmarshal keys", err)
+		return C.CString("")
+	}
+	keys, err := c.KeyFilter(keyList, filterExpr)
+	if err != nil {
+		messagef("filter error, %s", err)
+		return C.CString("")
+	}
 	src, err := json.Marshal(keys)
 	if err != nil {
-		messagef("Can't marshal keys for %s, %s", collectionName, err)
+		messagef("Can't marshal filtered keys, %s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+//export key_sort
+func key_sort(cname, cKeyList, cSortExpr *C.char) *C.char {
+	collectionName := C.GoString(cname)
+	keyList := C.GoString(cKeyList)
+	sortExpr := C.GoString(cSortExpr)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("Cannot open collection %s, %s", collectionName, err)
+		return C.CString("")
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if err := json.Unmarshal([]byte(keyList), &keys); err != nil {
+		messagef("Unable to unmarshal keys", err)
+		return C.CString("")
+	}
+	keys, err = c.KeySortByExpression(keys, sortExpr)
+	if err != nil {
+		messagef("filter error, %s", err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(keys)
+	if err != nil {
+		messagef("Can't marshal sorted keys, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)

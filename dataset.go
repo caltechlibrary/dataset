@@ -43,7 +43,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.26-dev`
+	Version = `v0.0.27-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -653,8 +653,8 @@ func colToString(cell interface{}) string {
 
 // ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
 func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	keys := c.Keys()
-	f, err := tmplfn.ParseFilter(filterExpr)
+
+	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return 0, err
 	}
@@ -673,22 +673,20 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	for _, key := range keys {
 		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
-				// write row out.
-				row = []string{}
-				for _, colPath := range dotExpr {
-					col, err := dotpath.Eval(colPath, data)
-					if err == nil {
-						row = append(row, colToString(col))
-					} else {
-						row = append(row, "")
-					}
+			// write row out.
+			row = []string{}
+			for _, colPath := range dotExpr {
+				col, err := dotpath.Eval(colPath, data)
+				if err == nil {
+					row = append(row, colToString(col))
+				} else {
+					row = append(row, "")
 				}
-				if err := w.Write(row); err == nil {
-					cnt++
-				}
-				data = nil
 			}
+			if err := w.Write(row); err == nil {
+				cnt++
+			}
+			data = nil
 		} else {
 			fmt.Fprintf(os.Stderr, "error reading %q, %s\n", key, err)
 			readErrors += 1
@@ -733,48 +731,35 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
-	keys := c.Keys()
-	uniqueStrings := map[string]bool{}
-	hKey := ""
-	f, err := tmplfn.ParseFilter(filterExpr)
+
+	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return nil, err
 	}
+
+	uniqueStrings := map[string]bool{}
+	hKey := ""
 	for _, key := range keys {
 		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
-				if cell, err := dotpath.Eval(dotExpr, data); err == nil {
-					switch cell.(type) {
-					case []interface{}:
-						for _, v := range cell.([]interface{}) {
-							hKey = colToString(v)
-							uniqueStrings[hKey] = true
-						}
-					case map[string]interface{}:
-						for _, v := range cell.([]interface{}) {
-							hKey = colToString(v)
-							uniqueStrings[hKey] = true
-						}
-					case map[string]string:
-						for _, v := range cell.([]string) {
-							hKey = v
-							uniqueStrings[hKey] = true
-						}
-					case []string:
-						for _, v := range cell.([]string) {
-							hKey = v
-							uniqueStrings[hKey] = true
-						}
-					default:
-						hKey = colToString(cell)
+			if cell, err := dotpath.Eval(dotExpr, data); err == nil {
+				switch cell.(type) {
+				case []interface{}:
+					for _, v := range cell.([]interface{}) {
+						hKey = colToString(v)
 						uniqueStrings[hKey] = true
 					}
-				} else if err != nil {
-					return nil, fmt.Errorf("can't parse dotExpr %q", err)
+				case map[string]interface{}:
+					for _, v := range cell.([]interface{}) {
+						hKey = colToString(v)
+						uniqueStrings[hKey] = true
+					}
+				default:
+					hKey = colToString(cell)
+					uniqueStrings[hKey] = true
 				}
-			} else {
-				return nil, err
+			} else if err != nil {
+				return nil, fmt.Errorf("can't parse dotExpr %q", err)
 			}
 		} else {
 			return nil, fmt.Errorf("c.Read() error, %s, %s", key, err)

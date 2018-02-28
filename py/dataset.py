@@ -63,6 +63,14 @@ go_keys = lib.keys
 go_keys.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_keys.restype = ctypes.c_char_p
 
+go_key_filter = lib.key_filter
+go_key_filter.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_key_filter.restype = ctypes.c_char_p
+
+go_key_sort = lib.key_sort
+go_key_sort.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_key_sort.restype = ctypes.c_char_p
+
 go_count = lib.count
 go_count.argtypes = [ctypes.c_char_p]
 go_count.restype = ctypes.c_int
@@ -136,6 +144,23 @@ def keys(name, filter_expr = "", sort_expr = ""):
         value = value.encode('utf8')
     return json.loads(value.decode())
     
+# Key filter takes a list of keys and filter expression and returns a filtered list of keys
+def key_filter(name, keys, filter_expr):
+    '''key_filter takes a list of keys (if empty or * then it uses all keys in collection) and a filter expression returning a filtered list'''
+    key_list = json.dumps(keys)
+    value = go_key_filter(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key_list.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    return json.loads(value.decode())
+    
+# Key sort takes sort expression and an optional list of keys and returns a sorted list of keys
+def key_sort(name, keys, sort_expr):
+    '''key_filter takes a list of keys (if empty or * then it uses all keys in collection) and a filter expression returning a filtered list'''
+    key_list = json.dumps(keys)
+    value = go_key_sort(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key_list.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    return json.loads(value.decode())
 
 # Count returns an integer of the number of keys in a collection
 def count(name, filter = ''):

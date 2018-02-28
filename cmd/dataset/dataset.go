@@ -462,7 +462,7 @@ func collectionKeys(args ...string) (string, error) {
 	}
 
 	// We still have sorting to do.
-	keys, err = collection.SortKeysByExpression(keys, args[1])
+	keys, err = collection.KeySortByExpression(keys, args[1])
 	return strings.Join(keys, "\n"), err
 }
 

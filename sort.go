@@ -116,8 +116,8 @@ func (c *Collection) sortBy(ids []string, dpath string, ascending bool) ([]strin
 	return ids, nil
 }
 
-// SortKeysByExpression takes a array of keys and a sort expression and turns a sorted list of keys.
-func (c *Collection) SortKeysByExpression(keys []string, expr string) ([]string, error) {
+// KeySortByExpression takes a array of keys and a sort expression and turns a sorted list of keys.
+func (c *Collection) KeySortByExpression(keys []string, expr string) ([]string, error) {
 	ascending := true
 	if strings.HasPrefix(expr, "-") {
 		ascending = false
