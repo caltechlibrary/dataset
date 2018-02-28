@@ -399,18 +399,21 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 		}
 	}
 
-	idxAlias, _, err := dataset.OpenIndexes(indexNames)
+	idxList, _, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		messagef("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
 		return C.CString("")
 	}
-	defer idxAlias.Close()
 
-	result, err := dataset.Find(idxAlias, strings.Split(queryString, "\n"), options)
+	result, err := dataset.Find(idxList.Alias, strings.Split(queryString, "\n"), options)
 	if err != nil {
 		messagef("Find error %s, %s", strings.Join(indexNames, ", "), err)
 		// return "", failed
 		return C.CString("")
+	}
+	err = idxList.Close()
+	if err != nil {
+		messagef("Can't close indexes %s, %s", strings.Join(indexNames, ", "), err)
 	}
 
 	src, err := json.Marshal(result)

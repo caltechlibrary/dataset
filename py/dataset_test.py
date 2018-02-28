@@ -2,6 +2,7 @@
 import sys
 import os
 import shutil
+import json
 
 print("Starting dataset_test.py")
 import dataset
@@ -157,6 +158,46 @@ for s in targets:
     if s not in v:
         print("Failed, expected to find", s, "in", v)
         error_count += 1
+
+#
+# Test indexer,deindexer and find
+#
+dataset.verbose_on()
+index_name = "test_index.bleve"
+index_map_name = "test_index_map.json"
+if os.path.exists(index_name):
+    shutil.rmtree(index_name)
+if os.path.exists(index_map_name):
+    os.remove(index_map_name)
+
+index_map = {
+    "title": {
+        "object_path": ".title"
+    },
+    "family": {
+        "object_path": ".authors[:].family"
+    },
+    "categories": {
+        "object_path": ".categories"
+    }
+}
+with open(index_map_name, 'w') as outfile:
+     json.dump(index_map, outfile, indent = 4, ensure_ascii = False)
+
+ok = dataset.indexer(collection_name, index_name, index_map_name, batch_size = 2)
+if ok == False:
+    print("Failed to index", collection_name)
+    error_count += 1
+results = dataset.find(index_name, '+family:"Verne"')
+if results["total_hits"] != 2: 
+    print("Warning: unexpected results", json.dumps(results, indent = 4))
+hits = results["hits"]
+#print("DEBUG results", json.dumps(hits, indent = 4))
+k1 = hits[0]["id"]
+ok = dataset.deindexer(collection_name, index_name, [k1])
+if ok == False:
+    print("deindexer failed for key", k1)
+
 
 # Wrap up tests
 if error_count > 0:

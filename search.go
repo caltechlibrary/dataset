@@ -260,7 +260,6 @@ func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, b
 	if err != nil {
 		return err
 	}
-	defer idx.Close()
 
 	// Get all the keys and index each record
 	startT := time.Now()
@@ -323,7 +322,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, b
 		batchIdx = nil
 	}
 	log.Printf("%d/%d records indexed, running time %s", cnt, tot, time.Now().Sub(startT))
-	return nil
+	return idx.Close()
 }
 
 // Deindexer deletes the keys from an index. Returns an error if a problem occurs.
@@ -332,8 +331,11 @@ func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) err
 		idx bleve.Index
 		err error
 	)
+	if len(keys) == 0 {
+		return fmt.Errorf("%d keys to remove", len(keys))
+	}
 
-	//NOTE: if indexName exists use bleve.Open() instead of bleve.New()
+	//NOTE: if indexName does not exists abort
 	if _, e := os.Stat(idxName); os.IsNotExist(e) {
 		return fmt.Errorf("%s does not exist", idxName)
 	}
@@ -341,15 +343,16 @@ func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) err
 	if err != nil {
 		return err
 	}
-	defer idx.Close()
+
+	if batchSize == 0 {
+		batchSize = 100
+	}
 
 	// Get all the keys and index each record
 	startT := time.Now()
 	batchT := time.Now()
 	batchIdx := idx.NewBatch()
-	if len(keys) == 0 {
-		keys = c.Keys()
-	}
+
 	tot := len(keys)
 	cnt := 0
 	log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
@@ -357,6 +360,8 @@ func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) err
 		batchIdx.Delete(key)
 		cnt++
 		if (cnt % batchSize) == 0 {
+			// Execute out batch!!
+			log.Println("Executing patch inside loop")
 			if err := idx.Batch(batchIdx); err != nil {
 				log.Fatal(err)
 			}
@@ -368,6 +373,7 @@ func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) err
 		}
 	}
 	if batchIdx.Size() > 0 {
+		log.Println("Executing patch outside loop")
 		if err := idx.Batch(batchIdx); err != nil {
 			log.Fatal(err)
 		}
@@ -376,11 +382,18 @@ func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) err
 		batchIdx = nil
 	}
 	log.Printf("%d/%d records de-indexed, running time %s", cnt, tot, time.Now().Sub(startT))
-	return nil
+	return idx.Close()
+}
+
+type IndexList struct {
+	Names   []string
+	Fields  []string
+	Alias   bleve.IndexAlias
+	Indexes []bleve.Index
 }
 
 // OpenIndexes opens a list of index names and returns an index alias, a combined list of fields and error
-func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
+func OpenIndexes(indexNames []string) (*IndexList, []string, error) {
 	var (
 		idxAlias  bleve.IndexAlias
 		allFields []string
@@ -396,6 +409,7 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 		return append(l, s)
 	}
 
+	idxList := new(IndexList)
 	for i, idxName := range indexNames {
 		idx, err := bleve.Open(idxName)
 		if err != nil {
@@ -414,13 +428,30 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 		} else {
 			idxAlias.Add(idx)
 		}
+		idxList.Names = append(idxList.Names, idxName)
+		idxList.Indexes = append(idxList.Indexes, idx)
 	}
 
 	if len(indexNames) > 1 {
 		allFields = appendField(allFields, "_index")
 	}
 	allFields = appendField(allFields, "_id")
-	return idxAlias, allFields, nil
+	idxList.Fields = allFields
+	idxList.Alias = idxAlias
+	return idxList, allFields, nil
+}
+
+// Close removes all the indexes from a list associated with idx.Alias, then closes the related indexes.
+// idx.Alias.Remove(idx.Indexes) returning error
+func (idxList *IndexList) Close() error {
+	idxList.Alias.Remove(idxList.Indexes...)
+	for i, idx := range idxList.Indexes {
+		err := idx.Close()
+		if err != nil {
+			return fmt.Errorf("Failed to close %s, %s", idxList.Names[i], err)
+		}
+	}
+	return nil
 }
 
 func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {

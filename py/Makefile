@@ -52,7 +52,7 @@ clean:
 release: $(LIB_NAME)$(EXT)
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	mkdir -p ../dist
-	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" "$(PROJECT).py" "$(LIB_NAME)$(EXT)" "README.md"
+	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" "*.py" "$(LIB_NAME)$(EXT)" "README.md"
 
 status:
 	git status

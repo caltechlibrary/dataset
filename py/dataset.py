@@ -79,6 +79,19 @@ go_extract = lib.extract
 go_extract.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_extract.restype = ctypes.c_char_p
 
+go_indexer = lib.indexer
+go_indexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_indexer.restype = ctypes.c_int
+
+
+go_deindexer = lib.deindexer
+go_deindexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_deindexer.restype = ctypes.c_int
+
+go_find = lib.find
+go_find.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_find.restype = ctypes.c_char_p
+
 verbose_on = lib.verbose_on
 verbose_off = lib.verbose_off
 
@@ -104,8 +117,8 @@ def has_key(name, key):
 # Create a JSON record in a Dataset Collectin
 def create_record(name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
-    err = go_create_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    if err == 1:
+    ok = go_create_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
+    if ok == 1:
         return True
     return False
     
@@ -115,14 +128,17 @@ def read_record(name, key):
     value = go_read_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
-    return json.loads(value.decode())
+    rval = value.decode()
+    if rval == "":
+        return {}
+    return json.loads(rval)
     
 
 # Update a JSON record from a Dataset collection
 def update_record(name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
-    err = go_update_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    if err == 1:
+    ok = go_update_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
+    if ok == 1:
         return True
     return False
     
@@ -130,8 +146,8 @@ def update_record(name, key, value):
 # Delete a JSON record from a Dataset collection
 def delete_record(name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
-    err = go_delete_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
-    if err == 1:
+    ok = go_delete_record(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    if ok == 1:
         return True
     return False
     
@@ -142,7 +158,10 @@ def keys(name, filter_expr = "", sort_expr = ""):
     value = go_keys(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(sort_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
-    return json.loads(value.decode())
+    rval = value.decode()
+    if rval == "":
+        return []
+    return json.loads(rval)
     
 # Key filter takes a list of keys and filter expression and returns a filtered list of keys
 def key_filter(name, keys, filter_expr):
@@ -151,7 +170,10 @@ def key_filter(name, keys, filter_expr):
     value = go_key_filter(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key_list.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
-    return json.loads(value.decode())
+    rval = value.decode()
+    if rval == "":
+        return []
+    return json.loads(rval)
     
 # Key sort takes sort expression and an optional list of keys and returns a sorted list of keys
 def key_sort(name, keys, sort_expr):
@@ -160,7 +182,10 @@ def key_sort(name, keys, sort_expr):
     value = go_key_sort(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(key_list.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
-    return json.loads(value.decode())
+    rval = value.decode()
+    if rval == "":
+        return []
+    return json.loads(rval)
 
 # Count returns an integer of the number of keys in a collection
 def count(name, filter = ''):
@@ -173,8 +198,43 @@ def extract(name, filter_expr, dot_expr):
     '''extract unique values from the JSON records in a collection given a filter expression and dot path'''
     value = go_extract(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(dot_expr.encode('utf8')))
     if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    if value.decode() == "":
-        return [] 
-    return json.loads(value.decode())
+        value = value.encode('utf8')
+    rval = value.decode()
+    if rval == "":
+        return []
+    return json.loads(rval)
     
+
+# Indexer takes a collection name, an index name, an index map file name, and an optional keylist 
+# and creates/updates a Bleve index on disc.
+def indexer(name, index_name, index_map_name, key_list = [], batch_size = 0):
+    '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
+    key_list_src = json.dumps(key_list)
+    ok = go_indexer(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(index_map_name.encode('utf8')), ctypes.c_char_p(key_list_src.encode('utf8')), ctypes.c_int(batch_size))
+    if ok == 1:
+        return True
+    return False
+
+# Deindexer takes a collection name, an index name, key list and optional batch size deleting the provided keys from 
+# the index.
+def deindexer(name, index_name, key_list, batch_size = 0):
+    '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
+    key_list_src = json.dumps(key_list).encode('utf8')
+    ok = go_deindexer(ctypes.c_char_p(name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(key_list_src), ctypes.c_int(batch_size))
+    if ok == 1:
+        return True
+    return False
+
+# Find takes an index name, query string an optional options dict and returns a search result
+def find(index_names, query_string, options = {}):
+    '''Find takes an index name, query string an optional options dict and returns a search result'''
+    option_src = json.dumps(options)
+    value = go_find(ctypes.c_char_p(index_names.encode('utf8')), ctypes.c_char_p(query_string.encode('utf8')), ctypes.c_char_p(option_src.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    rval = value.decode()
+    if rval == "":
+        return {}
+    return json.loads(rval)
+
+

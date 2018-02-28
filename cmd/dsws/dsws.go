@@ -267,12 +267,12 @@ func main() {
 	}
 
 	// Open the indexes for reading
-	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
+	idxList, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		fmt.Fprintf(app.Eout, "Can't open indexes, %s", err)
 		os.Exit(1)
 	}
-	defer idxAlias.Close()
+	defer idxList.Close()
 
 	// Construct our handler
 	searchHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -304,7 +304,7 @@ func main() {
 			}
 		}
 
-		results, err := dataset.Find(idxAlias, []string{qString}, opts)
+		results, err := dataset.Find(idxList.Alias, []string{qString}, opts)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%s", err), 500)
 		}

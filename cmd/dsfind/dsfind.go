@@ -203,13 +203,13 @@ func main() {
 		options["fields"] = "*"
 	}
 
-	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
+	idxList, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}
-	defer idxAlias.Close()
+	defer idxList.Close()
 
-	results, err := dataset.Find(idxAlias, args, options)
+	results, err := dataset.Find(idxList.Alias, args, options)
 	if err != nil {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't search index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}
