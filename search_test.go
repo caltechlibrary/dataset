@@ -290,15 +290,16 @@ func TestIndexerDeindexer(t *testing.T) {
 		t.FailNow()
 	}
 
-	/*
-		log.Printf("DEBUG results Total %+v", results.Total)
-		log.Printf("DEBUG results Hits[] -> %+v --> %s", results.Hits[0], src)
-		   hits = results["hits"]
-		   #print("DEBUG results", json.dumps(hits, indent = 4))
-		   k1 = hits[0]["id"]
-		   ok = dataset.deindexer(collection_name, index_name, [k1])
-		   if ok == False:
-		       print("deindexer failed for key", k1)
+	/*FIXME: Need to re-open and make sure our return results are fewer....
+
+	log.Printf("DEBUG results Total %+v", results.Total)
+	log.Printf("DEBUG results Hits[] -> %+v --> %s", results.Hits[0], src)
+	   hits = results["hits"]
+	   #print("DEBUG results", json.dumps(hits, indent = 4))
+	   k1 = hits[0]["id"]
+	   ok = dataset.deindexer(collection_name, index_name, [k1])
+	   if ok == False:
+	       print("deindexer failed for key", k1)
 	*/
 }
 
