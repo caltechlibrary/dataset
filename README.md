@@ -3,7 +3,7 @@
 
 _dataset_ is a small collection of command line tools for working with JSON (object) documents stored as 
 collections.  [This](docs/dataset/) include basic storage actions (e.g. CRUD operations, filtering
-and extraction) as well as [indexing](docs/dsindexer/), [searching](docs/dsfind/) and even 
+and extraction) as well as [indexing](docs/dataset/indexer.html), [searching](docs/dataset/find.html) and even 
 [web hosting](docs/dsws/).  A project goal of _dataset_ is to "play nice" with shell scripts and other 
 Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is 
 easily scriptable via Bash, Posix shell or interpretted languages like Python.
@@ -39,31 +39,41 @@ The basic operations support by *dataset* are listed below organized by collecti
 
 ### Collection Level
 
-+ Create a collection
-+ List the JSON document ids in a collection
-+ Create named lists of JSON document ids (aka select lists)
-+ Read back a named list of JSON document ids
-+ Delete a named list of JSON document ids
-+ Import JSON documents from rows of a CSV file or Google Sheets
-+ Filter JSON documents and return a list of matching ids
-+ Extract Unique JSON attribute values from a collection
++ [init](docs/dataset/init.html) creates a collection
++ [import](docs/dataset/import.html) JSON documents from rows of a CSV file
++ [import-gsheet](docs/dataset/import.html) JSON documents from rows of a Google Sheet
++ [export](docs/dataset/export.html) JSON documents from a collection into a CSV file
++ [export-gsheet](docs/dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
++ [keys](docs/dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
++ [haskeys](docs/dataset/haskeys.html) returns true if key is found in collection, false otherwise
++ [count](docs/dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
++ [extract](docs/dataset/extract.html) unique JSON attribute values from a collection
 
 ### JSON Document level
 
-+ Create a JSON document in a collection
-+ Update a JSON document in a collection
-+ Read back a JSON document in a collection
-+ Delete a JSON document in a collection
-+ Join a JSON document with a document in a collection
++ [create](docs/dataset/create.html) a JSON document in a collection
++ [read](docs/dataset/read.html) back a JSON document in a collection
++ [update](docs/dataset/update.html) a JSON document in a collection
++ [delete](docs/dataset/delete.html) a JSON document in a collection
++ [join](docs/dataset/join.html) a JSON document with a document in a collection
++ [list](docs/dataset/list.html) the lists JSON records as an array for the supplied keys
++ [path](docs/dataset/path.html) list the file path for a JSON document in a collection
 
-Additionally
+### JSON Document Attachments
 
-+ Attach a file to a JSON document in a collection
-+ List the files attached to a JSON document in a collection
-+ Update a file attached to a JSON document in a collection
-+ Delete one or more attached files of a JSON document in a collection
++ [attach](docs/dataset/attach.html) a file to a JSON document in a collection
++ [attachments](docs/dataset/attachments.html) lists the files attached to a JSON document in a collection
++ [detach](docs/dataset/detach.html) retrieve an attached file associated with a JSON document in a collection
++ [prune](docs/dataset/prune.html) delete one or more attached files of a JSON document in a collection
 
-## Examples
+### Search
+
++ [indexer](docs/dataset/indexer.html) indexes JSON documents in a collection for searching with _find_
++ [deindexer](docs/dataset/deindexer.html) de-indexes (removes) JSON documents from an index
++ [find](docs/dataset/find.html) provides a search indexed full text interface into a collection
+
+
+## [Examples](examples/)
 
 Common operations using the *dataset* command line tool
 

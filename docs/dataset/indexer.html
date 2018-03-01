@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">dataset</a></li>
+<li><a href="topics.html">topics</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>indexer</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset [OPTIONS] indexer INDEX_NAME INDEX_MAP_FILENAME
+</code></pre>
+
+<h2>Description</h2>
+
+<p>Indexer creates a <a href="https://blevesearch.com">Blevesearch</a> index with used used by the <a href="find.html">find</a>
+command for searching a collection. The indexes support an elastic search like query language so
+in additional to general full text support it also includes the ability to scope results by fields
+defined in the index. The Bleve search packages supports full text search across many languages,
+time ranges and geo points.</p>
+
+<p>Index names should end in <code>.bleve</code> and the INDEX_MAP_FILE is a JSON file organized as described in
+<a href="../defining-indexes.html">defining-indexes</a> document.</p>
+
+<h2>Usage</h2>
+
+<pre><code>    dataset indexer author-title.bleve author-title.json
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

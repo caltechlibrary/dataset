@@ -19,7 +19,6 @@
 + [ ] Sort out cross compiling libdataset shared library for Python module
 + [ ] Add Experimental R native _dataset_ module for scripting collection management in R
 + [ ] Add Experimental PHP native _dataset_ module for script collection management in PHP 
-+ [ ] Merge _dsfind_ and _dsindexer_ into _dataset_ command
 + [ ] sparql cli interface for searching collection
     + support JSON-LD for cross collection integration
 + [ ] Add faceted support to search (dsfind, dsws)
@@ -71,6 +70,7 @@
 
 ## Completed
 
++ [x] Merge _dsfind_ and _dsindexer_ into _dataset_ command
 + [x] Normalize Create, Read, Update to have CreateJSON, ReadJSON, UpdateJSON counter parts for working with non-map[string]interface{} objects
 + [x] Create an experimental Python native module for dataset package
 + [x] In _dsindexer_ 'delete' remove one or more records from an index using record ids

@@ -3,9 +3,11 @@
 
 + [attachments](attachments.html)
 + [basics](basics.html)
-+ [examples](examples.html)
++ [a workflow](a-workflow.html)
 + [export](export.html)
 + [extract](extract.html)
-+ [filters](filters.html)
++ [filtering and sorting keys](filtering-keys.html)
 + [import](import.html)
 + [join](join.html)
++ [indexer](indexer.html)
++ [find](find.html)
