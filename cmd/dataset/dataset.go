@@ -928,6 +928,7 @@ func indexer(params ...string) (string, error) {
 	if len(params) > 1 {
 		indexMapName = params[1]
 	}
+
 	if len(keyFName) > 0 {
 		src, err := ioutil.ReadFile(keyFName)
 		if err != nil {
@@ -948,6 +949,18 @@ func indexer(params ...string) (string, error) {
 	keys := []string{}
 	if len(keyList) == 0 {
 		keys = c.Keys()
+	}
+
+	if batchSize == 0 {
+		if len(keys) > 100000 {
+			batchSize = 1000
+		} else if len(keys) > 10000 {
+			batchSize = len(keys) / 100
+		} else if len(keys) > 1000 {
+			batchSize = len(keys) / 10
+		} else {
+			batchSize = 100
+		}
 	}
 
 	err = c.Indexer(indexName, indexMapName, keys, batchSize)
@@ -998,6 +1011,17 @@ func deindexer(params ...string) (string, error) {
 		return "", fmt.Errorf("Deindexing requires a list of keys to de-index")
 	}
 
+	if batchSize == 0 {
+		if len(keys) > 100000 {
+			batchSize = 1000
+		} else if len(keys) > 10000 {
+			batchSize = len(keys) / 100
+		} else if len(keys) > 1000 {
+			batchSize = len(keys) / 10
+		} else {
+			batchSize = 100
+		}
+	}
 	err = c.Deindexer(indexName, keys, batchSize)
 	if err != nil {
 		return "", fmt.Errorf("Deindexing error %s %s, %s", collectionName, indexName, err)
