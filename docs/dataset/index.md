@@ -87,7 +87,7 @@ Options will override any corresponding environment settings. Options are shared
     prune           Remove attachments from a JSON record in a collection
     read            Read back a JSON record from a collection
     repair          Try to repair a damaged dataset collection
-    status          Show the status of a dataset collection
+    status          Checks to see if a collection name contains a 'collection.json' file
     update          Update a JSON record in a collection
 ```
 
@@ -259,4 +259,4 @@ Which would result in a record like
 
 Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [detach](detach.html), [export](export.html), [export-gsheet](export-gsheet.html), [extract](extract.html), [find](find.html), [haskey](haskey.html), [import](import.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [repair](repair.html), [status](status.html), [update](update.html)
 
-dataset v0.0.27-dev
+dataset v0.0.28-dev

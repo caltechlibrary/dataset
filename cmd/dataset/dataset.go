@@ -118,11 +118,11 @@ var (
 //
 
 // checkCollection takes a collection name and checks for problems
-func checkCollection(args ...string) (string, error) {
-	if len(args) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+func checkCollection(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	for _, cName := range args {
+	for _, cName := range params {
 		if err := dataset.Analyzer(cName); err != nil {
 			return "", err
 		}
@@ -132,11 +132,11 @@ func checkCollection(args ...string) (string, error) {
 
 // repairCollection takes a collection name and recreates collection.json, keys.json
 // based on what it finds on disc
-func repairCollection(args ...string) (string, error) {
-	if len(args) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+func repairCollection(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	for _, cName := range args {
+	for _, cName := range params {
 		if err := dataset.Repair(cName); err != nil {
 			return "", err
 		}
@@ -166,12 +166,11 @@ func collectionInit(args ...string) (string, error) {
 }
 
 // collectionStatus sees if we can find the dataset collection given the path
-func collectionStatus(args ...string) (string, error) {
-	if len(args) == 0 && collectionName == "" {
-		return "", fmt.Errorf("missing a collection name")
+func collectionStatus(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	args = append(args, collectionName)
-	for _, collectionName := range args {
+	for _, collectionName := range params {
 		_, err := dataset.Open(collectionName)
 		if err != nil {
 			return "", fmt.Errorf("%s: %s", collectionName, err)
@@ -1162,7 +1161,7 @@ func main() {
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	// NOTE: Sense dataset cli was developed pre-existed cli v0.0.6 we're only document our actions and not run them via cli.
 	app.AddVerb("init", "Initialize a dataset collection")
-	app.AddVerb("status", "Show the status of a dataset collection")
+	app.AddVerb("status", "Checks to see if a collection name contains a 'collection.json' file")
 	app.AddVerb("create", "Create a JSON record in a collection")
 	app.AddVerb("read", "Read back a JSON record from a collection")
 	app.AddVerb("list", "List the JSON records as an array for provided record ids")

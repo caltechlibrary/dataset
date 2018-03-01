@@ -4,12 +4,12 @@
 ## syntax
 
 ```shell
-    dataset check
+    dataset check COLLECTION_NAME [COLLECTION_NAME ...]
 ```
 
 ## Description
 
-Check reviews a collection and reports if any problems are identified based on the 
+Check reviews one or more collections and reports if any problems are identified based on the 
 `collection.json` file found in the folder holding the collection's buckets. Check
 only works on local disc based collections. If you are storing your collection in
 the cloud (e.g. S3 or Google Cloud Storage) then download a copy before running
@@ -21,7 +21,8 @@ If multiple instances of dataset write (e.g. create or update) to a collection t
 it is possible that the JSON file `collection.json` will become inaccurate.
 
 ```shell
-    dataset -c MyBrokenCollection.ds check
+    dataset check MyRecordCollection.ds
+    dataset check MyBrokenCollection.ds MyRecordCollection.ds
 ```
 
 

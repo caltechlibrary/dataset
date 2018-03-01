@@ -24,12 +24,12 @@
 
 <h2>syntax</h2>
 
-<pre><code class="language-shell">    dataset check
+<pre><code class="language-shell">    dataset check COLLECTION_NAME [COLLECTION_NAME ...]
 </code></pre>
 
 <h2>Description</h2>
 
-<p>Check reviews a collection and reports if any problems are identified based on the
+<p>Check reviews one or more collections and reports if any problems are identified based on the
 <code>collection.json</code> file found in the folder holding the collection&rsquo;s buckets. Check
 only works on local disc based collections. If you are storing your collection in
 the cloud (e.g. S3 or Google Cloud Storage) then download a copy before running
@@ -40,7 +40,8 @@ check.</p>
 <p>If multiple instances of dataset write (e.g. create or update) to a collection then
 it is possible that the JSON file <code>collection.json</code> will become inaccurate.</p>
 
-<pre><code class="language-shell">    dataset -c MyBrokenCollection.ds check
+<pre><code class="language-shell">    dataset check MyRecordCollection.ds
+    dataset check MyBrokenCollection.ds MyRecordCollection.ds
 </code></pre>
 
 </section>

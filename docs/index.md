@@ -11,9 +11,7 @@ but a more explority approach can be taken by the list below
 ## Command line program documentation
 
 + [dataset](dataset/) - the command line tool for managing _dataset_ collections
-+ [dsindexer](dsindexer/) - Creates/updates a Bleve index of _dataset_ content based on index definition document
-+ [dsfind](dsfind/) - Searches one or more Bleve indexes created with _dsindexer_
-+ [dsws](dsws/) - A web server and web service based on one or more Bleve indexes created with _dsindexer_
++ [dsws](dsws/) - A web server and web service based on one or more Bleve indexes created with _dataset indexer_
 
 
 ## Internal project concepts

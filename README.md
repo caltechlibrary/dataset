@@ -3,7 +3,7 @@
 
 _dataset_ is a small collection of command line tools for working with JSON (object) documents stored as 
 collections.  [This](docs/dataset/) include basic storage actions (e.g. CRUD operations, filtering
-and extraction) as well as [indexing](docs/dsindexer/), [searching](docs/dsfind/) and even 
+and extraction) as well as [indexing](docs/dataset/indexer.html), [searching](docs/dataset/find.html) and even 
 [web hosting](docs/dsws/).  A project goal of _dataset_ is to "play nice" with shell scripts and other 
 Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is 
 easily scriptable via Bash, Posix shell or interpretted languages like Python.

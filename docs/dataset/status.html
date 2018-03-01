@@ -22,13 +22,21 @@
 <section>
 <h1>status</h1>
 
-<p>FIXME: Need to document</p>
-
 <h2>Syntax</h2>
+
+<pre><code>    dataset status COLLECTION_NAME [COLLECTION_NAME ...]
+</code></pre>
 
 <h2>Description</h2>
 
+<p>Checks to see if a <code>collection.json</code> file is associated with the COLLECTION_NAME. Can work on multiple
+collection names. Returns &ldquo;OK&rdquo; if it is.</p>
+
 <h2>Usage</h2>
+
+<pre><code>    dataset status MyRecordCollection.ds
+    dataset status MyRecordCollection.ds MyBookCollection.ds
+</code></pre>
 
 </section>
 

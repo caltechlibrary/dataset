@@ -9,3 +9,5 @@
 + [filters](filters.html)
 + [import](import.html)
 + [join](join.html)
++ [indexer](indexer.html)
++ [find](find.html)

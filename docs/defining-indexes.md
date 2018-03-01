@@ -1,11 +1,11 @@
 # Defining Indexes
 
-_dsindexer_ builds an index from an index map file.  A map defines the structure of the index. The definition file is a JSON document.
-_dsindexer_ supports two types of map files. A simple version and also the more complicated version native to the Bleve search package.
+_dataset indexer ..._ builds an index from an index map file.  A map defines the structure of the index. The definition file is a JSON document.
+_dataset indexer ..._ supports two types of map files. A simple version and also the more complicated version native to the Bleve search package.
 
 ## The Simple index map
 
-_dsindexer_ works from a index definition expressed as a JSON document. The most important of the definition is to map
+_dataset indexer ..._ works from a index definition expressed as a JSON document. The most important of the definition is to map
 a indexed field name to a path in the JSON document being index. This is done with dotpath notation as the value associated
 with a field name in the index.
 
@@ -64,7 +64,7 @@ Here's a revised definition
     }
 ```
 
-_dsindexer_ supports four types of field mappings
+_dataet indexer_ supports four types of field mappings
 
 + text - this is the default and is what you would use for titles
 + numeric - use this for indexing numeric values
@@ -98,7 +98,7 @@ that are applied when building your index (see http://www.blevesearch.com/docs/A
 Analyzers include applying language rules for understanding the text analyzed. This includes handling things
 like stop word removal, language settings.
 
-_dsindexer_ support the following types of analyzers
+_dataset indexer_ support the following types of analyzers
 
 + keyword - performs zero analysis, use this if you want to treat the value as is
 + simple - performs minimal analysis, tokenizes using Unicode and lowercases the value
@@ -341,14 +341,14 @@ Here's an example where what an array of years might look like as a definition
     }
 ```
 
-_dsindexer_ will only index arrays that containing a single data type.  So if you have an array that has an object,
+_dataset indexer_ will only index arrays that containing a single data type.  So if you have an array that has an object,
 a numeric value and a string you're out of luck or you'll need to index each type separately.
 
 
 
 ## The Bleve native index map
 
-_dsindexer_ works from a index definition expressed as a JSON document. It is the same format as Bleve's native
+_dataset indexer_ works from a index definition expressed as a JSON document. It is the same format as Bleve's native
 index definition in JSON. Bleve native indexes are distinguished by the file extension `.bmap`.  Bleve supports complex 
 including things like facetted search.  In our example we'll keep it simple indexing only two specfic fields -- 
 last_name ad date_of_birth.
@@ -422,7 +422,7 @@ Here's a revised definition
     }
 ```
 
-_dsindexer_ supports four types and analyzers. 
+_dataset indexer_ supports four types and analyzers. 
 
 Types are
 
@@ -496,7 +496,7 @@ that are applied when building your index (see http://www.blevesearch.com/docs/A
 Analyzers include applying language rules for understanding the text analyzed. This includes handling things
 like stop word removal, language settings.
 
-_dsindexer_ support the following types of analyzers
+_dataset indexer_ support the following types of analyzers
 
 + keyword - performs zero analysis, use this if you want to treat the value as is
 + simple - performs minimal analysis, tokenizes using Unicode and lowercases the value
@@ -760,5 +760,5 @@ What about dates? In our record we have an array of years.  We can use a differe
 ```
 
 Indexes themselves can be defined fairly simple as we have so far and aggregated together after the fact. In addition to data shapping
-approaches dsindexer supports the full Bleve index functionality, see [Bleve](https://blevesearch.com).
+approaches _dataset indexer_ supports the full Bleve index functionality, see [Bleve](https://blevesearch.com).
 

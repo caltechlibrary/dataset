@@ -22,13 +22,26 @@
 <section>
 <h1>indexer</h1>
 
-<p>FIXME: Need to document</p>
-
 <h2>Syntax</h2>
+
+<pre><code>    dataset [OPTIONS] indexer INDEX_NAME INDEX_MAP_FILENAME
+</code></pre>
 
 <h2>Description</h2>
 
+<p>Indexer creates a <a href="https://blevesearch.com">Blevesearch</a> index with used used by the <a href="find.html">find</a>
+command for searching a collection. The indexes support an elastic search like query language so
+in additional to general full text support it also includes the ability to scope results by fields
+defined in the index. The Bleve search packages supports full text search across many languages,
+time ranges and geo points.</p>
+
+<p>Index names should end in <code>.bleve</code> and the INDEX_MAP_FILE is a JSON file organized as described in
+<a href="../defining-indexes.html">defining-indexes</a> document.</p>
+
 <h2>Usage</h2>
+
+<pre><code>    dataset indexer author-title.bleve author-title.json
+</code></pre>
 
 </section>
 
