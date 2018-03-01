@@ -20,6 +20,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -64,6 +66,21 @@ var (
 	sampleSize        int
 	clientSecretFName string
 	overwrite         bool
+	batchSize         int
+	keyFName          string
+
+	// Search specific options, application Options
+	showHighlight  bool
+	setHighlighter string
+	resultFields   string
+	sortBy         string
+	jsonFormat     bool
+	csvFormat      bool
+	csvSkipHeader  bool
+	idsOnly        bool
+	size           int
+	from           int
+	explain        bool // Note: will be force results to be in JSON format
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
@@ -90,6 +107,9 @@ var (
 		"repair":        repairCollection,
 		"import-gsheet": importGSheet,
 		"export-gsheet": exportGSheet,
+		"indexer":       indexer,
+		"deindexer":     deindexer,
+		"find":          find,
 	}
 )
 
@@ -893,6 +913,202 @@ func extract(params ...string) (string, error) {
 	return strings.Join(lines, "\n"), nil
 }
 
+// indexer replaces dsindexer command and is used to build a Bleve index for a collection
+func indexer(params ...string) (string, error) {
+	var (
+		indexName    string
+		indexMapName string
+		keyList      []string
+	)
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s [OPTIONS] indexer INDEX_NAME INDEX_MAP_FILENAME", os.Args[0])
+	}
+	if len(params) > 0 {
+		indexName = params[0]
+	}
+	if len(params) > 1 {
+		indexMapName = params[1]
+	}
+	if len(keyFName) > 0 {
+		src, err := ioutil.ReadFile(keyFName)
+		if err != nil {
+			return "", fmt.Errorf("Cannot read key file %s, %s", keyFName, err)
+		}
+		txt := fmt.Sprintf("%s", src)
+		for _, key := range strings.Split(txt, "\n") {
+			keyList = append(keyList, strings.TrimSpace(key))
+		}
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if len(keyList) == 0 {
+		keys = c.Keys()
+	}
+
+	err = c.Indexer(indexName, indexMapName, keys, batchSize)
+	if err != nil {
+		return "", fmt.Errorf("Indexing error %s %s, %s", collectionName, indexName, err)
+	}
+	// return success
+	return "OK", nil
+}
+
+// deindexer replaces dsindexer command and is used to build a Bleve index for a collection
+func deindexer(params ...string) (string, error) {
+	var (
+		indexName    string
+		keysListName string
+		keyList      []string
+	)
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s deindexer INDEX_NAME KEY_FILENAME", os.Args[0])
+	}
+	if len(params) > 0 {
+		indexName = params[0]
+	}
+	if len(params) > 1 {
+		keysListName = params[1]
+	} else if len(keyFName) > 0 {
+		keysListName = keyFName
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if len(keysListName) > 0 {
+		src, err := ioutil.ReadFile(keysListName)
+		if err != nil {
+			return "", fmt.Errorf("Cannot read key file %s, %s", keyFName, err)
+		}
+		txt := fmt.Sprintf("%s", src)
+		for _, key := range strings.Split(txt, "\n") {
+			keyList = append(keyList, strings.TrimSpace(key))
+		}
+	}
+	if len(keys) == 0 {
+		return "", fmt.Errorf("Deindexing requires a list of keys to de-index")
+	}
+
+	err = c.Deindexer(indexName, keys, batchSize)
+	if err != nil {
+		return "", fmt.Errorf("Deindexing error %s %s, %s", collectionName, indexName, err)
+	}
+	// return success
+	return "OK", nil
+}
+
+func find(params ...string) (string, error) {
+	var (
+		indexNames  []string
+		queryString string
+	)
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s [OPTIONS] INDEX_NAMES QUERY_STRING", os.Args[0])
+	}
+	if len(params) > 0 {
+		if strings.Contains(params[0], ":") == true {
+			indexNames = strings.Split(params[0], ":")
+		} else {
+			indexNames = []string{params[0]}
+		}
+	}
+	if len(params) > 1 {
+		queryString = params[1]
+	}
+	options := map[string]string{}
+	if explain == true {
+		options["explain"] = "true"
+		jsonFormat = true
+	}
+
+	if sampleSize > 0 {
+		options["sample"] = fmt.Sprintf("%d", sampleSize)
+	}
+	if from != 0 {
+		options["from"] = fmt.Sprintf("%d", from)
+	}
+	if batchSize > 0 {
+		options["size"] = fmt.Sprintf("%d", batchSize)
+	}
+	if sortBy != "" {
+		options["sort"] = sortBy
+	}
+	if showHighlight == true {
+		options["highlight"] = "true"
+		options["highlighter"] = "ansi"
+	}
+	if setHighlighter != "" {
+		options["highlight"] = "true"
+		options["highlighter"] = setHighlighter
+	}
+
+	if resultFields != "" {
+		options["fields"] = strings.TrimSpace(resultFields)
+	} else {
+		options["fields"] = "*"
+	}
+
+	idxList, idxFields, err := dataset.OpenIndexes(indexNames)
+	if err != nil {
+		return "", fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
+	}
+
+	results, err := dataset.Find(idxList.Alias, strings.Split(queryString, "\n"), options)
+	if err != nil {
+		return "", fmt.Errorf("Find error %s, %s", strings.Join(indexNames, ", "), err)
+	}
+	err = idxList.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't close indexes %s, %s", strings.Join(indexNames, ", "), err)
+	}
+
+	//
+	// Handle results formatting choices
+	//
+	var buf bytes.Buffer
+	out := bufio.NewWriter(&buf)
+	switch {
+	case jsonFormat == true:
+		err = dataset.JSONFormatter(out, results, prettyPrint)
+		if err != nil {
+			return "", err
+		}
+	case csvFormat == true:
+		var fields []string
+		if resultFields == "" {
+			fields = idxFields
+		} else {
+			fields = strings.Split(resultFields, ",")
+		}
+		err = dataset.CSVFormatter(out, results, fields, csvSkipHeader)
+		if err != nil {
+			return "", err
+		}
+	case idsOnly == true:
+		for _, hit := range results.Hits {
+			fmt.Fprintf(out, "%s", hit.ID)
+		}
+	default:
+		fmt.Fprintf(out, "%s", results)
+	}
+
+	if newLine {
+		fmt.Fprintln(out, "")
+	}
+	// Return buffer as string
+	return buf.String(), nil
+}
+
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
@@ -922,15 +1138,55 @@ func main() {
 
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
-	app.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
-	app.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
+	app.BoolVar(&useHeaderRow, "use-header-row", true, "(import) use the header row as attribute names in the JSON document")
+	app.BoolVar(&useUUID, "uuid", false, "(import) generate a UUID for a new JSON document name")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
-	app.StringVar(&clientSecretFName, "client-secret", "", "set the client secret path and filename for GSheet access")
+	app.StringVar(&clientSecretFName, "client-secret", "", "(import-gsheet, export-gsheet) set the client secret path and filename for GSheet access")
 	app.BoolVar(&overwrite, "overwrite", false, "overwrite will treat a create as update if the record exists")
+	app.IntVar(&batchSize, "batch,size", 0, "(indexer, deindexer, find) set the number of records per response")
+	app.StringVar(&keyFName, "key-file", "", "operate on the record keys contained in file, one key per line")
+
+	// Search specific application options
+	app.StringVar(&sortBy, "sort", "", "(find) a comma delimited list of field names to sort by")
+	app.BoolVar(&showHighlight, "highlight", false, "(find) display highlight in search results")
+	app.StringVar(&setHighlighter, "highlighter", "", "(find) set the highlighter (ansi,html) for search results")
+	app.StringVar(&resultFields, "fields", "", "(find) comma delimited list of fields to display in the results")
+	app.BoolVar(&jsonFormat, "json", false, "(find) format results as a JSON document")
+	app.BoolVar(&csvFormat, "csv", false, "(find) format results as a CSV document, used with fields option")
+	app.BoolVar(&csvSkipHeader, "csv-skip-header", false, "(find) don't output a header row, only values for csv output")
+	app.BoolVar(&idsOnly, "ids,ids-only", false, "(find) output only a list of ids from results")
+	app.IntVar(&from, "from", 0, "(find) return the result starting with this result number")
+	app.BoolVar(&explain, "explain", false, "(find) explain results in a verbose JSON document")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
-	// NOTE: Sense this pre-existed cli v0.0.6 we're going to stick with what we evolved.
+	// NOTE: Sense dataset cli was developed pre-existed cli v0.0.6 we're only document our actions and not run them via cli.
+	app.AddVerb("init", "Initialize a dataset collection")
+	app.AddVerb("status", "Show the status of a dataset collection")
+	app.AddVerb("create", "Create a JSON record in a collection")
+	app.AddVerb("read", "Read back a JSON record from a collection")
+	app.AddVerb("list", "List the JSON records as an array for provided record ids")
+	app.AddVerb("update", "Update a JSON record in a collection")
+	app.AddVerb("delete", "Delete a JSON record (and attachments) from a collection")
+	app.AddVerb("join", "Join a JSON record with a new JSON object in a collection")
+	app.AddVerb("keys", "List the keys in a collection, support filtering and sorting")
+	app.AddVerb("haskey", "Returns true if key is in collection, false otherwise")
+	app.AddVerb("count", "Counts the number of records in a collection, accepts a filter for sub-counts")
+	app.AddVerb("path", "Show the file system path to a JSON record in a collection")
+	app.AddVerb("attach", "Attach a document (file) to a JSON record in a collection")
+	app.AddVerb("attachments", "List of attachments associated with a JSON record in a collection")
+	app.AddVerb("detach", "Copy an attach out of an associated JSON record in a collection")
+	app.AddVerb("prune", "Remove attachments from a JSON record in a collection")
+	app.AddVerb("import", "Import a CSV file's rows as JSON records into a collection")
+	app.AddVerb("export", "Export a JSON records from a collection to a CSV file")
+	app.AddVerb("extract", "Extract unique values from JSON records in a collection based on a dot path expression")
+	app.AddVerb("check", "Check the health of a dataset collection")
+	app.AddVerb("repair", "Try to repair a damaged dataset collection")
+	app.AddVerb("import-gsheet", "Import a GSheet rows as JSON records into a collection")
+	app.AddVerb("export-gsheet", "Export a collection's JSON records to a GSheet")
+	app.AddVerb("indexer", "Create/Update a Bleve index of a collection")
+	app.AddVerb("deindexer", "Remove record(s) from a Bleve index for a collection")
+	app.AddVerb("find", "Query a bleve index(es) associated with a collection")
 
 	// We're ready to process args
 	app.Parse()
