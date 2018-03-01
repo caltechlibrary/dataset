@@ -236,6 +236,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, b
 		err              error
 		isSimpleIndexMap bool
 	)
+
 	// FIXME: this is a kludge, need to clean this up in a the long run
 	recordMap := map[string]map[string]interface{}{}
 	if strings.HasSuffix(idxMapName, ".bmap") == true {
@@ -261,6 +262,9 @@ func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, b
 		return err
 	}
 
+	if batchSize == 0 {
+		batchSize = 10
+	}
 	// Get all the keys and index each record
 	startT := time.Now()
 	batchT := time.Now()
