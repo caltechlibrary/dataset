@@ -89,4 +89,4 @@ Options will override any corresponding environment settings.
 ```
 
 
-dsindexer v0.0.26-dev
+dsindexer v0.0.27-dev
