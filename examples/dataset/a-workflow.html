@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">dataset</a></li>
+<li><a href="topics.html">topics</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Workflow</h1>
+
+<p>This is an example a workflow using the <em>dataset</em> command to creat andmanage a collection called <em>testdata/friends</em>.
+We start by saving a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
+
+<pre><code class="language-shell">   dataset init testdata/friends
+   export DATASET=testdata/friends
+   dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Now check to see if the key, littlefreda, is in the collection</p>
+
+<pre><code class="language-shell">   dataset haskey littlefreda
+</code></pre>
+
+<p>You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of testdata/friends</p>
+
+<pre><code class="language-shell">   dataset -i mojosam.json create mojosam
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
+
+<pre><code class="language-shell">   cat capt-jack.json | dataset create capt-jack
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
+   dataset attach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>List attachments for &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset attachments capt-jack
+</code></pre>
+
+<p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
+
+<pre><code class="language-shell">   dataset attached capt-jack
+</code></pre>
+
+<p>Writing out the attachment named <em>high-capt-jack.txt</em> from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">    dataset detach capt-jack high-capt-jack.txt
+</code></pre>
+
+<p>Remove all (prune) attachments from &ldquo;capt-jack&rdquo;</p>
+
+<pre><code class="language-shell">   dataset prune capt-jack
+</code></pre>
+
+<p>Keys can be used to filter and sort keys.
+Here&rsquo;s is a simple case for match records where name is equal to
+&ldquo;Mojo Sam&rdquo;.</p>
+
+<pre><code class="language-shell">   dataset keys '(eq .name &quot;Mojo Sam&quot;)'
+</code></pre>
+
+<p>You can take one list of keys and then do futher filtering using
+the <code>-key-file</code> option with the <em>keys</em> verb.</p>
+
+<pre><code class="language-shell">   dataset keys '(eq .name &quot;Mojo Sam&quot;) &gt; mojo.keys
+   dataset -key-file mojo.keys keys '(contains .title &quot;Morroco&quot;)'
+</code></pre>
+
+<p>Import can take a CSV file and store each row as a JSON document in dataset. In
+this example we&rsquo;re generating a UUID for the key name of each row</p>
+
+<pre><code class="language-shell">   dataset -uuid import my-data.csv
+</code></pre>
+
+<p>You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.</p>
+
+<pre><code class="language-shell">   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
+
+<pre><code class="language-shell">   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If wanted to extract a unqie list of all ORCIDs from a collection</p>
+
+<pre><code class="language-shell">   dataset extract true .authors[:].orcid
+</code></pre>
+
+<p>If you wanted to extract a list of ORCIDs from publications in 2016.</p>
+
+<pre><code class="language-shell">   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+</code></pre>
+
+<p>You can augement JSON key/value pairs for a JSON document in your collection
+using the join operation. This works similar to the datatools cli called jsonjoin.</p>
+
+<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
+three fields - name, email, age.</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
+</code></pre>
+
+<p>You also have an external JSON document called profile.json. It looks like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;: &quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;bio&quot;: &quot;world renowned geophysist&quot;}
+</code></pre>
+
+<p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
+
+<pre><code class="language-shell">    dataset join update jane.doe profile.json
+</code></pre>
+
+<p>The result would look like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+<p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
+
+<pre><code class="language-shell">    dataset join overwrite jane.doe profile.json
+</code></pre>
+
+<p>Which would result in a record like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

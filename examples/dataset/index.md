@@ -8,5 +8,5 @@ The following topics are available in examples
 + [export](export.html) - exporting data from a _dataset_ collection
 + [extract](extract.html) - list unique values in a collection
 + [join](join.html) - merge JSON documents with existing JSON records in a collection
-+ [examples](examples.html) - lists all examples as a single page
++ [a workflow](a-workflow.html) - lists examples as a single page
 
