@@ -89,7 +89,7 @@ var (
 		"create":        createJSONDoc,
 		"read":          readJSONDocs,
 		"list":          listJSONDocs,
-		"append":        updateJSONDoc,
+		"update":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
 		"keys":          collectionKeys,
@@ -374,7 +374,7 @@ func deleteJSONDoc(args ...string) (string, error) {
 // joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
 func joinJSONDoc(args ...string) (string, error) {
 	if len(args) < 3 {
-		return "", fmt.Errorf("expected update or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(args, ", "))
+		return "", fmt.Errorf("expected append or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(args, ", "))
 	}
 	action := strings.ToLower(args[0])
 	key := args[1]
@@ -397,7 +397,7 @@ func joinJSONDoc(args ...string) (string, error) {
 			return "", err
 		}
 		switch action {
-		case "update":
+		case "append":
 			for k, v := range newObject {
 				if _, ok := outObject[k]; ok != true {
 					outObject[k] = v
