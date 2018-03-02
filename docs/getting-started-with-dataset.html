@@ -46,83 +46,76 @@ retrieve your documents. If you were to initialize a dataset collection called &
 <pre><code class="language-shell">    dataset init FavoriteThings.ds
 </code></pre>
 
-<p>If the command is successful you&rsquo;ll see output that looks like</p>
-
-<pre><code class="language-shell">    export DATASET=&quot;FavoriteThings.ds&quot;
-</code></pre>
-
-<p>This is a suggested command to run your shell session. It sets the default DATASET to operate on. With out it
-you need to explicit indicite which collection using the command line option <code>-c</code> or <code>-collection</code>. To save your
-self some typing cut and paste the export statement now into your terminal session.</p>
-
 <p>Next you&rsquo;ll want to add some records to the collection of &ldquo;FavoriteThings.ds&rdquo;.  The records we&rsquo;re going to add need
 to be expressed as JSON objects. You need to decide on a key (the thing you&rsquo;ll used to retrieve the record later)
 of the document to store.  For this example I&rsquo;m going to use the key, &ldquo;beverage&rdquo; and a document that looks like
 <code>{&quot;thing&quot;: &quot;coffee&quot;}</code>.  If you&rsquo;ve set the DATASET environment variable you can run the following command &ndash;</p>
 
-<pre><code class="language-shell">    dataset create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
+<pre><code class="language-shell">    dataset FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
 </code></pre>
 
-<p>If all goes well you&rsquo;ll get a response of &ldquo;OK&rdquo;.  If you forgot to set the environment variable you can use the
-<code>-c</code> option to achieve the same thing.</p>
+<p>If all goes well you&rsquo;ll get a response of &ldquo;OK&rdquo;.  If you forgot to set the environment variable you can
+explicitly include the collection name</p>
 
-<pre><code class="language-shell">    dataset -c FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
+<pre><code class="language-shell">    dataset FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
 </code></pre>
 
 <p>Later if your have forgotten what your favorite beverage was you can read it back with</p>
 
-<pre><code class="language-shell">    dataset read beverage
+<pre><code class="language-shell">    dataset FavoriteThings.ds read beverage
 </code></pre>
 
-<p>Or using the <code>-c</code> option</p>
+<p>Or explicitly include the collection name</p>
 
-<pre><code class="language-shell">    dataset -c FavoriteThings.ds read beverage
+<pre><code class="language-shell">    dataset FavoriteThings.ds read beverage
 </code></pre>
 
 <p>To list all your favorite things keys try</p>
 
-<pre><code class="language-shell">    dataset keys
+<pre><code class="language-shell">    dataset FavoriteThings.ds keys
 </code></pre>
 
 <p>or
 k</p>
 
-<pre><code class="language-shell">    dataset -c FavoriteThings.ds keys
+<pre><code class="language-shell">    dataset FavoriteThings.ds keys
 </code></pre>
 
 <h2>Adding an existing JSON document to a collection</h2>
 
-<p>One of my favorite things is music. I happen to have a JSON document that I started currating with
-song and performers names. The document is called <code>music.json</code>. I can add this to my collection too.</p>
+<p>One of my favorite things is music. I happen to have a JSON document that I started currating a list of
+Jazz related songs and musicians.
+The document is called <code>jazz-notes.json</code>. I can add this to my collection too.</p>
 
 <pre><code class="language-json">    {
-       &quot;songs&quot;: [&quot;Blue Rondo al la Turk&quot;, &quot;Larks Tongues in Aspic&quot;, &quot;Bernie's Tune&quot;, &quot;Perdido&quot;],
-       &quot;performers&quot;: [&quot;Dave Brubeck Quartet&quot;, &quot;King Crimson&quot;, &quot;Dirk Fischer&quot;, &quot;L.A. Guitar Quartet&quot;]
+       &quot;songs&quot;: [&quot;Blue Rondo al la Turk&quot;, &quot;Bernie's Tune&quot;, &quot;Perdido&quot;],
+       &quot;pianist&quot;: [ &quot;Dave Brubeck&quot; ],
+       &quot;trumpet&quot;: [ &quot;Dirk Fischer&quot;, &quot;Dizzy Gillespie&quot; ]
     }
 </code></pre>
 
-<p>I can add this to my collection of <em>FavoriteThings.ds</em> this way using the key &ldquo;songs-performers&rdquo;.</p>
+<p>I can add this to my collection of <em>FavoriteThings.ds</em> this way using the key &ldquo;jazz-notes&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset -c FavoriteThings.ds create &quot;songs-performers&quot; music.json
+<pre><code class="language-shell">    dataset FavoriteThings.ds create &quot;jazz-notes&quot; jazz-notes.json
 </code></pre>
 
 <p>Notice that the organization of the JSON documents do not impose a common structure (though that is
 often useful). We can list the documents using our key command.</p>
 
-<pre><code class="language-shell">    dataset -c FavoriteThings.ds keys
+<pre><code class="language-shell">    dataset FavoriteThings.ds keys
 </code></pre>
 
 <p>Would return something like</p>
 
 <pre><code>    beverage
-    songs-performers
+    jazz-notes
 </code></pre>
 
-<p>The should list out &ldquo;beverage&rdquo; and &ldquo;songs-performers&rdquo;.</p>
+<p>The should list out &ldquo;beverage&rdquo; and &ldquo;jazz-notes&rdquo;.</p>
 
 <p>I can create a JSON list of the objects stored using the &ldquo;list&rdquo; command.</p>
 
-<pre><code class="language-shell">    dataset -c FavoriteThings.ds list beverage songs-performers
+<pre><code class="language-shell">    dataset FavoriteThings.ds list beverage jazz-notes
 </code></pre>
 
 <p>Would return something like</p>
@@ -133,18 +126,18 @@ often useful). We can list the documents using our key command.</p>
             &quot;thing&quot;: &quot;coffee&quot;
         },
         {
-            &quot;_Key&quot;: &quot;songs-performers&quot;,
-            &quot;performers&quot;: [
-                &quot;Dave Brubeck Quartet&quot;,
-                &quot;King Crimson&quot;,
-                &quot;Dirk Fischer&quot;,
-                &quot;L.A. Guitar Quartet&quot;
+            &quot;_Key&quot;: &quot;jazz-notes&quot;,
+            &quot;pianist&quot;: [
+                &quot;Dave Brubeck&quot;
             ],
             &quot;songs&quot;: [
                 &quot;Blue Rondo al la Turk&quot;,
-                &quot;Larks Tongues in Aspic&quot;,
                 &quot;Bernie's Tune&quot;,
                 &quot;Perdido&quot;
+            ],
+            &quot;trumpet&quot;: [
+                &quot;Dirk Fischer&quot;,
+                &quot;Dizzy Gillespie&quot;
             ]
         }
     ]

@@ -38,7 +38,7 @@ import (
 	"github.com/caltechlibrary/dataset/gsheet"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/shuffle"
-	"github.com/caltechlibrary/storage"
+	//"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
@@ -146,23 +146,21 @@ func repairCollection(params ...string) (string, error) {
 
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc
-func collectionInit(args ...string) (string, error) {
-	if len(args) == 0 {
+func collectionInit(params ...string) (string, error) {
+	if collectionName == "" && len(params) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	name := args[0]
-	collection, err := dataset.InitCollection(name)
-	if err != nil {
-		return "", err
+	if collectionName != "" {
+		params = append(params, collectionName)
 	}
-	defer collection.Close()
-	if collection.Store.Type == storage.S3 {
-		return fmt.Sprintf("export DATASET=\"s3://%s/%s\"", collection.Store.Config["AwsBucket"], collection.Name), nil
+	for _, cName := range params {
+		c, err := dataset.InitCollection(cName)
+		if err != nil {
+			return "", err
+		}
+		c.Close()
 	}
-	if collection.Store.Type == storage.GS {
-		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
-	}
-	return fmt.Sprintf("export DATASET=%q", collection.Name), nil
+	return "OK", nil
 }
 
 // collectionStatus sees if we can find the dataset collection given the path
@@ -1294,10 +1292,12 @@ func main() {
 	}
 	// Look for *.ds in the args and use that.
 	if collectionName == "" {
-		if strings.HasSuffix(args[0], ".ds") {
+		// Trival check
+		if strings.HasSuffix(args[0], ".ds") || strings.HasSuffix(args[0], ".dataset") || strings.HasPrefix(args[0], "gs://") || strings.HasPrefix(args[0], "s3://") {
 			collectionName = args[0]
 			args = args[1:]
 		}
+		// FIXME: We could check to see if args[0] is a directory containing a collection.json for certain.
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)

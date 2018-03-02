@@ -90,43 +90,42 @@ Common operations using the *dataset* command line tool
 + delete a JSON document
 
 ```shell
-    # Create a collection "mystuff" inside the directory called demo
-    dataset init demo/mystuff
-    # if successful an expression to export the collection name is show
-    export DATASET=demo/mystuff
+    # Create a collection "mystuff.ds", the ".ds" lets the dataset command know that's the collection to use. 
+    dataset mystuff.ds init
+    # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    dataset create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
-    # If successful then you should see an OK or an error message
+    dataset mystuff.ds create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
+    # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    dataset read freda.json
+    dataset mystuff.ds read freda.json
 
     # Path to JSON document
-    dataset path freda.json
+    dataset mystuff.ds path freda.json
 
     # Update a JSON document
-    dataset update freda.json '{"name":"freda","email":"freda@zbs.example.org"}'
+    dataset mystuff.ds update freda.json '{"name":"freda","email":"freda@zbs.example.org"}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    dataset keys
+    dataset mystuff.ds keys
 
-    # Filter for the name "freda"
-    dataset filter '(eq .name "freda")'
+    # Get keys filtered for the name "freda"
+    dataset mystuff.ds keys '(eq .name "freda")'
 
     # Join freda-profile.json with "freda" adding unique key/value pairs
-    dataset join update freda freda-profile.json
+    dataset mystuff.ds join update freda freda-profile.json
 
     # Join freda-profile.json overwriting in commont key/values adding unique key/value pairs
     # from freda-profile.json
-    dataset join overwrite freda freda-profile.json
+    dataset mystuff.ds join overwrite freda freda-profile.json
 
     # Delete a JSON document
-    dataset delete freda.json
+    dataset mystuff.ds delete freda.json
 
     # To remove the collection just use the Unix shell command
-    # /bin/rm -fR demo/mystuff
+    # /bin/rm -fR mystuff.ds
 ```
 
 ## Releases
