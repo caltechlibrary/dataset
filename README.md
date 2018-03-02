@@ -1,34 +1,37 @@
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
-_dataset_ is a small collection of command line tools for working with JSON (object) documents stored as 
-collections.  [This](docs/dataset/) include basic storage actions (e.g. CRUD operations, filtering
-and extraction) as well as [indexing](docs/dataset/indexer.html), [searching](docs/dataset/find.html) and even 
-[web hosting](docs/dsws/).  A project goal of _dataset_ is to "play nice" with shell scripts and other 
+_dataset_ is a command line tool for working with JSON (object) documents stored as 
+collections.  [This](docs/dataset/) supports basic storage actions (e.g. CRUD operations, filtering
+and extraction) as well as [indexing](docs/dataset/indexer.html), [searching](docs/dataset/find.html).
+A project goal of _dataset_ is to "play nice" with shell scripts and other 
 Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is 
-easily scriptable via Bash, Posix shell or interpretted languages like Python.
+easily scriptable via Bash, Posix shell or interpretted languages like R.
 
-_dataset_ is also a golang package for managing JSON documents and their attachments on disc or in cloud storage
+_dataset_ includes an implementation as a Python3 module. The same functionality as in the command line tool is 
+replicated for Python3.
+
+Finally _dataset_ is a golang package for managing JSON documents and their attachments on disc or in cloud storage
 (e.g. Amazon S3, Google Cloud Storage). The command line utilities excersize this package extensively.
 
 The inspiration for creating _dataset_ was the desire to process metadata as JSON document collections using
 Unix shell utilities and pipe lines. While it has grown in capabilities that remains a core use case.
 
 _dataset_ organanizes JSON documents by unique names in collections. Collections are represented
-as an index into a series of buckets. The buckets are subdirectories (or paths under cloud storage services) 
-holding individual JSON documents and their attachments. The JSON documents in a collection as assigned to a
-bucket (and the bucket generated if necessary) automatically when the document is added to the collection.
-The assigment to the buckets is round robin determined by the order of addition. This avoids having too
-many documents assigned to a single path (e.g. on some Unix there is a limit to how many documents are held
-in a single directory). This means you can list and manipulate the JSON documents directly with common
-Unix commands like ls, find, grep or their cloud counter parts.
+as an index into a series of buckets. The buckets are subdirectories (or paths under cloud storage services). 
+Buckets hold individual JSON documents and their attachments. The JSON document is assigned automatically to a
+bucket (and the bucket generated if necessary) when it is added to a collection. 
+Assigning documents to buckets avoids having too many documents assigned to a single path (e.g. on some Unix 
+there is a limit to how many documents are held in a single directory). In addition to using the _dataset_ 
+comnad you can list and manipulate the JSON documents directly with common Unix commands like ls, find, grep or 
+their cloud counter parts.
 
 
 ### Limitations of _dataset_
 
 _dataset_ has many limitations, some are listed below
 
-+ it is not a real-time data store
++ it is not a multi-process, multi-user data store (it's just files on disc)
 + it is not a repository management system
 + it is not a general purpose multiuser database system
 
@@ -45,9 +48,10 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [export](docs/dataset/export.html) JSON documents from a collection into a CSV file
 + [export-gsheet](docs/dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
 + [keys](docs/dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
-+ [haskeys](docs/dataset/haskeys.html) returns true if key is found in collection, false otherwise
++ [haskey](docs/dataset/haskey.html) returns true if key is found in collection, false otherwise
 + [count](docs/dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
 + [extract](docs/dataset/extract.html) unique JSON attribute values from a collection
+
 
 ### JSON Document level
 
@@ -58,6 +62,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [join](docs/dataset/join.html) a JSON document with a document in a collection
 + [list](docs/dataset/list.html) the lists JSON records as an array for the supplied keys
 + [path](docs/dataset/path.html) list the file path for a JSON document in a collection
+
 
 ### JSON Document Attachments
 
@@ -70,7 +75,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 
 + [indexer](docs/dataset/indexer.html) indexes JSON documents in a collection for searching with _find_
 + [deindexer](docs/dataset/deindexer.html) de-indexes (removes) JSON documents from an index
-+ [find](docs/dataset/find.html) provides a search indexed full text interface into a collection
++ [find](docs/dataset/find.html) provides a index based full text search interface for collections
 
 
 ## [Examples](examples/)

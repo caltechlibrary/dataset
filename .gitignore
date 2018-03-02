@@ -42,3 +42,4 @@ demos/*
 *.dylib
 *.h
 __pycache__
+test*.json
