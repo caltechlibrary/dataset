@@ -6,6 +6,7 @@
 
 ## Next (prep for v0.1.0)
 
++ [ ] change dataset join update to dataset join append
 + [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
     + Make key column required
 + [ ] In _dataset_ add `sync-gsheet` provide a mechanism to write (update the GSheet) to specific rows and columns based on a column as key and column mapping
