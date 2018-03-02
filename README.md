@@ -26,6 +26,7 @@ there is a limit to how many documents are held in a single directory). In addit
 comnad you can list and manipulate the JSON documents directly with common Unix commands like ls, find, grep or 
 their cloud counter parts.
 
+See [getting-started-with-datataset.md](docs/getting-started-with-dataset.html) for a tour of functionality.
 
 ### Limitations of _dataset_
 

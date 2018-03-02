@@ -162,7 +162,7 @@ func collectionInit(args ...string) (string, error) {
 	if collection.Store.Type == storage.GS {
 		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
 	}
-	return fmt.Sprintf("export DATASET=%s", collection.Name), nil
+	return fmt.Sprintf("export DATASET=%q", collection.Name), nil
 }
 
 // collectionStatus sees if we can find the dataset collection given the path
