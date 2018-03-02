@@ -1,6 +1,8 @@
 
-This is an example of creating a dataset called testdata/friends, saving
-a record called "littlefreda.json" and reading it back.
+# Workflow
+
+This is an example a workflow using the _dataset_ command to creat andmanage a collection called *testdata/friends*.
+We start by saving a record called "littlefreda.json" and reading it back.
 
 ```shell
    dataset init testdata/friends
@@ -59,30 +61,32 @@ Get the attachments for "capt-jack" (this will untar in your current directory)
    dataset attached capt-jack
 ```
 
-Remove high-capt-jack.txt from "capt-jack"
+Writing out the attachment named *high-capt-jack.txt* from "capt-jack"
 
 ```shell
     dataset detach capt-jack high-capt-jack.txt
 ```
 
-Remove all attachments from "capt-jack"
+Remove all (prune) attachments from "capt-jack"
 
 ```shell
-   dataset detach capt-jack
+   dataset prune capt-jack
 ```
 
-Filter can be used to return only the record keys that return true for a given
-expression. Here's is a simple case for match records where name is equal to
+Keys can be used to filter and sort keys.
+Here's is a simple case for match records where name is equal to
 "Mojo Sam".
 
 ```shell
-   dataset filter '(eq .name "Mojo Sam")'
+   dataset keys '(eq .name "Mojo Sam")'
 ```
 
-If you are using a complex filter it can read a file in and apply it as a filter.
+You can take one list of keys and then do futher filtering using
+the `-key-file` option with the *keys* verb.
 
 ```shell
-   dataset filter < myfilter.txt
+   dataset keys '(eq .name "Mojo Sam") > mojo.keys
+   dataset -key-file mojo.keys keys '(contains .title "Morroco")'
 ```
 
 Import can take a CSV file and store each row as a JSON document in dataset. In
@@ -98,7 +102,7 @@ then givening columns a name.
 ```shell
    dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
 ```
-   
+
 If you wanted to restrict to a subset (e.g. publication in year 2016)
 
 ```shell
@@ -123,10 +127,10 @@ You can augement JSON key/value pairs for a JSON document in your collection
 using the join operation. This works similar to the datatools cli called jsonjoin.
 
 Let's assume you have a record in your collection with a key 'jane.doe'. It has
-three fields - name, email, age.  
+three fields - name, email, age.
 
 ```json
-    {"name":"Doe, Jane", "email": "jd@example.org", age: 42}
+    {"name":"Doe, Jane", "email": "jd@example.org", "age": 42}
 ```
 
 You also have an external JSON document called profile.json. It looks like

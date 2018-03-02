@@ -1,7 +1,7 @@
 //
 // dsws.go - A web server/service for hosting dataset search and related static pages.
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech
@@ -267,12 +267,12 @@ func main() {
 	}
 
 	// Open the indexes for reading
-	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
+	idxList, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		fmt.Fprintf(app.Eout, "Can't open indexes, %s", err)
 		os.Exit(1)
 	}
-	defer idxAlias.Close()
+	defer idxList.Close()
 
 	// Construct our handler
 	searchHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -303,8 +303,8 @@ func main() {
 				opts["highlighter"] = "html"
 			}
 		}
-		buf := bytes.NewBufferString("")
-		results, err := dataset.Find(buf, idxAlias, []string{qString}, opts)
+
+		results, err := dataset.Find(idxList.Alias, []string{qString}, opts)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%s", err), 500)
 		}

@@ -23,9 +23,10 @@ function buildHelp() {
 
 # build Help assets 
 buildHelp dataset
+buildHelp dsws
+## FIXME: Will be depreciated in the future
 buildHelp dsindexer
 buildHelp dsfind
-buildHelp dsws
 
 # build Template assets
 pkgassets -o cmd/dsws/templates.go -p main Defaults defaults

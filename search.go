@@ -1,7 +1,7 @@
 //
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
-// Author R. S. Doiel, <rsdoiel@library.caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
@@ -27,10 +27,16 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
 	"github.com/blevesearch/bleve"
@@ -172,8 +178,8 @@ func isTrueValue(val interface{}) bool {
 	return false
 }
 
-// readIndexDefinition reads in a JSON document and converts it to a Bleve index mapping.
-func readIndexDefinition(mapName string) (*mapping.IndexMappingImpl, error) {
+// readBleveIndexDefinition reads in a JSON document and converts it to a Bleve index mapping.
+func readBleveIndexDefinition(mapName string) (*mapping.IndexMappingImpl, error) {
 	var (
 		src []byte
 		err error
@@ -206,26 +212,42 @@ func stringToGeoPoint(s string) (map[string]float64, bool) {
 	return pt, true
 }
 
-// recordToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
-// renders a new map[string]interface{} ready to be indexed.
+// recordToIndexRecord takes the JSON srouce and Key and converts Unmarhals it into
+// a new map[string]interface{} ready to be indexed.
 func recordToIndexRecord(ky string, src []byte) (map[string]interface{}, error) {
-	var rec map[string]interface{}
+	rec := map[string]interface{}{}
 	d := json.NewDecoder(bytes.NewReader(src))
 	d.UseNumber()
 	if err := d.Decode(&rec); err != nil {
 		return nil, err
 	}
+	if len(rec) == 0 {
+		return nil, fmt.Errorf("%s has nothing to index", ky)
+	}
 	return rec, nil
 }
 
-// Indexer ingests all the records of a collection applying the definition
-// creating or updating a Bleve index. Returns an error.
-func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, keys []string) error {
+// Indexer generates or updates and a Bleve index based on the index map filename provided, a list of keys
+// and batch size.
+func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, batchSize int) error {
 	var (
-		idx bleve.Index
-		err error
+		idx              bleve.Index
+		idxMap           *mapping.IndexMappingImpl
+		err              error
+		isSimpleIndexMap bool
 	)
-	idxMap, err := readIndexDefinition(idxMapName)
+
+	// FIXME: this is a kludge, need to clean this up in a the long run
+	recordMap := map[string]map[string]interface{}{}
+	if strings.HasSuffix(idxMapName, ".bmap") == true {
+		// We are using a Bleve native index def here.
+		idxMap, err = readBleveIndexDefinition(idxMapName)
+		isSimpleIndexMap = false
+	} else {
+		// We are using a simple index def so that we can support indexing in either Bleve or Lunrjs
+		recordMap, idxMap, err = readIndexDefinition(idxMapName)
+		isSimpleIndexMap = true
+	}
 	if err != nil {
 		return fmt.Errorf("failed to read index definition %s, %s", idxMapName, err)
 	}
@@ -239,8 +261,10 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	if err != nil {
 		return err
 	}
-	defer idx.Close()
 
+	if batchSize == 0 {
+		batchSize = 10
+	}
 	// Get all the keys and index each record
 	startT := time.Now()
 	batchT := time.Now()
@@ -253,18 +277,40 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 	log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
 	for i, key := range keys {
 		if src, err := c.ReadJSON(key); err == nil {
-			if rec, err := recordToIndexRecord(key, src); err == nil {
-				batchIdx.Index(key, rec)
-				cnt++
-				if (cnt % batchSize) == 0 {
-					if err := idx.Batch(batchIdx); err != nil {
-						log.Fatal(err)
+			if isSimpleIndexMap == true {
+				if rec, err := recordMapToIndexRecord(key, recordMap, src); err == nil {
+					//idx.Index(key, rec)
+					batchIdx.Index(key, rec)
+					cnt++
+					if (cnt % batchSize) == 0 {
+						if err := idx.Batch(batchIdx); err != nil {
+							log.Fatal(err)
+						}
+						log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+						// Force release of memory
+						batchIdx = nil
+						batchIdx = idx.NewBatch()
+						batchT = time.Now()
 					}
-					log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
-					// Force release of memory
-					batchIdx = nil
-					batchIdx = idx.NewBatch()
-					batchT = time.Now()
+				} else {
+					log.Printf("%d, %s", i, err)
+				}
+			} else {
+				if rec, err := recordToIndexRecord(key, src); err == nil {
+					batchIdx.Index(key, rec)
+					cnt++
+					if (cnt % batchSize) == 0 {
+						if err := idx.Batch(batchIdx); err != nil {
+							log.Fatal(err)
+						}
+						log.Printf("%d/%d records indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+						// Force release of memory
+						batchIdx = nil
+						batchIdx = idx.NewBatch()
+						batchT = time.Now()
+					}
+				} else {
+					log.Printf("%d, %s", i, err)
 				}
 			}
 		} else {
@@ -280,11 +326,78 @@ func (c *Collection) Indexer(idxName string, idxMapName string, batchSize int, k
 		batchIdx = nil
 	}
 	log.Printf("%d/%d records indexed, running time %s", cnt, tot, time.Now().Sub(startT))
-	return nil
+	return idx.Close()
+}
+
+// Deindexer deletes the keys from an index. Returns an error if a problem occurs.
+func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) error {
+	var (
+		idx bleve.Index
+		err error
+	)
+	if len(keys) == 0 {
+		return fmt.Errorf("%d keys to remove", len(keys))
+	}
+
+	//NOTE: if indexName does not exists abort
+	if _, e := os.Stat(idxName); os.IsNotExist(e) {
+		return fmt.Errorf("%s does not exist", idxName)
+	}
+	idx, err = bleve.Open(idxName)
+	if err != nil {
+		return err
+	}
+
+	if batchSize == 0 {
+		batchSize = 100
+	}
+
+	// Get all the keys and index each record
+	startT := time.Now()
+	batchT := time.Now()
+	batchIdx := idx.NewBatch()
+
+	tot := len(keys)
+	cnt := 0
+	log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+	for _, key := range keys {
+		batchIdx.Delete(key)
+		cnt++
+		if (cnt % batchSize) == 0 {
+			// Execute out batch!!
+			log.Println("Executing patch inside loop")
+			if err := idx.Batch(batchIdx); err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+			// Force release of memory
+			batchIdx = nil
+			batchIdx = idx.NewBatch()
+			batchT = time.Now()
+		}
+	}
+	if batchIdx.Size() > 0 {
+		log.Println("Executing patch outside loop")
+		if err := idx.Batch(batchIdx); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("%d/%d records de-indexed, batch time (%d) %s, running time %s", cnt, tot, batchSize, time.Now().Sub(batchT), time.Now().Sub(startT))
+		// force release of memory fo rlast batchIdx
+		batchIdx = nil
+	}
+	log.Printf("%d/%d records de-indexed, running time %s", cnt, tot, time.Now().Sub(startT))
+	return idx.Close()
+}
+
+type IndexList struct {
+	Names   []string
+	Fields  []string
+	Alias   bleve.IndexAlias
+	Indexes []bleve.Index
 }
 
 // OpenIndexes opens a list of index names and returns an index alias, a combined list of fields and error
-func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
+func OpenIndexes(indexNames []string) (*IndexList, []string, error) {
 	var (
 		idxAlias  bleve.IndexAlias
 		allFields []string
@@ -300,6 +413,7 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 		return append(l, s)
 	}
 
+	idxList := new(IndexList)
 	for i, idxName := range indexNames {
 		idx, err := bleve.Open(idxName)
 		if err != nil {
@@ -318,13 +432,30 @@ func OpenIndexes(indexNames []string) (bleve.IndexAlias, []string, error) {
 		} else {
 			idxAlias.Add(idx)
 		}
+		idxList.Names = append(idxList.Names, idxName)
+		idxList.Indexes = append(idxList.Indexes, idx)
 	}
 
 	if len(indexNames) > 1 {
 		allFields = appendField(allFields, "_index")
 	}
 	allFields = appendField(allFields, "_id")
-	return idxAlias, allFields, nil
+	idxList.Fields = allFields
+	idxList.Alias = idxAlias
+	return idxList, allFields, nil
+}
+
+// Close removes all the indexes from a list associated with idx.Alias, then closes the related indexes.
+// idx.Alias.Remove(idx.Indexes) returning error
+func (idxList *IndexList) Close() error {
+	idxList.Alias.Remove(idxList.Indexes...)
+	for i, idx := range idxList.Indexes {
+		err := idx.Close()
+		if err != nil {
+			return fmt.Errorf("Failed to close %s, %s", idxList.Names[i], err)
+		}
+	}
+	return nil
 }
 
 func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {
@@ -339,7 +470,7 @@ func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {
 
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
-func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
+func Find(idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
 	// Opening all our indexes
 	var (
 		size             int
@@ -450,4 +581,160 @@ func Find(out io.Writer, idxAlias bleve.IndexAlias, queryStrings []string, optio
 		}
 	}
 	return results, nil
+}
+
+// recordMapToIndexRecord takes the definition map and byte array, Unmarshals the JSON source and
+// renders a new map[string]interface{} ready to be indexed.
+func recordMapToIndexRecord(ky string, defnMap map[string]map[string]interface{}, src []byte) (map[string]interface{}, error) {
+	idxMap := map[string]interface{}{}
+
+	raw, err := dotpath.JSONDecode(src)
+	if err != nil {
+		return nil, err
+	}
+	// Copy the dot path elements to new smaller map
+	for pName := range defnMap {
+		//FIXME: Need to handle both object_path and object_template
+		//dTemplate, _ := defnMap[pName]["object_template"].(string)
+		if dPath, ok := defnMap[pName]["object_path"].(string); ok == true {
+			if val, err := dotpath.Eval(dPath, raw); err == nil {
+				switch val.(type) {
+				case json.Number:
+					if i, err := (val.(json.Number)).Int64(); err == nil {
+						idxMap[pName] = i
+					} else if f, err := (val.(json.Number)).Float64(); err == nil {
+						idxMap[pName] = f
+					} else {
+						idxMap[pName] = (val.(json.Number)).String()
+					}
+				case string:
+					if dType, tOk := defnMap[pName]["field_mapping"].(string); tOk == true && dType == "geopoint" {
+						if pt, ok := stringToGeoPoint(val.(string)); ok == true {
+							idxMap[pName] = pt
+						}
+					} else {
+						idxMap[pName] = val.(string)
+					}
+				default:
+					idxMap[pName] = val
+				}
+			}
+		}
+		if tmpl, ok := defnMap[pName]["object_tmpl"].(*template.Template); ok == true {
+			//NOTE: the whole record is passed to the template for processing...
+			if rec, err := dotpath.Eval(".", raw); err == nil {
+				var (
+					buf bytes.Buffer
+				)
+				wr := io.Writer(&buf)
+				if err := tmpl.Execute(wr, rec); err == nil {
+					idxMap[pName] = buf.String()
+				} else {
+					log.Printf("key %s, %s", ky, err)
+				}
+			}
+		}
+	}
+	return idxMap, nil
+}
+
+// readIndexDefinition reads in a JSON document and converts it into a record map and a Bleve index mapping.
+func readIndexDefinition(mapName string) (map[string]map[string]interface{}, *mapping.IndexMappingImpl, error) {
+	var (
+		src []byte
+		err error
+	)
+
+	if src, err = ioutil.ReadFile(mapName); err != nil {
+		return nil, nil, err
+	}
+
+	definitions := map[string]map[string]interface{}{}
+	if err := json.Unmarshal(src, &definitions); err != nil {
+		return nil, nil, fmt.Errorf("error unpacking definition: %s", err)
+	}
+
+	indexMapping := bleve.NewIndexMapping()
+	indexMapping.DefaultAnalyzer = simple.Name
+
+	//NOTE: convert definition into an appropriate index mappings, analyzers and such
+	var fieldMap *mapping.FieldMapping
+
+	for fieldName, defn := range definitions {
+		if templateName, ok := defn["object_template"].(string); ok == true {
+			// NOTE: if we have an object_template, read it in, parse it and add it to the
+			// definitions.
+			tmpl, err := template.New(path.Base(templateName)).Funcs(tmplfn.AllFuncs()).ParseFiles(templateName)
+			if err != nil {
+				return definitions, indexMapping, fmt.Errorf("Can't parse template %s for %s,%s", templateName, fieldName, err)
+			}
+			definitions[fieldName]["object_tmpl"] = tmpl
+		}
+		if fieldType, ok := defn["field_mapping"]; ok == true {
+			switch fieldType.(string) {
+			case "numeric":
+				fieldMap = bleve.NewNumericFieldMapping()
+			case "datetime":
+				fieldMap = bleve.NewDateTimeFieldMapping()
+			case "boolean":
+				fieldMap = bleve.NewBooleanFieldMapping()
+			case "geopoint":
+				fieldMap = bleve.NewGeoPointFieldMapping()
+			case "text":
+				fieldMap = bleve.NewTextFieldMapping()
+			default:
+				fieldMap = bleve.NewTextFieldMapping()
+			}
+		} else {
+			fieldMap = bleve.NewTextFieldMapping()
+		}
+		if sVal, ok := defn["store"]; ok == true {
+			if isTrueValue(sVal) == true {
+				fieldMap.Store = true
+			} else {
+				fieldMap.Store = false
+			}
+		}
+		if analyzerType, ok := defn["analyzer"]; ok == true {
+			switch analyzerType.(string) {
+			case "keyword":
+				fieldMap.Analyzer = keyword.Name
+			case "simple":
+				fieldMap.Analyzer = simple.Name
+			case "standard":
+				fieldMap.Analyzer = standard.Name
+			case "web":
+				fieldMap.Analyzer = web.Name
+			case "lang":
+				if langCode, ok := defn["lang"]; ok == true {
+					if langAnalyzer, ok := languagesSupported[langCode.(string)]; ok == true {
+						fieldMap.Analyzer = langAnalyzer
+					}
+				}
+			}
+		}
+		if sVal, ok := defn["include_in_all"]; ok == true {
+			if isTrueValue(sVal) == true {
+				fieldMap.IncludeInAll = true
+			} else {
+				fieldMap.IncludeInAll = false
+			}
+		}
+		if sVal, ok := defn["include_term_vectors"]; ok == true {
+			if isTrueValue(sVal) == true {
+				fieldMap.IncludeTermVectors = true
+			} else {
+				fieldMap.IncludeTermVectors = false
+			}
+		}
+		if sVal, ok := defn["date_format"]; ok == true {
+			if fmt, ok := supportedNamedTimeFormats[strings.ToLower(strings.TrimSpace(sVal.(string)))]; ok == true {
+				fieldMap.DateFormat = fmt
+			} else {
+				fieldMap.DateFormat = strings.TrimSpace(sVal.(string))
+			}
+		}
+		indexMapping.DefaultMapping.AddFieldMappingsAt(fieldName, fieldMap)
+	}
+	return definitions, indexMapping, nil
 }

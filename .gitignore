@@ -39,3 +39,6 @@ demos/*
 *.bleve
 *.ds
 *.dataset
+*.dylib
+*.h
+__pycache__

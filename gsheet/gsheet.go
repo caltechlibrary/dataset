@@ -2,6 +2,8 @@
 // gsheets.go is a part of the dataset package written to allow import/export of records
 // to/from dataset collections.
 //
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
+//
 package gsheets
 
 import (
@@ -66,7 +68,7 @@ func tokenCacheFile() (string, error) {
 	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
 	os.MkdirAll(tokenCacheDir, 0700)
 	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("sheets.googleapis.com-go-quickstart.json")), err
+		url.QueryEscape("sheets.googleapis.com-dataset.json")), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.
@@ -103,7 +105,7 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
+	// at ~/.credentials/sheets.googleapis.com-dataset.json
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to parse client secret file to config: %s", err)
@@ -146,7 +148,7 @@ func WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string, ta
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
-	// at ~/.credentials/sheets.googleapis.com-go-quickstart.json
+	// at ~/.credentials/sheets.googleapis.com-dataset.json
 	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		return fmt.Errorf("Unable to parse client secret file to config: %s", err)

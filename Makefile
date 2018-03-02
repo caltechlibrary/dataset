@@ -41,7 +41,7 @@ cmd/dsws/templates.go:
 	pkgassets -o cmd/dsws/templates.go -p main Defaults defaults
 	git add cmd/dsws/templates.go
 
-bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
 bin/dsindexer$(EXT): dataset.go search.go cmd/dsindexer/dsindexer.go cmd/dsindexer/assets.go
@@ -61,13 +61,17 @@ install:
 	env GOBIN=$(GOPATH)/bin go install cmd/dsfind/dsfind.go cmd/dsfind/assets.go
 	env GOBIN=$(GOPATH)/bin go install cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
+python:
+	cd py && $(MAKE)
+
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
 test: bin/dataset$(EXT) bin/dsindexer$(EXT) bin/dsfind$(EXT) bin/dsws$(EXT)
 	go test
-	cd gsheets && go test
+	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
+	cd py && $(MAKE) test
 
 format:
 	gofmt -w dataset.go
@@ -98,6 +102,7 @@ clean:
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
+	cd py && $(MAKE) clean
 
 dist/linux-amd64:
 	mkdir -p dist/bin
@@ -151,6 +156,7 @@ distribute_docs:
 	bash package-versions.bash > dist/package-versions.txt
 
 release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+	cd py && $(MAKE) release
 
 status:
 	git status

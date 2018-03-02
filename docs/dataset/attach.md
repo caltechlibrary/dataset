@@ -4,13 +4,13 @@
 ## Syntax 
 
 ```
-    dataset attach JSON_RECORD_ID FILENAME(S)
+    dataset attach KEY FILENAME(S)
 ```
 
 ## Description
 
 Attach a file to a JSON record. Attachments are stored in a tar ball
-related to the JSON record id.
+related to the JSON record key.
 
 ## Usage
 

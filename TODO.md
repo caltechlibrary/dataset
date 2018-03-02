@@ -3,29 +3,31 @@
 
 ## Bugs
 
-+ [ ] Document creating/managing indexes using the Bleve native cli
-+ [ ] Update dataset documentation to use Bleve's JSON definitions for indexes
-+ [ ] Update demos to use Bleve's JSON definitions for indexes
-+ [ ] Re-write docs for JSON index definitions
-+ [ ] Re-write demos for JSON index definitions
-+ [ ] Re-write examples for JSON index definitions
-+ [ ] Re-write how-to for JSON index definitions
-+ [ ] Evaluate adding automatic Lunrjs index support for collections
 
 ## Next (prep for v0.1.0)
 
-+ [ ] Create an experimental Python native module for dataset package
-+ [ ] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
-+ [ ] In _dsindexer_ 'add' to add/update one or more records in an existing index
-    + An array of objects should work as a Batch update
-+ [ ] In _dsindexer_ 'delete' remove one or more records from an index using record ids
-    + An array of ids should work as a batch delete
++ [ ] change dataset join update to dataset join append
 + [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
-+ [ ] In _dataset_ `export-gsheet` provide a mechanism to write (update the GSheet) to specific rows based on a column as key and column mapping
-+ [ ] In _dataset_ `import-gsheet` provide a mechanism to read from rows based on a column as key and column mappings
+    + Make key column required
++ [ ] In _dataset_ add `sync-gsheet` provide a mechanism to write (update the GSheet) to specific rows and columns based on a column as key and column mapping
 + [ ] Confirm consensus on the minor release version number bump
 
 ## Roadmap (v0.2.x)
+
++ [ ] Add support for generating Lunrjs indexes automatically inside the collection folder
+    + [ ] build a simple web UI for exploring collection (read only) via web browser
++ [ ] Normalize Python3 native _dataset_ module for scripting collection management in Python3
++ [ ] Sort out cross compiling libdataset shared library for Python module
++ [ ] Add Experimental R native _dataset_ module for scripting collection management in R
++ [ ] Add Experimental PHP native _dataset_ module for script collection management in PHP 
++ [ ] sparql cli interface for searching collection
+    + support JSON-LD for cross collection integration
++ [ ] Add faceted support to search (dsfind, dsws)
++ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python, PHP or R
++ [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
+
+
+## Someday, Maybe
 
 + [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
@@ -34,20 +36,6 @@
     + Browser based for UI, localhost restrict server for interacting with file system
     + Interactively build up of command strings, display results and saving off commands to runnable Bash scripts
     + Support importing datasets from s3:// and gs:// to local disc for interactive work
-+ [ ] Merge _dsfind_ and _dsindexer_ into _dataset_ command
-    + Assumes Bleve's native commands do not supercede datasets' custom Bleve integration
-+ [ ] sparql cli interface for searching collection
-    + support JSON-LD for cross collection integration
-+ [ ] Add faceted support to search (dsfind, dsws)
-+ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python, PHP or R
-+ [ ] Normalize Python3 native dataset module for scripting collection management in Python3
-+ [ ] Add Experimental R native dataset module for scripting collection management in R
-+ [ ] Add Experimental PHP native dataset module for script collection management in PHP 
-+ [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
-+ [ ] Implement cross compilation for Python wrapper of dataset package
-
-## Someday, Maybe
-
 + [ ] Integrate lunrjs and an index.html file into the root folder of a collection, this could be used to provide a web browser read interface to the collection without installing dataset itself.
 + [ ] Depreciate _dsindexer_ in favor of Bleve native cli
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
@@ -83,6 +71,22 @@
 
 ## Completed
 
++ [x] Merge _dsfind_ and _dsindexer_ into _dataset_ command
++ [x] Normalize Create, Read, Update to have CreateJSON, ReadJSON, UpdateJSON counter parts for working with non-map[string]interface{} objects
++ [x] Create an experimental Python native module for dataset package
++ [x] In _dsindexer_ 'delete' remove one or more records from an index using record ids
+    + An array of ids should work as a batch delete
++ [x] Document creating/managing indexes using the Bleve native cli
++ [x] Update dataset documentation to use Bleve's JSON definitions for indexes
++ [x] Update demos to use Bleve's JSON definitions for indexes
++ [x] Re-write docs for JSON index definitions
++ [x] Re-write demos for JSON index definitions
++ [x] Re-write examples for JSON index definitions
++ [x] Re-write how-to for JSON index definitions
++ [x] Evaluate adding automatic Lunrjs index support for collections
++ [x] In _dsindexer_ adopt JSON map compatible with  `bleve create INDEX_NAME -m INDEX_DEF`
++ [x] In _dsindexer_ 'add' to add/update one or more records in an existing index
+    + An array of objects should work as a Batch update
 + [x] Remove automated metadata for `_Attachments` when removing attachments from a JSON document
 + [x] Attachment metaphor still needs better alignment with idiomatic go
     + [x] AttachFile should be implemented with an io.Writer interface

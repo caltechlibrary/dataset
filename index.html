@@ -27,7 +27,7 @@
 
 <p><em>dataset</em> is a small collection of command line tools for working with JSON (object) documents stored as
 collections.  <a href="docs/dataset/">This</a> include basic storage actions (e.g. CRUD operations, filtering
-and extraction) as well as <a href="docs/dsindexer/">indexing</a>, <a href="docs/dsfind/">searching</a> and even
+and extraction) as well as <a href="docs/dataset/indexer.html">indexing</a>, <a href="docs/dataset/find.html">searching</a> and even
 <a href="docs/dsws/">web hosting</a>.  A project goal of <em>dataset</em> is to &ldquo;play nice&rdquo; with shell scripts and other
 Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is
 easily scriptable via Bash, Posix shell or interpretted languages like Python.</p>
@@ -64,36 +64,47 @@ Unix commands like ls, find, grep or their cloud counter parts.</p>
 <h3>Collection Level</h3>
 
 <ul>
-<li>Create a collection</li>
-<li>List the JSON document ids in a collection</li>
-<li>Create named lists of JSON document ids (aka select lists)</li>
-<li>Read back a named list of JSON document ids</li>
-<li>Delete a named list of JSON document ids</li>
-<li>Import JSON documents from rows of a CSV file or Google Sheets</li>
-<li>Filter JSON documents and return a list of matching ids</li>
-<li>Extract Unique JSON attribute values from a collection</li>
+<li><a href="docs/dataset/init.html">init</a> creates a collection</li>
+<li><a href="docs/dataset/import.html">import</a> JSON documents from rows of a CSV file</li>
+<li><a href="docs/dataset/import.html">import-gsheet</a> JSON documents from rows of a Google Sheet</li>
+<li><a href="docs/dataset/export.html">export</a> JSON documents from a collection into a CSV file</li>
+<li><a href="docs/dataset/export-gsheet.html">export-gsheet</a> JSON documents from a collection into a Google Sheet</li>
+<li><a href="docs/dataset/keys.html">keys</a> list keys of JSON documents in a collection, supports filtering and sorting</li>
+<li><a href="docs/dataset/haskeys.html">haskeys</a> returns true if key is found in collection, false otherwise</li>
+<li><a href="docs/dataset/count.html">count</a> returns the number of documents in a collection, supports filtering for subsets</li>
+<li><a href="docs/dataset/extract.html">extract</a> unique JSON attribute values from a collection</li>
 </ul>
 
 <h3>JSON Document level</h3>
 
 <ul>
-<li>Create a JSON document in a collection</li>
-<li>Update a JSON document in a collection</li>
-<li>Read back a JSON document in a collection</li>
-<li>Delete a JSON document in a collection</li>
-<li>Join a JSON document with a document in a collection</li>
+<li><a href="docs/dataset/create.html">create</a> a JSON document in a collection</li>
+<li><a href="docs/dataset/read.html">read</a> back a JSON document in a collection</li>
+<li><a href="docs/dataset/update.html">update</a> a JSON document in a collection</li>
+<li><a href="docs/dataset/delete.html">delete</a> a JSON document in a collection</li>
+<li><a href="docs/dataset/join.html">join</a> a JSON document with a document in a collection</li>
+<li><a href="docs/dataset/list.html">list</a> the lists JSON records as an array for the supplied keys</li>
+<li><a href="docs/dataset/path.html">path</a> list the file path for a JSON document in a collection</li>
 </ul>
 
-<p>Additionally</p>
+<h3>JSON Document Attachments</h3>
 
 <ul>
-<li>Attach a file to a JSON document in a collection</li>
-<li>List the files attached to a JSON document in a collection</li>
-<li>Update a file attached to a JSON document in a collection</li>
-<li>Delete one or more attached files of a JSON document in a collection</li>
+<li><a href="docs/dataset/attach.html">attach</a> a file to a JSON document in a collection</li>
+<li><a href="docs/dataset/attachments.html">attachments</a> lists the files attached to a JSON document in a collection</li>
+<li><a href="docs/dataset/detach.html">detach</a> retrieve an attached file associated with a JSON document in a collection</li>
+<li><a href="docs/dataset/prune.html">prune</a> delete one or more attached files of a JSON document in a collection</li>
 </ul>
 
-<h2>Examples</h2>
+<h3>Search</h3>
+
+<ul>
+<li><a href="docs/dataset/indexer.html">indexer</a> indexes JSON documents in a collection for searching with <em>find</em></li>
+<li><a href="docs/dataset/deindexer.html">deindexer</a> de-indexes (removes) JSON documents from an index</li>
+<li><a href="docs/dataset/find.html">find</a> provides a search indexed full text interface into a collection</li>
+</ul>
+
+<h2><a href="examples/">Examples</a></h2>
 
 <p>Common operations using the <em>dataset</em> command line tool</p>
 

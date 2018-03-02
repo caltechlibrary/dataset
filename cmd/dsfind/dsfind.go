@@ -2,7 +2,7 @@
 // dsfind is a command line utility that will search one or more Blevesearch indexes created by
 // dsindexer. The output can be in a number formats included text, CSV and JSON.
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
@@ -65,6 +65,9 @@ var (
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
+
+	// Add Params
+	app.AddParams("[INDEX_LIST]", "QUERY_STRING")
 
 	// Add Help Docs
 	app.AddHelp("description", []byte(description))
@@ -200,13 +203,13 @@ func main() {
 		options["fields"] = "*"
 	}
 
-	idxAlias, idxFields, err := dataset.OpenIndexes(indexNames)
+	idxList, idxFields, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}
-	defer idxAlias.Close()
+	defer idxList.Close()
 
-	results, err := dataset.Find(app.Out, idxAlias, args, options)
+	results, err := dataset.Find(idxList.Alias, args, options)
 	if err != nil {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("Can't search index %s, %s", strings.Join(indexNames, ", "), err), quiet)
 	}

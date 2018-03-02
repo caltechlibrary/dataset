@@ -1,7 +1,7 @@
 //
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
-// Author R. S. Doiel, <rsdoiel@library.caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
@@ -47,12 +47,75 @@ var (
 418925,,,National food situation,
 415750,0007-6597,,BCD : business conditions digest,
 `
-	cName = "testdata/search-test"
-	mName = "testdata/search-test.json"
-	iName = "testdata/search-test.bleve"
-
-	defn1 []byte
+	cName  = "testdata/search-test.ds"
+	mbName = "testdata/search-test.bmap"
+	mName  = "testdata/search-test.json"
+	iName  = "testdata/search-test.bleve"
 )
+
+func TestBleveMapIndexingSearch(t *testing.T) {
+	// Remove stale collection and index
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
+
+	// create the collection
+	c, err := create(cName, generateBucketNames("ab", 2))
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
+	if err != nil {
+		t.Errorf("Error import csvtable, %s", err)
+		t.FailNow()
+	}
+	if lines != 16 {
+		t.Errorf("Expected to import 16 rows, got %d", lines)
+		t.FailNow()
+	}
+	if err := c.Indexer(iName, mbName, []string{}, 100); err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
+	if err := c.Close(); err != nil {
+		t.Errorf("Can't close index, %s", err)
+		t.FailNow()
+	}
+
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	// Run queries and test results
+	opts := map[string]string{
+		"result_fields": "*",
+	}
+
+	idxList, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", iName, err)
+		t.FailNow()
+	}
+
+	results, err := Find(idxList.Alias, []string{"600622"}, opts)
+	if err != nil {
+		t.Errorf("Find returned an error, %s", err)
+		t.FailNow()
+	}
+	err = idxList.Close()
+	if err != nil {
+		t.Errorf("Failed to close index %s, %s", iName, err)
+	}
+	src, _ := json.Marshal(results)
+	if len(results.Hits) != 1 {
+		t.Errorf("unexpected results -> %s", src)
+		t.FailNow()
+	}
+}
 
 func TestIndexingSearch(t *testing.T) {
 	// Remove stale collection and index
@@ -75,23 +138,16 @@ func TestIndexingSearch(t *testing.T) {
 		t.Errorf("Expected to import 16 rows, got %d", lines)
 		t.FailNow()
 	}
-	// Build an index to test with
-	if err := ioutil.WriteFile(mName, defn1, 0666); err != nil {
-		t.Errorf("Can't write %q, %s", mName, err)
-		t.FailNow()
-	}
-	if err := c.Indexer(iName, mName, 100, []string{}); err != nil {
+	if err = c.Indexer(iName, mName, []string{}, 100); err != nil {
 		t.Errorf("Can't create index %q, %s", iName, err)
 		t.FailNow()
 	}
-	if err := c.Close(); err != nil {
+	if err = c.Close(); err != nil {
 		t.Errorf("Can't close index, %s", err)
 		t.FailNow()
 	}
-}
 
-func TestSearch(t *testing.T) {
-	c, err := Open(cName)
+	c, err = Open(cName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -103,16 +159,20 @@ func TestSearch(t *testing.T) {
 		"result_fields": "*",
 	}
 
-	idx, _, err := OpenIndexes([]string{iName})
+	idxList, _, err := OpenIndexes([]string{iName})
 	if err != nil {
 		t.Errorf("Can't open index %s, %s", iName, err)
 		t.FailNow()
 	}
 
-	results, err := Find(os.Stderr, idx, []string{"600622"}, opts)
+	results, err := Find(idxList.Alias, []string{"600622"}, opts)
 	if err != nil {
 		t.Errorf("Find returned an error, %s", err)
 		t.FailNow()
+	}
+	err = idxList.Close()
+	if err != nil {
+		t.Errorf("failed to close index %s, %s", iName, err)
 	}
 	src, _ := json.Marshal(results)
 	if len(results.Hits) != 1 {
@@ -121,7 +181,139 @@ func TestSearch(t *testing.T) {
 	}
 }
 
+func TestIndexerDeindexer(t *testing.T) {
+	cName := "test_index.ds"
+	indexName := "test_index.bleve"
+	indexMapName := "test_index_map.json"
+	os.RemoveAll(cName)
+	os.RemoveAll(indexName)
+	os.RemoveAll(indexMapName)
+
+	testRecords := map[string]map[string]interface{}{}
+	src := []byte(`{
+    "gutenberg:21489": {"title": "The Secret of the Island", "formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": "Jules", "family": "Verne"}], "url": "http://www.gutenberg.org/ebooks/21489", "categories": "fiction, novel"},
+    "gutenberg:2488": { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488", "categories": "fiction, novel"},
+    "gutenberg:21839": { "title": "Sense and Sensibility", "formats": ["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": "Austin"}], "url": "http://www.gutenberg.org/ebooks/21839", "categories": "fiction, novel" },
+    "gutenberg:3186": {"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186", "categories": "fiction, short story"},
+    "hathi:uc1321060001561131": { "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9", "categories": "non-fiction, memoir" }
+}`)
+	err := json.Unmarshal(src, &testRecords)
+	if err != nil {
+		t.Errorf("Can't unmarshal test records, %s", err)
+		t.FailNow()
+	}
+	testRecordCount := len(testRecords)
+	if testRecordCount != 5 {
+		t.Errorf("Something went wrong with unmarshalling test records, expected 5 got %d", testRecordCount)
+		t.FailNow()
+	}
+
+	src = []byte(`{
+	"title": {
+		"object_path": ".title"
+	},
+	"family": {
+		"object_path": ".authors[:].family"
+	},
+	"categories": {
+		"object_path": ".categories"
+	}
+}`)
+
+	// Make sure our test definition is valid JSON!
+	indexMap := map[string]interface{}{}
+	err = json.Unmarshal(src, &indexMap)
+	if err != nil {
+		t.Errorf("Can't unmarshal test map, %s", err)
+		t.FailNow()
+	}
+
+	err = ioutil.WriteFile(indexMapName, src, 0664)
+	if err != nil {
+		t.Errorf("Can't write test index map file, %s", err)
+		t.FailNow()
+	}
+	// create the collection
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	// Populate our test collection
+	for k, v := range testRecords {
+		err = c.Create(k, v)
+		if err != nil {
+			t.Errorf("Can't create %s in %s, %s", k, cName, err)
+			t.FailNow()
+		}
+	}
+
+	err = c.Indexer(indexName, indexMapName, []string{}, 2)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	idxList, _, err := OpenIndexes([]string{indexName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", indexName, err)
+		t.FailNow()
+	}
+
+	queryString := `+family:"Verne"`
+	results, err := Find(idxList.Alias, []string{queryString}, map[string]string{})
+	if err != nil {
+		t.Errorf("Can't find %q in index %s, %s", queryString, indexName, err)
+		t.FailNow()
+	}
+	err = idxList.Close()
+	if err != nil {
+		t.Errorf("Failed to close index %s, %s", indexName, err)
+	}
+	src, err = json.Marshal(results.Hits)
+	if err != nil {
+		t.Errorf("Can't marshal results")
+	}
+	if results.Total != 2 {
+		t.Errorf("Expected two results got %s", src)
+		t.FailNow()
+	}
+	delKeys := []string{}
+	for _, hit := range results.Hits {
+		delKeys = append(delKeys, hit.ID)
+	}
+	err = c.Deindexer(indexName, delKeys, 0)
+	if err != nil {
+		t.Errorf("deindexer failed for %s, %s", indexName, err)
+		t.FailNow()
+	}
+
+	/*FIXME: Need to re-open and make sure our return results are fewer....
+
+	log.Printf("DEBUG results Total %+v", results.Total)
+	log.Printf("DEBUG results Hits[] -> %+v --> %s", results.Hits[0], src)
+	   hits = results["hits"]
+	   #print("DEBUG results", json.dumps(hits, indent = 4))
+	   k1 = hits[0]["id"]
+	   ok = dataset.deindexer(collection_name, index_name, [k1])
+	   if ok == False:
+	       print("deindexer failed for key", k1)
+	*/
+}
+
 func TestMain(m *testing.M) {
+	var (
+		err          error
+		defn1, defn2 []byte
+	)
+
+	// Remove stale collection and index
+	os.RemoveAll(mName)
+	os.RemoveAll(mbName)
+
+	// Build an Bleve index map to test with
 	idxMap := bleve.NewIndexMapping()
 	document := bleve.NewDocumentMapping()
 
@@ -155,11 +347,74 @@ func TestMain(m *testing.M) {
 
 	idxMap.AddDocumentMapping("default", document)
 
-	var err error
-
 	defn1, err = json.MarshalIndent(idxMap, "", "    ")
 	if err != nil {
 		log.Fatal("Can't marshal mapping for tests")
 	}
+	err = ioutil.WriteFile(mbName, defn1, 0666)
+	if err != nil {
+		log.Fatalf("Can't write %q, %s", mbName, err)
+	}
+
+	// Build an Simple index map to test with
+	defn2 = []byte(`{
+	"tind_id": {
+		"object_path": ".tind",
+		"field_mapping": "numeric",
+		"store": true
+	},
+	"issn": {
+		"object_path": ".issn",
+		"field_mapping": "keyword",
+		"store": true
+	},
+	"oclc": {
+		"object_path": ".oclc",
+		"field_mapping": "keyword",
+		"store": true
+	},
+	"title": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "lang",
+		"lang":"en",
+		"store": true
+	},
+	"title_simple": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "simple",
+		"store": true
+	},
+	"title_standard": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "standard",
+		"store": true
+	},
+	"title_keyword": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "keyword",
+		"store": true
+	},
+	"title_web": {
+		"object_path": ".title",
+		"field_mapping": "text",
+		"analyzer": "web",
+		"store": true
+	},
+	"year": {
+		"object_path": ".date",
+		"field_mapping": "numeric",
+		"store": true
+	}
+}`)
+
+	err = ioutil.WriteFile(mName, defn2, 0666)
+	if err != nil {
+		log.Fatalf("Can't write %q, %s", mName, err)
+	}
+
 	os.Exit(m.Run())
 }

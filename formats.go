@@ -1,7 +1,7 @@
 //
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
-// Author R. S. Doiel, <rsdoiel@library.caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2018, Caltech
 // All rights not granted herein are expressly reserved by Caltech.

@@ -4,12 +4,12 @@
 ## Syntax
 
 ```
-    dataset attachments JSON_RECORD_ID
+    dataset attachments KEY
 ```
 
 ## Description
 
-List the files attached to the JSON record matching the JSON_RECORD_ID
+List the files attached to the JSON record matching the KEY
 in the collection.
 
 ## Usage

@@ -1,7 +1,7 @@
 //
 // dataset is a command line utility to manage content stored in a dataset collection.
 //
-// @author R. S. Doiel, <rsdoiel@caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
 //
 // Copyright (c) 2018, Caltech
@@ -20,6 +20,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,7 +35,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/gsheets"
+	"github.com/caltechlibrary/dataset/gsheet"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
@@ -57,19 +59,36 @@ var (
 	generateMarkdownDocs bool
 
 	// App Specific Options
-	collectionName string
-	useHeaderRow   bool
-	useUUID        bool
-	showVerbose    bool
-	sampleSize     int
+	collectionName    string
+	useHeaderRow      bool
+	useUUID           bool
+	showVerbose       bool
+	sampleSize        int
+	clientSecretFName string
+	overwrite         bool
+	batchSize         int
+	keyFName          string
+
+	// Search specific options, application Options
+	showHighlight  bool
+	setHighlighter string
+	resultFields   string
+	sortBy         string
+	jsonFormat     bool
+	csvFormat      bool
+	csvSkipHeader  bool
+	idsOnly        bool
+	size           int
+	from           int
+	explain        bool // Note: will be force results to be in JSON format
 
 	// Vocabulary
 	voc = map[string]func(...string) (string, error){
 		"init":          collectionInit,
 		"status":        collectionStatus,
 		"create":        createJSONDoc,
-		"read":          readJSONDocs,
-		"list":          listJSONDocs,
+		"read":          readJSONDoc,
+		"list":          listJSONDoc,
 		"update":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
@@ -88,6 +107,9 @@ var (
 		"repair":        repairCollection,
 		"import-gsheet": importGSheet,
 		"export-gsheet": exportGSheet,
+		"indexer":       indexer,
+		"deindexer":     deindexer,
+		"find":          find,
 	}
 )
 
@@ -96,11 +118,11 @@ var (
 //
 
 // checkCollection takes a collection name and checks for problems
-func checkCollection(args ...string) (string, error) {
-	if len(args) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+func checkCollection(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	for _, cName := range args {
+	for _, cName := range params {
 		if err := dataset.Analyzer(cName); err != nil {
 			return "", err
 		}
@@ -110,11 +132,11 @@ func checkCollection(args ...string) (string, error) {
 
 // repairCollection takes a collection name and recreates collection.json, keys.json
 // based on what it finds on disc
-func repairCollection(args ...string) (string, error) {
-	if len(args) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+func repairCollection(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	for _, cName := range args {
+	for _, cName := range params {
 		if err := dataset.Repair(cName); err != nil {
 			return "", err
 		}
@@ -144,12 +166,11 @@ func collectionInit(args ...string) (string, error) {
 }
 
 // collectionStatus sees if we can find the dataset collection given the path
-func collectionStatus(args ...string) (string, error) {
-	if len(args) == 0 && collectionName == "" {
-		return "", fmt.Errorf("missing a collection name")
+func collectionStatus(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	args = append(args, collectionName)
-	for _, collectionName := range args {
+	for _, collectionName := range params {
 		_, err := dataset.Open(collectionName)
 		if err != nil {
 			return "", fmt.Errorf("%s: %s", collectionName, err)
@@ -159,32 +180,27 @@ func collectionStatus(args ...string) (string, error) {
 }
 
 // createJSONDoc adds a new JSON document to the collection
-func createJSONDoc(args ...string) (string, error) {
+func createJSONDoc(params ...string) (string, error) {
 	var (
-		name string
-		src  string
+		key       string
+		objectSrc string
+		src       []byte
+		err       error
 	)
-	switch {
-	case useUUID == true:
-		name = uuid.New().String()
-		if len(args) != 1 {
-			return "", fmt.Errorf("Expected a JSON blob")
-		}
-		src = args[0]
-	case len(args) == 2:
-		name, src = args[0], args[1]
-	default:
-		return "", fmt.Errorf("Expected a document name and a JSON document")
+	if len(params) != 2 {
+		return "", fmt.Errorf("Expected a key and a JSON document")
 	}
+
+	key, objectSrc = params[0], params[1]
 
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
-	if len(name) == 0 {
-		return "", fmt.Errorf("Missing document name")
+	if len(key) == 0 {
+		return "", fmt.Errorf("Missing document key")
 	}
-	if len(src) == 0 {
-		return "", fmt.Errorf("Missing JSON document %s\n", name)
+	if len(objectSrc) == 0 {
+		return "", fmt.Errorf("Missing JSON document for %s\n", key)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -192,22 +208,37 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
+	if strings.HasSuffix(objectSrc, ".json") {
+		src, err = ioutil.ReadFile(objectSrc)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		src = []byte(objectSrc)
+	}
+
 	m := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(src), &m); err != nil {
-		return "", fmt.Errorf("%s must be a valid JSON Object", name)
+	if err := json.Unmarshal(src, &m); err != nil {
+		return "", fmt.Errorf("%s must be a valid JSON Object", key)
 	}
 	if useUUID == true {
-		m["_uuid"] = name
+		m["_UUID"] = key
 	}
-	if err := collection.Create(name, m); err != nil {
+	if overwrite == true && collection.HasKey(key) == true {
+		if err := collection.Update(key, m); err != nil {
+			return "", err
+		}
+		return "OK", nil
+	}
+	if err := collection.Create(key, m); err != nil {
 		return "", err
 	}
 	return "OK", nil
 }
 
-// readJSONDocs returns the JSON from a document in the collection, if more than one key is provided
+// readJSONDoc returns the JSON from a document in the collection, if more than one key is provided
 // it returns an array of JSON docs ordered by the keys provided
-func readJSONDocs(args ...string) (string, error) {
+func readJSONDoc(args ...string) (string, error) {
 	if len(args) < 1 {
 		return "", fmt.Errorf("Missing document name")
 	}
@@ -224,30 +255,30 @@ func readJSONDocs(args ...string) (string, error) {
 	defer collection.Close()
 
 	if len(args) == 1 {
-		data := map[string]interface{}{}
-		err := collection.Read(args[0], data)
+		m := map[string]interface{}{}
+		err := collection.Read(args[0], m)
 		if err != nil {
 			return "", err
 		}
 		if prettyPrint {
-			src, err := json.MarshalIndent(data, "", "    ")
+			src, err := json.MarshalIndent(m, "", "    ")
 			if err != nil {
 				return "", err
 			}
 			return string(src), nil
 		}
-		src, err := json.Marshal(data)
+		src, err := json.Marshal(m)
 		return string(src), err
 	}
 
-	var rec map[string]interface{}
 	recs := []map[string]interface{}{}
 	for _, name := range args {
-		err := collection.Read(name, rec)
+		m := map[string]interface{}{}
+		err := collection.Read(name, m)
 		if err != nil {
 			return "", err
 		}
-		recs = append(recs, rec)
+		recs = append(recs, m)
 	}
 	if prettyPrint {
 		src, err := json.MarshalIndent(recs, "", "    ")
@@ -257,9 +288,9 @@ func readJSONDocs(args ...string) (string, error) {
 	return string(src), err
 }
 
-// listJSONDocs returns a JSON array from a document in the collection
+// listJSONDoc returns a JSON array from a document in the collection
 // if not matching records returns an empty list
-func listJSONDocs(args ...string) (string, error) {
+func listJSONDoc(args ...string) (string, error) {
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name")
 	}
@@ -272,14 +303,14 @@ func listJSONDocs(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	var rec map[string]interface{}
 	recs := []map[string]interface{}{}
 	for _, name := range args {
-		err := collection.Read(name, rec)
+		m := map[string]interface{}{}
+		err := collection.Read(name, m)
 		if err != nil {
 			return "", err
 		}
-		recs = append(recs, rec)
+		recs = append(recs, m)
 	}
 	if prettyPrint {
 		src, err := json.MarshalIndent(recs, "", "    ")
@@ -290,30 +321,46 @@ func listJSONDocs(args ...string) (string, error) {
 }
 
 // updateJSONDoc replaces a JSON document in the collection
-func updateJSONDoc(args ...string) (string, error) {
-	if len(args) != 2 {
+func updateJSONDoc(params ...string) (string, error) {
+	var (
+		key       string
+		objectSrc string
+		src       []byte
+		err       error
+	)
+	if len(params) != 2 {
 		return "", fmt.Errorf("Expected document name and JSON blob")
 	}
-	name, src := args[0], []byte(args[1])
+	key, objectSrc = params[0], params[1]
+
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
-	if len(name) == 0 {
-		return "", fmt.Errorf("Missing document name")
+	if len(key) == 0 {
+		return "", fmt.Errorf("Missing document key")
 	}
-	if len(src) == 0 {
-		return "", fmt.Errorf("Can't update, no JSON source found in %s", name)
+	if len(objectSrc) == 0 {
+		return "", fmt.Errorf("Can't update, no JSON source found for %s", key)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
 	}
 	defer collection.Close()
+
+	if strings.HasSuffix(objectSrc, ".json") {
+		src, err = ioutil.ReadFile(objectSrc)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		src = []byte(objectSrc)
+	}
 	data := map[string]interface{}{}
 	if err := json.Unmarshal(src, &data); err != nil {
 		return "", err
 	}
-	if err := collection.Update(name, data); err != nil {
+	if err := collection.Update(key, data); err != nil {
 		return "", err
 	}
 	return "OK", nil
@@ -344,13 +391,18 @@ func deleteJSONDoc(args ...string) (string, error) {
 }
 
 // joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
-func joinJSONDoc(args ...string) (string, error) {
-	if len(args) < 3 {
-		return "", fmt.Errorf("expected update or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(args, ", "))
+func joinJSONDoc(params ...string) (string, error) {
+	var (
+		src        []byte
+		err        error
+		adverb     string
+		key        string
+		objectSrcs []string
+	)
+	if len(params) < 3 {
+		return "", fmt.Errorf("expected append or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(params, ", "))
 	}
-	action := strings.ToLower(args[0])
-	key := args[1]
-	objects_src := args[2:]
+	adverb, key, objectSrcs = strings.ToLower(params[0]), params[1], params[2:]
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -364,12 +416,21 @@ func joinJSONDoc(args ...string) (string, error) {
 	if err := collection.Read(key, outObject); err != nil {
 		return "", err
 	}
-	for _, src := range objects_src {
-		if err := json.Unmarshal([]byte(src), &newObject); err != nil {
+
+	for _, objectSrc := range objectSrcs {
+		if strings.HasSuffix(objectSrc, ".json") {
+			src, err = ioutil.ReadFile(objectSrc)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			src = []byte(objectSrc)
+		}
+		if err := json.Unmarshal(src, &newObject); err != nil {
 			return "", err
 		}
-		switch action {
-		case "update":
+		switch adverb {
+		case "append":
 			for k, v := range newObject {
 				if _, ok := outObject[k]; ok != true {
 					outObject[k] = v
@@ -380,7 +441,7 @@ func joinJSONDoc(args ...string) (string, error) {
 				outObject[k] = v
 			}
 		default:
-			return "", fmt.Errorf("Unknown join type %q", action)
+			return "", fmt.Errorf("Unknown join type %q", adverb)
 		}
 	}
 	if err := collection.Update(key, outObject); err != nil {
@@ -411,24 +472,10 @@ func collectionKeys(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
-	// Trivial case of return all keys
-	if len(args) == 0 || (len(args) == 1 && args[0] == "true") {
-		if sampleSize == 0 {
-			return strings.Join(collection.Keys(), "\n"), nil
-		}
-		keys := collection.Keys()
-		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		shuffle.Strings(keys, random)
-		if sampleSize <= len(keys) {
-			return strings.Join(keys[0:sampleSize], "\n"), nil
-		}
-		return strings.Join(collection.Keys(), "\n"), nil
-	}
-
-	// Some sort of filter is involved
-	f, err := tmplfn.ParseFilter(args[0])
-	if err != nil {
-		return "", err
+	// Set our filter
+	filterExpr := "true"
+	if len(args) > 0 {
+		filterExpr = args[0]
 	}
 
 	// Some sort of Sort is involved
@@ -447,13 +494,9 @@ func collectionKeys(args ...string) (string, error) {
 	keys := []string{}
 
 	// Process the filter
-	for _, key := range keyList {
-		data := map[string]interface{}{}
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
-				keys = append(keys, key)
-			}
-		}
+	keys, err = collection.KeyFilter(keyList, filterExpr)
+	if err != nil {
+		return "", err
 	}
 
 	// Apply Sample Size
@@ -471,7 +514,7 @@ func collectionKeys(args ...string) (string, error) {
 	}
 
 	// We still have sorting to do.
-	keys, err = collection.SortKeysByExpression(keys, args[1])
+	keys, err = collection.KeySortByExpression(keys, args[1])
 	return strings.Join(keys, "\n"), err
 }
 
@@ -527,9 +570,9 @@ func collectionCount(args ...string) (string, error) {
 	}
 	cnt := 0
 	for _, key := range keyList {
-		data := map[string]interface{}{}
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
+		m := map[string]interface{}{}
+		if err := collection.Read(key, m); err == nil {
+			if ok, err := f.Apply(m); err == nil && ok == true {
 				cnt++
 			}
 		}
@@ -562,9 +605,9 @@ func streamFilterResults(w *os.File, keyList []string, filterExp string, sampleS
 		}
 	}
 	for _, key := range keyList {
-		data := map[string]interface{}{}
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
+		m := map[string]interface{}{}
+		if err := collection.Read(key, m); err == nil {
+			if ok, err := f.Apply(m); err == nil && ok == true {
 				fmt.Fprintln(w, key)
 			}
 		}
@@ -677,8 +720,8 @@ func importCSV(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s import CSV_FILENAME [COL_NUMBER_USED_FOR_ID]", os.Args[0])
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s import CSV_FILENAME COL_NUMBER_USED_FOR_ID", os.Args[0])
 	}
 	idCol := -1
 	csvFName := params[0]
@@ -706,13 +749,19 @@ func importCSV(params ...string) (string, error) {
 
 func importGSheet(params ...string) (string, error) {
 	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretFName != "" {
+		clientSecretJSON = clientSecretFName
+	}
+	if clientSecretJSON == "" {
+		clientSecretJSON = "client_secret.json"
+	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) < 3 {
-		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE [COL_NO_FOR_ID]", os.Args[0])
+	if len(params) < 4 {
+		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NUMBER_USED_FOR_ID", os.Args[0])
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
@@ -732,8 +781,8 @@ func importGSheet(params ...string) (string, error) {
 		return "", err
 	}
 
-	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
-		return "", fmt.Errorf("Can't import Google Sheet, %s", err)
+	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, showVerbose); err != nil {
+		return "", fmt.Errorf("Errors importing %s, %s", sheetName, err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
 	}
@@ -742,6 +791,12 @@ func importGSheet(params ...string) (string, error) {
 
 func exportGSheet(params ...string) (string, error) {
 	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretFName != "" {
+		clientSecretJSON = clientSecretFName
+	}
+	if clientSecretJSON == "" {
+		clientSecretJSON = "client_secret.json"
+	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -771,16 +826,6 @@ func exportGSheet(params ...string) (string, error) {
 		colNames[i] = strings.TrimSpace(val)
 	}
 
-	keys := collection.Keys()
-	f, err := tmplfn.ParseFilter(filterExpr)
-	if err != nil {
-		return "", err
-	}
-
-	var (
-		data map[string]interface{}
-	)
-
 	table := [][]interface{}{}
 	if len(colNames) > 0 {
 		row := []interface{}{}
@@ -789,13 +834,15 @@ func exportGSheet(params ...string) (string, error) {
 		}
 		table = append(table, row)
 	}
-	for _, key := range keys {
-		if err := collection.Read(key, data); err == nil {
-			if ok, err := f.Apply(data); err == nil && ok == true {
-				// save row out.
+	keys := collection.Keys()
+
+	if strings.ToLower(filterExpr) == "true" {
+		for _, key := range keys {
+			m := map[string]interface{}{}
+			if err := collection.Read(key, m); err == nil {
 				row := []interface{}{}
 				for _, colPath := range dotPaths {
-					col, err := dotpath.Eval(colPath, data)
+					col, err := dotpath.Eval(colPath, m)
 					if err == nil {
 						row = append(row, col)
 					} else {
@@ -803,6 +850,30 @@ func exportGSheet(params ...string) (string, error) {
 					}
 				}
 				table = append(table, row)
+			}
+		}
+	} else {
+		f, err := tmplfn.ParseFilter(filterExpr)
+		if err != nil {
+			return "", err
+		}
+
+		for _, key := range keys {
+			m := map[string]interface{}{}
+			if err := collection.Read(key, m); err == nil {
+				if ok, err := f.Apply(m); err == nil && ok == true {
+					// save row out.
+					row := []interface{}{}
+					for _, colPath := range dotPaths {
+						col, err := dotpath.Eval(colPath, m)
+						if err == nil {
+							row = append(row, col)
+						} else {
+							row = append(row, "")
+						}
+					}
+					table = append(table, row)
+				}
 			}
 		}
 	}
@@ -863,15 +934,235 @@ func extract(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH", os.Args[0])
+		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH_EXPR", os.Args[0])
 	}
 	filterExpr := strings.TrimSpace(params[0])
-	dotPaths := strings.TrimSpace(params[1])
-	lines, err := collection.Extract(filterExpr, dotPaths)
+	dotExpr := strings.TrimSpace(params[1])
+	lines, err := collection.Extract(filterExpr, dotExpr)
 	if err != nil {
-		return "", fmt.Errorf("Can't export CSV, %s", err)
+		return "", fmt.Errorf("Can't extract %s, %s", dotExpr, err)
 	}
 	return strings.Join(lines, "\n"), nil
+}
+
+// indexer replaces dsindexer command and is used to build a Bleve index for a collection
+func indexer(params ...string) (string, error) {
+	var (
+		indexName    string
+		indexMapName string
+		keyList      []string
+	)
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s [OPTIONS] indexer INDEX_NAME INDEX_MAP_FILENAME", os.Args[0])
+	}
+	if len(params) > 0 {
+		indexName = params[0]
+	}
+	if len(params) > 1 {
+		indexMapName = params[1]
+	}
+
+	if len(keyFName) > 0 {
+		src, err := ioutil.ReadFile(keyFName)
+		if err != nil {
+			return "", fmt.Errorf("Cannot read key file %s, %s", keyFName, err)
+		}
+		txt := fmt.Sprintf("%s", src)
+		for _, key := range strings.Split(txt, "\n") {
+			keyList = append(keyList, strings.TrimSpace(key))
+		}
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if len(keyList) == 0 {
+		keys = c.Keys()
+	}
+
+	if batchSize == 0 {
+		if len(keys) > 100000 {
+			batchSize = 1000
+		} else if len(keys) > 10000 {
+			batchSize = len(keys) / 100
+		} else if len(keys) > 1000 {
+			batchSize = len(keys) / 10
+		} else {
+			batchSize = 100
+		}
+	}
+
+	err = c.Indexer(indexName, indexMapName, keys, batchSize)
+	if err != nil {
+		return "", fmt.Errorf("Indexing error %s %s, %s", collectionName, indexName, err)
+	}
+	// return success
+	return "OK", nil
+}
+
+// deindexer replaces dsindexer command and is used to build a Bleve index for a collection
+func deindexer(params ...string) (string, error) {
+	var (
+		indexName    string
+		keysListName string
+		keyList      []string
+	)
+	if len(params) < 1 {
+		return "", fmt.Errorf("syntax: %s deindexer INDEX_NAME KEY_FILENAME", os.Args[0])
+	}
+	if len(params) > 0 {
+		indexName = params[0]
+	}
+	if len(params) > 1 {
+		keysListName = params[1]
+	} else if len(keyFName) > 0 {
+		keysListName = keyFName
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
+	}
+	defer c.Close()
+
+	keys := []string{}
+	if len(keysListName) > 0 {
+		src, err := ioutil.ReadFile(keysListName)
+		if err != nil {
+			return "", fmt.Errorf("Cannot read key file %s, %s", keyFName, err)
+		}
+		txt := fmt.Sprintf("%s", src)
+		for _, key := range strings.Split(txt, "\n") {
+			keyList = append(keyList, strings.TrimSpace(key))
+		}
+	}
+	if len(keys) == 0 {
+		return "", fmt.Errorf("Deindexing requires a list of keys to de-index")
+	}
+
+	if batchSize == 0 {
+		if len(keys) > 100000 {
+			batchSize = 1000
+		} else if len(keys) > 10000 {
+			batchSize = len(keys) / 100
+		} else if len(keys) > 1000 {
+			batchSize = len(keys) / 10
+		} else {
+			batchSize = 100
+		}
+	}
+	err = c.Deindexer(indexName, keys, batchSize)
+	if err != nil {
+		return "", fmt.Errorf("Deindexing error %s %s, %s", collectionName, indexName, err)
+	}
+	// return success
+	return "OK", nil
+}
+
+func find(params ...string) (string, error) {
+	var (
+		indexNames  []string
+		queryString string
+	)
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s [OPTIONS] INDEX_NAMES QUERY_STRING", os.Args[0])
+	}
+	if len(params) > 0 {
+		if strings.Contains(params[0], ":") == true {
+			indexNames = strings.Split(params[0], ":")
+		} else {
+			indexNames = []string{params[0]}
+		}
+	}
+	if len(params) > 1 {
+		queryString = params[1]
+	}
+	options := map[string]string{}
+	if explain == true {
+		options["explain"] = "true"
+		jsonFormat = true
+	}
+
+	if sampleSize > 0 {
+		options["sample"] = fmt.Sprintf("%d", sampleSize)
+	}
+	if from != 0 {
+		options["from"] = fmt.Sprintf("%d", from)
+	}
+	if batchSize > 0 {
+		options["size"] = fmt.Sprintf("%d", batchSize)
+	}
+	if sortBy != "" {
+		options["sort"] = sortBy
+	}
+	if showHighlight == true {
+		options["highlight"] = "true"
+		options["highlighter"] = "ansi"
+	}
+	if setHighlighter != "" {
+		options["highlight"] = "true"
+		options["highlighter"] = setHighlighter
+	}
+
+	if resultFields != "" {
+		options["fields"] = strings.TrimSpace(resultFields)
+	} else {
+		options["fields"] = "*"
+	}
+
+	idxList, idxFields, err := dataset.OpenIndexes(indexNames)
+	if err != nil {
+		return "", fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
+	}
+
+	results, err := dataset.Find(idxList.Alias, strings.Split(queryString, "\n"), options)
+	if err != nil {
+		return "", fmt.Errorf("Find error %s, %s", strings.Join(indexNames, ", "), err)
+	}
+	err = idxList.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't close indexes %s, %s", strings.Join(indexNames, ", "), err)
+	}
+
+	//
+	// Handle results formatting choices
+	//
+	var buf bytes.Buffer
+	out := bufio.NewWriter(&buf)
+	switch {
+	case jsonFormat == true:
+		err = dataset.JSONFormatter(out, results, prettyPrint)
+		if err != nil {
+			return "", err
+		}
+	case csvFormat == true:
+		var fields []string
+		if resultFields == "" {
+			fields = idxFields
+		} else {
+			fields = strings.Split(resultFields, ",")
+		}
+		err = dataset.CSVFormatter(out, results, fields, csvSkipHeader)
+		if err != nil {
+			return "", err
+		}
+	case idsOnly == true:
+		for _, hit := range results.Hits {
+			fmt.Fprintf(out, "%s", hit.ID)
+		}
+	default:
+		fmt.Fprintf(out, "%s", results)
+	}
+
+	if newLine {
+		fmt.Fprintln(out, "")
+	}
+	// Return buffer as string
+	return buf.String(), nil
 }
 
 func main() {
@@ -903,13 +1194,55 @@ func main() {
 
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
-	app.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON document")
-	app.BoolVar(&useUUID, "uuid", false, "generate a UUID for a new JSON document name")
+	app.BoolVar(&useHeaderRow, "use-header-row", true, "(import) use the header row as attribute names in the JSON document")
+	app.BoolVar(&useUUID, "uuid", false, "(import) generate a UUID for a new JSON document name")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
+	app.StringVar(&clientSecretFName, "client-secret", "", "(import-gsheet, export-gsheet) set the client secret path and filename for GSheet access")
+	app.BoolVar(&overwrite, "overwrite", false, "overwrite will treat a create as update if the record exists")
+	app.IntVar(&batchSize, "batch,size", 0, "(indexer, deindexer, find) set the number of records per response")
+	app.StringVar(&keyFName, "key-file", "", "operate on the record keys contained in file, one key per line")
+
+	// Search specific application options
+	app.StringVar(&sortBy, "sort", "", "(find) a comma delimited list of field names to sort by")
+	app.BoolVar(&showHighlight, "highlight", false, "(find) display highlight in search results")
+	app.StringVar(&setHighlighter, "highlighter", "", "(find) set the highlighter (ansi,html) for search results")
+	app.StringVar(&resultFields, "fields", "", "(find) comma delimited list of fields to display in the results")
+	app.BoolVar(&jsonFormat, "json", false, "(find) format results as a JSON document")
+	app.BoolVar(&csvFormat, "csv", false, "(find) format results as a CSV document, used with fields option")
+	app.BoolVar(&csvSkipHeader, "csv-skip-header", false, "(find) don't output a header row, only values for csv output")
+	app.BoolVar(&idsOnly, "ids,ids-only", false, "(find) output only a list of ids from results")
+	app.IntVar(&from, "from", 0, "(find) return the result starting with this result number")
+	app.BoolVar(&explain, "explain", false, "(find) explain results in a verbose JSON document")
 
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
-	// NOTE: Sense this pre-existed cli v0.0.6 we're going to stick with what we evolved.
+	// NOTE: Sense dataset cli was developed pre-existed cli v0.0.6 we're only document our actions and not run them via cli.
+	app.AddVerb("init", "Initialize a dataset collection")
+	app.AddVerb("status", "Checks to see if a collection name contains a 'collection.json' file")
+	app.AddVerb("create", "Create a JSON record in a collection")
+	app.AddVerb("read", "Read back a JSON record from a collection")
+	app.AddVerb("list", "List the JSON records as an array for provided record ids")
+	app.AddVerb("update", "Update a JSON record in a collection")
+	app.AddVerb("delete", "Delete a JSON record (and attachments) from a collection")
+	app.AddVerb("join", "Join a JSON record with a new JSON object in a collection")
+	app.AddVerb("keys", "List the keys in a collection, support filtering and sorting")
+	app.AddVerb("haskey", "Returns true if key is in collection, false otherwise")
+	app.AddVerb("count", "Counts the number of records in a collection, accepts a filter for sub-counts")
+	app.AddVerb("path", "Show the file system path to a JSON record in a collection")
+	app.AddVerb("attach", "Attach a document (file) to a JSON record in a collection")
+	app.AddVerb("attachments", "List of attachments associated with a JSON record in a collection")
+	app.AddVerb("detach", "Copy an attach out of an associated JSON record in a collection")
+	app.AddVerb("prune", "Remove attachments from a JSON record in a collection")
+	app.AddVerb("import", "Import a CSV file's rows as JSON records into a collection")
+	app.AddVerb("export", "Export a JSON records from a collection to a CSV file")
+	app.AddVerb("extract", "Extract unique values from JSON records in a collection based on a dot path expression")
+	app.AddVerb("check", "Check the health of a dataset collection")
+	app.AddVerb("repair", "Try to repair a damaged dataset collection")
+	app.AddVerb("import-gsheet", "Import a GSheet rows as JSON records into a collection")
+	app.AddVerb("export-gsheet", "Export a collection's JSON records to a GSheet")
+	app.AddVerb("indexer", "Create/Update a Bleve index of a collection")
+	app.AddVerb("deindexer", "Remove record(s) from a Bleve index for a collection")
+	app.AddVerb("find", "Query a bleve index(es) associated with a collection")
 
 	// We're ready to process args
 	app.Parse()
@@ -970,6 +1303,19 @@ func main() {
 	defer cli.CloseFile(outputFName, out)
 
 	action, params := args[0], args[1:]
+	// NOTE: Special case of when -useUUID flag set when action is create, import or
+	// import-gsheet, we need to auto-generate the UUID as key and add to our args
+	// appropriately
+	if useUUID {
+		id := uuid.New().String()
+		switch action {
+		case "create":
+			params = append([]string{id}, args[1:]...)
+		case "import":
+			params = append(args, id)
+		case "import-gsheet":
+		}
+	}
 
 	var data string
 	if inputFName != "" {

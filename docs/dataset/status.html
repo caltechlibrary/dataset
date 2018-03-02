@@ -20,23 +20,22 @@
 </nav>
 
 <section>
-<h1>haskey</h1>
+<h1>status</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset haskey JSON_RECORD_ID
+<pre><code>    dataset status COLLECTION_NAME [COLLECTION_NAME ...]
 </code></pre>
 
 <h2>Description</h2>
 
-<p>haskey checks the JSON_RECORD_ID and returns true is key is in collection,
-false otherwise.</p>
+<p>Checks to see if a <code>collection.json</code> file is associated with the COLLECTION_NAME. Can work on multiple
+collection names. Returns &ldquo;OK&rdquo; if it is.</p>
 
 <h2>Usage</h2>
 
-<p>Given a JSON_RECORD_ID of <em>r1</em> see if the key is in the collection.</p>
-
-<pre><code class="language-shell">    dataset haskey r1
+<pre><code>    dataset status MyRecordCollection.ds
+    dataset status MyRecordCollection.ds MyBookCollection.ds
 </code></pre>
 
 </section>

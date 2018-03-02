@@ -1,34 +1,43 @@
 
 ## _dataset_ Operations
 
-+ Collection level 
-    + Create (collection) - creates or opens collection structure on disc, creates collection.json and keys.json if new
-    + Open (collection) - opens an existing collections and reads collection.json into memory
-    + Close (collection) - writes changes to collection.json to disc if dirty
-    + Delete (collection) - removes a collection from disc
-    + Keys (collection) - list of keys in the collection
-    + Select (collection) - returns the request select list, will create the list if not exist, append keys if provided
-    + Clear (collection) - Removes a select list from a collection and disc
-    + Lists (collection) - returns the names of the available select lists
-    + Import CSV (collection) - imports rows of a CSV file as JSON documents
-+ JSON document level
-    + Create (JSON document) - saves a new JSON blob or overwrites and existing one on  disc with given blob name, updates keys.json if needed
-    + Read (JSON document)) - finds the JSON document in the buckets and returns the JSON document contents
-    + Update (JSON document) - updates an existing blob on disc (record must already exist)
-    + Delete (JSON document) - removes a JSON blob from its disc
-    + Path (JSON document) - returns the path to the JSON document
-+ Select list level
-    + First (select list) - returns the value of the first key in the select list (non-distructively)
-    + Last (select list) - returns the value of the last key in the select list (non-distructively)
-    + Rest (select list) - returns values of all keys in the select list except the first (non-destructively)
-    + List (select list) - returns values of all keys in the select list (non-destructively)
-    + Length (select list) - returns the number of keys in a select list
-    + Push (select list) - appends one or more keys to an existing select list
-    + Pop (select list) - returns the last key in select list and removes it
-    + Unshift (select list) - inserts one or more new keys at the beginning of the select list
-    + Shift (select list) - returns the first key in a select list and removes it
-    + Sort (select list) - orders the select lists' keys in ascending or descending alphabetical order
-    + Reverse (select list) - flips the order of the keys in the select list
+The basic operations support by *dataset* are listed below organized by collection and JSON document level.
+
+### Collection Level
+
++ [init](dataset/init.html) creates a collection
++ [import](dataset/import.html) JSON documents from rows of a CSV file
++ [import-gsheet](dataset/import.html) JSON documents from rows of a Google Sheet
++ [export](dataset/export.html) JSON documents from a collection into a CSV file
++ [export-gsheet](dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
++ [keys](dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
++ [haskey](dataset/haskey.html) returns true if key is found in collection, false otherwise
++ [count](dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
++ [extract](dataset/extract.html) unique JSON attribute values from a collection
+
+### JSON Document level
+
++ [create](dataset/create.html) a JSON document in a collection
++ [read](dataset/read.html) back a JSON document in a collection
++ [update](dataset/update.html) a JSON document in a collection
++ [delete](dataset/delete.html) a JSON document in a collection
++ [join](dataset/join.html) a JSON document with a document in a collection
++ [list](dataset/list.html) the lists JSON records as an array for the supplied keys
++ [path](dataset/path.html) list the file path for a JSON document in a collection
+
+### JSON Document Attachments
+
++ [attach](dataset/attach.html) a file to a JSON document in a collection
++ [attachments](dataset/attachments.html) lists the files attached to a JSON document in a collection
++ [detach](dataset/detach.html) retrieve an attached file associated with a JSON document in a collection
++ [prune](dataset/prune.html) delete one or more attached files of a JSON document in a collection
+
+### Search
+
++ [indexer](dataset/indexer.html) indexes JSON documents in a collection for searching with _find_
++ [deindexer](dataset/deindexer.html) de-indexes (removes) JSON documents from an index
++ [find](dataset/find.html) provides a search indexed full text interface into a collection
+
 
 ## Example
 
@@ -74,41 +83,5 @@ Common operations using the *dataset* command line tool
 
     # To remove the collection just use the Unix shell command
     # /bin/rm -fR demo/mystuff
-```
-
-Common operations shown in Golang
-
-+ create collection
-+ create a JSON document to collection
-+ read a JSON document
-+ update a JSON document
-+ delete a JSON document
-
-```go
-    // Create a collection "mystuff" inside the directory called demo
-    collection, err := dataset.Create("demo/mystuff", dataset.GenerateBucketNames("ab", 2))
-    if err != nil {
-        log.Fatalf("%s", err)
-    }
-    defer collection.Close()
-    // Create a JSON document 
-    docName := "freda.json"
-    document := map[string]string{"name":"freda","email":"freda@inverness.example.org"}
-    if err := collection.Create(docName, document); err != nil {
-        log.Fatalf("%s", err)
-    }
-    // Read a JSON document
-    if err := collection.Read(docName, document); err != nil {
-        log.Fatalf("%s", err)
-    }
-    // Update a JSON document
-    document["email"] = "freda@zbs.example.org"
-    if err := collection.Update(docName, document); err != nil {
-        log.Fatalf("%s", err)
-    }
-    // Delete a JSON document
-    if err := collection.Delete(docName); err != nil {
-        log.Fatalf("%s", err)
-    }
 ```
 

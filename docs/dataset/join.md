@@ -4,19 +4,20 @@
 ## Syntax
 
 ```
-    dataset join JOIN_TYPE JSON_RECORD_ID [JSON_EXPRESSION]
-    dataset -i JSON_DOCUMENT_NAME join JOIN_TYPE JSON_RECORD_ID
-    cat JSON_DOCUMENT_NAME | dataset join JOIN_TYPE JSON_RECORD_ID
+    dataset join JOIN_TYPE KEY JSON_EXPRESSION
+    dataset join JOIN_TYPE KEY JSON_FILENAME
+    dataset -i JSON_DOCUMENT_NAME join JOIN_TYPE KEY
+    cat JSON_DOCUMENT_NAME | dataset join JOIN_TYPE KEY
 ```
 
 ## Description
 
-join will allow you to merge (updating or overwriting) an existing JSON document stored in
-a collection. Two JOIN_TYPES are available -- "update" and "overwrite".  With "update" 
+join will allow you to merge by appending or merge by overwriting to an existing JSON document 
+stored in a collection identified by KEY.  With "append" 
 only new fields will be added to the record. If you specify "overwrite" new fields will be 
 added and existing fields in common will be overwritten.
 
-join us helpful in building up an aggregated record where you have a common JSON_RECORD_ID.
+join us helpful in building up an aggregated record where you have a common KEY.
 
 ## Usage
 
@@ -37,7 +38,7 @@ You can merge the unique fields in profile.json with your existing jane.doe reco
 (where the existing record id is "jane.doe").
 
 ```shell
-    dataset -i profile.json join update jane.doe
+    dataset join append jane.doe profile.json
 ```
 
 The result would look like
@@ -49,7 +50,7 @@ The result would look like
 If you wanted to overwrite the common fields you would use 'join overwrite'
 
 ```shell
-    dataset -i profile.json join overwrite jane.doe
+    dataset join overwrite jane.doe profile.json
 ```
 
 Which would result in a record like

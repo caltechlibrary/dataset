@@ -4,14 +4,14 @@
 ## Syntax
 
 ```
-    dataset detach JSON_RECORD_ID
-    dataset detach JSON_RECORD_ID ATTACHMENT_NAME
+    dataset detach KEY
+    dataset detach KEY ATTACHMENT_NAME
 ```
 
 ## Description
 
 detach writes out (to local disc) the items that have been attached to a JSON record in the collection with
-the matching JSON_RECORD_ID
+the matching KEY
 
 ## Usage
 
