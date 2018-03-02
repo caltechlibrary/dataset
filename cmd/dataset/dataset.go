@@ -1303,10 +1303,18 @@ func main() {
 	defer cli.CloseFile(outputFName, out)
 
 	action, params := args[0], args[1:]
-	//NOTE: Special case of when -useUUID flag set when action is create we need to auto-generate the UUID as key
-	if action == "create" && useUUID {
-		uid := uuid.New().String()
-		params = append([]string{uid}, args[1:]...)
+	// NOTE: Special case of when -useUUID flag set when action is create, import or
+	// import-gsheet, we need to auto-generate the UUID as key and add to our args
+	// appropriately
+	if useUUID {
+		id := uuid.New().String()
+		switch action {
+		case "create":
+			params = append([]string{id}, args[1:]...)
+		case "import":
+			params = append(args, id)
+		case "import-gsheet":
+		}
 	}
 
 	var data string
