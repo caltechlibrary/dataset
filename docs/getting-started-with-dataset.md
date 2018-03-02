@@ -48,20 +48,8 @@ Later if your have forgotten what your favorite beverage was you can read it bac
     dataset FavoriteThings.ds read beverage
 ```
 
-Or explicitly include the collection name
+To list all your favorite things' keys try
 
-```shell
-    dataset FavoriteThings.ds read beverage
-```
-
-To list all your favorite things keys try
-
-```shell
-    dataset FavoriteThings.ds keys
-```
-
-or 
-k
 ```shell
     dataset FavoriteThings.ds keys
 ```
