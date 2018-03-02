@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset import TABLE_FILENAME COLUMN_NO_AS_KEY
+    dataset COLLECTION_NAME import TABLE_FILENAME COLUMN_NO_AS_KEY
 ```
 
 ## Description
@@ -31,11 +31,13 @@ In the third version we're importing all the rows of _data.xlsx_ using column 1 
 the KEY. In the final example we're only adding new records from _data.xlsx_
 workbook sheet named "Title List" where the KEY is taken from column 1.
 
+Our collection is named "Data.ds".
+
 ```shell
-    dataset import data.csv
-    dataset import data.csv 1
-    dataset -sheet "Title List" import data.xlsx 1
-    dataset -sheet "Title List" -update-only import data.xlsx 1
+    dataset Data.ds import data.csv
+    dataset Data.ds import data.csv 1
+    dataset -sheet "Title List" Data.ds import data.xlsx 1
+    dataset -sheet "Title List" -update-only Data.ds import data.xlsx 1
 ```
 
 By default the header row of the table (the first row of the table) is used as the

@@ -24,8 +24,8 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset detach KEY
-    dataset detach KEY ATTACHMENT_NAME
+<pre><code>    dataset COLLECTION_NAME detach KEY
+    dataset COLLECTION_NAME detach KEY ATTACHMENT_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -35,14 +35,14 @@ the matching KEY</p>
 
 <h2>Usage</h2>
 
-<p>Write out all the attached files for k1</p>
+<p>Write out all the attached files for k1 in collection named &ldquo;publications.ds&rdquo;</p>
 
-<pre><code class="language-shell">    dataset detach k1
+<pre><code class="language-shell">    dataset publications.ds detach k1
 </code></pre>
 
 <p>Write out only the <em>stats.xlsx</em> file attached to k1</p>
 
-<pre><code class="language-shell">    dataset detach k1 stats.xlsx
+<pre><code class="language-shell">    dataset publications.ds detach k1 stats.xlsx
 </code></pre>
 
 <p>Related topics: attach, attachments, and prune</p>

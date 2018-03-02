@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset init COLLECT_NAME
+    dataset COLLECT_NAME init
 ```
 
 ## Description
@@ -26,14 +26,33 @@ are named "stuff.example.org". Also for both remote storage options it is assume
 you've authenticated and have your environment setup correctly.
 
 ```
-    dataset init data
-    dataset init s3://stuff.example.org/data
-    dataset init gs://stuff.example.org/data
+    dataset data init
+    dataset s3://stuff.example.org/data init
+    dataset gs://stuff.example.org/data init
 ```
 
 NOTE: After each envocation of `dataset init` if all went well you will be
-shown an `export DATASET=...` line. This cut and pasted into your shell
-to save using the `-c` option explicitly indicating which dataset to operate on.
+shown an `OK`. If you want to save typing you can set the environment variable
+DATASET.  For our examples above that would look like
+
+```
+    dataset data init
+    export DATASET="data"
+```
+
+or for the Amazon S3 example
+
+```
+    dataset s3://stuff.example.org/data init
+    export DATASET="s3://stuff.example.org/data"
+```
+
+or for the Google storage example
+
+```
+    dataset gs://stuff.example.org/data init
+    export DATASET="gs://stuff.example.org/data"
+```
 
 ### S3 environment example
 

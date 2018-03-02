@@ -38,7 +38,7 @@ import (
 	"github.com/caltechlibrary/dataset/gsheet"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/shuffle"
-	"github.com/caltechlibrary/storage"
+	//"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
 	// 3rd Party packages
@@ -146,23 +146,21 @@ func repairCollection(params ...string) (string, error) {
 
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc
-func collectionInit(args ...string) (string, error) {
-	if len(args) == 0 {
+func collectionInit(params ...string) (string, error) {
+	if collectionName == "" && len(params) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
-	name := args[0]
-	collection, err := dataset.InitCollection(name)
-	if err != nil {
-		return "", err
+	if collectionName != "" {
+		params = append(params, collectionName)
 	}
-	defer collection.Close()
-	if collection.Store.Type == storage.S3 {
-		return fmt.Sprintf("export DATASET=\"s3://%s/%s\"", collection.Store.Config["AwsBucket"], collection.Name), nil
+	for _, cName := range params {
+		c, err := dataset.InitCollection(cName)
+		if err != nil {
+			return "", err
+		}
+		c.Close()
 	}
-	if collection.Store.Type == storage.GS {
-		return fmt.Sprintf("export DATASET=\"gs://%s/%s\"", collection.Store.Config["GoogleBucket"], collection.Name), nil
-	}
-	return fmt.Sprintf("export DATASET=%q", collection.Name), nil
+	return "OK", nil
 }
 
 // collectionStatus sees if we can find the dataset collection given the path
@@ -188,7 +186,7 @@ func createJSONDoc(params ...string) (string, error) {
 		err       error
 	)
 	if len(params) != 2 {
-		return "", fmt.Errorf("Expected a key and a JSON document")
+		return "", fmt.Errorf("Expected a key and a JSON document %q", strings.Join(params, " "))
 	}
 
 	key, objectSrc = params[0], params[1]
@@ -1168,6 +1166,11 @@ func find(params ...string) (string, error) {
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
+	// We require an "ACTION" or verb for command to work.
+	app.ActionsRequired = true
+
+	// Add command line parameters.
+	app.AddParams("COLLECTION_NAME")
 
 	// Add Help Docs
 	for k, v := range Help {
@@ -1283,15 +1286,20 @@ func main() {
 	}
 
 	// Application Option's processing
+	if len(args) == 0 {
+		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
+	}
 
 	// Merge environment
 	datasetEnv := os.Getenv("DATASET")
-	if datasetEnv != "" && collectionName == "" {
-		collectionName = datasetEnv
+	if datasetEnv != "" {
+		collectionName = strings.TrimSpace(datasetEnv)
 	}
 
-	if len(args) == 0 {
-		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
+	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
+	if strings.HasSuffix(args[0], ".ds") || strings.HasSuffix(args[0], ".dataset") || strings.HasPrefix(args[0], "gs://") || strings.HasPrefix(args[0], "s3://") {
+		collectionName = args[0]
+		args = args[1:]
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)
@@ -1326,7 +1334,7 @@ func main() {
 
 	fn, ok := voc[action]
 	if ok == false {
-		cli.ExitOnError(os.Stderr, fmt.Errorf("do not understand %s", action), quiet)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("do not understand %s for %q", action, strings.Join(os.Args, " ")), quiet)
 	}
 
 	if (action == "create" || action == "update" || action == "join") && len(data) > 0 {

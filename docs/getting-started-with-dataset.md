@@ -26,94 +26,86 @@ retrieve your documents. If you were to initialize a dataset collection called "
     dataset init FavoriteThings.ds
 ```
 
-If the command is successful you'll see output that looks like
-
-```shell
-    export DATASET="FavoriteThings.ds"
-```
-
-This is a suggested command to run your shell session. It sets the default DATASET to operate on. With out it
-you need to explicit indicite which collection using the command line option `-c` or `-collection`. To save your
-self some typing cut and paste the export statement now into your terminal session.
-
 Next you'll want to add some records to the collection of "FavoriteThings.ds".  The records we're going to add need
 to be expressed as JSON objects. You need to decide on a key (the thing you'll used to retrieve the record later)
 of the document to store.  For this example I'm going to use the key, "beverage" and a document that looks like
 `{"thing": "coffee"}`.  If you've set the DATASET environment variable you can run the following command --
 
 ```shell
-    dataset create beverage '{"thing":"coffee"}'
+    dataset FavoriteThings.ds create beverage '{"thing":"coffee"}'
 ```
 
-If all goes well you'll get a response of "OK".  If you forgot to set the environment variable you can use the 
-`-c` option to achieve the same thing.
+If all goes well you'll get a response of "OK".  If you forgot to set the environment variable you can 
+explicitly include the collection name
 
 ```shell
-    dataset -c FavoriteThings.ds create beverage '{"thing":"coffee"}'
+    dataset FavoriteThings.ds create beverage '{"thing":"coffee"}'
 ```
 
 Later if your have forgotten what your favorite beverage was you can read it back with
 
 ```shell
-    dataset read beverage
+    dataset FavoriteThings.ds read beverage
 ```
 
-Or using the `-c` option
+Or explicitly include the collection name
 
 ```shell
-    dataset -c FavoriteThings.ds read beverage
+    dataset FavoriteThings.ds read beverage
 ```
 
 To list all your favorite things keys try
 
 ```shell
-    dataset keys
+    dataset FavoriteThings.ds keys
 ```
 
 or 
 k
 ```shell
-    dataset -c FavoriteThings.ds keys
+    dataset FavoriteThings.ds keys
 ```
 
 ## Adding an existing JSON document to a collection
 
-One of my favorite things is music. I happen to have a JSON document that I started currating with
-song and performers names. The document is called `music.json`. I can add this to my collection too.
+One of my favorite things is music. I happen to have a JSON document that I started currating a list of 
+Jazz related songs and musicians.
+The document is called `jazz-notes.json`. I can add this to my collection too.
 
 ```json
     {
-       "songs": ["Blue Rondo al la Turk", "Larks Tongues in Aspic", "Bernie's Tune", "Perdido"],
-       "performers": ["Dave Brubeck Quartet", "King Crimson", "Dirk Fischer", "L.A. Guitar Quartet"]
+       "songs": ["Blue Rondo al la Turk", "Bernie's Tune", "Perdido"],
+       "pianist": [ "Dave Brubeck" ],
+       "trumpet": [ "Dirk Fischer", "Dizzy Gillespie" ]
     }
 ```
 
-I can add this to my collection of *FavoriteThings.ds* this way using the key "songs-performers". 
+I can add this to my collection of *FavoriteThings.ds* this way using the key "jazz-notes". 
 
 ```shell
-    dataset -c FavoriteThings.ds create "songs-performers" music.json
+    dataset FavoriteThings.ds create "jazz-notes" jazz-notes.json
 ```
 
 Notice that the organization of the JSON documents do not impose a common structure (though that is
 often useful). We can list the documents using our key command.
 
 ```shell
-    dataset -c FavoriteThings.ds keys
+    dataset FavoriteThings.ds keys
 ```
 
 Would return something like
 
 ```
     beverage
-    songs-performers
+    jazz-notes
 ```
 
-The should list out "beverage" and "songs-performers". 
+The should list out "beverage" and "jazz-notes". 
 
 I can create a JSON list of the objects stored using the "list" command.
 
 ```shell
-    dataset -c FavoriteThings.ds list beverage songs-performers
+    dataset FavoriteThings.ds list beverage jazz-notes
 ```
 
 Would return something like
@@ -125,18 +117,18 @@ Would return something like
             "thing": "coffee"
         },
         {
-            "_Key": "songs-performers",
-            "performers": [
-                "Dave Brubeck Quartet",
-                "King Crimson",
-                "Dirk Fischer",
-                "L.A. Guitar Quartet"
+            "_Key": "jazz-notes",
+            "pianist": [
+                "Dave Brubeck"
             ],
             "songs": [
                 "Blue Rondo al la Turk",
-                "Larks Tongues in Aspic",
                 "Bernie's Tune",
                 "Perdido"
+            ],
+            "trumpet": [
+                "Dirk Fischer",
+                "Dizzy Gillespie"
             ]
         }
     ]

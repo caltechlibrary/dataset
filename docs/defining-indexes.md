@@ -1,3 +1,4 @@
+
 # Defining Indexes
 
 _dataset indexer ..._ builds an index from an index map file.  A map defines the structure of the index. The definition file is a JSON document.
@@ -107,20 +108,30 @@ _dataset indexer_ support the following types of analyzers
   the language detected was German then German stop words, analysis would be performed)
 + lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, fr)
 
-Language analyzers current supported are -
+Some of the language analyzers current supported are -
 
 + Arabic (ar)
 + Catalan (ca)
 + Chokwe (cjk)
 + Central Kurdish (ckb)
++ Danish (da)
++ Dutch (nl)
 + German (de)
 + English (en)
 + Spanish (es)
 + Persian (fa)
++ Finnish (fi)
 + French (fr)
 + Hindi (hi)
++ Hungarian (hu)
 + Italian (it)
++ Norwegian (no)
 + Portuguese (pt)
++ Romanian (ro)
++ Russian (ru)
++ Swedish (sv)
++ Turkish (tr)
+
 
 Let's consider a JSON document that has a title and abstract field.
 
@@ -507,18 +518,28 @@ _dataset indexer_ support the following types of analyzers
 
 Example of language analyzers supported are - 
 
-+ Arabic (ar) 
++ Arabic (ar)
 + Catalan (ca)
-+ Chokwe (cjk) 
-+ Central Kurdish (ckb) 
++ Chokwe (cjk)
++ Central Kurdish (ckb)
++ Danish (da)
++ Dutch (nl)
 + German (de)
 + English (en)
 + Spanish (es)
 + Persian (fa)
++ Finnish (fi)
 + French (fr)
 + Hindi (hi)
++ Hungarian (hu)
 + Italian (it)
++ Norwegian (no)
 + Portuguese (pt)
++ Romanian (ro)
++ Russian (ru)
++ Swedish (sv)
++ Turkish (tr)
+
 
 Let's consider a JSON document that has a title and abstract field.
 

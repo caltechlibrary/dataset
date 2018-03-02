@@ -24,10 +24,10 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    cat JSON_DOCNAME | dataset create KEY
-    dataset -i JSON_DOCNAME create KEY
-    dataset create KEY JSON_VALUE
-    dataset create KEY JSON_FILENAME
+<pre><code>    cat JSON_DOCNAME | dataset COLLECTION_NAME create KEY
+    dataset -i JSON_DOCNAME COLLECTION_NAME create KEY
+    dataset COLLECTION_NAME create KEY JSON_VALUE
+    dataset COLLECTION_NAME create KEY JSON_FILENAME
 </code></pre>
 
 <h2>Description</h2>
@@ -39,12 +39,12 @@ standard in, a named file (with a &ldquo;.json&rdquo; file extension) or express
 
 <p>In the following four examples <em>jane-doe.json</em> is a file on the local file system
 contains JSON data containing the JSON_VALUE of <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code>.  The KEY we will
-create is <em>r1</em>.  The following are equivalent in resulting record.</p>
+create is <em>r1</em>. Collection is &ldquo;people.ds&rdquo;.  The following are equivalent in resulting record.</p>
 
-<pre><code class="language-shell">    cat jane-doe.json | dataset create r1
-    dataset -i blob.json create r1
-    dataset create r1 jane-doe.json
-    dataset create r1 '{&quot;name&quot;:&quot;Jane Doe&quot;}'
+<pre><code class="language-shell">    cat jane-doe.json | dataset people.ds create r1
+    dataset -i blob.json people.ds create r1
+    dataset people.ds create r1 jane-doe.json
+    dataset people.ds create r1 '{&quot;name&quot;:&quot;Jane Doe&quot;}'
 </code></pre>
 
 <p>Related topics: update, read, and delete</p>

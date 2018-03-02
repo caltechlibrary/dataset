@@ -4,8 +4,8 @@
 ## Syntax
 
 ```
-    dataset detach KEY
-    dataset detach KEY ATTACHMENT_NAME
+    dataset COLLECTION_NAME detach KEY
+    dataset COLLECTION_NAME detach KEY ATTACHMENT_NAME
 ```
 
 ## Description
@@ -15,16 +15,16 @@ the matching KEY
 
 ## Usage
 
-Write out all the attached files for k1
+Write out all the attached files for k1 in collection named "publications.ds"
 
 ```shell
-    dataset detach k1
+    dataset publications.ds detach k1
 ```
 
 Write out only the *stats.xlsx* file attached to k1
 
 ```shell
-    dataset detach k1 stats.xlsx
+    dataset publications.ds detach k1 stats.xlsx
 ```
 
 Related topics: attach, attachments, and prune

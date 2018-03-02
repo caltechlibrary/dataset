@@ -24,7 +24,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset init COLLECT_NAME
+<pre><code>    dataset COLLECT_NAME init
 </code></pre>
 
 <h2>Description</h2>
@@ -45,14 +45,30 @@ Cloud Storage. In the case of S3 and Google Cloud Storage the buckets exist and
 are named &ldquo;stuff.example.org&rdquo;. Also for both remote storage options it is assumed
 you&rsquo;ve authenticated and have your environment setup correctly.</p>
 
-<pre><code>    dataset init data
-    dataset init s3://stuff.example.org/data
-    dataset init gs://stuff.example.org/data
+<pre><code>    dataset data init
+    dataset s3://stuff.example.org/data init
+    dataset gs://stuff.example.org/data init
 </code></pre>
 
 <p>NOTE: After each envocation of <code>dataset init</code> if all went well you will be
-shown an <code>export DATASET=...</code> line. This cut and pasted into your shell
-to save using the <code>-c</code> option explicitly indicating which dataset to operate on.</p>
+shown an <code>OK</code>. If you want to save typing you can set the environment variable
+DATASET.  For our examples above that would look like</p>
+
+<pre><code>    dataset data init
+    export DATASET=&quot;data&quot;
+</code></pre>
+
+<p>or for the Amazon S3 example</p>
+
+<pre><code>    dataset s3://stuff.example.org/data init
+    export DATASET=&quot;s3://stuff.example.org/data&quot;
+</code></pre>
+
+<p>or for the Google storage example</p>
+
+<pre><code>    dataset gs://stuff.example.org/data init
+    export DATASET=&quot;gs://stuff.example.org/data&quot;
+</code></pre>
 
 <h3>S3 environment example</h3>
 

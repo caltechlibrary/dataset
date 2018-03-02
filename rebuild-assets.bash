@@ -15,6 +15,7 @@ fi
 function buildHelp() {
     PROG="$1"
     pkgassets -o "cmd/${PROG}/assets.go" -p main \
+        -exclude="nav.md:topics.md" \
         -ext=".md" -strip-prefix="/" -strip-suffix=".md" \
         Examples "examples/${PROG}" \
         Help "docs/${PROG}"
@@ -24,9 +25,6 @@ function buildHelp() {
 # build Help assets 
 buildHelp dataset
 buildHelp dsws
-## FIXME: Will be depreciated in the future
-buildHelp dsindexer
-buildHelp dsfind
 
 # build Template assets
 pkgassets -o cmd/dsws/templates.go -p main Defaults defaults

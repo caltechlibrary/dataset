@@ -24,7 +24,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset update KEY
+<pre><code>    dataset COLLECTION_NAME update KEY
 </code></pre>
 
 <h2>Description</h2>
@@ -40,12 +40,13 @@ when you use update.</p>
 contains <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code> and the KEY is &ldquo;jane.doe&rdquo;. In the first
 one we specify the full JSON document via the command line after the KEY.
 In the second example we read the data from <em>jane-doe.json</em>. Finally in the last we
-read the JSON document from standard input and save the update to &ldquo;jane.doe&rdquo;.</p>
+read the JSON document from standard input and save the update to &ldquo;jane.doe&rdquo;.
+The collection name is &ldquo;people.ds&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset update jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'
-    dataset update jane.doe jane-doe.json
-    dataset -i jane-doe.json update jane.doe
-    cat jane-doe.json | dataset update jane.doe
+<pre><code class="language-shell">    dataset people.ds update jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'
+    dataset people.ds update jane.doe jane-doe.json
+    dataset -i jane-doe.json people.ds update jane.doe
+    cat jane-doe.json | dataset people.ds update jane.doe
 </code></pre>
 
 </section>

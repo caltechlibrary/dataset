@@ -53,35 +53,34 @@ Common operations using the *dataset* command line tool
 
 ```shell
     # Create a collection "mystuff" inside the directory called demo
-    dataset init demo/mystuff
-    # if successful an expression to export the collection name is show
-    export DATASET=demo/mystuff
+    dataset mystuff.ds init
+    # If successful then you should see an OK or an error message
 
     # Create a JSON document 
-    dataset create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
+    dataset mystuff.ds create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
     # If successful then you should see an OK or an error message
 
     # Read a JSON document
-    dataset read freda.json
+    dataset mystuff.ds read freda.json
 
     # Path to JSON document
-    dataset path freda.json
+    dataset mystuff.ds path freda.json
 
     # Update a JSON document
-    dataset update freda.json '{"name":"freda","email":"freda@zbs.example.org"}'
+    dataset mystuff.ds update freda.json '{"name":"freda","email":"freda@zbs.example.org"}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    dataset keys
+    dataset mystuff.ds keys
 
     # Delete a JSON document
-    dataset delete freda.json
+    dataset mystuff.ds delete freda.json
 
     # Import CSV file as JSON documents using column 1 as JSON document name
     # (if no column given the row number will be used for the JSON document name)
-    dataset import my-data.csv 1
+    dataset mystuff.ds import my-data.csv 1
 
     # To remove the collection just use the Unix shell command
-    # /bin/rm -fR demo/mystuff
+    # /bin/rm -fR mystuff.ds
 ```
 

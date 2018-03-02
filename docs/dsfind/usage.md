@@ -1,5 +1,0 @@
-
-# USAGE
-
-    dsfind [OPTIONS] [INDEX_LIST] QUERY_STRINGS
-

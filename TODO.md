@@ -6,7 +6,7 @@
 
 ## Next (prep for v0.1.0)
 
-+ [ ] change dataset join update to dataset join append
++ [ ] Documentation updates
 + [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
     + Make key column required
 + [ ] In _dataset_ add `sync-gsheet` provide a mechanism to write (update the GSheet) to specific rows and columns based on a column as key and column mapping
@@ -71,6 +71,7 @@
 
 ## Completed
 
++ [x] change dataset join update to dataset join append
 + [x] Merge _dsfind_ and _dsindexer_ into _dataset_ command
 + [x] Normalize Create, Read, Update to have CreateJSON, ReadJSON, UpdateJSON counter parts for working with non-map[string]interface{} objects
 + [x] Create an experimental Python native module for dataset package

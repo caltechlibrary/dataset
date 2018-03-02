@@ -6,5 +6,4 @@
 + [getting-started-with-dataset](getting-started-with-dataset.html)
 + [operations](operations.html)
 + [samples](samples.html)
-+ [package](package.html)
 + [gsheet integration](gsheet-integration.html)

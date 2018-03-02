@@ -14,6 +14,8 @@ collection names. Returns "OK" if it is.
 
 ## Usage
 
+Collection names are "MyRecordCollection.ds" and "MyBookCollection.ds".
+
 ```
     dataset status MyRecordCollection.ds
     dataset status MyRecordCollection.ds MyBookCollection.ds

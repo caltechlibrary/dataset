@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset keys
+    dataset COLLECTION_NAME keys
 ```
 
 ## Description
@@ -24,9 +24,9 @@ keys sorted by descending `.family_name`, return only keys where the `.group` is
 `"alumni"` sorted by ascending `.family_name`.
 
 ```shell
-    dataset keys
-    dataset keys true '-.family_name'
-    dataset keys '(eq .group "alumni")' '+.family_name'
+    dataset COLLECTION_NAME keys
+    dataset COLLECTION_NAME keys true '-.family_name'
+    dataset COLLECTION_NAME keys '(eq .group "alumni")' '+.family_name'
 ```
 
 ## filter expressions
@@ -94,16 +94,17 @@ use the expression `-.family_name`.  By default we assume an ascending sort so i
 practice you can omit a leading "+".
 
 In this example we listing last names of "Smith" sorting by ascending given name.
+The collection name is "people.ds".
 
 ```
-    dataset keys '(eq "Smith" .family_name)' '.given_name'
+    dataset people.ds keys '(eq "Smith" .family_name)' '.given_name'
 ```
 
 In this example we list last anes of "Smith" sorted by descending given name.
 
 
 ```
-    dataset keys '(eq "Smith" .family_name)' '-.given_name'
+    dataset people.ds keys '(eq "Smith" .family_name)' '-.given_name'
 ```
 
 ## Getting a "sample" of keys

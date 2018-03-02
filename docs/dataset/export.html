@@ -24,7 +24,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
+<pre><code>    dataset COLLECTION_NAME export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
 </code></pre>
 
 <h2>Description</h2>
@@ -47,10 +47,11 @@ in the collection (see <code>dataset -help dotpath</code> for more explanation)<
 The following fields are being exported - ._id,.title, and .pubDate with the following headings &ndash;
 id, title and publication date.</p>
 
-<p>The example blow creates a CSV file then creates a Workbook with a sheet named &ldquo;Title List&rdquo;.</p>
+<p>The example blow creates a CSV file then creates a Workbook with a sheet named &ldquo;Title List&rdquo;. The
+collection is &ldquo;publications.ds&rdquo;.</p>
 
-<pre><code class="language-shell">	dataset export titles.csv true '._id,.title,.pubDate' 'id,title,publication date'
-	dataset -sheet 'Title List' export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
+<pre><code class="language-shell">	dataset publications.ds  export titles.csv true '._id,.title,.pubDate' 'id,title,publication date'
+	dataset -sheet 'Title List' publications.ds export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
 </code></pre>
 
 <p>Related topics: extract, import, import-gsheets, export-gsheets</p>

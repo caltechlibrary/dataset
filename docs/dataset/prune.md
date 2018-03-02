@@ -4,8 +4,8 @@
 ## Syntax
 
 ```
-    dataset prune KEY
-    dataset prune KEY ATTACHMENT_NAME
+    dataset COLLECTION_NAME prune KEY
+    dataset COLLECTION_NAME prune KEY ATTACHMENT_NAME
 ```
 
 ## Description
@@ -18,12 +18,12 @@ name is supplied then only the specific attachment is removed.
 
 In the following examples _r1_ is the KEY, *stats.xlsx* is the 
 attached file. In the first example only *stats.xlsx* is removed in
-the second all attachments are removed.
+the second all attachments are removed. Our collection name is "data.ds"
 
 
 ```shell
-    dataset prune k1 stats.xlsx
-    dataset prune k1
+    dataset data.ds prune k1 stats.xlsx
+    dataset data.ds prune k1
 ```
 
 Related topics: attach, detach, and attachments
