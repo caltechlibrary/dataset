@@ -87,8 +87,8 @@ var (
 		"init":          collectionInit,
 		"status":        collectionStatus,
 		"create":        createJSONDoc,
-		"read":          readJSONDocs,
-		"list":          listJSONDocs,
+		"read":          readJSONDoc,
+		"list":          listJSONDoc,
 		"update":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
@@ -180,33 +180,27 @@ func collectionStatus(params ...string) (string, error) {
 }
 
 // createJSONDoc adds a new JSON document to the collection
-func createJSONDoc(args ...string) (string, error) {
+func createJSONDoc(params ...string) (string, error) {
 	var (
-		name string
-		src  string
+		key       string
+		objectSrc string
+		src       []byte
+		err       error
 	)
-	switch {
-	case useUUID == true:
-		name = uuid.New().String()
-		if len(args) != 1 {
-			return "", fmt.Errorf("Expected a JSON blob")
-		}
-		src = args[0]
-	case len(args) == 2:
-		//FIXME: string spaces, URL Encode
-		name, src = args[0], args[1]
-	default:
-		return "", fmt.Errorf("Expected a document name and a JSON document")
+	if len(params) != 2 {
+		return "", fmt.Errorf("Expected a key and a JSON document")
 	}
+
+	key, objectSrc = params[0], params[1]
 
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
-	if len(name) == 0 {
-		return "", fmt.Errorf("Missing document name")
+	if len(key) == 0 {
+		return "", fmt.Errorf("Missing document key")
 	}
-	if len(src) == 0 {
-		return "", fmt.Errorf("Missing JSON document %s\n", name)
+	if len(objectSrc) == 0 {
+		return "", fmt.Errorf("Missing JSON document for %s\n", key)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -214,28 +208,37 @@ func createJSONDoc(args ...string) (string, error) {
 	}
 	defer collection.Close()
 
+	if strings.HasSuffix(objectSrc, ".json") {
+		src, err = ioutil.ReadFile(objectSrc)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		src = []byte(objectSrc)
+	}
+
 	m := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(src), &m); err != nil {
-		return "", fmt.Errorf("%s must be a valid JSON Object", name)
+	if err := json.Unmarshal(src, &m); err != nil {
+		return "", fmt.Errorf("%s must be a valid JSON Object", key)
 	}
 	if useUUID == true {
-		m["_uuid"] = name
+		m["_UUID"] = key
 	}
-	if overwrite == true && collection.HasKey(name) == true {
-		if err := collection.Update(name, m); err != nil {
+	if overwrite == true && collection.HasKey(key) == true {
+		if err := collection.Update(key, m); err != nil {
 			return "", err
 		}
 		return "OK", nil
 	}
-	if err := collection.Create(name, m); err != nil {
+	if err := collection.Create(key, m); err != nil {
 		return "", err
 	}
 	return "OK", nil
 }
 
-// readJSONDocs returns the JSON from a document in the collection, if more than one key is provided
+// readJSONDoc returns the JSON from a document in the collection, if more than one key is provided
 // it returns an array of JSON docs ordered by the keys provided
-func readJSONDocs(args ...string) (string, error) {
+func readJSONDoc(args ...string) (string, error) {
 	if len(args) < 1 {
 		return "", fmt.Errorf("Missing document name")
 	}
@@ -285,9 +288,9 @@ func readJSONDocs(args ...string) (string, error) {
 	return string(src), err
 }
 
-// listJSONDocs returns a JSON array from a document in the collection
+// listJSONDoc returns a JSON array from a document in the collection
 // if not matching records returns an empty list
-func listJSONDocs(args ...string) (string, error) {
+func listJSONDoc(args ...string) (string, error) {
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name")
 	}
@@ -318,30 +321,46 @@ func listJSONDocs(args ...string) (string, error) {
 }
 
 // updateJSONDoc replaces a JSON document in the collection
-func updateJSONDoc(args ...string) (string, error) {
-	if len(args) != 2 {
+func updateJSONDoc(params ...string) (string, error) {
+	var (
+		key       string
+		objectSrc string
+		src       []byte
+		err       error
+	)
+	if len(params) != 2 {
 		return "", fmt.Errorf("Expected document name and JSON blob")
 	}
-	name, src := args[0], []byte(args[1])
+	key, objectSrc = params[0], params[1]
+
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name, set DATASET in the environment variable or use -c option")
 	}
-	if len(name) == 0 {
-		return "", fmt.Errorf("Missing document name")
+	if len(key) == 0 {
+		return "", fmt.Errorf("Missing document key")
 	}
-	if len(src) == 0 {
-		return "", fmt.Errorf("Can't update, no JSON source found in %s", name)
+	if len(objectSrc) == 0 {
+		return "", fmt.Errorf("Can't update, no JSON source found for %s", key)
 	}
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
 	}
 	defer collection.Close()
+
+	if strings.HasSuffix(objectSrc, ".json") {
+		src, err = ioutil.ReadFile(objectSrc)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		src = []byte(objectSrc)
+	}
 	data := map[string]interface{}{}
 	if err := json.Unmarshal(src, &data); err != nil {
 		return "", err
 	}
-	if err := collection.Update(name, data); err != nil {
+	if err := collection.Update(key, data); err != nil {
 		return "", err
 	}
 	return "OK", nil
@@ -372,13 +391,18 @@ func deleteJSONDoc(args ...string) (string, error) {
 }
 
 // joinJSONDoc addes/copies fields from another JSON document into the one in the collection.
-func joinJSONDoc(args ...string) (string, error) {
-	if len(args) < 3 {
-		return "", fmt.Errorf("expected append or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(args, ", "))
+func joinJSONDoc(params ...string) (string, error) {
+	var (
+		src        []byte
+		err        error
+		adverb     string
+		key        string
+		objectSrcs []string
+	)
+	if len(params) < 3 {
+		return "", fmt.Errorf("expected append or overwrite, collection key, one or more JSON Objects, got %s", strings.Join(params, ", "))
 	}
-	action := strings.ToLower(args[0])
-	key := args[1]
-	objects_src := args[2:]
+	adverb, key, objectSrcs = strings.ToLower(params[0]), params[1], params[2:]
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
@@ -392,11 +416,20 @@ func joinJSONDoc(args ...string) (string, error) {
 	if err := collection.Read(key, outObject); err != nil {
 		return "", err
 	}
-	for _, src := range objects_src {
-		if err := json.Unmarshal([]byte(src), &newObject); err != nil {
+
+	for _, objectSrc := range objectSrcs {
+		if strings.HasSuffix(objectSrc, ".json") {
+			src, err = ioutil.ReadFile(objectSrc)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			src = []byte(objectSrc)
+		}
+		if err := json.Unmarshal(src, &newObject); err != nil {
 			return "", err
 		}
-		switch action {
+		switch adverb {
 		case "append":
 			for k, v := range newObject {
 				if _, ok := outObject[k]; ok != true {
@@ -408,7 +441,7 @@ func joinJSONDoc(args ...string) (string, error) {
 				outObject[k] = v
 			}
 		default:
-			return "", fmt.Errorf("Unknown join type %q", action)
+			return "", fmt.Errorf("Unknown join type %q", adverb)
 		}
 	}
 	if err := collection.Update(key, outObject); err != nil {
@@ -687,8 +720,8 @@ func importCSV(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s import CSV_FILENAME [COL_NUMBER_USED_FOR_ID]", os.Args[0])
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s import CSV_FILENAME COL_NUMBER_USED_FOR_ID", os.Args[0])
 	}
 	idCol := -1
 	csvFName := params[0]
@@ -727,8 +760,8 @@ func importGSheet(params ...string) (string, error) {
 		return "", err
 	}
 	defer collection.Close()
-	if len(params) < 3 {
-		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE [COL_NO_FOR_ID]", os.Args[0])
+	if len(params) < 4 {
+		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NUMBER_USED_FOR_ID", os.Args[0])
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
@@ -1270,6 +1303,11 @@ func main() {
 	defer cli.CloseFile(outputFName, out)
 
 	action, params := args[0], args[1:]
+	//NOTE: Special case of when -useUUID flag set when action is create we need to auto-generate the UUID as key
+	if action == "create" && useUUID {
+		uid := uuid.New().String()
+		params = append([]string{uid}, args[1:]...)
+	}
 
 	var data string
 	if inputFName != "" {

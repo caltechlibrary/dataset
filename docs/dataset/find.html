@@ -33,11 +33,22 @@
 It supports a [query string language]() similar to elastic search. Additionally <em>find</em> can render the results
 in various formats include plain text, JSON, and CSV.</p>
 
+<p><em>find</em> supports using multiple indexes. List the index names separated by colons.</p>
+
 <h2>Usage</h2>
+
+<p>Single index examples</p>
 
 <pre><code>    dataset find authors-title.bleve 'Robert Doiel'
     dataset find authors-title.bleve '+family:&quot;Doiel&quot; given:&quot;R&quot;'
     dataset find authors-title.bleve '+orcid:&quot;0000-0003-0900-6903&quot;'
+</code></pre>
+
+<p>Multi index examples (using authors-title.bleve and abstracts.bleve indexes)</p>
+
+<pre><code>    dataset find 'authors-title.bleve:abstracts.bleve' 'Robert Doiel'
+    dataset find 'authors-title.bleve:abstracts.bleve' '+family:&quot;Doiel&quot; given:&quot;R&quot;'
+    dataset find 'authors-title.bleve:abstracts.bleve' '+orcid:&quot;0000-0003-0900-6903&quot;'
 </code></pre>
 
 </section>

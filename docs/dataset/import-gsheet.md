@@ -6,7 +6,7 @@ This is place holder for documentation on import Google Sheets into a _dataset_ 
 ## Syntax
 
 ```
-    dataset import-gsheet SHEET_ID SHEET_NAME CELL_RANGE [COL_NO_FOR_ID]
+    dataset import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
 ```
 
 + SHEET_ID is the hash id Google assignes, it looks like a long string with numbers and letters in 
@@ -43,7 +43,7 @@ and placed it in *etc/client_secret.json*.
     export GOOGLE_CLIENT_SECRET_JSON="etc/client_secret.json"
     dataset init DemoStudentList
     export DATASET="DemoStudentList"
-    dataset import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A1:Z"
+    dataset import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A1:Z" 1
     dataset keys | while read KY; do dataset read "${KY}"; done
 ```
 
@@ -55,7 +55,7 @@ In this version we've not used the first row as field names in the JSON record. 
 it look different? What does "-use-header-row=false" mean? Why is the range different?
 
 ```shell
-    dataset -use-header-row=false import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A2:Z"
+    dataset -use-header-row=false import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A2:Z" 1
     dataset keys | while read KY; do dataset read "${KY}"; done
 ```
 

@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset delete JSON_RECORD_ID
+    dataset delete KEY
 ```
 
 ## Description

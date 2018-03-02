@@ -11,7 +11,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [export](dataset/export.html) JSON documents from a collection into a CSV file
 + [export-gsheet](dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
 + [keys](dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
-+ [haskeys](dataset/haskeys.html) returns true if key is found in collection, false otherwise
++ [haskey](dataset/haskey.html) returns true if key is found in collection, false otherwise
 + [count](dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
 + [extract](dataset/extract.html) unique JSON attribute values from a collection
 

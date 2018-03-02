@@ -15,5 +15,6 @@ Checks if a given key is in the a collection. Returns "true" if found, "false" o
 
 ```
     dataset haskey '0000-0003-0900-6903'
+    dataset haskey r1
 ```
 

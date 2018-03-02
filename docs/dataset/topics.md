@@ -14,7 +14,7 @@
 + [export-gsheet](export-gsheet.html)
 + [extract](extract.html)
 + [find](find.html)
-+ [haskeys](haskeys.html)
++ [haskey](haskey.html)
 + [import](import.html)
 + [import-gsheet](import-gsheet.html)
 + [indexer](indexer.html)

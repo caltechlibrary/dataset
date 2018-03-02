@@ -21,5 +21,5 @@ we use is "true". The author field is an array so our dotpath uses that notation
     dataset extract true .authors[:].orcid
 ```
 
-Related topics: export and import
+Related topics: dotpath, export and import
 

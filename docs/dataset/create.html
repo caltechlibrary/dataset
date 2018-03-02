@@ -24,24 +24,26 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    cat JSON_DOCNAME | dataset create JSON_RECORD_ID
-    dataset -i JSON_DOCNAME create JSON_RECORD_ID
-    dataset create JSON_RECORD_ID JSON_VALUE
+<pre><code>    cat JSON_DOCNAME | dataset create KEY
+    dataset -i JSON_DOCNAME create KEY
+    dataset create KEY JSON_VALUE
+    dataset create KEY JSON_FILENAME
 </code></pre>
 
 <h2>Description</h2>
 
 <p>create adds or replaces a JSON document to a collection. The JSON document can be read from a
-standard in, a named file or expressed on the command line.</p>
+standard in, a named file (with a &ldquo;.json&rdquo; file extension) or expressed literally on the command line.</p>
 
 <h2>Usage</h2>
 
-<p>In the following three examples <em>blob.json</em> is a file on the local file system
-contains JSON data containing the JSON_VALUE of <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code>.  The JSON_RECORD_ID we will
-create is <em>r1</em>.</p>
+<p>In the following four examples <em>jane-doe.json</em> is a file on the local file system
+contains JSON data containing the JSON_VALUE of <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code>.  The KEY we will
+create is <em>r1</em>.  The following are equivalent in resulting record.</p>
 
-<pre><code class="language-shell">    cat blob.json | dataset create r1
+<pre><code class="language-shell">    cat jane-doe.json | dataset create r1
     dataset -i blob.json create r1
+    dataset create r1 jane-doe.json
     dataset create r1 '{&quot;name&quot;:&quot;Jane Doe&quot;}'
 </code></pre>
 

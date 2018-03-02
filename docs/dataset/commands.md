@@ -18,7 +18,7 @@ the commands below --
   that match filter expression
     + [dotpath](dotpath.html) - reach into an object to return a value(s)
 + [keys](keys.html) - returns the keys to stdout, one key per line
-+ [haskey](haskeys.html) - returns true is key is in collection, false otherwise
++ [haskey](haskey.html) - returns true is key is in collection, false otherwise
 + [count](count.html) - returns a count of keys in a collection
 + [path](path.html) - given a document name return the full path to document
 + [attach](attach.html) - attaches a non-JSON content to a JSON record

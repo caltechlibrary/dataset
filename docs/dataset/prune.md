@@ -4,8 +4,8 @@
 ## Syntax
 
 ```
-    dataset prune JSON_RECORD_ID
-    dataset prune JSON_RECORD_ID ATTACHMENT_NAME
+    dataset prune KEY
+    dataset prune KEY ATTACHMENT_NAME
 ```
 
 ## Description
@@ -16,7 +16,7 @@ name is supplied then only the specific attachment is removed.
 
 ## Usage
 
-In the following examples _r1_ is the JSON_RECORD_ID, *stats.xlsx* is the 
+In the following examples _r1_ is the KEY, *stats.xlsx* is the 
 attached file. In the first example only *stats.xlsx* is removed in
 the second all attachments are removed.
 
