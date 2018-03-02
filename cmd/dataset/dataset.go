@@ -1283,15 +1283,21 @@ func main() {
 	}
 
 	// Application Option's processing
+	if len(args) == 0 {
+		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
+	}
 
 	// Merge environment
 	datasetEnv := os.Getenv("DATASET")
-	if datasetEnv != "" && collectionName == "" {
+	if datasetEnv != "" {
 		collectionName = datasetEnv
 	}
-
-	if len(args) == 0 {
-		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
+	// Look for *.ds in the args and use that.
+	if collectionName == "" {
+		if strings.HasSuffix(args[0], ".ds") {
+			collectionName = args[0]
+			args = args[1:]
+		}
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)
