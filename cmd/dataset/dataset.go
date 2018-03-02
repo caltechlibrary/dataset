@@ -89,7 +89,7 @@ var (
 		"create":        createJSONDoc,
 		"read":          readJSONDocs,
 		"list":          listJSONDocs,
-		"update":        updateJSONDoc,
+		"append":        updateJSONDoc,
 		"delete":        deleteJSONDoc,
 		"join":          joinJSONDoc,
 		"keys":          collectionKeys,
