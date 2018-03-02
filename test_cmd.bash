@@ -26,7 +26,6 @@ function assert_equal() {
 #
 # Tests
 #
-
 function test_dataset() {
 	if [ -f "test1.ds/collection.json" ]; then
 		rm -fR test1.ds
@@ -48,11 +47,13 @@ function test_dataset() {
 	fi
 
 	# Test init
-	EXPECTED='export DATASET=test1.ds'
+	EXPECTED="OK"
 	RESULT=$(bin/dataset init test1.ds)
 	assert_equal "init test1.ds" "$EXPECTED" "$RESULT"
 	assert_exists "collection create" "test1.ds"
 	assert_exists "collection created metadata" "test1.ds/collection.json"
+
+	# Set environment and then continue with tests
 	export DATASET="test1.ds"
 
 	# Test create
@@ -64,7 +65,7 @@ function test_dataset() {
 	echo '{"three":3}' >"testdata/test3.json"
 	RESULT=$(bin/dataset -i testdata/test3.json create 3)
 	assert_equal "create 3:" "$EXPECTED" "$RESULT"
-    echo '{"four":4}' >"testdata/test4.json"
+	echo '{"four":4}' >"testdata/test4.json"
 	RESULT=$(bin/dataset create 4 testdata/test4.json)
 	assert_equal "create 4:" "$EXPECTED" "$RESULT"
 
@@ -126,7 +127,7 @@ function test_gsheet() {
 	fi
 
 	echo "Test gsheet export support "
-    SHEET_NAME="Sheet1"
+	SHEET_NAME="Sheet1"
 	bin/dataset -nl=false -quiet -client-secret "${CLIENT_SECRET_JSON}" export-gsheet "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' true \
 		'.done,.key,.resolver,.subjects,.additional,.identifier_1,.description_1' \
 		'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
@@ -135,9 +136,9 @@ function test_gsheet() {
 		exit 1
 	fi
 
-    echo "Test gsheet import support "
+	echo "Test gsheet import support "
 	bin/dataset -nl=false -quiet -client-secret "${CLIENT_SECRET_JSON}" import-gsheet "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' 2
-	if [[ "$?" = "0" ]]; then
+	if [[ "$?" == "0" ]]; then
 		echo "Should NOT be able to import-gsheet over our existing collection without -overwrite"
 		exit 1
 	fi
@@ -148,33 +149,38 @@ function test_gsheet() {
 		exit 1
 	fi
 
-
 	echo "Test gsheet support successful"
 }
 
 function test_issue15() {
-	if [[ -d "test_issue15.ds" ]]; then
-		rm -fR test_issue15.ds
+    #unset DATASET
+	CNAME="test_issue15.ds"
+	if [[ -d "$CNAME" ]]; then
+		rm -fR $CNAME
 	fi
-	bin/dataset -nl=false -quiet init "test_issue15.ds"
-	bin/dataset -nl=false -quiet -c test_issue15.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
-	I=$(bin/dataset -nl=false -c test_issue15.ds count)
+	bin/dataset -nl=false -quiet init $CNAME
+	if [[ ! -d "$CNAME" ]]; then
+		echo "Should have created $CNAME"
+		exit 1
+	fi
+	bin/dataset -quiet -nl=false "$CNAME" create freda '{"name":"freda","email":"freda@inverness.example.org"}'
+	I="$(bin/dataset -nl=false "$CNAME" count)"
 	if [[ "$I" != "1" ]]; then
-		echo "Failed to add freda record test_issue15.ds"
+		echo "Failed to add freda record $CNAME"
 		exit 1
 	fi
-	K=$(bin/dataset -nl=false -c test_issue15.ds keys '(eq "freda" .name)')
+	K="$(bin/dataset -nl=false "$CNAME" keys '(eq "freda" .name)')"
 	if [[ "$K" != "freda" ]]; then
-		echo "Should have one key, freda, in test_issue15.ds"
+		echo "Should have one key, freda, in $CNAME"
 		exit 1
 	fi
-	V=$(bin/dataset -nl=false -c test_issue15.ds extract 'true' '.name')
+	V="$(bin/dataset -nl=false "$CNAME" extract 'true' '.name')"
 	if [[ "$V" != "freda" ]]; then
-		echo "Should extract one name, freda, in test_issue15.ds $V"
+		echo "Should extract one name, freda, in $CNAME $V"
 		exit 1
 	fi
 	echo "Test issue 15 fix OK"
-	rm -fR "test_issue15.ds"
+	rm -fR "$CNAME"
 }
 
 function test_issue19() {
@@ -189,7 +195,7 @@ function test_issue19() {
 	fi
 
 	# Now try creating the record again without -overwrite
-	bin/dataset  -nl=false -quiet -c test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
+	bin/dataset -nl=false -quiet -c test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
 	if [[ "$?" == "0" ]]; then
 		echo "Failed, should NOT be able to create the record when it exists in an empty collection without -overwrite"
 		exit 1
@@ -212,4 +218,3 @@ test_gsheet
 test_issue15
 test_issue19
 echo 'Success!'
-

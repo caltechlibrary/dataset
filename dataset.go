@@ -316,17 +316,17 @@ func keyAndFName(name string) (string, string) {
 }
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
-func (c *Collection) CreateJSON(name string, src []byte) error {
+func (c *Collection) CreateJSON(key string, src []byte) error {
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection is not valid, zero buckets")
 	}
 
 	// Enforce the _Key attribute is unique and does not exist in collection already
-	name = normalizeKeyName(name)
-	keyName, FName := keyAndFName(name)
+	key = normalizeKeyName(key)
+	keyName, FName := keyAndFName(key)
 	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
-		return fmt.Errorf("%s already exists in collection", name)
+		return fmt.Errorf("%s already exists in collection %s", key, c.Name)
 	}
 
 	// Make sure we have an "object" not an array object in JSON notation

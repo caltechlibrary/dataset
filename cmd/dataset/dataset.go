@@ -186,7 +186,7 @@ func createJSONDoc(params ...string) (string, error) {
 		err       error
 	)
 	if len(params) != 2 {
-		return "", fmt.Errorf("Expected a key and a JSON document")
+		return "", fmt.Errorf("Expected a key and a JSON document %q", strings.Join(params, " "))
 	}
 
 	key, objectSrc = params[0], params[1]
@@ -1288,16 +1288,13 @@ func main() {
 	// Merge environment
 	datasetEnv := os.Getenv("DATASET")
 	if datasetEnv != "" {
-		collectionName = datasetEnv
+		collectionName = strings.TrimSpace(datasetEnv)
 	}
-	// Look for *.ds in the args and use that.
-	if collectionName == "" {
-		// Trival check
-		if strings.HasSuffix(args[0], ".ds") || strings.HasSuffix(args[0], ".dataset") || strings.HasPrefix(args[0], "gs://") || strings.HasPrefix(args[0], "s3://") {
-			collectionName = args[0]
-			args = args[1:]
-		}
-		// FIXME: We could check to see if args[0] is a directory containing a collection.json for certain.
+
+	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
+	if strings.HasSuffix(args[0], ".ds") || strings.HasSuffix(args[0], ".dataset") || strings.HasPrefix(args[0], "gs://") || strings.HasPrefix(args[0], "s3://") {
+		collectionName = args[0]
+		args = args[1:]
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)
@@ -1332,7 +1329,7 @@ func main() {
 
 	fn, ok := voc[action]
 	if ok == false {
-		cli.ExitOnError(os.Stderr, fmt.Errorf("do not understand %s", action), quiet)
+		cli.ExitOnError(os.Stderr, fmt.Errorf("do not understand %s for %q", action, strings.Join(os.Args, " ")), quiet)
 	}
 
 	if (action == "create" || action == "update" || action == "join") && len(data) > 0 {
