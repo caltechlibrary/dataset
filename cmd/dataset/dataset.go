@@ -1310,7 +1310,17 @@ func main() {
 	cli.ExitOnError(os.Stderr, err, quiet)
 	defer cli.CloseFile(outputFName, out)
 
-	action, params := args[0], args[1:]
+	var (
+		action string
+		params []string
+	)
+	if len(args) > 1 {
+		action, params = args[0], args[1:]
+	} else if len(args) == 1 {
+		action = args[0]
+		params = []string{}
+	}
+
 	// NOTE: Special case of when -useUUID flag set when action is create, import or
 	// import-gsheet, we need to auto-generate the UUID as key and add to our args
 	// appropriately
