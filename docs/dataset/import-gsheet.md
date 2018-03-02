@@ -6,9 +6,10 @@ This is place holder for documentation on import Google Sheets into a _dataset_ 
 ## Syntax
 
 ```
-    dataset import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
+    dataset COLLECTION_NAME import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
 ```
 
++ COLLECTION_NAME is the collection we are going to import into
 + SHEET_ID is the hash id Google assignes, it looks like a long string with numbers and letters in 
   the URL when you edit your sheet
 + SHEET_NAME is a string name of the sheet. The default name is usually "Sheet1" it is seen at the 
@@ -37,14 +38,13 @@ way you can re-import the sheet's data into your collection and replacing the st
 In this example we're using the example Google Sheet from the Golang Google Sheets API v4 
 Quickstart. You'll first need to have created a *client_secret.json* file as described in
 the Step 1 of the [Google Cloud SDK docs](https://developers.google.com/sheets/api/quickstart/go)
-and placed it in *etc/client_secret.json*. 
+and placed it in *etc/client_secret.json*.  Our collection name is "DemoStudentList.ds".
 
 ```shell
     export GOOGLE_CLIENT_SECRET_JSON="etc/client_secret.json"
-    dataset init DemoStudentList
-    export DATASET="DemoStudentList"
-    dataset import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A1:Z" 1
-    dataset keys | while read KY; do dataset read "${KY}"; done
+    dataset DemoStudentList.ds init
+    dataset DemoStudentList.ds import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A1:Z" 1
+    dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read "${KY}"; done
 ```
 
 In this example we've used the row number as the ID for the JSON document created. This isn't
@@ -55,7 +55,7 @@ In this version we've not used the first row as field names in the JSON record. 
 it look different? What does "-use-header-row=false" mean? Why is the range different?
 
 ```shell
-    dataset -use-header-row=false import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A2:Z" 1
-    dataset keys | while read KY; do dataset read "${KY}"; done
+    dataset -use-header-row=false DemoStudentList.ds import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A2:Z" 1
+    dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read "${KY}"; done
 ```
 

@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
+    dataset COLLECTION_NAME export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
 ```
 
 ## Description
@@ -39,10 +39,10 @@ in the collection (see `dataset -help dotpath` for more explanation)
 
 In the following examples we will "filter" for all records in a collection so we use the string "true". 
 The following fields are being exported - .name and .contact with the following headings --
-Name, Contact.
+Name, Contact. Collection name is "people.ds".
 
 ```shell
-	dataset export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
+	dataset people.ds export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
 ```
 
 Related topics: extract, import, import-gsheet

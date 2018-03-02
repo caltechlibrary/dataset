@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset [OPTIONS] indexer INDEX_NAME INDEX_MAP_FILENAME
+    dataset [OPTIONS] COLLECTION_NAME indexer INDEX_NAME INDEX_MAP_FILENAME
 ```
 
 ## Description
@@ -20,7 +20,9 @@ Index names should end in `.bleve` and the INDEX_MAP_FILE is a JSON file organiz
 
 ## Usage
 
+Our collection name in this example is "publications.ds"
+
 ```
-    dataset indexer author-title.bleve author-title.json
+    dataset publications.ds indexer author-title.bleve author-title.json
 ```
 

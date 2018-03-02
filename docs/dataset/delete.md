@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset delete KEY
+    dataset COLLECTION_NAME delete KEY
 ```
 
 ## Description
@@ -15,10 +15,10 @@
 ## Usage
 
 This usage example will delete the JSON document withe the key _r1_ in 
-the currently active collection.
+the collection named "publications.ds".
 
 ```shell
-    dataset delete r1
+    dataset publications.ds delete r1
 ```
 
 Related topics: create, read, and update

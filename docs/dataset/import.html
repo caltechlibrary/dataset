@@ -24,7 +24,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset import TABLE_FILENAME COLUMN_NO_AS_KEY
+<pre><code>    dataset COLLECTION_NAME import TABLE_FILENAME COLUMN_NO_AS_KEY
 </code></pre>
 
 <h2>Description</h2>
@@ -51,10 +51,12 @@ In the third version we&rsquo;re importing all the rows of <em>data.xlsx</em> us
 the KEY. In the final example we&rsquo;re only adding new records from <em>data.xlsx</em>
 workbook sheet named &ldquo;Title List&rdquo; where the KEY is taken from column 1.</p>
 
-<pre><code class="language-shell">    dataset import data.csv
-    dataset import data.csv 1
-    dataset -sheet &quot;Title List&quot; import data.xlsx 1
-    dataset -sheet &quot;Title List&quot; -update-only import data.xlsx 1
+<p>Our collection is named &ldquo;Data.ds&rdquo;.</p>
+
+<pre><code class="language-shell">    dataset Data.ds import data.csv
+    dataset Data.ds import data.csv 1
+    dataset -sheet &quot;Title List&quot; Data.ds import data.xlsx 1
+    dataset -sheet &quot;Title List&quot; -update-only Data.ds import data.xlsx 1
 </code></pre>
 
 <p>By default the header row of the table (the first row of the table) is used as the

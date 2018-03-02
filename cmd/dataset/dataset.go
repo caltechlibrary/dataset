@@ -1166,6 +1166,11 @@ func find(params ...string) (string, error) {
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
+	// We require an "ACTION" or verb for command to work.
+	app.ActionsRequired = true
+
+	// Add command line parameters.
+	app.AddParams("COLLECTION_NAME")
 
 	// Add Help Docs
 	for k, v := range Help {

@@ -4,7 +4,7 @@
 ## Syntax 
 
 ```
-    dataset attach KEY FILENAME(S)
+    dataset COLLECTION_NAME attach KEY FILENAME(S)
 ```
 
 ## Description
@@ -14,10 +14,11 @@ related to the JSON record key.
 
 ## Usage
 
-Attaching a file named *start.xlsx* to the JSON record with id _t1_
+Attaching a file named *start.xlsx* to the JSON record with id _t1_ in 
+collection "stats.ds"
 
 ```shell
-    dataset attach t1 start.xlsx
+    dataset stats.ds attach t1 start.xlsx
 ```
 
 Related topics: attachments, detach and prune

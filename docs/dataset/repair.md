@@ -14,6 +14,8 @@ where things are to be found.
 
 ## Usage
 
+Our collection name is "MyCollectiond.ds".
+
 ```
    dataset repair MyCollection.ds
 ```

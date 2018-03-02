@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset read KEY
+    dataset COLLECTION_NAME read KEY
 ```
 
 ## Description
@@ -14,10 +14,10 @@ for the given KEY.
 
 ## Usage
 
-An example we're assuming there is a JSON document with a KEY of "r1".
+An example we're assuming there is a JSON document with a KEY of "r1". Our collection name is "data.ds"
 
 ```shell
-    dataset read r1
+    dataset data.ds read r1
 ```
 
 

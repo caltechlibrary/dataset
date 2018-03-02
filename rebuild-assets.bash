@@ -15,6 +15,7 @@ fi
 function buildHelp() {
     PROG="$1"
     pkgassets -o "cmd/${PROG}/assets.go" -p main \
+        -exclude="nav.md:topics.md" \
         -ext=".md" -strip-prefix="/" -strip-suffix=".md" \
         Examples "examples/${PROG}" \
         Help "docs/${PROG}"

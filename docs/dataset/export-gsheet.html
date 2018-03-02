@@ -24,7 +24,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
+<pre><code>    dataset COLLECTION_NAME export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
 </code></pre>
 
 <h2>Description</h2>
@@ -57,9 +57,9 @@ in the collection (see <code>dataset -help dotpath</code> for more explanation)<
 
 <p>In the following examples we will &ldquo;filter&rdquo; for all records in a collection so we use the string &ldquo;true&rdquo;.
 The following fields are being exported - .name and .contact with the following headings &ndash;
-Name, Contact.</p>
+Name, Contact. Collection name is &ldquo;people.ds&rdquo;.</p>
 
-<pre><code class="language-shell">	dataset export-gsheet &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; Sheet1 &quot;A1:Z&quot; true '.name,.contact' 'Name,Contact'
+<pre><code class="language-shell">	dataset people.ds export-gsheet &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; Sheet1 &quot;A1:Z&quot; true '.name,.contact' 'Name,Contact'
 </code></pre>
 
 <p>Related topics: extract, import, import-gsheet</p>

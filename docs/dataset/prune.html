@@ -24,8 +24,8 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset prune KEY
-    dataset prune KEY ATTACHMENT_NAME
+<pre><code>    dataset COLLECTION_NAME prune KEY
+    dataset COLLECTION_NAME prune KEY ATTACHMENT_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -38,10 +38,10 @@ name is supplied then only the specific attachment is removed.</p>
 
 <p>In the following examples <em>r1</em> is the KEY, <em>stats.xlsx</em> is the
 attached file. In the first example only <em>stats.xlsx</em> is removed in
-the second all attachments are removed.</p>
+the second all attachments are removed. Our collection name is &ldquo;data.ds&rdquo;</p>
 
-<pre><code class="language-shell">    dataset prune k1 stats.xlsx
-    dataset prune k1
+<pre><code class="language-shell">    dataset data.ds prune k1 stats.xlsx
+    dataset data.ds prune k1
 </code></pre>
 
 <p>Related topics: attach, detach, and attachments</p>

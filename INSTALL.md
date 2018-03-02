@@ -31,7 +31,7 @@ For all the released version go to the project page on Github and click latest r
 
 + Find the Zip file listed matching the architecture you're running and download it
     + (e.g. if you're on a Windows 10 laptop/Surface with a amd64 style CPU you'd choose the Zip file with "windows-amd64" in the name).
-+ Download the zip file and unzip the file.  
++ Download the zip file and unzip the file.
 + Copy the contents of the folder named "bin" to a folder that is in your path 
     + (e.g. "$HOME/bin" is common).
 + Adjust your PATH if needed
@@ -142,5 +142,5 @@ Or clone the repstory and then compile
     make install
 ```
 
-Compilation assumes [go](https://github.com/golang/go) v1.9.3 and [bleve](https://blevesearh.com) v0.6.0.
+Compilation assumes [go](https://github.com/golang/go) v1.10 and [bleve](https://blevesearh.com) v0.6.0.
 

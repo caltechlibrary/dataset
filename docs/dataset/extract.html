@@ -24,20 +24,21 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset extract FILTER DOTPATH
+<pre><code>    dataset COLLECTION_NAME extract FILTER DOTPATH
 </code></pre>
 
 <h2>Description</h2>
 
 <p>extract returns a list of unique values across documents in a collection based on the FILTER and
-DOTPATH provided (for DOTPATH see <code>dataset -help dotpath</code> and FITLER see `dataset -help filter).</p>
+DOTPATH provided (for DOTPATH see <code>dataset -help dotpath</code> and FITLER see <code>dataset -help filter</code>).</p>
 
 <h2>Usage</h2>
 
 <p>In this example we&rsquo;re turning a list of unique author orcid ids across the collection. The filter
-we use is &ldquo;true&rdquo;. The author field is an array so our dotpath uses that notation.</p>
+we use is &ldquo;true&rdquo;. The author field is an array so our dotpath uses that notation. Collection name
+is &ldquo;publications.ds&rdquo;</p>
 
-<pre><code class="language-shell">    dataset extract true .authors[:].orcid
+<pre><code class="language-shell">    dataset publications.ds extract true .authors[:].orcid
 </code></pre>
 
 <p>Related topics: dotpath, export and import</p>

@@ -4,10 +4,10 @@
 ## Syntax
 
 ```
-    dataset join JOIN_TYPE KEY JSON_EXPRESSION
-    dataset join JOIN_TYPE KEY JSON_FILENAME
-    dataset -i JSON_DOCUMENT_NAME join JOIN_TYPE KEY
-    cat JSON_DOCUMENT_NAME | dataset join JOIN_TYPE KEY
+    dataset COLLECTION_NAME join JOIN_TYPE KEY JSON_EXPRESSION
+    dataset COLLECTION_NAME join JOIN_TYPE KEY JSON_FILENAME
+    dataset -i JSON_DOCUMENT_NAME COLLECTION_NAME join JOIN_TYPE KEY
+    cat JSON_DOCUMENT_NAME | dataset COLLECTION_NAME join JOIN_TYPE KEY
 ```
 
 ## Description
@@ -35,10 +35,10 @@ You also have an external JSON document called profile.json. It looks like
 ```
 
 You can merge the unique fields in profile.json with your existing jane.doe record
-(where the existing record id is "jane.doe").
+(where the existing record id is "jane.doe"). The collection is "people.ds"
 
 ```shell
-    dataset join append jane.doe profile.json
+    dataset people.ds join append jane.doe profile.json
 ```
 
 The result would look like
@@ -50,7 +50,7 @@ The result would look like
 If you wanted to overwrite the common fields you would use 'join overwrite'
 
 ```shell
-    dataset join overwrite jane.doe profile.json
+    dataset people.ds join overwrite jane.doe profile.json
 ```
 
 Which would result in a record like

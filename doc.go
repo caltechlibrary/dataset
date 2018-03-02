@@ -99,10 +99,10 @@ Common operations using the *dataset* command line tool
 
 Example Bash script usage
 
-    # Create a collection "mystuff" inside the directory called demo
-    dataset init demo/mystuff
+    # Create a collection "mystuff.ds" inside the directory called demo
+    dataset init mystuff.ds
     # if successful an expression to export the collection name is show
-    export DATASET=demo/mystuff
+    export DATASET="mystuff.ds"
 
     # Create a JSON document
     dataset create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
@@ -125,7 +125,7 @@ Example Bash script usage
     dataset delete freda.json
 
     # To remove the collection just use the Unix shell command
-    # /bin/rm -fR demo/mystuff
+    # /bin/rm -fR mystuff.ds
 
 Common operations shown in Golang
 
@@ -138,7 +138,7 @@ Common operations shown in Golang
 Example Go code
 
     // Create a collection "mystuff" inside the directory called demo
-    collection, err := dataset.InitCollection("demo/mystuff")
+    collection, err := dataset.InitCollection("mystuff.ds")
     if err != nil {
         log.Fatalf("%s", err)
     }

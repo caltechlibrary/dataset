@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset count [FILTER EXPRESSION]
+    dataset COLLECTION_NAME count [FILTER EXPRESSION]
 ```
 
 ## Description
@@ -16,15 +16,15 @@ filter expression provided.
 
 ## Usage
 
-Count all records
+Count all records in collection "publications.ds"
 
 ```shell
-    dataset count
+    dataset "publications.ds" count
 ```
 
 Count records where the `.published` field is true.
 
 ```shell
-    dataset count '(eq .published true)'
+    dataset "publications.ds" count '(eq .published true)'
 ```
 

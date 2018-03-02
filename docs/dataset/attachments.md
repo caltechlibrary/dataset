@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset attachments KEY
+    dataset COLLECTION_NAME attachments KEY
 ```
 
 ## Description
@@ -14,10 +14,10 @@ in the collection.
 
 ## Usage
 
-List all the attachments for _k1_.
+List all the attachments for _k1_ in collection "stats.ds".
 
 ```shell
-    dataset attachments k1
+    dataset stats.ds attachments k1
 ```
 
 Related topics: attach, detach and prune

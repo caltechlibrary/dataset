@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
+    dataset COLLECTION_NAME export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
 ```
 
 ## Description
@@ -27,12 +27,12 @@ In the following examples we will "filter" for all records in a collection so we
 The following fields are being exported - ._id,.title, and .pubDate with the following headings --
 id, title and publication date. 
 
-The example blow creates a CSV file then creates a Workbook with a sheet named "Title List".
-
+The example blow creates a CSV file then creates a Workbook with a sheet named "Title List". The
+collection is "publications.ds".
 
 ```shell
-	dataset export titles.csv true '._id,.title,.pubDate' 'id,title,publication date'
-	dataset -sheet 'Title List' export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
+	dataset publications.ds  export titles.csv true '._id,.title,.pubDate' 'id,title,publication date'
+	dataset -sheet 'Title List' publications.ds export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
 ```
 
 Related topics: extract, import, import-gsheets, export-gsheets
