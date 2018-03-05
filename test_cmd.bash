@@ -637,17 +637,17 @@ EOT
         exit 1
     fi
 
-    bin/dataset pubs.ds "import-csv" in.csv 1
+    bin/dataset -quiet -nl=false pubs.ds "import-csv" in.csv 1
     if [[ "$?" != "0" ]]; then
         echo 'test_import_export: (failed) pubs.ds import-csv in.csv 1'
         exit 1
     fi
-    bin/dataset pubs.ds keys
+    bin/dataset -quiet -nl=false pubs.ds keys
     if [[ "$?" != "0" ]]; then
         echo 'test_import_export: (failed) pubs.ds keys'
         exit 1
     fi
-    bin/dataset pubs.ds "export-csv" "out.csv" "true" '._Key,.title,.type,.date_type,.date' 'EPrint ID,Title,Type, Date Type,Date'
+    bin/dataset -quiet -nl=false pubs.ds "export-csv" "out.csv" "true" '._Key,.title,.type,.date_type,.date' 'EPrint ID,Title,Type, Date Type,Date'
     if [[ "$?" != "0" ]]; then
         echo 'test_import_export: (failed) pubs.ds export-csv out.csv true "._Key,.title,.type,.date_type,.date" "EPrint ID,Title,Type,Date Type,Date"'
         exit 1
