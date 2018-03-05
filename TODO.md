@@ -29,6 +29,7 @@
 
 ## Someday, Maybe
 
++ [ ] rename py directory to py-module to mimic R-package relationship
 + [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] In _dsws_ Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
