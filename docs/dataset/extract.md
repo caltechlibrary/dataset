@@ -22,5 +22,5 @@ is "publications.ds"
     dataset publications.ds extract true .authors[:].orcid
 ```
 
-Related topics: dotpath, export and import
+Related topics: dotpath, export-csv and import-csv
 

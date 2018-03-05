@@ -20,26 +20,22 @@
 </nav>
 
 <section>
-<h1>export</h1>
+<h1>export-csv</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME export OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
+<pre><code>    dataset COLLECTION_NAME export-csv OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
 </code></pre>
 
 <h2>Description</h2>
 
-<p>export will render the contents of a collection as a tabular file. Supported tabular formats include
-CSV and xlsx. Format is determined by file suffix (e.g. .csv for CSV format, .xlsx for
-workbook format).</p>
+<p><em>export-csv</em> will render the contents of a collection as a CSV file.</p>
 
 <p>FILTER_EXPR is an expression that evaluates to <em>true</em> or <em>false</em> based on Golang template expressions
 (see <code>dataset -help filter</code> for more explanation).</p>
 
-<p>FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. .id,.title,.pubDate) in the JSON documents
-in the collection (see <code>dataset -help dotpath</code> for more explanation)</p>
-
-<p>Note for workbooks you can set the sheet name with the option &ldquo;-sheet&rdquo;.</p>
+<p>FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. .id,.title,.pubDate) in the collection&rsquo;s JSON documents.
+(see <code>dataset -help dotpath</code> for more explanation of dotpaths)</p>
 
 <h2>Usage</h2>
 
@@ -47,14 +43,13 @@ in the collection (see <code>dataset -help dotpath</code> for more explanation)<
 The following fields are being exported - ._id,.title, and .pubDate with the following headings &ndash;
 id, title and publication date.</p>
 
-<p>The example blow creates a CSV file then creates a Workbook with a sheet named &ldquo;Title List&rdquo;. The
+<p>The example blow creates a CSV file named &lsquo;output.csv&rsquo;. The
 collection is &ldquo;publications.ds&rdquo;.</p>
 
-<pre><code class="language-shell">	dataset publications.ds  export titles.csv true '._id,.title,.pubDate' 'id,title,publication date'
-	dataset -sheet 'Title List' publications.ds export titles.xlsx true '._id,.title,.pubDate' 'id,title,publication date'
+<pre><code class="language-shell">	dataset publications.ds export-csv titles.csv true '._id,.title,.pubDate' 'id,title,publication date' &gt; output.csv
 </code></pre>
 
-<p>Related topics: extract, import, import-gsheets, export-gsheets</p>
+<p>Related topics: extract, import-csv, import-gsheets, export-gsheets</p>
 
 </section>
 
