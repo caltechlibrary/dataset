@@ -45,5 +45,5 @@ Name, Contact. Collection name is "people.ds".
 	dataset people.ds export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
 ```
 
-Related topics: extract, import, import-gsheet
+Related topics: extract, import-csv, export-csv, import-gsheet
 

@@ -43,51 +43,43 @@ you have a large number of simple structures.</p>
 <p>Save this file as <em>characters.csv</em>. To import this let&rsquo;s create a collection
 named <em>characters</em>.</p>
 
-<pre><code class="language-shell">    dataset init characters-v1
+<pre><code class="language-shell">    dataset characters-v1.ds init
 </code></pre>
 
 <p>Now we can populate our characters collection by importing <em>characters.csv</em>.
 Then look at the keys.</p>
 
-<pre><code class="language-shell">    dataset import characters.csv
-    dataset list keys
+<pre><code class="language-shell">    dataset characters-v1.ds import characters.csv 2
+    dataset characeter-v1.ds keys
 </code></pre>
 
-<p>Notice the assigned ids.</p>
+<p>Notice the assigned ids. We used the second column, the one with th email heading
+to be our keys.</p>
 
-<pre><code>    characters.csv_7
-    characters.csv_2
-    characters.csv_3
-    characters.csv_4
-    characters.csv_5
-    characters.csv_6
+<pre><code>    ralph.rolf@zbs.example.org
+    zowie@zbs.example.org
+    captain.jack@zbs.example.org
+    little.frieda@zbs.example.org
+    mojo.sam@zbs.example.org
+    old.art@zbs.example.org
 </code></pre>
 
-<p>The default ids are formed by combining the filename with the row number. By default the first
-row is treated as the property names in the JSON document. Now take a look one of the rows
-that now are JSON documents.</p>
-
-<pre><code class="language-shell">    dataset list keys | while read ID; do dataset read &quot;${ID}&quot;; done
+<pre><code class="language-shell">    dataset characters-v1.ds keys | while read ID; do dataset characters-v1.ds read &quot;${ID}&quot;; done
 </code></pre>
 
-<p>Now let&rsquo;s make a new version of our characters collection but this time we&rsquo;ll column two (the email column)
+<p>In out next example we will use the  environment variable DATASET to save us some typing.
+Now let&rsquo;s make a new version of our characters collection but this time we&rsquo;ll column one (the name column)
 as the key.</p>
 
-<pre><code class="language-shell">    dataset init characters-v2
-    export DATASET=characters-v2
-    dataset import characters.csv 2
-    dataset list keys
+<pre><code class="language-shell">    dataset init characters-v2.ds
+    export DATASET=&quot;characters-v2.ds&quot;
+    dataset import characters.csv 1
+    dataset keys
 </code></pre>
 
 <p>Now our keys look a little different.</p>
 
-<pre><code>    ralph.rolf@zbs.example.org
-    mojo.sam@zbs.example.org
-    little.frieda@zbs.example.org
-    old.art@zbs.example.org
-    captain.jack@zbs.example.org
-    zowie@zbs.example.org
-</code></pre>
+<pre><code></code></pre>
 
 <p>Reading the records back we see we have the JSON same document structure.</p>
 

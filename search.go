@@ -330,7 +330,7 @@ func (c *Collection) Indexer(idxName string, idxMapName string, keys []string, b
 }
 
 // Deindexer deletes the keys from an index. Returns an error if a problem occurs.
-func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) error {
+func Deindexer(idxName string, keys []string, batchSize int) error {
 	var (
 		idx bleve.Index
 		err error
@@ -387,6 +387,11 @@ func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) err
 	}
 	log.Printf("%d/%d records de-indexed, running time %s", cnt, tot, time.Now().Sub(startT))
 	return idx.Close()
+}
+
+// Deindexer removes items from an index on a collection.
+func (c *Collection) Deindexer(idxName string, keys []string, batchSize int) error {
+	return Deindexer(idxName, keys, batchSize)
 }
 
 type IndexList struct {

@@ -20,28 +20,33 @@
 </nav>
 
 <section>
-<h1>extract</h1>
+<h1>import-csv</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME extract FILTER DOTPATH
+<pre><code>    dataset COLLECTION_NAME import-csv CSV_FILENAME COLUMN_NO_AS_KEY
 </code></pre>
 
 <h2>Description</h2>
 
-<p>extract returns a list of unique values across documents in a collection based on the FILTER and
-DOTPATH provided (for DOTPATH see <code>dataset -help dotpath</code> and FITLER see <code>dataset -help filter</code>).</p>
+<p><em>import-csv</em> adds JSON documents to a collection from a CSV table.</p>
 
 <h2>Usage</h2>
 
-<p>In this example we&rsquo;re turning a list of unique author orcid ids across the collection. The filter
-we use is &ldquo;true&rdquo;. The author field is an array so our dotpath uses that notation. Collection name
-is &ldquo;publications.ds&rdquo;</p>
+<p>In the following examples the CSV filename is <em>data.csv</em>.
+The first column (column 1) is used as the value for KEY if
+specified.  Our collection is named &ldquo;data.ds&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset publications.ds extract true .authors[:].orcid
+<pre><code class="language-shell">    dataset data.ds import-csv data.csv 1
 </code></pre>
 
-<p>Related topics: dotpath, export-csv and import-csv</p>
+<p>By default the header row of the table (the first row of the table) is used as the
+attribute names of the JSON document you create on import.  If you don&rsquo;t want that
+behavior you can use the &ldquo;-use-header-row=false&rdquo; option and the fields will be in the
+form of &ldquo;column_IDNO&rdquo; where IDNO is replaced with a left zero padded column number
+(e.g. column_001, column_002, column_003).</p>
+
+<p>Related topics: extract and export-csv,  import-gsheets, export-gsheets</p>
 
 </section>
 

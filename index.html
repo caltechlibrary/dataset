@@ -70,9 +70,9 @@ their cloud counter parts.</p>
 
 <ul>
 <li><a href="docs/dataset/init.html">init</a> creates a collection</li>
-<li><a href="docs/dataset/import.html">import</a> JSON documents from rows of a CSV file</li>
-<li><a href="docs/dataset/import.html">import-gsheet</a> JSON documents from rows of a Google Sheet</li>
-<li><a href="docs/dataset/export.html">export</a> JSON documents from a collection into a CSV file</li>
+<li><a href="docs/dataset/import-csv.html">import-csv</a> JSON documents from rows of a CSV file</li>
+<li><a href="docs/dataset/import-gsheet.html">import-gsheet</a> JSON documents from rows of a Google Sheet</li>
+<li><a href="docs/dataset/export-csv.html">export-csv</a> JSON documents from a collection into a CSV file</li>
 <li><a href="docs/dataset/export-gsheet.html">export-gsheet</a> JSON documents from a collection into a Google Sheet</li>
 <li><a href="docs/dataset/keys.html">keys</a> list keys of JSON documents in a collection, supports filtering and sorting</li>
 <li><a href="docs/dataset/haskey.html">haskey</a> returns true if key is found in collection, false otherwise</li>
@@ -121,42 +121,45 @@ their cloud counter parts.</p>
 <li>delete a JSON document</li>
 </ul>
 
-<pre><code class="language-shell">    # Create a collection &quot;mystuff.ds&quot;, the &quot;.ds&quot; lets the dataset command know that's the collection to use. 
-    dataset mystuff.ds init
+<pre><code class="language-shell">    # Create a collection &quot;mystuff.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that's the collection to use. 
+    bin/dataset mystuff.ds init
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    dataset mystuff.ds create freda.json '{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@inverness.example.org&quot;}'
+    bin/dataset mystuff.ds create freda '{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@inverness.example.org&quot;}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    dataset mystuff.ds read freda.json
-
+    bin/dataset mystuff.ds read freda
+    
     # Path to JSON document
-    dataset mystuff.ds path freda.json
+    bin/dataset mystuff.ds path freda
 
     # Update a JSON document
-    dataset mystuff.ds update freda.json '{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@zbs.example.org&quot;}'
+    bin/dataset mystuff.ds update freda '{&quot;name&quot;:&quot;freda&quot;,&quot;email&quot;:&quot;freda@zbs.example.org&quot;, &quot;count&quot;: 2}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    dataset mystuff.ds keys
+    bin/dataset mystuff.ds keys
 
     # Get keys filtered for the name &quot;freda&quot;
-    dataset mystuff.ds keys '(eq .name &quot;freda&quot;)'
+    bin/dataset mystuff.ds keys '(eq .name &quot;freda&quot;)'
 
     # Join freda-profile.json with &quot;freda&quot; adding unique key/value pairs
-    dataset mystuff.ds join update freda freda-profile.json
+    bin/dataset mystuff.ds join append freda freda-profile.json
 
     # Join freda-profile.json overwriting in commont key/values adding unique key/value pairs
     # from freda-profile.json
-    dataset mystuff.ds join overwrite freda freda-profile.json
+    bin/dataset mystuff.ds join overwrite freda freda-profile.json
 
     # Delete a JSON document
-    dataset mystuff.ds delete freda.json
+    bin/dataset mystuff.ds delete freda
+
+    # Import data from a CSV file using column 1 as key
+    bin/dataset -quiet -nl=false mystuff.ds import-csv my-data.csv 1
 
     # To remove the collection just use the Unix shell command
-    # /bin/rm -fR mystuff.ds
+    rm -fR mystuff.ds
 </code></pre>
 
 <h2>Releases</h2>

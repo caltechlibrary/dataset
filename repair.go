@@ -252,6 +252,9 @@ func Repair(collectionName string) error {
 	}
 	log.Printf("Finding JSON docs in buckets")
 	for j, bck := range c.Buckets {
+		if c.KeyMap == nil {
+			c.KeyMap = map[string]string{}
+		}
 		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
 			for i, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(jsonDoc, ".json")
