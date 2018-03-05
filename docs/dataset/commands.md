@@ -25,10 +25,10 @@ the commands below --
 + [attachments](attachments.html) - lists any attached content for JSON document
 + [detach](detach.html) - returns attachments for a JSON document
 + [prune](prune.html) - remove attachments to a JSON document
-+ [import](import.html) - import a CSV file's rows as JSON documents
++ [import-csv](import-csv.html) - import a CSV file's rows as JSON documents
     + [import-gsheet](import-gsheet.html) - import a Google Sheets sheet rows
       as JSON documents
-+ [export](export.html) - export a CSV file based on filtered results of
++ [export-csv](export-csv.html) - export a CSV file based on filtered results of
   collection records rendering dotpaths associated with column names
     + [export-gsheet](export-gsheet.html) - export a Collection of JSON
       documents to Google Sheets sheet rows

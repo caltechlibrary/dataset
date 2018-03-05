@@ -20,55 +20,47 @@ Save this file as _characters.csv_. To import this let's create a collection
 named _characters_.
 
 ```shell
-    dataset init characters-v1
+    dataset characters-v1.ds init
 ```
 
 Now we can populate our characters collection by importing _characters.csv_.
 Then look at the keys.
 
 ```shell
-    dataset import characters.csv
-    dataset list keys
+    dataset characters-v1.ds import characters.csv 2
+    dataset characeter-v1.ds keys
 ```
 
-Notice the assigned ids.
+Notice the assigned ids. We used the second column, the one with th email heading
+to be our keys.
 
 ```
-    characters.csv_7
-    characters.csv_2
-    characters.csv_3
-    characters.csv_4
-    characters.csv_5
-    characters.csv_6
+    ralph.rolf@zbs.example.org
+    zowie@zbs.example.org
+    captain.jack@zbs.example.org
+    little.frieda@zbs.example.org
+    mojo.sam@zbs.example.org
+    old.art@zbs.example.org
 ```
-
-The default ids are formed by combining the filename with the row number. By default the first
-row is treated as the property names in the JSON document. Now take a look one of the rows
-that now are JSON documents.
 
 ```shell
-    dataset list keys | while read ID; do dataset read "${ID}"; done
+    dataset characters-v1.ds keys | while read ID; do dataset characters-v1.ds read "${ID}"; done
 ```
 
-Now let's make a new version of our characters collection but this time we'll column two (the email column)
+In out next example we will use the  environment variable DATASET to save us some typing.
+Now let's make a new version of our characters collection but this time we'll column one (the name column)
 as the key.
 
 ```shell
-    dataset init characters-v2
-    export DATASET=characters-v2
-    dataset import characters.csv 2
-    dataset list keys
+    dataset init characters-v2.ds
+    export DATASET="characters-v2.ds"
+    dataset import characters.csv 1
+    dataset keys
 ```
 
 Now our keys look a little different.
 
 ```
-    ralph.rolf@zbs.example.org
-    mojo.sam@zbs.example.org
-    little.frieda@zbs.example.org
-    old.art@zbs.example.org
-    captain.jack@zbs.example.org
-    zowie@zbs.example.org
 ```
 
 Reading the records back we see we have the JSON same document structure.

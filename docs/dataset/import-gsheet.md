@@ -59,3 +59,4 @@ it look different? What does "-use-header-row=false" mean? Why is the range diff
     dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read "${KY}"; done
 ```
 
+Related topics: dotpath, export-csv, import-csv, and export-gsheet

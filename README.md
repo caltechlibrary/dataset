@@ -44,9 +44,9 @@ The basic operations support by *dataset* are listed below organized by collecti
 ### Collection Level
 
 + [init](docs/dataset/init.html) creates a collection
-+ [import](docs/dataset/import.html) JSON documents from rows of a CSV file
-+ [import-gsheet](docs/dataset/import.html) JSON documents from rows of a Google Sheet
-+ [export](docs/dataset/export.html) JSON documents from a collection into a CSV file
++ [import-csv](docs/dataset/import-csv.html) JSON documents from rows of a CSV file
++ [import-gsheet](docs/dataset/import-gsheet.html) JSON documents from rows of a Google Sheet
++ [export-csv](docs/dataset/export-csv.html) JSON documents from a collection into a CSV file
 + [export-gsheet](docs/dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
 + [keys](docs/dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
 + [haskey](docs/dataset/haskey.html) returns true if key is found in collection, false otherwise
@@ -90,42 +90,45 @@ Common operations using the *dataset* command line tool
 + delete a JSON document
 
 ```shell
-    # Create a collection "mystuff.ds", the ".ds" lets the dataset command know that's the collection to use. 
-    dataset mystuff.ds init
+    # Create a collection "mystuff.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
+    bin/dataset mystuff.ds init
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    dataset mystuff.ds create freda.json '{"name":"freda","email":"freda@inverness.example.org"}'
+    bin/dataset mystuff.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    dataset mystuff.ds read freda.json
-
+    bin/dataset mystuff.ds read freda
+    
     # Path to JSON document
-    dataset mystuff.ds path freda.json
+    bin/dataset mystuff.ds path freda
 
     # Update a JSON document
-    dataset mystuff.ds update freda.json '{"name":"freda","email":"freda@zbs.example.org"}'
+    bin/dataset mystuff.ds update freda '{"name":"freda","email":"freda@zbs.example.org", "count": 2}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    dataset mystuff.ds keys
+    bin/dataset mystuff.ds keys
 
     # Get keys filtered for the name "freda"
-    dataset mystuff.ds keys '(eq .name "freda")'
+    bin/dataset mystuff.ds keys '(eq .name "freda")'
 
     # Join freda-profile.json with "freda" adding unique key/value pairs
-    dataset mystuff.ds join update freda freda-profile.json
+    bin/dataset mystuff.ds join append freda freda-profile.json
 
     # Join freda-profile.json overwriting in commont key/values adding unique key/value pairs
     # from freda-profile.json
-    dataset mystuff.ds join overwrite freda freda-profile.json
+    bin/dataset mystuff.ds join overwrite freda freda-profile.json
 
     # Delete a JSON document
-    dataset mystuff.ds delete freda.json
+    bin/dataset mystuff.ds delete freda
+
+    # Import data from a CSV file using column 1 as key
+    bin/dataset -quiet -nl=false mystuff.ds import-csv my-data.csv 1
 
     # To remove the collection just use the Unix shell command
-    # /bin/rm -fR mystuff.ds
+    rm -fR mystuff.ds
 ```
 
 ## Releases

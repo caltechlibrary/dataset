@@ -100,8 +100,8 @@ var (
 		"attachments":   listAttachments,
 		"detach":        getAttachments,
 		"prune":         removeAttachments,
-		"import":        importCSV,
-		"export":        exportCSV,
+		"import-csv":    importCSV,
+		"export-csv":    exportCSV,
 		"extract":       extract,
 		"check":         checkCollection,
 		"repair":        repairCollection,
@@ -119,8 +119,13 @@ var (
 
 // checkCollection takes a collection name and checks for problems
 func checkCollection(params ...string) (string, error) {
-	if len(params) < 1 {
+	if len(params) == 0 && collectionName == "" {
 		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
+	}
+	if collectionName != "" {
+		if err := dataset.Analyzer(collectionName); err != nil {
+			return "", err
+		}
 	}
 	for _, cName := range params {
 		if err := dataset.Analyzer(cName); err != nil {
@@ -133,8 +138,13 @@ func checkCollection(params ...string) (string, error) {
 // repairCollection takes a collection name and recreates collection.json, keys.json
 // based on what it finds on disc
 func repairCollection(params ...string) (string, error) {
-	if len(params) < 1 {
+	if len(params) == 0 && collectionName == "" {
 		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
+	}
+	if collectionName != "" {
+		if err := dataset.Repair(collectionName); err != nil {
+			return "", err
+		}
 	}
 	for _, cName := range params {
 		if err := dataset.Repair(cName); err != nil {
@@ -719,18 +729,19 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s import CSV_FILENAME COL_NUMBER_USED_FOR_ID", os.Args[0])
+		return "", fmt.Errorf("syntax: %s import-csv CSV_FILENAME COL_NUMBER_USED_FOR_ID", os.Args[0])
 	}
-	idCol := -1
 	csvFName := params[0]
-	if len(params) > 1 {
-		idCol, err = strconv.Atoi(params[1])
-		if err != nil {
-			return "", fmt.Errorf("Can't convert column number to integer, %s", err)
-		}
-		// NOTE: we need to adjust to zero based index
-		idCol--
+	idCol, err := strconv.Atoi(params[1])
+	if err != nil {
+		return "", fmt.Errorf("Can't convert column number to integer, %s", err)
 	}
+	if idCol < 1 {
+		return "", fmt.Errorf("Column number must be greater than zero, got %s", idCol)
+	}
+
+	// NOTE: we need to adjust to zero based index
+	idCol--
 	fp, err := os.Open(csvFName)
 	if err != nil {
 		return "", fmt.Errorf("Can't open %s, %s", csvFName, err)
@@ -888,7 +899,7 @@ func exportCSV(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 3 {
-		return "", fmt.Errorf("syntax: %s export CSV_FILENAME FILTER_EXPR DOTPATHS [COLUMN_NAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s export-csv CSV_FILENAME FILTER_EXPR DOTPATHS [COLUMN_NAMES]", os.Args[0])
 	}
 	csvFName := params[0]
 	filterExpr := params[1]
@@ -896,7 +907,7 @@ func exportCSV(params ...string) (string, error) {
 	colNames := []string{}
 	if len(params) < 4 {
 		for _, val := range dotPaths {
-			colNames = append(colNames, val)
+			colNames = append(colNames, strings.TrimPrefix(val, "."))
 		}
 	} else {
 		colNames = strings.Split(params[3], ",")
@@ -951,13 +962,21 @@ func indexer(params ...string) (string, error) {
 		keyList      []string
 	)
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s [OPTIONS] indexer INDEX_NAME INDEX_MAP_FILENAME", os.Args[0])
+		return "", fmt.Errorf("syntax: %s [OPTIONS] indexer INDEX_MAP_FILENAME INDEX_NAME", os.Args[0])
 	}
 	if len(params) > 0 {
-		indexName = params[0]
+		if strings.HasSuffix(params[0], "bleve") {
+			indexName = params[0]
+		} else {
+			indexMapName = params[0]
+		}
 	}
 	if len(params) > 1 {
-		indexMapName = params[1]
+		if strings.HasSuffix(params[1], "bleve") {
+			indexName = params[1]
+		} else {
+			indexMapName = params[1]
+		}
 	}
 
 	if len(keyFName) > 0 {
@@ -1005,37 +1024,39 @@ func indexer(params ...string) (string, error) {
 // deindexer replaces dsindexer command and is used to build a Bleve index for a collection
 func deindexer(params ...string) (string, error) {
 	var (
-		indexName    string
-		keysListName string
-		keyList      []string
+		indexName string
+		keyFName  string
 	)
-	if len(params) < 1 {
+	if len(params) == 0 {
 		return "", fmt.Errorf("syntax: %s deindexer INDEX_NAME KEY_FILENAME", os.Args[0])
 	}
 	if len(params) > 0 {
-		indexName = params[0]
+		if strings.HasSuffix(params[0], ".bleve") {
+			indexName = params[0]
+		} else {
+			keyFName = params[0]
+		}
 	}
 	if len(params) > 1 {
-		keysListName = params[1]
-	} else if len(keyFName) > 0 {
-		keysListName = keyFName
+		if strings.HasSuffix(params[1], ".bleve") {
+			indexName = params[1]
+		} else {
+			keyFName = params[1]
+		}
 	}
-
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
-	}
-	defer c.Close()
 
 	keys := []string{}
-	if len(keysListName) > 0 {
-		src, err := ioutil.ReadFile(keysListName)
+	if len(keyFName) > 0 {
+		src, err := ioutil.ReadFile(keyFName)
 		if err != nil {
 			return "", fmt.Errorf("Cannot read key file %s, %s", keyFName, err)
 		}
 		txt := fmt.Sprintf("%s", src)
 		for _, key := range strings.Split(txt, "\n") {
-			keyList = append(keyList, strings.TrimSpace(key))
+			key = strings.TrimSpace(key)
+			if len(key) > 0 {
+				keys = append(keys, key)
+			}
 		}
 	}
 	if len(keys) == 0 {
@@ -1053,8 +1074,7 @@ func deindexer(params ...string) (string, error) {
 			batchSize = 100
 		}
 	}
-	err = c.Deindexer(indexName, keys, batchSize)
-	if err != nil {
+	if err := dataset.Deindexer(indexName, keys, batchSize); err != nil {
 		return "", fmt.Errorf("Deindexing error %s %s, %s", collectionName, indexName, err)
 	}
 	// return success
@@ -1290,16 +1310,27 @@ func main() {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
 	}
 
-	// Merge environment
-	datasetEnv := os.Getenv("DATASET")
-	if datasetEnv != "" {
-		collectionName = strings.TrimSpace(datasetEnv)
+	// Check for collectionName in environment
+	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
+	for i, arg := range args {
+		if strings.HasSuffix(arg, ".ds") || strings.HasSuffix(arg, ".dataset") || strings.HasPrefix(arg, "gs://") || strings.HasPrefix(arg, "s3://") {
+			collectionName = arg
+			if i < len(args) {
+				if i == 0 {
+					args = args[1:]
+				} else {
+					args = append(args[:i], args[i+1:]...)
+				}
+			}
+		}
 	}
 
-	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
-	if strings.HasSuffix(args[0], ".ds") || strings.HasSuffix(args[0], ".dataset") || strings.HasPrefix(args[0], "gs://") || strings.HasPrefix(args[0], "s3://") {
-		collectionName = args[0]
-		args = args[1:]
+	// Merge environment if colleciton name not set
+	if collectionName == "" {
+		datasetEnv := os.Getenv("DATASET")
+		if datasetEnv != "" {
+			collectionName = strings.TrimSpace(datasetEnv)
+		}
 	}
 
 	in, err := cli.Open(inputFName, os.Stdin)
@@ -1310,7 +1341,17 @@ func main() {
 	cli.ExitOnError(os.Stderr, err, quiet)
 	defer cli.CloseFile(outputFName, out)
 
-	action, params := args[0], args[1:]
+	var (
+		action string
+		params []string
+	)
+	if len(args) > 1 {
+		action, params = args[0], args[1:]
+	} else if len(args) == 1 {
+		action = args[0]
+		params = []string{}
+	}
+
 	// NOTE: Special case of when -useUUID flag set when action is create, import or
 	// import-gsheet, we need to auto-generate the UUID as key and add to our args
 	// appropriately
