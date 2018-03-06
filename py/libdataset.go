@@ -47,6 +47,11 @@ func messagef(s string, values ...interface{}) {
 	}
 }
 
+//export dataset_version
+func dataset_version() *C.char {
+	return C.CString(dataset.Version)
+}
+
 //export init_collection
 func init_collection(name *C.char) C.int {
 	collectionName := C.GoString(name)

@@ -12,17 +12,14 @@ error_count = 0
 ok = True
 dataset.verbose_off()
 
-if len(sys.argv) > 1:
-    collection_name = sys.argv[1]
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
-    ok = dataset.init_collection(collection_name)
-    if ok == False:
-        print("Failed, could not create collection")
-        error_count += 1
-else:
-    print("To run tests provide a collection name for testing,", sys.argv[0], '"test_collection.ds"')
-    sys.exit(1)
+print("Testing dataset version", dataset.version())
+collection_name = "test_collection.ds"
+if os.path.exists(collection_name):
+    shutil.rmtree(collection_name)
+ok = dataset.init_collection(collection_name)
+if ok == False:
+    print("Failed, could not create collection")
+    error_count += 1
 
 
 # Setup a test record
@@ -198,9 +195,27 @@ ok = dataset.deindexer(collection_name, index_name, [k1])
 if ok == False:
     print("deindexer failed for key", k1)
 
+#
+# Issue 32
+#
+ok = dataset.create_record(collection_name, "k1", {"one":1})
+if ok == False:
+    print("Failed to create k1 in", collection_name)
+    os.exit(1)
+ok = dataset.has_key(collection_name, "k1")
+if ok == False:
+    print("Failed, has_key k1 should return", True)
+    error_count += 1
+ok = dataset.has_key(collection_name, "k2")
+if ok == True:
+    print("Failed, has_key k2 should return", False)
+    error_count += 1
+    
+
 
 # Wrap up tests
 if error_count > 0:
     print("Failed", error_count, "tests")
     sys.exit(1)
 print("Success!")
+

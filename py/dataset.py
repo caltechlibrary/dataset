@@ -35,6 +35,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 
 # Setup our Go functions to be nicely wrapped
+go_dataset_version = lib.dataset_version
+go_dataset_version.restype = ctypes.c_char_p
+
 go_init_collection = lib.init_collection
 go_init_collection.argtypes = [ctypes.c_char_p]
 go_init_collection.restype = ctypes.c_int
@@ -98,6 +101,13 @@ verbose_off = lib.verbose_off
 #
 # Now write our Python idiomatic function
 #
+
+# Returns version of dataset shared library
+def version():
+    value = go_dataset_version()
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode() 
 
 # Initializes a Dataset Collection
 def init_collection(name):
