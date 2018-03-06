@@ -149,6 +149,16 @@ function test_gsheet() {
 		exit 1
 	fi
 
+    # Check to see if this throws error correctly, i.e. should have exit code 1
+	SHEET_NAME="Sheet2"
+	bin/dataset -nl=false -quiet -client-secret "${CLIENT_SECRET_JSON}" export-gsheet "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' true \
+		'true,.done,.key,.QT_resolver,.subjects,.additional[],.identifier_1,.description_1' \
+		'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
+	if [[ "$?" != "1" ]]; then
+		echo "Count should throw error for bad dotpath in export-gsheet"
+		exit 1
+	fi
+
 	echo "Test gsheet support successful"
 }
 

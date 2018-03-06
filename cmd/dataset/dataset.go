@@ -856,6 +856,7 @@ func exportGSheet(params ...string) (string, error) {
 						row = append(row, col)
 					} else {
 						row = append(row, "")
+						return "", fmt.Errorf("failed to evaluate dot path, %s", err)
 					}
 				}
 				table = append(table, row)
@@ -879,6 +880,7 @@ func exportGSheet(params ...string) (string, error) {
 							row = append(row, col)
 						} else {
 							row = append(row, "")
+							return "", fmt.Errorf("failed to evaluate dot path, %s", err)
 						}
 					}
 					table = append(table, row)
