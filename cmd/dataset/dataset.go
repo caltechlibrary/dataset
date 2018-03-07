@@ -28,6 +28,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -1294,11 +1295,24 @@ func main() {
 		app.GenerateMarkdownDocs(app.Out)
 		os.Exit(0)
 	}
-	if showHelp || showExamples {
+	if showHelp {
 		if len(args) > 0 {
 			fmt.Fprintf(app.Out, app.Help(args...))
 		} else {
 			app.Usage(app.Out)
+		}
+		os.Exit(0)
+	}
+	if showExamples {
+		if len(args) > 0 {
+			fmt.Fprintf(app.Out, app.Help(args...))
+		} else {
+			keys := []string{}
+			for k, _ := range Examples {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			fmt.Fprintf(app.Out, "try \"%s -examples TOPIC\" for any of these topics:\n\t%s\n\n", appName, strings.Join(keys, "\n\t"))
 		}
 		os.Exit(0)
 	}

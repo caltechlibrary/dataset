@@ -406,6 +406,29 @@ def test_check_repair(collection_name):
         error_count += 1
     return error_count
         
+def test_attachments(collection_name, filenames):
+    print("Testing attach, attachments, detach and prune")
+    error_count = 0
+    ok = dataset.status(collection_name)
+    if ok == False:
+        print("Failed,", collection_name, "missing")
+        error_count += 1
+        return error_count
+    keys = dataset.keys(collection_name)
+    if len(keys) < 1:
+        print("Failed,", collection_name, "should have keys")
+        error_count += 1
+        return error_count
+
+    key = keys[0]
+    ok = dataset.attach(collection_name, key, filenames)
+    if ok == False:
+        print("Failed, to attach files for", collection_name, key, filenames)
+        error_count += 1
+        return error_count
+
+    return error_count
+
 #
 # Main processing
 #
@@ -426,6 +449,8 @@ error_count += test_search(collection_name, "test_index_map.json", "test_index.b
 error_count += test_issue32(collection_name)
 error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
 error_count += test_check_repair("test_gsheet.ds")
+error_count += test_attachments(collection_name, ["README.md", "Makefile"])
+
 print("Tests completed")
 
 # Wrap up tests

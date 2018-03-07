@@ -20,15 +20,16 @@
 </nav>
 
 <section>
-<h2>Join</h2>
+<h2>Joining Objects</h2>
 
 <p>You can augement JSON key/value pairs for a JSON document in your collection
 using the join operation. This works similar to the datatools cli called jsonjoin.</p>
 
-<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
-three fields - name, email, age.</p>
+<p>In this example our collection is called <em>people.ds</em>.  Let&rsquo;s assume you have a
+record in your collection with a key &lsquo;jane.doe&rsquo;. It has three fields -
+name, email, age.</p>
 
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, age: 42}
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
 </code></pre>
 
 <p>You also have an external JSON document called profile.json. It looks like</p>
@@ -38,7 +39,7 @@ three fields - name, email, age.</p>
 
 <p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
 
-<pre><code class="language-shell">    dataset join update jane.doe profile.json
+<pre><code class="language-shell">    dataset people.ds join update jane.doe profile.json
 </code></pre>
 
 <p>The result would look like</p>
@@ -48,7 +49,7 @@ three fields - name, email, age.</p>
 
 <p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
 
-<pre><code class="language-shell">    dataset join overwrite jane.doe profile.json
+<pre><code class="language-shell">    dataset people.ds join overwrite jane.doe profile.json
 </code></pre>
 
 <p>Which would result in a record like</p>

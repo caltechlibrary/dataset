@@ -132,6 +132,10 @@ go_repair = lib.repair
 go_repair.argtypes = [ctypes.c_char_p]
 go_repair.restype = ctypes.c_int
 
+go_attach = lib.attach
+go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_attach.restype = ctypes.c_int
+
 
 #
 # Now write our Python idiomatic function
@@ -364,3 +368,12 @@ def repair(collection_name):
     if ok == 1:
         return True
     return False
+
+def attach(collection_name, key, filenames = []):
+    srcFNames = json.dumps(filenames).encode('utf8')
+    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(srcFNames))
+    if ok == 1:
+        return True
+    return False
+    
+

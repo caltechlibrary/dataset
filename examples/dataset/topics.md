@@ -1,13 +1,11 @@
 
 # Topics
 
-+ [attachments](attachments.html)
++ [managing attachments](managing-attachments.html)
 + [basics](basics.html)
 + [a workflow](a-workflow.html)
-+ [export](export.html)
-+ [extract](extract.html)
++ [extracting values](extract-values.html)
 + [filtering and sorting keys](filtering-keys.html)
-+ [import](import.html)
-+ [join](join.html)
-+ [indexer](indexer.html)
-+ [find](find.html)
++ [imports and export](imports-and-exports.html)
++ [joining objects](joining-objects.html)
++ [searching](searching.html)

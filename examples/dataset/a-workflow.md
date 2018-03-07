@@ -1,12 +1,12 @@
 
 # Workflow
 
-This is an example a workflow using the _dataset_ command to creat andmanage a collection called *testdata/friends*.
+This is an example a workflow using the _dataset_ command to creat andmanage a collection called *fiends.ds*.
 We start by saving a record called "littlefreda.json" and reading it back.
 
 ```shell
-   dataset init testdata/friends
-   export DATASET=testdata/friends
+   dataset init fiends.ds
+   export DATASET=fiends.ds
    dataset create littlefreda '{"name":"Freda","email":"little.freda@inverness.example.org"}'
    for KY in $(dataset keys); do
       echo "Path: $(dataset path $KY) 
@@ -22,7 +22,7 @@ Now check to see if the key, littlefreda, is in the collection
 
 You can also read your JSON formatted data from a file or standard input.
 In this example we are creating a mojosam record and reading back the contents
-of testdata/friends
+of fiends.ds
 
 ```shell
    dataset -i mojosam.json create mojosam

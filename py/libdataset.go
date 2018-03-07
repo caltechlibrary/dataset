@@ -739,4 +739,49 @@ func repair(cName *C.char) C.int {
 	return C.int(1)
 }
 
+//export attach
+func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+	srcFNames := C.GoString(cFNames)
+	fNames := []string{}
+	if len(srcFNames) > 0 {
+		err := json.Unmarshal([]byte(srcFNames), &fNames)
+		if err != nil {
+			messagef("Can't unmarshal %q, %s", srcFNames, err)
+			return C.int(0)
+		}
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+
+	if c.HasKey(key) == false {
+		messagef("%q is not in collection", key)
+		return C.int(0)
+	}
+	for _, fname := range fNames {
+		if _, err := os.Stat(fname); os.IsNotExist(err) {
+			messagef("%s does not exist", fname)
+			return C.int(0)
+		}
+	}
+	err = c.AttachFiles(key, fNames...)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+/*
+//export attachments
+//export detach
+//export prune
+*/
+
 func main() {}

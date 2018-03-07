@@ -20,16 +20,32 @@
 </nav>
 
 <section>
-<h2>Import</h2>
+<h1>imports and exports</h1>
 
-<p>Import can take a CSV file and store each row as a JSON document in dataset. In
-this example we&rsquo;re generating a UUID for the key name of each row</p>
+<h2>importing data into a collection</h2>
 
-<pre><code class="language-shell">   dataset -uuid import my-data.csv
+<p>We can import data from a CSV file and store each row as a JSON document in dataset. In
+this example we&rsquo;re generating a UUID for the key name of each row. Our dataset is called
+<em>mydata.ds</em>. Because we have used the <code>-uuid</code> option, no columm number is needed to use
+for the key.</p>
+
+<pre><code class="language-shell">    dataset init mydata.ds
+    dataset -uuid mydata.ds import my-data.csv
 </code></pre>
 
 <p>You can create a CSV export by providing the dot paths for each column and
 then givening columns a name.</p>
+
+<h2>exporting data from a collection</h2>
+
+<pre><code class="language-shell">   dataset mydata.ds export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
+
+<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
+
+<pre><code class="language-shell">   dataset mydata.ds export titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+</code></pre>
 
 </section>
 

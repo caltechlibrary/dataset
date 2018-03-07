@@ -20,14 +20,25 @@
 </nav>
 
 <section>
-<h2>EXAMPLES</h2>
+<h2>Indexing a collection</h2>
 
-<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
+<p>In the example the index will be created for a collection called <em>characters.ds</em>.</p>
 
-<pre><code>dsfind characters.bleve &quot;Jack Flanders&quot;
+<pre><code class="language-shell">    dataset characters.ds indexer email-mapping.json email-index
 </code></pre>
 
-<p>This would search the Bleve index named characters.bleve for the string &ldquo;Jack Flanders&rdquo;
+<p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
+in &ldquo;email-mapping.json&rdquo;.</p>
+
+<h2>Searching an index</h2>
+
+<p>In this example we have already indexes a collection called &ldquo;characters.ds&rdquo;. The
+index name in <em>characters.bleve</em> which we will use for searching.</p>
+
+<pre><code class="language-shell">    dataset find characters.bleve &quot;Jack Flanders&quot;
+</code></pre>
+
+<p>This would search the Bleve index named <em>characters.bleve</em> for the string &ldquo;Jack Flanders&rdquo;
 returning records that matched based on how the index was defined.</p>
 
 </section>
