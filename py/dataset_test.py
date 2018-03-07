@@ -16,7 +16,7 @@ def test_basic(collection_name):
     value = { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
     
     # We should have an empty collection, we will create our test record.
-    ok = dataset.create_record(collection_name, key, value)
+    ok = dataset.create(collection_name, key, value)
     if ok == False:
         print("Failed, could not create record",key)
         error_count += 1
@@ -29,7 +29,7 @@ def test_basic(collection_name):
     
     # Do a minimal test to see if the record looks like it has content
     keyList = dataset.keys(collection_name)
-    rec = dataset.read_record(collection_name, key)
+    rec = dataset.read(collection_name, key)
     for k, v in value.items():
        if not isinstance(v, list):
             if k in rec and rec[k] == v:
@@ -43,11 +43,11 @@ def test_basic(collection_name):
     
     # Test updating record
     value["verified"] = True
-    ok = dataset.update_record(collection_name, key, value)
+    ok = dataset.update(collection_name, key, value)
     if ok == False:
        print("Failed, count not update record", key, value)
        error_count += 1
-    rec = dataset.read_record(collection_name, key)
+    rec = dataset.read(collection_name, key)
     for k, v in value.items():
        if not isinstance(v, list):
            if k in rec and rec[k] == v:
@@ -60,7 +60,7 @@ def test_basic(collection_name):
                error_count += 1
     
     # test deleting a record
-    ok = dataset.delete_record(collection_name, key)
+    ok = dataset.delete(collection_name, key)
     if ok == False:
         print("Failed, could not delete record", key)
         error_count += 1
@@ -91,19 +91,19 @@ def test_keys(collection_name):
         "gutenberg:3186": {"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186", "categories": "fiction, short story"},
         "hathi:uc1321060001561131": { "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9", "categories": "non-fiction, memoir" }
     }
-    test_record_count = len(test_records)
+    test_count = len(test_records)
     
     for k in test_records:
         v = test_records[k]
-        ok = dataset.create_record(collection_name, k, v)
+        ok = dataset.create(collection_name, k, v)
         if ok == False:
             print("Failed, could not add", k, "to", collection_name)
             error_count += 1
     
     # Test keys, filtering keys and sorting keys
     keys = dataset.keys(collection_name)
-    if len(keys) != test_record_count:
-        print("Expected", test_record_count,"keys back, got", keys)
+    if len(keys) != test_count:
+        print("Expected", test_count,"keys back, got", keys)
         error_count += 1
     
     dataset.verbose_on()
@@ -209,7 +209,7 @@ def test_search(collection_name, index_map_name, index_name):
 #
 def test_issue32(collection_name):
     error_count = 0
-    ok = dataset.create_record(collection_name, "k1", {"one":1})
+    ok = dataset.create(collection_name, "k1", {"one":1})
     if ok == False:
         print("Failed to create k1 in", collection_name)
         error_count += 1
@@ -244,14 +244,22 @@ def test_gsheet(collection_name, setup_bash):
                 v = v.strip("'\"\n ")
                 cfg[k] = v
     
-    if cfg.get("cliend_secret_json") == None:
-        print("Failed, could not parse CLIENT_SECRET_JSON in", setup_bash)
+    client_secret_name = ""
+    sheet_id = ""
+    if cfg.get("client_secret_json") == None:
+        print("Failed, could not parse CLIENT_SECRET_JSON in", setup_bash, cfg)
         error_count += 1
         return error_count
+    else:
+        client_secret_name = cfg.get("client_secret_json")
+
     if cfg.get("spreadsheet_id") == None:
         print("Failed, could not parse SPREADSHEET_ID in", setup_bash)
         error_count += 1
         return error_count
+    else:
+        sheet_id = cfg.get("spreadsheet_id")
+    client_secret_name = "../" + client_secret_name
 
     if os.path.exists(collection_name):
         shutil.rmtree(collection_name)
@@ -259,9 +267,9 @@ def test_gsheet(collection_name, setup_bash):
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
-    return error_count
+        return error_count
 
-    ok = dataset.create_record("Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
+    ok = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
     if ok != True:
         print("Failed, could not create test record in", collection_name)
         error_count += 1
@@ -274,39 +282,39 @@ def test_gsheet(collection_name, setup_bash):
         return error_count
 
     sheet_name = "Sheet1"
-    row_range = 'A1:CZ'
+    cell_range = 'A1:Z'
     filter_expr = 'true'
-    dot_paths = '.done,.key,.resolver,.subjects,.additional,.identifier_1,.description_1'
-    column_names = 'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
-    print("Test gsheet export support", cfg['spreadsheet_id'], sheet_name, row_range, filter_expr, dot_paths, column_names)
-    ok = dataset.export_gsheet(collection_name, cfg["client_secret_json"], cfg["spreadsheet_id"], sheet_name, row_range, filter_expr, dot_paths, column_names)
+    dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
+    column_names = ['Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
+    print("Test gsheet export support", sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
+    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
     if ok != True:
         print("Failed, count not export-gsheet in", collection_name)
         error_count += 1
         return error_count
 
     print("Test import-gsheet support")
-    ok = dataset.import_gsheet(collection_name, cfg["client_secret_json"], cfg["spreadsheet_id"], sheet_name, row_range, 2, False)
+    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, 2, overwrite = False)
     if ok == True:
-        print("Failed, should NOT be able to import-gsheet over our existing collection without -overwrite")
+        print("Failed, should NOT be able to import-gsheet over our existing collection without overwrite = True")
         error_count += 1
         return error_count
 
-    ok = dataset.import_gsheet(collection_name, cfg["client_secret_json"], cfg["spreadshet_id"], sheet_name, row_range, 2, True) 
+    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, 2, overwrite = True) 
     if ok == False:
         print("Failed, should be able to import-gsheet over our existing collection with overwrite=True")
         error_count += 1
         return error_count
 
     # Check to see if this throws error correctly, i.e. should have exit code 1
+    dataset.verbose_off()
     sheet_name="Sheet2"
-    dot_paths = 'true,.done,.key,.QT_resolver,.subjects,.additional[],.identifier_1,.description_1'
-    ok = dataset.export_gsheet(collection_name, cfg["client_secret_json"], cfg["$spreadsheet_id"], sheet_name, row_range, filter_epxr, dot_paths, column_names)
-    if ok == True :
+    dots = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
+    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dots)
+    if ok == True:
         print("Failed, export_gsheet should throw error for bad dotpath in export_gsheet")
         error_count += 1
         return error_count
-
     # test_gsheet() done, return error count
     return error_count
 
@@ -341,7 +349,7 @@ error_count += test_keys(collection_name)
 error_count += test_extract(collection_name)
 error_count += test_search(collection_name, "test_index_map.json", "test_index.bleve")
 error_count += test_issue32(collection_name)
-error_count += test_gsheet(collection_name, "../etc/test_gsheet.bash")
+error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
 
 # Wrap up tests
 if error_count > 0:

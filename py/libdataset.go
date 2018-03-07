@@ -23,10 +23,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/gsheet"
+	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/tmplfn"
 )
 
 var verbose = false
@@ -283,8 +287,8 @@ func count(cName *C.char) C.int {
 }
 
 //export extract
-func extract(name, filterExpr, dotExpr *C.char) *C.char {
-	collectionName := C.GoString(name)
+func extract(cName, filterExpr, dotExpr *C.char) *C.char {
+	collectionName := C.GoString(cName)
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		messagef("Cannot open collection %s, %s", collectionName, err)
@@ -431,6 +435,218 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 	txt := fmt.Sprintf("%s", src)
 	// return our encoded results, success
 	return C.CString(txt)
+}
+
+//export import_csv
+func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cUseUUID C.int) C.int {
+	// Covert options
+	collectionName := C.GoString(cName)
+	csvFName := C.GoString(cCSVFName)
+	idCol := int(cIDCol)
+	useHeaderRow := (int(cUseHeaderRow) == 1)
+	useUUID := (int(cUseUUID) == 1)
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("Can't open %s, %s", collectionName, err)
+		return C.int(0)
+	}
+	defer collection.Close()
+
+	if idCol < 1 {
+		messagef("Column number must be greater than zero, got %s", idCol)
+		return C.int(0)
+	}
+
+	// NOTE: we need to adjust to zero based index
+	idCol--
+	fp, err := os.Open(csvFName)
+	if err != nil {
+		messagef("Can't open %s, %s", csvFName, err)
+		return C.int(0)
+	}
+	defer fp.Close()
+
+	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, verbose); err != nil {
+		messagef("Can't import CSV, %s", err)
+		return C.int(0)
+	} else {
+		messagef("%d total rows processed", linesNo)
+	}
+	return C.int(1)
+}
+
+//export export_csv
+func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.int {
+	// Convert out parameters
+	collectionName := C.GoString(cName)
+	csvFName := C.GoString(cCSVFName)
+	filterExpr := C.GoString(cFilterExpr)
+	dotExprs := strings.Split(C.GoString(cDotExprs), ",")
+	colNames := strings.Split(C.GoString(cColNames), ",")
+	if len(colNames) == 0 {
+		for _, val := range dotExprs {
+			colNames = append(colNames, strings.TrimPrefix(val, "."))
+		}
+	}
+
+	// Trim the any spaces for paths and column names
+	for i, val := range dotExprs {
+		dotExprs[i] = strings.TrimSpace(val)
+	}
+	for i, val := range colNames {
+		colNames[i] = strings.TrimSpace(val)
+	}
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	defer collection.Close()
+
+	fp, err := os.Create(csvFName)
+	if err != nil {
+		messagef("Can't create %s, %s", csvFName, err)
+		return C.int(0)
+	}
+	defer fp.Close()
+
+	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, verbose); err != nil {
+		messagef("Can't export CSV, %s", err)
+		return C.int(0)
+	} else {
+		messagef("%d total rows processed", linesNo)
+	}
+	return C.int(1)
+}
+
+//export import_gsheet
+func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C.char, cIDCol C.int, cUseHeaderRow C.int, cUseUUID C.int, cOverwrite C.int) C.int {
+	collectionName := C.GoString(cName)
+	clientSecretJSON := C.GoString(cClientSecretJSON)
+	sheetID := C.GoString(cSheetID)
+	sheetName := C.GoString(cSheetName)
+	cellRange := C.GoString(cCellRange)
+	idCol := int(cIDCol)
+	useHeaderRow := (C.int(cUseHeaderRow) == 1)
+	useUUID := (C.int(cUseUUID) == 1)
+	overwrite := (C.int(cOverwrite) == 1)
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	defer collection.Close()
+
+	// NOTE: we need to adjust to zero based index
+	idCol--
+
+	table, err := gsheets.ReadSheet(clientSecretJSON, sheetID, sheetName, cellRange)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+
+	linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, verbose)
+	if err != nil {
+		messagef("Errors importing %s %s, %s", sheetID, sheetName, err)
+		return C.int(0)
+	}
+	messagef("%d total rows processed", linesNo)
+	return C.int(1)
+}
+
+//export export_gsheet
+func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, cFilterExpr, cDotExprs, cColNames *C.char) C.int {
+	collectionName := C.GoString(cName)
+	clientSecretJSON := C.GoString(cClientSecretJSON)
+	sheetID := C.GoString(cSheetID)
+	sheetName := C.GoString(cSheetName)
+	cellRange := C.GoString(cCellRange)
+	filterExpr := C.GoString(cFilterExpr)
+	dotExprs := strings.Split(C.GoString(cDotExprs), ",")
+	colNames := strings.Split(C.GoString(cColNames), ",")
+
+	collection, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("failed, %s %s, %s", sheetID, sheetName, err)
+		return C.int(0)
+	}
+	defer collection.Close()
+
+	if len(colNames) == 0 {
+		for _, val := range dotExprs {
+			colNames = append(colNames, strings.TrimPrefix(val, "."))
+		}
+	}
+	// Trim the any spaces for paths and column names
+	for i, val := range dotExprs {
+		dotExprs[i] = strings.TrimSpace(val)
+	}
+	for i, val := range colNames {
+		colNames[i] = strings.TrimSpace(val)
+	}
+
+	table := [][]interface{}{}
+	if len(colNames) > 0 {
+		row := []interface{}{}
+		for _, name := range colNames {
+			row = append(row, name)
+		}
+		table = append(table, row)
+	}
+	keys := collection.Keys()
+
+	if strings.ToLower(filterExpr) == "true" {
+		for _, key := range keys {
+			m := map[string]interface{}{}
+			if err := collection.Read(key, m); err == nil {
+				row := []interface{}{}
+				for _, colExpr := range dotExprs {
+					col, err := dotpath.Eval(colExpr, m)
+					if err != nil {
+						messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+						return C.int(0)
+					}
+					row = append(row, col)
+				}
+				table = append(table, row)
+			}
+		}
+	} else {
+		f, err := tmplfn.ParseFilter(filterExpr)
+		if err != nil {
+			messagef("failed, %s %s filter expression %q, %s", sheetID, sheetName, filterExpr, err)
+			return C.int(0)
+		}
+
+		for _, key := range keys {
+			m := map[string]interface{}{}
+			if err := collection.Read(key, m); err == nil {
+				if ok, err := f.Apply(m); err == nil && ok == true {
+					// save row out.
+					row := []interface{}{}
+					for _, colExpr := range dotExprs {
+						col, err := dotpath.Eval(colExpr, m)
+						if err != nil {
+							messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+							return C.int(0)
+						}
+						row = append(row, col)
+					}
+					table = append(table, row)
+				}
+			}
+		}
+	}
+	err = gsheets.WriteSheet(clientSecretJSON, sheetID, sheetName, cellRange, table)
+	if err != nil {
+		messagef("Failed to write %s %s, %s", sheetID, sheetName, err)
+		return C.int(0)
+	}
+	return C.int(1)
 }
 
 func main() {}

@@ -818,18 +818,18 @@ func exportGSheet(params ...string) (string, error) {
 	sheetName := params[1]
 	cellRange := params[2]
 	filterExpr := params[3]
-	dotPaths := strings.Split(params[4], ",")
+	dotExprs := strings.Split(params[4], ",")
 	colNames := []string{}
 	if len(params) <= 5 {
-		for _, val := range dotPaths {
+		for _, val := range dotExprs {
 			colNames = append(colNames, val)
 		}
 	} else {
 		colNames = strings.Split(params[5], ",")
 	}
 	// Trim the any spaces for paths and column names
-	for i, val := range dotPaths {
-		dotPaths[i] = strings.TrimSpace(val)
+	for i, val := range dotExprs {
+		dotExprs[i] = strings.TrimSpace(val)
 	}
 	for i, val := range colNames {
 		colNames[i] = strings.TrimSpace(val)
@@ -850,7 +850,7 @@ func exportGSheet(params ...string) (string, error) {
 			m := map[string]interface{}{}
 			if err := collection.Read(key, m); err == nil {
 				row := []interface{}{}
-				for _, colPath := range dotPaths {
+				for _, colPath := range dotExprs {
 					col, err := dotpath.Eval(colPath, m)
 					if err == nil {
 						row = append(row, col)
@@ -874,7 +874,7 @@ func exportGSheet(params ...string) (string, error) {
 				if ok, err := f.Apply(m); err == nil && ok == true {
 					// save row out.
 					row := []interface{}{}
-					for _, colPath := range dotPaths {
+					for _, colPath := range dotExprs {
 						col, err := dotpath.Eval(colPath, m)
 						if err == nil {
 							row = append(row, col)
@@ -905,18 +905,18 @@ func exportCSV(params ...string) (string, error) {
 	}
 	csvFName := params[0]
 	filterExpr := params[1]
-	dotPaths := strings.Split(params[2], ",")
+	dotExprs := strings.Split(params[2], ",")
 	colNames := []string{}
 	if len(params) < 4 {
-		for _, val := range dotPaths {
+		for _, val := range dotExprs {
 			colNames = append(colNames, strings.TrimPrefix(val, "."))
 		}
 	} else {
 		colNames = strings.Split(params[3], ",")
 	}
 	// Trim the any spaces for paths and column names
-	for i, val := range dotPaths {
-		dotPaths[i] = strings.TrimSpace(val)
+	for i, val := range dotExprs {
+		dotExprs[i] = strings.TrimSpace(val)
 	}
 	for i, val := range colNames {
 		colNames[i] = strings.TrimSpace(val)
@@ -928,7 +928,7 @@ func exportCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotPaths, colNames, showVerbose); err != nil {
+	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't export CSV, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
