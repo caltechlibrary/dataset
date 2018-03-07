@@ -649,4 +649,94 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 	return C.int(1)
 }
 
+//export status
+func status(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("failed, %s, %s", collectionName, err)
+		return C.int(0)
+	}
+	c.Close()
+	return C.int(1)
+}
+
+//export list
+func list(cName *C.char, cKeys *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	sKeys := C.GoString(cKeys)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+
+	keys := []string{}
+	err = json.Unmarshal([]byte(sKeys), &keys)
+	if err != nil {
+		messagef("Failed to unmarshal key list, %s", err)
+		return C.CString("")
+	}
+
+	recs := []map[string]interface{}{}
+	for _, name := range keys {
+		m := map[string]interface{}{}
+		err = c.Read(name, m)
+		if err != nil {
+			messagef("%s", err)
+			return C.CString("")
+		}
+		recs = append(recs, m)
+	}
+	src, err := json.Marshal(recs)
+	if err != nil {
+		messagef("failed to marshal result, %s", err)
+		return C.CString("")
+	}
+	return C.CString(string(src))
+}
+
+//export path
+func path(cName *C.char, cKey *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+	s, err := c.DocPath(key)
+	if err != nil {
+		messagef("%s", err)
+		return C.CString("")
+	}
+	return C.CString(s)
+}
+
+//export check
+func check(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	err := dataset.Analyzer(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+//export repair
+func repair(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	err := dataset.Repair(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
 func main() {}

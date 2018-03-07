@@ -121,7 +121,7 @@ func Analyzer(collectionName string) error {
 		}
 		if docPath, exists := checkFileExists(path.Join(collectionName, fname)); exists == false {
 			log.Printf("Missing %s", docPath)
-			eCnt++
+			return fmt.Errorf("%q does not exist", collectionName)
 		} else {
 			// Make sure we can JSON parse the file
 			if src, err := ioutil.ReadFile(docPath); err == nil {
@@ -140,13 +140,11 @@ func Analyzer(collectionName string) error {
 	}
 
 	// See if we can open a collection, if not then create an empty struct
-	if c, err = Open(collectionName); err == nil {
-		defer c.Close()
-	} else {
-		log.Printf("ERROR: Open collection error, %s", err)
-		c = new(Collection)
-		eCnt++
+	c, err = Open(collectionName)
+	if err != nil {
+		return fmt.Errorf("ERROR: Open %s, %s", collectionName, err)
 	}
+	defer c.Close()
 	if c.Store.Type != storage.FS {
 		return fmt.Errorf("Analyzer only works on local disc storage")
 	}
@@ -231,12 +229,23 @@ func Repair(collectionName string) error {
 	)
 
 	// See if we can open a collection, if not then create an empty struct
-	if c, err = Open(collectionName); err == nil {
-		defer c.Close()
-	} else {
-		log.Printf("ERROR: Open collection error, %s", err)
-		c = new(Collection)
+	c, err = Open(collectionName)
+	if err != nil {
+		log.Printf("Open %s error, %s, attempting to re-create collection.json", collectionName, err)
+		err = ioutil.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		if err != nil {
+			log.Printf("Can't re-initilize %s, %s", collectionName, err)
+			return err
+		}
+		log.Printf("Attempting to re-open %s", collectionName)
+		c, err = Open(collectionName)
+		if err != nil {
+			log.Printf("Failed to re-open %s, %s", collectionName, err)
+			return err
+		}
 	}
+	defer c.Close()
+
 	if c.Store.Type != storage.FS {
 		return fmt.Errorf("Repair only works on local disc storage")
 	}

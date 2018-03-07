@@ -38,6 +38,9 @@ lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 go_dataset_version = lib.dataset_version
 go_dataset_version.restype = ctypes.c_char_p
 
+verbose_on = lib.verbose_on
+verbose_off = lib.verbose_off
+
 go_init_collection = lib.init_collection
 go_init_collection.argtypes = [ctypes.c_char_p]
 go_init_collection.restype = ctypes.c_int
@@ -86,7 +89,6 @@ go_indexer = lib.indexer
 go_indexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_indexer.restype = ctypes.c_int
 
-
 go_deindexer = lib.deindexer
 go_deindexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_deindexer.restype = ctypes.c_int
@@ -111,8 +113,25 @@ go_export_gsheet = lib.export_gsheet
 go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_gsheet.restype = ctypes.c_int
 
-verbose_on = lib.verbose_on
-verbose_off = lib.verbose_off
+go_status = lib.status
+go_status.restype = ctypes.c_int
+
+go_list = lib.list
+go_list.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_list.restype = ctypes.c_char_p
+
+go_path = lib.path
+go_path.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_path.restype = ctypes.c_char_p
+
+go_check = lib.check
+go_check.argtypes = [ctypes.c_char_p]
+go_check.restype = ctypes.c_int
+
+go_repair = lib.repair
+go_repair.argtypes = [ctypes.c_char_p]
+go_repair.restype = ctypes.c_int
+
 
 #
 # Now write our Python idiomatic function
@@ -264,7 +283,7 @@ def find(index_names, query_string, options = {}):
     return json.loads(rval)
 
 
-def import_csv(collection_name, csv_name, id_col = 1, use_header_row = True, use_uuid = False):
+def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uuid = False):
     if use_header_row == True:
         i_use_header_row = 1
     else:
@@ -286,7 +305,7 @@ def export_csv(collection_name, csv_name, filter_expr = 'true', dot_exprs = [], 
         return True
     return False
 
-def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 1, use_header_row = True, use_uuid = False, overwrite = True):
+def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col, use_header_row = True, use_uuid = False, overwrite = True):
     if use_header_row == True:
         i_use_header_row = 1
     else:
@@ -309,6 +328,39 @@ def export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cel
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
+    if ok == 1:
+        return True
+    return False
+
+def status(collection_name):
+    ok = go_status(collection_name.encode('utf8'))
+    if ok == 1:
+        return True
+    return False
+
+def list(collection_name, keys = []):
+    src_keys = json.dumps(keys)
+    value = go_list(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(src_keys.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    if len(value) == 0:
+        return [] 
+    return json.loads(value.decode()) 
+
+def path(collection_name, key):
+    value = go_path(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    return value.decode()
+
+def check(collection_name):
+    ok = go_check(ctypes.c_char_p(collection_name.encode('utf8')))
+    if ok == 1:
+        return True
+    return False
+
+def repair(collection_name):
+    ok = go_repair(ctypes.c_char_p(collection_name.encode('utf8')))
     if ok == 1:
         return True
     return False

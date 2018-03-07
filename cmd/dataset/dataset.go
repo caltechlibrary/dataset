@@ -175,14 +175,18 @@ func collectionInit(params ...string) (string, error) {
 
 // collectionStatus sees if we can find the dataset collection given the path
 func collectionStatus(params ...string) (string, error) {
-	if len(params) < 1 {
+	if len(params) == 1 && collectionName == "" {
 		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	for _, collectionName := range params {
-		_, err := dataset.Open(collectionName)
+	if len(params) == 0 {
+		params = []string{collectionName}
+	}
+	for _, cName := range params {
+		c, err := dataset.Open(cName)
 		if err != nil {
-			return "", fmt.Errorf("%s: %s", collectionName, err)
+			return "", fmt.Errorf("%s: %s", cName, err)
 		}
+		c.Close()
 	}
 	return "OK", nil
 }

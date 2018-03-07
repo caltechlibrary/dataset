@@ -59,12 +59,32 @@ def test_basic(collection_name):
                print("Failed, expected", k, "with v",v)
                error_count += 1
     
+    # Test path to record
+    expected_s = collection_name+"/aa/"+key+".json"
+    expected_l = len(expected_s)
+    p = dataset.path(collection_name, key)
+    if len(p) != expected_l:
+        print("Failed, expected length", expected_l, "got", len(p))
+        error_count += 1
+    if p != expected_s:
+        print("Failed, expected", expected_s, "got", p)
+        error_count += 1
+
+    # Test listing records
+    l = dataset.list(collection_name, [key])
+    if len(l) != 1:
+        print("Failed, list should return an array of one record, got", l)
+        error_count += 1
+        return error_count
+
     # test deleting a record
     ok = dataset.delete(collection_name, key)
     if ok == False:
         print("Failed, could not delete record", key)
         error_count += 1
-    # test_base() done, return error_count
+    # test_base() done
+    if error_count > 0:
+        print("Test failed")
     return error_count
     
 
@@ -134,6 +154,8 @@ def test_keys(collection_name):
         i += 1
 
     # test_keys() done, return error count
+    if error_count > 0:
+        print("Test failed")
     return error_count
     
 #
@@ -159,6 +181,8 @@ def test_extract(collection_name):
             print("Failed, expected to find", s, "in", v)
             error_count += 1
     # test_extract() done, return error count
+    if error_count > 0:
+        print("Test failed")
     return error_count
     
 
@@ -201,6 +225,9 @@ def test_search(collection_name, index_map_name, index_name):
     ok = dataset.deindexer(collection_name, index_name, [k1])
     if ok == False:
         print("deindexer failed for key", k1)
+    # test_search(), done
+    if error_count > 0:
+        print("Test failed")
     return error_count 
     
 
@@ -222,6 +249,9 @@ def test_issue32(collection_name):
     if ok == True:
         print("Failed, has_key k2 should return", False)
         error_count += 1
+    # test_issue32() done
+    if error_count > 0:
+        print("Test failed")
     return error_count
     
 #
@@ -232,6 +262,8 @@ def test_gsheet(collection_name, setup_bash):
     if os.path.exists(setup_bash) == False:
         print("Skipping test_gsheet(", collection_name, setup_bash, ")")
         return 0
+    if os.path.exists(collection_name):
+        shutil.rmtree(collection_name)
     error_count = 0
     cfg = {}
     # read the environment settings from fname, turn into object.
@@ -261,14 +293,19 @@ def test_gsheet(collection_name, setup_bash):
         sheet_id = cfg.get("spreadsheet_id")
     client_secret_name = "../" + client_secret_name
 
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
     ok = dataset.init_collection(collection_name)
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
         return error_count
 
+    cnt = dataset.count(collection_name)
+    if cnt != 0:
+        print("Failed to initialize a fresh collection", collection_name)
+        error_count += 1
+        return error_count
+
+    # Setup some test data to work with.
     ok = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
     if ok != True:
         print("Failed, could not create test record in", collection_name)
@@ -277,7 +314,7 @@ def test_gsheet(collection_name, setup_bash):
     
     cnt = dataset.count(collection_name)
     if cnt != 1:
-        print("Failed, should have one record to export in", collection_name)
+        print("Failed, should have one test record in", collection_name)
         error_count += 1
         return error_count
 
@@ -286,36 +323,38 @@ def test_gsheet(collection_name, setup_bash):
     filter_expr = 'true'
     dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
     column_names = ['Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
-    print("Test gsheet export support", sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
+    print("Testing gsheet export support", sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
     ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
     if ok != True:
         print("Failed, count not export-gsheet in", collection_name)
         error_count += 1
         return error_count
 
-    print("Test import-gsheet support")
-    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, 2, overwrite = False)
+    print("Testing gsheet import support (should fail)", sheet_id, sheet_name, cell_range, 2, False)
+    dataset.verbose_off()
+    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = False)
     if ok == True:
         print("Failed, should NOT be able to import-gsheet over our existing collection without overwrite = True")
         error_count += 1
         return error_count
 
-    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, 2, overwrite = True) 
+    print("Testing gsheet import support (should succeeed)", sheet_id, sheet_name, cell_range, 2, True)
+    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = True) 
     if ok == False:
         print("Failed, should be able to import-gsheet over our existing collection with overwrite=True")
         error_count += 1
         return error_count
 
     # Check to see if this throws error correctly, i.e. should have exit code 1
-    dataset.verbose_off()
     sheet_name="Sheet2"
-    dots = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
-    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dots)
+    dot_exprs = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
+    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
     if ok == True:
         print("Failed, export_gsheet should throw error for bad dotpath in export_gsheet")
         error_count += 1
         return error_count
-    # test_gsheet() done, return error count
+
+    # test_gsheet() done
     return error_count
 
 
@@ -328,8 +367,44 @@ def test_setup(collection_name):
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
+        return error_count
+
+    # test_gsheet() done, return error count
     return error_count
 
+def test_check_repair(collection_name):
+    error_count = 0
+    print("Testing status on", collection_name)
+    # Make sure we have a left over collection to check and repair
+    ok = dataset.status(collection_name)
+    if ok == False:
+        print("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
+        error_count += 1
+        return error_count
+
+    print("Testing check on", collection_name)
+    # Check our collection
+    ok = dataset.check(collection_name)
+    if ok == False:
+        print("Failed, expected check", collection_name, "to return True, got", ok)
+        error_count += 1
+
+    # Break and recheck our collection
+    if os.path.exists(collection_name + "/collection.json"):
+        os.remove(collection_name + "/collection.json")
+    print("Testing check on (broken)", collection_name)
+    ok = dataset.check(collection_name)
+    if ok == True:
+        print("Failed, expected check", collection_name, "to return False, got", ok)
+        error_count += 1
+
+    # Repair our collection
+    print("Testing repair on", collection_name)
+    ok = dataset.repair(collection_name)
+    if ok == False:
+        print("Failed, expected repair to return True, got", ok)
+        error_count += 1
+    return error_count
         
 #
 # Main processing
@@ -350,10 +425,12 @@ error_count += test_extract(collection_name)
 error_count += test_search(collection_name, "test_index_map.json", "test_index.bleve")
 error_count += test_issue32(collection_name)
 error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
+error_count += test_check_repair("test_gsheet.ds")
+print("Tests completed")
 
 # Wrap up tests
 if error_count > 0:
-    print("Failed", error_count, "tests")
+    print("Failed", error_count, "test(s)")
     sys.exit(1)
 print("Success!")
 
