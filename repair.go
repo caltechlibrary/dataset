@@ -25,6 +25,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	// CaltechLibrary packages
@@ -220,6 +221,15 @@ func Analyzer(collectionName string) error {
 	return nil
 }
 
+func hasBucket(l []string, s string) bool {
+	for _, v := range l {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
 // Repair will take a collection name and attempt to recreate
 // valid collection.json from content in discovered buckets and attached documents
 func Repair(collectionName string) error {
@@ -227,6 +237,10 @@ func Repair(collectionName string) error {
 		c   *Collection
 		err error
 	)
+
+	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
+		return fmt.Errorf("Repair only works on local disc storage")
+	}
 
 	// See if we can open a collection, if not then create an empty struct
 	c, err = Open(collectionName)
@@ -298,5 +312,15 @@ func Repair(collectionName string) error {
 	}
 	log.Printf("%d keys in %d buckets", len(c.KeyMap), len(c.Buckets))
 	log.Printf("Saving metadata for %s", collectionName)
+	if len(c.Buckets) < len(DefaultBucketNames) {
+		log.Printf("Adding missing buckets")
+		for _, bucket := range DefaultBucketNames {
+			if hasBucket(c.Buckets, bucket) == false {
+				c.Buckets = append(c.Buckets, bucket)
+			}
+		}
+		log.Printf("Re-sorting buckets")
+		sort.Strings(c.Buckets)
+	}
 	return c.saveMetadata()
 }
