@@ -22,14 +22,15 @@
 <section>
 <h2>Extract</h2>
 
-<p>If wanted to extract a unqie list of all ORCIDs from a collection</p>
+<p>If wanted to extract a unqie list of all ORCIDs from a collection. For
+our example we assume that you have already created a collection called *publishers.ds&rdquo;.</p>
 
-<pre><code class="language-shell">   dataset extract true .authors[:].orcid
+<pre><code class="language-shell">   dataset publishers.ds extract true .authors[:].orcid
 </code></pre>
 
 <p>If you wanted to extract a list of ORCIDs from publications in 2016.</p>
 
-<pre><code class="language-shell">   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+<pre><code class="language-shell">   dataset publishers.ds extract '(eq 2016 (year .pubDate))' .authors[:].orcid
 </code></pre>
 
 </section>

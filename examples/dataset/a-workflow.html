@@ -22,11 +22,11 @@
 <section>
 <h1>Workflow</h1>
 
-<p>This is an example a workflow using the <em>dataset</em> command to creat andmanage a collection called <em>testdata/friends</em>.
+<p>This is an example a workflow using the <em>dataset</em> command to creat andmanage a collection called <em>fiends.ds</em>.
 We start by saving a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 
-<pre><code class="language-shell">   dataset init testdata/friends
-   export DATASET=testdata/friends
+<pre><code class="language-shell">   dataset init fiends.ds
+   export DATASET=fiends.ds
    dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
    for KY in $(dataset keys); do
       echo &quot;Path: $(dataset path $KY) 
@@ -41,7 +41,7 @@ We start by saving a record called &ldquo;littlefreda.json&rdquo; and reading it
 
 <p>You can also read your JSON formatted data from a file or standard input.
 In this example we are creating a mojosam record and reading back the contents
-of testdata/friends</p>
+of fiends.ds</p>
 
 <pre><code class="language-shell">   dataset -i mojosam.json create mojosam
    for KY in $(dataset keys); do

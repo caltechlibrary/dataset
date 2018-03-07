@@ -1,12 +1,11 @@
 
 The following topics are available in examples
 
-+ [basics](basics.html) - getting started scripting _dataset_
-+ [attachments](attachments.html) - adding documents to JSON collection records
-+ [filters](filters.html) - getting keys or fields conditionally
-+ [import](import.html) - importing data into _dataset_ from CSV, XLSX or Sheets
-+ [export](export.html) - exporting data from a _dataset_ collection
-+ [extract](extract.html) - list unique values in a collection
-+ [join](join.html) - merge JSON documents with existing JSON records in a collection
-+ [a workflow](a-workflow.html) - lists examples as a single page
-
++ [basics](basics.html) - covers the CRUD operations of dataset
++ [a workflow](a-workflow.html) - shows a simple example for how to work with dataset and data
++ [managing attachments](managing-attachments.html) - working with non-JSON files in a collections
++ [extracting values](extract-values.html) - finding unique values in objects stored in the collection
++ [filtering and sorting keys](filtering-keys.html) - getting list of keys, subset of keys and ordering keys
++ [imports and export](imports-and-exports.html) - importing, exporting either CSV and GSheet data
++ [joining objects](joining-objects.html) - merging JSON objects with those in a collection
++ [searching](searching.html) - indexing, de-indexing and find
