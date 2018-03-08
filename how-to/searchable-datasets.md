@@ -40,9 +40,9 @@ returning records that matched based on how the index was defined.
 
 Let's say you have created an index called *audiodramas.bleve*. That index also includes
 information about characters, scenes, etc.  If you want to search both *characters.bleve*
-and *audiodramas.bleve* include both with your _find_ command
+and *audiodramas.bleve* separate them a colon and include both with your _find_ command.
 
 ```shell
-    dataset find characters.bleve audiodramas.bleve "Jack Flanders"
+    dataset find 'characters.bleve:audiodramas.bleve' "Jack Flanders"
 ```
 

@@ -9,9 +9,9 @@
 
 ## Description
 
-_find_ adds support for full text searching of a collection based on [Bleve](https://blevesearch.com) indexes.
-It supports a [query string language]() similar to elastic search. Additionally _find_ can render the results
-in various formats include plain text, JSON, and CSV.
+_find_ adds support for full text searching of a collection based on [Bleve](https://www.blevesearch.com) search
+engine indexes.  It supports a [query string language](http://www.blevesearch.com/docs/Query-String-Query/) 
+similar to elastic search. Additionally _find_ can render the results in various formats include plain text, JSON, and CSV.
 
 _find_ supports using multiple indexes. List the index names separated by colons.
 

@@ -61,9 +61,9 @@ returning records that matched based on how the index was defined.</p>
 
 <p>Let&rsquo;s say you have created an index called <em>audiodramas.bleve</em>. That index also includes
 information about characters, scenes, etc.  If you want to search both <em>characters.bleve</em>
-and <em>audiodramas.bleve</em> include both with your <em>find</em> command</p>
+and <em>audiodramas.bleve</em> separate them a colon and include both with your <em>find</em> command.</p>
 
-<pre><code class="language-shell">    dataset find characters.bleve audiodramas.bleve &quot;Jack Flanders&quot;
+<pre><code class="language-shell">    dataset find 'characters.bleve:audiodramas.bleve' &quot;Jack Flanders&quot;
 </code></pre>
 
 </section>

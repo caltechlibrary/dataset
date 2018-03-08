@@ -79,7 +79,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [find](docs/dataset/find.html) provides a index based full text search interface for collections
 
 
-## [Examples](examples/)
+## Example
 
 Common operations using the *dataset* command line tool
 
