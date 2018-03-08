@@ -304,7 +304,7 @@ func main() {
 			}
 		}
 
-		results, err := dataset.Find(idxList.Alias, []string{qString}, opts)
+		results, err := dataset.Find(idxList.Alias, qString, opts)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%s", err), 500)
 		}

@@ -6,7 +6,6 @@ but a more explority approach can be taken by the list below
 
 + [getting started with dataset](getting-started-with-dataset.html)
 + [how to](../how-to/) -- task oriented
-+ [examples](../examples/) -- examples by command line program
 
 ## Command line program documentation
 

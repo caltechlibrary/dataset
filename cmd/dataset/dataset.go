@@ -28,6 +28,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -175,14 +176,18 @@ func collectionInit(params ...string) (string, error) {
 
 // collectionStatus sees if we can find the dataset collection given the path
 func collectionStatus(params ...string) (string, error) {
-	if len(params) < 1 {
+	if len(params) == 1 && collectionName == "" {
 		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
 	}
-	for _, collectionName := range params {
-		_, err := dataset.Open(collectionName)
+	if len(params) == 0 {
+		params = []string{collectionName}
+	}
+	for _, cName := range params {
+		c, err := dataset.Open(cName)
 		if err != nil {
-			return "", fmt.Errorf("%s: %s", collectionName, err)
+			return "", fmt.Errorf("%s: %s", cName, err)
 		}
+		c.Close()
 	}
 	return "OK", nil
 }
@@ -818,18 +823,18 @@ func exportGSheet(params ...string) (string, error) {
 	sheetName := params[1]
 	cellRange := params[2]
 	filterExpr := params[3]
-	dotPaths := strings.Split(params[4], ",")
+	dotExprs := strings.Split(params[4], ",")
 	colNames := []string{}
 	if len(params) <= 5 {
-		for _, val := range dotPaths {
+		for _, val := range dotExprs {
 			colNames = append(colNames, val)
 		}
 	} else {
 		colNames = strings.Split(params[5], ",")
 	}
 	// Trim the any spaces for paths and column names
-	for i, val := range dotPaths {
-		dotPaths[i] = strings.TrimSpace(val)
+	for i, val := range dotExprs {
+		dotExprs[i] = strings.TrimSpace(val)
 	}
 	for i, val := range colNames {
 		colNames[i] = strings.TrimSpace(val)
@@ -850,12 +855,13 @@ func exportGSheet(params ...string) (string, error) {
 			m := map[string]interface{}{}
 			if err := collection.Read(key, m); err == nil {
 				row := []interface{}{}
-				for _, colPath := range dotPaths {
+				for _, colPath := range dotExprs {
 					col, err := dotpath.Eval(colPath, m)
 					if err == nil {
 						row = append(row, col)
 					} else {
 						row = append(row, "")
+						return "", fmt.Errorf("failed to evaluate dot path, %s", err)
 					}
 				}
 				table = append(table, row)
@@ -873,12 +879,13 @@ func exportGSheet(params ...string) (string, error) {
 				if ok, err := f.Apply(m); err == nil && ok == true {
 					// save row out.
 					row := []interface{}{}
-					for _, colPath := range dotPaths {
+					for _, colPath := range dotExprs {
 						col, err := dotpath.Eval(colPath, m)
 						if err == nil {
 							row = append(row, col)
 						} else {
 							row = append(row, "")
+							return "", fmt.Errorf("failed to evaluate dot path, %s", err)
 						}
 					}
 					table = append(table, row)
@@ -903,18 +910,18 @@ func exportCSV(params ...string) (string, error) {
 	}
 	csvFName := params[0]
 	filterExpr := params[1]
-	dotPaths := strings.Split(params[2], ",")
+	dotExprs := strings.Split(params[2], ",")
 	colNames := []string{}
 	if len(params) < 4 {
-		for _, val := range dotPaths {
+		for _, val := range dotExprs {
 			colNames = append(colNames, strings.TrimPrefix(val, "."))
 		}
 	} else {
 		colNames = strings.Split(params[3], ",")
 	}
 	// Trim the any spaces for paths and column names
-	for i, val := range dotPaths {
-		dotPaths[i] = strings.TrimSpace(val)
+	for i, val := range dotExprs {
+		dotExprs[i] = strings.TrimSpace(val)
 	}
 	for i, val := range colNames {
 		colNames[i] = strings.TrimSpace(val)
@@ -926,7 +933,7 @@ func exportCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotPaths, colNames, showVerbose); err != nil {
+	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't export CSV, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
@@ -1082,22 +1089,23 @@ func deindexer(params ...string) (string, error) {
 }
 
 func find(params ...string) (string, error) {
-	var (
-		indexNames  []string
-		queryString string
-	)
 	if len(params) < 2 {
 		return "", fmt.Errorf("syntax: %s [OPTIONS] INDEX_NAMES QUERY_STRING", os.Args[0])
 	}
-	if len(params) > 0 {
-		if strings.Contains(params[0], ":") == true {
-			indexNames = strings.Split(params[0], ":")
-		} else {
-			indexNames = []string{params[0]}
+	indexNames := []string{}
+	queryString := ""
+	for _, param := range params {
+		if len(param) > 0 {
+			if strings.HasSuffix(param, ".bleve") {
+				if strings.Contains(param, ":") == true {
+					indexNames = append(indexNames, strings.Split(param, ":")...)
+				} else {
+					indexNames = append(indexNames, param)
+				}
+			} else {
+				queryString = param
+			}
 		}
-	}
-	if len(params) > 1 {
-		queryString = params[1]
 	}
 	options := map[string]string{}
 	if explain == true {
@@ -1137,7 +1145,7 @@ func find(params ...string) (string, error) {
 		return "", fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
 	}
 
-	results, err := dataset.Find(idxList.Alias, strings.Split(queryString, "\n"), options)
+	results, err := dataset.Find(idxList.Alias, queryString, options)
 	if err != nil {
 		return "", fmt.Errorf("Find error %s, %s", strings.Join(indexNames, ", "), err)
 	}
@@ -1149,14 +1157,20 @@ func find(params ...string) (string, error) {
 	//
 	// Handle results formatting choices
 	//
-	var buf bytes.Buffer
-	out := bufio.NewWriter(&buf)
 	switch {
 	case jsonFormat == true:
-		err = dataset.JSONFormatter(out, results, prettyPrint)
+		if prettyPrint {
+			src, err := json.MarshalIndent(results, "", "    ")
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf("%s", src), err
+		}
+		src, err := json.Marshal(results)
 		if err != nil {
 			return "", err
 		}
+		return fmt.Sprintf("%s", src), err
 	case csvFormat == true:
 		var fields []string
 		if resultFields == "" {
@@ -1164,23 +1178,24 @@ func find(params ...string) (string, error) {
 		} else {
 			fields = strings.Split(resultFields, ",")
 		}
-		err = dataset.CSVFormatter(out, results, fields, csvSkipHeader)
+		var buf bytes.Buffer
+		fp := bufio.NewWriter(&buf)
+		err = dataset.CSVFormatter(fp, results, fields, csvSkipHeader)
 		if err != nil {
 			return "", err
 		}
-	case idsOnly == true:
-		for _, hit := range results.Hits {
-			fmt.Fprintf(out, "%s", hit.ID)
+		if err := fp.Flush(); err != nil {
+			return "", err
 		}
-	default:
-		fmt.Fprintf(out, "%s", results)
+		return buf.String(), nil
+	case idsOnly == true:
+		ids := []string{}
+		for _, hit := range results.Hits {
+			ids = append(ids, hit.ID)
+		}
+		return strings.Join(ids, "\n"), nil
 	}
-
-	if newLine {
-		fmt.Fprintln(out, "")
-	}
-	// Return buffer as string
-	return buf.String(), nil
+	return results.String(), nil
 }
 
 func main() {
@@ -1288,11 +1303,24 @@ func main() {
 		app.GenerateMarkdownDocs(app.Out)
 		os.Exit(0)
 	}
-	if showHelp || showExamples {
+	if showHelp {
 		if len(args) > 0 {
 			fmt.Fprintf(app.Out, app.Help(args...))
 		} else {
 			app.Usage(app.Out)
+		}
+		os.Exit(0)
+	}
+	if showExamples {
+		if len(args) > 0 {
+			fmt.Fprintf(app.Out, app.Help(args...))
+		} else {
+			keys := []string{}
+			for k, _ := range Examples {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			fmt.Fprintf(app.Out, "try \"%s -examples TOPIC\" for any of these topics:\n\t%s\n\n", appName, strings.Join(keys, "\n\t"))
 		}
 		os.Exit(0)
 	}

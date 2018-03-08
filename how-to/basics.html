@@ -13,8 +13,12 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="./">dataset</a></li>
-<li><a href="topics.html">topics</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
@@ -22,11 +26,11 @@
 <section>
 <h2>Basics</h2>
 
-<p>This is an example of creating a dataset called testdata/friends, saving
+<p>This is an example of creating a dataset called <em>fiends.ds</em>, saving
 a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
 
-<pre><code class="language-shell">   dataset init testdata/friends
-   export DATASET=testdata/friends
+<pre><code class="language-shell">   dataset init fiends.ds
+   export DATASET=&quot;fiends.ds&quot;
    dataset create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
    for KY in $(dataset keys); do
       echo &quot;Path: $(dataset path $KY) 
@@ -34,7 +38,7 @@ a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
    done
 </code></pre>
 
-<p>Notice that the command <code>dataset init testdata/friends</code> will emmit the <code>export DATASET=testdata/friends</code>
+<p>Notice that the command <code>dataset init fiends.ds</code> will emmit the <code>export DATASET=&quot;fiends.ds&quot;</code>
 line. You can cut and paste this into your terminal session to set the default
 dataset you&rsquo;re using. This will save you resorting to the <code>-c</code> or <code>-collection</code> option which makes
 the command quite long.</p>
@@ -46,7 +50,7 @@ the command quite long.</p>
 
 <p>You can also read your JSON formatted data from a file or standard input.
 In this example we are creating a mojosam record and reading back the contents
-of testdata/friends</p>
+of fiends.ds</p>
 
 <pre><code class="language-shell">   dataset -i mojosam.json create mojosam
    for KY in $(dataset keys); do

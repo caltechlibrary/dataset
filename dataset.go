@@ -43,13 +43,13 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.31-dev`
+	Version = `v0.0.32-dev`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
 %s %s
 
-Copyright (c) 2017, Caltech
+Copyright (c) 2018, Caltech
 All rights not granted herein are expressly reserved by Caltech.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

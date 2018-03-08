@@ -13,22 +13,29 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="./">examples</a></li>
-<li><a href="topics.html">topics</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h2>EXAMPLES</h2>
+<h2>Extract</h2>
 
-<p>In the example the index will be created for a collection called &ldquo;characters&rdquo;.</p>
+<p>If wanted to extract a unqie list of all ORCIDs from a collection. For
+our example we assume that you have already created a collection called *publishers.ds&rdquo;.</p>
 
-<pre><code>    dsindexer -c characters email-mapping.json email-index
+<pre><code class="language-shell">   dataset publishers.ds extract true .authors[:].orcid
 </code></pre>
 
-<p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
-in &ldquo;email-mapping.json&rdquo;.</p>
+<p>If you wanted to extract a list of ORCIDs from publications in 2016.</p>
+
+<pre><code class="language-shell">   dataset publishers.ds extract '(eq 2016 (year .pubDate))' .authors[:].orcid
+</code></pre>
 
 </section>
 

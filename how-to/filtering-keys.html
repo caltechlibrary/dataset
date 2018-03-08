@@ -13,8 +13,12 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="./">dataset</a></li>
-<li><a href="topics.html">topics</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
@@ -23,17 +27,17 @@
 <h2>Filters and sorts</h2>
 
 <p><em>dataset keys</em> can be used to to filter and sort a key list.
-Here&rsquo;s is a simple case for match records where given name is equal to
-&ldquo;Mojo&rdquo;. We will save the result in a file called <em>mojo.keys</em>.</p>
+Here&rsquo;s is a simple case for match records in a collection named <em>characters.ds</em>
+where the given name is equal to &ldquo;Mojo&rdquo;. We will save the result in a file called <em>mojo.keys</em>.</p>
 
-<pre><code class="language-shell">   dataset keys '(eq .given &quot;Mojo&quot;)' &gt; mojo.keys
+<pre><code class="language-shell">   dataset characters.ds keys '(eq .given &quot;Mojo&quot;)' &gt; mojo.keys
 </code></pre>
 
 <p>You can also use an existing key list (e.g. <em>mojo.keys</em>)
 to sub select based on a new filter and/or sort expression.
 We will filter for a family name of &ldquo;Sam&rdquo; and sort by the age field.</p>
 
-<pre><code class="language-shell">   dataset -key-file=mojo.keys keys '(eq .family &quot;Sam&quot;)' '+.age'
+<pre><code class="language-shell">   dataset -c characters.ds -key-file=mojo.keys keys '(eq .family &quot;Sam&quot;)' '+.age'
 </code></pre>
 
 </section>

@@ -475,7 +475,7 @@ func randomXsOfNInts(size, MaxSize int, random *rand.Rand) []int {
 
 // Find takes a Bleve index name and query string, opens the index, and writes the
 // results to the os.File provided. Function returns an error if their are problems.
-func Find(idxAlias bleve.IndexAlias, queryStrings []string, options map[string]string) (*bleve.SearchResult, error) {
+func Find(idxAlias bleve.IndexAlias, queryString string, options map[string]string) (*bleve.SearchResult, error) {
 	// Opening all our indexes
 	var (
 		size             int
@@ -522,7 +522,7 @@ func Find(idxAlias bleve.IndexAlias, queryStrings []string, options map[string]s
 	}
 
 	//Note: find uses the Query String Query, it'll join queryStrings with a space
-	query := bleve.NewQueryStringQuery(strings.Join(queryStrings, " "))
+	query := bleve.NewQueryStringQuery(queryString)
 	search := bleve.NewSearchRequestOptions(query, size, from, explain)
 	if includeLocations == true {
 		search.IncludeLocations = true
