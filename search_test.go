@@ -101,7 +101,7 @@ func TestBleveMapIndexingSearch(t *testing.T) {
 		t.FailNow()
 	}
 
-	results, err := Find(idxList.Alias, []string{"600622"}, opts)
+	results, err := Find(idxList.Alias, "600622", opts)
 	if err != nil {
 		t.Errorf("Find returned an error, %s", err)
 		t.FailNow()
@@ -165,7 +165,7 @@ func TestIndexingSearch(t *testing.T) {
 		t.FailNow()
 	}
 
-	results, err := Find(idxList.Alias, []string{"600622"}, opts)
+	results, err := Find(idxList.Alias, "600622", opts)
 	if err != nil {
 		t.Errorf("Find returned an error, %s", err)
 		t.FailNow()
@@ -263,7 +263,7 @@ func TestIndexerDeindexer(t *testing.T) {
 	}
 
 	queryString := `+family:"Verne"`
-	results, err := Find(idxList.Alias, []string{queryString}, map[string]string{})
+	results, err := Find(idxList.Alias, queryString, map[string]string{})
 	if err != nil {
 		t.Errorf("Can't find %q in index %s, %s", queryString, indexName, err)
 		t.FailNow()

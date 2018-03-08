@@ -1089,22 +1089,23 @@ func deindexer(params ...string) (string, error) {
 }
 
 func find(params ...string) (string, error) {
-	var (
-		indexNames  []string
-		queryString string
-	)
 	if len(params) < 2 {
 		return "", fmt.Errorf("syntax: %s [OPTIONS] INDEX_NAMES QUERY_STRING", os.Args[0])
 	}
-	if len(params) > 0 {
-		if strings.Contains(params[0], ":") == true {
-			indexNames = strings.Split(params[0], ":")
-		} else {
-			indexNames = []string{params[0]}
+	indexNames := []string{}
+	queryString := ""
+	for _, param := range params {
+		if len(param) > 0 {
+			if strings.HasSuffix(param, ".bleve") {
+				if strings.Contains(param, ":") == true {
+					indexNames = append(indexNames, strings.Split(param, ":")...)
+				} else {
+					indexNames = append(indexNames, param)
+				}
+			} else {
+				queryString = param
+			}
 		}
-	}
-	if len(params) > 1 {
-		queryString = params[1]
 	}
 	options := map[string]string{}
 	if explain == true {
@@ -1144,7 +1145,7 @@ func find(params ...string) (string, error) {
 		return "", fmt.Errorf("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
 	}
 
-	results, err := dataset.Find(idxList.Alias, strings.Split(queryString, "\n"), options)
+	results, err := dataset.Find(idxList.Alias, queryString, options)
 	if err != nil {
 		return "", fmt.Errorf("Find error %s, %s", strings.Join(indexNames, ", "), err)
 	}
@@ -1156,14 +1157,20 @@ func find(params ...string) (string, error) {
 	//
 	// Handle results formatting choices
 	//
-	var buf bytes.Buffer
-	out := bufio.NewWriter(&buf)
 	switch {
 	case jsonFormat == true:
-		err = dataset.JSONFormatter(out, results, prettyPrint)
+		if prettyPrint {
+			src, err := json.MarshalIndent(results, "", "    ")
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf("%s", src), err
+		}
+		src, err := json.Marshal(results)
 		if err != nil {
 			return "", err
 		}
+		return fmt.Sprintf("%s", src), err
 	case csvFormat == true:
 		var fields []string
 		if resultFields == "" {
@@ -1171,23 +1178,24 @@ func find(params ...string) (string, error) {
 		} else {
 			fields = strings.Split(resultFields, ",")
 		}
-		err = dataset.CSVFormatter(out, results, fields, csvSkipHeader)
+		var buf bytes.Buffer
+		fp := bufio.NewWriter(&buf)
+		err = dataset.CSVFormatter(fp, results, fields, csvSkipHeader)
 		if err != nil {
 			return "", err
 		}
-	case idsOnly == true:
-		for _, hit := range results.Hits {
-			fmt.Fprintf(out, "%s", hit.ID)
+		if err := fp.Flush(); err != nil {
+			return "", err
 		}
-	default:
-		fmt.Fprintf(out, "%s", results)
+		return buf.String(), nil
+	case idsOnly == true:
+		ids := []string{}
+		for _, hit := range results.Hits {
+			ids = append(ids, hit.ID)
+		}
+		return strings.Join(ids, "\n"), nil
 	}
-
-	if newLine {
-		fmt.Fprintln(out, "")
-	}
-	// Return buffer as string
-	return buf.String(), nil
+	return results.String(), nil
 }
 
 func main() {
