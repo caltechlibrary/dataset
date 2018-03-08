@@ -6,7 +6,7 @@
   "codeRepository": "https://github.com/caltechlibrary/dataset",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "license": "https://data.caltech.edu/license",
-  "version": "0.0.32-dev",
+  "version": "0.0.33",
   "author": [
     {
       "@type": "Person",
@@ -25,7 +25,7 @@
       "@id": "https://orcid.org/0000-0001-9266-5146"
     }],
   "developmentStatus": "active",
-  "downloadUrl": "https://github.com/caltechlibrary/dataset/archive/0.0.32.zip",
+  "downloadUrl": "https://github.com/caltechlibrary/dataset/archive/0.0.33.zip",
   "keywords": [
     "GitHub",
     "metadata",

@@ -41,9 +41,9 @@ go_dataset_version.restype = ctypes.c_char_p
 verbose_on = lib.verbose_on
 verbose_off = lib.verbose_off
 
-go_init_collection = lib.init_collection
-go_init_collection.argtypes = [ctypes.c_char_p]
-go_init_collection.restype = ctypes.c_int
+go_init = lib.init_collection
+go_init.argtypes = [ctypes.c_char_p]
+go_init.restype = ctypes.c_int
 
 go_create_record = lib.create_record
 go_create_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
@@ -160,9 +160,9 @@ def version():
     return value.decode() 
 
 # Initializes a Dataset Collection
-def init_collection(collection_name):
+def init(collection_name):
     '''initialize a dataset collection with the given name'''
-    value = go_init_collection(ctypes.c_char_p(collection_name.encode('utf8')))
+    value = go_init(ctypes.c_char_p(collection_name.encode('utf8')))
     if value == 1:
         return True
     return False
