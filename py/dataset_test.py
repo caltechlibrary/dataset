@@ -293,7 +293,7 @@ def test_gsheet(collection_name, setup_bash):
         sheet_id = cfg.get("spreadsheet_id")
     client_secret_name = "../" + client_secret_name
 
-    ok = dataset.init_collection(collection_name)
+    ok = dataset.init(collection_name)
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
@@ -363,7 +363,7 @@ def test_setup(collection_name):
     error_count = 0
     if os.path.exists(collection_name):
         shutil.rmtree(collection_name)
-    ok = dataset.init_collection(collection_name)
+    ok = dataset.init(collection_name)
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
@@ -512,7 +512,7 @@ def test_s3():
     ok = dataset.status(collection_name)
     if ok == False:
         print("Missing", collection_name, "attempting to initialize", collection_name)
-        ok = dataset.init_collection(collection_name)
+        ok = dataset.init(collection_name)
         if ok == False:
             print("Aborting, couldn't initialize", collection_name)
             error_count += 1
