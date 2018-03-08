@@ -414,7 +414,7 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 		return C.CString("")
 	}
 
-	result, err := dataset.Find(idxList.Alias, strings.Split(queryString, "\n"), options)
+	result, err := dataset.Find(idxList.Alias, queryString, options)
 	if err != nil {
 		messagef("Find error %s, %s", strings.Join(indexNames, ", "), err)
 		// return "", failed
