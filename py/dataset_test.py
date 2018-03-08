@@ -501,6 +501,58 @@ def test_attachments(collection_name):
 
     return error_count
 
+def test_s3():
+    error_count = 0
+    aws_sdk_load_config = os.getenv("AWS_SDK_LOAD_CONFIG", "")
+    collection_name = os.getenv("DATASET", "")
+    if aws_sdk_load_config != "1" or collection_name[0:5] != "s3://":
+        print("Skipping test_s3(), missing environment AWS_SDK_LOAD_CONFIG and DATASET")
+        return error_count
+    
+    ok = dataset.status(collection_name)
+    if ok == False:
+        print("Missing", collection_name, "attempting to initialize", collection_name)
+        ok = dataset.init_collection(collection_name)
+        if ok == False:
+            print("Aborting, couldn't initialize", collection_name)
+            error_count += 1
+            return error_count
+    else:
+        print("Using collection initialized as", collection_name)
+
+    collection_name = os.getenv("DATASET")
+    record = { "one": 1 }
+    key = "s3t1"
+    ok = dataset.create(collection_name, key, record)
+    if ok == False:
+        print("Failed to create record", collection_name, key, record)
+        error_count += 1
+    record2 = dataset.read(collection_name, key)
+    if record2.get("one") != 1:
+        print("Failed, read", collection_name, key, record2)
+        error_count += 1
+    record["two"] = 2
+    ok = dataset.update(collection_name, key, record)
+    if ok == False:
+        print("Failed to update record", collection_name, key, record)
+        error_count += 1
+    record2 = dataset.read(collection_name, key)
+    if record2.get("one") != 1:
+        print("Failed, 2nd read", collection_name, key, record2)
+        error_count += 1
+    if record2.get("two") != 2:
+        print("Failed, 2nd read", collection_name, key, record2)
+        error_count += 1
+    ok = dataset.delete(collection_name, key)
+    if ok == False:
+        print("Failed to delete record", collection_name, key, record)
+        error_count += 1
+    ok = dataset.has_key(collection_name, key)
+    if ok == True:
+        print("Failed, delete should have removed key", collection_name, key)
+        error_count += 1
+    return error_count     
+
 #
 # Main processing
 #
@@ -522,6 +574,7 @@ error_count += test_issue32(collection_name)
 error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
 error_count += test_check_repair("test_gsheet.ds")
 error_count += test_attachments(collection_name)
+error_count += test_s3()
 
 print("Tests completed")
 
