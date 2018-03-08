@@ -406,8 +406,15 @@ def test_check_repair(collection_name):
         error_count += 1
     return error_count
         
-def test_attachments(collection_name, filenames):
+def test_attachments(collection_name):
     print("Testing attach, attachments, detach and prune")
+    # Generate two files to attach.
+    with open('a1.txt', 'w') as text_file:
+        text_file.write('This is file a1')
+    with open('a2.txt', 'w') as text_file:
+        text_file.write('This is file a2')
+    filenames = ['a1.txt','a2.txt']
+
     error_count = 0
     ok = dataset.status(collection_name)
     if ok == False:
@@ -426,6 +433,71 @@ def test_attachments(collection_name, filenames):
         print("Failed, to attach files for", collection_name, key, filenames)
         error_count += 1
         return error_count
+
+    l = dataset.attachments(collection_name, key)
+    if len(l) != 2:
+        print("Failed, expected two attachments for", collection_name, key, "got", l)
+        error_count += 1
+        return error_count
+
+    if os.path.exists(filenames[0]):
+        os.remove(filenames[0])
+    if os.path.exists(filenames[1]):
+        os.remove(filenames[1])
+
+    # First try detaching one file.
+    ok = dataset.detach(collection_name, key, [filenames[1]])
+    if ok == False:
+        print("Failed, expected True for", collection_name, key, filenames[1])
+        error_count += 1
+    if os.path.exists(filenames[1]):
+        os.remove(filenames[1])
+    else:
+        printf("Failed to detch", filenames[1], "from", collection_name, key)
+        error_count += 1
+
+    # Test explicit filenames detch
+    ok = dataset.detach(collection_name, key, filenames)
+    if ok == False:
+        print("Failed, expected True for", collection_name, key, filenames)
+        error_count += 1 
+
+    for fname in filenames:
+        if os.path.exists(fname):
+            os.remove(fname)
+        else:
+            print("Failed, expected", fname, "to be detached from", collection_name, key)
+            error_count += 1
+
+    # Test detaching all files
+    ok = dataset.detach(collection_name, key)
+    if ok == False:
+        print("Failed, expected True for (detaching all)", collection_name, key)
+        error_count += 1 
+    for fname in filenames:
+        if os.path.exists(fname):
+            os.remove(fname)
+        else:
+            print("Failed, expected", fname, "for detaching all from", collection_name, key)
+            error_count += 1
+
+    ok = dataset.prune(collection_name, key, [filenames[0]])
+    if ok == False:
+        print("Failed, expected True for prune", collection_name, key, [filenames[0]])
+        error_count += 1 
+    l = dataset.attachments(collection_name, key)
+    if len(l) != 1:
+        print("Failed, expected one file after prune for", collection_name, key, [filenames[0]], "got", l)
+        error_count += 1
+
+    ok = dataset.prune(collection_name, key)
+    if ok == False:
+        print("Failed, expected True for prune (all)", collection_name, key)
+        error_count += 1 
+    l = dataset.attachments(collection_name, key)
+    if len(l) != 0:
+        print("Failed, expected zero files after prune for", collection_name, key, "got", l)
+        error_count += 1
 
     return error_count
 
@@ -449,7 +521,7 @@ error_count += test_search(collection_name, "test_index_map.json", "test_index.b
 error_count += test_issue32(collection_name)
 error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
 error_count += test_check_repair("test_gsheet.ds")
-error_count += test_attachments(collection_name, ["README.md", "Makefile"])
+error_count += test_attachments(collection_name)
 
 print("Tests completed")
 

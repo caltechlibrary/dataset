@@ -778,10 +778,88 @@ func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	return C.int(1)
 }
 
-/*
 //export attachments
+func attachments(cName *C.char, cKey *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+	if c.HasKey(key) == false {
+		messagef("%q is not in collection", key)
+		return C.CString("")
+	}
+	results, err := c.Attachments(key)
+	if err != nil {
+		messagef("%s", err)
+		return C.CString("")
+	}
+	if len(results) > 0 {
+		return C.CString(strings.Join(results, "\n"))
+	}
+	return C.CString("")
+}
+
 //export detach
+func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+	srcFNames := C.GoString(cFNames)
+	fNames := []string{}
+	if len(srcFNames) > 0 {
+		err := json.Unmarshal([]byte(srcFNames), &fNames)
+		if err != nil {
+			messagef("Can't unmarshal filename list, %s", err)
+			return C.int(0)
+		}
+	}
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+	if c.HasKey(key) == false {
+		messagef("%q is not in collection", key)
+		return C.int(0)
+	}
+	err = c.GetAttachedFiles(key, fNames...)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
 //export prune
-*/
+func prune(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+	srcFNames := C.GoString(cFNames)
+	fNames := []string{}
+	if len(srcFNames) > 0 {
+		err := json.Unmarshal([]byte(srcFNames), &fNames)
+		if err != nil {
+			messagef("Can't unmarshal filename list, %s", err)
+			return C.int(0)
+		}
+	}
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+
+	err = c.Prune(key, fNames...)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
 
 func main() {}

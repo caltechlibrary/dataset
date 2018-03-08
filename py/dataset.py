@@ -136,6 +136,17 @@ go_attach = lib.attach
 go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_attach.restype = ctypes.c_int
 
+go_attachments = lib.attachments
+go_attachments.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_attachments.restype = ctypes.c_char_p
+
+go_detach = lib.detach
+go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_detach.restype = ctypes.c_int
+
+go_prune = lib.prune
+go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_prune.restype = ctypes.c_int
 
 #
 # Now write our Python idiomatic function
@@ -376,4 +387,26 @@ def attach(collection_name, key, filenames = []):
         return True
     return False
     
+def attachments(collection_name, key):
+    value = go_attachments(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    s = value.decode().strip(' ')
+    if len(s) > 0:
+        return s.split("\n")
+    return ''
+
+def detach(collection_name, key, filenames = []):
+    fnames = json.dumps(filenames).encode('utf8')
+    ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
+    if ok == 1:
+        return True
+    return False
+
+def prune(collection_name, key, filenames = []):
+    fnames = json.dumps(filenames).encode('utf8')
+    ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
+    if ok == 1:
+        return True
+    return False
 
