@@ -35,6 +35,14 @@ import (
 
 var verbose = false
 
+//export is_verbose
+func is_verbose() C.int {
+	if verbose == true {
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
 //export verbose_on
 func verbose_on() {
 	verbose = true
@@ -167,6 +175,54 @@ func delete_record(name, key *C.char) C.int {
 	err = c.Delete(k)
 	if err != nil {
 		messagef("Update %s failed, %s", k, err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+//export join
+func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+	adverb := C.GoString(cAdverb)
+	objectSrc := C.GoString(cObjSrc)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+
+	outObject := map[string]interface{}{}
+	newObject := map[string]interface{}{}
+
+	if err := c.Read(key, outObject); err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+
+	if err := json.Unmarshal([]byte(objectSrc), &newObject); err != nil {
+		messagef("%s", err)
+		return C.int(0)
+	}
+	switch adverb {
+	case "append":
+		for k, v := range newObject {
+			if _, ok := outObject[k]; ok != true {
+				outObject[k] = v
+			}
+		}
+	case "overwrite":
+		for k, v := range newObject {
+			outObject[k] = v
+		}
+	default:
+		messagef("Unknown join type %q", adverb)
+		return C.int(0)
+	}
+	if err := c.Update(key, outObject); err != nil {
+		messagef("%s", err)
 		return C.int(0)
 	}
 	return C.int(1)

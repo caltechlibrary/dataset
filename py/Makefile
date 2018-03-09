@@ -41,7 +41,7 @@ $(LIB_NAME)$(EXT): $(LIB_NAME).go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 test: $(LIB_NAME)$(EXT)
-	python3 dataset_test.py "test_collection.ds"
+	python3 dataset_test.py
 
 clean:
 	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi

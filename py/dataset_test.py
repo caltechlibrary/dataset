@@ -553,6 +553,54 @@ def test_s3():
         error_count += 1
     return error_count     
 
+def test_join(collection_name):
+    error_count = 0
+    key = "test_join1"
+    obj1 = { "one": 1}
+    obj2 = { "two": 2}
+    ok = dataset.status(collection_name)
+    if ok == False:
+        print("Failed, collection status is False,", collection_name)
+        error_count += 1
+        return error_count
+    ok = dataset.has_key(collection_name, key)
+    if ok == True:
+        ok = dataset.update(collection_nane, key, obj1)
+    else:
+        ok = dataset.create(collection_name, key, obj1)
+    if ok == False:
+        print("Failed, could not add record for test", collection, key, obj1)
+        error_count += 1
+        return error_count
+    ok = dataset.join(collection_name, key, "append", obj2)
+    if ok == False:
+        print("Failed, join for", collection_name, key, "append", obj2)
+        error_count += 1
+    obj_result = dataset.read(collection_name, key)
+    if obj_result.get("one") != 1:
+        print("Failed to join append key", key, obj_result)
+        error_count += 1
+    if obj_result.get("two") != 2:
+        print("Failed to join append key", key, obj_result)
+        error_count += 1
+    obj2["one"] = 3
+    obj2["two"] = 3
+    obj2["three"] = 3
+    ok = dataset.join(collection_name, key, "overwrite", obj2)
+    if ok == False:
+        print("Failed to join overwrite", collection_name, key, "overwrite", obj2)
+        error_count += 1
+    obj_result = dataset.read(collection_name, key)
+    for k in obj_result:
+        if k != "_Key" and obj_result[k] != 3:
+            print("Failed to update value in join overwrite", k, obj_result)
+            error_count += 1
+    ok = dataset.join(collection_name, key, "fred and mary", obj2)
+    if ok == True:
+        print("Failed, expected error for join type 'fred and mary'")
+        error_count += 1
+    return error_count
+
 #
 # Main processing
 #
@@ -575,6 +623,7 @@ error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
 error_count += test_check_repair("test_gsheet.ds")
 error_count += test_attachments(collection_name)
 error_count += test_s3()
+error_count += test_join(collection_name)
 
 print("Tests completed")
 
