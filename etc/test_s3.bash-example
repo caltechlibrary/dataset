@@ -1,0 +1,3 @@
+#!/bin/bash
+export AWS_SDK_LOAD_CONFIG="1"
+export DATASET="s3://test-dataset.library.example.edu/testpy.ds"

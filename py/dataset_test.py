@@ -126,7 +126,7 @@ def test_keys(collection_name):
         print("Expected", test_count,"keys back, got", keys)
         error_count += 1
     
-    dataset.verbose_on()
+    #dataset.verbose_on()
     filter_expr = '(eq .categories "non-fiction, memoir")'
     keys = dataset.keys(collection_name, filter_expr)
     if len(keys) != 1:
@@ -192,7 +192,7 @@ def test_extract(collection_name):
 def test_search(collection_name, index_map_name, index_name):
     '''test indexer, deindexer and find functions'''
     error_count = 0
-    dataset.verbose_on()
+    #dataset.verbose_on()
     if os.path.exists(index_name):
         shutil.rmtree(index_name)
     if os.path.exists(index_map_name):
@@ -293,7 +293,7 @@ def test_gsheet(collection_name, setup_bash):
         sheet_id = cfg.get("spreadsheet_id")
     client_secret_name = "../" + client_secret_name
 
-    ok = dataset.init_collection(collection_name)
+    ok = dataset.init(collection_name)
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
@@ -363,7 +363,7 @@ def test_setup(collection_name):
     error_count = 0
     if os.path.exists(collection_name):
         shutil.rmtree(collection_name)
-    ok = dataset.init_collection(collection_name)
+    ok = dataset.init(collection_name)
     if ok == False:
         print("Failed, could not create collection")
         error_count += 1
@@ -376,6 +376,8 @@ def test_check_repair(collection_name):
     error_count = 0
     print("Testing status on", collection_name)
     # Make sure we have a left over collection to check and repair
+    if os.path.exists(collection_name) == False:
+        dataset.init(collection_name)
     ok = dataset.status(collection_name)
     if ok == False:
         print("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
@@ -512,7 +514,7 @@ def test_s3():
     ok = dataset.status(collection_name)
     if ok == False:
         print("Missing", collection_name, "attempting to initialize", collection_name)
-        ok = dataset.init_collection(collection_name)
+        ok = dataset.init(collection_name)
         if ok == False:
             print("Aborting, couldn't initialize", collection_name)
             error_count += 1
@@ -553,6 +555,54 @@ def test_s3():
         error_count += 1
     return error_count     
 
+def test_join(collection_name):
+    error_count = 0
+    key = "test_join1"
+    obj1 = { "one": 1}
+    obj2 = { "two": 2}
+    ok = dataset.status(collection_name)
+    if ok == False:
+        print("Failed, collection status is False,", collection_name)
+        error_count += 1
+        return error_count
+    ok = dataset.has_key(collection_name, key)
+    if ok == True:
+        ok = dataset.update(collection_nane, key, obj1)
+    else:
+        ok = dataset.create(collection_name, key, obj1)
+    if ok == False:
+        print("Failed, could not add record for test", collection, key, obj1)
+        error_count += 1
+        return error_count
+    ok = dataset.join(collection_name, key, "append", obj2)
+    if ok == False:
+        print("Failed, join for", collection_name, key, "append", obj2)
+        error_count += 1
+    obj_result = dataset.read(collection_name, key)
+    if obj_result.get("one") != 1:
+        print("Failed to join append key", key, obj_result)
+        error_count += 1
+    if obj_result.get("two") != 2:
+        print("Failed to join append key", key, obj_result)
+        error_count += 1
+    obj2["one"] = 3
+    obj2["two"] = 3
+    obj2["three"] = 3
+    ok = dataset.join(collection_name, key, "overwrite", obj2)
+    if ok == False:
+        print("Failed to join overwrite", collection_name, key, "overwrite", obj2)
+        error_count += 1
+    obj_result = dataset.read(collection_name, key)
+    for k in obj_result:
+        if k != "_Key" and obj_result[k] != 3:
+            print("Failed to update value in join overwrite", k, obj_result)
+            error_count += 1
+    ok = dataset.join(collection_name, key, "fred and mary", obj2)
+    if ok == True:
+        print("Failed, expected error for join type 'fred and mary'")
+        error_count += 1
+    return error_count
+
 #
 # Main processing
 #
@@ -571,9 +621,10 @@ error_count += test_keys(collection_name)
 error_count += test_extract(collection_name)
 error_count += test_search(collection_name, "test_index_map.json", "test_index.bleve")
 error_count += test_issue32(collection_name)
-error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
-error_count += test_check_repair("test_gsheet.ds")
 error_count += test_attachments(collection_name)
+error_count += test_join(collection_name)
+error_count += test_check_repair("test_check_and_repair.ds")
+error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
 error_count += test_s3()
 
 print("Tests completed")

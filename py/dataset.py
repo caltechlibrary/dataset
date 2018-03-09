@@ -38,12 +38,18 @@ lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 go_dataset_version = lib.dataset_version
 go_dataset_version.restype = ctypes.c_char_p
 
-verbose_on = lib.verbose_on
-verbose_off = lib.verbose_off
+go_is_verbose = lib.is_verbose
+go_is_verbose.restype = ctypes.c_int
 
-go_init_collection = lib.init_collection
-go_init_collection.argtypes = [ctypes.c_char_p]
-go_init_collection.restype = ctypes.c_int
+go_verbose_on = lib.verbose_on
+go_verbose_on.restype = ctypes.c_int
+
+go_verbose_off = lib.verbose_off
+go_verbose_off.restype = ctypes.c_int
+
+go_init = lib.init_collection
+go_init.argtypes = [ctypes.c_char_p]
+go_init.restype = ctypes.c_int
 
 go_create_record = lib.create_record
 go_create_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
@@ -148,9 +154,28 @@ go_prune = lib.prune
 go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_prune.restype = ctypes.c_int
 
+go_join = lib.join
+go_join.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_join.restype = ctypes.c_int
+
 #
 # Now write our Python idiomatic function
 #
+
+# is_verbose returns true is verbose is enabled, false otherwise
+def is_verbose():
+    ok = go_is_verbose()
+    return (ok == 1)
+
+# verbose_on turns verboseness off
+def verbose_on():
+    ok = go_verbose_on()
+    return (ok == 1)
+
+# verbose_off turns verboseness on
+def verbose_off():
+    ok = go_verbose_off()
+    return (ok == 1)
 
 # Returns version of dataset shared library
 def version():
@@ -160,27 +185,21 @@ def version():
     return value.decode() 
 
 # Initializes a Dataset Collection
-def init_collection(collection_name):
+def init(collection_name):
     '''initialize a dataset collection with the given name'''
-    value = go_init_collection(ctypes.c_char_p(collection_name.encode('utf8')))
-    if value == 1:
-        return True
-    return False
+    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')))
+    return (ok == 1)
 
 # Has key, checks if a key is in the dataset collection
 def has_key(collection_name, key):
-    value = go_has_key(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
-    if value == 1:
-        return True
-    return False
+    ok = go_has_key(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    return (ok == 1)
 
 # Create a JSON record in a Dataset Collectin
 def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
     ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
     
 # Read a JSON record from a Dataset collection
 def read(collection_name, key):
@@ -198,19 +217,13 @@ def read(collection_name, key):
 def update(collection_name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
     ok = go_update_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    if ok == 1:
-        return True
-    return False
-    
+    return (ok == 1)
 
 # Delete a JSON record from a Dataset collection
 def delete(collection_name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
     ok = go_delete_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
-    if ok == 1:
-        return True
-    return False
-    
+    return (ok == 1)
 
 # Keys returns a list of keys from a collection optionally applying a filter or sort expression
 def keys(collection_name, filter_expr = "", sort_expr = ""):
@@ -239,7 +252,7 @@ def key_filter(collection_name, keys, filter_expr):
 def key_sort(collection_name, keys, sort_expr):
     '''key_filter takes a list of keys (if empty or * then it uses all keys in collection) and a filter expression returning a filtered list'''
     key_list = json.dumps(keys)
-    value = go_key_sort(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key_list.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')))
+    value = go_key_sort(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key_list.encode('utf8')), ctypes.c_char_p(sort_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
     rval = value.decode()
@@ -250,8 +263,7 @@ def key_sort(collection_name, keys, sort_expr):
 # Count returns an integer of the number of keys in a collection
 def count(collection_name, filter = ''):
     '''count returns an integer of the number of keys in a collection'''
-    value = go_count(ctypes.c_char_p(collection_name.encode('utf8')))
-    return value
+    return go_count(ctypes.c_char_p(collection_name.encode('utf8')))
 
 # Extract unique values from the JSON records in a collection given a filter expression and dot path
 def extract(collection_name, filter_expr, dot_expr):
@@ -271,9 +283,7 @@ def indexer(collection_name, index_name, index_map_name, key_list = [], batch_si
     '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
     key_list_src = json.dumps(key_list)
     ok = go_indexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(index_map_name.encode('utf8')), ctypes.c_char_p(key_list_src.encode('utf8')), ctypes.c_int(batch_size))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 # Deindexer takes a collection name, an index name, key list and optional batch size deleting the provided keys from 
 # the index.
@@ -281,9 +291,7 @@ def deindexer(collection_name, index_name, key_list, batch_size = 0):
     '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
     key_list_src = json.dumps(key_list).encode('utf8')
     ok = go_deindexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(key_list_src), ctypes.c_int(batch_size))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 # Find takes an index name, query string an optional options dict and returns a search result
 def find(index_names, query_string, options = {}):
@@ -308,17 +316,13 @@ def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uui
     else:
         i_use_uuid = 0
     ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctyles.c_int(i_use_uuid))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def export_csv(collection_name, csv_name, filter_expr = 'true', dot_exprs = [], col_names = []):
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col, use_header_row = True, use_uuid = False, overwrite = True):
     if use_header_row == True:
@@ -335,23 +339,17 @@ def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cel
         i_overwrite = 0
 
     ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctypes.c_int(i_use_uuid), ctypes.c_int(i_overwrite))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr = 'true', dot_exprs = [], col_names = []):
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def status(collection_name):
     ok = go_status(collection_name.encode('utf8'))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def list(collection_name, keys = []):
     src_keys = json.dumps(keys)
@@ -370,22 +368,16 @@ def path(collection_name, key):
 
 def check(collection_name):
     ok = go_check(ctypes.c_char_p(collection_name.encode('utf8')))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def repair(collection_name):
     ok = go_repair(ctypes.c_char_p(collection_name.encode('utf8')))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def attach(collection_name, key, filenames = []):
     srcFNames = json.dumps(filenames).encode('utf8')
     ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(srcFNames))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
     
 def attachments(collection_name, key):
     value = go_attachments(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
@@ -399,14 +391,15 @@ def attachments(collection_name, key):
 def detach(collection_name, key, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
 
 def prune(collection_name, key, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
-    if ok == 1:
-        return True
-    return False
+    return (ok == 1)
+
+def join(collection_name, key, adverb, obj = {}):
+    src = json.dumps(obj).encode('utf8')
+    ok = go_join(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(adverb.encode('utf8')), ctypes.c_char_p(src))
+    return (ok == 1)
 

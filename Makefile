@@ -82,6 +82,7 @@ clean:
 	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
+	if [ -d testdata ]; then rm -fR testdata; fi
 	cd py && $(MAKE) clean
 
 dist/linux-amd64:
@@ -116,14 +117,11 @@ distribute_docs:
 	rm -fR dist
 	mkdir -p dist/how-to
 	mkdir -p dist/docs
-	mkdir -p dist/demos
-	mkdir -p dist/examples
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
 	cp -v docs/*.md dist/docs/
 	cp -v how-to/*.md dist/how-to/
-	cp -v examples/*.md dist/examples/
 	cp -vR demos dist/
 	bash package-versions.bash > dist/package-versions.txt
 
