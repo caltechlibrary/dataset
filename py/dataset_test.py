@@ -126,7 +126,7 @@ def test_keys(collection_name):
         print("Expected", test_count,"keys back, got", keys)
         error_count += 1
     
-    dataset.verbose_on()
+    #dataset.verbose_on()
     filter_expr = '(eq .categories "non-fiction, memoir")'
     keys = dataset.keys(collection_name, filter_expr)
     if len(keys) != 1:
@@ -192,7 +192,7 @@ def test_extract(collection_name):
 def test_search(collection_name, index_map_name, index_name):
     '''test indexer, deindexer and find functions'''
     error_count = 0
-    dataset.verbose_on()
+    #dataset.verbose_on()
     if os.path.exists(index_name):
         shutil.rmtree(index_name)
     if os.path.exists(index_map_name):
@@ -376,6 +376,8 @@ def test_check_repair(collection_name):
     error_count = 0
     print("Testing status on", collection_name)
     # Make sure we have a left over collection to check and repair
+    if os.path.exists(collection_name) == False:
+        dataset.init(collection_name)
     ok = dataset.status(collection_name)
     if ok == False:
         print("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
@@ -619,11 +621,11 @@ error_count += test_keys(collection_name)
 error_count += test_extract(collection_name)
 error_count += test_search(collection_name, "test_index_map.json", "test_index.bleve")
 error_count += test_issue32(collection_name)
-error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
-error_count += test_check_repair("test_gsheet.ds")
 error_count += test_attachments(collection_name)
-error_count += test_s3()
 error_count += test_join(collection_name)
+error_count += test_check_repair("test_check_and_repair.ds")
+error_count += test_gsheet("test_gsheet.ds", "../etc/test_gsheet.bash")
+error_count += test_s3()
 
 print("Tests completed")
 

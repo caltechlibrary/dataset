@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
@@ -296,6 +297,14 @@ func TestMain(m *testing.M) {
 		err          error
 		defn1, defn2 []byte
 	)
+	err = os.MkdirAll(path.Dir(mName), 0775)
+	if err != nil {
+		log.Fatalf("Can't create dir %s, %s", path.Dir(mName), err)
+	}
+	err = os.MkdirAll(path.Dir(mbName), 0775)
+	if err != nil {
+		log.Fatalf("Can't create dir %s, %s", path.Dir(mbName), err)
+	}
 
 	// Remove stale collection and index
 	os.RemoveAll(mName)
