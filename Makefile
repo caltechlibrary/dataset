@@ -125,7 +125,7 @@ distribute_docs:
 	cp -vR demos dist/
 	bash package-versions.bash > dist/package-versions.txt
 
-update_patch_no:
+update_version:
 	./update_version.py --yes
 
 release: dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
