@@ -18,6 +18,9 @@
 //
 package main
 
+// #cgo pkg-config: python-3.6
+// #define Py_LIMITED_API
+// #include <Python.h>
 import (
 	"C"
 	"encoding/json"

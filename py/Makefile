@@ -22,7 +22,7 @@ endif
 ifeq ($(OS), Darwin)
 	EXT = .dylib
 	ARCH = $(shell arch)
-	OS = maxosx
+	OS = macosx
 endif
 ifeq ($(OS), Linux)
 	EXT = .so
@@ -36,24 +36,33 @@ ifeq ($(ARCH), x86_64)
 	ARCH = amd64
 endif
 
+build: dataset/$(LIB_NAME)$(EXT)
+	python3 setup.py build
 
-$(LIB_NAME)$(EXT): $(LIB_NAME).go
-	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
-
-test: $(LIB_NAME)$(EXT)
-	python3 dataset_test.py
+dataset/$(LIB_NAME)$(EXT): $(LIB_NAME).go
+	go build -buildmode=c-shared -o "dataset/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 clean:
-	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
-	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	if [ -f "MANIFEST" ]; then rm MANIFEST; fi
+	if [ -f "dataset/$(LIB_NAME)$(EXT)" ]; then rm "dataset/$(LIB_NAME)$(EXT)"; fi
+	if [ -f "dataset/$(LIB_NAME).h" ]; then rm "dataset/$(LIB_NAME).h"; fi
+	if [ -f "test_index_map.json" ]; then rm "test_index_map.json"; fi
+	if [ -d "dist" ]; then rm -fR dist; fi
+	if [ -d "build" ]; then rm -fR build; fi
 	if [ -d "test_collection.ds" ]; then rm -fR "test_collection.ds"; fi	
 	if [ -d "test_gsheet.ds" ]; then rm -fR "test_gsheet.ds"; fi	
+	if [ -d "test_check_and_repair.ds" ]; then rm -fR "test_check_and_repair.ds"; fi
+	if [ -d "test_index.bleve" ]; then rm -fR "test_index.bleve"; fi
 	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
 
-release: $(LIB_NAME)$(EXT)
-	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+test: clean dataset/$(LIB_NAME)$(EXT)
+	python3 dataset_test.py
+
+release: clean dataset/$(LIB_NAME)$(EXT)
+	go build -buildmode=c-shared -o "dataset/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+	python3 setup.py sdist
 	mkdir -p ../dist
-	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" *.py "$(LIB_NAME)$(EXT)" "README.md"
+	cp -v dist/$(PROJECT)-$(VERSION).tar.gz "../dist/py3-$(PROJECT)-$(VERSION)-$(OS)-$(ARCH).tar.gz"
 
 status:
 	git status

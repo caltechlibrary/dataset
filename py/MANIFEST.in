@@ -1,0 +1,2 @@
+# Include our custom Go share library and codameta.json
+include dataset/libdataset.* codemeta.json

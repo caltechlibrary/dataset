@@ -31,7 +31,7 @@ def update_codemeta_json(codemeta_json, current_version, next_version):
     meta["version"] = next_version
     downloadURL = meta["downloadUrl"]
     meta["downloadUrl"] = downloadURL.replace(current_version, next_version)
-    src = json.dumps(meta)
+    src = json.dumps(meta, indent = 4)
     with open(codemeta_json, mode = "w", encoding = "utf-8") as f:
         f.write(src)
     print(f"updated {codemeta_json} version from {current_version} to {next_version}")
