@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 # Project values
-project_go = "dataset.go"
-codemeta_json = "codemeta.json"
+PROJECT_GO = "dataset.go"
+CODEMETA_JSON = "codemeta.json"
 
 #
 # No changes below this line
@@ -21,7 +21,6 @@ def inc_patch_no(v = "0.0.0"):
         patch_no += 1
         parts[2] = str(patch_no)
         return ".".join(parts)
-
     else:
         return v
 
@@ -33,19 +32,19 @@ def update_codemeta_json(codemeta_json, current_version, next_version):
     downloadURL = meta["downloadUrl"]
     meta["downloadUrl"] = downloadURL.replace(current_version, next_version)
     src = json.dumps(meta)
-    print(f"updating {codemeta_json} version from {current_version} to {next_version}")
-
     with open(codemeta_json, mode = "w", encoding = "utf-8") as f:
         f.write(src)
+    print(f"updated {codemeta_json} version from {current_version} to {next_version}")
     return True
 
 def update_project_go(project_go, current_version, next_version):
-    current_version = f"v{current_version}"
-    next_version = f"v{next_version}"
-
-    print(f"updating {project_go} Version from {current_version} to {next_version}")
-    print("WARNING: update_project_go not implemented")
-    return True
+    with open(project_go, mode = "r", encoding = "utf-8") as f:
+        src = f.read()
+    txt = src.replace(f"Version = `v{current_version}`", f"Version = `v{next_version}`")
+    with open(project_go, mode = "w", encoding = "utf-8") as f:
+        f.write(txt)
+    print(f"updated {project_go} Version from v{current_version} to v{next_version}")
+    return True 
 
 def usage(app_name):
     app_name = os.path.basename(app_name)
@@ -75,7 +74,7 @@ def main(args):
     current_version = ""
     next_version = ""
     meta = {}
-    with open(codemeta_json,"r") as f:
+    with open(CODEMETA_JSON,"r") as f:
         src = f.read()
         meta = json.loads(src)
 
@@ -93,14 +92,9 @@ def main(args):
     else:
         next_version = inc_patch_no(current_version)
 
-    if ("--yes" in args) or ("-y" in args):
-        ok = update_codemeta_json(codemeta_json, current_version, next_version)
-        if ok == False:
-            sys.exit(1)
-        ok = update_project_go(project_go, current_version, next_version)
-        if ok == False:
-            sys.exit(1)
-        sys.exit(0)
+    if ("--yes" in args) or ("-yes" in args) or ("-y" in args):
+        update_codemeta_json(CODEMETA_JSON, current_version, next_version)
+        update_project_go(PROJECT_GO, current_version, next_version)
     else:
         print("current version:", current_version)
         print("proposed version:", next_version)
