@@ -25,7 +25,7 @@
       "@id": "https://orcid.org/0000-0001-9266-5146"
     }],
   "developmentStatus": "active",
-  "downloadUrl": "https://github.com/caltechlibrary/dataset/archive/0.0.33.zip",
+  "downloadUrl": "https://github.com/caltechlibrary/dataset/archive/v0.0.33.zip",
   "keywords": [
     "GitHub",
     "metadata",
