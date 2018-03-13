@@ -47,3 +47,4 @@ py/dist
 py/build
 py/MANIFEST
 py/codemeta.json
+py/files.txt
