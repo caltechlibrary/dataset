@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
 from distutils.core import setup
 
-#FIXME: I probably want to use setuptools rather than distutils, my compiled library isn't getting copied to the right place.
-
 import sys
 import os
 import shutil
 import json
 
+readme_md = "README.md"
+readme_txt = "README.txt"
+
+def read(fname):
+    with open(fname, mode = "r", encoding = "utf-8") as f:
+        src = f.read()
+    return src
+
 codemeta_json = "codemeta.json"
 # If we're running sdist make sure our local codemeta.json is up to date!
 if "sdist" in sys.argv:
-    # Project Metadata 
+    # Project Metadata and README
     shutil.copyfile(os.path.join("..", codemeta_json),  codemeta_json)
+    shutil.copyfile(os.path.join("..", readme_md),  readme_txt)
 
 # Let's pickup as much metadata as we need from codemeta.json
 with open(codemeta_json, mode = "r", encoding = "utf-8") as f:
@@ -21,6 +28,7 @@ with open(codemeta_json, mode = "r", encoding = "utf-8") as f:
 
 # Let's make our symvar string
 version = "v"+meta["version"]
+#version = meta["version"]
 
 # Now we need to pull and format our author, author_email strings.
 author = ""
@@ -53,12 +61,7 @@ elif platform.startswith("Win"):
 setup(name = "dataset",
     version = version,
     description = "A python module for managing with JSON docs on local disc, in cloud storage",
-    long_description = """This module wraps the functionality available from the Go base command line tool developed
-at Caltech Library called dataset. The module, like the tool, supports working 
-with collections of JSON documents on your local disc as well as in the cloud 
-(e.g. AWS S3, Google Cloud Storage). It can also import/export to CSV files or 
-Google Spreadsheets. In addition to managing JSON documents dataset also
-supports full search and indexing.""",
+    long_description = read(readme_txt),
     author = author,
     author_email = author_email,
     url = "https://caltechlibrary.github.io/dataset",
@@ -66,7 +69,7 @@ supports full search and indexing.""",
     license = meta["license"],
     packages = ["dataset"],
     data_files = [
-        ("", [shared_library_name, codemeta_json])
+        ("lib/python3.6/site-packages/dataset", [os.path.join("dataset", shared_library_name)]),
     ],
     platforms = [platform],
     keywords = ["JSON", "CSV", "data science", "storage"],
