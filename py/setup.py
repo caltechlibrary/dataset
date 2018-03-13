@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from distutils.core import setup
+from site import getsitepackages
 
 import sys
 import os
@@ -56,6 +57,7 @@ elif platform.startswith("Win"):
     shared_library_name = "libdataset.dll"
     platform = "Windows"
 
+site_package_location = os.path.join(getsitepackages()[0], "dataset")
 
 # Now that we know everything configure out setup
 setup(name = "dataset",
@@ -69,7 +71,7 @@ setup(name = "dataset",
     license = meta["license"],
     packages = ["dataset"],
     data_files = [
-        ("lib/python3.6/site-packages/dataset", [os.path.join("dataset", shared_library_name)]),
+        (site_package_location, [os.path.join("dataset", shared_library_name)]),
     ],
     platforms = [platform],
     keywords = ["JSON", "CSV", "data science", "storage"],
