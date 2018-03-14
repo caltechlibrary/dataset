@@ -88,7 +88,6 @@ setup(name = "dataset",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: BSD License",
-        OS_Classifier,
-        "Natural Language :: English",
+        OS_Classifier
     ]
 )
