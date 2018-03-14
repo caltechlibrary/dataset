@@ -35,8 +35,12 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 
 # Setup our Go functions to be nicely wrapped
-go_dataset_version = lib.dataset_version
-go_dataset_version.restype = ctypes.c_char_p
+go_use_strict_dotpath = lib.use_strict_dotpath
+go_use_strict_dotpath.argtypes = [ctypes.c_int]
+go_use_strict_dotpath.restype = ctypes.c_int
+
+go_version = lib.version
+go_version.restype = ctypes.c_char_p
 
 go_is_verbose = lib.is_verbose
 go_is_verbose.restype = ctypes.c_int
@@ -161,6 +165,12 @@ go_join.restype = ctypes.c_int
 #
 # Now write our Python idiomatic function
 #
+def use_strict_dotpath(on_off = True):
+    if on_off == True:
+        go_use_strict_dotpath(1)
+        return True
+    go_use_strict_dotpath(0)
+    return False
 
 # is_verbose returns true is verbose is enabled, false otherwise
 def is_verbose():
@@ -179,7 +189,7 @@ def verbose_off():
 
 # Returns version of dataset shared library
 def version():
-    value = go_dataset_version()
+    value = go_version()
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode() 

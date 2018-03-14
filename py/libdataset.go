@@ -36,7 +36,20 @@ import (
 	"github.com/caltechlibrary/tmplfn"
 )
 
-var verbose = false
+var (
+	verbose          = false
+	useStrictDotpath = true
+)
+
+//export use_strict_dotpath
+func use_strict_dotpath(v C.int) C.int {
+	if int(v) == 1 {
+		useStrictDotpath = true
+		return C.int(1)
+	}
+	useStrictDotpath = false
+	return C.int(0)
+}
 
 //export is_verbose
 func is_verbose() C.int {
@@ -62,8 +75,8 @@ func messagef(s string, values ...interface{}) {
 	}
 }
 
-//export dataset_version
-func dataset_version() *C.char {
+//export version
+func version() *C.char {
 	return C.CString(dataset.Version)
 }
 
@@ -659,15 +672,18 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 	keys := collection.Keys()
 
 	if strings.ToLower(filterExpr) == "true" {
-		for _, key := range keys {
+		for i, key := range keys {
 			m := map[string]interface{}{}
 			if err := collection.Read(key, m); err == nil {
 				row := []interface{}{}
-				for _, colExpr := range dotExprs {
+				for j, colExpr := range dotExprs {
 					col, err := dotpath.Eval(colExpr, m)
 					if err != nil {
-						messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
-						return C.int(0)
+						if useStrictDotpath == true {
+							messagef("failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
+							return C.int(0)
+						}
+						messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 					}
 					row = append(row, col)
 				}
@@ -681,17 +697,20 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 			return C.int(0)
 		}
 
-		for _, key := range keys {
+		for i, key := range keys {
 			m := map[string]interface{}{}
 			if err := collection.Read(key, m); err == nil {
 				if ok, err := f.Apply(m); err == nil && ok == true {
 					// save row out.
 					row := []interface{}{}
-					for _, colExpr := range dotExprs {
+					for j, colExpr := range dotExprs {
 						col, err := dotpath.Eval(colExpr, m)
 						if err != nil {
-							messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
-							return C.int(0)
+							if useStrictDotpath == true {
+								messagef("failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
+								return C.int(0)
+							}
+							messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 						}
 						row = append(row, col)
 					}
