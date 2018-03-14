@@ -50,13 +50,16 @@ for obj in meta["author"]:
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
 platform = os.uname().sysname
 shared_library_name = "libdataset.so"
+OS_Classifier = "Operating System :: POSIX :: Linux"
 if platform.startswith("Darwin"):
     shared_library_name = "libdataset.dylib"
     platform = "Mac OS X"
+    OS_Classifier = "Operating System :: MacOS :: MacOS X"
 elif platform.startswith("Win"):
     shared_library_name = "libdataset.dll"
     platform = "Windows"
-
+    OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
+        
 site_package_location = os.path.join(getsitepackages()[0], "dataset")
 
 # Now that we know everything configure out setup
@@ -85,8 +88,7 @@ setup(name = "dataset",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: BSD License",
-        "Operating System :: MacOS :: MacOS X",
-        #"Operating System :: POSIX :: Linux",
+        OS_Classifier,
         "Natural Language :: English",
     ]
 )
