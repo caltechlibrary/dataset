@@ -36,7 +36,20 @@ import (
 	"github.com/caltechlibrary/tmplfn"
 )
 
-var verbose = false
+var (
+	verbose          = false
+	useStrictDotpath = true
+)
+
+//export use_strict_dotpath
+func use_strict_dotpath(v C.int) C.int {
+	if int(v) == 1 {
+		useStrictDotpath = true
+		return C.int(1)
+	}
+	useStrictDotpath = false
+	return C.int(0)
+}
 
 //export is_verbose
 func is_verbose() C.int {
@@ -62,8 +75,8 @@ func messagef(s string, values ...interface{}) {
 	}
 }
 
-//export dataset_version
-func dataset_version() *C.char {
+//export version
+func version() *C.char {
 	return C.CString(dataset.Version)
 }
 
@@ -666,8 +679,11 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 				for _, colExpr := range dotExprs {
 					col, err := dotpath.Eval(colExpr, m)
 					if err != nil {
-						messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
-						return C.int(0)
+						if useStrictDotpath == true {
+							messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+							return C.int(0)
+						}
+						messagef("warning, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
 					}
 					row = append(row, col)
 				}
@@ -690,8 +706,11 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 					for _, colExpr := range dotExprs {
 						col, err := dotpath.Eval(colExpr, m)
 						if err != nil {
-							messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
-							return C.int(0)
+							if useStrictDotpath == true {
+								messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+								return C.int(0)
+							}
+							messagef("warning, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
 						}
 						row = append(row, col)
 					}
