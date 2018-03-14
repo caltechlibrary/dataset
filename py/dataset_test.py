@@ -555,7 +555,8 @@ class TestRunner:
         if error_count > 0:
             print(f"Failed {set_name}, {error_count} total errors found")
             sys.exit(1)
-        print("Success!")
+        print("PASS")
+        print("Ok", __file__)
         sys.exit(0)
 
 #
