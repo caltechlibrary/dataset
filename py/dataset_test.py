@@ -290,12 +290,19 @@ def test_gsheet(t, collection_name, setup_bash):
         return
 
     # Check to see if this throws error correctly, i.e. should have exit code 1
-    sheet_name="Sheet2"
+    dataset.use_strict_dotpath(True)
+    sheet_name="Sheet1"
     dot_exprs = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
     ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
     if ok == True:
         t.error("Failed, export_gsheet should throw error for bad dotpath in export_gsheet")
-
+    #dataset.verbose_on()
+    dataset.use_strict_dotpath(False)
+    sheet_name = "Sheet1"
+    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
+    if ok == False:
+        t.error("Failed, export_gsheet should only warn of error for bad dotpath in export_gsheet")
+    #dataset.verbose_off()
 
 # Setup our test collection, recreate it if necessary
 def test_setup(t, collection_name):

@@ -672,18 +672,18 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 	keys := collection.Keys()
 
 	if strings.ToLower(filterExpr) == "true" {
-		for _, key := range keys {
+		for i, key := range keys {
 			m := map[string]interface{}{}
 			if err := collection.Read(key, m); err == nil {
 				row := []interface{}{}
-				for _, colExpr := range dotExprs {
+				for j, colExpr := range dotExprs {
 					col, err := dotpath.Eval(colExpr, m)
 					if err != nil {
 						if useStrictDotpath == true {
-							messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+							messagef("failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 							return C.int(0)
 						}
-						messagef("warning, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+						messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 					}
 					row = append(row, col)
 				}
@@ -697,20 +697,20 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 			return C.int(0)
 		}
 
-		for _, key := range keys {
+		for i, key := range keys {
 			m := map[string]interface{}{}
 			if err := collection.Read(key, m); err == nil {
 				if ok, err := f.Apply(m); err == nil && ok == true {
 					// save row out.
 					row := []interface{}{}
-					for _, colExpr := range dotExprs {
+					for j, colExpr := range dotExprs {
 						col, err := dotpath.Eval(colExpr, m)
 						if err != nil {
 							if useStrictDotpath == true {
-								messagef("failed, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+								messagef("failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 								return C.int(0)
 							}
-							messagef("warning, %s %s to evaluate %q, %s", sheetID, sheetName, colExpr, err)
+							messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 						}
 						row = append(row, col)
 					}
