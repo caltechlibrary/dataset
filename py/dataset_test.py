@@ -509,6 +509,9 @@ class ATest:
         self._error_count = 0
         self._verbose = False
 
+    def test_name(self):
+        return self._test_name
+
     def is_verbose(self):
         return self._verbose
 
