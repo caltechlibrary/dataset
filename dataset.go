@@ -319,7 +319,7 @@ func keyAndFName(name string) (string, string) {
 func (c *Collection) CreateJSON(key string, src []byte) error {
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
-		return fmt.Errorf("collection is not valid, zero buckets")
+		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
 	}
 
 	// Enforce the _Key attribute is unique and does not exist in collection already
@@ -376,7 +376,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 func (c *Collection) UpdateJSON(name string, src []byte) error {
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
-		return fmt.Errorf("collection is not valid, zero buckets")
+		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
 	}
 
 	// Make sure Key exists before proceeding with update

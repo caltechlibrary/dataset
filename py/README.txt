@@ -9,7 +9,7 @@ Unix tools (e.g. it respects standard in, out and error with minimal side effect
 easily scriptable via Bash, Posix shell or interpretted languages like R.
 
 _dataset_ includes an implementation as a Python3 module. The same functionality as in the command line tool is 
-replicated for Python3.
+replicated for Python3. (module requires Python 3.6 or better).
 
 Finally _dataset_ is a golang package for managing JSON documents and their attachments on disc or in cloud storage
 (e.g. Amazon S3, Google Cloud Storage). The command line utilities excersize this package extensively.

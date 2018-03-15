@@ -35,6 +35,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 
 # Setup our Go functions to be nicely wrapped
+go_error_message = lib.error_message
+go_error_message.restype = ctypes.c_char_p
+
 go_use_strict_dotpath = lib.use_strict_dotpath
 go_use_strict_dotpath.argtypes = [ctypes.c_int]
 go_use_strict_dotpath.restype = ctypes.c_int
@@ -165,6 +168,14 @@ go_join.restype = ctypes.c_int
 #
 # Now write our Python idiomatic function
 #
+
+def error_message():
+    value = go_error_message()
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode() 
+
+
 def use_strict_dotpath(on_off = True):
     if on_off == True:
         go_use_strict_dotpath(1)

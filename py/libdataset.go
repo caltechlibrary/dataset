@@ -39,7 +39,25 @@ import (
 var (
 	verbose          = false
 	useStrictDotpath = true
+	errorValue       error
 )
+
+func error_dispatch(err error, s string, values ...interface{}) {
+	errorValue = err
+	if verbose == true {
+		log.Printf(s, values...)
+	}
+}
+
+//export error_message
+func error_message() *C.char {
+	if errorValue != nil {
+		s := fmt.Sprintf("%s", errorValue)
+		errorValue = nil
+		return C.CString(s)
+	}
+	return C.CString("")
+}
 
 //export use_strict_dotpath
 func use_strict_dotpath(v C.int) C.int {
