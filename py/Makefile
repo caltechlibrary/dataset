@@ -36,32 +36,41 @@ ifeq ($(ARCH), x86_64)
 	ARCH = amd64
 endif
 
-build: dataset/$(LIB_NAME)$(EXT)
-	python3 setup.py build
+USE_SUDO =
+ifeq ($(use_sudo), true)
+	USE_SUDO = sudo
+endif
 
-dataset/$(LIB_NAME)$(EXT): $(LIB_NAME).go
-	go build -buildmode=c-shared -o "dataset/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+build: $(PROJECT)/$(LIB_NAME)$(EXT)
+
+install: $(PROJECT)/$(LIB_NAME)$(EXT)
+	$(USE_SUDO) python3 setup.py install --record files.txt
+
+
+$(PROJECT)/$(LIB_NAME)$(EXT): $(LIB_NAME).go
+	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 clean:
-	if [ -f "MANIFEST" ]; then rm MANIFEST; fi
-	if [ -f "dataset/$(LIB_NAME)$(EXT)" ]; then rm "dataset/$(LIB_NAME)$(EXT)"; fi
-	if [ -f "dataset/$(LIB_NAME).h" ]; then rm "dataset/$(LIB_NAME).h"; fi
-	if [ -f "test_index_map.json" ]; then rm "test_index_map.json"; fi
-	if [ -d "dist" ]; then rm -fR dist; fi
-	if [ -d "build" ]; then rm -fR build; fi
-	if [ -d "test_collection.ds" ]; then rm -fR "test_collection.ds"; fi	
-	if [ -d "test_gsheet.ds" ]; then rm -fR "test_gsheet.ds"; fi	
-	if [ -d "test_issue43.ds" ]; then rm -fR "test_issue43.ds"; fi	
-	if [ -f "test_issue43.csv" ]; then rm -fR "test_issue43.csv"; fi	
-	if [ -d "test_check_and_repair.ds" ]; then rm -fR "test_check_and_repair.ds"; fi
-	if [ -d "test_index.bleve" ]; then rm -fR "test_index.bleve"; fi
-	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
+	if [ -f "MANIFEST" ]; then $(USE_SUDO) rm MANIFEST; fi
+	if [ -f "$(PROJECT)/$(LIB_NAME)$(EXT)" ]; then $(USE_SUDO) rm "$(PROJECT)/$(LIB_NAME)$(EXT)"; fi
+	if [ -f "$(PROJECT)/$(LIB_NAME).h" ]; then $(USE_SUDO) rm "$(PROJECT)/$(LIB_NAME).h"; fi
+	if [ -f "test_index_map.json" ]; then $(USE_SUDO) rm "test_index_map.json"; fi
+	if [ -d "dist" ]; then $(USE_SUDO) rm -fR dist; fi
+	if [ -d "build" ]; then $(USE_SUDO) rm -fR build; fi
+	if [ -d "test_collection.ds" ]; then $(USE_SUDO) rm -fR "test_collection.ds"; fi	
+	if [ -d "test_gsheet.ds" ]; then $(USE_SUDO) rm -fR "test_gsheet.ds"; fi	
+	if [ -d "test_issue43.ds" ]; then $(USE_SUDO) rm -fR "test_issue43.ds"; fi	
+	if [ -f "test_issue43.csv" ]; then $(USE_SUDO) rm -fR "test_issue43.csv"; fi	
+	if [ -d "test_check_and_repair.ds" ]; then $(USE_SUDO) rm -fR "test_check_and_repair.ds"; fi
+	if [ -d "test_index.bleve" ]; then $(USE_SUDO) rm -fR "test_index.bleve"; fi
+	if [ -d "__pycache__" ]; then $(USE_SUDO) rm -fR "__pycache__"; fi	
+	if [ -d "$(PROJECT)/__pycache__" ]; then $(USE_SUDO) rm -fR "$(PROJECT)/__pycache__"; fi	
 
-test: clean dataset/$(LIB_NAME)$(EXT)
+test: clean $(PROJECT)/$(LIB_NAME)$(EXT)
 	python3 dataset_test.py
 
-release: clean dataset/$(LIB_NAME)$(EXT)
-	go build -buildmode=c-shared -o "dataset/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+release: clean $(PROJECT)/$(LIB_NAME)$(EXT)
+	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	python3 setup.py sdist
 	mkdir -p ../dist
 	cp -v dist/$(PROJECT)-$(VERSION).tar.gz "../dist/py3-$(PROJECT)-$(VERSION)-$(OS)-$(ARCH).tar.gz"

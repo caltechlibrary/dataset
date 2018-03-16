@@ -39,7 +39,7 @@ bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheet/gsheet.go 
 bin/dsws$(EXT): dataset.go search.go formats.go cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	go build -o bin/dsws$(EXT) cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
-build: $(PROJECT_LIST)
+build: $(PROJECT_LIST) python
 
 install: 
 	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
@@ -51,7 +51,7 @@ python:
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
-test: clean bin/dataset$(EXT) bin/dsws$(EXT) python
+test: clean bin/dataset$(EXT) bin/dsws$(EXT)
 	go test
 	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
