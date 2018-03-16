@@ -573,11 +573,14 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 	csvFName := C.GoString(cCSVFName)
 	filterExpr := C.GoString(cFilterExpr)
 	dotExprs := strings.Split(C.GoString(cDotExprs), ",")
-	colNames := strings.Split(C.GoString(cColNames), ",")
-	if len(colNames) == 0 {
+	sColNames := strings.TrimSpace(C.GoString(cColNames))
+	colNames := []string{}
+	if sColNames == "" {
 		for _, val := range dotExprs {
 			colNames = append(colNames, strings.TrimPrefix(val, "."))
 		}
+	} else {
+		colNames = strings.Split(sColNames, ",")
 	}
 
 	// Trim the any spaces for paths and column names
@@ -602,12 +605,12 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, verbose); err != nil {
+	linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, verbose)
+	if err != nil {
 		messagef("Can't export CSV, %s", err)
 		return C.int(0)
-	} else {
-		messagef("%d total rows processed", linesNo)
 	}
+	messagef("%d total rows processed", linesNo)
 	return C.int(1)
 }
 
@@ -702,8 +705,10 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 							return C.int(0)
 						}
 						messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
+						row = append(row, "")
+					} else {
+						row = append(row, col)
 					}
-					row = append(row, col)
 				}
 				table = append(table, row)
 			}
@@ -729,8 +734,10 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 								return C.int(0)
 							}
 							messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
+							row = append(row, "")
+						} else {
+							row = append(row, col)
 						}
-						row = append(row, col)
 					}
 					table = append(table, row)
 				}

@@ -681,4 +681,5 @@ test_check_and_repair
 test_count
 test_search
 test_import_export
-echo 'Success!'
+echo 'PASS'
+echo "Ok $(basename "$0")"

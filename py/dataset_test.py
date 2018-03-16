@@ -506,6 +506,70 @@ def test_join(t, collection_name):
     if ok == True:
         t.error("Failed, expected error for join type 'fred and mary'")
     
+#
+# test_issue43() When exporting records to a table using
+# use_srict_dotpath(True), the rows are getting miss aligned.
+#
+def test_issue43(t, collection_name, csv_name):
+    if os.path.exists(collection_name):
+        shutil.rmtree(collection_name)
+    if os.path.exists(csv_name):
+        os.remove(csv_name)
+    ok = dataset.init(collection_name)
+    if ok == False:
+        t.error(f"Failed, need a {collection_name} to run test")
+        return
+    table = {
+            "r1": {
+                "c1": "one",
+                "c2": "two",
+                "c3": "three",
+                "c4": "four"
+                },
+            "r2": {
+                "c1": "one",
+                "c3": "three",
+                "c4": "four"
+                },
+
+            "r3": {
+                "c1": "one",
+                "c2": "two",
+                "c4": "four"
+                },
+            "r4": {
+                "c1": "one",
+                "c2": "two",
+                "c3": "three"
+                },
+            "r5": {
+                "c1": "one",
+                "c2": "two",
+                "c3": "three",
+                "c4": "four"
+                }
+            }
+    for key in table:
+        row = table[key]
+        ok = dataset.create(collection_name, key, row)
+        if ok == False:
+            t.error(f"Can't add test row {key} to {collection_name}")
+            return
+    #dataset.verbose_on()
+    dataset.use_strict_dotpath(False)
+    ok = dataset.export_csv(collection_name, csv_name, "true", ["._Key",".c1",".c2",".c3",".c4"])
+    if ok == False:
+       t.error(f"csv_export({collection_name}, {csv_name} should have emitted warnings, not error")
+       return
+    with open(csv_name, mode = "r", encoding = "utf-8") as f:
+        rows = f.read()
+
+    for row in rows.split("\n"):
+        if len(row) > 0:
+            cells = row.split(",")
+            if len(cells) < 5:
+                t.error(f"row error {csv_name} for {cells}")
+
 
 #
 # Test harness
@@ -593,6 +657,7 @@ if __name__ == "__main__":
     test_runner.add(test_join, [collection_name])
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.add(test_gsheet, ["test_gsheet.ds", "../etc/test_gsheet.bash"])
+    test_runner.add(test_issue43,["issue43.ds", "issue43.csv"])
     test_runner.add(test_s3)
     test_runner.run()
 

@@ -43,7 +43,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.35`
+	Version = `v0.0.36`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -653,7 +653,6 @@ func colToString(cell interface{}) string {
 
 // ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
 func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-
 	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return 0, err
@@ -666,11 +665,13 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	}
 
 	var (
-		cnt        int
-		row        []string
-		readErrors int
+		cnt           int
+		row           []string
+		readErrors    int
+		writeErrors   int
+		dotpathErrors int
 	)
-	for _, key := range keys {
+	for i, key := range keys {
 		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
 			// write row out.
@@ -680,20 +681,29 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 				if err == nil {
 					row = append(row, colToString(col))
 				} else {
+					if verboseLog == true {
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.Name, err)
+					}
+					dotpathErrors++
 					row = append(row, "")
 				}
 			}
 			if err := w.Write(row); err == nil {
 				cnt++
+			} else {
+				if verboseLog == true {
+					log.Printf("error writing row %d from %s key %q, %s\n", i+1, c.Name, key, err)
+				}
+				writeErrors++
 			}
 			data = nil
 		} else {
-			fmt.Fprintf(os.Stderr, "error reading %q, %s\n", key, err)
-			readErrors += 1
+			log.Printf("error reading %s %q, %s\n", c.Name, key, err)
+			readErrors++
 		}
 	}
-	if readErrors > 0 {
-		return cnt, fmt.Errorf("%d read errors encountered", readErrors)
+	if readErrors > 0 || writeErrors > 0 || dotpathErrors > 0 && verboseLog == true {
+		log.Printf("warning %d read error, %d write errors, %d dotpath errors in CSV export from %s", readErrors, writeErrors, dotpathErrors, c.Name)
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
