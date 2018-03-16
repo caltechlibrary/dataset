@@ -657,7 +657,7 @@ if __name__ == "__main__":
     test_runner.add(test_join, [collection_name])
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.add(test_gsheet, ["test_gsheet.ds", "../etc/test_gsheet.bash"])
-    test_runner.add(test_issue43,["issue43.ds", "issue43.csv"])
+    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     test_runner.add(test_s3)
     test_runner.run()
 

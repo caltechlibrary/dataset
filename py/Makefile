@@ -51,6 +51,8 @@ clean:
 	if [ -d "build" ]; then rm -fR build; fi
 	if [ -d "test_collection.ds" ]; then rm -fR "test_collection.ds"; fi	
 	if [ -d "test_gsheet.ds" ]; then rm -fR "test_gsheet.ds"; fi	
+	if [ -d "test_issue43.ds" ]; then rm -fR "test_issue43.ds"; fi	
+	if [ -f "test_issue43.csv" ]; then rm -fR "test_issue43.csv"; fi	
 	if [ -d "test_check_and_repair.ds" ]; then rm -fR "test_check_and_repair.ds"; fi
 	if [ -d "test_index.bleve" ]; then rm -fR "test_index.bleve"; fi
 	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
