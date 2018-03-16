@@ -51,7 +51,7 @@ python:
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
-test: clean bin/dataset$(EXT) bin/dsws$(EXT)
+test: clean bin/dataset$(EXT) bin/dsws$(EXT) python
 	go test
 	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
@@ -124,7 +124,7 @@ distribute_docs:
 update_version:
 	./update_version.py --yes
 
-release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7 python
 	cd py && $(MAKE) release
 
 status:
