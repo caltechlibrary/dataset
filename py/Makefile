@@ -47,8 +47,8 @@ install: $(PROJECT)/$(LIB_NAME)$(EXT)
 	$(USE_SUDO) python3 setup.py install --record files.txt
 
 
-$(PROJECT)/$(LIB_NAME)$(EXT): $(LIB_NAME).go
-	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+$(PROJECT)/$(LIB_NAME)$(EXT): ../$(LIB_NAME)/$(LIB_NAME).go
+	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "../$(LIB_NAME)/$(LIB_NAME).go"
 
 clean:
 	if [ -f "MANIFEST" ]; then $(USE_SUDO) rm MANIFEST; fi
@@ -65,12 +65,13 @@ clean:
 	if [ -d "test_index.bleve" ]; then $(USE_SUDO) rm -fR "test_index.bleve"; fi
 	if [ -d "__pycache__" ]; then $(USE_SUDO) rm -fR "__pycache__"; fi	
 	if [ -d "$(PROJECT)/__pycache__" ]; then $(USE_SUDO) rm -fR "$(PROJECT)/__pycache__"; fi	
+	if [ -d "$(PROEJCT).egg-info" ]; then $(USE_SUDO) rm -fR "$(PROJECT).egg-info"; fi
 
 test: clean $(PROJECT)/$(LIB_NAME)$(EXT)
 	python3 dataset_test.py
 
 release: clean $(PROJECT)/$(LIB_NAME)$(EXT)
-	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "../$(LIB_NAME)/$(LIB_NAME).go"
 	python3 setup.py sdist
 	mkdir -p ../dist
 	cp -v dist/$(PROJECT)-$(VERSION).tar.gz "../dist/py3-$(PROJECT)-$(VERSION)-$(OS)-$(ARCH).tar.gz"
