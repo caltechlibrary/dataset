@@ -986,6 +986,12 @@ func indexer(params ...string) (string, error) {
 		}
 	}
 
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
+	}
+	defer c.Close()
+
 	if len(keyFName) > 0 {
 		src, err := ioutil.ReadFile(keyFName)
 		if err != nil {
@@ -998,12 +1004,6 @@ func indexer(params ...string) (string, error) {
 	} else {
 		keyList = c.Keys()
 	}
-
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", fmt.Errorf("Cannot open collection %s, %s", collectionName, err)
-	}
-	defer c.Close()
 
 	if batchSize == 0 {
 		if len(keyList) > 100000 {
