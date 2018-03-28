@@ -728,10 +728,13 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 
 	keys := []string{}
 	for _, key := range keyList {
-		m := map[string]interface{}{}
-		if err := c.Read(key, m); err == nil {
-			if ok, err := f.Apply(m); err == nil && ok == true {
-				keys = append(keys, key)
+		key = strings.TrimSpace(key)
+		if len(key) > 0 {
+			m := map[string]interface{}{}
+			if err := c.Read(key, m); err == nil {
+				if ok, err := f.Apply(m); err == nil && ok == true {
+					keys = append(keys, key)
+				}
 			}
 		}
 	}
@@ -769,7 +772,10 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 					uniqueStrings[hKey] = true
 				}
 			} else if err != nil {
-				return nil, fmt.Errorf("can't parse dotExpr %q", err)
+				s := fmt.Sprintf("%s", err)
+				if s != "value not found" {
+					return nil, fmt.Errorf("can't parse dotExpr %q", err)
+				}
 			}
 		} else {
 			return nil, fmt.Errorf("c.Read() error, %s, %s", key, err)
