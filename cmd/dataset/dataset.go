@@ -999,7 +999,10 @@ func indexer(params ...string) (string, error) {
 		}
 		txt := fmt.Sprintf("%s", src)
 		for _, key := range strings.Split(txt, "\n") {
-			keyList = append(keyList, strings.TrimSpace(key))
+			key = strings.TrimSpace(key)
+			if len(key) > 0 {
+				keyList = append(keyList, key)
+			}
 		}
 	} else {
 		keyList = c.Keys()
