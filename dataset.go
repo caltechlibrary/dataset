@@ -43,7 +43,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.37`
+	Version = `v0.0.38`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -317,6 +317,10 @@ func keyAndFName(name string) (string, string) {
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
+	key = strings.TrimSpace(key)
+	if key == "" || key == ".json" {
+		return fmt.Errorf("must not be empty")
+	}
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
 		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
