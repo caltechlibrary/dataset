@@ -340,3 +340,12 @@ func TestComplexKeys(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractOverVariableSchema(t *testing.T) {
+	//FIXME: Initialize a small dataset collection with asymetric records
+	//FIXME: Extract over whole collection dotpaths may exist in some but not all records
+	//FIXME: If error then something went wrong.
+	//FIXME: Then run extract with an invalid dotpath (i.e. the dotpath doesn't make syntax sense), should return an error
+	//FIXME: Run extract across collection where dotpath doesn't exist in any of them, in this case return an error
+	t.Error("Need to implement tests for better defined extract behavior")
+}
