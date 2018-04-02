@@ -43,13 +43,13 @@ for obj in meta["author"]:
     family = obj["familyName"]
     email = obj["email"]
     if len(author) == 0:
-        author = f"{given} {family}"
+        author = given + " " + family
     else:
-        author = author + f", {given} {family}"
+        author = author + ", " + given + " " + family
     if len(author_email) == 0:
-        author_email = f"{email}"
+        author_email = email
     else:
-        author_email = author_email + f", {email}"
+        author_email = author_email + ", " + email
 
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
 platform = os.uname().sysname
@@ -65,7 +65,7 @@ elif platform.startswith("Win"):
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
         
 if os.path.exists(os.path.join("dataset", shared_library_name)) == False:
-    print(f"Missing compiled shared library {shared_library_name} in dataset module")
+    print("Missing compiled shared library " + shared_library_name + " in dataset module")
     sys.exit(1)
 
 # Now that we know everything configure out setup
