@@ -20,6 +20,9 @@ def read(fname):
     return src
 
 codemeta_json = "codemeta.json"
+if os.path.exists(codemeta_json) == False:
+    shutil.copyfile(path.join("..", codemeta_json), codemeta_json)
+
 # If we're running sdist make sure our local codemeta.json is up to date!
 if "sdist" in sys.argv:
     # Project Metadata and README
