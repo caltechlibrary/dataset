@@ -955,10 +955,7 @@ func extract(params ...string) (string, error) {
 	filterExpr := strings.TrimSpace(params[0])
 	dotExpr := strings.TrimSpace(params[1])
 	lines, err := collection.Extract(filterExpr, dotExpr)
-	if err != nil {
-		return "", fmt.Errorf("Can't extract %s, %s", dotExpr, err)
-	}
-	return strings.Join(lines, "\n"), nil
+	return strings.Join(lines, "\n"), err
 }
 
 // indexer replaces dsindexer command and is used to build a Bleve index for a collection

@@ -20,7 +20,9 @@ package dataset
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path"
 	"testing"
 )
 
@@ -342,10 +344,50 @@ func TestComplexKeys(t *testing.T) {
 }
 
 func TestExtractOverVariableSchema(t *testing.T) {
-	//FIXME: Initialize a small dataset collection with asymetric records
-	//FIXME: Extract over whole collection dotpaths may exist in some but not all records
-	//FIXME: If error then something went wrong.
-	//FIXME: Then run extract with an invalid dotpath (i.e. the dotpath doesn't make syntax sense), should return an error
-	//FIXME: Run extract across collection where dotpath doesn't exist in any of them, in this case return an error
-	t.Error("Need to implement tests for better defined extract behavior")
+	src := []byte(`[
+{"name": "one", "test_path": 1},
+{"name": "two", "field": "B"},
+{"name": "three", "field": "C", "test_path": 2, "and_the_other_thing":true}
+]`)
+
+	data := []map[string]interface{}{}
+	err := json.Unmarshal(src, &data)
+	if err != nil {
+		t.Errorf("Can't generate tests records, %s", err)
+		t.FailNow()
+	}
+	cName := path.Join("testdata", "extract_test.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("Can't create %s, %s", cName, err)
+		t.FailNow()
+	}
+	for i, rec := range data {
+		err = c.Create(fmt.Sprintf("%d", i), rec)
+		if err != nil {
+			t.Errorf("Can't create record %d in %s, %s", i, c.Name, err)
+		}
+	}
+	result, err := c.Extract("true", ".field")
+	if len(result) != 2 {
+		t.Errorf("expected 2 values, got %+v", result)
+	}
+	if err == nil {
+		t.Errorf("Expected an error value because of missing .field for %+v", result)
+	}
+	result, err = c.Extract("true", ".field_does_not_exist")
+	if len(result) > 0 {
+		t.Errorf("Expected an empty result for .field_does_not_exist, got %+v", result)
+	}
+	if err == nil {
+		t.Errorf("Expected an an error for .field_does_not_exist in %+v", result)
+	}
+	result, err = c.Extract("true", ".name")
+	if len(result) != 3 {
+		t.Errorf("Expected three values for .name, got %+v", result)
+	}
+	if err != nil {
+		t.Errorf("Expected no errors for .name, got, %s", err)
+	}
 }

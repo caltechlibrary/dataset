@@ -749,6 +749,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
 
+	errorMsgs := []string{}
 	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return nil, err
@@ -775,14 +776,11 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 					hKey = colToString(cell)
 					uniqueStrings[hKey] = true
 				}
-			} else if err != nil {
-				s := fmt.Sprintf("%s", err)
-				if s != "value not found" {
-					return nil, fmt.Errorf("can't parse dotExpr %q", err)
-				}
+			} else {
+				errorMsgs = append(errorMsgs, fmt.Sprintf("%s in %s, dot path expression %q, %s", key, c.Name, dotExpr, err))
 			}
 		} else {
-			return nil, fmt.Errorf("c.Read() error, %s, %s", key, err)
+			errorMsgs = append(errorMsgs, fmt.Sprintf("%s in %s, read, %s", key, c.Name, err))
 		}
 	}
 	rows := []string{}
@@ -790,5 +788,8 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 		rows = append(rows, ky)
 	}
 	sort.Strings(rows)
+	if len(errorMsgs) > 0 {
+		return rows, fmt.Errorf("%s", strings.Join(errorMsgs, "\n"))
+	}
 	return rows, nil
 }
