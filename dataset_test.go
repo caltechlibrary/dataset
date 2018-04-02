@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 )
 
@@ -283,6 +284,42 @@ func TestExtract(t *testing.T) {
 		}
 		if found == false {
 			t.Errorf("Could not find %s in list %+v", target, l)
+		}
+	}
+
+	src := []byte(`[
+{"authorAffiliation":"California Institute of Technology","authorName":"Roberts, Ellis Earl"},
+{"authorAffiliation":["Ariane Tracking Station, Ascension Island (SH)"],"authorName":"John, N."},
+{"authorAffiliation":["California Institute of Technology, Pasadena, CA (US)"],"authorName":"Yavin, Y."},
+{"authorAffiliation":["California Institute of Technology, Pasadena, CA, USA","University of Toronto, Toronto, ON, CAN"],"authorIdentifiers":[{"authorIdentifier":"0000-0003-2025-7519","authorIdentifierScheme":"ORCID"}],"authorName":"Jacob Hedelius"},
+{"authorAffiliation":["California Institute of Technology, Pasadena, CA, USA"],"authorIdentifiers":[{"authorIdentifier":"0000-0002-6126-3854","authorIdentifierScheme":"ORCID"},{"authorIdentifier":"A-5460-2012","authorIdentifierScheme":"ResearcherID"}],"authorName":"Paul Wennberg"},
+{"authorAffiliation":["Caltech Library"],"authorIdentifiers":[{"authorIdentifier":"0000-0003-0900-6903","authorIdentifierScheme":"ORCID"}],"authorName":"Doiel,Robert"},
+{"authorAffiliation":["Caltech"],"authorName":"Doiel, Robert"},
+{"authorAffiliation":["Wisconsin Educational Communications Board, Park Falls, WI (US)"],"authorName":"Ayers, J."},
+{"authorName":"Neufeld, G."},
+{"authorName":"Springett, S."},
+{"authorName":"Yavin, Y."}
+]`)
+	data := []map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		t.Errorf("Can't unmarshal test data, %s", err)
+		t.FailNow()
+	}
+	for i, rec := range data {
+		if err := c.Create(fmt.Sprintf("%d", i), rec); err != nil {
+			t.Errorf("Can't create %d in %s, %s", i, c.Name, err)
+		}
+
+	}
+	lines, err := c.Extract("true", ".authorAffiliation[:]")
+	if err != nil {
+		t.Errorf("Can't extract .authorAffiliation[:] from %s, %s", c.Name, err)
+	}
+	for i, line := range lines {
+		fmt.Printf("DEBUG line (%d): %q\n", i, line)
+		if strings.HasPrefix(line, "[") == true {
+			t.Errorf("%d started as an array, %s, expecting simple string", i, line)
 		}
 	}
 }
