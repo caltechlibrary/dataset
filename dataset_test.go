@@ -370,24 +370,24 @@ func TestExtractOverVariableSchema(t *testing.T) {
 		}
 	}
 	result, err := c.Extract("true", ".field")
+	if err != nil {
+		t.Errorf("Expected no error for .field in %s, got %s", c.Name, err)
+	}
 	if len(result) != 2 {
 		t.Errorf("expected 2 values, got %+v", result)
 	}
-	if err == nil {
-		t.Errorf("Expected an error value because of missing .field for %+v", result)
-	}
 	result, err = c.Extract("true", ".field_does_not_exist")
+	if err != nil {
+		t.Errorf("Expected no error for .field_does_not_exist in %s, got %s", c.Name, err)
+	}
 	if len(result) > 0 {
 		t.Errorf("Expected an empty result for .field_does_not_exist, got %+v", result)
-	}
-	if err == nil {
-		t.Errorf("Expected an an error for .field_does_not_exist in %+v", result)
 	}
 	result, err = c.Extract("true", ".name")
 	if len(result) != 3 {
 		t.Errorf("Expected three values for .name, got %+v", result)
 	}
 	if err != nil {
-		t.Errorf("Expected no errors for .name, got, %s", err)
+		t.Errorf("Expected no errors for .name in %s, got, %s", c.Name, err)
 	}
 }

@@ -748,8 +748,6 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
-
-	errorMsgs := []string{}
 	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return nil, err
@@ -776,11 +774,7 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 					hKey = colToString(cell)
 					uniqueStrings[hKey] = true
 				}
-			} else {
-				errorMsgs = append(errorMsgs, fmt.Sprintf("%s in %s, dot path expression %q, %s", key, c.Name, dotExpr, err))
 			}
-		} else {
-			errorMsgs = append(errorMsgs, fmt.Sprintf("%s in %s, read, %s", key, c.Name, err))
 		}
 	}
 	rows := []string{}
@@ -788,8 +782,5 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 		rows = append(rows, ky)
 	}
 	sort.Strings(rows)
-	if len(errorMsgs) > 0 {
-		return rows, fmt.Errorf("%s", strings.Join(errorMsgs, "\n"))
-	}
 	return rows, nil
 }
