@@ -766,7 +766,7 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 						uniqueStrings[hKey] = true
 					}
 				case map[string]interface{}:
-					for _, v := range cell.([]interface{}) {
+					for _, v := range cell.(map[string]interface{}) {
 						hKey = colToString(v)
 						uniqueStrings[hKey] = true
 					}
