@@ -307,9 +307,27 @@ func listJSONDoc(args ...string) (string, error) {
 	if len(collectionName) == 0 {
 		return "", fmt.Errorf("Missing a collection name")
 	}
-	if len(args) == 0 {
+	if len(args) == 0 && len(keyFName) == 0 {
 		return "[]", nil
 	}
+	var keyList []string
+	if len(keyFName) > 0 {
+		src, err := ioutil.ReadFile(keyFName)
+		if err != nil {
+			return "", fmt.Errorf("Cannot read key file %s, %s", keyFName, err)
+		}
+		txt := fmt.Sprintf("%s", src)
+		for _, key := range strings.Split(txt, "\n") {
+			key = strings.TrimSpace(key)
+			if len(key) > 0 {
+				keyList = append(keyList, key)
+			}
+		}
+	}
+	if len(args) > 0 {
+		keyList = append(keyList, args...)
+	}
+
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		return "", err
@@ -317,7 +335,7 @@ func listJSONDoc(args ...string) (string, error) {
 	defer collection.Close()
 
 	recs := []map[string]interface{}{}
-	for _, name := range args {
+	for _, name := range keyList {
 		m := map[string]interface{}{}
 		err := collection.Read(name, m)
 		if err != nil {
