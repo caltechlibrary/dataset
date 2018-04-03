@@ -20,6 +20,9 @@ def read(fname):
     return src
 
 codemeta_json = "codemeta.json"
+if os.path.exists(codemeta_json) == False:
+    shutil.copyfile(path.join("..", codemeta_json), codemeta_json)
+
 # If we're running sdist make sure our local codemeta.json is up to date!
 if "sdist" in sys.argv:
     # Project Metadata and README
@@ -43,13 +46,13 @@ for obj in meta["author"]:
     family = obj["familyName"]
     email = obj["email"]
     if len(author) == 0:
-        author = f"{given} {family}"
+        author = given + " " + family
     else:
-        author = author + f", {given} {family}"
+        author = author + ", " + given + " " + family
     if len(author_email) == 0:
-        author_email = f"{email}"
+        author_email = email
     else:
-        author_email = author_email + f", {email}"
+        author_email = author_email + ", " + email
 
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
 platform = os.uname().sysname
@@ -65,7 +68,7 @@ elif platform.startswith("Win"):
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
         
 if os.path.exists(os.path.join("dataset", shared_library_name)) == False:
-    print(f"Missing compiled shared library {shared_library_name} in dataset module")
+    print("Missing compiled shared library " + shared_library_name + " in dataset module")
     sys.exit(1)
 
 # Now that we know everything configure out setup
