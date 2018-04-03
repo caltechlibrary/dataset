@@ -317,7 +317,7 @@ func TestExtract(t *testing.T) {
 		t.Errorf("Can't extract .authorAffiliation[:] from %s, %s", c.Name, err)
 	}
 	for i, line := range lines {
-		fmt.Printf("DEBUG line (%d): %q\n", i, line)
+		//fmt.Printf("DEBUG line (%d): %q\n", i, line)
 		if strings.HasPrefix(line, "[") == true {
 			t.Errorf("%d started as an array, %s, expecting simple string", i, line)
 		}
