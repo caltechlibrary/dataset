@@ -313,6 +313,18 @@ func Repair(collectionName string) error {
 		}
 	}
 	log.Printf("%d keys in %d buckets", len(c.KeyMap), len(c.Buckets))
+	keyList := c.Keys()
+	log.Printf("checking that each key resolves to a value on disc")
+	for _, key := range keyList {
+		p, err := c.DocPath(key)
+		if err != nil {
+			break
+		}
+		if _, err := os.Stat(p); os.IsNotExist(err) == true {
+			log.Printf("Removing %s from %s, %s does not exist", key, collectionName, p)
+			delete(c.KeyMap, key)
+		}
+	}
 	log.Printf("Saving metadata for %s", collectionName)
 	if len(c.Buckets) < len(DefaultBucketNames) {
 		log.Printf("Adding missing buckets")
