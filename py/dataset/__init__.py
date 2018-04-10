@@ -224,14 +224,14 @@ def create(collection_name, key, value):
     
 # Read a JSON record from a Dataset collection
 def read(collection_name, key):
-    '''read a JSON record from a collection with the given name and record key, returns a dict'''
+    '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
     value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
     if rval == "":
-        return {}
-    return json.loads(rval)
+        return {}, error_message()
+    return json.loads(rval), ''
     
 
 # Update a JSON record from a Dataset collection

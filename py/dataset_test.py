@@ -26,7 +26,9 @@ def test_basic(t, collection_name):
     
     # Do a minimal test to see if the record looks like it has content
     keyList = dataset.keys(collection_name)
-    rec = dataset.read(collection_name, key)
+    rec, err = dataset.read(collection_name, key)
+    if err != "":
+        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     for k, v in value.items():
        if not isinstance(v, list):
             if k in rec and rec[k] == v:
@@ -44,7 +46,9 @@ def test_basic(t, collection_name):
     ok = dataset.update(collection_name, key, value)
     if ok == False:
        t.error(f"Failed, count not update record {key}, {value}")
-    rec = dataset.read(collection_name, key)
+    rec, err = dataset.read(collection_name, key)
+    if err != "":
+        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     for k, v in value.items():
        if not isinstance(v, list):
            if k in rec and rec[k] == v:
@@ -448,14 +452,18 @@ def test_s3(t):
     ok = dataset.create(collection_name, key, record)
     if ok == False:
         t.error("Failed to create record", collection_name, key, record)
-    record2 = dataset.read(collection_name, key)
+    record2, err = dataset.read(collection_name, key)
+    if err != "":
+        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     if record2.get("one") != 1:
         t.error("Failed, read", collection_name, key, record2)
     record["two"] = 2
     ok = dataset.update(collection_name, key, record)
     if ok == False:
         t.error("Failed to update record", collection_name, key, record)
-    record2 = dataset.read(collection_name, key)
+    record2, err = dataset.read(collection_name, key)
+    if err != "":
+        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     if record2.get("one") != 1:
         t.error("Failed, 2nd read", collection_name, key, record2)
     if record2.get("two") != 2:
@@ -487,7 +495,9 @@ def test_join(t, collection_name):
     ok = dataset.join(collection_name, key, "append", obj2)
     if ok == False:
         t.error("Failed, join for", collection_name, key, "append", obj2)
-    obj_result = dataset.read(collection_name, key)
+    obj_result, err = dataset.read(collection_name, key)
+    if err != "":
+        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     if obj_result.get("one") != 1:
         t.error("Failed to join append key", key, obj_result)
     if obj_result.get("two") != 2:
@@ -498,7 +508,9 @@ def test_join(t, collection_name):
     ok = dataset.join(collection_name, key, "overwrite", obj2)
     if ok == False:
         t.error("Failed to join overwrite", collection_name, key, "overwrite", obj2)
-    obj_result = dataset.read(collection_name, key)
+    obj_result, err = dataset.read(collection_name, key)
+    if err != "":
+        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     for k in obj_result:
         if k != "_Key" and obj_result[k] != 3:
             t.error("Failed to update value in join overwrite", k, obj_result)
