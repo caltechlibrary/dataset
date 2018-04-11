@@ -31,7 +31,8 @@
         "GitHub",
         "metadata",
         "data",
-        "software"
+        "software",
+        "json"
     ],
     "maintainer": "https://orcid.org/0000-0003-0900-6903",
     "programmingLanguage": [
