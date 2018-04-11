@@ -429,11 +429,11 @@ def test_attachments(t, collection_name):
 
 
 def test_s3(t):
-    aws_sdk_load_config = os.getenv("AWS_SDK_LOAD_CONFIG", "")
+    aws_sdk_load_config = "1" # os.getenv("AWS_SDK_LOAD_CONFIG", "")
     collection_name = os.getenv("DATASET", "")
     if aws_sdk_load_config != "1" or collection_name[0:5] != "s3://":
         t.verbose_on()
-        t.print("Skipping test_s3(), missing environment AWS_SDK_LOAD_CONFIG and DATASET")
+        t.print("Skipping test_s3(), missing environment S3 DATASET to test with") #AWS_SDK_LOAD_CONFIG and DATASET")
         return
     
     ok = dataset.status(collection_name)

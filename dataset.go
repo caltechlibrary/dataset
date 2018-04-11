@@ -159,6 +159,10 @@ func getStore(name string) (*storage.Store, string, error) {
 	// Pick storage based on name
 	switch {
 	case strings.HasPrefix(name, "s3://") == true:
+		// NOTE: Attempting to overwrite the lack of an environment variable AWS_SDK_LOAD_CONFIG=1
+		if os.Getenv("AWS_SDK_LOAD_CONFIG") == "" {
+			os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
+		}
 		u, _ := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
