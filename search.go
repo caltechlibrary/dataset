@@ -555,6 +555,8 @@ func Find(idxAlias bleve.IndexAlias, queryString string, options map[string]stri
 		} else {
 			search.Fields = []string{"*"}
 		}
+	} else {
+		search.Fields = []string{"*"}
 	}
 
 	if sVal, ok := options["sort"]; ok == true {
