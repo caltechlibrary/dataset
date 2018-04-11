@@ -318,13 +318,15 @@ def deindexer(collection_name, index_name, key_list, batch_size = 0):
 def find(index_names, query_string, options = {}):
     '''Find takes an index name, query string an optional options dict and returns a search result'''
     option_src = json.dumps(options)
+    err = ''
     value = go_find(ctypes.c_char_p(index_names.encode('utf8')), ctypes.c_char_p(query_string.encode('utf8')), ctypes.c_char_p(option_src.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
     rval = value.decode()
+    err = error_message()
     if rval == "":
-        return {}
-    return json.loads(rval)
+        return {}, err
+    return json.loads(rval), err
 
 
 def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uuid = False):

@@ -186,7 +186,10 @@ def test_search(t, collection_name, index_map_name, index_name):
     ok = dataset.indexer(collection_name, index_name, index_map_name, batch_size = 2)
     if ok == False:
         t.error("Failed to index", collection_name)
-    results = dataset.find(index_name, '+family:"Verne"')
+    results, err = dataset.find(index_name, '+family:"Verne"')
+    if err != '':
+        t.error("Find failed for ", collection_name + ", "+err)
+        return
     if results["total_hits"] != 2: 
         t.print("Warning: unexpected results", json.dumps(results, indent = 4))
     hits = results["hits"]
