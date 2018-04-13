@@ -15,8 +15,8 @@ def test_basic(t, collection_name):
     value = { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
     
     # We should have an empty collection, we will create our test record.
-    ok = dataset.create(collection_name, key, value)
-    if ok == False:
+    err = dataset.create(collection_name, key, value)
+    if err != '':
         t.error(f"Failed, could not create record {key}")
     
     # Check to see that we have only one record
@@ -43,9 +43,9 @@ def test_basic(t, collection_name):
     
     # Test updating record
     value["verified"] = True
-    ok = dataset.update(collection_name, key, value)
-    if ok == False:
-       t.error(f"Failed, count not update record {key}, {value}")
+    err = dataset.update(collection_name, key, value)
+    if err != '':
+       t.error(f"Failed, count not update record {key}, {value}, {err}")
     rec, err = dataset.read(collection_name, key)
     if err != "":
         t.error(f"Unexpected error for {key} in {collection_name}, {err}")
@@ -77,9 +77,9 @@ def test_basic(t, collection_name):
         return
 
     # test deleting a record
-    ok = dataset.delete(collection_name, key)
-    if ok == False:
-        t.error("Failed, could not delete record", key)
+    err = dataset.delete(collection_name, key)
+    if err != '':
+        t.error("Failed, could not delete record", key, ", ", err)
     
 
 #
@@ -107,9 +107,9 @@ def test_keys(t, collection_name):
     
     for k in test_records:
         v = test_records[k]
-        ok = dataset.create(collection_name, k, v)
-        if ok == False:
-            t.error("Failed, could not add", k, "to", collection_name)
+        err = dataset.create(collection_name, k, v)
+        if err != '':
+            t.error("Failed, could not add", k, "to", collection_name, ', ', err)
     
     # Test keys, filtering keys and sorting keys
     keys = dataset.keys(collection_name)
@@ -183,9 +183,9 @@ def test_search(t, collection_name, index_map_name, index_name):
     with open(index_map_name, 'w') as outfile:
          json.dump(index_map, outfile, indent = 4, ensure_ascii = False)
     
-    ok = dataset.indexer(collection_name, index_name, index_map_name, batch_size = 2)
-    if ok == False:
-        t.error("Failed to index", collection_name)
+    err = dataset.indexer(collection_name, index_name, index_map_name, batch_size = 2)
+    if err != '':
+        t.error("Failed to index", collection_name, ', ', err)
     results, err = dataset.find(index_name, '+family:"Verne"')
     if err != '':
         t.error("Find failed for ", collection_name + ", "+err)
@@ -195,17 +195,17 @@ def test_search(t, collection_name, index_map_name, index_name):
     hits = results["hits"]
     
     k1 = hits[0]["id"]
-    ok = dataset.deindexer(collection_name, index_name, [k1])
-    if ok == False:
-        t.print("deindexer failed for key", k1)
+    err = dataset.deindexer(collection_name, index_name, [k1])
+    if err != '':
+        t.print("deindexer failed for key", k1, ', ', err)
 
 #
 # test_issue32() make sure issue 32 stays fixed.
 #
 def test_issue32(t, collection_name):
-    ok = dataset.create(collection_name, "k1", {"one":1})
-    if ok == False:
-        t.error("Failed to create k1 in", collection_name)
+    err = dataset.create(collection_name, "k1", {"one":1})
+    if err != '':
+        t.error("Failed to create k1 in", collection_name, ', ', err)
         return
     ok = dataset.has_key(collection_name, "k1")
     if ok == False:
@@ -251,9 +251,9 @@ def test_gsheet(t, collection_name, setup_bash):
         sheet_id = cfg.get("spreadsheet_id")
     client_secret_name = "../" + client_secret_name
 
-    ok = dataset.init(collection_name)
-    if ok == False:
-        t.error("Failed, could not create collection")
+    err = dataset.init(collection_name)
+    if err != '':
+        t.error("Failed, could not create collection, ", err)
         return
 
     cnt = dataset.count(collection_name)
@@ -262,9 +262,9 @@ def test_gsheet(t, collection_name, setup_bash):
         return
 
     # Setup some test data to work with.
-    ok = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
-    if ok != True:
-        t.error("Failed, could not create test record in", collection_name)
+    err = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
+    if err != '':
+        t.error("Failed, could not create test record in", collection_name, ', ', err)
         return
     
     cnt = dataset.count(collection_name)
@@ -278,46 +278,46 @@ def test_gsheet(t, collection_name, setup_bash):
     dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
     column_names = ['Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
     t.print("Testing gsheet export support", sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
-    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
-    if ok != True:
-        t.error("Failed, count not export-gsheet in", collection_name)
+    err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
+    if err != '':
+        t.error("Failed, count not export-gsheet in", collection_name, ', ', err)
         return
 
     t.print("Testing gsheet import support (should fail)", sheet_id, sheet_name, cell_range, 2, False)
     dataset.verbose_off()
-    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = False)
-    if ok == True:
-        t.error("Failed, should NOT be able to import-gsheet over our existing collection without overwrite = True")
+    err = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = False)
+    if err != '':
+        t.error("Failed, should NOT be able to import-gsheet over our existing collection without overwrite = True, ", err)
         return
 
     t.print("Testing gsheet import support (should succeeed)", sheet_id, sheet_name, cell_range, 2, True)
-    ok = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = True) 
-    if ok == False:
-        t.error("Failed, should be able to import-gsheet over our existing collection with overwrite=True")
+    err = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = True) 
+    if err != '':
+        t.error("Failed, should be able to import-gsheet over our existing collection with overwrite=True, ", err)
         return
 
     # Check to see if this throws error correctly, i.e. should have exit code 1
     dataset.use_strict_dotpath(True)
     sheet_name="Sheet1"
     dot_exprs = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
-    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
-    if ok == True:
-        t.error("Failed, export_gsheet should throw error for bad dotpath in export_gsheet")
+    err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
+    if err != '':
+        t.error("Failed, export_gsheet should throw error for bad dotpath in export_gsheet, ", err)
     #dataset.verbose_on()
     dataset.use_strict_dotpath(False)
     sheet_name = "Sheet1"
-    ok = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
-    if ok == False:
-        t.error("Failed, export_gsheet should only warn of error for bad dotpath in export_gsheet")
+    err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
+    if err != '':
+        t.error("Failed, export_gsheet should only warn of error for bad dotpath in export_gsheet, ", err)
     #dataset.verbose_off()
 
 # Setup our test collection, recreate it if necessary
 def test_setup(t, collection_name):
     if os.path.exists(collection_name):
         shutil.rmtree(collection_name)
-    ok = dataset.init(collection_name)
-    if ok == False:
-        t.error("Failed, could not create collection")
+    err = dataset.init(collection_name)
+    if err != '':
+        t.error("Failed, could not create collection, ", err)
         return
 
 
@@ -347,9 +347,9 @@ def test_check_repair(t, collection_name):
 
     # Repair our collection
     t.print("Testing repair on", collection_name)
-    ok = dataset.repair(collection_name)
-    if ok == False:
-        t.error("Failed, expected repair to return True, got", ok)
+    err = dataset.repair(collection_name)
+    if err != '':
+        t.error("Failed, expected repair to return True, got, ", err)
  
         
 def test_attachments(t, collection_name):
@@ -371,9 +371,9 @@ def test_attachments(t, collection_name):
         return
 
     key = keys[0]
-    ok = dataset.attach(collection_name, key, filenames)
-    if ok == False:
-        t.error("Failed, to attach files for", collection_name, key, filenames)
+    err = dataset.attach(collection_name, key, filenames)
+    if err != '':
+        t.error("Failed, to attach files for", collection_name, key, filenames, ', ', err)
         return
 
     l = dataset.attachments(collection_name, key)
@@ -387,18 +387,18 @@ def test_attachments(t, collection_name):
         os.remove(filenames[1])
 
     # First try detaching one file.
-    ok = dataset.detach(collection_name, key, [filenames[1]])
-    if ok == False:
-        t.error("Failed, expected True for", collection_name, key, filenames[1])
+    err = dataset.detach(collection_name, key, [filenames[1]])
+    if err != '':
+        t.error("Failed, expected True for", collection_name, key, filenames[1], ', ', err)
     if os.path.exists(filenames[1]):
         os.remove(filenames[1])
     else:
         t.error("Failed to detch", filenames[1], "from", collection_name, key)
 
     # Test explicit filenames detch
-    ok = dataset.detach(collection_name, key, filenames)
-    if ok == False:
-        t.error("Failed, expected True for", collection_name, key, filenames)
+    err = dataset.detach(collection_name, key, filenames)
+    if err != '':
+        t.error("Failed, expected True for", collection_name, key, filenames, ', ', err)
 
     for fname in filenames:
         if os.path.exists(fname):
@@ -407,25 +407,25 @@ def test_attachments(t, collection_name):
             t.error("Failed, expected", fname, "to be detached from", collection_name, key)
 
     # Test detaching all files
-    ok = dataset.detach(collection_name, key)
-    if ok == False:
-        t.error("Failed, expected True for (detaching all)", collection_name, key)
+    err = dataset.detach(collection_name, key)
+    if err != '':
+        t.error("Failed, expected True for (detaching all)", collection_name, key, ', ', err)
     for fname in filenames:
         if os.path.exists(fname):
             os.remove(fname)
         else:
             t.error("Failed, expected", fname, "for detaching all from", collection_name, key)
 
-    ok = dataset.prune(collection_name, key, [filenames[0]])
-    if ok == False:
-        t.error("Failed, expected True for prune", collection_name, key, [filenames[0]])
+    err = dataset.prune(collection_name, key, [filenames[0]])
+    if err != '':
+        t.error("Failed, expected True for prune", collection_name, key, [filenames[0]], ', ', err)
     l = dataset.attachments(collection_name, key)
     if len(l) != 1:
         t.error("Failed, expected one file after prune for", collection_name, key, [filenames[0]], "got", l)
 
-    ok = dataset.prune(collection_name, key)
-    if ok == False:
-        t.error("Failed, expected True for prune (all)", collection_name, key)
+    err = dataset.prune(collection_name, key)
+    if err != '':
+        t.error("Failed, expected True for prune (all)", collection_name, key, ', ', err)
     l = dataset.attachments(collection_name, key)
     if len(l) != 0:
         t.error("Failed, expected zero files after prune for", collection_name, key, "got", l)
@@ -441,9 +441,9 @@ def test_s3(t):
     ok = dataset.status(collection_name)
     if ok == False:
         t.print("Missing", collection_name, "attempting to initialize", collection_name)
-        ok = dataset.init(collection_name)
-        if ok == False:
-            t.error("Aborting, couldn't initialize", collection_name)
+        err = dataset.init(collection_name)
+        if err != '':
+            t.error("Aborting, couldn't initialize", collection_name, ', ', err)
             return
     else:
         t.print("Using collection initialized as", collection_name)
@@ -451,18 +451,18 @@ def test_s3(t):
     collection_name = os.getenv("DATASET")
     record = { "one": 1 }
     key = "s3t1"
-    ok = dataset.create(collection_name, key, record)
-    if ok == False:
-        t.error("Failed to create record", collection_name, key, record)
+    err = dataset.create(collection_name, key, record)
+    if err != '':
+        t.error("Failed to create record", collection_name, key, record, ', ', err)
     record2, err = dataset.read(collection_name, key)
     if err != "":
         t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     if record2.get("one") != 1:
         t.error("Failed, read", collection_name, key, record2)
     record["two"] = 2
-    ok = dataset.update(collection_name, key, record)
-    if ok == False:
-        t.error("Failed to update record", collection_name, key, record)
+    err = dataset.update(collection_name, key, record)
+    if err != '':
+        t.error("Failed to update record", collection_name, key, record, ', ', err)
     record2, err = dataset.read(collection_name, key)
     if err != "":
         t.error(f"Unexpected error for {key} in {collection_name}, {err}")
@@ -470,9 +470,9 @@ def test_s3(t):
         t.error("Failed, 2nd read", collection_name, key, record2)
     if record2.get("two") != 2:
         t.error("Failed, 2nd read", collection_name, key, record2)
-    ok = dataset.delete(collection_name, key)
-    if ok == False:
-        t.error("Failed to delete record", collection_name, key, record)
+    err = dataset.delete(collection_name, key)
+    if err != '':
+        t.error("Failed to delete record", collection_name, key, record, ', ', err)
     ok = dataset.has_key(collection_name, key)
     if ok == True:
         t.error("Failed, delete should have removed key", collection_name, key)
