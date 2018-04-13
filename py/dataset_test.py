@@ -487,37 +487,38 @@ def test_join(t, collection_name):
         t.error("Failed, collection status is False,", collection_name)
         return
     ok = dataset.has_key(collection_name, key)
+    err = ''
     if ok == True:
-        ok = dataset.update(collection_nane, key, obj1)
+        err = dataset.update(collection_nane, key, obj1)
     else:
-        ok = dataset.create(collection_name, key, obj1)
-    if ok == False:
-        t.error("Failed, could not add record for test", collection, key, obj1)
+        err = dataset.create(collection_name, key, obj1)
+    if err != '':
+        t.error('Failed, could not add record for test', collection, key, obj1, ', ', err)
         return
-    ok = dataset.join(collection_name, key, "append", obj2)
-    if ok == False:
-        t.error("Failed, join for", collection_name, key, "append", obj2)
+    err = dataset.join(collection_name, key, "append", obj2)
+    if err != '':
+        t.error('Failed, join for', collection_name, key, 'append', obj2, ', ', err)
     obj_result, err = dataset.read(collection_name, key)
-    if err != "":
-        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
-    if obj_result.get("one") != 1:
-        t.error("Failed to join append key", key, obj_result)
+    if err != '':
+        t.error(f'Unexpected error for {key} in {collection_name}, {err}')
+    if obj_result.get('one') != 1:
+        t.error('Failed to join append key', key, obj_result)
     if obj_result.get("two") != 2:
         t.error("Failed to join append key", key, obj_result)
-    obj2["one"] = 3
-    obj2["two"] = 3
-    obj2["three"] = 3
-    ok = dataset.join(collection_name, key, "overwrite", obj2)
-    if ok == False:
-        t.error("Failed to join overwrite", collection_name, key, "overwrite", obj2)
+    obj2['one'] = 3
+    obj2['two'] = 3
+    obj2['three'] = 3
+    err = dataset.join(collection_name, key, 'overwrite', obj2)
+    if err != '':
+        t.error('Failed to join overwrite', collection_name, key, 'overwrite', obj2)
     obj_result, err = dataset.read(collection_name, key)
-    if err != "":
-        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
+    if err != '':
+        t.error(f'Unexpected error for {key} in {collection_name}, {err}')
     for k in obj_result:
-        if k != "_Key" and obj_result[k] != 3:
-            t.error("Failed to update value in join overwrite", k, obj_result)
-    ok = dataset.join(collection_name, key, "fred and mary", obj2)
-    if ok == True:
+        if k != '_Key' and obj_result[k] != 3:
+            t.error('Failed to update value in join overwrite', k, obj_result)
+    err = dataset.join(collection_name, key, 'fred and mary', obj2)
+    if err != '':
         t.error("Failed, expected error for join type 'fred and mary'")
     
 #
@@ -529,9 +530,9 @@ def test_issue43(t, collection_name, csv_name):
         shutil.rmtree(collection_name)
     if os.path.exists(csv_name):
         os.remove(csv_name)
-    ok = dataset.init(collection_name)
-    if ok == False:
-        t.error(f"Failed, need a {collection_name} to run test")
+    err = dataset.init(collection_name)
+    if err != '':
+        t.error(f'Failed, need a {collection_name} to run test')
         return
     table = {
             "r1": {
@@ -565,24 +566,24 @@ def test_issue43(t, collection_name, csv_name):
             }
     for key in table:
         row = table[key]
-        ok = dataset.create(collection_name, key, row)
-        if ok == False:
+        err = dataset.create(collection_name, key, row)
+        if err != '':
             t.error(f"Can't add test row {key} to {collection_name}")
             return
-    #dataset.verbose_on()
+
     dataset.use_strict_dotpath(False)
-    ok = dataset.export_csv(collection_name, csv_name, "true", ["._Key",".c1",".c2",".c3",".c4"])
-    if ok == False:
-       t.error(f"csv_export({collection_name}, {csv_name} should have emitted warnings, not error")
+    err = dataset.export_csv(collection_name, csv_name, "true", ["._Key",".c1",".c2",".c3",".c4"])
+    if err != '':
+       t.error(f'csv_export({collection_name}, {csv_name} should have emitted warnings, not error')
        return
-    with open(csv_name, mode = "r", encoding = "utf-8") as f:
+    with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
         rows = f.read()
 
-    for row in rows.split("\n"):
+    for row in rows.split('\n'):
         if len(row) > 0:
-            cells = row.split(",")
+            cells = row.split(',')
             if len(cells) < 5:
-                t.error(f"row error {csv_name} for {cells}")
+                t.error(f'row error {csv_name} for {cells}')
 
 
 #
