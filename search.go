@@ -549,9 +549,13 @@ func Find(idxAlias bleve.IndexAlias, queryString string, options map[string]stri
 
 	if sVal, ok := options["fields"]; ok == true {
 		if strings.Contains(sVal, ",") == true {
-			search.Fields = strings.Split(sVal, ",")
+			fields := []string{}
+			for _, s := range strings.Split(sVal, ",") {
+				fields = append(fields, strings.Replace(strings.TrimSpace(s), ".", "", 1))
+			}
+			search.Fields = fields
 		} else if len(sVal) > 0 {
-			search.Fields = []string{sVal}
+			search.Fields = []string{strings.Replace(strings.TrimSpace(sVal), ".", "", 1)}
 		} else {
 			search.Fields = []string{"*"}
 		}
@@ -561,9 +565,13 @@ func Find(idxAlias bleve.IndexAlias, queryString string, options map[string]stri
 
 	if sVal, ok := options["sort"]; ok == true {
 		if strings.Contains(sVal, ",") == true {
-			search.SortBy(strings.Split(sVal, ","))
+			fields := []string{}
+			for _, s := range strings.Split(sVal, ",") {
+				fields = append(fields, strings.Replace(strings.TrimSpace(s), ".", "", 1))
+			}
+			search.SortBy(fields)
 		} else {
-			search.SortBy([]string{sVal})
+			search.SortBy([]string{strings.Replace(strings.TrimSpace(sVal), ".", "", 1)})
 		}
 	}
 
