@@ -305,8 +305,8 @@ def extract(collection_name, filter_expr, dot_expr):
         value = value.encode('utf8')
     rval = value.decode()
     if rval == "":
-        return [], ''
-    return json.loads(rval), ''
+        return [], error_message()
+    return json.loads(rval), error_message()
     
 
 # Indexer takes a collection name, an index name, an index map file name, and an optional keylist 
