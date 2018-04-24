@@ -11,6 +11,7 @@
     + Make key column required
 + [ ] In _dataset_ add `sync-gsheet` provide a mechanism to write (update the GSheet) to specific rows and columns based on a column as key and column mapping
 + [ ] Confirm consensus on the minor release version number bump
++ [ ] Figure out a way to speed up Extract() function for collections larger than 1000 records
 
 ## Roadmap (v0.2.x)
 
