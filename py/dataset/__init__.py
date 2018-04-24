@@ -297,13 +297,16 @@ def count(collection_name, filter = ''):
 # Extract unique values from the JSON records in a collection given a filter expression and dot path
 def extract(collection_name, filter_expr, dot_expr):
     '''extract unique values from the JSON records in a collection given a filter expression and dot path'''
+    c_name = collection_name.encode('utf8')
+    if os.path.exists(c_name) == False:
+        return [], '{c_name} not found'.format(c_name = c_name)
     value = go_extract(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(dot_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
     rval = value.decode()
     if rval == "":
-        return []
-    return json.loads(rval)
+        return [], ''
+    return json.loads(rval), ''
     
 
 # Indexer takes a collection name, an index name, an index map file name, and an optional keylist 

@@ -145,7 +145,10 @@ def test_keys(t, collection_name):
 def test_extract(t, collection_name):
     '''test_extract() tests extracting unique values form a collection based on a dot path'''
     # Test extracting the family names
-    v = dataset.extract(collection_name, 'true', '.authors[:].family')
+    v, err = dataset.extract(collection_name, 'true', '.authors[:].family')
+    if err != '':
+        t.error('dataset.extract() returned an error', err)
+        return
     if not isinstance(v, list):
         t.error("Failed, expected a list, got", type(v), v)
         return
