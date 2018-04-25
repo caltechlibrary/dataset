@@ -1288,9 +1288,6 @@ func main() {
 		app.AddHelp(k, v)
 	}
 
-	// Document Environment options
-	app.EnvStringVar(&collectionName, "DATASET", "", "Set the working path to your dataset collection")
-
 	// Standard Options
 	app.BoolVar(&showHelp, "h,help", false, "display help")
 	app.BoolVar(&showLicense, "l,license", false, "display license")
@@ -1413,23 +1410,26 @@ func main() {
 		cli.ExitOnError(os.Stderr, fmt.Errorf("See %s --help for usage", appName), quiet)
 	}
 
-	// Check for collectionName in environment
+	// Check for collectionName in environment if not specified with an option
+
 	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
-	for i, arg := range args {
-		if strings.HasSuffix(arg, ".ds") || strings.HasSuffix(arg, ".dataset") || strings.HasPrefix(arg, "gs://") || strings.HasPrefix(arg, "s3://") {
-			collectionName = arg
-			if i < len(args) {
-				if i == 0 {
-					args = args[1:]
-				} else {
-					args = append(args[:i], args[i+1:]...)
+	if collectionName == "" {
+		for i, arg := range args {
+			if strings.HasSuffix(arg, ".ds") || strings.HasSuffix(arg, ".dataset") || strings.HasPrefix(arg, "gs://") || strings.HasPrefix(arg, "s3://") {
+				collectionName = arg
+				if i < len(args) {
+					if i == 0 {
+						args = args[1:]
+					} else {
+						args = append(args[:i], args[i+1:]...)
+					}
 				}
+				break
 			}
-			break
 		}
 	}
 
-	// Merge environment if colleciton name not set
+	// Merge environment if colleciton name yet set, not set
 	if collectionName == "" {
 		datasetEnv := os.Getenv("DATASET")
 		if datasetEnv != "" {

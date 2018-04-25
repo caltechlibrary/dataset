@@ -3,6 +3,7 @@
 
 ## Bugs
 
++ [ ] Source collection, isn't being respected when using the -c, -collection option in v0.0.39
 
 ## Next (prep for v0.1.0)
 
