@@ -24,6 +24,13 @@
 
 <p>Clone a collection from a list of keys into a new collection.</p>
 
+<p>In this example we create a list of keys using the <code>-sample</code> option
+and then clone those keys into a new collection called <em>sample.ds</em>.</p>
+
+<pre><code class="language-shell">    dataset -sample=3 mycollection.ds keys &gt; sample.keys
+    dataset mycollection.ds clone sample.keys sample.ds
+</code></pre>
+
 </section>
 
 <footer>
