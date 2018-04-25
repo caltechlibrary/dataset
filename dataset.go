@@ -25,15 +25,18 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/url"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -43,7 +46,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.33`
+	Version = `v0.0.39`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -159,6 +162,10 @@ func getStore(name string) (*storage.Store, string, error) {
 	// Pick storage based on name
 	switch {
 	case strings.HasPrefix(name, "s3://") == true:
+		// NOTE: Attempting to overwrite the lack of an environment variable AWS_SDK_LOAD_CONFIG=1
+		if os.Getenv("AWS_SDK_LOAD_CONFIG") == "" {
+			os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
+		}
 		u, _ := url.Parse(name)
 		opts := storage.EnvToOptions(os.Environ())
 		opts["AwsBucket"] = u.Host
@@ -317,9 +324,13 @@ func keyAndFName(name string) (string, string) {
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
+	key = strings.TrimSpace(key)
+	if key == "" || key == ".json" {
+		return fmt.Errorf("must not be empty")
+	}
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
-		return fmt.Errorf("collection is not valid, zero buckets")
+		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
 	}
 
 	// Enforce the _Key attribute is unique and does not exist in collection already
@@ -376,7 +387,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 func (c *Collection) UpdateJSON(name string, src []byte) error {
 	// NOTE: Make sure collection exists before doing anything else!!
 	if len(c.Buckets) == 0 {
-		return fmt.Errorf("collection is not valid, zero buckets")
+		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
 	}
 
 	// Make sure Key exists before proceeding with update
@@ -653,7 +664,6 @@ func colToString(cell interface{}) string {
 
 // ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
 func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-
 	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return 0, err
@@ -666,11 +676,13 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	}
 
 	var (
-		cnt        int
-		row        []string
-		readErrors int
+		cnt           int
+		row           []string
+		readErrors    int
+		writeErrors   int
+		dotpathErrors int
 	)
-	for _, key := range keys {
+	for i, key := range keys {
 		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
 			// write row out.
@@ -680,20 +692,29 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 				if err == nil {
 					row = append(row, colToString(col))
 				} else {
+					if verboseLog == true {
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.Name, err)
+					}
+					dotpathErrors++
 					row = append(row, "")
 				}
 			}
 			if err := w.Write(row); err == nil {
 				cnt++
+			} else {
+				if verboseLog == true {
+					log.Printf("error writing row %d from %s key %q, %s\n", i+1, c.Name, key, err)
+				}
+				writeErrors++
 			}
 			data = nil
 		} else {
-			fmt.Fprintf(os.Stderr, "error reading %q, %s\n", key, err)
-			readErrors += 1
+			log.Printf("error reading %s %q, %s\n", c.Name, key, err)
+			readErrors++
 		}
 	}
-	if readErrors > 0 {
-		return cnt, fmt.Errorf("%d read errors encountered", readErrors)
+	if readErrors > 0 || writeErrors > 0 || dotpathErrors > 0 && verboseLog == true {
+		log.Printf("warning %d read error, %d write errors, %d dotpath errors in CSV export from %s", readErrors, writeErrors, dotpathErrors, c.Name)
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
@@ -718,10 +739,13 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 
 	keys := []string{}
 	for _, key := range keyList {
-		m := map[string]interface{}{}
-		if err := c.Read(key, m); err == nil {
-			if ok, err := f.Apply(m); err == nil && ok == true {
-				keys = append(keys, key)
+		key = strings.TrimSpace(key)
+		if len(key) > 0 {
+			m := map[string]interface{}{}
+			if err := c.Read(key, m); err == nil {
+				if ok, err := f.Apply(m); err == nil && ok == true {
+					keys = append(keys, key)
+				}
 			}
 		}
 	}
@@ -731,7 +755,6 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // Extract takes a collection, a filter and a dot path and returns a list of unique values
 // E.g. in a collection article records extracting orcid ids which are values in a authors field
 func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
-
 	keys, err := c.KeyFilter(c.Keys(), filterExpr)
 	if err != nil {
 		return nil, err
@@ -750,7 +773,7 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 						uniqueStrings[hKey] = true
 					}
 				case map[string]interface{}:
-					for _, v := range cell.([]interface{}) {
+					for _, v := range cell.(map[string]interface{}) {
 						hKey = colToString(v)
 						uniqueStrings[hKey] = true
 					}
@@ -758,11 +781,7 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 					hKey = colToString(cell)
 					uniqueStrings[hKey] = true
 				}
-			} else if err != nil {
-				return nil, fmt.Errorf("can't parse dotExpr %q", err)
 			}
-		} else {
-			return nil, fmt.Errorf("c.Read() error, %s, %s", key, err)
 		}
 	}
 	rows := []string{}
@@ -771,4 +790,62 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 	}
 	sort.Strings(rows)
 	return rows, nil
+}
+
+// Clone copies the current collection records into a newly initialized collection given a list of keys
+// and new collection name. Returns an error value if there is a problem. Clone does NOT copy
+// attachments, only the JSON records.
+func (c *Collection) Clone(keys []string, cloneName string) error {
+	if len(keys) == 0 {
+		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
+	}
+	clone, err := InitCollection(cloneName)
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		src, err := c.ReadJSON(key)
+		if err != nil {
+			return err
+		}
+		err = clone.CreateJSON(key, src)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CloneSample takes the current collection, a sample size, a training collection name and a test collection
+// name. The training collection will be created and receive a random sample of the records from the current
+// collection based on the sample size provided. Sample size must be greater than zero and less than the total
+// number of records in the current collection.
+//
+// If the test collection name is not an empty string it will be created and any records not in the training
+// collection will be cloned from the current collection into the test collection.
+func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, testCollectionName string) error {
+	if sampleSize < 1 {
+		return fmt.Errorf("sample size should be greater than zero")
+	}
+	keys := c.Keys()
+	if sampleSize >= len(keys) {
+		return fmt.Errorf("sample size too big, %s has %d keys", c.Name, len(keys))
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("%s has zero keys", c.Name)
+	}
+	// Apply Sample Size
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	shuffle.Strings(keys, random)
+	trainingKeys := keys[0:sampleSize]
+	if err := c.Clone(trainingKeys, trainingCollectionName); err != nil {
+		return err
+	}
+	if len(testCollectionName) > 0 {
+		testKeys := keys[sampleSize:]
+		if err := c.Clone(testKeys, testCollectionName); err != nil {
+			return err
+		}
+	}
+	return nil
 }

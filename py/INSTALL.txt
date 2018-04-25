@@ -1,0 +1,21 @@
+
+# Installing dataset Python module
+
+## From Source code
+
+_dataset_ is available to Python 3.6 based on a C shared library derived from the _dataset_ Go package. If you want to 
+compile from scratch you need to have Go 1.10, GNU Make and Python 3.6 installed.  Running make will compile 
+an appropriate shared library for your platform and place the shared library in the module directory
+(e.g. libdataset.so, libdataset.dll, or libdataset.dylib).  After this is done you can then run
+the standard `python3 setup.py install --user` to install the package on to your system. 
+
+## From distibution package
+
+If you are installing distribution package follow these steps.
+
+1. Go to https://github.com/caltechlibrary/dataset/latest/release and find the Python module file associated with your operating system
+2. Download `py3-dataset-VERSION-OS-ARCHITECTURE.zip` (where VERSION is a version number, OS refers to the opperating system and ARCHITECTURE refers to the type of CPU)
+3. Unzip the zip file and change directory into that location
+4. Run `python3 setup.py install --user` to install on your system.
+
+

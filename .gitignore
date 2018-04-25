@@ -43,3 +43,11 @@ demos/*
 *.h
 __pycache__
 test*.json
+py/dist
+py/build
+py/MANIFEST
+py/codemeta.json
+py/files.txt
+dataset.egg-info
+py/test_*
+idxdefs/*

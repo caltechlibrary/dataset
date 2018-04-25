@@ -78,37 +78,39 @@ based JSON document keys (aka JSON document names).</p>
 
 <h2>ACTIONS</h2>
 
-<pre><code>    attach          Attach a document (file) to a JSON record in a collection
-    attachments     List of attachments associated with a JSON record in a collection
-    check           Check the health of a dataset collection
-    count           Counts the number of records in a collection, accepts a filter for sub-counts
-    create          Create a JSON record in a collection
-    deindexer       Remove record(s) from a Bleve index for a collection
-    delete          Delete a JSON record (and attachments) from a collection
-    detach          Copy an attach out of an associated JSON record in a collection
-    export          Export a JSON records from a collection to a CSV file
-    export-gsheet   Export a collection's JSON records to a GSheet
-    extract         Extract unique values from JSON records in a collection based on a dot path expression
-    find            Query a bleve index(es) associated with a collection
-    haskey          Returns true if key is in collection, false otherwise
-    import          Import a CSV file's rows as JSON records into a collection
-    import-gsheet   Import a GSheet rows as JSON records into a collection
-    indexer         Create/Update a Bleve index of a collection
-    init            Initialize a dataset collection
-    join            Join a JSON record with a new JSON object in a collection
-    keys            List the keys in a collection, support filtering and sorting
-    list            List the JSON records as an array for provided record ids
-    path            Show the file system path to a JSON record in a collection
-    prune           Remove attachments from a JSON record in a collection
-    read            Read back a JSON record from a collection
-    repair          Try to repair a damaged dataset collection
-    status          Checks to see if a collection name contains a 'collection.json' file
-    update          Update a JSON record in a collection
+<pre><code>    attach         Attach a document (file) to a JSON record in a collection
+    attachments    List of attachments associated with a JSON record in a collection
+    check          Check the health of a dataset collection
+    clone          Clone a collection from a list of keys into a new collection
+    clone-sample   Clone a collection into a sample size based training collection and test collection
+    count          Counts the number of records in a collection, accepts a filter for sub-counts
+    create         Create a JSON record in a collection
+    deindexer      Remove record(s) from a Bleve index for a collection
+    delete         Delete a JSON record (and attachments) from a collection
+    detach         Copy an attach out of an associated JSON record in a collection
+    export         Export a JSON records from a collection to a CSV file
+    export-gsheet  Export a collection's JSON records to a GSheet
+    extract        Extract unique values from JSON records in a collection based on a dot path expression
+    find           Query a bleve index(es) associated with a collection
+    haskey         Returns true if key is in collection, false otherwise
+    import         Import a CSV file's rows as JSON records into a collection
+    import-gsheet  Import a GSheet rows as JSON records into a collection
+    indexer        Create/Update a Bleve index of a collection
+    init           Initialize a dataset collection
+    join           Join a JSON record with a new JSON object in a collection
+    keys           List the keys in a collection, support filtering and sorting
+    list           List the JSON records as an array for provided record ids
+    path           Show the file system path to a JSON record in a collection
+    prune          Remove attachments from a JSON record in a collection
+    read           Read back a JSON record from a collection
+    repair         Try to repair a damaged dataset collection
+    status         Checks to see if a collection name contains a 'collection.json' file
+    update         Update a JSON record in a collection
 </code></pre>
 
-<p>Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="deindexer.html">deindexer</a>, <a href="delete.html">delete</a>, <a href="detach.html">detach</a>, <a href="export.html">export</a>, <a href="export-gsheet.html">export-gsheet</a>, <a href="extract.html">extract</a>, <a href="find.html">find</a>, <a href="haskey.html">haskey</a>, <a href="import.html">import</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="indexer.html">indexer</a>, <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a></p>
+<p>Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="clone.html">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="deindexer.html">deindexer</a>, <a href="delete.html">delete</a>, <a href="detach.html">detach</a>, <a href="export.html">export</a>, <a href="export-gsheet.html">export-gsheet</a>, <a href="extract.html">extract</a>, <a href="find.html">find</a>, <a href="haskey.html">haskey</a>, <a href="import.html">import</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="indexer.html">indexer</a>, <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a></p>
 
-<p>dataset v0.0.30-dev</p>
+<p>dataset v0.0.39</p>
 
 </section>
 

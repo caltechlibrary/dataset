@@ -22,7 +22,7 @@ endif
 ifeq ($(OS), Darwin)
 	EXT = .dylib
 	ARCH = $(shell arch)
-	OS = maxosx
+	OS = macosx
 endif
 ifeq ($(OS), Linux)
 	EXT = .so
@@ -36,24 +36,42 @@ ifeq ($(ARCH), x86_64)
 	ARCH = amd64
 endif
 
+build: $(PROJECT)/$(LIB_NAME)$(EXT)
+	cp ../codemeta.json ./
 
-$(LIB_NAME)$(EXT): $(LIB_NAME).go
-	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+install: $(PROJECT)/$(LIB_NAME)$(EXT)
+	python3 setup.py install --user --record files.txt
 
-test: $(LIB_NAME)$(EXT)
-	python3 dataset_test.py
+
+$(PROJECT)/$(LIB_NAME)$(EXT): ../$(LIB_NAME)/$(LIB_NAME).go
+	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "../$(LIB_NAME)/$(LIB_NAME).go"
 
 clean:
-	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
-	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	if [ -f "codemeta.json" ]; then cp ../codemeta.json ./; fi
+	if [ -f "MANIFEST" ]; then rm MANIFEST; fi
+	if [ -f "$(PROJECT)/$(LIB_NAME)$(EXT)" ]; then rm "$(PROJECT)/$(LIB_NAME)$(EXT)"; fi
+	if [ -f "$(PROJECT)/$(LIB_NAME).h" ]; then rm "$(PROJECT)/$(LIB_NAME).h"; fi
+	if [ -f "test_index_map.json" ]; then rm "test_index_map.json"; fi
+	if [ -d "dist" ]; then rm -fR dist; fi
+	if [ -d "build" ]; then rm -fR build; fi
 	if [ -d "test_collection.ds" ]; then rm -fR "test_collection.ds"; fi	
 	if [ -d "test_gsheet.ds" ]; then rm -fR "test_gsheet.ds"; fi	
+	if [ -d "test_issue43.ds" ]; then rm -fR "test_issue43.ds"; fi	
+	if [ -f "test_issue43.csv" ]; then rm -fR "test_issue43.csv"; fi	
+	if [ -d "test_check_and_repair.ds" ]; then rm -fR "test_check_and_repair.ds"; fi
+	if [ -d "test_index.bleve" ]; then rm -fR "test_index.bleve"; fi
 	if [ -d "__pycache__" ]; then rm -fR "__pycache__"; fi	
+	if [ -d "$(PROJECT)/__pycache__" ]; then rm -fR "$(PROJECT)/__pycache__"; fi	
+	if [ -d "$(PROEJCT).egg-info" ]; then rm -fR "$(PROJECT).egg-info"; fi
 
-release: $(LIB_NAME)$(EXT)
-	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+test: clean $(PROJECT)/$(LIB_NAME)$(EXT)
+	python3 dataset_test.py
+
+release: clean $(PROJECT)/$(LIB_NAME)$(EXT)
+	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "../$(LIB_NAME)/$(LIB_NAME).go"
+	python3 setup.py sdist
 	mkdir -p ../dist
-	zip -r "../dist/py3-$(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip" *.py "$(LIB_NAME)$(EXT)" "README.md"
+	cp -v dist/$(PROJECT)-*.tar.gz "../dist/py3-$(PROJECT)-$(VERSION)-$(OS)-$(ARCH).tar.gz"
 
 status:
 	git status

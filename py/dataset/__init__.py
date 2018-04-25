@@ -4,7 +4,7 @@
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2017, Caltech
+# Copyright (c) 2018, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -35,8 +35,15 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 
 # Setup our Go functions to be nicely wrapped
-go_dataset_version = lib.dataset_version
-go_dataset_version.restype = ctypes.c_char_p
+go_error_message = lib.error_message
+go_error_message.restype = ctypes.c_char_p
+
+go_use_strict_dotpath = lib.use_strict_dotpath
+go_use_strict_dotpath.argtypes = [ctypes.c_int]
+go_use_strict_dotpath.restype = ctypes.c_int
+
+go_version = lib.version
+go_version.restype = ctypes.c_char_p
 
 go_is_verbose = lib.is_verbose
 go_is_verbose.restype = ctypes.c_int
@@ -158,9 +165,31 @@ go_join = lib.join
 go_join.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_join.restype = ctypes.c_int
 
+go_clone = lib.clone
+go_clone.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_clone.restype = ctypes.c_int
+
+go_clone_sample = lib.clone_sample
+go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p]
+go_clone_sample.restype = ctypes.c_int
+
 #
 # Now write our Python idiomatic function
 #
+
+def error_message():
+    value = go_error_message()
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode() 
+
+
+def use_strict_dotpath(on_off = True):
+    if on_off == True:
+        go_use_strict_dotpath(1)
+        return True
+    go_use_strict_dotpath(0)
+    return False
 
 # is_verbose returns true is verbose is enabled, false otherwise
 def is_verbose():
@@ -179,7 +208,7 @@ def verbose_off():
 
 # Returns version of dataset shared library
 def version():
-    value = go_dataset_version()
+    value = go_version()
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode() 
@@ -188,7 +217,9 @@ def version():
 def init(collection_name):
     '''initialize a dataset collection with the given name'''
     ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 # Has key, checks if a key is in the dataset collection
 def has_key(collection_name, key):
@@ -199,31 +230,37 @@ def has_key(collection_name, key):
 def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
     ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
     
 # Read a JSON record from a Dataset collection
 def read(collection_name, key):
-    '''read a JSON record from a collection with the given name and record key, returns a dict'''
+    '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
     value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
     if rval == "":
-        return {}
-    return json.loads(rval)
+        return {}, error_message()
+    return json.loads(rval), ''
     
 
 # Update a JSON record from a Dataset collection
 def update(collection_name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
     ok = go_update_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 # Delete a JSON record from a Dataset collection
 def delete(collection_name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
     ok = go_delete_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 # Keys returns a list of keys from a collection optionally applying a filter or sort expression
 def keys(collection_name, filter_expr = "", sort_expr = ""):
@@ -268,13 +305,16 @@ def count(collection_name, filter = ''):
 # Extract unique values from the JSON records in a collection given a filter expression and dot path
 def extract(collection_name, filter_expr, dot_expr):
     '''extract unique values from the JSON records in a collection given a filter expression and dot path'''
+    c_name = collection_name.encode('utf8')
+    if os.path.exists(c_name) == False:
+        return [], '{c_name} not found'.format(c_name = c_name)
     value = go_extract(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(dot_expr.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
     rval = value.decode()
     if rval == "":
-        return []
-    return json.loads(rval)
+        return [], error_message()
+    return json.loads(rval), error_message()
     
 
 # Indexer takes a collection name, an index name, an index map file name, and an optional keylist 
@@ -283,7 +323,9 @@ def indexer(collection_name, index_name, index_map_name, key_list = [], batch_si
     '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
     key_list_src = json.dumps(key_list)
     ok = go_indexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(index_map_name.encode('utf8')), ctypes.c_char_p(key_list_src.encode('utf8')), ctypes.c_int(batch_size))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 # Deindexer takes a collection name, an index name, key list and optional batch size deleting the provided keys from 
 # the index.
@@ -291,19 +333,23 @@ def deindexer(collection_name, index_name, key_list, batch_size = 0):
     '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
     key_list_src = json.dumps(key_list).encode('utf8')
     ok = go_deindexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(key_list_src), ctypes.c_int(batch_size))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 # Find takes an index name, query string an optional options dict and returns a search result
 def find(index_names, query_string, options = {}):
     '''Find takes an index name, query string an optional options dict and returns a search result'''
     option_src = json.dumps(options)
+    err = ''
     value = go_find(ctypes.c_char_p(index_names.encode('utf8')), ctypes.c_char_p(query_string.encode('utf8')), ctypes.c_char_p(option_src.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf8')
     rval = value.decode()
+    err = error_message()
     if rval == "":
-        return {}
-    return json.loads(rval)
+        return {}, err
+    return json.loads(rval), err
 
 
 def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uuid = False):
@@ -316,13 +362,17 @@ def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uui
     else:
         i_use_uuid = 0
     ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctyles.c_int(i_use_uuid))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def export_csv(collection_name, csv_name, filter_expr = 'true', dot_exprs = [], col_names = []):
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col, use_header_row = True, use_uuid = False, overwrite = True):
     if use_header_row == True:
@@ -339,13 +389,17 @@ def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cel
         i_overwrite = 0
 
     ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctypes.c_int(i_use_uuid), ctypes.c_int(i_overwrite))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr = 'true', dot_exprs = [], col_names = []):
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def status(collection_name):
     ok = go_status(collection_name.encode('utf8'))
@@ -368,16 +422,20 @@ def path(collection_name, key):
 
 def check(collection_name):
     ok = go_check(ctypes.c_char_p(collection_name.encode('utf8')))
-    return (ok == 1)
+    return (ok == True)
 
 def repair(collection_name):
     ok = go_repair(ctypes.c_char_p(collection_name.encode('utf8')))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def attach(collection_name, key, filenames = []):
     srcFNames = json.dumps(filenames).encode('utf8')
     ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(srcFNames))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
     
 def attachments(collection_name, key):
     value = go_attachments(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
@@ -391,15 +449,34 @@ def attachments(collection_name, key):
 def detach(collection_name, key, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def prune(collection_name, key, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
 
 def join(collection_name, key, adverb, obj = {}):
     src = json.dumps(obj).encode('utf8')
     ok = go_join(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(adverb.encode('utf8')), ctypes.c_char_p(src))
-    return (ok == 1)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def clone(collection_name, keys, destination_name):
+    src_keys = json.dumps(keys)
+    ok = go_clone(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(src_keys.encode('utf-8')), ctypes.c_char_p(destination_name.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def clone_sample(collection_name, sample_size, training_name, test_name = ""):
+    ok = go_clone_sample(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_int(sample_size), ctypes.c_char_p(training_name.encode('utf-8')), ctypes.c_char_p(test_name.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
 

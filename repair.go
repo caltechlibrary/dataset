@@ -281,19 +281,21 @@ func Repair(collectionName string) error {
 		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
 			for i, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(jsonDoc, ".json")
-				if val, ok := c.KeyMap[ky]; ok == true {
-					if stat1, err := os.Stat(path.Join(collectionName, bck, ky+".json")); err == nil {
-						if stat2, err := os.Stat(path.Join(collectionName, val, ky+".json")); err == nil {
-							m1 := stat1.ModTime()
-							m2 := stat2.ModTime()
-							if m1.Unix() > m2.Unix() {
-								log.Printf("Switching key %s from %s (%s) to  %s (%s)", ky, val, m2, bck, m1)
-								c.KeyMap[ky] = bck
+				if strings.TrimSpace(ky) != "" {
+					if val, ok := c.KeyMap[ky]; ok == true {
+						if stat1, err := os.Stat(path.Join(collectionName, bck, ky+".json")); err == nil {
+							if stat2, err := os.Stat(path.Join(collectionName, val, ky+".json")); err == nil {
+								m1 := stat1.ModTime()
+								m2 := stat2.ModTime()
+								if m1.Unix() > m2.Unix() {
+									log.Printf("Switching key %s from %s (%s) to  %s (%s)", ky, val, m2, bck, m1)
+									c.KeyMap[ky] = bck
+								}
 							}
 						}
+					} else {
+						c.KeyMap[ky] = bck
 					}
-				} else {
-					c.KeyMap[ky] = bck
 				}
 				if i > 0 && (i%5000) == 0 {
 					log.Printf("Saving %d items in bucket %s", i, bck)
@@ -311,6 +313,18 @@ func Repair(collectionName string) error {
 		}
 	}
 	log.Printf("%d keys in %d buckets", len(c.KeyMap), len(c.Buckets))
+	keyList := c.Keys()
+	log.Printf("checking that each key resolves to a value on disc")
+	for _, key := range keyList {
+		p, err := c.DocPath(key)
+		if err != nil {
+			break
+		}
+		if _, err := os.Stat(p); os.IsNotExist(err) == true {
+			log.Printf("Removing %s from %s, %s does not exist", key, collectionName, p)
+			delete(c.KeyMap, key)
+		}
+	}
 	log.Printf("Saving metadata for %s", collectionName)
 	if len(c.Buckets) < len(DefaultBucketNames) {
 		log.Printf("Adding missing buckets")

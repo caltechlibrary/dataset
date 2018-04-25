@@ -20,7 +20,10 @@ package dataset
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path"
+	"strings"
 	"testing"
 )
 
@@ -283,6 +286,42 @@ func TestExtract(t *testing.T) {
 			t.Errorf("Could not find %s in list %+v", target, l)
 		}
 	}
+
+	src := []byte(`[
+{"authorAffiliation":"California Institute of Technology","authorName":"Roberts, Ellis Earl"},
+{"authorAffiliation":["Ariane Tracking Station, Ascension Island (SH)"],"authorName":"John, N."},
+{"authorAffiliation":["California Institute of Technology, Pasadena, CA (US)"],"authorName":"Yavin, Y."},
+{"authorAffiliation":["California Institute of Technology, Pasadena, CA, USA","University of Toronto, Toronto, ON, CAN"],"authorIdentifiers":[{"authorIdentifier":"0000-0003-2025-7519","authorIdentifierScheme":"ORCID"}],"authorName":"Jacob Hedelius"},
+{"authorAffiliation":["California Institute of Technology, Pasadena, CA, USA"],"authorIdentifiers":[{"authorIdentifier":"0000-0002-6126-3854","authorIdentifierScheme":"ORCID"},{"authorIdentifier":"A-5460-2012","authorIdentifierScheme":"ResearcherID"}],"authorName":"Paul Wennberg"},
+{"authorAffiliation":["Caltech Library"],"authorIdentifiers":[{"authorIdentifier":"0000-0003-0900-6903","authorIdentifierScheme":"ORCID"}],"authorName":"Doiel,Robert"},
+{"authorAffiliation":["Caltech"],"authorName":"Doiel, Robert"},
+{"authorAffiliation":["Wisconsin Educational Communications Board, Park Falls, WI (US)"],"authorName":"Ayers, J."},
+{"authorName":"Neufeld, G."},
+{"authorName":"Springett, S."},
+{"authorName":"Yavin, Y."}
+]`)
+	data := []map[string]interface{}{}
+	err = json.Unmarshal(src, &data)
+	if err != nil {
+		t.Errorf("Can't unmarshal test data, %s", err)
+		t.FailNow()
+	}
+	for i, rec := range data {
+		if err := c.Create(fmt.Sprintf("%d", i), rec); err != nil {
+			t.Errorf("Can't create %d in %s, %s", i, c.Name, err)
+		}
+
+	}
+	lines, err := c.Extract("true", ".authorAffiliation[:]")
+	if err != nil {
+		t.Errorf("Can't extract .authorAffiliation[:] from %s, %s", c.Name, err)
+	}
+	for i, line := range lines {
+		//fmt.Printf("DEBUG line (%d): %q\n", i, line)
+		if strings.HasPrefix(line, "[") == true {
+			t.Errorf("%d started as an array, %s, expecting simple string", i, line)
+		}
+	}
 }
 
 func TestComplexKeys(t *testing.T) {
@@ -337,6 +376,150 @@ func TestComplexKeys(t *testing.T) {
 		err := collection.Create(k, v)
 		if err != nil {
 			t.Errorf("Can't create %s <-- %s : %s", k, v, err)
+		}
+	}
+}
+
+func TestExtractOverVariableSchema(t *testing.T) {
+	src := []byte(`[
+{"name": "one", "test_path": 1},
+{"name": "two", "field": "B"},
+{"name": "three", "field": "C", "test_path": 2, "and_the_other_thing":true}
+]`)
+
+	data := []map[string]interface{}{}
+	err := json.Unmarshal(src, &data)
+	if err != nil {
+		t.Errorf("Can't generate tests records, %s", err)
+		t.FailNow()
+	}
+	cName := path.Join("testdata", "extract_test.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("Can't create %s, %s", cName, err)
+		t.FailNow()
+	}
+	for i, rec := range data {
+		err = c.Create(fmt.Sprintf("%d", i), rec)
+		if err != nil {
+			t.Errorf("Can't create record %d in %s, %s", i, c.Name, err)
+		}
+	}
+	result, err := c.Extract("true", ".field")
+	if err != nil {
+		t.Errorf("Expected no error for .field in %s, got %s", c.Name, err)
+	}
+	if len(result) != 2 {
+		t.Errorf("expected 2 values, got %+v", result)
+	}
+	result, err = c.Extract("true", ".field_does_not_exist")
+	if err != nil {
+		t.Errorf("Expected no error for .field_does_not_exist in %s, got %s", c.Name, err)
+	}
+	if len(result) > 0 {
+		t.Errorf("Expected an empty result for .field_does_not_exist, got %+v", result)
+	}
+	result, err = c.Extract("true", ".name")
+	if len(result) != 3 {
+		t.Errorf("Expected three values for .name, got %+v", result)
+	}
+	if err != nil {
+		t.Errorf("Expected no errors for .name in %s, got, %s", c.Name, err)
+	}
+}
+
+func TestCloneSample(t *testing.T) {
+	testRecords := map[string]map[string]interface{}{
+		"character:1": map[string]interface{}{
+			"name": "Jack Flanders",
+		},
+		"character:2": map[string]interface{}{
+			"name": "Little Frieda",
+		},
+		"character:3": map[string]interface{}{
+			"name": "Mojo Sam the Yoodoo Man",
+		},
+		"character:4": map[string]interface{}{
+			"name": "Kasbah Kelly",
+		},
+		"character:5": map[string]interface{}{
+			"name": "Dr. Marlin Mazoola",
+		},
+		"character:6": map[string]interface{}{
+			"name": "Old Far-Seeing Art",
+		},
+		"character:7": map[string]interface{}{
+			"name": "Chief Wampum Stompum",
+		},
+		"character:8": map[string]interface{}{
+			"name": "The Madonna Vampira",
+		},
+		"character:9": map[string]interface{}{
+			"name": "Domenique",
+		},
+		"character:10": map[string]interface{}{
+			"name": "Claudine",
+		},
+	}
+	cName := "test_zbs_characters.ds"
+	trainingName := "test_zbs_training.ds"
+	testName := "test_zbs_test.ds"
+	os.RemoveAll(cName)
+	os.RemoveAll(trainingName)
+	os.RemoveAll(testName)
+
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("Can't create %s, %s", cName, err)
+		t.FailNow()
+	}
+	for key, value := range testRecords {
+		err := c.Create(key, value)
+		if err != nil {
+			t.Errorf("Can't add %s to %s, %s", key, cName, err)
+			t.FailNow()
+		}
+	}
+	cnt := c.Length()
+	trainingSize := 4
+	testSize := cnt - trainingSize
+	if err := c.CloneSample(trainingSize, trainingName, testName); err != nil {
+		t.Errorf("Failed to create samples %s (%d) and %s, %s", trainingName, trainingSize, testName, err)
+	}
+	training, err := Open(trainingName)
+	if err != nil {
+		t.Errorf("Could not open %s, %s", trainingName, err)
+		t.FailNow()
+	}
+	defer training.Close()
+	test, err := Open(testName)
+	if err != nil {
+		t.Errorf("Could not open %s, %s", testName, err)
+		t.FailNow()
+	}
+	defer test.Close()
+
+	if trainingSize != training.Length() {
+		t.Errorf("Expected %d, got %d for %s", trainingSize, training.Length(), trainingName)
+	}
+	if testSize != test.Length() {
+		t.Errorf("Expected %d, got %d for %s", testSize, test.Length(), testName)
+	}
+
+	keys := c.Keys()
+	for _, key := range keys {
+		switch {
+		case training.HasKey(key) == true:
+			if test.HasKey(key) == true {
+				t.Errorf("%s and %s has key %s", trainingName, testName, key)
+			}
+		case test.HasKey(key) == true:
+			if training.HasKey(key) == true {
+				t.Errorf("%s and %s has key %s", trainingName, testName, key)
+			}
+		default:
+			t.Errorf("Could not find %s in %s or %s", key, trainingName, testName)
 		}
 	}
 }

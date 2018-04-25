@@ -292,6 +292,132 @@ func TestIndexerDeindexer(t *testing.T) {
 	}
 }
 
+func TestSearchSort(t *testing.T) {
+	cName := "test_search_sort.ds"
+	iName := "test_search_sort.bleve"
+	iMapName := "test_search_sort_map.json"
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
+	os.RemoveAll(iMapName)
+
+	src := []byte(`{
+	"title": {
+		"object_path": ".title",
+		"field_mapping": "text"
+	},
+	"created": {
+		"object_path": ".created",
+		"field_mapping": "datetime"
+	}
+}`)
+	err := ioutil.WriteFile(iMapName, src, 0775)
+	if err != nil {
+		t.Errorf("Can't write %s, %s", iMapName, err)
+		t.FailNow()
+	}
+
+	// create the collection
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	src = []byte(`{
+		"one": {
+			"title":"G one",
+			"created": "2018-03-04"
+		},
+		"two": {
+			"title": "F two",
+			"created": "2018-04-04"
+		},
+		"three": {
+			"title": "E three",
+			"created": "2018-05-04"
+		},
+		"four": {
+			"title": "D four",
+			"created": "2018-06-04"
+		},
+		"five": {
+			"title": "C five",
+			"created": "2018-07-04"
+		},
+		"six": {
+			"title": "B six",
+			"created": "2018-08-04"
+		},
+		"seven": {
+			"title": "A seven",
+			"created": "2018-09-04"
+		}
+	}`)
+
+	records := map[string]map[string]interface{}{}
+	err = json.Unmarshal(src, &records)
+	if err != nil {
+		t.Errorf("Can't unmarshal src, %s", err)
+	}
+
+	for key, record := range records {
+		err := c.Create(key, record)
+		if err != nil {
+			t.Errorf("Can't add %s to %s, %s", key, cName, err)
+		}
+	}
+	keys := c.Keys()
+
+	// Now we are ready to index our collection
+	err = c.Indexer(iName, iMapName, keys, 100)
+	if err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
+	//c.CloseIndexes(iName)
+	idxLists, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %q, %s", iName, err)
+		t.FailNow()
+	}
+	defer idxLists.Close()
+
+	// Now we can test our sorting with a query of '*'
+	options := map[string]string{
+		"fields": ".created,.title",
+		"sort":   "-.created,+.title",
+	}
+	results, err := Find(idxLists.Alias, "*", options)
+	if err != nil {
+		t.Errorf("Can't find '*' with sort option, %s", err)
+		t.FailNow()
+	}
+	if results.Hits == nil || len(results.Hits) == 0 {
+		src, _ := json.MarshalIndent(results, "", "    ")
+		t.Errorf("Expected hits in result, %s", src)
+	}
+	expected := []string{
+		"seven",
+		"six",
+		"five",
+		"four",
+		"three",
+		"two",
+		"one",
+	}
+	for i, hit := range results.Hits {
+		src, err = json.MarshalIndent(hit, "", "    ")
+		if err != nil {
+			t.Errorf("Can't marshal search results (%d), %s", i, err)
+			t.FailNow()
+		}
+		if expected[i] != hit.ID {
+			t.Errorf("expected (%d) %q, got %q", i, expected[i], hit.ID)
+		}
+	}
+}
+
 func TestMain(m *testing.M) {
 	var (
 		err          error
