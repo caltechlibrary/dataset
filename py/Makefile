@@ -37,6 +37,7 @@ ifeq ($(ARCH), x86_64)
 endif
 
 build: $(PROJECT)/$(LIB_NAME)$(EXT)
+	cp ../codemeta.json ./
 
 install: $(PROJECT)/$(LIB_NAME)$(EXT)
 	python3 setup.py install --user --record files.txt
@@ -46,6 +47,7 @@ $(PROJECT)/$(LIB_NAME)$(EXT): ../$(LIB_NAME)/$(LIB_NAME).go
 	go build -buildmode=c-shared -o "$(PROJECT)/$(LIB_NAME)$(EXT)" "../$(LIB_NAME)/$(LIB_NAME).go"
 
 clean:
+	if [ -f "codemeta.json" ]; then cp ../codemeta.json ./; fi
 	if [ -f "MANIFEST" ]; then rm MANIFEST; fi
 	if [ -f "$(PROJECT)/$(LIB_NAME)$(EXT)" ]; then rm "$(PROJECT)/$(LIB_NAME)$(EXT)"; fi
 	if [ -f "$(PROJECT)/$(LIB_NAME).h" ]; then rm "$(PROJECT)/$(LIB_NAME).h"; fi

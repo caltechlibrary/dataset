@@ -1354,6 +1354,8 @@ func main() {
 	app.AddVerb("indexer", "Create/Update a Bleve index of a collection")
 	app.AddVerb("deindexer", "Remove record(s) from a Bleve index for a collection")
 	app.AddVerb("find", "Query a bleve index(es) associated with a collection")
+	app.AddVerb("clone", "Clone a collection from a list of keys into a new collection")
+	app.AddVerb("clone-sample", "Clone a collection into a sample size based training collection and test collection")
 
 	// We're ready to process args
 	app.Parse()

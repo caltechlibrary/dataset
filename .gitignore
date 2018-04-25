@@ -50,3 +50,4 @@ py/codemeta.json
 py/files.txt
 dataset.egg-info
 py/test_*
+idxdefs/*
