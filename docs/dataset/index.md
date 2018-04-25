@@ -63,35 +63,37 @@ Options will override any corresponding environment settings. Options are shared
 ## ACTIONS
 
 ```
-    attach          Attach a document (file) to a JSON record in a collection
-    attachments     List of attachments associated with a JSON record in a collection
-    check           Check the health of a dataset collection
-    count           Counts the number of records in a collection, accepts a filter for sub-counts
-    create          Create a JSON record in a collection
-    deindexer       Remove record(s) from a Bleve index for a collection
-    delete          Delete a JSON record (and attachments) from a collection
-    detach          Copy an attach out of an associated JSON record in a collection
-    export          Export a JSON records from a collection to a CSV file
-    export-gsheet   Export a collection's JSON records to a GSheet
-    extract         Extract unique values from JSON records in a collection based on a dot path expression
-    find            Query a bleve index(es) associated with a collection
-    haskey          Returns true if key is in collection, false otherwise
-    import          Import a CSV file's rows as JSON records into a collection
-    import-gsheet   Import a GSheet rows as JSON records into a collection
-    indexer         Create/Update a Bleve index of a collection
-    init            Initialize a dataset collection
-    join            Join a JSON record with a new JSON object in a collection
-    keys            List the keys in a collection, support filtering and sorting
-    list            List the JSON records as an array for provided record ids
-    path            Show the file system path to a JSON record in a collection
-    prune           Remove attachments from a JSON record in a collection
-    read            Read back a JSON record from a collection
-    repair          Try to repair a damaged dataset collection
-    status          Checks to see if a collection name contains a 'collection.json' file
-    update          Update a JSON record in a collection
+    attach         Attach a document (file) to a JSON record in a collection
+    attachments    List of attachments associated with a JSON record in a collection
+    check          Check the health of a dataset collection
+    clone          Clone a collection from a list of keys into a new collection
+    clone-sample   Clone a collection into a sample size based training collection and test collection
+    count          Counts the number of records in a collection, accepts a filter for sub-counts
+    create         Create a JSON record in a collection
+    deindexer      Remove record(s) from a Bleve index for a collection
+    delete         Delete a JSON record (and attachments) from a collection
+    detach         Copy an attach out of an associated JSON record in a collection
+    export         Export a JSON records from a collection to a CSV file
+    export-gsheet  Export a collection's JSON records to a GSheet
+    extract        Extract unique values from JSON records in a collection based on a dot path expression
+    find           Query a bleve index(es) associated with a collection
+    haskey         Returns true if key is in collection, false otherwise
+    import         Import a CSV file's rows as JSON records into a collection
+    import-gsheet  Import a GSheet rows as JSON records into a collection
+    indexer        Create/Update a Bleve index of a collection
+    init           Initialize a dataset collection
+    join           Join a JSON record with a new JSON object in a collection
+    keys           List the keys in a collection, support filtering and sorting
+    list           List the JSON records as an array for provided record ids
+    path           Show the file system path to a JSON record in a collection
+    prune          Remove attachments from a JSON record in a collection
+    read           Read back a JSON record from a collection
+    repair         Try to repair a damaged dataset collection
+    status         Checks to see if a collection name contains a 'collection.json' file
+    update         Update a JSON record in a collection
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [detach](detach.html), [export](export.html), [export-gsheet](export-gsheet.html), [extract](extract.html), [find](find.html), [haskey](haskey.html), [import](import.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [detach](detach.html), [export](export.html), [export-gsheet](export-gsheet.html), [extract](extract.html), [find](find.html), [haskey](haskey.html), [import](import.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [repair](repair.html), [status](status.html), [update](update.html)
 
-dataset v0.0.30-dev
+dataset v0.0.39
