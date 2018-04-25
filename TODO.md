@@ -6,6 +6,7 @@
 
 ## Next (prep for v0.1.0)
 
++ [ ] Add clone verb to _dataset_ command, clone will copy a repository if the -sample option is used it will copy a sample of the source repository if two destination repositories are provided and sample is choosen then the first will contain the sample (training set) and second records not included in the first (the test set)
 + [ ] Documentation updates
 + [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
     + Make key column required

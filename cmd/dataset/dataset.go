@@ -28,6 +28,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -111,6 +112,8 @@ var (
 		"indexer":       indexer,
 		"deindexer":     deindexer,
 		"find":          find,
+		"clone-sample":  cloneSample,
+		"clone":         clone,
 	}
 )
 
@@ -121,7 +124,7 @@ var (
 // checkCollection takes a collection name and checks for problems
 func checkCollection(params ...string) (string, error) {
 	if len(params) == 0 && collectionName == "" {
-		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
 	if collectionName != "" {
 		if err := dataset.Analyzer(collectionName); err != nil {
@@ -140,7 +143,7 @@ func checkCollection(params ...string) (string, error) {
 // based on what it finds on disc
 func repairCollection(params ...string) (string, error) {
 	if len(params) == 0 && collectionName == "" {
-		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
 	if collectionName != "" {
 		if err := dataset.Repair(collectionName); err != nil {
@@ -177,7 +180,7 @@ func collectionInit(params ...string) (string, error) {
 // collectionStatus sees if we can find the dataset collection given the path
 func collectionStatus(params ...string) (string, error) {
 	if len(params) == 1 && collectionName == "" {
-		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
 	if len(params) == 0 {
 		params = []string{collectionName}
@@ -671,7 +674,7 @@ func addAttachments(params ...string) (string, error) {
 	defer collection.Close()
 
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", os.Args[0])
+		return "", fmt.Errorf("syntax: %s attach KEY PATH_TO_ATTACHMENT ...", path.Base(os.Args[0]))
 	}
 	key := params[0]
 	if collection.HasKey(key) == false {
@@ -696,7 +699,7 @@ func listAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) != 1 {
-		return "", fmt.Errorf("syntax: %s attachments KEY", os.Args[0])
+		return "", fmt.Errorf("syntax: %s attachments KEY", path.Base(os.Args[0]))
 	}
 	key := params[0]
 	if collection.HasKey(key) == false {
@@ -716,7 +719,7 @@ func getAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s detach KEY [FILENAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s detach KEY [FILENAMES]", path.Base(os.Args[0]))
 	}
 	key := params[0]
 	if collection.HasKey(key) == false {
@@ -736,7 +739,7 @@ func removeAttachments(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 1 {
-		return "", fmt.Errorf("syntax: %s prune KEY", os.Args[0])
+		return "", fmt.Errorf("syntax: %s prune KEY", path.Base(os.Args[0]))
 	}
 	err = collection.Prune(params[0], params[1:]...)
 	if err != nil {
@@ -752,7 +755,7 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s import-csv CSV_FILENAME COL_NUMBER_USED_FOR_ID", os.Args[0])
+		return "", fmt.Errorf("syntax: %s import-csv CSV_FILENAME COL_NUMBER_USED_FOR_ID", path.Base(os.Args[0]))
 	}
 	csvFName := params[0]
 	idCol, err := strconv.Atoi(params[1])
@@ -793,7 +796,7 @@ func importGSheet(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 4 {
-		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NUMBER_USED_FOR_ID", os.Args[0])
+		return "", fmt.Errorf("syntax: %s import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NUMBER_USED_FOR_ID", path.Base(os.Args[0]))
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
@@ -835,7 +838,7 @@ func exportGSheet(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 5 {
-		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR EXPORT_FIELD_LIST [COLUMN_NAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR EXPORT_FIELD_LIST [COLUMN_NAMES]", path.Base(os.Args[0]))
 	}
 	spreadSheetId := params[0]
 	sheetName := params[1]
@@ -924,7 +927,7 @@ func exportCSV(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 3 {
-		return "", fmt.Errorf("syntax: %s export-csv CSV_FILENAME FILTER_EXPR DOTPATHS [COLUMN_NAMES]", os.Args[0])
+		return "", fmt.Errorf("syntax: %s export-csv CSV_FILENAME FILTER_EXPR DOTPATHS [COLUMN_NAMES]", path.Base(os.Args[0]))
 	}
 	csvFName := params[0]
 	filterExpr := params[1]
@@ -968,7 +971,7 @@ func extract(params ...string) (string, error) {
 	}
 	defer collection.Close()
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH_EXPR", os.Args[0])
+		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH_EXPR", path.Base(os.Args[0]))
 	}
 	filterExpr := strings.TrimSpace(params[0])
 	dotExpr := strings.TrimSpace(params[1])
@@ -984,7 +987,7 @@ func indexer(params ...string) (string, error) {
 		keyList      []string
 	)
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s [OPTIONS] indexer INDEX_MAP_FILENAME INDEX_NAME", os.Args[0])
+		return "", fmt.Errorf("syntax: %s [OPTIONS] indexer INDEX_MAP_FILENAME INDEX_NAME", path.Base(os.Args[0]))
 	}
 	if len(params) > 0 {
 		if strings.HasSuffix(params[0], "bleve") {
@@ -1051,7 +1054,7 @@ func deindexer(params ...string) (string, error) {
 		keyList   []string
 	)
 	if len(params) == 0 {
-		return "", fmt.Errorf("syntax: %s deindexer INDEX_NAME KEY_FILENAME", os.Args[0])
+		return "", fmt.Errorf("syntax: %s deindexer INDEX_NAME KEY_FILENAME", path.Base(os.Args[0]))
 	}
 	if len(params) > 0 {
 		if strings.HasSuffix(params[0], ".bleve") {
@@ -1105,7 +1108,7 @@ func deindexer(params ...string) (string, error) {
 
 func find(params ...string) (string, error) {
 	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s [OPTIONS] INDEX_NAMES QUERY_STRING", os.Args[0])
+		return "", fmt.Errorf("syntax: %s [OPTIONS] INDEX_NAMES QUERY_STRING", path.Base(os.Args[0]))
 	}
 	indexNames := []string{}
 	queryString := ""
@@ -1213,6 +1216,61 @@ func find(params ...string) (string, error) {
 	return results.String(), nil
 }
 
+func clone(params ...string) (string, error) {
+	if len(params) != 2 {
+		return "", fmt.Errorf("syntax: %s clone KEY_LIST_FILE DESTINATION_COLLECTION", path.Base(os.Args[0]))
+	}
+	keyListName, dName := params[0], params[1]
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+	src, err := ioutil.ReadFile(keyListName)
+	if err != nil {
+		return "", err
+	}
+	keys := strings.Split(strings.TrimSpace(fmt.Sprintf("%s", src)), "\n")
+	err = c.Clone(keys, dName)
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+func cloneSample(params ...string) (string, error) {
+	if len(params) < 2 || len(params) > 3 {
+		return "", fmt.Errorf("syntax: %s clone-sample SAMPLE_SIZE TRAINING_COLLECTION [TEST_COLLECTION]", path.Base(os.Args[0]))
+	}
+	var (
+		sampleSize   string
+		size         int
+		trainingName string
+		testName     string
+		err          error
+	)
+	if len(params) == 3 {
+		sampleSize, trainingName, testName = params[0], params[1], params[2]
+	}
+	if len(params) == 2 {
+		sampleSize, trainingName, testName = params[0], params[1], ""
+	}
+	size, err = strconv.Atoi(sampleSize)
+	if err != nil {
+		return "", err
+	}
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+	err = c.CloneSample(size, trainingName, testName)
+	if err != nil {
+		return "", err
+	}
+	return "OK", err
+}
+
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
@@ -1230,7 +1288,7 @@ func main() {
 		app.AddHelp(k, v)
 	}
 
-	// Add Environment options
+	// Document Environment options
 	app.EnvStringVar(&collectionName, "DATASET", "", "Set the working path to your dataset collection")
 
 	// Standard Options
@@ -1365,6 +1423,7 @@ func main() {
 					args = append(args[:i], args[i+1:]...)
 				}
 			}
+			break
 		}
 	}
 
@@ -1474,6 +1533,9 @@ func main() {
 		for _, k := range keyList {
 			params = append(params, k)
 		}
+	}
+
+	if action == "clone" || action == "clone-sample" {
 	}
 
 	output, err := fn(params...)

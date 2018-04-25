@@ -289,7 +289,7 @@ def test_gsheet(t, collection_name, setup_bash):
     t.print("Testing gsheet import support (should fail)", sheet_id, sheet_name, cell_range, 2, False)
     dataset.verbose_off()
     err = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = False)
-    if err != '':
+    if err == '':
         t.error("Failed, should NOT be able to import-gsheet over our existing collection without overwrite = True, ", err)
         return
 
@@ -304,7 +304,7 @@ def test_gsheet(t, collection_name, setup_bash):
     sheet_name="Sheet1"
     dot_exprs = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
     err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
-    if err != '':
+    if err == '':
         t.error("Failed, export_gsheet should throw error for bad dotpath in export_gsheet, ", err)
     #dataset.verbose_on()
     dataset.use_strict_dotpath(False)
@@ -589,6 +589,16 @@ def test_issue43(t, collection_name, csv_name):
                 t.error(f'row error {csv_name} for {cells}')
 
 
+def test_clone_sample(t, c_name, sample_size, training_name, test_name):
+    if os.path.exists(training_name):
+        shutil.rmtree(training_name)
+    if os.path.exists(test_name):
+        shutil.rmtree(test_name)
+    err = dataset.clone_sample(c_name, sample_size, training_name, test_name)
+    if err != '':
+        t.error("can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}".format(
+            c_name = c_name, sample_size = sample_size, training_name = training_name, test_name = test_name, err = err))
+
 #
 # Test harness
 #
@@ -677,5 +687,6 @@ if __name__ == "__main__":
     test_runner.add(test_gsheet, ["test_gsheet.ds", "../etc/test_gsheet.bash"])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     test_runner.add(test_s3)
+    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
     test_runner.run()
 

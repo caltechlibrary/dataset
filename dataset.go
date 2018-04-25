@@ -25,15 +25,18 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/url"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 
@@ -43,7 +46,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.38`
+	Version = `v0.0.39`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -787,4 +790,62 @@ func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error
 	}
 	sort.Strings(rows)
 	return rows, nil
+}
+
+// Clone copies the current collection records into a newly initialized collection given a list of keys
+// and new collection name. Returns an error value if there is a problem. Clone does NOT copy
+// attachments, only the JSON records.
+func (c *Collection) Clone(keys []string, cloneName string) error {
+	if len(keys) == 0 {
+		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
+	}
+	clone, err := InitCollection(cloneName)
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		src, err := c.ReadJSON(key)
+		if err != nil {
+			return err
+		}
+		err = clone.CreateJSON(key, src)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CloneSample takes the current collection, a sample size, a training collection name and a test collection
+// name. The training collection will be created and receive a random sample of the records from the current
+// collection based on the sample size provided. Sample size must be greater than zero and less than the total
+// number of records in the current collection.
+//
+// If the test collection name is not an empty string it will be created and any records not in the training
+// collection will be cloned from the current collection into the test collection.
+func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, testCollectionName string) error {
+	if sampleSize < 1 {
+		return fmt.Errorf("sample size should be greater than zero")
+	}
+	keys := c.Keys()
+	if sampleSize >= len(keys) {
+		return fmt.Errorf("sample size too big, %s has %d keys", c.Name, len(keys))
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("%s has zero keys", c.Name)
+	}
+	// Apply Sample Size
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	shuffle.Strings(keys, random)
+	trainingKeys := keys[0:sampleSize]
+	if err := c.Clone(trainingKeys, trainingCollectionName); err != nil {
+		return err
+	}
+	if len(testCollectionName) > 0 {
+		testKeys := keys[sampleSize:]
+		if err := c.Clone(testKeys, testCollectionName); err != nil {
+			return err
+		}
+	}
+	return nil
 }

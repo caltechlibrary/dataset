@@ -165,6 +165,14 @@ go_join = lib.join
 go_join.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_join.restype = ctypes.c_int
 
+go_clone = lib.clone
+go_clone.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_clone.restype = ctypes.c_int
+
+go_clone_sample = lib.clone_sample
+go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p]
+go_clone_sample.restype = ctypes.c_int
+
 #
 # Now write our Python idiomatic function
 #
@@ -209,7 +217,7 @@ def version():
 def init(collection_name):
     '''initialize a dataset collection with the given name'''
     ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -222,7 +230,7 @@ def has_key(collection_name, key):
 def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
     ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
     
@@ -242,7 +250,7 @@ def read(collection_name, key):
 def update(collection_name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
     ok = go_update_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -250,7 +258,7 @@ def update(collection_name, key, value):
 def delete(collection_name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
     ok = go_delete_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -315,7 +323,7 @@ def indexer(collection_name, index_name, index_map_name, key_list = [], batch_si
     '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
     key_list_src = json.dumps(key_list)
     ok = go_indexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(index_map_name.encode('utf8')), ctypes.c_char_p(key_list_src.encode('utf8')), ctypes.c_int(batch_size))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -325,7 +333,7 @@ def deindexer(collection_name, index_name, key_list, batch_size = 0):
     '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
     key_list_src = json.dumps(key_list).encode('utf8')
     ok = go_deindexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(key_list_src), ctypes.c_int(batch_size))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -354,7 +362,7 @@ def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uui
     else:
         i_use_uuid = 0
     ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctyles.c_int(i_use_uuid))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -362,7 +370,7 @@ def export_csv(collection_name, csv_name, filter_expr = 'true', dot_exprs = [], 
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -381,7 +389,7 @@ def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cel
         i_overwrite = 0
 
     ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctypes.c_int(i_use_uuid), ctypes.c_int(i_overwrite))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -389,7 +397,7 @@ def export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cel
     s_dot_exprs = ','.join(dot_exprs).encode('utf8')
     s_col_names = ','.join(col_names).encode('utf8')
     ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
@@ -418,14 +426,14 @@ def check(collection_name):
 
 def repair(collection_name):
     ok = go_repair(ctypes.c_char_p(collection_name.encode('utf8')))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
 def attach(collection_name, key, filenames = []):
     srcFNames = json.dumps(filenames).encode('utf8')
     ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(srcFNames))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
     
@@ -441,21 +449,34 @@ def attachments(collection_name, key):
 def detach(collection_name, key, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
 def prune(collection_name, key, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
-    if ok == True:
+    if ok == 1:
         return ''
     return error_message()
 
 def join(collection_name, key, adverb, obj = {}):
     src = json.dumps(obj).encode('utf8')
     ok = go_join(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(adverb.encode('utf8')), ctypes.c_char_p(src))
-    if ok == True:
+    if ok == 1:
+        return ''
+    return error_message()
+
+def clone(collection_name, keys, destination_name):
+    src_keys = json.dumps(keys)
+    ok = go_clone(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(src_keys.encode('utf-8')), ctypes.c_char_p(destination_name.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def clone_sample(collection_name, sample_size, training_name, test_name = ""):
+    ok = go_clone_sample(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_int(sample_size), ctypes.c_char_p(training_name.encode('utf-8')), ctypes.c_char_p(test_name.encode('utf-8')))
+    if ok == 1:
         return ''
     return error_message()
 

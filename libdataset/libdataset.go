@@ -18,9 +18,6 @@
 //
 package main
 
-// #cgo pkg-config: python-3.6
-// #define Py_LIMITED_API
-// #include <Python.h>
 import (
 	"C"
 	"encoding/json"
@@ -106,7 +103,7 @@ func init_collection(name *C.char) C.int {
 	}
 	_, err := dataset.InitCollection(collectionName)
 	if err != nil {
-		messagef("Cannot create collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot create collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	messagef("%s initialized", collectionName)
@@ -120,7 +117,7 @@ func has_key(name, key *C.char) C.int {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	defer c.Close()
@@ -139,14 +136,14 @@ func create_record(name, key, src *C.char) C.int {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	defer c.Close()
 
 	err = c.CreateJSON(k, v)
 	if err != nil {
-		messagef("Create %s failed, %s", k, err)
+		error_dispatch(err, "Create %s failed, %s", k, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -159,14 +156,14 @@ func read_record(name, key *C.char) *C.char {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	defer c.Close()
 
 	src, err := c.ReadJSON(k)
 	if err != nil {
-		messagef("Can't read %s, %s", k, err)
+		error_dispatch(err, "Can't read %s, %s", k, err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -181,14 +178,14 @@ func update_record(name, key, src *C.char) C.int {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	defer c.Close()
 
 	err = c.UpdateJSON(k, v)
 	if err != nil {
-		messagef("Update %s failed, %s", k, err)
+		error_dispatch(err, "Update %s failed, %s", k, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -201,14 +198,14 @@ func delete_record(name, key *C.char) C.int {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	defer c.Close()
 
 	err = c.Delete(k)
 	if err != nil {
-		messagef("Update %s failed, %s", k, err)
+		error_dispatch(err, "Update %s failed, %s", k, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -223,7 +220,7 @@ func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer c.Close()
@@ -232,12 +229,12 @@ func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
 	newObject := map[string]interface{}{}
 
 	if err := c.Read(key, outObject); err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	if err := json.Unmarshal([]byte(objectSrc), &newObject); err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	switch adverb {
@@ -252,11 +249,11 @@ func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
 			outObject[k] = v
 		}
 	default:
-		messagef("Unknown join type %q", adverb)
+		error_dispatch(err, "Unknown join type %q", adverb)
 		return C.int(0)
 	}
 	if err := c.Update(key, outObject); err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -270,7 +267,7 @@ func keys(cname, cFilterExpr, cSortExpr *C.char) *C.char {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	defer c.Close()
@@ -279,20 +276,20 @@ func keys(cname, cFilterExpr, cSortExpr *C.char) *C.char {
 	if filterExpr != "" {
 		keyList, err = c.KeyFilter(keyList, filterExpr)
 		if err != nil {
-			messagef("Filter error, %s", err)
+			error_dispatch(err, "Filter error, %s", err)
 			return C.CString("")
 		}
 	}
 	if sortExpr != "" {
 		keyList, err = c.KeySortByExpression(keyList, sortExpr)
 		if err != nil {
-			messagef("Sort error, %s", err)
+			error_dispatch(err, "Sort error, %s", err)
 			return C.CString("")
 		}
 	}
 	src, err := json.Marshal(keyList)
 	if err != nil {
-		messagef("Can't marshal key list, %s", err)
+		error_dispatch(err, "Can't marshal key list, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -307,24 +304,24 @@ func key_filter(cname, cKeyListExpr, cFilterExpr *C.char) *C.char {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	defer c.Close()
 
 	keyList := []string{}
 	if err := json.Unmarshal([]byte(keyListExpr), &keyList); err != nil {
-		messagef("Unable to unmarshal keys", err)
+		error_dispatch(err, "Unable to unmarshal keys", err)
 		return C.CString("")
 	}
 	keys, err := c.KeyFilter(keyList, filterExpr)
 	if err != nil {
-		messagef("filter error, %s", err)
+		error_dispatch(err, "filter error, %s", err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(keys)
 	if err != nil {
-		messagef("Can't marshal filtered keys, %s", err)
+		error_dispatch(err, "Can't marshal filtered keys, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -339,24 +336,24 @@ func key_sort(cname, cKeyList, cSortExpr *C.char) *C.char {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	defer c.Close()
 
 	keys := []string{}
 	if err := json.Unmarshal([]byte(keyList), &keys); err != nil {
-		messagef("Unable to unmarshal keys", err)
+		error_dispatch(err, "Unable to unmarshal keys", err)
 		return C.CString("")
 	}
 	keys, err = c.KeySortByExpression(keys, sortExpr)
 	if err != nil {
-		messagef("filter error, %s", err)
+		error_dispatch(err, "filter error, %s", err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(keys)
 	if err != nil {
-		messagef("Can't marshal sorted keys, %s", err)
+		error_dispatch(err, "Can't marshal sorted keys, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -368,7 +365,7 @@ func count(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	defer c.Close()
@@ -381,18 +378,18 @@ func extract(cName, filterExpr, dotExpr *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	defer c.Close()
 	values, err := c.Extract(C.GoString(filterExpr), C.GoString(dotExpr))
 	if err != nil {
-		messagef("Extract failed for %s, %q, %q:  %s", collectionName, filterExpr, dotExpr, err)
+		error_dispatch(err, "Extract failed for %s, %q, %q:  %s", collectionName, filterExpr, dotExpr, err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(values)
 	if err != nil {
-		messagef("Can't marshal extracted values for %s, %s", collectionName, err)
+		error_dispatch(err, "Can't marshal extracted values for %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -409,7 +406,7 @@ func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.in
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		// return 0 (false)
 		return C.int(0)
 	}
@@ -419,7 +416,7 @@ func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.in
 	if keyList != "" {
 		err = json.Unmarshal([]byte(keyList), &keys)
 		if err != nil {
-			messagef("Can't unmarshal key list, %s", err)
+			error_dispatch(err, "Can't unmarshal key list, %s", err)
 			// return 0 (false)
 			return C.int(0)
 		}
@@ -427,7 +424,7 @@ func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.in
 
 	err = c.Indexer(indexName, indexMapName, keys, batchSize)
 	if err != nil {
-		messagef("Indexing error %s %s, %s", collectionName, indexName, err)
+		error_dispatch(err, "Indexing error %s %s, %s", collectionName, indexName, err)
 		// return 0 (false)
 		return C.int(0)
 	}
@@ -444,7 +441,7 @@ func deindexer(cName, cIndexName, cKeyList *C.char, cBatchSize C.int) C.int {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Cannot open collection %s, %s", collectionName, err)
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		// return 0 (false), failed
 		return C.int(0)
 	}
@@ -454,7 +451,7 @@ func deindexer(cName, cIndexName, cKeyList *C.char, cBatchSize C.int) C.int {
 	if keyList != "" {
 		err = json.Unmarshal([]byte(keyList), &keys)
 		if err != nil {
-			messagef("Can't unmarshal key list, %s", err)
+			error_dispatch(err, "Can't unmarshal key list, %s", err)
 			// return 0 (false), failed
 			return C.int(0)
 		}
@@ -462,7 +459,7 @@ func deindexer(cName, cIndexName, cKeyList *C.char, cBatchSize C.int) C.int {
 
 	err = c.Deindexer(indexName, keys, batchSize)
 	if err != nil {
-		messagef("Deindexing error %s %s, %s", collectionName, indexName, err)
+		error_dispatch(err, "Deindexing error %s %s, %s", collectionName, indexName, err)
 		// return 0 (false), failed
 		return C.int(0)
 	}
@@ -480,7 +477,7 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 	if strings.HasPrefix(indexNamesSrc, "[") {
 		err := json.Unmarshal([]byte(indexNamesSrc), &indexNames)
 		if err != nil {
-			messagef("Can't unmarshal index names, %s", err)
+			error_dispatch(err, "Can't unmarshal index names, %s", err)
 			return C.CString("")
 		}
 	} else if strings.Contains(indexNamesSrc, ":") {
@@ -492,7 +489,7 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 	if optionsSrc != "" {
 		err := json.Unmarshal([]byte(optionsSrc), &options)
 		if err != nil {
-			messagef("Options error, %s", err)
+			error_dispatch(err, "Options error, %s", err)
 			// return "", failed
 			return C.CString("")
 		}
@@ -500,24 +497,24 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 
 	idxList, _, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
-		messagef("Can't open index %s, %s", strings.Join(indexNames, ", "), err)
+		error_dispatch(err, "Can't open index %s, %s", strings.Join(indexNames, ", "), err)
 		return C.CString("")
 	}
 
 	result, err := dataset.Find(idxList.Alias, queryString, options)
 	if err != nil {
-		messagef("Find error %s, %s", strings.Join(indexNames, ", "), err)
+		error_dispatch(err, "Find error %s, %s", strings.Join(indexNames, ", "), err)
 		// return "", failed
 		return C.CString("")
 	}
 	err = idxList.Close()
 	if err != nil {
-		messagef("Can't close indexes %s, %s", strings.Join(indexNames, ", "), err)
+		error_dispatch(err, "Can't close indexes %s, %s", strings.Join(indexNames, ", "), err)
 	}
 
 	src, err := json.Marshal(result)
 	if err != nil {
-		messagef("Can't marshal results, %s", err)
+		error_dispatch(err, "Can't marshal results, %s", err)
 		// return "", failed
 		return C.CString("")
 	}
@@ -538,13 +535,13 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("Can't open %s, %s", collectionName, err)
+		error_dispatch(err, "Can't open %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	defer collection.Close()
 
 	if idCol < 1 {
-		messagef("Column number must be greater than zero, got %s", idCol)
+		error_dispatch(fmt.Errorf("invalid column number"), "Column number must be greater than zero, got %s", idCol)
 		return C.int(0)
 	}
 
@@ -552,13 +549,13 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	idCol--
 	fp, err := os.Open(csvFName)
 	if err != nil {
-		messagef("Can't open %s, %s", csvFName, err)
+		error_dispatch(err, "Can't open %s, %s", csvFName, err)
 		return C.int(0)
 	}
 	defer fp.Close()
 
 	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, verbose); err != nil {
-		messagef("Can't import CSV, %s", err)
+		error_dispatch(err, "Can't import CSV, %s", err)
 		return C.int(0)
 	} else {
 		messagef("%d total rows processed", linesNo)
@@ -593,21 +590,21 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer collection.Close()
 
 	fp, err := os.Create(csvFName)
 	if err != nil {
-		messagef("Can't create %s, %s", csvFName, err)
+		error_dispatch(err, "Can't create %s, %s", csvFName, err)
 		return C.int(0)
 	}
 	defer fp.Close()
 
 	linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, verbose)
 	if err != nil {
-		messagef("Can't export CSV, %s", err)
+		error_dispatch(err, "Can't export CSV, %s", err)
 		return C.int(0)
 	}
 	messagef("%d total rows processed", linesNo)
@@ -628,7 +625,7 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer collection.Close()
@@ -638,13 +635,13 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 
 	table, err := gsheets.ReadSheet(clientSecretJSON, sheetID, sheetName, cellRange)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, verbose)
 	if err != nil {
-		messagef("Errors importing %s %s, %s", sheetID, sheetName, err)
+		error_dispatch(err, "Errors importing %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
 	messagef("%d total rows processed", linesNo)
@@ -664,7 +661,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("failed, %s %s, %s", sheetID, sheetName, err)
+		error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
 	defer collection.Close()
@@ -701,7 +698,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 					col, err := dotpath.Eval(colExpr, m)
 					if err != nil {
 						if useStrictDotpath == true {
-							messagef("failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
+							error_dispatch(err, "failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 							return C.int(0)
 						}
 						messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
@@ -716,7 +713,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 	} else {
 		f, err := tmplfn.ParseFilter(filterExpr)
 		if err != nil {
-			messagef("failed, %s %s filter expression %q, %s", sheetID, sheetName, filterExpr, err)
+			error_dispatch(err, "failed, %s %s filter expression %q, %s", sheetID, sheetName, filterExpr, err)
 			return C.int(0)
 		}
 
@@ -730,7 +727,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 						col, err := dotpath.Eval(colExpr, m)
 						if err != nil {
 							if useStrictDotpath == true {
-								messagef("failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
+								error_dispatch(err, "failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
 								return C.int(0)
 							}
 							messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
@@ -746,7 +743,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 	}
 	err = gsheets.WriteSheet(clientSecretJSON, sheetID, sheetName, cellRange, table)
 	if err != nil {
-		messagef("Failed to write %s %s, %s", sheetID, sheetName, err)
+		error_dispatch(err, "Failed to write %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -757,7 +754,7 @@ func status(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("failed, %s, %s", collectionName, err)
+		error_dispatch(err, "failed, %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	c.Close()
@@ -771,7 +768,7 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.CString("")
 	}
 	defer c.Close()
@@ -779,7 +776,7 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 	keys := []string{}
 	err = json.Unmarshal([]byte(sKeys), &keys)
 	if err != nil {
-		messagef("Failed to unmarshal key list, %s", err)
+		error_dispatch(err, "Failed to unmarshal key list, %s", err)
 		return C.CString("")
 	}
 
@@ -788,14 +785,14 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 		m := map[string]interface{}{}
 		err = c.Read(name, m)
 		if err != nil {
-			messagef("%s", err)
+			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 		recs = append(recs, m)
 	}
 	src, err := json.Marshal(recs)
 	if err != nil {
-		messagef("failed to marshal result, %s", err)
+		error_dispatch(err, "failed to marshal result, %s", err)
 		return C.CString("")
 	}
 	return C.CString(string(src))
@@ -808,13 +805,13 @@ func path(cName *C.char, cKey *C.char) *C.char {
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.CString("")
 	}
 	defer c.Close()
 	s, err := c.DocPath(key)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.CString("")
 	}
 	return C.CString(s)
@@ -825,7 +822,7 @@ func check(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	err := dataset.Analyzer(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -836,7 +833,7 @@ func repair(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	err := dataset.Repair(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -851,31 +848,31 @@ func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	if len(srcFNames) > 0 {
 		err := json.Unmarshal([]byte(srcFNames), &fNames)
 		if err != nil {
-			messagef("Can't unmarshal %q, %s", srcFNames, err)
+			error_dispatch(err, "Can't unmarshal %q, %s", srcFNames, err)
 			return C.int(0)
 		}
 	}
 
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer c.Close()
 
 	if c.HasKey(key) == false {
-		messagef("%q is not in collection", key)
+		error_dispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
 		return C.int(0)
 	}
 	for _, fname := range fNames {
 		if _, err := os.Stat(fname); os.IsNotExist(err) {
-			messagef("%s does not exist", fname)
+			error_dispatch(err, "%s does not exist", fname)
 			return C.int(0)
 		}
 	}
 	err = c.AttachFiles(key, fNames...)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -887,17 +884,17 @@ func attachments(cName *C.char, cKey *C.char) *C.char {
 	key := C.GoString(cKey)
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.CString("")
 	}
 	defer c.Close()
 	if c.HasKey(key) == false {
-		messagef("%q is not in collection", key)
+		error_dispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
 		return C.CString("")
 	}
 	results, err := c.Attachments(key)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.CString("")
 	}
 	if len(results) > 0 {
@@ -915,23 +912,23 @@ func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	if len(srcFNames) > 0 {
 		err := json.Unmarshal([]byte(srcFNames), &fNames)
 		if err != nil {
-			messagef("Can't unmarshal filename list, %s", err)
+			error_dispatch(err, "Can't unmarshal filename list, %s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer c.Close()
 	if c.HasKey(key) == false {
-		messagef("%q is not in collection", key)
+		error_dispatch(err, "%q is not in collection", key)
 		return C.int(0)
 	}
 	err = c.GetAttachedFiles(key, fNames...)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -946,20 +943,66 @@ func prune(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	if len(srcFNames) > 0 {
 		err := json.Unmarshal([]byte(srcFNames), &fNames)
 		if err != nil {
-			messagef("Can't unmarshal filename list, %s", err)
+			error_dispatch(err, "Can't unmarshal filename list, %s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.Open(collectionName)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer c.Close()
 
 	err = c.Prune(key, fNames...)
 	if err != nil {
-		messagef("%s", err)
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+//export clone
+func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	srcKeys := C.GoString(cKeys)
+	destName := C.GoString(dName)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+	keys := []string{}
+	err = json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal keys, %s", err)
+		return C.int(0)
+	}
+	err = c.Clone(keys, destName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+//export clone_sample
+func clone_sample(cName *C.char, cSampleSize C.int, cTrainingName *C.char, cTestName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	sampleSize := int(cSampleSize)
+	trainingName := C.GoString(cTrainingName)
+	testName := C.GoString(cTestName)
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+	err = c.CloneSample(sampleSize, trainingName, testName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
