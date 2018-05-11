@@ -14,6 +14,7 @@
 + [export-gsheet](export-gsheet.html)
 + [extract](extract.html)
 + [find](find.html)
++ [grid](grid.html)
 + [haskey](haskey.html)
 + [import-csv](import-csv.html)
 + [import-gsheet](import-gsheet.html)

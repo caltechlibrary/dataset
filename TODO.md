@@ -3,16 +3,16 @@
 
 ## Bugs
 
++ [ ] Source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
 
 ## Next (prep for v0.1.0)
 
-+ [ ] Add clone verb to _dataset_ command, clone will copy a repository if the -sample option is used it will copy a sample of the source repository if two destination repositories are provided and sample is choosen then the first will contain the sample (training set) and second records not included in the first (the test set)
 + [ ] Documentation updates
 + [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
     + Make key column required
 + [ ] In _dataset_ add `sync-gsheet` provide a mechanism to write (update the GSheet) to specific rows and columns based on a column as key and column mapping
 + [ ] Confirm consensus on the minor release version number bump
-+ [ ] Figure out a way to speed up Extract() function for collections larger than 1000 records
++ [ ] Figure out a way to speed up Extract() function for collections larger than 1000 records (look at traversing the set concurrently, could also be sued to speed up generating a Grid of data)
 
 ## Roadmap (v0.2.x)
 
@@ -31,7 +31,7 @@
 
 ## Someday, Maybe
 
-+ [ ] rename py directory to py-module to mimic R-package relationship
++ [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
 + [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
 + [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
 + [ ] In _dsws_ Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
@@ -47,13 +47,9 @@
     + for size info, call Stats first to get the filesize to include in tarball header
 + [ ] Migrate export functions into an appropriate sub-packages (e.g. like how subpackages work in Bleve)
 + [ ] Move indexes and definitions into folder with collection.json
-+ [ ] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
 + [ ] Inaddition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
 + [ ] VCARD and VCAL importer
-+ [ ] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
-    + [ ] explore using templates as filters for select lists and the like
-    + [ ] implement select lists that save results as CSV files (sorting then could be off loaded
 + [ ] Should the keymap in collection.json be a separate file(s)?
 + [ ] optional strageties for including arrays in a single column of CSV output
     + provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
@@ -61,19 +57,19 @@
 + [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
     + [ ] N35.0000,W118.0000 or S35.000,E118.000
     + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
-+ [ ] implementing select lists as CSV files using Go's encoding/csv package 
 + [ ] take KeyMap out of collection.json so collection.json is smaller
     + support for segmented key maps (to limit memory consuption for very large collections)
 + [ ] dsbagit would generate a "BagIt" bag for preservation of collection objects
 + [ ] OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
 + [ ] RSS importer (example RSS as JSON: http://scripting.com/rss.json)
 + [ ] OPML importer
-+ dsselect would generate select lists based on query results in the manner of dsfind
 + dataset "versioning" support via something like libgit2
 
 
 ## Completed
 
++ [x] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
++ [x] Add clone verb to _dataset_ command, clone will copy a repository if the -sample option is used it will copy a sample of the source repository if two destination repositories are provided and sample is choosen then the first will contain the sample (training set) and second records not included in the first (the test set)
 + [x] change dataset join update to dataset join append
 + [x] Merge _dsfind_ and _dsindexer_ into _dataset_ command
 + [x] Normalize Create, Read, Update to have CreateJSON, ReadJSON, UpdateJSON counter parts for working with non-map[string]interface{} objects
@@ -218,4 +214,7 @@
 + [x] convert extract, etc to work on streams so we can leverage pipelines more effeciently
 + [x] Repair and check will fail on S3/Google Cloud Storage without warning or reason why it is failing
     + Add an error message or implementing repair and check for s3:// and gs:// storage systems
-
++ [x] _dsfind_ Implement simple field filters using a prefix notation (e.g. (and (gt pubDate "2017-06-01") (eq (has .authors_family[:] "Doiel") true)))
+    + [x] explore using templates as filters for select lists and the like
+    + [x] implement select lists that save results as CSV files (sorting then could be off loaded
++ [x] implementing select lists as CSV files using Go's encoding/csv package 

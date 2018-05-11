@@ -596,8 +596,30 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
         shutil.rmtree(test_name)
     err = dataset.clone_sample(c_name, sample_size, training_name, test_name)
     if err != '':
-        t.error("can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}".format(
-            c_name = c_name, sample_size = sample_size, training_name = training_name, test_name = test_name, err = err))
+        t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
+
+def test_grid(t, c_name):
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    err = dataset.init(c_name)
+    if err != '':
+        t.error(err)
+        return
+    data = [
+        { "id":    "A", "one":   "one", "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
+        { "id":    "B", "two":   2000, "three": 3000.1 },
+        { "id": "C" },
+        { "id":    "D", "one":   "ONE", "two":   20, "three": 334.1, "four":  [] }
+    ]
+    keys = []
+    dot_paths = ["._Key", ".one", ".two", ".three", ".four"]
+    for row in data:
+        key = row['id']
+        keys.append(key)
+        err = dataset.create(c_name, key, row)
+    (g, err) = dataset.grid(c_name, keys, dot_paths)
+    if err != '':
+        t.error(err)
 
 #
 # Test harness
@@ -688,5 +710,6 @@ if __name__ == "__main__":
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     test_runner.add(test_s3)
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
+    test_runner.add(test_grid, ["test_grid.ds"])
     test_runner.run()
 

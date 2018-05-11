@@ -173,6 +173,10 @@ go_clone_sample = lib.clone_sample
 go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p]
 go_clone_sample.restype = ctypes.c_int
 
+go_grid = lib.grid
+go_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_grid.restype = ctypes.c_char_p
+
 #
 # Now write our Python idiomatic function
 #
@@ -479,4 +483,14 @@ def clone_sample(collection_name, sample_size, training_name, test_name = ""):
     if ok == 1:
         return ''
     return error_message()
+
+def grid(collection_name, keys, dot_paths):
+    src_keys = json.dumps(keys)
+    src_dot_paths = json.dumps(dot_paths)
+    value = go_grid(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(src_keys.encode('utf-8')), ctypes.c_char_p(src_dot_paths.encode('utf-8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    if value == None or value.strip() == "":
+        return [], error_message()
+    return json.loads(value), ''
 
