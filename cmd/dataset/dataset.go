@@ -102,6 +102,7 @@ var (
 		"attachments":   listAttachments,
 		"detach":        getAttachments,
 		"prune":         removeAttachments,
+		"grid":          makeGrid,
 		"import-csv":    importCSV,
 		"export-csv":    exportCSV,
 		"extract":       extract,
@@ -1271,6 +1272,36 @@ func cloneSample(params ...string) (string, error) {
 	return "OK", err
 }
 
+func makeGrid(params ...string) (string, error) {
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s grid KEY_LIST_FILE LIST_OF_DOTPATHS", path.Base(os.Args[0]))
+	}
+	keyListName, dPaths := params[0], params[1:]
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+	src, err := ioutil.ReadFile(keyListName)
+	if err != nil {
+		return "", err
+	}
+	keys := strings.Split(strings.TrimSpace(fmt.Sprintf("%s", src)), "\n")
+	g, err := c.Grid(keys, dPaths, showVerbose)
+	if err != nil {
+		return "", err
+	}
+	if prettyPrint {
+		src, err = json.MarshalIndent(g, "", "    ")
+	} else {
+		src, err = json.Marshal(g)
+	}
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s", src), nil
+}
+
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
@@ -1353,6 +1384,7 @@ func main() {
 	app.AddVerb("find", "Query a bleve index(es) associated with a collection")
 	app.AddVerb("clone", "Clone a collection from a list of keys into a new collection")
 	app.AddVerb("clone-sample", "Clone a collection into a sample size based training collection and test collection")
+	app.AddVerb("grid", "Creates a data grid from a list keys of dot paths")
 
 	// We're ready to process args
 	app.Parse()
@@ -1537,8 +1569,10 @@ func main() {
 		}
 	}
 
-	if action == "clone" || action == "clone-sample" {
+	/* now special handling needed
+	if action == "clone" || action == "clone-sample" || "grid" {
 	}
+	*/
 
 	output, err := fn(params...)
 	cli.ExitOnError(os.Stderr, err, quiet)

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Data Grids</h1>
+
+<p>Often when processing data it is useful to pull date into a grid format.
+<em>dataset</em> provides a verb &ldquo;grid&rdquo; for doing just that. Below we&rsquo;re going
+to create a small dataset collection called <code>grid_test.ds</code>, populate
+it with some simple asymetric data (i.e. each record doesn&rsquo;t have the
+same fields) then turn this into a 2D JSON array suitable for further
+processing in a language like Python, R or Julia. The <em>grid</em> verb
+is available in the Python module for dataset so we&rsquo;ll show that too.</p>
+
+<p>In both examples the JSON representing our raw data seen in the file
+<a href="data-grids.json">data-grids.json</a></p>
+
+<h2>command line example</h2>
+
+<h3>Generate a key list</h3>
+
+<p>From an existing collection, <code>grid_test.ds</code>, create a list of keys.</p>
+
+<pre><code class="language-shell">    dataset grid_test.ds keys &gt; grid_test.keys
+</code></pre>
+
+<h3>Check a few records to see which will go into our grid.</h3>
+
+<p>We have the following keys  in our collection &ldquo;gutenberg:21489&rdquo;,
+&ldquo;gutenberg:2488&rdquo;, &ldquo;gutenberg:21839&rdquo;, &ldquo;gutenberg:3186&rdquo;, &ldquo;hathi:uc1321060001561131&rdquo;. Let&rsquo;s pick the first one and see what fields we might want
+in our grid (notice we&rsquo;re using the <code>-p</code> option to pretty print
+the JSON record).</p>
+
+<pre><code class="language-shell">    dataset -p grid_test.ds read &quot;gutenberg:21489&quot;
+</code></pre>
+
+<p>The fields that we&rsquo;re interested in are &ldquo;._Key&rdquo;, &ldquo;.title&rdquo;, &ldquo;.authors&rdquo;,</p>
+
+<h3>Create our grid from our collection</h3>
+
+<p>Now that we have a list of keys we&rsquo;re interested and and know the
+dot paths to the fields we&rsquo;re interested in we can create our grid.</p>
+
+<pre><code class="language-shell">    dataset -p grid_test.ds grid grid_test.keys &quot;._Key&quot; &quot;.title&quot; &quot;.authors&quot; 
+</code></pre>
+
+<p>The results are a 2D array wich rows for each key and cells matching the
+contents of the dot paths. Note that a cell may have a complex structure
+like that shown with &ldquo;.authors&rdquo;</p>
+
+<h2>python 3 example</h2>
+
+<p>In this example we&rsquo;re use the <em>dataset</em> python module to read in our
+raw JSON data (e.g. <a href="data-grids.json">data-grids.json</a>) and convert
+it into a <em>dataset</em> collection called &ldquo;grid_test.ds&rdquo;. Next
+we&rsquo;ll generate our set of keys and finally generate our grid as
+a python list of lists.</p>
+
+<pre><code class="language-python3">    import sys
+    import json
+    import dataset
+
+    # Read in our test data and convert from JSON into an array of dicts
+    f_name = 'data-grids.json'
+    with open(f_name, mode = 'r', encoding = 'utf-8') as f:
+        src = f.read()
+    data = json.loads(src)
+
+    # create our collection
+    c_name = 'grid_test.ds'
+    err = dataset.init(c_name)
+    if err != '':
+        print(err)
+        sys.exit(1)
+    
+    # load our test data
+    for key in data:
+        rec = rec[key]
+        err = dataset.create(c_name, key, rec)
+        if err != '':
+            print(err)
+            sys.exit(1)
+    
+    # Create a list of keys and list of dot paths
+    keys = dataset.keys(c_name)
+    dot_paths = [&quot;._Key&quot;, &quot;.title&quot;, &quot;.authors&quot;]
+    # now we can create our grid
+    (g, err) = dataset.grid(c_name, keys, dot_paths)
+    if err != '':
+        print(err)
+        sys.exit(1)
+
+    # Now pretty print our grid
+    print(json.dumps(g, indent = 4))
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2017 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

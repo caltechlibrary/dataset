@@ -93,6 +93,8 @@ def main(args):
         next_version = inc_patch_no(current_version)
 
     if ("--yes" in args) or ("-yes" in args) or ("-y" in args):
+        print("current version:", current_version)
+        print("new version:", next_version)
         update_codemeta_json(CODEMETA_JSON, current_version, next_version)
         update_project_go(PROJECT_GO, current_version, next_version)
     else:

@@ -1008,4 +1008,42 @@ func clone_sample(cName *C.char, cSampleSize C.int, cTrainingName *C.char, cTest
 	return C.int(1)
 }
 
+//export grid
+func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	srcKeys := C.GoString(cKeys)
+	srcDotpaths := C.GoString(cDotPaths)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+	keys := []string{}
+	err = json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal keys, %s", err)
+		return C.CString("")
+	}
+	dotPaths := []string{}
+	err = json.Unmarshal([]byte(srcDotpaths), &dotPaths)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal dot paths, %s", err)
+		return C.CString("")
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	g, err := c.Grid(keys, dotPaths, verbose)
+	if err != nil {
+		error_dispatch(err, "failed to create grid, %s", err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(g)
+	if err != nil {
+		error_dispatch(err, "failed to marshal grid, %s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
 func main() {}
