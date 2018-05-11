@@ -29,27 +29,25 @@ import (
 // from the array of keys and dot paths provided
 func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]interface{}, error) {
 	rows := make([][]interface{}, len(keys))
-	for i := range rows {
-		rows[i] = make([]interface{}, len(dotPaths))
-	}
+	col_cnt := len(dotPaths)
 	for i, key := range keys {
 		rec := map[string]interface{}{}
 		err := c.Read(key, rec)
 		if err != nil {
 			return nil, err
 		}
+		rows[i] = make([]interface{}, col_cnt)
 		for j, dpath := range dotPaths {
 			value, err := dotpath.Eval(dpath, rec)
 			if err == nil {
 				rows[i][j] = value
 			} else {
-				rows[i][j] = nil
-				if verbose == true {
-					log.Printf("WARNING: skipped cell %d row %d, %s", j, i, err)
+				if verbose {
+					log.Printf("WARNING: skipped %s for cell %d row %d, %s", dpath, j, i, err)
 				}
 			}
 		}
-		if (verbose == true) && (i > 0) && ((i % 1000) == 0) {
+		if verbose && (i > 0) && ((i % 1000) == 0) {
 			log.Printf("%d keys processed", i)
 		}
 	}
