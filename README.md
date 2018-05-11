@@ -52,6 +52,7 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [haskey](docs/dataset/haskey.html) returns true if key is found in collection, false otherwise
 + [count](docs/dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
 + [extract](docs/dataset/extract.html) unique JSON attribute values from a collection
++ [grid](docs/dataset/grid.html) generates a 2D array of cells from a list of collection keys and a list of dot paths
 
 
 ### JSON Document level
