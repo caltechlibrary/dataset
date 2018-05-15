@@ -53,7 +53,6 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 
 test: clean bin/dataset$(EXT) bin/dsws$(EXT)
 	go test
-	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
 	cd py && $(MAKE) test
 

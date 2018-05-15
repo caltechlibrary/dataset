@@ -22,7 +22,8 @@ var (
 func TestReadSheet(t *testing.T) {
 	// The following sheet id is taken from https://developers.google.com/sheets/api/quickstart/go
 	if len(clientSecretFName) == 0 {
-		fmt.Fprintf(os.Stderr, "Skipping TestReadSheet, CLENT_SECRET filename not provided\n")
+		fmt.Fprintf(os.Stderr, "Skipping TestReadSheet, CLENT_SECRET_JSON filename or SPREADSHEET_ID not provided\n")
+		fmt.Fprintln(os.Stderr, "USAGE: go test -client-secret CLIENT_SECRET_JSON -spreadsheet-id SPREADSHEET_ID")
 		return
 	}
 	sheetName := "Staff Data"
@@ -50,11 +51,7 @@ func TestReadSheet(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	flag.StringVar(&clientSecretFName, "client-secret", "", "Set path/filename for client_secret.json")
-	flag.StringVar(&spreadsheetID, "spreadsheet-id", "1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx", "Set spreadsheet id to use for testing")
+	flag.StringVar(&spreadsheetID, "spreadsheet-id", "", "Set spreadsheet id to use for testing")
 	flag.Parse()
-	if clientSecretFName == "" || spreadsheetID == "" {
-		fmt.Fprintln(os.Stderr, "USAGE: go test -client-secret CLIENT_SECRET_JSON -spreadsheet-id SPREADSHEET_ID")
-		os.Exit(1)
-	}
 	os.Exit(m.Run())
 }

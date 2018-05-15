@@ -1208,6 +1208,7 @@ func find(params ...string) (string, error) {
 		}
 		return buf.String(), nil
 	case idsOnly == true:
+		//NOTE: idsOnly should never be quiet, per issue 46.
 		ids := []string{}
 		for _, hit := range results.Hits {
 			ids = append(ids, hit.ID)
@@ -1573,10 +1574,9 @@ func main() {
 	if action == "clone" || action == "clone-sample" || "grid" {
 	}
 	*/
-
 	output, err := fn(params...)
 	cli.ExitOnError(os.Stderr, err, quiet)
-	if quiet == false || showVerbose == true && output != "" {
+	if (quiet == false || showVerbose == true || idsOnly == true) && output != "" {
 		fmt.Fprintf(app.Out, "%s", output)
 	}
 	if newLine {
