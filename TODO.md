@@ -24,17 +24,11 @@
 + [ ] Add Experimental PHP native _dataset_ module for script collection management in PHP 
 + [ ] sparql cli interface for searching collection
     + support JSON-LD for cross collection integration
-+ [ ] Add faceted support to search (dsfind, dsws)
-+ [ ] Add Fast CGI support in _dsws_ to allow custom development in Python, PHP or R
-+ [ ] A zero or negative length for result size will be treated as a request for all results in _dsws_ and _dsfind_
 
 
 ## Someday, Maybe
 
 + [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
-+ [ ] In _dsws_ Add specific index search, e.g. path is  /api/INDEX_NAME/q? ...
-+ [ ] In _dsws_ Add /api/COLLECTION_NAME/records end point to get ALL keys in collection
-+ [ ] In _dsws_ Add /api/COLLECTION_NAME/records/RECORD_ID end point for fetch an individual collection record
 + [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections
     + Browser based for UI, localhost restrict server for interacting with file system
     + Interactively build up of command strings, display results and saving off commands to runnable Bash scripts
@@ -100,7 +94,6 @@
 + [x] -nl line should be defaulted to true in dataset
 + [x] -nl line should be defaulted to true in dsfind
 + [x] -nl line should be defaulted to true in dsindexer
-+ [x] -nl line should be defaulted to true in dsws
 + [x] Migrate the cli funciton in _dsindexer_ to package level
 + [x] Migrate cli functions in _dsfind_ to package level
 + [x] Migrate cli functions in _dataset_ to package level
@@ -124,7 +117,6 @@
 + [x] Add composite fields to indexes by leveraging text templates to modify JSON structure
 + [x] Add template defined format support 
     + currently required templates are page.tmpl (for HTML page), include.tmpl (for HTML includable output)
-    + if format parameters' value matches a known template name then it should treated as a "supported" format by dsws instance
 + [x] Add filter aware CSV export
 + [x] Add filter aware value list extraction (e.g. all the unique orcids in a collection of authors data)
 + [x] Depreciate select commands in favor of filter, export and extract
@@ -134,7 +126,6 @@
 + [x] Add option for batch indexing in dsindexer
 + [x] Reconfigure Makefile to build individual releases for each supported platform
 + [x] Merge results.tmpl changes into defaults from dr2
-+ [x] CSV and JSON output not sending correct Content-Type header in _dsws_
 + [x] when adding a fielded search in default templates the query string breaks the HTML of the query input form
     + double quotes make <input ... value="{{- . -}}" ...> break
     	+ is it better to just have query field be a textarea, or use the urlencode/urldecode functions from tmplfn
@@ -193,7 +184,6 @@
         + an array might be delimited by a pipe or semi-colon
     + optional filter for specific JSON documents to flatten
 + [x] Titles don't seem to sort in deployment, triage problem - is it index definition or faulty search implementation?
-+ [x] Fix CORS setting in _dsws_ (Let's Encrypt support implemented, not needed)
 + [x] Add support for gs:// Google cloud storage as an alternative to disc and s3://
 + [x] Add Google Sheet import based on existing CSV import code
 + [x] Add Google Sheet export based on existing CSV export code
