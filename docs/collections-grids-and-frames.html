@@ -106,7 +106,8 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <pre><code class="language-json">    {
        &quot;frame_name&quot;: ...,
        &quot;collection_name&quot;: ...,
-       &quot;generated&quot;: TIMESTAMP,
+       &quot;updated&quot;: TIMESTAMP,
+       &quot;created&quot;: TIMESTAMP,
        &quot;labels&quot;: [ ... ],
        &quot;dot_paths&quot;: [ ... ],
        &quot;column_types&quot;: [ ... ],
@@ -130,7 +131,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <li>delete-frame</li>
 </ul>
 
-<h3>CREATE A FRAME</h3>
+<h3>Create a frame</h3>
 
 <p>Example creating a frame named &ldquo;titles-and-dois&rdquo;</p>
 
@@ -144,7 +145,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
     frame = dataset.frame('Pubs.ds', 'titles-and-dois', keys, ['.doi', '.title'])
 </code></pre>
 
-<h3>RETRIEVE AN EXISTING FRAME</h3>
+<h3>Retrieve an existing frame</h3>
 
 <p>Example of getting the contents of an existing frame.</p>
 
@@ -156,7 +157,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <pre><code class="language-python">    frame = dataset.frame('Pubs.ds', 'titles-and-dois')
 </code></pre>
 
-<h3>REGENERATING A FRAME</h3>
+<h3>Regenerating a frame</h3>
 
 <p>Regenerating &ldquo;titles-and-dois&rdquo;.</p>
 
@@ -168,7 +169,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'titles-and-dois')
 </code></pre>
 
-<h3>UPDATING KEYS ASSOCIATED WITH THE FRAME</h3>
+<h3>Updating keys associated with the frame</h3>
 
 <pre><code class="language-shell">    dataset Pubs.ds keys &gt;updated.keys
     dataset Pubs.ds reframe titles-and-dios updated.keys
@@ -179,7 +180,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'titles-and-dois', updated_keys)
 </code></pre>
 
-<h3>UPDATING LABELS IN A FRAME</h3>
+<h3>Updating labels in a frame</h3>
 
 <p>Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns.</p>
 
@@ -191,7 +192,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <pre><code class="language-python">    err = dataset.frame_labels('Pubs.ds', 'titles-and-dois', [&quot;Column 1&quot;, &quot;Column 2&quot;])
 </code></pre>
 
-<h3>UPDATING COLUMN TYPES</h3>
+<h3>Updating column types</h3>
 
 <p>Column types are represented as a JSON array. Column types provide hints to the indexer when indexing a collection or frame. The standard JSON types are supported (e.g. string, number, object, list) plus keyword, number, datetime, and geolocation. In this example we will change are
 will change the column types from <code>[</code><code>&quot;</code><code>string</code><code>&quot;</code><code>,</code> <code>&quot;</code><code>string</code><code>&quot;</code><code>]</code> to <code>[</code><code>&quot;</code><code>string</code><code>&quot;</code><code>,</code><code>&quot;</code><code>keyword</code><code>&quot;</code><code>]</code></p>
@@ -204,7 +205,7 @@ will change the column types from <code>[</code><code>&quot;</code><code>string<
 <pre><code class="language-python">    err = dataset.frame_types('Pubs.ds', 'titles-and-dois', [&quot;string&quot;,&quot;keyword&quot;])
 </code></pre>
 
-<h3>REMOVING A FRAME</h3>
+<h3>Removing a frame</h3>
 
 <pre><code class="language-shell">    dataset Pubs.ds remove-frame titles-and-dios
 </code></pre>
@@ -214,7 +215,7 @@ will change the column types from <code>[</code><code>&quot;</code><code>string<
 <pre><code class="language-python">    err = dataset.remove_frame('Pubs.ds', 'titles-and-dois')
 </code></pre>
 
-<h2>LISTING AVAILABLE FRAMES</h2>
+<h2>Listing available frames</h2>
 
 <pre><code class="language-shell">    dataset Pubs.ds frames
 </code></pre>
@@ -224,7 +225,7 @@ will change the column types from <code>[</code><code>&quot;</code><code>string<
 <pre><code class="language-python">    frame_names = dataset.frames('Pubs.ds')
 </code></pre>
 
-<h2>OTHER pOSSIBILITIES</h2>
+<h2>Other possibilities</h2>
 
 <p>One possible use of frames would be in rendering search indexes like pthose used by <a href="https://blevesearch.com">Bleve</a>
 or <a href="https://lunrjs.com">Lunrjs</a>. A frame proves all information needed for transforming the frame&rsquo;s. value (i.e. grid) into minimalist documents for indexing.  One workflow for creating a searchable collection might be</p>
