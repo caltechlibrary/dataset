@@ -96,7 +96,8 @@ A system of *frame*s could be stored alongside *dataset*'s collection.json file.
     {
        "frame_name": ...,
        "collection_name": ...,
-       "generated": TIMESTAMP,
+       "updated": TIMESTAMP,
+       "created": TIMESTAMP,
        "labels": [ ... ],
        "dot_paths": [ ... ],
        "column_types": [ ... ],
@@ -119,7 +120,7 @@ A system of *frame*s could be stored alongside *dataset*'s collection.json file.
 - delete-frame
 
 
-### CREATE A FRAME
+### Create a frame
 
 Example creating a frame named "titles-and-dois"
 
@@ -138,7 +139,7 @@ Or in python
 ```
 
 
-### RETRIEVE AN EXISTING FRAME
+### Retrieve an existing frame
 
 Example of getting the contents of an existing frame.
 
@@ -153,7 +154,7 @@ Or in python
 ```
 
 
-### REGENERATING A FRAME
+### Regenerating a frame
 
 Regenerating "titles-and-dois".
 
@@ -167,7 +168,8 @@ Or in python
     frame = dataset.reframe('Pubs.ds', 'titles-and-dois')
 ```
 
-### UPDATING KEYS ASSOCIATED WITH THE FRAME
+
+### Updating keys associated with the frame
 
 ```shell
     dataset Pubs.ds keys >updated.keys
@@ -180,7 +182,8 @@ In python
     frame = dataset.reframe('Pubs.ds', 'titles-and-dois', updated_keys)
 ```
 
-### UPDATING LABELS IN A FRAME
+
+### Updating labels in a frame
 
 Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns.
 
@@ -194,7 +197,8 @@ In python
     err = dataset.frame_labels('Pubs.ds', 'titles-and-dois', ["Column 1", "Column 2"])
 ```
 
-### UPDATING COLUMN TYPES
+
+### Updating column types
 
 Column types are represented as a JSON array. Column types provide hints to the indexer when indexing a collection or frame. The standard JSON types are supported (e.g. string, number, object, list) plus keyword, number, datetime, and geolocation. In this example we will change are
 will change the column types from `[``"``string``"``,` `"``string``"``]` to `[``"``string``"``,``"``keyword``"``]`
@@ -209,7 +213,7 @@ In python
     err = dataset.frame_types('Pubs.ds', 'titles-and-dois', ["string","keyword"])
 ```
 
-### REMOVING A FRAME
+### Removing a frame
 
 ```shell
     dataset Pubs.ds remove-frame titles-and-dios
@@ -221,7 +225,7 @@ Or in python
     err = dataset.remove_frame('Pubs.ds', 'titles-and-dois')
 ```
 
-## LISTING AVAILABLE FRAMES
+## Listing available frames
 
 ```shell
     dataset Pubs.ds frames
@@ -234,7 +238,7 @@ Or in python
 ```
 
 
-## OTHER pOSSIBILITIES
+## Other possibilities
 
 One possible use of frames would be in rendering search indexes like pthose used by [Bleve](https://blevesearch.com)
 or [Lunrjs](https://lunrjs.com). A frame proves all information needed for transforming the frame's. value (i.e. grid) into minimalist documents for indexing.  One workflow for creating a searchable collection might be

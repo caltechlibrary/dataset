@@ -186,7 +186,7 @@ func (c *Collection) FrameLabels(name string, labels []string) error {
 		return err
 	}
 	if len(f.DotPaths) != len(labels) {
-		return fmt.Errorf("number of columns, %d, does not match the number of labels, %d, provided", len(f.DotPaths), len(labels))
+		return fmt.Errorf("number of columns (%d) does not match the number of labels (%d)", len(f.DotPaths), len(labels))
 	}
 	f.Labels = labels[:]
 	f.Updated = time.Now()
@@ -200,7 +200,7 @@ func (c *Collection) FrameTypes(name string, columnTypes []string) error {
 		return err
 	}
 	if len(f.DotPaths) != len(columnTypes) {
-		return fmt.Errorf("number of columns, %d, does not match the number of column types, %d, provided", len(f.DotPaths), len(columnTypes))
+		return fmt.Errorf("number of columns (%d) does not match the number of column types (%d)", len(f.DotPaths), len(columnTypes))
 	}
 	f.ColumnTypes = columnTypes[:]
 	f.Updated = time.Now()
