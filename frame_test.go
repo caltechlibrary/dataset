@@ -19,15 +19,14 @@
 package dataset
 
 import (
-	"encoding/json"
-	//"log"
+	"log"
 	"os"
 	"testing"
 )
 
-func TestGrid(t *testing.T) {
-	os.RemoveAll("grid_test.ds")
-	cName := "grid_test.ds"
+func TestFrame(t *testing.T) {
+	os.RemoveAll("frame_test.ds")
+	cName := "frame_test.ds"
 	c, err := InitCollection(cName)
 	if err != nil {
 		t.Error(err)
@@ -42,7 +41,7 @@ func TestGrid(t *testing.T) {
 		"C",
 		"D",
 	}
-	tData := []map[string]interface{}{
+	tRecords := []map[string]interface{}{
 		map[string]interface{}{
 			"id":    "A",
 			"one":   "one",
@@ -66,7 +65,7 @@ func TestGrid(t *testing.T) {
 			"four":  []string{},
 		},
 	}
-	for i, rec := range tData {
+	for i, rec := range tRecords {
 		err := c.Create(keys[i], rec)
 		if err != nil {
 			t.Error(err)
@@ -74,21 +73,21 @@ func TestGrid(t *testing.T) {
 		}
 	}
 
-	g, err := c.Grid(keys, []string{"._Key", ".one", ".two", ".three", ".four"}, true)
+	f, err := c.Frame("frame-1", keys, []string{"._Key", ".one", ".two", ".three", ".four"}, true)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
-	//FIXME: verify grid created was reasonable
-
-	//FIXME: verify that we can convert the grid to a JSON structure
-	src, err := json.MarshalIndent(g, "", "  ")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
+	expected := "frame-1"
+	result := f.Name
+	if expected != result {
+		t.Errorf("expected %q, got %q, for %s", expected, result, f)
 	}
-	if len(src) == 0 {
-		t.Errorf("expected content marshaled for grid, got none")
+	expected = "frame_test.ds"
+	result = f.CollectionName
+	if expected != result {
+		t.Errorf("expected %q, got %q, for %s", expected, result, f)
 	}
-	//	log.Printf("DEBUG grid src:\n%s", src)
+	//FIXME: verify frame created was reasonable
+	log.Printf("DEBUG frame:\n%s", f)
 }

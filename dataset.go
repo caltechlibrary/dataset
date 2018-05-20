@@ -150,6 +150,8 @@ type Collection struct {
 	Store *storage.Store `json:"-"`
 	// FullPath is the fully qualified path on disc or URI to S3 or GS bucket
 	FullPath string `json:"-"`
+	// FrameMap is a list of frame names and with rel path to the frame defined in the collection
+	FrameMap map[string]string `json:"frames"`
 }
 
 // getStore returns a store object, collectionName from name
