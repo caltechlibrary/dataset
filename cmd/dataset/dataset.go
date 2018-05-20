@@ -115,6 +115,12 @@ var (
 		"find":          find,
 		"clone-sample":  cloneSample,
 		"clone":         clone,
+		"frame":         frame,
+		"frames":        frames,
+		"reframe":       reframe,
+		"frame-labels":  frameLabels,
+		"frame-types":   frameTypes,
+		"delete-frame":  deleteFrame,
 	}
 )
 
@@ -1303,6 +1309,174 @@ func makeGrid(params ...string) (string, error) {
 	return fmt.Sprintf("%s", src), nil
 }
 
+func frame(params ...string) (string, error) {
+	var (
+		frameName   string
+		keyListName string
+		keys        []string
+		dotPaths    []string
+	)
+	if len(params) < 1 || len(params) == 2 {
+		return "", fmt.Errorf("syntax: %s frame FRAME_NAME [KEY_LIST_FILE LIST_OF_DOTPATHS]", path.Base(os.Args[0]))
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+
+	frameName = params[0]
+	if len(params) > 2 {
+		keyListName = params[1]
+		src, err := ioutil.ReadFile(keyListName)
+		if err != nil {
+			return "", err
+		}
+		for _, key := range strings.Split(strings.TrimSpace(fmt.Sprintf("%s", src)), "\n") {
+			keys = append(keys, key)
+		}
+		for _, s := range params[2:] {
+			dotPaths = append(dotPaths, s)
+		}
+	}
+	// NOTE: See if we are reading a frame back or define one.
+	if len(keyListName) == 0 {
+		f, err := c.Frame(frameName, []string{}, []string{}, showVerbose)
+		if err != nil {
+			return "", err
+		}
+		return f.String(), nil
+	}
+	f, err := c.Frame(frameName, keys, dotPaths, showVerbose)
+	if err != nil {
+		return "", err
+	}
+	return f.String(), nil
+}
+
+func frames(params ...string) (string, error) {
+	if len(params) != 0 {
+		return "", fmt.Errorf("syntax: %s frames]", path.Base(os.Args[0]))
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+	fNames := c.Frames()
+	return strings.Join(fNames, "\n"), nil
+}
+
+func reframe(params ...string) (string, error) {
+	var (
+		frameName string
+		keys      []string
+	)
+	if len(params) < 1 || len(params) > 2 {
+		return "", fmt.Errorf("syntax: %s reframe FRAME_NAME [KEY_LIST_FILE]", path.Base(os.Args[0]))
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+
+	frameName = params[0]
+	if len(params) == 2 {
+		src, err := ioutil.ReadFile(params[1])
+		if err != nil {
+			return "", err
+		}
+		for _, key := range strings.Split(strings.TrimSpace(fmt.Sprintf("%s", src)), "\n") {
+			keys = append(keys, key)
+		}
+	}
+	err = c.Reframe(frameName, keys, showVerbose)
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+func frameLabels(params ...string) (string, error) {
+	var (
+		frameName string
+		labels    []string
+	)
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s frame-labels FRAME_NAME LABELS", path.Base(os.Args[0]))
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+
+	frameName = params[0]
+	for _, s := range params[1:] {
+		label := strings.TrimSpace(s)
+		if label != "" {
+			labels = append(labels, label)
+		}
+	}
+	err = c.FrameLabels(frameName, labels)
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+func frameTypes(params ...string) (string, error) {
+	var (
+		frameName   string
+		columnTypes []string
+	)
+	if len(params) < 2 {
+		return "", fmt.Errorf("syntax: %s frame-types FRAME_NAME COLUMN_TYPES", path.Base(os.Args[0]))
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+
+	frameName = params[0]
+	for _, s := range params[1:] {
+		columnType := strings.TrimSpace(s)
+		if columnType != "" {
+			columnTypes = append(columnTypes, columnType)
+		}
+	}
+	err = c.FrameTypes(frameName, columnTypes)
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
+func deleteFrame(params ...string) (string, error) {
+	if len(params) != 1 {
+		return "", fmt.Errorf("syntax: %s delete-frame FRAME_NAME", path.Base(os.Args[0]))
+	}
+
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+
+	err = c.DeleteFrame(params[0])
+	if err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
 func main() {
 	app := cli.NewCli(dataset.Version)
 	appName := app.AppName()
@@ -1386,6 +1560,12 @@ func main() {
 	app.AddVerb("clone", "Clone a collection from a list of keys into a new collection")
 	app.AddVerb("clone-sample", "Clone a collection into a sample size based training collection and test collection")
 	app.AddVerb("grid", "Creates a data grid from a list keys of dot paths")
+	app.AddVerb("frame", "define or retrieve a frame from a collection")
+	app.AddVerb("frames", "list the available frames in a collection")
+	app.AddVerb("reframe", "re-generate a frame with existing or provided key list")
+	app.AddVerb("frame-labels", "define explicitly the labels associated with a frame")
+	app.AddVerb("frame-types", "define explicitly the column type names associated with a frame")
+	app.AddVerb("delete-frame", "remove a frame from a collection")
 
 	// We're ready to process args
 	app.Parse()
