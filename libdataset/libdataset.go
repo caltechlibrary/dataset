@@ -1046,4 +1046,163 @@ func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
 	return C.CString(txt)
 }
 
+//export frame
+func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcKeys := C.GoString(cKeys)
+	srcDotpaths := C.GoString(cDotPaths)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+	keys := []string{}
+	err = json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal keys, %s", err)
+		return C.CString("")
+	}
+	dotPaths := []string{}
+	err = json.Unmarshal([]byte(srcDotpaths), &dotPaths)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal dot paths, %s", err)
+		return C.CString("")
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	f, err := c.Frame(frameName, keys, dotPaths, verbose)
+	if err != nil {
+		error_dispatch(err, "failed to create frame, %s", err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(f)
+	if err != nil {
+		error_dispatch(err, "failed to marshal frame, %s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+//export frames
+func frames(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+
+	frameNames := c.Frames()
+	if len(frameNames) == 0 {
+		return C.CString("[]")
+	}
+	src, err := json.Marshal(frameNames)
+	if err != nil {
+		error_dispatch(err, "failed to marshal frame names, %s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+//export reframe
+func reframe(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcKeys := C.GoString(cKeys)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(1)
+	}
+	defer c.Close()
+	keys := []string{}
+	err = json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal keys, %s", err)
+		return C.int(1)
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	err = c.Reframe(frameName, keys, verbose)
+	if err != nil {
+		error_dispatch(err, "failed to reframe, %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+//export frame_labels
+func frame_labels(cName *C.char, cFName *C.char, cLabels *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcLabels := C.GoString(cLabels)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(1)
+	}
+	defer c.Close()
+	labels := []string{}
+	err = json.Unmarshal([]byte(srcLabels), &labels)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal frame labels, %s", err)
+		return C.int(1)
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	err = c.FrameLabels(frameName, labels)
+	if err != nil {
+		error_dispatch(err, "failed set frame labels, %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+//export frame_types
+func frame_types(cName *C.char, cFName *C.char, cTypes *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcTypes := C.GoString(cTypes)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(1)
+	}
+	defer c.Close()
+	types := []string{}
+	err = json.Unmarshal([]byte(srcTypes), &types)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal frame types, %s", err)
+		return C.int(1)
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	err = c.FrameTypes(frameName, types)
+	if err != nil {
+		error_dispatch(err, "failed set frame types, %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+//export delete_frame
+func delete_frame(cName *C.char, cFName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(1)
+	}
+	defer c.Close()
+	//NOTE: We're picking up the verbose flag from the modules global state
+	err = c.DeleteFrame(frameName)
+	if err != nil {
+		error_dispatch(err, "failed to delete frame %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
 func main() {}
