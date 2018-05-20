@@ -46,7 +46,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.40-frames`
+	Version = `v0.0.40`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
