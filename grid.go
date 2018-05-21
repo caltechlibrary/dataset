@@ -20,6 +20,7 @@ package dataset
 
 import (
 	"log"
+	"os"
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dotpath"
@@ -28,6 +29,7 @@ import (
 // Grid takes a set of collection keys and builds a grid (a 2D array cells)
 // from the array of keys and dot paths provided
 func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]interface{}, error) {
+	pid := os.Getpid()
 	rows := make([][]interface{}, len(keys))
 	col_cnt := len(dotPaths)
 	for i, key := range keys {
@@ -43,12 +45,12 @@ func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]i
 				rows[i][j] = value
 			} else {
 				if verbose {
-					log.Printf("WARNING: skipped %s for cell %d row %d, %s", dpath, j, i, err)
+					log.Printf("(pid: %d) WARNING: skipped %s for cell %d row %d, %s", pid, dpath, j, i, err)
 				}
 			}
 		}
 		if verbose && (i > 0) && ((i % 1000) == 0) {
-			log.Printf("%d keys processed", i)
+			log.Printf("(pid: %d) %d keys processed", pid, i)
 		}
 	}
 	return rows, nil
