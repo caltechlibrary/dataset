@@ -1550,9 +1550,6 @@ func main() {
 	app.AddVerb("repair", "Try to repair a damaged dataset collection")
 	app.AddVerb("import-gsheet", "Import a GSheet rows as JSON records into a collection")
 	app.AddVerb("export-gsheet", "Export a collection's JSON records to a GSheet")
-	//app.AddVerb("indexer", "(experimental) Create/Update a Bleve index of a collection")
-	//app.AddVerb("deindexer", "(experimental) Remove record(s) from a Bleve index for a collection")
-	//app.AddVerb("find", "(experimental) Query a bleve index(es) associated with a collection")
 	app.AddVerb("clone", "Clone a collection from a list of keys into a new collection")
 	app.AddVerb("clone-sample", "Clone a collection into a sample size based training collection and test collection")
 	app.AddVerb("grid", "Creates a data grid from a list keys of dot paths")
@@ -1562,6 +1559,10 @@ func main() {
 	app.AddVerb("frame-labels", "define explicitly the labels associated with a frame")
 	app.AddVerb("frame-types", "define explicitly the column type names associated with a frame")
 	app.AddVerb("delete-frame", "remove a frame from a collection")
+	// NOTE: These command current work with bleve, bleve maybe replace with another tech (e.g. A Go port of Lunrjs)
+	app.AddVerb("indexer", "(experimental) Create/Update an index of a collection")
+	app.AddVerb("deindexer", "(experimental) Remove record(s) from an index for a collection")
+	app.AddVerb("find", "(experimental) Query an index(es) associated with a collection")
 
 	// We're ready to process args
 	app.Parse()
