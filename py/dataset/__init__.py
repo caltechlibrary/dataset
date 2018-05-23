@@ -297,6 +297,8 @@ def has_key(collection_name, key):
 # Create a JSON record in a Dataset Collectin
 def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
         return ''
@@ -305,6 +307,8 @@ def create(collection_name, key, value):
 # Read a JSON record from a Dataset collection
 def read(collection_name, key):
     '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
@@ -317,6 +321,8 @@ def read(collection_name, key):
 # Update a JSON record from a Dataset collection
 def update(collection_name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     ok = go_update_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
         return ''
@@ -325,6 +331,8 @@ def update(collection_name, key, value):
 # Delete a JSON record from a Dataset collection
 def delete(collection_name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     ok = go_delete_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if ok == 1:
         return ''

@@ -120,6 +120,21 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbos
 		return c.getFrame(name)
 	}
 	// Case of new Frame Build our Grid.
+
+	// NOTE: we need to enforce that column zero is explicitly ._Key
+	hasKeyColumn := false
+	for _, key := range dotPaths {
+		if key == "._Key" {
+			hasKeyColumn = true
+			break
+		}
+	}
+	if hasKeyColumn == false {
+		dotPaths = append(dotPaths, "")
+		copy(dotPaths[1:], dotPaths)
+		dotPaths[0] = "._Key"
+	}
+
 	f := new(DataFrame)
 	f.Name = name
 	f.CollectionName = c.Name
