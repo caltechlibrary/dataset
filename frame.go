@@ -31,13 +31,14 @@ import (
 
 type DataFrame struct {
 	// Explicit at creator
-	Name           string          `json:"frame_name"`
-	CollectionName string          `json:"collection_name"`
-	DotPaths       []string        `json:"dot_paths"`
-	Keys           []string        `json:"keys"`
-	Grid           [][]interface{} `json:"grid"`
-	Created        time.Time       `json:"created"`
-	Updated        time.Time       `json:"updated,omitempty"`
+	Name           string   `json:"frame_name"`
+	CollectionName string   `json:"collection_name"`
+	DotPaths       []string `json:"dot_paths"`
+	// NOTE: Keys may be deprecaited as _Key as column zero of the grid is a requirement of Frames.
+	Keys    []string        `json:"keys"`
+	Grid    [][]interface{} `json:"grid"`
+	Created time.Time       `json:"created"`
+	Updated time.Time       `json:"updated,omitempty"`
 
 	// Derived or explicitly set after creation
 	Labels      []string `json:"labels,omitempty"`

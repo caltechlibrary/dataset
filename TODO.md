@@ -8,29 +8,33 @@
 ## Next (prep for v0.1.0)
 
 - [x] Drop uuid integration for import/export
-- [ ] Make _extract_, _indexer_ and _find_ experimental features (extract might not be needed now that dataset has grid and frames)
+- [ ] Mark _extract_, _indexer_, _deindexer_ and _find_ experimental features (extract might not be needed now that dataset has grid and frames)
 - [ ] Documentation updates
 - [ ] Confirm consensus on the minor release version number bump
 
 ## Roadmap (v0.2.x)
 
-- [ ] Replace import/export 
-- [ ] Keys should be column zero on Frame.Grid aways, I can then drop the separate keys array
-- [ ] GSheet/Excel Sync functionality
-    - [ ] GSheet/Excel Sync should use the "Labels" array to find the columns in the target sheet 
-    - [ ] Column Zero should provide the Unique keys to sync with
-        - [ ] Add automatic metadata fields syncing GSheet import/export (e.g. `_KeyColumn` and `_ColumnMap`) for improving GSheet import/export
-            - Make key column required
-- [ ] In _dataset_ add `sync-gsheet` provide a mechanism to write (update the GSheet) to specific rows and columns based on a column as key and column mapping
+- [ ] Replace import/export with sync for CSV, Excel and Google Sheet
+    - a collection frame defines/controls the relationship between a spreadsheet's rows/columns and a collection's records/field values
+    - a collection's frame labels are expected to match column names in row zero of spreadsheet
+    - a frame's grid's zero column (collection keys) map to/from column zero of the spreadsheeet
+    - order of args determines source and target when copying rows between a frame and spreadsheet
+        - `dataset sync-csv MyCollection.ds MySpreadsheet.csv` would copy data from collection to spreadsheet
+        - `dataset sync-csv MySpreadsheet.csv MyCollections.ds` would copy data from collection to spreadsheet
+        - `daatset sync-csv -prune MyCollectiond.ds MySpreadsheet.csv` would remove rows from spreadsheet that didn't have matching records in collection
+    - [ ] In _dataset_ add `sync-gsheet` for interactive with GSheets (replacing import/export)
+    - [ ] In _dataset_ add `sync-csv` for interactiving with CSV rows (replacing import/export)
+    - [ ] In _dataset_ add `sync-xlsx` for interactiving with Excel Workbook Sheets (replacing import/export)
 - [ ] Add support for generating Lunrjs indexes automatically inside the collection folder
     - [ ] build a simple web UI for exploring collection (read only) via web browser
-- [ ] Normalize Python3 native _dataset_ module for scripting collection management in Python3
 - [ ] Sort out cross compiling libdataset shared library for Python module
-- [ ] Add Experimental R native _dataset_ module for scripting collection management in R
-- [ ] Add Experimental PHP native _dataset_ module for script collection management in PHP 
+- [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
+- [ ] Add Experimental R _dataset_ module for scripting collection management in R
+- [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
 - [ ] sparql cli interface for searching collection
     - support JSON-LD for cross collection integration
-
++ [ ] Remove dependency on github.com/caltechlibrary/tmplfn
++ [ ] Remove dependency on Blevesearch
 
 ## Someday, Maybe
 
@@ -215,3 +219,4 @@
     - [x] explore using templates as filters for select lists and the like
     - [x] implement select lists that save results as CSV files (sorting then could be off loaded
 - [x] implementing select lists as CSV files using Go's encoding/csv package 
+- [x] Add Python3 _dataset_ module for scripting collection management in Python3
