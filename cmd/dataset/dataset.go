@@ -42,9 +42,6 @@ import (
 	"github.com/caltechlibrary/shuffle"
 	//"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
-
-	// 3rd Party packages
-	"github.com/google/uuid"
 )
 
 var (
@@ -1509,7 +1506,6 @@ func main() {
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
 	app.BoolVar(&useHeaderRow, "use-header-row", true, "(import) use the header row as attribute names in the JSON document")
-	app.BoolVar(&useUUID, "uuid", false, "(import) generate a UUID for a new JSON document name")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
 	app.StringVar(&clientSecretFName, "client-secret", "", "(import-gsheet, export-gsheet) set the client secret path and filename for GSheet access")
@@ -1549,14 +1545,14 @@ func main() {
 	app.AddVerb("prune", "Remove attachments from a JSON record in a collection")
 	app.AddVerb("import", "Import a CSV file's rows as JSON records into a collection")
 	app.AddVerb("export", "Export a JSON records from a collection to a CSV file")
-	app.AddVerb("extract", "Extract unique values from JSON records in a collection based on a dot path expression")
+	app.AddVerb("extract", "(experimental) Extract unique values from JSON records in a collection based on a dot path expression")
 	app.AddVerb("check", "Check the health of a dataset collection")
 	app.AddVerb("repair", "Try to repair a damaged dataset collection")
 	app.AddVerb("import-gsheet", "Import a GSheet rows as JSON records into a collection")
 	app.AddVerb("export-gsheet", "Export a collection's JSON records to a GSheet")
-	app.AddVerb("indexer", "Create/Update a Bleve index of a collection")
-	app.AddVerb("deindexer", "Remove record(s) from a Bleve index for a collection")
-	app.AddVerb("find", "Query a bleve index(es) associated with a collection")
+	app.AddVerb("indexer", "(experimental) Create/Update a Bleve index of a collection")
+	app.AddVerb("deindexer", "(experimental) Remove record(s) from a Bleve index for a collection")
+	app.AddVerb("find", "(experimental) Query a bleve index(es) associated with a collection")
 	app.AddVerb("clone", "Clone a collection from a list of keys into a new collection")
 	app.AddVerb("clone-sample", "Clone a collection into a sample size based training collection and test collection")
 	app.AddVerb("grid", "Creates a data grid from a list keys of dot paths")
@@ -1667,20 +1663,6 @@ func main() {
 	} else if len(args) == 1 {
 		action = args[0]
 		params = []string{}
-	}
-
-	// NOTE: Special case of when -useUUID flag set when action is create, import or
-	// import-gsheet, we need to auto-generate the UUID as key and add to our args
-	// appropriately
-	if useUUID {
-		id := uuid.New().String()
-		switch action {
-		case "create":
-			params = append([]string{id}, args[1:]...)
-		case "import":
-			params = append(args, id)
-		case "import-gsheet":
-		}
 	}
 
 	var data string
