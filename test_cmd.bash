@@ -98,13 +98,16 @@ function test_gsheet() {
 		exit 1
 	fi
 	if [[ ! -s "${CLIENT_SECRET_JSON}" ]]; then
-		echo "Missing environment varaiable for CLIENT_SECRET_JSON"
+		echo "Skipping test_gsheet(), missing environment varaiable for CLIENT_SECRET_JSON"
 		exit 1
 	fi
 	if [[ "${SPREADSHEET_ID}" == "" ]]; then
-		echo "Missing environment variable for SPREADSHEET_ID"
+		echo "Skipping test_gsheet(), missing environment variable for SPREADSHEET_ID"
 		exit 1
 	fi
+    cd gsheet || exit 1
+    go test -client-secret "../${CLIENT_SECRET_JSON}" -spreadsheet-id "${SPREADSHEET_ID}"
+    cd ..
 	if [[ -d "test_gsheet.ds" ]]; then
 		rm -fR test_gsheet.ds
 	fi

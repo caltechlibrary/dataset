@@ -1,6 +1,8 @@
 
 # indexer
 
+This is an experimental feature of dataset and maybe removed in the future.
+
 ## Syntax
 
 ```

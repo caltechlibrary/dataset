@@ -39,14 +39,11 @@ import (
 	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
-
-	// 3rd Party packages
-	"github.com/google/uuid"
 )
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.40`
+	Version = `v0.0.42-rc1`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -150,6 +147,8 @@ type Collection struct {
 	Store *storage.Store `json:"-"`
 	// FullPath is the fully qualified path on disc or URI to S3 or GS bucket
 	FullPath string `json:"-"`
+	// FrameMap is a list of frame names and with rel path to the frame defined in the collection
+	FrameMap map[string]string `json:"frames"`
 }
 
 // getStore returns a store object, collectionName from name
@@ -522,15 +521,8 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 		}
 		var fieldName string
 		record := map[string]interface{}{}
-		if idCol < 0 && useUUID == false {
+		if idCol < 0 {
 			jsonFName = fmt.Sprintf("%d", lineNo)
-		} else if useUUID == true {
-			jsonFName = uuid.New().String()
-			if _, ok := record["uuid"]; ok == true {
-				record["_uuid"] = jsonFName
-			} else {
-				record["uuid"] = jsonFName
-			}
 		}
 		for i, val := range row {
 			if i < len(fieldNames) {
@@ -594,15 +586,8 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 
 		var fieldName string
 		record := map[string]interface{}{}
-		if idCol < 0 && useUUID == false {
+		if idCol < 0 {
 			key = fmt.Sprintf("%d", lineNo)
-		} else if useUUID == true {
-			key = uuid.New().String()
-			if _, ok := record["uuid"]; ok == true {
-				record["_uuid"] = key
-			} else {
-				record["uuid"] = key
-			}
 		}
 		for i, val := range row {
 			if i < len(fieldNames) {

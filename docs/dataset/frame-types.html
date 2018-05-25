@@ -20,30 +20,20 @@
 </nav>
 
 <section>
-<h1>extract</h1>
+<h1>frames-types</h1>
 
-<p>This is an experimental feature of dataset and may be removed in the future.</p>
+<p>Set the types associated with the dotpath in the frame. If
+the frame &ldquo;f1&rdquo; has the following dotpaths - .title, .authors, and .year
+then set the types as string, string and year. Not the order
+the dotpaths are defined is the order you&rsquo;re apply the types.</p>
 
-<h2>Syntax</h2>
-
-<pre><code>    dataset COLLECTION_NAME extract FILTER DOTPATH
+<pre><code class="language-shell">    dataset pubs.ds frame-types f1 string string year
 </code></pre>
 
-<h2>Description</h2>
+<p>In python</p>
 
-<p>extract returns a list of unique values across documents in a collection based on the FILTER and
-DOTPATH provided (for DOTPATH see <code>dataset -help dotpath</code> and FITLER see <code>dataset -help filter</code>).</p>
-
-<h2>Usage</h2>
-
-<p>In this example we&rsquo;re turning a list of unique author orcid ids across the collection. The filter
-we use is &ldquo;true&rdquo;. The author field is an array so our dotpath uses that notation. Collection name
-is &ldquo;publications.ds&rdquo;</p>
-
-<pre><code class="language-shell">    dataset publications.ds extract true .authors[:].orcid
+<pre><code class="language-python">    err = dataset.frame_types('pubs.ds', 'f1', ['string', 'string', 'year'])
 </code></pre>
-
-<p>Related topics: dotpath, export-csv and import-csv</p>
 
 </section>
 

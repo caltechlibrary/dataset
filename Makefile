@@ -19,31 +19,19 @@ ifeq ($(OS), Windows)
 endif
 
 
-dataset$(EXT): bin/dataset$(EXT) bin/dsws$(EXT)
+dataset$(EXT): bin/dataset$(EXT)
 
 cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
 	git add cmd/dataset/assets.go
 
-cmd/dsws/assets.go:
-	pkgassets -o cmd/dsws/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dsws Help docs/dsws 
-	git add cmd/dsws/assets.go
-
-cmd/dsws/templates.go:
-	pkgassets -o cmd/dsws/templates.go -p main Defaults defaults
-	git add cmd/dsws/templates.go
-
-bin/dataset$(EXT): dataset.go attachments.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go attachments.go grid.go frame.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
-
-bin/dsws$(EXT): dataset.go search.go formats.go cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
-	go build -o bin/dsws$(EXT) cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
 build: $(PROJECT_LIST) python
 
 install: 
 	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
-	env GOBIN=$(GOPATH)/bin go install cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 
 python:
 	cd py && $(MAKE)
@@ -51,9 +39,8 @@ python:
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
-test: clean bin/dataset$(EXT) bin/dsws$(EXT)
+test: clean bin/dataset$(EXT)
 	go test
-	cd gsheet && go test -client-secret="../etc/client_secret.json" -spreadsheet-id="1y23sLVy4rfL2U81kYhOYG6x3dTxnexqJcVBasIsyEx8"
 	bash test_cmd.bash
 	cd py && $(MAKE) test
 
@@ -88,28 +75,24 @@ clean:
 dist/linux-amd64:
 	mkdir -p dist/bin
 	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dsws cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip README.md LICENSE INSTALL.md bin/*
 	rm -fR dist/bin
 
 dist/windows-amd64:
 	mkdir -p dist/bin
 	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dataset.exe cmd/dataset/dataset.go cmd/dataset/assets.go
-	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dsws.exe cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip README.md LICENSE INSTALL.md bin/*
 	rm -fR dist/bin
 
 dist/macosx-amd64:
 	mkdir -p dist/bin
 	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dsws cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-macosx-amd64.zip README.md LICENSE INSTALL.md bin/*
 	rm -fR dist/bin
 
 dist/raspbian-arm7:
 	mkdir -p dist/bin
 	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dsws cmd/dsws/dsws.go cmd/dsws/assets.go cmd/dsws/templates.go
 	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip README.md LICENSE INSTALL.md bin/*
 	rm -fR dist/bin
 

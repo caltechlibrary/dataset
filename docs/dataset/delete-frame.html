@@ -13,16 +13,26 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="./">dsws</a></li>
+<li><a href="./">dataset</a></li>
 <li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h1>USAGE</h1>
+<h1>delete-frame</h1>
 
-<pre><code>dsws [OPTIONS] [KEY_VALUE_PAIRS] [DOC_ROOT] BLEVE_INDEXES
+<p>This is used to removed a frame from a collection.</p>
+
+<pre><code class="language-shell">    dataset example.ds delete-frame f1
+</code></pre>
+
+<pre><code>delete frame f1 from collection called example.ds
+</code></pre>
+
+<p>In python</p>
+
+<pre><code class="language-python">    err = dataset.delete_frame('example.ds', 'f1')
 </code></pre>
 
 </section>

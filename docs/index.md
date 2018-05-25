@@ -10,8 +10,6 @@ but a more explority approach can be taken by the list below
 ## Command line program documentation
 
 + [dataset](dataset/) - the command line tool for managing _dataset_ collections
-+ [dsws](dsws/) - A web server and web service based on one or more Bleve indexes created with _dataset indexer_
-
 
 ## Internal project concepts
 
@@ -36,6 +34,13 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [count](dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
 + [extract](dataset/extract.html) unique JSON attribute values from a collection
 + [grid](dataset/grid.html) create a 2D grid of data from keys and dot paths in a collection
++ [data frame support](collections-grids-and-frames.html) provides a persistant grid plus metadata associated with the collection
+    + [frame](dataset/frame.html)
+    + [frames](dataset/frames.html)
+    + [reframe](dataset/reframe.html)
+    + [frame-labels](dataset/frame-labels.html)
+    + [frame-types](dataset/frame-types.html)
+    + [delete-frame](dataset/delete-frame.html)
 
 ### JSON Document level
 
@@ -59,16 +64,5 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [indexer](dataset/indexer.html) indexes JSON documents in a collection for searching with _find_
 + [deindexer](dataset/deindexer.html) de-indexes (removes) JSON documents from an index
 + [find](dataset/find.html) provides a search indexed full text interface into a collection
-
-
-
-
-
-
-
-
-
-
-
 
 

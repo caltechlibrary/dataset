@@ -214,14 +214,6 @@ At this has not been necessary to vendor any packages assuming you're building f
 
 ## 3rd party packages
 
-+ [bleve](https://blevesearch.com) - for indexing and search capabilities (e.g. _dsfind_ and _dsws_)
-    + github.com/blevesearch/bleve
-    + github.com/blevesearch/bleve
-    + github.com/blevesearch/bleve/analysis/analyzer/keyword
-    + github.com/blevesearch/bleve/analysis/analyzer/simple
-    + github.com/blevesearch/bleve/analysis/analyzer/standard
-    + github.com/blevesearch/bleve/analysis/analyzer/web
-    + github.com/blevesearch/bleve/analysis/lang/ar
 + [aws sdk go](https://github.com/aws/aws-sdk-go) - supporting AWS S3 storage (used by all the cli)
     + github.com/aws/aws-sdk-go/aws
     + github.com/aws/aws-sdk-go/aws/session

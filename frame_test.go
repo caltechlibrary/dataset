@@ -19,15 +19,14 @@
 package dataset
 
 import (
-	"encoding/json"
-	//"log"
+	"log"
 	"os"
 	"testing"
 )
 
-func TestGrid(t *testing.T) {
-	os.RemoveAll("grid_test.ds")
-	cName := "grid_test.ds"
+func TestFrame(t *testing.T) {
+	os.RemoveAll("frame_test.ds")
+	cName := "frame_test.ds"
 	c, err := InitCollection(cName)
 	if err != nil {
 		t.Error(err)
@@ -36,14 +35,9 @@ func TestGrid(t *testing.T) {
 	defer c.Close()
 
 	//NOTE: test data and to load into collection and generate grid
-	keys := []string{
-		"A",
-		"B",
-		"C",
-		"D",
-	}
-	tData := []map[string]interface{}{
+	tRecords := []map[string]interface{}{
 		map[string]interface{}{
+			"_Key":  "A",
 			"id":    "A",
 			"one":   "one",
 			"two":   22,
@@ -51,14 +45,17 @@ func TestGrid(t *testing.T) {
 			"four":  []string{"one", "two", "three"},
 		},
 		map[string]interface{}{
+			"_Key":  "B",
 			"id":    "B",
 			"two":   2000,
 			"three": 3000.1,
 		},
 		map[string]interface{}{
-			"id": "C",
+			"_Key": "C",
+			"id":   "C",
 		},
 		map[string]interface{}{
+			"_Key":  "D",
 			"id":    "D",
 			"one":   "ONE",
 			"two":   20,
@@ -66,29 +63,30 @@ func TestGrid(t *testing.T) {
 			"four":  []string{},
 		},
 	}
-	for i, rec := range tData {
-		err := c.Create(keys[i], rec)
+	keys := []string{}
+	for _, rec := range tRecords {
+		key := rec["_Key"].(string)
+		keys = append(keys, key)
+		err := c.Create(key, rec)
 		if err != nil {
 			t.Error(err)
 			t.FailNow()
 		}
 	}
 
-	g, err := c.Grid(keys, []string{"._Key", ".one", ".two", ".three", ".four"}, true)
+	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, true)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
-	//FIXME: verify grid created was reasonable
-
-	//FIXME: verify that we can convert the grid to a JSON structure
-	src, err := json.MarshalIndent(g, "", "  ")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
+	expected := "frame-1"
+	result := f.Name
+	if expected != result {
+		t.Errorf("expected %q, got %q, for %s", expected, result, f)
 	}
-	if len(src) == 0 {
-		t.Errorf("expected content marshaled for grid, got none")
+	expected = "frame_test.ds"
+	result = f.CollectionName
+	if expected != result {
+		t.Errorf("expected %q, got %q, for %s", expected, result, f)
 	}
-	//	log.Printf("DEBUG grid src:\n%s", src)
 }

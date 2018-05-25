@@ -621,6 +621,48 @@ def test_grid(t, c_name):
     if err != '':
         t.error(err)
 
+def test_frame(t, c_name):
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    err = dataset.init(c_name)
+    if err != '':
+        t.error(err)
+        return
+    data = [
+        { "id":    "A", "one":   "one", "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
+        { "id":    "B", "two":   2000, "three": 3000.1 },
+        { "id": "C" },
+        { "id":    "D", "one":   "ONE", "two":   20, "three": 334.1, "four":  [] }
+    ]
+    keys = []
+    dot_paths = ["._Key", ".one", ".two", ".three", ".four"]
+    for row in data:
+        key = row['id']
+        keys.append(key)
+        err = dataset.create(c_name, key, row)
+    f_name = 'f1'
+    (g, err) = dataset.frame(c_name, f_name, keys, dot_paths)
+    if err != '':
+        t.error(err)
+    err = dataset.reframe(c_name, f_name)
+    if err != '':
+        t.error(err)
+    l = dataset.frames(c_name)
+    if len(l) != 1 or l[0] != 'f1':
+        t.error(f"expected one frame name, f1, got {l}")
+    labels = ['Column A', 'Column B', 'Column C', 'Column D', 'Column E']
+    err = dataset.frame_labels(c_name, f_name, labels)
+    if err != '':
+        t.error(err)
+    f_types = ['string', 'string', 'number', 'string', 'composite']
+    err = dataset.frame_types(c_name, f_name, f_types)
+    if err != '':
+        t.error(err)
+    err = dataset.delete_frame(c_name, f_name)
+    if err != '':
+        t.error(err)
+
+
 #
 # Test harness
 #
@@ -711,5 +753,7 @@ if __name__ == "__main__":
     test_runner.add(test_s3)
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
     test_runner.add(test_grid, ["test_grid.ds"])
+    test_runner.add(test_frame, ["test_frame.ds"])
+    
     test_runner.run()
 

@@ -177,6 +177,70 @@ go_grid = lib.grid
 go_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_grid.restype = ctypes.c_char_p
 
+go_frame = lib.frame
+go_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.c_char_p]
+go_frame.restype = ctypes.c_char_p
+
+go_frames = lib.frames
+go_frames.argtypes = [ctypes.c_char_p]
+go_frames.restype = ctypes.c_char_p
+
+go_reframe = lib.reframe
+go_reframe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_reframe.restype = ctypes.c_int
+
+go_frame_labels = lib.frame_labels
+go_frame_labels.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_frame_labels.restype = ctypes.c_int
+
+go_frame_types = lib.frame_types
+go_frame_types.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_frame_types.restype = ctypes.c_int
+
+go_delete_frame = lib.delete_frame
+go_delete_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_delete_frame.restype = ctypes.c_int
+
+
+#
+# Now write our Python idiomatic function
+#
+
+def error_message():
+    value = go_error_message()
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode() 
+
+
+def use_strict_dotpath(on_off = True):
+    if on_off == True:
+        go_use_strict_dotpath(1)
+        return True
+    go_use_strict_dotpath(0)
+    return False
+
+# is_verbose returns true is verbose is enabled, false otherwise
+def is_verbose():
+    ok = go_is_verbose()
+    return (ok == 1)
+
+# verbose_on turns verboseness off
+def verbose_on():
+    ok = go_verbose_on()
+    return (ok == 1)
+
+# verbose_off turns verboseness on
+def verbose_off():
+    ok = go_verbose_off()
+    return (ok == 1)
+
+# Returns version of dataset shared library
+def version():
+    value = go_version()
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+
 #
 # Now write our Python idiomatic function
 #
@@ -233,6 +297,8 @@ def has_key(collection_name, key):
 # Create a JSON record in a Dataset Collectin
 def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
         return ''
@@ -241,6 +307,8 @@ def create(collection_name, key, value):
 # Read a JSON record from a Dataset collection
 def read(collection_name, key):
     '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
@@ -253,6 +321,8 @@ def read(collection_name, key):
 # Update a JSON record from a Dataset collection
 def update(collection_name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     ok = go_update_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
         return ''
@@ -261,6 +331,8 @@ def update(collection_name, key, value):
 # Delete a JSON record from a Dataset collection
 def delete(collection_name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
     ok = go_delete_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if ok == 1:
         return ''
@@ -493,4 +565,62 @@ def grid(collection_name, keys, dot_paths):
     if value == None or value.strip() == "":
         return [], error_message()
     return json.loads(value), ''
+
+def frame(collection_name, frame_name, keys = [], dot_paths = []):
+    src_keys = json.dumps(keys)
+    src_dot_paths = json.dumps(dot_paths)
+    value = go_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')),
+        ctypes.c_char_p(src_keys.encode('utf-8')),
+        ctypes.c_char_p(src_dot_paths.encode('utf-8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    if value == None or value.strip() == '':
+        return [], error_message()
+    return json.loads(value), ''
+
+def frames(collection_name):
+    value = go_frames(ctypes.c_char_p(collection_name.encode('utf-8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    if value == None or value.strip() == '':
+        return []
+    return json.loads(value)
+
+def reframe(collection_name, frame_name, keys = []):
+    src_keys = json.dumps(keys)
+    ok = go_reframe(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')),
+        ctypes.c_char_p(src_keys.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def frame_labels(collection_name, frame_name, labels):
+    src_labels = json.dumps(labels)
+    ok = go_frame_labels(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')),
+        ctypes.c_char_p(src_labels.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def frame_types(collection_name, frame_name, types):
+    src_types = json.dumps(types)
+    ok = go_frame_types(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')),
+        ctypes.c_char_p(src_types.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def delete_frame(collection_name, frame_name):
+    ok = go_delete_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+
 

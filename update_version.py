@@ -13,6 +13,9 @@ import json
 
 def inc_patch_no(v = "0.0.0"):
     """inc_patch_no takes a symvar and increments the right most value in the dot touple"""
+    suffix = ''
+    if "-" in v:
+        (v, suffix) = v.split("-")
     parts = v.split(".")
     if len(parts) == 3:
         #major_no = parts[0]
@@ -20,9 +23,10 @@ def inc_patch_no(v = "0.0.0"):
         patch_no = int(parts[2])
         patch_no += 1
         parts[2] = str(patch_no)
-        return ".".join(parts)
-    else:
-        return v
+        v = ".".join(parts)
+    if suffix != '':
+        return f'{v}-{suffix}'
+    return v
 
 def update_codemeta_json(codemeta_json, current_version, next_version):
     with open(codemeta_json, mode = "r", encoding = "utf-8") as f:

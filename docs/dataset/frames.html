@@ -13,14 +13,25 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
-<li><a href="./">dsws</a></li>
+<li><a href="./">dataset</a></li>
 <li><a href="topics.html">topics</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h1>Topics</h1>
+<h1>frames</h1>
+
+<p>Lists the frames available in a collection. In this example our
+collection name is <code>pubs.ds</code>.</p>
+
+<pre><code class="language-shell">   dataset pubs.ds frames 
+</code></pre>
+
+<p>In python</p>
+
+<pre><code class="language-python">    list_of_frames = dataset.frames('pubs.ds')
+</code></pre>
 
 </section>
 
