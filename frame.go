@@ -183,6 +183,28 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 	if err != nil {
 		return err
 	}
+	// NOTE: we need to enforce that column zero is explicitly ._Key
+	hasKeyColumn := false
+	for _, key := range f.DotPaths {
+		if key == "._Key" {
+			hasKeyColumn = true
+			break
+		}
+	}
+	if hasKeyColumn == false {
+		dotPaths := f.DotPaths
+		// Update DotPaths
+		dotPaths = append(dotPaths, "")
+		copy(dotPaths[1:], dotPaths)
+		dotPaths[0] = "._Key"
+		f.DotPaths = dotPaths[:]
+		// Update Labels
+		labels := f.Labels
+		labels = append(labels, "")
+		copy(labels[1:], labels)
+		labels[0] = "_Key"
+		f.Labels = labels[:]
+	}
 	if len(keys) > 0 {
 		f.Keys = keys[:]
 	}
