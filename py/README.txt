@@ -1,5 +1,7 @@
 
-# dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
+# dataset   
+
+[![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
 _dataset_ is a command line tool for working with JSON (object) documents stored as 
 collections.  [This](docs/dataset/) supports basic storage actions (e.g. CRUD operations, filtering
