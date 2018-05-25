@@ -89,41 +89,28 @@ the `-key-file` option with the *keys* verb.
    dataset -key-file mojo.keys keys '(contains .title "Morroco")'
 ```
 
-Import can take a CSV file and store each row as a JSON document in dataset. In
-this example we're generating a UUID for the key name of each row
+Import can take a CSV file and store each row as a JSON document in dataset. You must
+indicate which column to use as the key.  We're using column zero in this example.
 
 ```shell
-   dataset -uuid import my-data.csv
+   dataset import-csv my-data.csv 0
 ```
 
 You can create a CSV export by providing the dot paths for each column and
 then givening columns a name.
 
 ```shell
-   dataset export titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+   dataset export-csv titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
 ```
 
 If you wanted to restrict to a subset (e.g. publication in year 2016)
 
 ```shell
-   dataset export titles2016.csv '(eq 2016 (year .pubDate))' \
+   dataset export-csv titles2016.csv '(eq 2016 (year .pubDate))' \
            '.id,.title,.pubDate' 'id,title,publication date'
 ```
 
-If wanted to extract a unqie list of all ORCIDs from a collection 
-
-```shell
-   dataset extract true .authors[:].orcid
-```
-
-If you wanted to extract a list of ORCIDs from publications in 2016.
-
-```shell
-   dataset extract '(eq 2016 (year .pubDate))' .authors[:].orcid
-```
-
-
-You can augement JSON key/value pairs for a JSON document in your collection
+You can augment JSON key/value pairs for a JSON document in your collection
 using the join operation. This works similar to the datatools cli called jsonjoin.
 
 Let's assume you have a record in your collection with a key 'jane.doe'. It has

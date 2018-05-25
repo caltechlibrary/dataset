@@ -7,9 +7,6 @@
 
 ## Next (prep for v0.1.0)
 
-- [x] Drop uuid integration for import/export
-- [ ] Mark _indexer_, _deindexer_ and _find_ experimental features
-- [x] Remove extract as it is easier to filter via Python and grids or frames
 - [ ] Documentation updates
 - [ ] Confirm consensus on the minor release version number bump
 
@@ -221,3 +218,6 @@
     - [x] implement select lists that save results as CSV files (sorting then could be off loaded
 - [x] implementing select lists as CSV files using Go's encoding/csv package 
 - [x] Add Python3 _dataset_ module for scripting collection management in Python3
+- [x] Drop uuid integration for import/export
+- [x] Mark _indexer_, _deindexer_ and _find_ experimental features
+- [x] Remove extract as it is easier to filter via Python and grids or frames

@@ -4,10 +4,10 @@
 In the example the index will be created for a collection called *characters.ds*.
 
 ```shell
-    dataset characters.ds indexer email-mapping.json email-index
+    dataset characters.ds indexer email-mapping.json email-index.bleve
 ```
 
-This will build a Bleve index called "email-index" based on the index defined
+This will build a Bleve index called "email-index.bleve" based on the index defined
 in "email-mapping.json".
 
 
