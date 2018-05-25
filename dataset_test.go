@@ -20,10 +20,7 @@ package dataset
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
-	"path"
-	"strings"
 	"testing"
 )
 

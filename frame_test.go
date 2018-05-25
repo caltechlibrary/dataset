@@ -19,7 +19,7 @@
 package dataset
 
 import (
-	"log"
+	//"log"
 	"os"
 	"testing"
 )
