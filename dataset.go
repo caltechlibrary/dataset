@@ -737,46 +737,6 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 	return keys, nil
 }
 
-// Extract takes a collection, a filter and a dot path and returns a list of unique values
-// E.g. in a collection article records extracting orcid ids which are values in a authors field
-func (c *Collection) Extract(filterExpr string, dotExpr string) ([]string, error) {
-	keys, err := c.KeyFilter(c.Keys(), filterExpr)
-	if err != nil {
-		return nil, err
-	}
-
-	uniqueStrings := map[string]bool{}
-	hKey := ""
-	for _, key := range keys {
-		data := map[string]interface{}{}
-		if err := c.Read(key, data); err == nil {
-			if cell, err := dotpath.Eval(dotExpr, data); err == nil {
-				switch cell.(type) {
-				case []interface{}:
-					for _, v := range cell.([]interface{}) {
-						hKey = colToString(v)
-						uniqueStrings[hKey] = true
-					}
-				case map[string]interface{}:
-					for _, v := range cell.(map[string]interface{}) {
-						hKey = colToString(v)
-						uniqueStrings[hKey] = true
-					}
-				default:
-					hKey = colToString(cell)
-					uniqueStrings[hKey] = true
-				}
-			}
-		}
-	}
-	rows := []string{}
-	for ky, _ := range uniqueStrings {
-		rows = append(rows, ky)
-	}
-	sort.Strings(rows)
-	return rows, nil
-}
-
 // Clone copies the current collection records into a newly initialized collection given a list of keys
 // and new collection name. Returns an error value if there is a problem. Clone does NOT copy
 // attachments, only the JSON records.

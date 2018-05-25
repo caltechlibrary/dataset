@@ -8,7 +8,8 @@
 ## Next (prep for v0.1.0)
 
 - [x] Drop uuid integration for import/export
-- [ ] Mark _extract_, _indexer_, _deindexer_ and _find_ experimental features (extract might not be needed now that dataset has grid and frames)
+- [ ] Mark _indexer_, _deindexer_ and _find_ experimental features
+- [x] Remove extract as it is easier to filter via Python and grids or frames
 - [ ] Documentation updates
 - [ ] Confirm consensus on the minor release version number bump
 

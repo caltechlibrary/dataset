@@ -94,10 +94,6 @@ go_count = lib.count
 go_count.argtypes = [ctypes.c_char_p]
 go_count.restype = ctypes.c_int
 
-go_extract = lib.extract
-go_extract.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-go_extract.restype = ctypes.c_char_p
-
 go_indexer = lib.indexer
 go_indexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_indexer.restype = ctypes.c_int
@@ -378,20 +374,6 @@ def count(collection_name, filter = ''):
     '''count returns an integer of the number of keys in a collection'''
     return go_count(ctypes.c_char_p(collection_name.encode('utf8')))
 
-# Extract unique values from the JSON records in a collection given a filter expression and dot path
-def extract(collection_name, filter_expr, dot_expr):
-    '''extract unique values from the JSON records in a collection given a filter expression and dot path'''
-    c_name = collection_name.encode('utf8')
-    if os.path.exists(c_name) == False:
-        return [], '{c_name} not found'.format(c_name = c_name)
-    value = go_extract(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(dot_expr.encode('utf8')))
-    if not isinstance(value, bytes):
-        value = value.encode('utf8')
-    rval = value.decode()
-    if rval == "":
-        return [], error_message()
-    return json.loads(rval), error_message()
-    
 
 # Indexer takes a collection name, an index name, an index map file name, and an optional keylist 
 # and creates/updates a Bleve index on disc.
