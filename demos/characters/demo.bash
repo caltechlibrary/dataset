@@ -51,7 +51,7 @@ done | sort
 
 echo ""
 echo "TESTING dataset indexer"
-dataset characters.ds indexer characters.bleve characters.json
+dataset characters.ds indexer characters.bleve characters.bmap
 if [[ "$?" = "1" ]]; then
     echo "Can't create characters.bleve, aborting"
     exit 1
