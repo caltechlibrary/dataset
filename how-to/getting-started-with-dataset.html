@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">How To</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Getting started with dataset</h1>
+
+<p><em>dataset</em> is a set of tools for managing JSON (object) documents as a collection of key/value pairs stored on either your
+local file system, AWS S3 or Google Cloud Storage. These documents can be interated over or retrieved individually.
+There is also a full text indexer for supporting fielded or full text searches based on the index definitions.
+One final feature of <em>dataset</em> is the ability to add attachments to your JSON objects. These attachments are stored
+in a simple archive format called tar. Basic metadata can be retrieved, and the attachments can be retreive as a group
+or individually. Attachments can be removed.</p>
+
+<h2>Getting dataset onto your computer</h2>
+
+<p>The command line <em>dataset</em> is available for installation from <a href="https://github.com/caltechlibrary/dataset/releases/latest">https://github.com/caltechlibrary/dataset/releases/latest</a>.
+Find the zip file associated with your computer type and operating system then download it. Once downloaded you can unzip the zip
+file and copy the programs into a local directory called &ldquo;bin&rdquo; on your comptuer. For full instructions on installation see
+<a href="../install.html">INSTALL.md</a>.</p>
+
+<h2>Basic workflow with dataset</h2>
+
+<p><em>dataset</em>&rsquo;s focus is in storing JSON (object) documents in collections. The documents are stored in a bucketed directory structure and
+named for the &ldquo;key&rdquo; provided. The documents remain plain text JSON on disc. When you first start working with a dataset you
+will need to initialize the collection. This creates the bucket directories and associated metadata so you can easily
+retrieve your documents. If you were to initialize a dataset collection called &ldquo;FavoriteThings.ds&rdquo; it would look like &ndash;</p>
+
+<pre><code class="language-shell">    dataset init FavoriteThings.ds
+</code></pre>
+
+<p>Next you&rsquo;ll want to add some records to the collection of &ldquo;FavoriteThings.ds&rdquo;.  The records we&rsquo;re going to add need
+to be expressed as JSON objects. You need to decide on a key (the thing you&rsquo;ll used to retrieve the record later)
+of the document to store.  For this example I&rsquo;m going to use the key, &ldquo;beverage&rdquo; and a document that looks like
+<code>{&quot;thing&quot;: &quot;coffee&quot;}</code>.  If you&rsquo;ve set the DATASET environment variable you can run the following command &ndash;</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
+</code></pre>
+
+<p>If all goes well you&rsquo;ll get a response of &ldquo;OK&rdquo;.  If you forgot to set the environment variable you can
+explicitly include the collection name</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
+</code></pre>
+
+<p>Later if your have forgotten what your favorite beverage was you can read it back with</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds read beverage
+</code></pre>
+
+<p>To list all your favorite things&rsquo; keys try</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds keys
+</code></pre>
+
+<h2>Adding an existing JSON document to a collection</h2>
+
+<p>One of my favorite things is music. I happen to have a JSON document that I started currating a list of
+Jazz related songs and musicians.
+The document is called <code>jazz-notes.json</code>. I can add this to my collection too.</p>
+
+<pre><code class="language-json">    {
+       &quot;songs&quot;: [&quot;Blue Rondo al la Turk&quot;, &quot;Bernie's Tune&quot;, &quot;Perdido&quot;],
+       &quot;pianist&quot;: [ &quot;Dave Brubeck&quot; ],
+       &quot;trumpet&quot;: [ &quot;Dirk Fischer&quot;, &quot;Dizzy Gillespie&quot; ]
+    }
+</code></pre>
+
+<p>I can add this to my collection of <em>FavoriteThings.ds</em> this way using the key &ldquo;jazz-notes&rdquo;.</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds create &quot;jazz-notes&quot; jazz-notes.json
+</code></pre>
+
+<p>Notice that the organization of the JSON documents do not impose a common structure (though that is
+often useful). We can list the documents using our key command.</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds keys
+</code></pre>
+
+<p>Would return something like</p>
+
+<pre><code>    beverage
+    jazz-notes
+</code></pre>
+
+<p>The should list out &ldquo;beverage&rdquo; and &ldquo;jazz-notes&rdquo;.</p>
+
+<p>I can create a JSON list of the objects stored using the &ldquo;list&rdquo; command.</p>
+
+<pre><code class="language-shell">    dataset FavoriteThings.ds list beverage jazz-notes
+</code></pre>
+
+<p>Would return something like</p>
+
+<pre><code class="language-json">    [
+        {
+            &quot;_Key&quot;: &quot;beverage&quot;,
+            &quot;thing&quot;: &quot;coffee&quot;
+        },
+        {
+            &quot;_Key&quot;: &quot;jazz-notes&quot;,
+            &quot;pianist&quot;: [
+                &quot;Dave Brubeck&quot;
+            ],
+            &quot;songs&quot;: [
+                &quot;Blue Rondo al la Turk&quot;,
+                &quot;Bernie's Tune&quot;,
+                &quot;Perdido&quot;
+            ],
+            &quot;trumpet&quot;: [
+                &quot;Dirk Fischer&quot;,
+                &quot;Dizzy Gillespie&quot;
+            ]
+        }
+    ]
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

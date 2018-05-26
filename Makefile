@@ -22,7 +22,7 @@ endif
 dataset$(EXT): bin/dataset$(EXT)
 
 cmd/dataset/assets.go:
-	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples examples/dataset Help docs/dataset
+	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
 	git add cmd/dataset/assets.go
 
 bin/dataset$(EXT): dataset.go attachments.go grid.go frame.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go

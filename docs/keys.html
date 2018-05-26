@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="topics.html">topics</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>keys</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset COLLECTION_NAME keys
+</code></pre>
+
+<h2>Description</h2>
+
+<p>List the JSON_DOCUMENT_ID available in a collection. Normally order is not guaranted to
+be the between calls. <em>keys</em> also supports <em>filter</em> and <em>sort</em> expressions. For each
+JSON document which the filter expression evaluates to true for a key will be return.
+If no sort expression is supplied the order is not guaranteed.  If a sort expression
+is supplied then it will be used to sort the keys matching the filter expression.</p>
+
+<p><em>key</em> also accepts atone to two additional The &ldquo;keys&rdquo; option</p>
+
+<h2>Usage</h2>
+
+<p>Three examples of usage are shown below - return all keys (unsorted), return all
+keys sorted by descending <code>.family_name</code>, return only keys where the <code>.group</code> is
+<code>&quot;alumni&quot;</code> sorted by ascending <code>.family_name</code>.</p>
+
+<pre><code class="language-shell">    dataset COLLECTION_NAME keys
+    dataset COLLECTION_NAME keys true '-.family_name'
+    dataset COLLECTION_NAME keys '(eq .group &quot;alumni&quot;)' '+.family_name'
+</code></pre>
+
+<h2>filter expressions</h2>
+
+<p>A <em>filter expression</em> is based on the Go template conditional expressions. It uses
+a prefix notation for the logic (e.g. eq - equal, ne - not equal, lt - less than, gt
+greater than) and the value(s) to be compared in <a href="dotpath.html">dotpath notation</a>.</p>
+
+<p>Filters can be simple expressions that result in &ldquo;true&rdquo; or &ldquo;false&rdquo; or compound
+expressions (e.g. expressions combined with <em>and</em> and <em>or</em>)
+that evaluate to &ldquo;true&rdquo; or &ldquo;false&rdquo;.  Simple expressions can isolated by
+parenthasis (e.g. <code>(and (eq .i 1) (ne .s &quot;1&quot;) (ne .s &quot;one&quot;))</code>).</p>
+
+<p>Example filter operators</p>
+
+<ul>
+<li>eq - equal (must be same type and value, e.g. 1 does not equal &ldquo;1&rdquo;)</li>
+<li>nq - not equal (comparing same type but different values)</li>
+<li>lt - less than</li>
+<li>gt - greater than</li>
+<li>match - given a regular expression and string data return true if they match</li>
+<li>and - allows you to combine two expression and if both true the expression is true.</li>
+<li>or - allows you to combine two or more expressions where one is true then expression is true.</li>
+</ul>
+
+<h4>Simple</h4>
+
+<p>A field, <code>.family_name</code>, matches a known value, &ldquo;Feynman&rdquo;.</p>
+
+<pre><code>	'(eq .family_name &quot;Feynman&quot;)'
+</code></pre>
+
+<p>A field, <code>.family_name</code>, does not match a known value, &ldquo;Feynman&rdquo;.</p>
+
+<p>A field, <code>.family_name</code>, does not match value</p>
+
+<pre><code>	'(ne .family_name &quot;Feynman&quot;)'
+</code></pre>
+
+<p>A field, <code>.family_name</code>, match the regular expression <code>Feym*n</code>.</p>
+
+<pre><code>	'(match &quot;Feynm*n&quot; .family_name)'
+</code></pre>
+
+<h4>Compound</h4>
+
+<p>Two fields match, <code>.family_name</code> and <code>.given_name</code>, known values &ldquo;Feynman&rdquo; and &ldquo;Richard&rdquo;.</p>
+
+<pre><code>	'(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))'
+</code></pre>
+
+<p>NOTE: That the filters experessions are data type aware. So &ldquo;1&rdquo; is not the same
+as 1. Likewise 1 is not the same as 1.0.</p>
+
+<h2>sort expressions</h2>
+
+<p>The &ldquo;keys&rdquo; option provides for simple one level sorting.  Sorting is described
+by a plus or minus followed by a dotpath to a simple field type (i.e. string, int, or
+float JSON types). In our previous examples sorting ascending by <code>.family_name</code> would
+be expressed as <code>+.family_name</code>. To sort by descending <code>.family_name</code> you would
+use the expression <code>-.family_name</code>.  By default we assume an ascending sort so in
+practice you can omit a leading &ldquo;+&rdquo;.</p>
+
+<p>In this example we listing last names of &ldquo;Smith&rdquo; sorting by ascending given name.
+The collection name is &ldquo;people.ds&rdquo;.</p>
+
+<pre><code>    dataset people.ds keys '(eq &quot;Smith&quot; .family_name)' '.given_name'
+</code></pre>
+
+<p>In this example we list last anes of &ldquo;Smith&rdquo; sorted by descending given name.</p>
+
+<pre><code>    dataset people.ds keys '(eq &quot;Smith&quot; .family_name)' '-.given_name'
+</code></pre>
+
+<h2>Getting a &ldquo;sample&rdquo; of keys</h2>
+
+<p>The <em>dataset</em> command respects an option named <code>-sample N</code> where N is the size
+(number) of the keys to include in the sample. The sample is taken after any
+filters are applied but may be less than requested size if the the filtered
+results are few than the sample size.  The basic process is to get a set of
+keys, randomly sort the keys, then return the top N number of those keys.</p>
+
+<p>Related topics: extract and export</p>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

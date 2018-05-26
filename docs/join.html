@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="topics.html">topics</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>join</h1>
+
+<h2>Syntax</h2>
+
+<pre><code>    dataset COLLECTION_NAME join JOIN_TYPE KEY JSON_EXPRESSION
+    dataset COLLECTION_NAME join JOIN_TYPE KEY JSON_FILENAME
+    dataset -i JSON_DOCUMENT_NAME COLLECTION_NAME join JOIN_TYPE KEY
+    cat JSON_DOCUMENT_NAME | dataset COLLECTION_NAME join JOIN_TYPE KEY
+</code></pre>
+
+<h2>Description</h2>
+
+<p>join will allow you to merge by appending or merge by overwriting to an existing JSON document
+stored in a collection identified by KEY.  With &ldquo;append&rdquo;
+only new fields will be added to the record. If you specify &ldquo;overwrite&rdquo; new fields will be
+added and existing fields in common will be overwritten.</p>
+
+<p>join us helpful in building up an aggregated record where you have a common KEY.</p>
+
+<h2>Usage</h2>
+
+<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
+three fields - name, email, age.</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
+</code></pre>
+
+<p>You also have an external JSON document called profile.json. It looks like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;: &quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;bio&quot;: &quot;world renowned geophysist&quot;}
+</code></pre>
+
+<p>You can merge the unique fields in profile.json with your existing jane.doe record
+(where the existing record id is &ldquo;jane.doe&rdquo;). The collection is &ldquo;people.ds&rdquo;</p>
+
+<pre><code class="language-shell">    dataset people.ds join append jane.doe profile.json
+</code></pre>
+
+<p>The result would look like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+<p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
+
+<pre><code class="language-shell">    dataset people.ds join overwrite jane.doe profile.json
+</code></pre>
+
+<p>Which would result in a record like</p>
+
+<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

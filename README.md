@@ -1,33 +1,68 @@
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
-_dataset_ is a command line tool for working with JSON (object) documents stored as 
-collections.  [This](docs/dataset/) supports basic storage actions (e.g. CRUD operations)
-as producing data [grids]() and [frames]() based from collections and lists of keys. It 
-provides experimental support for [indexing](docs/dataset/indexer.html), [searching](docs/dataset/find.html).
-A project goal of _dataset_ is to "play nice" with shell scripts and other 
-Unix tools (e.g. it respects standard in, out and error with minimal side effects). This means it is 
-easily scriptable via Bash, Posix shell or interpretted languages like Python.
+_dataset_ is a command line tool, go package and python package you can use to manage 
+[JSON](https://en.wikipedia.org/wiki/JSON) objects stored on local disc or in the cloud 
+(e.g. Amazon S3 and Google Cloud Storage). It stores the JSON objects in collections as plain 
+UTF-8 text. This means the objects can be accessed with common Unix text processing tools as well as
+most programming languages with text processing support. The [dataset](docs/dataset.html)
+command line tool supports common data manage operations such as initialization of collections,
+creation, reading, updating and delete JSON objects in the collection. Some of its enhanced
+features include the ability to import and export JSON object to and from CSV files,
+Excel Workbook sheets and Google Sheets. It supports key filter and sorting as well as
+mapping collection content into [grids](docs/grids.html) and data [frames](docs/frames.html).
+It even includes an experimental search feature by the integrating [Blevesearch](https://blevesearch.com)
+indexing and search engine library developed by [CouchDB]().
 
-_dataset_ includes an implementation as a Python3 module. The same functionality as in the command line tool is 
-replicated for Python3. (module requires Python 3.6 or better).
+See [getting-started-with-datataset.md](how-to/getting-started-with-dataset.html) for a tour of functionality.
 
-Finally _dataset_ is a golang package for managing JSON documents and their attachments on disc or in cloud storage
-(e.g. Amazon S3, Google Cloud Storage). The command line utilities excersizes this package extensively.
 
-The inspiration for creating _dataset_ was the desire to process metadata as JSON document collections using
-simple Unix shell utilities and data pipelines. While it has grown in capabilities that remains a core use case.
+## Origin story
 
-_dataset_ organanizes JSON documents by unique names in collections. Collections are represented
-as an index into a series of buckets. The buckets are subdirectories (or paths under cloud storage services). 
-Buckets hold individual JSON documents and their attachments. The JSON document is assigned automatically to a
-bucket (and the bucket generated if necessary) when it is added to a collection. 
-Assigning documents to buckets avoids having too many documents assigned to a single path (e.g. on some Unix 
-there is a limit to how many documents are held in a single directory). In addition to using the _dataset_ 
-comnad you can list and manipulate the JSON documents directly with common Unix commands like ls, find, grep or 
-their cloud counter parts.
+The inspiration for creating _dataset_ was the desire to process metadata as JSON object collections 
+using simple Unix shell utilities and data pipelines. The core use case evolved at [Caltech Library](https://library.caltech.edu)
+working with various repository systems' API (e.g. [EPrints](https://en.wikipedia.org/wiki/EPrints) and
+and [Invenio](https://en.wikipedia.org/wiki/Invenio)). It has allowed
+the library to easily build aggregated views of hetrogeious content (see https://feeds.library.caltech.edu)
+as well as facilitate ad-hoc analysis and data enhancement for a number of internal library projects.
 
-See [getting-started-with-datataset.md](docs/getting-started-with-dataset.html) for a tour of functionality.
+
+## Design choices
+
+_dataset_ isn't a database or repository system. It is intended to be simplier and easier to use with
+minimal setup (e.g. `dataset init mycollection.ds` would create a new collection).  It built around a few simple
+abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON
+file called collections.json and buckets containing the JSON objects and any attachments, the collections.json
+file describes the mapping of keys to buckets).  It takes minimal system resources
+and keeps all content, except JSON object attachments, in plain UTF-8 text (attachments are kept in tar files).
+In the typcial library processing pattern of "harvest", "transform" and "redeploy" dataset provides a convienent 
+way to store intermediate results in a data processing pipeline. 
+
+Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine
+as small as a Raspberry Pi while being equally comformatable on a more resource rich server or desktop
+environment.
+
+Currently dataset provides a command line tool called `dataset` as well as a Go package and Python 3.6 Package.
+It can be integrated into other programming languages that provide support for C shared libraries. _dataset_
+itself is written in [Go](https://golang.org).
+
+## Features
+
+[dataset](docs/dataest) supports 
+
+- Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
+- listing of collection [keys](docs/keys.html) (including filtering and sorting)
+- import/export  of [CSV](how-to/import-csv-rows-as-json-documents.html) files, Excel Workbook sheets and [Google Sheets](how-to/gsheet-integration.html)
+- An experimental full text [search](how-to/searchable-datasets.html) interface based on [Blevesearch](https://blevesearch.com)
+- The ability to reshape data by performing simple object [joins](docs/join.html)
+- The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based 
+  on keys lists and [dot paths](docs/dotpath.html) into the JSON objects stored
+
+You can work with dataset collections via the [command line tool](docs/dataset.html), via Go using the 
+[dataset package](https://godoc.org/github.com/caltechlibrary/dataset) or in
+Python 3.6 using a python package.  _dataset_ is useful for general data science applications which 
+need intermediate JSON object storage but not a full blown database.
+
 
 ### Limitations of _dataset_
 
@@ -36,60 +71,13 @@ _dataset_ has many limitations, some are listed below
 + it is not a multi-process, multi-user data store (it's just files on disc without any locking)
 + it is not a repository management system
 + it is not a general purpose multiuser database system
-
-
-## Operations
-
-The basic operations support by *dataset* are listed below organized by collection and JSON document level.
-
-### Collection Level
-
-+ [init](docs/dataset/init.html) creates a collection
-+ [import-csv](docs/dataset/import-csv.html) JSON documents from rows of a CSV file
-+ [import-gsheet](docs/dataset/import-gsheet.html) JSON documents from rows of a Google Sheet
-+ [export-csv](docs/dataset/export-csv.html) JSON documents from a collection into a CSV file
-+ [export-gsheet](docs/dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
-+ [keys](docs/dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
-+ [haskey](docs/dataset/haskey.html) returns true if key is found in collection, false otherwise
-+ [count](docs/dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
-+ [grid](docs/dataset/grid.html) generates a 2D array of cells from a list of collection keys and a list of dot paths
-+ [frame](docs/dataset/grid.html) generates a grid plus metatadata, frames persist with the collection
-
-
-### JSON Document level
-
-+ [create](docs/dataset/create.html) a JSON document in a collection
-+ [read](docs/dataset/read.html) back a JSON document in a collection
-+ [update](docs/dataset/update.html) a JSON document in a collection
-+ [delete](docs/dataset/delete.html) a JSON document in a collection
-+ [join](docs/dataset/join.html) a JSON document with a document in a collection
-+ [list](docs/dataset/list.html) the lists JSON records as an array for the supplied keys
-+ [path](docs/dataset/path.html) list the file path for a JSON document in a collection
-
-
-### JSON Document Attachments
-
-+ [attach](docs/dataset/attach.html) a file to a JSON document in a collection
-+ [attachments](docs/dataset/attachments.html) lists the files attached to a JSON document in a collection
-+ [detach](docs/dataset/detach.html) retrieve an attached file associated with a JSON document in a collection
-+ [prune](docs/dataset/prune.html) delete one or more attached files of a JSON document in a collection
-
-### Experimental Search
-
-+ [indexer](docs/dataset/indexer.html) indexes JSON documents in a collection for searching with _find_
-+ [deindexer](docs/dataset/deindexer.html) de-indexes (removes) JSON documents from an index
-+ [find](docs/dataset/find.html) provides a index based full text search interface for collections
-
++ it does not supply version control on collections or objects (though integrating it with git 
+  or mercurial is trivial)
 
 ## Example
 
-Common operations using the *dataset* command line tool
-
-+ create collection
-+ create a JSON document to collection
-+ read a JSON document
-+ update a JSON document
-+ delete a JSON document
+Below is a simple example of shell based interactoin with dataset colletions using the command line
+dataset tool.
 
 ```shell
     # Create a collection "mystuff.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
