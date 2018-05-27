@@ -60,45 +60,45 @@ _dataset_ has many limitations, some are listed below
 Below is a simple example of shell based interaction with dataset collations using the command line dataset tool.
 
 ```shell
-    # Create a collection "mystuff.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
-    bin/dataset mystuff.ds init
+    # Create a collection "friends.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
+    bin/dataset friends.ds init
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    bin/dataset mystuff.ds create frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
+    bin/dataset friends.ds create frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    bin/dataset mystuff.ds read frieda
+    bin/dataset friends.ds read frieda
     
     # Path to JSON document
-    bin/dataset mystuff.ds path frieda
+    bin/dataset friends.ds path frieda
 
     # Update a JSON document
-    bin/dataset mystuff.ds update frieda '{"name":"frieda","email":"frieda@zbs.example.org", "count": 2}'
+    bin/dataset friends.ds update frieda '{"name":"frieda","email":"frieda@zbs.example.org", "count": 2}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    bin/dataset mystuff.ds keys
+    bin/dataset friends.ds keys
 
     # Get keys filtered for the name "frieda"
-    bin/dataset mystuff.ds keys '(eq .name "frieda")'
+    bin/dataset friends.ds keys '(eq .name "frieda")'
 
     # Join frieda-profile.json with "frieda" adding unique key/value pairs
-    bin/dataset mystuff.ds join append frieda frieda-profile.json
+    bin/dataset friends.ds join append frieda frieda-profile.json
 
     # Join frieda-profile.json overwriting in commont key/values adding unique key/value pairs
     # from frieda-profile.json
-    bin/dataset mystuff.ds join overwrite frieda frieda-profile.json
+    bin/dataset friends.ds join overwrite frieda frieda-profile.json
 
     # Delete a JSON document
-    bin/dataset mystuff.ds delete frieda
+    bin/dataset friends.ds delete frieda
 
     # Import data from a CSV file using column 1 as key
-    bin/dataset -quiet -nl=false mystuff.ds import-csv my-data.csv 1
+    bin/dataset -quiet -nl=false friends.ds import-csv my-data.csv 1
 
     # To remove the collection just use the Unix shell command
-    rm -fR mystuff.ds
+    rm -fR friends.ds
 ```
 
 ## Releases
