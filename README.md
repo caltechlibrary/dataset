@@ -1,50 +1,31 @@
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
-_dataset_ is a command line tool, go package and python package you can use to manage 
-[JSON](https://en.wikipedia.org/wiki/JSON) objects stored on local disc or in the cloud 
-(e.g. Amazon S3 and Google Cloud Storage). It stores the JSON objects in collections as plain 
-UTF-8 text. This means the objects can be accessed with common Unix text processing tools as well as
-most programming languages with text processing support. The [dataset](docs/dataset.html)
-command line tool supports common data manage operations such as initialization of collections,
-creation, reading, updating and delete JSON objects in the collection. Some of its enhanced
-features include the ability to import and export JSON object to and from CSV files,
-Excel Workbook sheets and Google Sheets. It supports key filter and sorting as well as
-mapping collection content into [grids](docs/grids.html) and data [frames](docs/frames.html).
-It even includes an experimental search feature by the integrating [Blevesearch](https://blevesearch.com)
-indexing and search engine library developed by [CouchDB]().
+_dataset_ is a command line tool, Go package, shared library and Python package for working with [JSON](https://en.wikipedia.org/wiki/JSON) objects as collection. Collections can be stored on disc, in S3 or Google Cloud Storage.
+JSON objects are stored in collections as plain UTF-8 text. This means the objects can be accessed with common Unix text processing tools as well as
+most programming languages with text processing support. 
 
-See [getting-started-with-datataset.md](how-to/getting-started-with-dataset.html) for a tour of functionality.
+The [dataset](docs/dataset.html) command line tool supports common data manage operations such as initialization of collections, creation, reading, updating and delete JSON objects in the collection. Some of its enhanced features include the ability to generate data [grid](docs/grid.html)s and [frame](docs/frame.html), the ability to import and export JSON object to and from CSV files, Excel Workbook sheets and Google Sheets.  It even includes an experimental search feature by the integrating [Blevesearch](https://blevesearch.com) indexing and search engine library developed by [CouchDB](http://couchdb.apache.org/).
+
+In addition to the command line tool dataset includes a C shared library called libdataset which is used for integration in a Python module of the same name.  _dataset_ itself is written in a [Go](https://golang.org) package which can also in other Go based projects.  _libdataset_ could be used as a bases for integration with other languages that support a C API (e.g. [Julia](https://julialang.org/)).
+
+See [getting-started-with-datataset.md](how-to/getting-started-with-dataset.html) for a tour and tutorial.
 
 
 ## Origin story
 
-The inspiration for creating _dataset_ was the desire to process metadata as JSON object collections 
-using simple Unix shell utilities and data pipelines. The core use case evolved at [Caltech Library](https://library.caltech.edu)
-working with various repository systems' API (e.g. [EPrints](https://en.wikipedia.org/wiki/EPrints) and
-and [Invenio](https://en.wikipedia.org/wiki/Invenio)). It has allowed
-the library to easily build aggregated views of hetrogeious content (see https://feeds.library.caltech.edu)
-as well as facilitate ad-hoc analysis and data enhancement for a number of internal library projects.
+The inspiration for creating _dataset_ was the desire to process metadata as JSON object collections using simple Unix shell utilities and data pipelines. The core use case evolved at [Caltech Library](https://library.caltech.edu) working with various repository systems' API (e.g. [EPrints](https://en.wikipedia.org/wiki/EPrints) and and [Invenio](https://en.wikipedia.org/wiki/Invenio)). It has allowed the library to build an aggregated view of hetrogeious content (see https://feeds.library.caltech.edu) as well as facilitate ad-hoc analysis and data enhancement for a number of internal library projects.
 
 
 ## Design choices
 
-_dataset_ isn't a database or repository system. It is intended to be simplier and easier to use with
-minimal setup (e.g. `dataset init mycollection.ds` would create a new collection).  It built around a few simple
-abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON
-file called collections.json and buckets containing the JSON objects and any attachments, the collections.json
-file describes the mapping of keys to buckets).  It takes minimal system resources
+_dataset_ isn't a database or repository system. It is intended to be simpleand easier to use with minimal setup (e.g. `dataset init mycollection.ds` would create a new collection called 'mycollection.ds').  It built around a few abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON file called collections.json and buckets containing the JSON objects and any attachments, the collections.json file describes the mapping of keys to buckets).  It takes minimal system resources
 and keeps all content, except JSON object attachments, in plain UTF-8 text (attachments are kept in tar files).
-In the typcial library processing pattern of "harvest", "transform" and "redeploy" dataset provides a convienent 
-way to store intermediate results in a data processing pipeline. 
 
-Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine
-as small as a Raspberry Pi while being equally comformatable on a more resource rich server or desktop
-environment.
+A the typcial library processing pattern is to write a "harvester" which stores it results in a _dataset_ collaction, the use either a shell script or Python program to transform the collections content and finally redeploy the augmented results.
 
-Currently dataset provides a command line tool called `dataset` as well as a Go package and Python 3.6 Package.
-It can be integrated into other programming languages that provide support for C shared libraries. _dataset_
-itself is written in [Go](https://golang.org).
+Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi while being equally comformatable on a more resource rich server or desktop environment.
+
 
 ## Features
 
@@ -68,16 +49,15 @@ need intermediate JSON object storage but not a full blown database.
 
 _dataset_ has many limitations, some are listed below
 
-+ it is not a multi-process, multi-user data store (it's just files on disc without any locking)
-+ it is not a repository management system
-+ it is not a general purpose multiuser database system
-+ it does not supply version control on collections or objects (though integrating it with git 
-  or mercurial is trivial)
+- it is not a multi-process, multi-user data store (it's just files on disc without any locking)
+- it is not a repository management system
+- it is not a general purpose multiuser database system
+- it does not supply version control on collections or objects (though integrating it with git, mercurial or subversion would be trivial)
+
 
 ## Example
 
-Below is a simple example of shell based interactoin with dataset colletions using the command line
-dataset tool.
+Below is a simple example of shell based interaction with dataset colletions using the command line dataset tool.
 
 ```shell
     # Create a collection "mystuff.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
