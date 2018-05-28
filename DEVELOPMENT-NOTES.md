@@ -9,7 +9,7 @@ Compiler requirements
 
 Package assumptions
 
-+ blevesearch v0.7.0
++ blevesearch v0.7.0 or better
 
 ## Recommend
 
