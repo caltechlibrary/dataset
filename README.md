@@ -33,7 +33,7 @@ Care has been taken to keep _dataset_ simple enough and light weight enough that
 
 - Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
-- import/export  of [CSV](how-to/import-csv-rows-as-json-documents.html) files, Excel Workbook sheets and [Google Sheets](how-to/gsheet-integration.html)
+- import/export  of [CSV](how-to/import-csv-rows-as-json-documents.html) files and [Google Sheets](how-to/gsheet-integration.html)
 - An experimental full text [search](how-to/searchable-datasets.html) interface based on [Blevesearch](https://blevesearch.com)
 - The ability to reshape data by performing simple object [joins](docs/join.html)
 - The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based 
