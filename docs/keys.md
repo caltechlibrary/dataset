@@ -116,6 +116,6 @@ results are few than the sample size.  The basic process is to get a set of
 keys, randomly sort the keys, then return the top N number of those keys.
 
 
-Related topics: extract and export
+Related topics: [count](count.html), [clone](clone), [clone-sample](clone-sample.html), [frame](frame.html), [grid](grid.html)
 
 

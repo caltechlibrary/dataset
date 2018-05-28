@@ -10,3 +10,5 @@ sample size of 1000.
     dataset mycollection.ds clone-sample 1000 training.ds test.ds
 ```
 
+Related topics: [clone](clone.html)
+

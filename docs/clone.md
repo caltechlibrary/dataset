@@ -11,3 +11,5 @@ and then clone those keys into a new collection called *sample.ds*.
     dataset mycollection.ds clone sample.keys sample.ds
 ```
 
+Related topics: [clone-sample](clone-sample.html)
+

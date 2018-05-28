@@ -34,3 +34,5 @@ Multi index examples (using authors-title.bleve and abstracts.bleve indexes)
     dataset find 'authors-title.bleve:abstracts.bleve' '+family:"Doiel" given:"R"'
     dataset find 'authors-title.bleve:abstracts.bleve' '+orcid:"0000-0003-0900-6903"'
 ```
+
+Related topics: [indexer](indexer.html)

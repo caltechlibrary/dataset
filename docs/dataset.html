@@ -27,7 +27,7 @@
 <section>
 <h1>USAGE</h1>
 
-<pre><code>	dataset [OPTIONS] COLLECTION_NAME ACTION [ACTION PARAMETERS...]
+<pre><code>dataset [OPTIONS] COLLECTION_NAME ACTION [ACTION PARAMETERS...]
 </code></pre>
 
 <h2>SYNOPSIS</h2>
@@ -36,8 +36,8 @@
 JSON documents stored on disc. A dataset is organized around collections,
 collections contain buckets holding specific JSON documents and related content.
 In addition to the JSON documents dataset maintains metadata for management
-of the documents, their attachments as well as a ability to generate key lists,
-aggregate collection contents into data grids and frames.</p>
+of the documents, their attachments as well as a ability to generate select lists
+based JSON document keys (aka JSON document names).</p>
 
 <h2>OPTIONS</h2>
 
@@ -86,7 +86,7 @@ aggregate collection contents into data grids and frames.</p>
     delete         Delete a JSON record (and attachments) from a collection
     delete-frame   remove a frame from a collection
     detach         Copy an attach out of an associated JSON record in a collection
-    export         Export a JSON records from a collection to a CSV file
+    export-csv     Export a JSON records from a collection to a CSV file
     export-gsheet  Export a collection's JSON records to a GSheet
     find           (experimental) Query an index(es) associated with a collection
     frame          define or retrieve a frame from a collection
@@ -95,7 +95,7 @@ aggregate collection contents into data grids and frames.</p>
     frames         list the available frames in a collection
     grid           Creates a data grid from a list keys of dot paths
     haskey         Returns true if key is in collection, false otherwise
-    import         Import a CSV file's rows as JSON records into a collection
+    import-csv     Import a CSV file's rows as JSON records into a collection
     import-gsheet  Import a GSheet rows as JSON records into a collection
     indexer        (experimental) Create/Update an index of a collection
     init           Initialize a dataset collection
@@ -111,7 +111,9 @@ aggregate collection contents into data grids and frames.</p>
     update         Update a JSON record in a collection
 </code></pre>
 
-<p>Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="clone.html">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="deindexer.html">deindexer</a>, <a href="delete.html">delete</a>, <a href="delete-frame.html">delete-frame</a>, <a href="detach.html">detach</a>, <a href="export.html">export</a>, <a href="export-gsheet.html">export-gsheet</a>, <a href="find.html">find</a>, <a href="frame.html">frame</a>, <a href="frame-labels.html">frame-labels</a>, <a href="frame-types.html">frame-types</a>, <a href="frames.html">frames</a>, <a href="grid.html">grid</a>, <a href="haskey.html">haskey</a>, <a href="import.html">import</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="indexer.html">indexer</a>, <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="reframe.html">reframe</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a></p>
+<p>Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="clone.html">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="deindexer.html">deindexer</a>, <a href="delete.html">delete</a>, <a href="delete-frame.html">delete-frame</a>, <a href="detach.html">detach</a>, <a href="export-csv.html">export-csv</a>, <a href="export-gsheet.html">export-gsheet</a>, <a href="find.html">find</a>, <a href="frame.html">frame</a>, <a href="frame-labels.html">frame-labels</a>, <a href="frame-types.html">frame-types</a>, <a href="frames.html">frames</a>, <a href="grid.html">grid</a>, <a href="haskey.html">haskey</a>, <a href="import-csv.html">import-csv</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="indexer.html">indexer</a>, <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="reframe.html">reframe</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a></p>
+
+<p>dataset v0.0.42-rc2</p>
 
 </section>
 

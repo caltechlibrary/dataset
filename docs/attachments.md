@@ -20,5 +20,5 @@ List all the attachments for _k1_ in collection "stats.ds".
     dataset stats.ds attachments k1
 ```
 
-Related topics: attach, detach and prune
+Related topics: [attach](attach.html), [detach](detach.html) and [prune](prune.html)
 

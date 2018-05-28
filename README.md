@@ -5,7 +5,7 @@ _dataset_ is a command line tool, Go package, shared library and Python package 
 JSON objects are stored in collections as plain UTF-8 text. This means the objects can be accessed with common Unix text processing tools as well as
 most programming languages with text processing support. 
 
-The [dataset](docs/dataset.html) command line tool supports common data manage operations such as initialization of collections, creation, reading, updating and deleting JSON objects in the collection. Some of its enhanced features include the ability to generate data [grid](docs/grid.html)s and [frame](docs/frame.html)s, the ability to import and export JSON object to and from CSV files, Excel Workbook sheets and Google Sheets.  It even includes an experimental search feature by the integrating [Blevesearch](https://blevesearch.com) indexing and search engine library developed for [CouchDB](http://couchdb.apache.org/).
+The [dataset](docs/dataset.html) command line tool supports common data manage operations such as initialization of collections, creation, reading, updating and deleting JSON objects in the collection. Some of its enhanced features include the ability to generate data [grid](docs/grid.html)s and [frame](docs/frame.html)s, the ability to import and export JSON object to and from CSV files and Google Sheets.  It even includes an experimental search feature by the integrating [Blevesearch](https://blevesearch.com) indexing and search engine library developed for [CouchDB](http://couchdb.apache.org/).
 
 In addition to the command line tool dataset includes a C shared library called libdataset which is used for integration in a Python module of the same name.  _dataset_ itself is written in a [Go](https://golang.org) package which can also in other Go based projects.  _libdataset_ could be used as a bases for integration with other languages that support a C API (e.g. [Julia](https://julialang.org/)).
 
@@ -33,7 +33,7 @@ Care has been taken to keep _dataset_ simple enough and light weight enough that
 
 - Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
-- import/export  of [CSV](how-to/import-csv-rows-as-json-documents.html) files, Excel Workbook sheets and [Google Sheets](how-to/gsheet-integration.html)
+- import/export  of [CSV](how-to/import-csv-rows-as-json-documents.html) files and [Google Sheets](how-to/gsheet-integration.html)
 - An experimental full text [search](how-to/searchable-datasets.html) interface based on [Blevesearch](https://blevesearch.com)
 - The ability to reshape data by performing simple object [joins](docs/join.html)
 - The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based 

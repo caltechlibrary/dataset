@@ -16,4 +16,5 @@ In python
     err = dataset.frame_types('pubs.ds', 'f1', ['string', 'string', 'year'])
 ```
 
+Related topics: [frame](frame.html), [frames](frames.html), [frame-labels](frame-labels.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
 

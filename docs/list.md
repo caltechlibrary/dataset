@@ -29,3 +29,5 @@ then the output would be
     [{"one":1},{"two":2},{"three":3}]
 ```
 
+Related topics: [keys](keys.html), [read](read.html)
+

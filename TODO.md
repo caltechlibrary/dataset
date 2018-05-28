@@ -12,7 +12,7 @@
 
 ## Roadmap (v0.2.x)
 
-- [ ] Replace import/export with sync for CSV, Excel and Google Sheet
+- [ ] Replace import/export with sync for CSV and Google Sheet
     - a collection frame defines/controls the relationship between a spreadsheet's rows/columns and a collection's records/field values
     - a collection's frame labels are expected to match column names in row zero of spreadsheet
     - a frame's grid's zero column (collection keys) map to/from column zero of the spreadsheeet
@@ -22,7 +22,6 @@
         - `daatset sync-csv -prune MyCollectiond.ds MySpreadsheet.csv` would remove rows from spreadsheet that didn't have matching records in collection
     - [ ] In _dataset_ add `sync-gsheet` for interactive with GSheets (replacing import/export)
     - [ ] In _dataset_ add `sync-csv` for interactiving with CSV rows (replacing import/export)
-    - [ ] In _dataset_ add `sync-xlsx` for interactiving with Excel Workbook Sheets (replacing import/export)
 - [ ] Add support for generating Lunrjs indexes automatically inside the collection folder
     - [ ] build a simple web UI for exploring collection (read only) via web browser
 - [ ] Sort out cross compiling libdataset shared library for Python module

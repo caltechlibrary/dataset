@@ -1,9 +1,7 @@
 
 # USAGE
 
-```
 	dataset [OPTIONS] COLLECTION_NAME ACTION [ACTION PARAMETERS...]
-```
 
 ## SYNOPSIS
 
@@ -12,8 +10,9 @@ dataset is a command line tool demonstrating dataset package for managing
 JSON documents stored on disc. A dataset is organized around collections,
 collections contain buckets holding specific JSON documents and related content.
 In addition to the JSON documents dataset maintains metadata for management
-of the documents, their attachments as well as a ability to generate key lists,
-aggregate collection contents into data grids and frames.
+of the documents, their attachments as well as a ability to generate select lists
+based JSON document keys (aka JSON document names).
+
 
 
 ## OPTIONS
@@ -66,7 +65,7 @@ Options are shared between all actions and must precede the action on the comman
     delete         Delete a JSON record (and attachments) from a collection
     delete-frame   remove a frame from a collection
     detach         Copy an attach out of an associated JSON record in a collection
-    export         Export a JSON records from a collection to a CSV file
+    export-csv     Export a JSON records from a collection to a CSV file
     export-gsheet  Export a collection's JSON records to a GSheet
     find           (experimental) Query an index(es) associated with a collection
     frame          define or retrieve a frame from a collection
@@ -75,7 +74,7 @@ Options are shared between all actions and must precede the action on the comman
     frames         list the available frames in a collection
     grid           Creates a data grid from a list keys of dot paths
     haskey         Returns true if key is in collection, false otherwise
-    import         Import a CSV file's rows as JSON records into a collection
+    import-csv     Import a CSV file's rows as JSON records into a collection
     import-gsheet  Import a GSheet rows as JSON records into a collection
     indexer        (experimental) Create/Update an index of a collection
     init           Initialize a dataset collection
@@ -92,5 +91,6 @@ Options are shared between all actions and must precede the action on the comman
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export](export.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import](import.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 
+dataset v0.0.42-rc2

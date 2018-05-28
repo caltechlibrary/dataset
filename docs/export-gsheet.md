@@ -23,7 +23,7 @@ The Sheet ID would be
     1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
 ```
 
-CELL_RANGE is expressed in a letter colum row fashion (like in an Excel Workbook). E.g. A1:B10 would refer to 
+CELL_RANGE is expressed in a letter colum row fashion E.g. A1:B10 would refer to 
 the grid starting in the first column (i.e. A) and row (i.a. 1) moving to the lower left with the grid
 ending in column 2 (i.e. B) row 10. This forms the grid that will be written out. Typically this would be something
 like "A1:Z" which would translate start in the upper right cell of the spreadsheet and replace all cells
@@ -45,5 +45,5 @@ Name, Contact. Collection name is "people.ds".
 	dataset people.ds export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
 ```
 
-Related topics: extract, import-csv, export-csv, import-gsheet
+Related topics: [import-csv](import-csv.html), [export-csv](export-csv.html), [import-gsheet](import-gsheet.html)
 

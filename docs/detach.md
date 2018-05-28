@@ -27,5 +27,5 @@ Write out only the *stats.xlsx* file attached to k1
     dataset publications.ds detach k1 stats.xlsx
 ```
 
-Related topics: attach, attachments, and prune
+Related topics: [attach](attach.html), [attachments](attachments.html), and [prune](prune.html)
 

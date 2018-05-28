@@ -21,5 +21,5 @@ collection "stats.ds"
     dataset stats.ds attach t1 start.xlsx
 ```
 
-Related topics: attachments, detach and prune
+Related topics: [attachments](attachments.html), [detach](detach.html) and [prune](prune.html)
 

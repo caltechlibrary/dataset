@@ -21,5 +21,5 @@ the collection named "publications.ds".
     dataset publications.ds delete r1
 ```
 
-Related topics: create, read, and update
+Related topics: [create](create.html), [read](read.html), and [update](update.html)
 

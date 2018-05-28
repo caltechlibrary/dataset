@@ -20,4 +20,5 @@ An example we're assuming there is a JSON document with a KEY of "r1". Our colle
     dataset data.ds read r1
 ```
 
+Related topics: [keys](keys.html), [create](create.html), [update](update.html), [delete](delete.html)
 
