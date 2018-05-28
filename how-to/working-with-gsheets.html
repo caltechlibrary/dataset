@@ -17,33 +17,28 @@
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
 <li><a href="../docs/">Documentation</a></li>
-<li><a href="./">How To</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h2>Indexing a collection</h2>
+<h1>Google Spreadsheet Integration</h1>
 
-<p>In the example the index will be created for a collection called <em>characters.ds</em>.</p>
+<p><em>dataset</em> provides for importing from and export to a Google spreadsheet (i.e. GSheet).
+This does require some setup for this to work.  <em>dataset</em> needs to beable to access
+the Google Sheets API for reading and writing. You can find documentation on setting
+up access in &ldquo;step 1&rdquo; at <a href="https://developers.google.com/sheets/api/quickstart/go">https://developers.google.com/sheets/api/quickstart/go</a>.</p>
 
-<pre><code class="language-shell">    dataset characters.ds indexer email-mapping.json email-index.bleve
-</code></pre>
+<p>You&rsquo;ll need a &ldquo;client_secret.json&rdquo; file and OAuth authorization for access to be permitted.
+If credentials for the OAuth part are usually stored in your <code>$HOME/.credentials</code> directory
+as sheets.googleapis.com-dataset.json.  If this file doesn&rsquo;t exist then the first time you
+run the <em>dataset</em> command with a GSheet option it&rsquo;ll prompt you to use your web browser
+to authorize <em>dataset</em> to access your Google spreadsheet.</p>
 
-<p>This will build a Bleve index called &ldquo;email-index.bleve&rdquo; based on the index defined
-in &ldquo;email-mapping.json&rdquo;.</p>
-
-<h2>Searching an index</h2>
-
-<p>In this example we have already indexes a collection called &ldquo;characters.ds&rdquo;. The
-index name in <em>characters.bleve</em> which we will use for searching.</p>
-
-<pre><code class="language-shell">    dataset find characters.bleve &quot;Jack Flanders&quot;
-</code></pre>
-
-<p>This would search the Bleve index named <em>characters.bleve</em> for the string &ldquo;Jack Flanders&rdquo;
-returning records that matched based on how the index was defined.</p>
+<h2>FIXME: need to walk through a couple use cases so it makes sense to most people</h2>
 
 </section>
 

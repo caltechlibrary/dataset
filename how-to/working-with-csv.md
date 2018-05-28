@@ -1,5 +1,27 @@
 
-# How to import CSV rows as JSON documents
+
+# Working with CSV
+
+[CSV](https://en.wikipedia.org/wiki/Comma-separated_values) files are commonly 
+used to share data. Most spreadsheets and many
+database systems can export and import from CSV files.  _datatset_ can use
+a spreadsheet in CSV format to populate JSON objects in a collection. The
+header row of the CSV file will become the object attribute names and the rows
+will become their values. _dataset_ requires a column of unique values to become
+the keys for the JSON objects stored in the collection. 
+
+You can export CSV directly from a collection too. The paths to the elements
+in the objects become the header row and the values exported from the objects
+become the subsequent rows.
+
+    NOTE: In an upcoming release of data the specific command line parameters and
+    Python method definitions may change.  Now that _dataset_ supports the concept
+    of frames import and export to a tabular structure (or even synchronizing with
+    a tabular structure) can be simplified. This document describes the current
+    release method for working with CSV files.
+
+
+## Import objects from a CSV file
 
 You can import rows of a CSV document as JSON documents. This is useful when
 you have a large number of simple structures.
@@ -20,7 +42,7 @@ Save this file as _characters.csv_. To import this let's create a collection
 named _characters_.
 
 ```shell
-    dataset characters-v1.ds init
+    dataset init characters-v1.ds
 ```
 
 Now we can populate our characters collection by importing _characters.csv_.
@@ -154,4 +176,35 @@ can be used with column numbers and or "-uuid" option.  Give it a try with this 
 ```
 
 Explore what you see.
+
+
+# imports and exports
+
+## importing data into a collection
+
+We can import data from a CSV file and store each row as a JSON document in dataset. You
+need to pick a column with unique values to be the key for each record in the collection.
+In this example we assume column one has the key value.
+
+```shell
+    dataset init mydata.ds
+    dataset mydata.ds import-csv my-data.csv 1
+```
+
+You can create a CSV export by providing the dot paths for each column and
+then givening columns a name.
+
+
+## exporting data from a collection
+
+```shell
+   dataset mydata.ds export-csv titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+```
+
+If you wanted to restrict to a subset (e.g. publication in year 2016)
+
+```shell
+   dataset mydata.ds export-csv titles2016.csv '(eq 2016 (year .pubDate))' \
+           '.id,.title,.pubDate' 'id,title,publication date'
+```
 

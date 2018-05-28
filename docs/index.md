@@ -5,7 +5,7 @@ The documentation is organized around the command line options and as a series
 of "how to" style examples.
 
 + [getting started with dataset](../how-to/getting-started-with-dataset.html) (covers both Bash and Python)
-+ Explore additional other [how to](../how-to/)
++ Explore additional other [tutorials](../how-to/)
 
 ## Command line program documentation
 
@@ -14,9 +14,6 @@ of "how to" style examples.
 ## Internal project concepts
 
 + [file system layout](../how-to/file-system-layout.html) - Describes how collections are organized
-+ [defining indexes](../how-to/defining-indexes.html) - Describes the index definition JSON document format
-+ [cloud storage](../how-to/cloud-storage.html) - Describes using Cloud Storage (e.g. Amazon S3, Google Cloud Storage)
-+ [Google Spreadsheet integration](../how-to/gsheet-integration.html) - describes how to setup import/export access to a Google Spreadsheet 
 
 ## _dataset_ Operations
 
@@ -70,5 +67,4 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [sample](sample.html) - getting a random sample of keys
 + [clone](clone.html) - clone a repository
 + [clone-sample](clone-sample.html) - cloning a respository into training and test collections
-
 

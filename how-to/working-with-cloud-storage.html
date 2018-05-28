@@ -17,13 +17,61 @@
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
 <li><a href="../docs/">Documentation</a></li>
-<li><a href="./">How To</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
 
 <section>
+<h1>Cloud Storage</h1>
+
+<p>These days it is often useful to leverage cloud storage. <em>dataset</em> currently supports Amazon&rsquo;s
+cloud storage and Google&rsquo;s cloud storage sollutions. These can be configured through the
+setting the DATASET environment variable or via the command line. The buckets for either Amazon
+or Google need to have already been setup including authenticated configs (e.g. with the aws or gsutil
+tools respectively).  The aws tool is available
+<a href="https://aws.amazon.com/cli">here</a>, and can be set up using <code>aws configure</code> and
+entering the Access key information from your AWS user accounts page (under
+&ldquo;Security credentials&rdquo;.  If the prefix for the path to the collection is prefixed with s3:// then the
+collection is stored at AWS S3, if the prefix is gs:// then it is stored on Google Cloud Storage and
+if there is now prefix it is stored on local disc.</p>
+
+<h2>Local Storage setup</h2>
+
+<pre><code class="language-shell">    #!/bin/bash
+    
+    #
+    # Local Disc setup
+    #
+    export DATASET=&quot;my-test-bucket&quot;
+</code></pre>
+
+<h2>S3 Storage setup</h2>
+
+<pre><code class="language-shell">    #!/bin/bash
+    
+    #
+    # S3 test setup example
+    #
+    
+    # Load the config and credentials in ~/.aws if found
+    export AWS_SDK_LOAD_CONFIG=1
+    # You will need to define your bucket name
+    export DATASET=&quot;s3://my-test-bucket&quot;
+</code></pre>
+
+<h2>GS Storage setup</h2>
+
+<pre><code class="language-shell">    #!/bin/bash
+    
+    #
+    # Google Cloud Storage test setup example
+    #
+    export DATASET=&quot;gs://my-test-bucket&quot;
+</code></pre>
+
 <h1>Use <em>dataset</em> with S3</h1>
 
 <p><em>dataset</em> now support integration with S3 storage.  Store <em>dataset</em> content on AWS S3 you should

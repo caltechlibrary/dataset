@@ -17,7 +17,8 @@
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
 <li><a href="../docs/">Documentation</a></li>
-<li><a href="./">How To</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
@@ -26,538 +27,364 @@
 <section>
 <h1>Getting started with dataset</h1>
 
-<p><em>dataset</em> is a set of tools for managing JSON (object) documents as a collection of key/value pairs stored on either your
-local file system, AWS S3 or Google Cloud Storage. These documents can be interated over or retrieved individually.
-There is also a full text indexer for supporting fielded or full text searches based on the index definitions.
-One final feature of <em>dataset</em> is the ability to add attachments to your JSON objects. These attachments are stored
-in a simple archive format called <a href="https://en.wikipedia.org/wiki/Tar_(computing)">tar</a>. Basic metadata can be retrieved
-, and the attachments can be retreive as a group or individually. Attachments can be removed.</p>
+<p><strong>dataset</strong> is designed to easily manage collections of JSON objects. Objects are associated with a unique key you provide. The objects themselves are stores on disc in a bucket folder inside the collection folder. The collection folder contains a JSON object document called <em>collection.json</em>. This file stores metadata about the collection including the association of keys with paths to their objects.  <strong>dataset</strong> comes in several flavors — a command line program called <strong>dataset</strong>, a Go langauge package also called dataset, a shared library called libdataset and a Python 3.6 package called <strong>dataset</strong>. This tutorial talks about the command line program and the Python package.</p>
 
-<h2>Getting dataset onto your computer</h2>
+<h2>Create a collection with init</h2>
 
-<p>The command line <em>dataset</em> is available for installation from <a href="https://github.com/caltechlibrary/dataset/releases/latest">https://github.com/caltechlibrary/dataset/releases/latest</a>.
-Find the zip file associated with your computer type and operating system then download it. Once downloaded you can unzip the zip
-file and copy the programs into a local directory called &ldquo;bin&rdquo; on your comptuer. For full instructions on installation see
-<a href="../install.html">INSTALL.md</a>. In addition to the command line tool a Python 3.6 package is also provide and can
-be installed with the usual <code>python3 setup.py install --user --record files.txt</code>.</p>
+<p>To create a collection you use the init verb. In the following examples you will see how to do this with both the command line tool called dataset as well as the Python module of the same name.</p>
 
-<h2>Basic workflow with dataset</h2>
+<p>Let&rsquo;s create a collection called <strong>friends.ds</strong>. At the command line type the following.</p>
 
-<p><em>dataset</em>&rsquo;s focus is in storing JSON (object) documents in collections. The documents are stored in a bucketed directory structure and
-named for the &ldquo;key&rdquo; provided. The documents remain plain text JSON on disc. When you first start working with a dataset you
-will need to initialize the collection. This creates the bucket directories and associated metadata so you can easily
-retrieve your documents. If you were to initialize a dataset collection called &ldquo;FavoriteThings.ds&rdquo; it would look like &ndash;</p>
-
-<pre><code class="language-shell">    dataset init FavoriteThings.ds
+<pre><code class="language-bash">    dataset init friends.ds
 </code></pre>
 
-<p>or in Python</p>
+<p>Notice that when you typed this in you see an &ldquo;OK&rdquo; response. If there had been an error then you would have seen an error message instead.</p>
 
-<pre><code class="language-python">    import dataset
+<p>Working in Python is similar to the command line we do need to import some modules and for these exercises we&rsquo;ll be importing the following modules <strong>sys</strong>, <strong>os</strong>, <strong>json</strong> and of course <strong>dataset</strong>.</p>
 
-    dataset.init('FavoriteThings.ds')
+<pre><code class="language-python">    import sys
+    import os
+    import json
+    import dataset
+    
+    # stop is a convenience function
+    def stop(msg):
+        print(msg)
+        sys.exit(1)
+        
+    err = dataset.init('friends.ds')
+    if err != '':
+        stop(err)
 </code></pre>
 
-<p>Next you&rsquo;ll want to add some records to the collection of &ldquo;FavoriteThings.ds&rdquo;.  The records we&rsquo;re going to add need
-to be expressed as JSON objects. You need to decide on a key (the thing you&rsquo;ll used to retrieve the record later)
-of the document to store.  For this example I&rsquo;m going to use the key, &ldquo;beverage&rdquo; and a document that looks like
-<code>{&quot;thing&quot;: &quot;coffee&quot;}</code>.  If you&rsquo;ve set the DATASET environment variable you can run the following command &ndash;</p>
+<p>In Python the error message is an empty string if everything is ok, otherwise we call stop which prints the message and exits. You will see this pattern followed in a number of upcoming Python examples.</p>
 
-<pre><code class="language-shell">    dataset FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
+<h3>removing friends.ds</h3>
+
+<p>There is no dataset  verb to remove a collection. A collection is just a folder with some files  in it. You can delete the collection by throwing the folder in the trash (Mac OS X and Windows) or using a recursive remove in the Unix shell.</p>
+
+<h2>create, read, update and delete</h2>
+
+<p>As with many systems that store information dataset provides for basic operations of creating, updating and deleting. In the following section we will work with the <strong>friends.ds</strong> collection and <strong>favorites.ds</strong> collection we created previously.</p>
+
+<p>I have some friends who are characters in <a href="https://zbs.org">ZBS</a> radio plays. I am going to create
+save some of their info in our collection called <strong>friends.ds</strong>. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.</p>
+
+<pre><code class="language-bash">    dataset friends.ds create frieda '{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
 </code></pre>
 
-<p>If all goes well you&rsquo;ll get a response of &ldquo;OK&rdquo;.  If you forgot to set the environment variable you can
-explicitly include the collection name</p>
+<p>Notice the “OK”. Just like <strong>init</strong> the <strong>create</strong> verb returns a status. “OK” means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.</p>
 
-<pre><code class="language-shell">    dataset FavoriteThings.ds create beverage '{&quot;thing&quot;:&quot;coffee&quot;}'
+<pre><code class="language-python">    err = dataset.create('friends.ds', 'frieda', {&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;})
+    if err != '':
+        stop(msg)
+</code></pre>
+
+<p>With create we need to provide a collection name, a key (e.g. ‘frieda’) and Python
+dict (which becomes our JSON object). Now let’s add records for Mojo Sam and Jack Flanders.</p>
+
+<p>command line —</p>
+
+<pre><code class="language-bash">    dataset friends.ds create 'mojo' '{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}'
+    dataset friends.ds create 'jack' '{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}'
+</code></pre>
+
+<p>in python —</p>
+
+<pre><code class="language-python">    err = dataset.create(&quot;friends.ds&quot;, &quot;mojo&quot;, {&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;})
+    if err != '': 
+        stop(err)
+    err = dataset.create(&quot;friends.ds&quot;, &quot;jack&quot;, {&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;})
+    if err != '': 
+        stop(err)
+</code></pre>
+
+<h3>read</h3>
+
+<p>We have three records in our <strong>friends.ds</strong> collection — ‘frieda’, ‘mojo’, and ‘jack’.  Let’s see what they look like with the <strong>read</strong> verb.</p>
+
+<p>command line —</p>
+
+<pre><code class="language-bash">    dataset friends.ds read frieda
+</code></pre>
+
+<p>This command emitts a JSON object. The JSON  is somewhat hard to read.  To get a pretty version of the JSON object used the ‘-p’  option.</p>
+
+<pre><code class="language-bash">    dataset -p friends.ds read frieda
+</code></pre>
+
+<p>On the command line you can easily pipe the results to a file for latter modification. Let’s do this for each of the records we have created so far.</p>
+
+<pre><code class="language-bash">    dataset -p friends.ds read frieda &gt; frieda-profile.json
+    dataset -p friends.ds read mojo &gt; mojo-profile.json
+    dataset -p friends.ds read jack &gt; jack-profile.json
+```bash
+
+Working in python is similar but rather than write out our JSON structures to a file we’re going to 
+keep them in memory as Python dict.
+
+In Python — 
+
+
+```python
+    (frieda_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;frieda&quot;)
+    if err != '':
+        stop(err)
+    (mojo_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;mojo&quot;)
+    if err != '':
+        stop(err)
+    (jack_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;jack&quot;)
+    if err != '':
+        stop(err)
+</code></pre>
+
+<p>In Python, just like with <strong>init</strong> and <strong>create</strong>  the <strong>read</strong> verb returns a tuple of the value and err. Notice a pattern?</p>
+
+<h3>update</h3>
+
+<p>Next we can modify the profiles (the *.json files for the command line version). We’re going to add a key/value pair for “catch_phrase” associated with each JSON object in <strong>friends.ds</strong>.  For
+Little Frieda edit freida-profile.json to look like —</p>
+
+<pre><code class="language-json">    {
+        &quot;_Key&quot;: &quot;frieda&quot;,
+        &quot;email&quot;: &quot;frieda@inverness.example.org&quot;,
+        &quot;name&quot;: &quot;Little Frieda&quot;,
+        &quot;catch_phrase&quot;: &quot;Woweee Zoweee&quot;
+    }
+</code></pre>
+
+<p>For Mojo’s mojo-profile.json —</p>
+
+<pre><code class="language-json">    {
+        &quot;_Key&quot;: &quot;mojo&quot;,
+        &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;,
+        &quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;,
+        &quot;catch_phrase&quot;: &quot;Feet Don't Fail Me Now!&quot;
+    }
+</code></pre>
+
+<p>An Jack’s jack-profile.json —</p>
+
+<pre><code class="language-json">    {
+        &quot;_Key&quot;: &quot;jack&quot;,
+        &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;,
+        &quot;name&quot;: &quot;Jack Flanders&quot;,
+        &quot;catch_phrase&quot;: &quot;What is coming at you is coming from you&quot;
+    }
+
+</code></pre>
+
+<p>On the command line we can read in the updated JSON objects and save the results in the collection with the <strong>update</strong> verb. Like with <strong>init</strong> and <strong>create</strong>  the <strong>update</strong> verb will return an “OK” or error message. Let’s update each of our JSON objects.</p>
+
+<pre><code class="language-bash">    dataset friends.ds update freida frieda-profile.json
+    dataset friends.ds update mojo mojo-profile.json
+    dataset friends.ds update jack jack-profile.json
+</code></pre>
+
+<p><strong>TIP</strong>: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a ‘{‘ and ended with a ‘}’ it would assume you were using an explicit JSON expression.</p>
+
+<p>In Python we can work with each of the dictionaries variables we save from our previous <strong>read</strong> example.  We add our “catch_phrase” attribute then <strong>update</strong> each record.</p>
+
+<pre><code class="language-python">    frieda_profile[&quot;catch_phrase&quot;] = &quot;Wowee Zowee&quot;
+    mojo_profile[&quot;catch_phrase&quot;] = &quot;Feet Don't Fail Me Now!&quot;
+    jack_profile[&quot;catch_phrase&quot;] = &quot;What is coming at you is coming from you&quot;
+    
+    err = dataset.update('friends.ds', 'frieda', frieda_profile)
+    if err != '':
+        stop(err)
+    err = dataset.update('friends.ds', 'mojo', mojo_profile)
+    if err != '':
+        stop(err)
+    err = dataset.update('friends.ds', 'jack', jack_profile)
+    if err != '':
+        stop(err)
+</code></pre>
+
+<p>As an exercise how would you read back the updated version on the command line or in Python?</p>
+
+<h3>delete</h3>
+
+<p>Eventually you might want to remove a JSON object from the collection. Let’s remove Jack Flander’s record for now.</p>
+
+<p>command line —</p>
+
+<pre><code class="language-bash">    dataset friends.ds delete jack
+</code></pre>
+
+<p>Notice the “OK” in this case it means we’ve successfully delete the JSON object from the collection.</p>
+
+<p>An perhaps as you’ve already guessed working in Python looks like —</p>
+
+<pre><code class="language-python">    err = dataset.delete('friends.ds', 'jack')
+    if err != '':
+       stop(err)
+</code></pre>
+
+<h2>keys and count</h2>
+
+<p>Eventually you have lots of objects in your collection. You are not going to be able to remember all the keys. dataset provides a <strong>keys</strong> function for getting a list of keys as well as a <strong>count</strong> to give you a
+total number of keys.</p>
+
+<p>Now that we’ve deleted a few things let’s see how many keys are in <strong>friends.ds</strong>. We can do that with the <strong>count</strong> verb.</p>
+
+<p>Command line —</p>
+
+<pre><code class="language-bash">    dataset friends.ds count
+</code></pre>
+
+<p>In Python —</p>
+
+<pre><code class="language-python">    cnt = dataset.count('friends.ds')
+    print(f&quot;Total Records Now: {cnt}&quot;)
+</code></pre>
+
+<p>Likewise we can get a list of the keys with the <strong>keys</strong> verb.</p>
+
+<pre><code class="language-bash">    dataset friends.ds keys
+</code></pre>
+
+<p>If you are following along in Python then you can just save the keys to a variable called keys.</p>
+
+<pre><code class="language-python">    keys = dataset.keys('friends.ds')
+    print(&quot;\n&quot;.join(keys))
+</code></pre>
+
+<h2>grids and frames</h2>
+
+<p>One of the challenges in working on JSON objects is their tree like structure. When tabulating or
+comparing values it is often easier to work in a spreadsheet like grid.  <strong>grid</strong> is dataset’s verb for taking a list of keys, a list of dot paths into the JSON objects and returning a 2D grid of the results. This is handy when generating reports. A <strong>grid</strong> unlike <strong>frame</strong> which we will see shortly doesn’t enforce any specifics on the columns and rows. It only contains the values you specify.</p>
+
+<h3>grid</h3>
+
+<p>Let’s create a <strong>grid</strong> from our <em>friends.ds</em> collection.</p>
+
+<pre><code class="language-bash">    dataset friends.ds keys &gt; fiends.keys
+    dataset friends.ds grid friends.keys .name .email .catch_phrase
+</code></pre>
+
+<p>As with <strong>read</strong> the <strong>grid</strong> verb can take the “-p” option to make the JSON grid a little easier to read.</p>
+
+<pre><code class="language-bash">    dataset -p friends.ds grid friends.keys .name .email .catch_phrase
+</code></pre>
+
+<p>Notice we make a list of keys first and save those to a file. Then we use that list of keys and create our grid.  The grid output is in JSON notation. In Python making a grid follows a similar patter, generate a list of keys, use those keys and a list of dot paths to define the grid.</p>
+
+<pre><code class="language-python">    keys = dataset.keys('friends.ds')
+    (g, err) = dataset.grid('friends.ds', keys, ['.name', '.email', 'catch_phrase'])
+    if err != '':
+        stop(err)
+    print(json.dumps(g, indent = 4))
+</code></pre>
+
+<p>In python <strong>grid</strong> like <strong>create</strong> and <strong>update</strong> returns a tuple that has your result and an error status. Finally we print our result using the JSON module’s <strong>dumps</strong>.</p>
+
+<h3>frame</h3>
+
+<p>dataset also comes with a <strong>frame</strong> verb.  A <strong>frame</strong> is like a grid plus additional matadata. It enforces a structure such on its grid. Column 1 of the <strong>frame</strong>’s internal grid element always has the keys associated with the collection. A <strong>frame</strong> will also derive heading labels from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a <strong>frame</strong> stays with the collection. Frames are persistent and can be easily recalculated based on collection updates. Finally frames as used by more complex verbs such as <strong>export-csv</strong>, <strong>export-gsheet</strong>, and <strong>indexer</strong> we’ll be covering later.</p>
+
+<p>To define a frame we only need one additional piece of information besides what we used for a grid. We need a name for the frame.</p>
+
+<p>Working from our previous <strong>grid</strong> example, let’s call this frame “name-and-email”.</p>
+
+<pre><code class="language-bash">    dataset friends.ds frame &quot;name-and-email&quot; fiends.keys .name .email .catch_phrase
+</code></pre>
+
+<p>In python it would look like</p>
+
+<pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
+    err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;,  keys, [ &quot;.name&quot;, &quot;.email&quot;, &quot;.catch_phrase&quot;])
+    if err != '':
+        stop(err)
+</code></pre>
+
+<p>To see the contents of a frame we only need to support the collection name and frame name.</p>
+
+<pre><code class="language-bash">    dataset friends.ds frame &quot;name-and-email&quot;
+</code></pre>
+
+<p>In Python it’d look like</p>
+
+<pre><code class="language-python">    (f, err) = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
+    if err != '':
+        stop(err)
+    print(json.dumps(f, indent = 4))
+</code></pre>
+
+<p>Looking at the resulting JSON object you see many other attribute beyond the grid of values. These are what simplify some of dataset more complex interactions.</p>
+
+<p>Let’s add back the Jack record we deleted a few sections again and “reframe” our “name-and-email” frame.</p>
+
+<pre><code class="language-bash">    # Adding back Jack
+    dataset friends.ds create jack jack-profile.json
+    # Save all the keys in the collection
+    dataset friends.ds keys &gt; friends.keys
+    # Now reframe &quot;name-and-email&quot; with the updated friends.keys
+    dataset friends.ds reframe &quot;name-and-email&quot; friends.keys
+    # Now let's take a look at the frame
+    dataset -p friends.ds frame  &quot;name-and-email&quot;
+</code></pre>
+
+<p>Like with <strong>grid</strong> and <strong>read</strong> before it the “-p” option will cause the JSON representation of the frame to be pretty printed.</p>
+
+<p>Let’s try the same thing in Python</p>
+
+<pre><code class="language-python">    err = dataset.create(&quot;friends.ds&quot;, &quot;jack&quot;, jack_profile)
+    if err != '':
+        stop(err)
+    keys = dataset.keys(&quot;friends.ds&quot;)
+    err = dataset.reframe(&quot;friends.ds&quot;, &quot;name-and-email&quot;, keys)
+    if err != '':
+        stop(err)
+    (f, err) = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
+    if err != '':
+        stop(err)
+    print(json.dumps(f, indent = 4))
+</code></pre>
+
+<p>We can list the frames in the collection using the <strong>frames</strong> verb.</p>
+
+<pre><code class="language-bash">    dataset friends.ds frames
 </code></pre>
 
 <p>In Python</p>
 
-<pre><code class="language-python">    # continued from the previous python example
-    err = dataset.create('FavoriteThings.ds', 'beverage', {&quot;thing&quot;: &quot;coffee&quot;})
-    if err != '':
-        print(f&quot;create error, {err}&quot;)
-    else:
-        print(&quot;OK&quot;)
+<pre><code class="language-python">    frame_names = dataset.frames(&quot;friends.ds&quot;)
+    print(&quot;\n&quot;.join(frame_names))
 </code></pre>
 
-<p>Later if your have forgotten what your favorite beverage was you can read it back with</p>
+<p>In our frame we have previously defined three columns, looking at the JSON representation of the frame we also see three labels and three “types”.  Labels are used when exporting frames to spreadsheets. They are also used as the field names when we get to indexes and search. The types are used when defining indexes for searching. The values in types should correspond to either JSON types or the types supported by the search system (e.g. keyword, datetime, geolocation).have three fields in our frame. We will work with both labels and types when we are using the other commands to export and indexes.</p>
 
-<pre><code class="language-shell">    dataset FavoriteThings.ds read beverage
+<p>Finally the last thing we need to be able to do is delete a frame. Delete frames work very similar to deleting a JSON record.</p>
+
+<pre><code class="language-bash">    dataset friends.ds delete-frame &quot;name-and-email&quot;
 </code></pre>
 
 <p>Or in Python</p>
 
-<pre><code class="language-python">    (record, err) = dataset.reac('FavoriteThings', 'beverage')
+<pre><code class="language-python">    err = dataset.delete_frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
     if err != '':
-        print(f&quot;read error, {err}&quot;)
-    else:
-        print(record)
+          stop(err)
 </code></pre>
 
-<p>To list all your favorite things&rsquo; keys try</p>
-
-<pre><code class="language-shell">    dataset FavoriteThings.ds keys
-</code></pre>
-
-<p>In Python</p>
-
-<pre><code class="language-python">    keys = dataset.keys('FavoriteThings.ds')
-</code></pre>
-
-<h2>Adding an existing JSON document to a collection</h2>
-
-<p>One of my favorite things is music. I happen to have a JSON document that I started currating a list of
-Jazz related songs and musicians.  The document is called <code>jazz-notes.json</code>. I can add this to my collection too.</p>
-
-<p>Here&rsquo;s the JSON document,</p>
-
-<pre><code class="language-json">    {
-       &quot;songs&quot;: [&quot;Blue Rondo al la Turk&quot;, &quot;Bernie's Tune&quot;, &quot;Perdido&quot;],
-       &quot;pianist&quot;: [ &quot;Dave Brubeck&quot; ],
-       &quot;trumpet&quot;: [ &quot;Dirk Fischer&quot;, &quot;Dizzy Gillespie&quot; ]
-    }
-</code></pre>
-
-<p>Add this to my collection of <em>FavoriteThings.ds</em> this way using the key &ldquo;jazz-notes&rdquo;.</p>
-
-<pre><code class="language-shell">    dataset FavoriteThings.ds create &quot;jazz-notes&quot; jazz-notes.json
-</code></pre>
-
-<p>or in Python</p>
-
-<pre><code class="language-python">    import json
-
-    with open('jazz-notes.json', mode = 'r', encoding = 'utf-8') as f:
-        src = f.read()
-    jazz_notes = json.loads(src)
-    err = dataset.create('FavoriteThings.ds', 'jazz-notes', jazz_notes)
-    if err != '':
-        print(f&quot;create error, {err}&quot;)
-</code></pre>
-
-<p>Notice that the organization of the JSON documents do not impose a common structure (though that is
-often useful). We can list the documents using our key command.</p>
-
-<pre><code class="language-shell">    dataset FavoriteThings.ds keys
-</code></pre>
-
-<p>Would return something like</p>
-
-<pre><code>    beverage
-    jazz-notes
-</code></pre>
-
-<p>or in Python like this</p>
-
-<pre><code class="language-python">    keys = dataset.keys('FavoriteThings.ds')
-    print(keys)
-</code></pre>
-
-<p>The should list out &ldquo;beverage&rdquo; and &ldquo;jazz-notes&rdquo;.</p>
-
-<p>I can create a JSON list of the objects stored using the &ldquo;list&rdquo; command.</p>
-
-<pre><code class="language-shell">    dataset FavoriteThings.ds list beverage jazz-notes
-</code></pre>
-
-<p>Would return something like</p>
-
-<pre><code class="language-json">    [
-        {
-            &quot;_Key&quot;: &quot;beverage&quot;,
-            &quot;thing&quot;: &quot;coffee&quot;
-        },
-        {
-            &quot;_Key&quot;: &quot;jazz-notes&quot;,
-            &quot;pianist&quot;: [
-                &quot;Dave Brubeck&quot;
-            ],
-            &quot;songs&quot;: [
-                &quot;Blue Rondo al la Turk&quot;,
-                &quot;Bernie's Tune&quot;,
-                &quot;Perdido&quot;
-            ],
-            &quot;trumpet&quot;: [
-                &quot;Dirk Fischer&quot;,
-                &quot;Dizzy Gillespie&quot;
-            ]
-        }
-    ]
-</code></pre>
-
-<p>Similarly in Python</p>
-
-<pre><code class="language-python">    (l, err) = dataset.list('FavoriteThings.ds')
-    if err != '':
-        print(f&quot;list error, {err}&quot;)
-    else:
-        print(json.dumps(l, indent = 4)
-</code></pre>
-
-<h2>A workflow in Bash</h2>
-
-<p>This is an example of creating a dataset called <em>fiends.ds</em>, saving
-a record called &ldquo;littlefreda.json&rdquo; and reading it back. We&rsquo;ll be adding some
-records, print things out to the screen as well as checking if they keys can
-be found in a collection.</p>
-
-<pre><code class="language-shell">   dataset init friends.ds
-   dataset friends.ds create littlefreda '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}'
-   for KY in $(dataset keys); do
-      echo &quot;Path: $(dataset path $KY) 
-      echo &quot;Doc: $(dataset read $KY)
-   done
-</code></pre>
-
-<p>Now check to see if the key, littlefreda, is in the collection</p>
-
-<pre><code class="language-shell">   dataset friends.ds haskey littlefreda
-</code></pre>
-
-<p>You can also read your JSON formatted data from a file or standard input.
-In this example we are creating a mojosam record and reading back the contents
-of fiends.ds</p>
-
-<pre><code class="language-shell">   dataset -i mojosam.json friends.ds create mojosam
-   for KY in $(dataset friends.ds keys); do
-      echo &quot;Path: $(dataset friends.ds path $KY) 
-      echo &quot;Doc: $(dataset friends.ds read $KY)
-   done
-</code></pre>
-
-<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
-
-<pre><code class="language-shell">   cat capt-jack.json | dataset friends.ds create capt-jack
-   for KY in $(dataset friends.ds keys); do
-      echo &quot;Path: $(dataset friends.ds path $KY) 
-      echo &quot;Doc: $(dataset friends.ds read $KY)
-   done
-</code></pre>
-
-<p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-shell">   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
-   dataset friends.ds attach capt-jack high-capt-jack.txt
-</code></pre>
-
-<p>List attachments for &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-shell">   dataset friends.ds attachments capt-jack
-</code></pre>
-
-<p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
-
-<pre><code class="language-shell">   dataset friends.ds attached capt-jack
-</code></pre>
-
-<p>Writing out the attachment named <em>high-capt-jack.txt</em> from &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-shell">    dataset friends.ds detach capt-jack high-capt-jack.txt
-</code></pre>
-
-<p>Remove all (prune) attachments from &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-shell">   dataset friends.ds prune capt-jack
-</code></pre>
-
-<h3>Continuing a Bash workflow</h3>
-
-<p>&ldquo;import-csv&rdquo; can take a CSV file and store each row as a JSON document in dataset.
-There does need to be a column of unique values to use as a key (each row becomes and
-object in the collection).  In this example the first column is going to hold a id number.
-The file contains a list of cast member, the title of the story and year of production.
-We&rsquo;re going to create a new empty collection called <em>characters.ds</em> and populated it from
-a CSV file.</p>
-
-<pre><code class="language-shell">    dataset init characters.ds
-    dataset friends.ds import characters.csv 1
-</code></pre>
-
-<p>You can check the number of records in <em>characters.ds</em> with <em>count</em>.</p>
-
-<pre><code class="language-shell">    dataset characters.ds count
-</code></pre>
-
-<p>Here&rsquo;s an example of looping through all the keys and displaying titles and years.
-We&rsquo;re using a command line tool called <code>jsoncols</code> from the <a href="https://caltechlibrary.github.io/datatools">datatools</a>
-project. It lets us read in a JSON object and display selected fields as a column</p>
-
-<pre><code class="language-shell">    dataset characters.ds keys | while read KEY; do
-        echo -n &quot;Title and year: &quot;
-        dataset -new-line=true characters.ds read &quot;${KEY}&quot; | jsoncols -i - .title .year
-    done
-</code></pre>
-
-<p>Keys can be used to filter and sort keys. Here&rsquo;s is a simple case for match
-records where name is equal to &ldquo;Mojo Sam&rdquo;.</p>
-
-<pre><code class="language-shell">   dataset characters.ds keys '(eq .name &quot;Mojo Sam&quot;)'
-</code></pre>
-
-<p>You can take one list of keys and then do futher filtering using
-the <code>-key-file</code> option with the <em>keys</em> verb.</p>
-
-<pre><code class="language-shell">   dataset characters.ds keys '(eq .name &quot;Mojo Sam&quot;) &gt; mojo.keys
-   dataset -key-file mojo.keys characters.ds keys '(contains .title &quot;Morroco&quot;)'
-</code></pre>
-
-<p>You can create a CSV export by providing the dot paths for each column and
-then givening columns a name.</p>
-
-<pre><code class="language-shell">   dataset characters.ds export titles.csv true '.id,.title,.year' 'id,title,publication year'
-</code></pre>
-
-<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
-
-<pre><code class="language-shell">   dataset characters.ds export titles2016.csv '(eq 2016 (year .year))' \
-           '.id,.title,.year' 'id,title,publication year'
-</code></pre>
-
-<p>Let&rsquo;s return back to our friends collection.  You can augement JSON key/value
-pairs for a JSON document in your collection using the join operation. This works similar to the datatools cli called jsonjoin.</p>
-
-<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
-three fields - name, email, age.</p>
-
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
-</code></pre>
-
-<p>You also have an external JSON document called profile.json. It looks like</p>
-
-<pre><code class="language-json">    {&quot;name&quot;: &quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;bio&quot;: &quot;world renowned geophysist&quot;}
-</code></pre>
-
-<p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
-
-<pre><code class="language-shell">    dataset join update jane.doe profile.json
-</code></pre>
-
-<p>The result would look like</p>
-
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
-</code></pre>
-
-<p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
-
-<pre><code class="language-shell">    dataset join overwrite jane.doe profile.json
-</code></pre>
-
-<p>Which would result in a record like</p>
-
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
-</code></pre>
-
-<h2>A workflow in Python</h2>
-
-<p>Like in the Bash example we&rsquo;re creating a dataset collection called <em>fiends.ds</em>, saving
-a record called &ldquo;littlefreda.json&rdquo; and reading it back. We going to
-use more variables, add a logging class and reference a few extra Python modules to
-make it more like scripts you&rsquo;ll write in practice.</p>
-
-<pre><code class="language-python">    # Standard Python packages
-    import sys
-    import os
-    import json
-    from datetime import tzinfo, timedelta, datetime
-
-    # Caltech Library packages
-    import dataset
-
-    class Logger:
-        def __init__(self, pid, time_format = '%Y/%m/%d %H:%M:%S'):
-            self.pid = pid
-            self.time_format = time_format
-
-        def sprint(self, msg):
-            dt = datetime.now().strftime(self.time_format)
-            pid = self.pid
-            return (f'{dt} (pid: {pid}) {msg}')
-
-        def print(self, msg):
-            dt = datetime.now().strftime(self.time_format)
-            pid = self.pid
-            print(f'{dt} (pid: {pid}) {msg}', flush = True)
-
-        def fatal(self, msg):
-            dt = datetime.now().strftime(self.time_format)
-            pid = self.pid
-            print(f'{dt} (pid: {pid}) {msg}', flush = True)
-            sys.exit(1)
-
-
-        def read_json(filename):
-            with open(filename, mode = 'r', encoding = 'utf-8') as f:
-                src = f.read()
-            return json.loads(src)
-
-            
-    log = Logger(os.getpid())
-
-    # We are saving our collection name in the variable c_name to save typing.
-    c_name = 'friends.ds'
-    err = dataset.init(c_name)
-    if err != '':
-        log.fatal(f&quot;init error, {err}&quot;)
-   
-    key = 'littlefreda'
-    err = dataset.create(c_name, key, '{&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}')
-    if err != '':
-        log.fatal(f&quot;create error, {err}&quot;)
-    log.print(f&quot;Displaying path and JSON notation for keys in {c_name}&quot;) 
-    keys = dataset.keys(c_name)
-    for key in keys:
-        p = dataset.path(key)
-        log.print(f&quot;Path for {key}: {p}&quot;)
-        (record, err) = dataset.read(key)
-        if err != '':
-            log.fatal(f&quot;read error, {err}&quot;)
-        else:
-            log.printf(f&quot;JSON Object: {record}&quot;)
-</code></pre>
-
-<p>We can read the file &ldquo;capt-jack.json&rdquo; off disc an add it too.</p>
-
-<pre><code class="language-python">    capt_jack = read_json('capt-jack.json')
-    err = dataset.create(c_name, 'capt-jack')
-    if err != '':
-        log.fatal(f&quot;create error, {err}&quot;)
-
-    for key in [ 'littlefreda', 'capt-jack' ]:
-        log.print(f&quot;Double check if {key} is in {c_name}&quot;
-        ok = dataset.haskey(key)
-        if ok == True:
-            log.print(&quot;OK&quot;)
-        else:
-            log.print(&quot;Missing {key} in {c_name}&quot;)
-</code></pre>
-
-<p>Let&rsquo;s read in capt-jack.json and mojosam.json and add them to our friends collection.</p>
-
-<pre><code class="language-python">    c_name = 'friends.ds'
-    for filename in [ 'capt-jack.json', 'mojo-sam.json' ]:
-        key = filename[0:-5]
-        record = read_json(filename)
-        err = dataset.create(c_name, key, record)
-        if err != '':
-            log.fatal(f&quot;create error, {err}&quot;)
-</code></pre>
-
-<p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-python">    with open('high-capt-jack.txt', mode = 'w', encoding = 'utf-8') as f:
-        f.write(&quot;Hi Capt. Jack, Hello World!&quot;)
-    err = dataset.attach(c_name, 'capt-jack',  'high-capt-jack.txt')
-    if err != '':
-        log.fatal(f&quot;create error, {err}&quot;)
-</code></pre>
-
-<p>List attachments for &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-python">   l = dataset.attachments(c_nanme, 'capt-jack')
-   log.print(l)
-</code></pre>
-
-<p>Get the attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
-
-<p>Writing out the attachment named <em>high-capt-jack.txt</em> from &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-python">    err = dataset.detach(c_name, 'capt-jack', 'high-capt-jack.txt')
-    if err != '':
-        log.fatal(f&quot;detach error, {err}&quot;)
-</code></pre>
-
-<p>Remove all (prune) attachments from &ldquo;capt-jack&rdquo;</p>
-
-<pre><code class="language-python">   err = dataset.prune(c_name, 'capt-jack')
-   if err != '':
-       log.fatal(f&quot;prune error, {err}&quot;)
-</code></pre>
-
-<p>Keys can be used to filter and sort keys.  Here&rsquo;s is a simple case for match records
-where name is equal to
-&ldquo;Mojo Sam&rdquo;.</p>
-
-<pre><code class="language-python">    c_name = 'characters.ds'
-    keys = dataset.keys_filter(c_name, filter = '(eq .name &quot;Mojo Sam&quot;)')
-</code></pre>
-
-<p>You can take one list of keys and then do futher filtering using
-the <code>keys_filter()</code>.</p>
-
-<pre><code class="language-python">    keys = dataset.keys(c_name, filter = '(eq .name &quot;Mojo Sam&quot;)')
-    morroco_keys = dataset.keys_filter(c_name, keys, '(contains .title &quot;Morroco&quot;)')
-</code></pre>
-
-<p>Import can take a CSV file and store each row as a JSON document in dataset. A column
-needs to contain unique keys and that column is specified with the import command.</p>
-
-<pre><code class="language-python">    c_name = 'characters.ds'
-    err = dataset.init(c_name)
-    if err != '':
-        log.fatal(f&quot;init error, {err}&quot;)
-    err = dataset.import_csv(c_name, 'characters.csv', 1)
-    if err != '':
-        log.fatal(f&quot;import_csv error, {err}&quot;)
-</code></pre>
-
-<p>You can create a CSV export by providing the dot paths for each column and
-then givening columns a name.</p>
-
-<pre><code class="language-python">    err = dataset.export_csv(c_name, 'titles.csv', 'true', [ '.id', '.title', '.year'], ['id','title','publication year'])
-    if err != '':
-        log.fata(f&quot;export_csv error, {err}&quot;)
-</code></pre>
-
-<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
-
-<pre><code class="language-python">    err = dataset.export_csv(c_name, 'titles2016.csv', '(eq 2016 (year .pubDate))',
-           ['.id', '.title', '.year'], [ 'id', 'title', 'publication year']
-    if err != '':
-        log.fatal(f&quot;export_csv error, {err}&quot;)
-</code></pre>
-
-<p>Returning to our <em>friends.ds</em> collection. You can augement JSON key/value pairs for a
-JSON document in your collection using the join operation. This works similar to the
-datatools cli called jsonjoin.</p>
-
-<p>Let&rsquo;s assume you have a record in your collection with a key &lsquo;jane.doe&rsquo;. It has
-three fields - name, email, age.</p>
-
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42}
-</code></pre>
-
-<p>You also have an external JSON document called profile.json. It looks like</p>
-
-<pre><code class="language-json">    {&quot;name&quot;: &quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;bio&quot;: &quot;world renowned geophysist&quot;}
-</code></pre>
-
-<p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
-
-<pre><code class="language-python">    profile = read_json('profile.json')
-    err = dataset.join(c_name, 'jane.doe', 'update', profile)
-    if err != '':
-        log.fatal(f&quot;join error, {err}&quot;)
-</code></pre>
-
-<p>The result would look like</p>
-
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jd@example.org&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
-</code></pre>
-
-<p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
-
-<pre><code class="language-python">    profile = read_json('profile.json')
-    err = dataset.join(c_name, 'jane.doe', 'overwrite', profile)
-    if err != '':
-        log.fatal(f&quot;join error, {err}&quot;)
-</code></pre>
-
-<p>Which would result in a record like</p>
-
-<pre><code class="language-json">    {&quot;name&quot;:&quot;Doe, Jane&quot;, &quot;email&quot;: &quot;jane.doe@example.edu&quot;, &quot;age&quot;: 42, &quot;bio&quot;: &quot;renowned geophysist&quot;}
-</code></pre>
+<p><strong>TIP</strong>: Frames like collections have a number of operations. Here’s the list</p>
+
+<ol>
+<li><strong>frame</strong> will set you define a frame</li>
+<li><strong>frame</strong> will also let you read back a frame</li>
+<li><strong>frames</strong> will list the frames defined in the collection</li>
+<li><strong>frame-labels</strong> will let you replace the labels values for all columns in a frame</li>
+<li><strong>frame-types</strong> will let you replace the type values for all columns in a frame</li>
+<li><strong>delete-frame</strong> will remove the frame from the collection</li>
+</ol>
+
+<p>Continue exploring dataset with</p>
+
+<ul>
+<li>[Indexing and Search]()</li>
+<li>[Working with CSV]()</li>
+<li>[Working with GSheets]()</li>
+<li>[Working with Cloud Storage]()</li>
+</ul>
 
 </section>
 
