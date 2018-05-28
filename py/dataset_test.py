@@ -94,7 +94,7 @@ def test_keys(t, collection_name):
         t.error("Failed, expected zero records, got", cnt, key_list)
     
     #
-    # Generate multiple records for collection for testing keys and extract
+    # Generate multiple records for collection for testing keys
     #
     test_records = {
         "gutenberg:21489": {"title": "The Secret of the Island", "formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": "Jules", "family": "Verne"}], "url": "http://www.gutenberg.org/ebooks/21489", "categories": "fiction, novel"},
@@ -139,27 +139,6 @@ def test_keys(t, collection_name):
             t.error("Expected", k, "got", keys[i])
         i += 1
     
-#
-# test_extract(collection_name) tests extracting unique values form a collection based on a dot path
-#
-def test_extract(t, collection_name):
-    '''test_extract() tests extracting unique values form a collection based on a dot path'''
-    # Test extracting the family names
-    v, err = dataset.extract(collection_name, 'true', '.authors[:].family')
-    if err != '':
-        t.error('dataset.extract() returned an error', err)
-        return
-    if not isinstance(v, list):
-        t.error("Failed, expected a list, got", type(v), v)
-        return
-    
-    if len(v) != 4:
-        t.error("Failed expected list to be of length 4, got", len(v))
-    
-    targets = [ "Austin", "Fremont", "Twain", "Verne" ]
-    for s in targets:
-        if s not in v:
-            t.error("Failed, expected to find", s, "in", v)
 
 #
 # test_search(t, collection_name, index_map_name, index_name) tests indexer, deindexer and find funcitons
@@ -742,7 +721,6 @@ if __name__ == "__main__":
     test_runner.add(test_setup, [collection_name])
     test_runner.add(test_basic, [collection_name])
     test_runner.add(test_keys, [collection_name])
-    test_runner.add(test_extract, [collection_name])
     test_runner.add(test_search, [collection_name, "test_index_map.json", "test_index.bleve"])
     test_runner.add(test_issue32, [collection_name])
     test_runner.add(test_attachments, [collection_name])

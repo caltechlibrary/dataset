@@ -165,43 +165,6 @@ function test_gsheet() {
 	echo "Test gsheet support successful"
 }
 
-function test_keys_filter_extract() {
-    #unset DATASET
-	CNAME="test_keys_filter_extract.ds"
-	if [[ -d "$CNAME" ]]; then
-		rm -fR $CNAME
-	fi
-	bin/dataset -nl=false -quiet init $CNAME
-	if [[ ! -d "$CNAME" ]]; then
-		echo "Should have created $CNAME"
-		exit 1
-	fi
-	bin/dataset -quiet -nl=false "$CNAME" create freda '{"name":"freda","email":"freda@inverness.example.org", "cigars": "havana"}'
-	bin/dataset -quiet -nl=false "$CNAME" create jack '{"name":"jack","phone":"1-234-567-8901"}'
-	bin/dataset -quiet -nl=false "$CNAME" create mojo '{"name":"mojo","aka":"the Youdo Man", "specialty":"Jazz Yoga and Piano"}'
-	I="$(bin/dataset -nl=false "$CNAME" count)"
-	if [[ "$I" != "3" ]]; then
-		echo "Failed to add freda record $CNAME, count is $I"
-		exit 1
-	fi
-	K="$(bin/dataset -nl=false "$CNAME" keys '(eq "freda" .name)')"
-	if [[ "$K" != "freda" ]]; then
-		echo "Should have one key, freda, in $CNAME"
-		exit 1
-	fi
-	V="$(bin/dataset -nl=false "$CNAME" extract 'true' '.name' | sort | tr -s "\n" " ")"
-	if [[ "$V" != "freda jack mojo " ]]; then
-		echo "Should extract find 'freda jack mojo' in $CNAME got '${V}'"
-		exit 1
-	fi
-	V="$(bin/dataset -nl=false "$CNAME" extract 'true' '.cigars' | sort | tr -s "\n" " ")"
-	if [[ "$V" != "havana " ]]; then
-		echo "Should extracted 'havana ' for .cigars in $CNAME got '$V'"
-		exit 1
-	fi
-	echo "Test issue 15 fix OK"
-	rm -fR "$CNAME"
-}
 
 function test_issue19() {
 	if [[ -d "test_issue19.ds" ]]; then
@@ -682,7 +645,6 @@ EOT
 echo "Testing command line tools"
 test_dataset
 test_gsheet
-test_keys_filter_extract
 test_issue19
 test_readme
 test_getting_started

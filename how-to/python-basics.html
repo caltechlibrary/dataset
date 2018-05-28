@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h2>Python Basics</h2>
+
+<p>This is an example of creating a dataset called <em>fiends.ds</em>, saving
+a record called &ldquo;littlefreda.json&rdquo; and reading it back.</p>
+
+<pre><code class="language-python">    import sys
+    import json
+    import dataset
+
+    c_name = 'friends.ds'
+    err = dataset.init(c_name)
+    if err != '':
+        print(f&quot;init error, {err}&quot;)
+        sys.exit(1)
+    key = 'littlefreda'
+    record = {&quot;name&quot;:&quot;Freda&quot;,&quot;email&quot;:&quot;little.freda@inverness.example.org&quot;}
+    err = dataset.create(c_name, key, record)
+    if err != '':
+        print(f&quot;create error, {err}&quot;)
+        sys.exit(1)
+    keys = dataset.keys(c_name)
+    for key in keys:
+        p = dataset.path(c_name, key)
+        print(p)
+        record, err := dataset.read(c_name, key)
+        if err != '':
+            print(f&quot;read error, {err}&quot;)
+            sys.exit(1)
+        print(f&quot;Doc: {record}&quot;)
+</code></pre>
+
+<p>Notice that the command <code>dataset.init(c_name)</code> and <code>dataset.create(c_name, key)</code>. Many of
+the dataset command will require the collection name as the first parameter.  Likewise
+many also return a tuple where the first value is the object you are fetching and the second
+part of the tuple is any error messages.</p>
+
+<p>Now check to see if the key, littlefreda, is in the collection</p>
+
+<pre><code class="language-python">   dataset.haskey(c_name, 'littlefreda')
+</code></pre>
+
+<p>You can also read your JSON formatted data from a file or standard input.
+In this example we are creating a mojosam record and reading back the contents
+of fiends.ds</p>
+
+<pre><code class="language-python">   dataset -i mojosam.json create mojosam
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+<p>Or similarly using a Unix pipe to create a &ldquo;capt-jack&rdquo; JSON record.</p>
+
+<pre><code class="language-python">   cat capt-jack.json | dataset create capt-jack
+   for KY in $(dataset keys); do
+      echo &quot;Path: $(dataset path $KY) 
+      echo &quot;Doc: $(dataset read $KY)
+   done
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

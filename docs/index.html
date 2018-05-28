@@ -13,8 +13,13 @@
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
 <li><a href="./">Documentation</a></li>
-<li><a href="topics.html">topics</a></li>
+<li><a href="../how-to/">Tutorials</a></li>
+<li><a href="topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
@@ -22,27 +27,24 @@
 <section>
 <h1>Documentation for dataset</h1>
 
-<p>The documentation generallyis organized by command line programs
-but a more explority approach can be taken by the list below</p>
+<p>The documentation is organized around the command line options and as a series
+of &ldquo;how to&rdquo; style examples.</p>
 
 <ul>
-<li><a href="getting-started-with-dataset.html">getting started with dataset</a></li>
-<li><a href="../how-to/">how to</a> &ndash; task oriented</li>
+<li><a href="../how-to/getting-started-with-dataset.html">getting started with dataset</a> (covers both Bash and Python)</li>
+<li>Explore additional other <a href="../how-to/">tutorials</a></li>
 </ul>
 
 <h2>Command line program documentation</h2>
 
 <ul>
-<li><a href="dataset/">dataset</a> - the command line tool for managing <em>dataset</em> collections</li>
+<li><a href="dataset.html">dataset</a> - usage page for managing collections with <em>dataset</em></li>
 </ul>
 
 <h2>Internal project concepts</h2>
 
 <ul>
-<li><a href="file-system-layout.html">file system layout</a> - Describes how collections are organized</li>
-<li><a href="defining-indexes.html">defining indexes</a> - Describes the index definition JSON document format</li>
-<li><a href="cloud-storage.html">cloud storage</a> - Describes using Cloud Storage (e.g. Amazon S3, Google Cloud Storage)</li>
-<li><a href="gsheet-integration.html">Google Spreadsheet integration</a> - describes how to setup import/export access to a Google Spreadsheet</li>
+<li><a href="../how-to/file-system-layout.html">file system layout</a> - Describes how collections are organized</li>
 </ul>
 
 <h2><em>dataset</em> Operations</h2>
@@ -52,55 +54,63 @@ but a more explority approach can be taken by the list below</p>
 <h3>Collection Level</h3>
 
 <ul>
-<li><a href="dataset/init.html">init</a> creates a collection</li>
-<li><a href="dataset/import-csv.html">import-csv</a> JSON documents from rows of a CSV file</li>
-<li><a href="dataset/import.html">import-gsheet</a> JSON documents from rows of a Google Sheet</li>
-<li><a href="dataset/export-csv.html">export-csv</a> JSON documents from a collection into a CSV file</li>
-<li><a href="dataset/export-gsheet.html">export-gsheet</a> JSON documents from a collection into a Google Sheet</li>
-<li><a href="dataset/keys.html">keys</a> list keys of JSON documents in a collection, supports filtering and sorting</li>
-<li><a href="dataset/haskey.html">haskey</a> returns true if key is found in collection, false otherwise</li>
-<li><a href="dataset/count.html">count</a> returns the number of documents in a collection, supports filtering for subsets</li>
-<li><a href="dataset/extract.html">extract</a> unique JSON attribute values from a collection</li>
-<li><a href="dataset/grid.html">grid</a> create a 2D grid of data from keys and dot paths in a collection</li>
-<li><a href="collections-grids-and-frames.html">data frame support</a> provides a persistant grid plus metadata associated with the collection
+<li><a href="init.html">init</a> creates a collection</li>
+<li><a href="import-csv.html">import-csv</a> JSON documents from rows of a CSV file</li>
+<li><a href="import.html">import-gsheet</a> JSON documents from rows of a Google Sheet</li>
+<li><a href="export-csv.html">export-csv</a> JSON documents from a collection into a CSV file</li>
+<li><a href="export-gsheet.html">export-gsheet</a> JSON documents from a collection into a Google Sheet</li>
+<li><a href="keys.html">keys</a> list keys of JSON documents in a collection, supports filtering and sorting</li>
+<li><a href="haskey.html">haskey</a> returns true if key is found in collection, false otherwise</li>
+<li><a href="count.html">count</a> returns the number of documents in a collection, supports filtering for subsets</li>
+<li><a href="extract.html">extract</a> unique JSON attribute values from a collection</li>
+<li><a href="grid.html">grid</a> create a 2D grid of data from keys and dot paths in a collection</li>
+<li><a href="../how-to/collections-grids-and-frames.html">data frame support</a> provides a persistant grid plus metadata associated with the collection
 
 <ul>
-<li><a href="dataset/frame.html">frame</a></li>
-<li><a href="dataset/frames.html">frames</a></li>
-<li><a href="dataset/reframe.html">reframe</a></li>
-<li><a href="dataset/frame-labels.html">frame-labels</a></li>
-<li><a href="dataset/frame-types.html">frame-types</a></li>
-<li><a href="dataset/delete-frame.html">delete-frame</a></li>
+<li><a href="frame.html">frame</a></li>
+<li><a href="frames.html">frames</a></li>
+<li><a href="reframe.html">reframe</a></li>
+<li><a href="frame-labels.html">frame-labels</a></li>
+<li><a href="frame-types.html">frame-types</a></li>
+<li><a href="delete-frame.html">delete-frame</a></li>
 </ul></li>
 </ul>
 
 <h3>JSON Document level</h3>
 
 <ul>
-<li><a href="dataset/create.html">create</a> a JSON document in a collection</li>
-<li><a href="dataset/read.html">read</a> back a JSON document in a collection</li>
-<li><a href="dataset/update.html">update</a> a JSON document in a collection</li>
-<li><a href="dataset/delete.html">delete</a> a JSON document in a collection</li>
-<li><a href="dataset/join.html">join</a> a JSON document with a document in a collection</li>
-<li><a href="dataset/list.html">list</a> the lists JSON records as an array for the supplied keys</li>
-<li><a href="dataset/path.html">path</a> list the file path for a JSON document in a collection</li>
+<li><a href="create.html">create</a> a JSON document in a collection</li>
+<li><a href="read.html">read</a> back a JSON document in a collection</li>
+<li><a href="update.html">update</a> a JSON document in a collection</li>
+<li><a href="delete.html">delete</a> a JSON document in a collection</li>
+<li><a href="join.html">join</a> a JSON document with a document in a collection</li>
+<li><a href="list.html">list</a> the lists JSON records as an array for the supplied keys</li>
+<li><a href="path.html">path</a> list the file path for a JSON document in a collection</li>
 </ul>
 
 <h3>JSON Document Attachments</h3>
 
 <ul>
-<li><a href="dataset/attach.html">attach</a> a file to a JSON document in a collection</li>
-<li><a href="dataset/attachments.html">attachments</a> lists the files attached to a JSON document in a collection</li>
-<li><a href="dataset/detach.html">detach</a> retrieve an attached file associated with a JSON document in a collection</li>
-<li><a href="dataset/prune.html">prune</a> delete one or more attached files of a JSON document in a collection</li>
+<li><a href="attach.html">attach</a> a file to a JSON document in a collection</li>
+<li><a href="attachments.html">attachments</a> lists the files attached to a JSON document in a collection</li>
+<li><a href="detach.html">detach</a> retrieve an attached file associated with a JSON document in a collection</li>
+<li><a href="prune.html">prune</a> delete one or more attached files of a JSON document in a collection</li>
 </ul>
 
 <h3>Search</h3>
 
 <ul>
-<li><a href="dataset/indexer.html">indexer</a> indexes JSON documents in a collection for searching with <em>find</em></li>
-<li><a href="dataset/deindexer.html">deindexer</a> de-indexes (removes) JSON documents from an index</li>
-<li><a href="dataset/find.html">find</a> provides a search indexed full text interface into a collection</li>
+<li><a href="indexer.html">indexer</a> indexes JSON documents in a collection for searching with <em>find</em></li>
+<li><a href="deindexer.html">deindexer</a> de-indexes (removes) JSON documents from an index</li>
+<li><a href="find.html">find</a> provides a search indexed full text interface into a collection</li>
+</ul>
+
+<h3>Samples and cloning</h3>
+
+<ul>
+<li><a href="sample.html">sample</a> - getting a random sample of keys</li>
+<li><a href="clone.html">clone</a> - clone a repository</li>
+<li><a href="clone-sample.html">clone-sample</a> - cloning a respository into training and test collections</li>
 </ul>
 
 </section>

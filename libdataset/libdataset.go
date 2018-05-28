@@ -373,29 +373,6 @@ func count(cName *C.char) C.int {
 	return C.int(i)
 }
 
-//export extract
-func extract(cName, filterExpr, dotExpr *C.char) *C.char {
-	collectionName := C.GoString(cName)
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		return C.CString("")
-	}
-	defer c.Close()
-	values, err := c.Extract(C.GoString(filterExpr), C.GoString(dotExpr))
-	if err != nil {
-		error_dispatch(err, "Extract failed for %s, %q, %q:  %s", collectionName, filterExpr, dotExpr, err)
-		return C.CString("")
-	}
-	src, err := json.Marshal(values)
-	if err != nil {
-		error_dispatch(err, "Can't marshal extracted values for %s, %s", collectionName, err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
-	return C.CString(txt)
-}
-
 //export indexer
 func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.int) C.int {
 	collectionName := C.GoString(cName)

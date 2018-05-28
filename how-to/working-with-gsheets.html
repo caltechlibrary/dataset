@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Google Spreadsheet Integration</h1>
+
+<p><em>dataset</em> provides for importing from and export to a Google spreadsheet (i.e. GSheet).
+This does require some setup for this to work.  <em>dataset</em> needs to beable to access
+the Google Sheets API for reading and writing. You can find documentation on setting
+up access in &ldquo;step 1&rdquo; at <a href="https://developers.google.com/sheets/api/quickstart/go">https://developers.google.com/sheets/api/quickstart/go</a>.</p>
+
+<p>You&rsquo;ll need a &ldquo;client_secret.json&rdquo; file and OAuth authorization for access to be permitted.
+If credentials for the OAuth part are usually stored in your <code>$HOME/.credentials</code> directory
+as sheets.googleapis.com-dataset.json.  If this file doesn&rsquo;t exist then the first time you
+run the <em>dataset</em> command with a GSheet option it&rsquo;ll prompt you to use your web browser
+to authorize <em>dataset</em> to access your Google spreadsheet.</p>
+
+<h2>FIXME: need to walk through a couple use cases so it makes sense to most people</h2>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

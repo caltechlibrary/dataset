@@ -20,10 +20,7 @@ package dataset
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
-	"path"
-	"strings"
 	"testing"
 )
 
@@ -229,101 +226,6 @@ func TestCollection(t *testing.T) {
 	}
 }
 
-func TestExtract(t *testing.T) {
-	colName := "testdata/test_extract.ds"
-	os.RemoveAll(colName)
-	c, err := InitCollection(colName)
-	if err != nil {
-		t.Errorf("failed to create %s, %s", colName, err)
-		t.FailNow()
-	}
-	if err := c.CreateJSON("gutenberg:21489", []byte(`{"title": "The Secret of the Island", "formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": "Jules", "family": "Verne"}], "url": "http://www.gutenberg.org/ebooks/21489"}`)); err != nil {
-		t.Errorf("Can't add record %s", err)
-		t.FailNow()
-	}
-	if err := c.CreateJSON("gutenberg:2488", []byte(`{"title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}`)); err != nil {
-		t.Errorf("Can't add record %s", err)
-		t.FailNow()
-	}
-	if err := c.CreateJSON("gutenberg:21839", []byte(`{ "title": "Sense and Sensibility", "formats": ["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": "Austin"}], "url": "http://www.gutenberg.org/ebooks/21839" }`)); err != nil {
-		t.Errorf("Can't add record %s", err)
-		t.FailNow()
-	}
-	if err := c.CreateJSON("gutenberg:3186", []byte(`{"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186"}`)); err != nil {
-		t.Errorf("Can't add record %s", err)
-		t.FailNow()
-	}
-	if err := c.CreateJSON("hathi:uc1321060001561131", []byte(`{ "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9" }`)); err != nil {
-		t.Errorf("Can't add record %s", err)
-		t.FailNow()
-	}
-	if i := c.Length(); i != 5 {
-		t.Errorf("Expected 5 records, got %d", i)
-		t.FailNow()
-	}
-	keys := c.Keys()
-	if len(keys) != 5 {
-		t.Errorf("Expected 5 keys, got %+v\n", keys)
-		t.FailNow()
-	}
-
-	l, err := c.Extract("true", ".authors[:].family")
-	if err != nil {
-		t.Errorf("Can't extract values, %s", err)
-	}
-	if len(l) != 4 {
-		t.Errorf("expected four author last names, %+v", l)
-	}
-	for _, target := range []string{"Verne", "Austin", "Twain", "Fremont"} {
-		found := false
-		for _, v := range l {
-			if v == target {
-				found = true
-				break
-			}
-		}
-		if found == false {
-			t.Errorf("Could not find %s in list %+v", target, l)
-		}
-	}
-
-	src := []byte(`[
-{"authorAffiliation":"California Institute of Technology","authorName":"Roberts, Ellis Earl"},
-{"authorAffiliation":["Ariane Tracking Station, Ascension Island (SH)"],"authorName":"John, N."},
-{"authorAffiliation":["California Institute of Technology, Pasadena, CA (US)"],"authorName":"Yavin, Y."},
-{"authorAffiliation":["California Institute of Technology, Pasadena, CA, USA","University of Toronto, Toronto, ON, CAN"],"authorIdentifiers":[{"authorIdentifier":"0000-0003-2025-7519","authorIdentifierScheme":"ORCID"}],"authorName":"Jacob Hedelius"},
-{"authorAffiliation":["California Institute of Technology, Pasadena, CA, USA"],"authorIdentifiers":[{"authorIdentifier":"0000-0002-6126-3854","authorIdentifierScheme":"ORCID"},{"authorIdentifier":"A-5460-2012","authorIdentifierScheme":"ResearcherID"}],"authorName":"Paul Wennberg"},
-{"authorAffiliation":["Caltech Library"],"authorIdentifiers":[{"authorIdentifier":"0000-0003-0900-6903","authorIdentifierScheme":"ORCID"}],"authorName":"Doiel,Robert"},
-{"authorAffiliation":["Caltech"],"authorName":"Doiel, Robert"},
-{"authorAffiliation":["Wisconsin Educational Communications Board, Park Falls, WI (US)"],"authorName":"Ayers, J."},
-{"authorName":"Neufeld, G."},
-{"authorName":"Springett, S."},
-{"authorName":"Yavin, Y."}
-]`)
-	data := []map[string]interface{}{}
-	err = json.Unmarshal(src, &data)
-	if err != nil {
-		t.Errorf("Can't unmarshal test data, %s", err)
-		t.FailNow()
-	}
-	for i, rec := range data {
-		if err := c.Create(fmt.Sprintf("%d", i), rec); err != nil {
-			t.Errorf("Can't create %d in %s, %s", i, c.Name, err)
-		}
-
-	}
-	lines, err := c.Extract("true", ".authorAffiliation[:]")
-	if err != nil {
-		t.Errorf("Can't extract .authorAffiliation[:] from %s, %s", c.Name, err)
-	}
-	for i, line := range lines {
-		//fmt.Printf("DEBUG line (%d): %q\n", i, line)
-		if strings.HasPrefix(line, "[") == true {
-			t.Errorf("%d started as an array, %s, expecting simple string", i, line)
-		}
-	}
-}
-
 func TestComplexKeys(t *testing.T) {
 	colName := "testdata/col2.ds"
 	buckets := generateBucketNames("ab", 2)
@@ -377,55 +279,6 @@ func TestComplexKeys(t *testing.T) {
 		if err != nil {
 			t.Errorf("Can't create %s <-- %s : %s", k, v, err)
 		}
-	}
-}
-
-func TestExtractOverVariableSchema(t *testing.T) {
-	src := []byte(`[
-{"name": "one", "test_path": 1},
-{"name": "two", "field": "B"},
-{"name": "three", "field": "C", "test_path": 2, "and_the_other_thing":true}
-]`)
-
-	data := []map[string]interface{}{}
-	err := json.Unmarshal(src, &data)
-	if err != nil {
-		t.Errorf("Can't generate tests records, %s", err)
-		t.FailNow()
-	}
-	cName := path.Join("testdata", "extract_test.ds")
-	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
-	if err != nil {
-		t.Errorf("Can't create %s, %s", cName, err)
-		t.FailNow()
-	}
-	for i, rec := range data {
-		err = c.Create(fmt.Sprintf("%d", i), rec)
-		if err != nil {
-			t.Errorf("Can't create record %d in %s, %s", i, c.Name, err)
-		}
-	}
-	result, err := c.Extract("true", ".field")
-	if err != nil {
-		t.Errorf("Expected no error for .field in %s, got %s", c.Name, err)
-	}
-	if len(result) != 2 {
-		t.Errorf("expected 2 values, got %+v", result)
-	}
-	result, err = c.Extract("true", ".field_does_not_exist")
-	if err != nil {
-		t.Errorf("Expected no error for .field_does_not_exist in %s, got %s", c.Name, err)
-	}
-	if len(result) > 0 {
-		t.Errorf("Expected an empty result for .field_does_not_exist, got %+v", result)
-	}
-	result, err = c.Extract("true", ".name")
-	if len(result) != 3 {
-		t.Errorf("Expected three values for .name, got %+v", result)
-	}
-	if err != nil {
-		t.Errorf("Expected no errors for .name in %s, got, %s", c.Name, err)
 	}
 }
 

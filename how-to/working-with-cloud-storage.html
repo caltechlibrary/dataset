@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>Cloud Storage</h1>
+
+<p>These days it is often useful to leverage cloud storage. <em>dataset</em> currently supports Amazon&rsquo;s
+cloud storage and Google&rsquo;s cloud storage sollutions. These can be configured through the
+setting the DATASET environment variable or via the command line. The buckets for either Amazon
+or Google need to have already been setup including authenticated configs (e.g. with the aws or gsutil
+tools respectively).  The aws tool is available
+<a href="https://aws.amazon.com/cli">here</a>, and can be set up using <code>aws configure</code> and
+entering the Access key information from your AWS user accounts page (under
+&ldquo;Security credentials&rdquo;.  If the prefix for the path to the collection is prefixed with s3:// then the
+collection is stored at AWS S3, if the prefix is gs:// then it is stored on Google Cloud Storage and
+if there is now prefix it is stored on local disc.</p>
+
+<h2>Local Storage setup</h2>
+
+<pre><code class="language-shell">    #!/bin/bash
+    
+    #
+    # Local Disc setup
+    #
+    export DATASET=&quot;my-test-bucket&quot;
+</code></pre>
+
+<h2>S3 Storage setup</h2>
+
+<pre><code class="language-shell">    #!/bin/bash
+    
+    #
+    # S3 test setup example
+    #
+    
+    # Load the config and credentials in ~/.aws if found
+    export AWS_SDK_LOAD_CONFIG=1
+    # You will need to define your bucket name
+    export DATASET=&quot;s3://my-test-bucket&quot;
+</code></pre>
+
+<h2>GS Storage setup</h2>
+
+<pre><code class="language-shell">    #!/bin/bash
+    
+    #
+    # Google Cloud Storage test setup example
+    #
+    export DATASET=&quot;gs://my-test-bucket&quot;
+</code></pre>
+
+<h1>Use <em>dataset</em> with S3</h1>
+
+<p><em>dataset</em> now support integration with S3 storage.  Store <em>dataset</em> content on AWS S3 you should
+download and install the <a href="https://aws.amazon.com/cli/">aws cli sdk</a>, setup your buckets and
+configure permissions, access keys, etc.  <em>dataset</em> will use your local SDK&rsquo;s configuration
+(e.g. $HOME/.aws) to configure the connection. You need only set one environment variable,
+run the <em>dataset</em> init option and add the resulting suggested environment variable for working
+with your dataset stored at S3.</p>
+
+<h2>Basic steps</h2>
+
+<ol>
+<li>Set AWS_SDK__LOAD_CONFIG environment variable</li>
+<li>Envoke the dataaset init command with your &ldquo;s3://&rdquo; URL appended with your collectio name</li>
+<li>Set DATASET environment variable</li>
+</ol>
+
+<p>In the following shell example our bucket is called &ldquo;dataset.library.exampl.edu&rdquo; and our dataset
+collection is called &ldquo;mycollection&rdquo;.</p>
+
+<pre><code class="language-shell">    export AWS_SDK_LOAD_CONFIG=1
+    dataset init s3://dataset.library.example.edu/mycollection
+    export DATASET=s3://dataset.library.example.edu/mycollection
+</code></pre>
+
+<p>We can now create a JSON record to add called &ldquo;waldo&rdquo; and add it to our
+collection.</p>
+
+<pre><code class="language-shell">    cat&lt;&lt;EOT&gt;waldo-reading.json
+    {
+        &quot;reader&quot;:&quot;Waldo&quot;,
+        &quot;author&quot;:&quot;Robert Louis Stevenson&quot;,
+        &quot;title&quot;:&quot;The Black Arrow&quot;,
+        &quot;url&quot;:&quot;https://www.gutenberg.org/ebooks/848&quot;
+    }
+    EOT
+    cat waldo-reading.json | dataset create waldo-reading
+</code></pre>
+
+<p>List the keys in our dataset</p>
+
+<pre><code class="language-shell">    dataset list keys
+</code></pre>
+
+<p>Now let&rsquo;s download a copy of what Waldo is reading and attach it to our &ldquo;waldo-reading&rdquo; record.</p>
+
+<pre><code class="language-shell">    curl -O https://www.gutenberg.org/ebooks/848.txt.utf-8
+    dataset attach waldo-reading 848.txt.utf-8
+</code></pre>
+
+<p>To check out attachments</p>
+
+<pre><code class="language-shell">    dataset attachments waldo-reading
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

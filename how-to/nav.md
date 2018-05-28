@@ -5,6 +5,7 @@
 + [LICENSE](../license.html)
 + [INSTALL](../install.html)
 + [Documentation](../docs/)
-+ [How To](./)
++ [Tutorials](./)
++ [Topics](../docs/topics.html)
 + [Github](https://github.com/caltechlibrary/dataset)
 

@@ -102,7 +102,6 @@ var (
 		"grid":          makeGrid,
 		"import-csv":    importCSV,
 		"export-csv":    exportCSV,
-		"extract":       extract,
 		"check":         checkCollection,
 		"repair":        repairCollection,
 		"import-gsheet": importGSheet,
@@ -966,23 +965,6 @@ func exportCSV(params ...string) (string, error) {
 	return "OK", nil
 }
 
-// extract returns a list of unique values from nested arrays across collection based on
-// the filter expression provided.
-func extract(params ...string) (string, error) {
-	collection, err := dataset.Open(collectionName)
-	if err != nil {
-		return "", err
-	}
-	defer collection.Close()
-	if len(params) < 2 {
-		return "", fmt.Errorf("syntax: %s extract FILTER_EXPR DOTPATH_EXPR", path.Base(os.Args[0]))
-	}
-	filterExpr := strings.TrimSpace(params[0])
-	dotExpr := strings.TrimSpace(params[1])
-	lines, err := collection.Extract(filterExpr, dotExpr)
-	return strings.Join(lines, "\n"), err
-}
-
 // indexer replaces dsindexer command and is used to build a Bleve index for a collection
 func indexer(params ...string) (string, error) {
 	var (
@@ -1543,9 +1525,8 @@ func main() {
 	app.AddVerb("attachments", "List of attachments associated with a JSON record in a collection")
 	app.AddVerb("detach", "Copy an attach out of an associated JSON record in a collection")
 	app.AddVerb("prune", "Remove attachments from a JSON record in a collection")
-	app.AddVerb("import", "Import a CSV file's rows as JSON records into a collection")
-	app.AddVerb("export", "Export a JSON records from a collection to a CSV file")
-	//app.AddVerb("extract", "(experimental) Extract unique values from JSON records in a collection based on a dot path expression")
+	app.AddVerb("import-csv", "Import a CSV file's rows as JSON records into a collection")
+	app.AddVerb("export-csv", "Export a JSON records from a collection to a CSV file")
 	app.AddVerb("check", "Check the health of a dataset collection")
 	app.AddVerb("repair", "Try to repair a damaged dataset collection")
 	app.AddVerb("import-gsheet", "Import a GSheet rows as JSON records into a collection")

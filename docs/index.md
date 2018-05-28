@@ -1,22 +1,19 @@
 
 # Documentation for dataset
 
-The documentation generallyis organized by command line programs
-but a more explority approach can be taken by the list below
+The documentation is organized around the command line options and as a series
+of "how to" style examples.
 
-+ [getting started with dataset](getting-started-with-dataset.html)
-+ [how to](../how-to/) -- task oriented
++ [getting started with dataset](../how-to/getting-started-with-dataset.html) (covers both Bash and Python)
++ Explore additional other [tutorials](../how-to/)
 
 ## Command line program documentation
 
-+ [dataset](dataset/) - the command line tool for managing _dataset_ collections
++ [dataset](dataset.html) - usage page for managing collections with _dataset_
 
 ## Internal project concepts
 
-+ [file system layout](file-system-layout.html) - Describes how collections are organized
-+ [defining indexes](defining-indexes.html) - Describes the index definition JSON document format
-+ [cloud storage](cloud-storage.html) - Describes using Cloud Storage (e.g. Amazon S3, Google Cloud Storage)
-+ [Google Spreadsheet integration](gsheet-integration.html) - describes how to setup import/export access to a Google Spreadsheet 
++ [file system layout](../how-to/file-system-layout.html) - Describes how collections are organized
 
 ## _dataset_ Operations
 
@@ -24,45 +21,50 @@ The basic operations support by *dataset* are listed below organized by collecti
 
 ### Collection Level
 
-+ [init](dataset/init.html) creates a collection
-+ [import-csv](dataset/import-csv.html) JSON documents from rows of a CSV file
-+ [import-gsheet](dataset/import.html) JSON documents from rows of a Google Sheet
-+ [export-csv](dataset/export-csv.html) JSON documents from a collection into a CSV file
-+ [export-gsheet](dataset/export-gsheet.html) JSON documents from a collection into a Google Sheet
-+ [keys](dataset/keys.html) list keys of JSON documents in a collection, supports filtering and sorting
-+ [haskey](dataset/haskey.html) returns true if key is found in collection, false otherwise
-+ [count](dataset/count.html) returns the number of documents in a collection, supports filtering for subsets
-+ [extract](dataset/extract.html) unique JSON attribute values from a collection
-+ [grid](dataset/grid.html) create a 2D grid of data from keys and dot paths in a collection
-+ [data frame support](collections-grids-and-frames.html) provides a persistant grid plus metadata associated with the collection
-    + [frame](dataset/frame.html)
-    + [frames](dataset/frames.html)
-    + [reframe](dataset/reframe.html)
-    + [frame-labels](dataset/frame-labels.html)
-    + [frame-types](dataset/frame-types.html)
-    + [delete-frame](dataset/delete-frame.html)
++ [init](init.html) creates a collection
++ [import-csv](import-csv.html) JSON documents from rows of a CSV file
++ [import-gsheet](import.html) JSON documents from rows of a Google Sheet
++ [export-csv](export-csv.html) JSON documents from a collection into a CSV file
++ [export-gsheet](export-gsheet.html) JSON documents from a collection into a Google Sheet
++ [keys](keys.html) list keys of JSON documents in a collection, supports filtering and sorting
++ [haskey](haskey.html) returns true if key is found in collection, false otherwise
++ [count](count.html) returns the number of documents in a collection, supports filtering for subsets
++ [extract](extract.html) unique JSON attribute values from a collection
++ [grid](grid.html) create a 2D grid of data from keys and dot paths in a collection
++ [data frame support](../how-to/collections-grids-and-frames.html) provides a persistant grid plus metadata associated with the collection
+    + [frame](frame.html)
+    + [frames](frames.html)
+    + [reframe](reframe.html)
+    + [frame-labels](frame-labels.html)
+    + [frame-types](frame-types.html)
+    + [delete-frame](delete-frame.html)
 
 ### JSON Document level
 
-+ [create](dataset/create.html) a JSON document in a collection
-+ [read](dataset/read.html) back a JSON document in a collection
-+ [update](dataset/update.html) a JSON document in a collection
-+ [delete](dataset/delete.html) a JSON document in a collection
-+ [join](dataset/join.html) a JSON document with a document in a collection
-+ [list](dataset/list.html) the lists JSON records as an array for the supplied keys
-+ [path](dataset/path.html) list the file path for a JSON document in a collection
++ [create](create.html) a JSON document in a collection
++ [read](read.html) back a JSON document in a collection
++ [update](update.html) a JSON document in a collection
++ [delete](delete.html) a JSON document in a collection
++ [join](join.html) a JSON document with a document in a collection
++ [list](list.html) the lists JSON records as an array for the supplied keys
++ [path](path.html) list the file path for a JSON document in a collection
 
 ### JSON Document Attachments
 
-+ [attach](dataset/attach.html) a file to a JSON document in a collection
-+ [attachments](dataset/attachments.html) lists the files attached to a JSON document in a collection
-+ [detach](dataset/detach.html) retrieve an attached file associated with a JSON document in a collection
-+ [prune](dataset/prune.html) delete one or more attached files of a JSON document in a collection
++ [attach](attach.html) a file to a JSON document in a collection
++ [attachments](attachments.html) lists the files attached to a JSON document in a collection
++ [detach](detach.html) retrieve an attached file associated with a JSON document in a collection
++ [prune](prune.html) delete one or more attached files of a JSON document in a collection
 
 ### Search
 
-+ [indexer](dataset/indexer.html) indexes JSON documents in a collection for searching with _find_
-+ [deindexer](dataset/deindexer.html) de-indexes (removes) JSON documents from an index
-+ [find](dataset/find.html) provides a search indexed full text interface into a collection
++ [indexer](indexer.html) indexes JSON documents in a collection for searching with _find_
++ [deindexer](deindexer.html) de-indexes (removes) JSON documents from an index
++ [find](find.html) provides a search indexed full text interface into a collection
 
+### Samples and cloning
+
++ [sample](sample.html) - getting a random sample of keys
++ [clone](clone.html) - clone a repository
++ [clone-sample](clone-sample.html) - cloning a respository into training and test collections
 

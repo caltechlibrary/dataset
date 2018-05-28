@@ -5,11 +5,11 @@
 
 Compiler requirements
 
-+ go1.10
++ go1.10.2 or better
 
 Package assumptions
 
-+ blevesearch v0.6.0
++ blevesearch v0.7.0
 
 ## Recommend
 
@@ -220,8 +220,6 @@ At this has not been necessary to vendor any packages assuming you're building f
     + github.com/aws/aws-sdk-go/service/s3
     + github.com/aws/aws-sdk-go/service/s3/s3iface
     + github.com/aws/aws-sdk-go/service/s3/s3manager
-+ [Google UUID]() - for generating UUID when importing from CSV
-    + [github.com/google/uuid](github.com/google/uuid)
 + [Markdown packages] - used to support rendering Markdown embedded in JSON objects
     + [github.com/microcosm-cc/bluemonday](https://github.com/microcosm-cc/bluemonday)
     + [github.com/russross/blackfriday](https://github.com/russross/blackfriday)

@@ -1,17 +1,26 @@
 
-# How To...
+# Toturials and How To...
 
-How to documentation for _dataset_
+Here is a small collection of pages to help you get started
+with _dataset_ or explore a specific topic.
 
-+ [Basics](basics.html)
-+ [Workflows](a-workflow.html)
-+ [Use dataset with S3](use-dataset-with-s3.html)
-+ [Data Grids](data-grids.html) (creating a 2d array from collection records)
-+ [Import CSV rows as JSON documenents](import-csv-rows-as-json-documents.html)
-+ [Reshape JSON collections](reshape-json-collections.html) (updating the individual JSON records shape)
-+ [Searchable Datasets](searchable-datasets.html) using Bleve indexes with _dataset indexer_ and _dataset find_
-+ [Extracting values](extracting-values.html) from a collection
-+ [Filter keys](filtering-keys.html)
-+ [Joining Objects](joining-objects.html)
-+ [Managing attachments](managing-attachments.html)
+## A short reading list
+
+- [Getting started with dataset](getting-started-with-dataset.html)
+- [Indexing and Search](indexing-and-search.html)
+- [Working with CSV](working-with-csv.html)
+- [Working with GSheets](working-with-gsheets.html)
+- [Working with Cloud Storage](working-with-cloud-storage.html)
+
+
+## Additional topics
+
+- [Cloning and samples](cloning-and-samples.html)
+- [Collections grids and frames](collections-grids-and-frames.html)
+- [File system layout](file-system-layout.html)
+- [Filtering keys](filtering-keys.html)
+- [Joining objects](joining-objects.html)
+- [Managing attachments](managing-attachments.html)
+- [Reshape JSON collections](reshape-json-collections.html)
+- [Taking Samples](taking-samples.html)
 
