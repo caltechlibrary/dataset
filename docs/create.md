@@ -28,5 +28,5 @@ create is _r1_. Collection is "people.ds".  The following are equivalent in resu
     dataset people.ds create r1 '{"name":"Jane Doe"}'
 ```
 
-Related topics: update, read, and delete
+Related topics: [update](update.html), [read](read.html), and [delete](delete.html)
 

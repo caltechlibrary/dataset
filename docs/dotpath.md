@@ -1,5 +1,4 @@
 
-
 # dotpath 
 
 ## Description
@@ -52,4 +51,5 @@ You would reference the title with `.title`, the first author's family name with
 `.authors[0].family_name` or get an array of authors family names with 
 `.authors[:].fmaily_name`.
 
+Related topics: [export-csv](export-csv.html), [frame](frame.html), [grid](grid.html), [import-csv](import-csv.html), [indexer](indexer.html)
 

@@ -31,3 +31,5 @@ The collection name is "people.ds".
     cat jane-doe.json | dataset people.ds update jane.doe
 ```
 
+Related topics: [keys](keys.html), [create](create.html), [read](read.html), [delete](delete.html)
+

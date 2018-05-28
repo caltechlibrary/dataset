@@ -19,3 +19,4 @@ The collection name is "people.ds"
     dataset people.ds haskey r1
 ```
 
+Related topics: [keys](keys.html)

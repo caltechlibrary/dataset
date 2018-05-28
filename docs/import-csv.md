@@ -27,4 +27,5 @@ behavior you can use the "-use-header-row=false" option and the fields will be i
 form of "column_IDNO" where IDNO is replaced with a left zero padded column number
 (e.g. column_001, column_002, column_003).
 
-Related topics: extract and export-csv,  import-gsheets, export-gsheets
+Related topics: [export-csv](export-csv.html), [import-gsheets](import-gsheets.html), [export-gsheets](export-gsheet.html)
+

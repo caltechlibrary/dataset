@@ -23,3 +23,6 @@ In python
     subset_keys = generate_subset(dataset.keys('examples.ds'))
     err = dataset.reframe('example.ds', 'f1', subset_keys)
 ```
+
+Releted topics: [frame](frame.html), [frames](frames.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [delete-frame](delete-frame.html)
+

@@ -29,5 +29,6 @@ structure. Note that in our example below the orcid itself is an array.
 
 The result is a 2D array of rows and cells (e.g. colums)
 
-Related topics: [dotpath](dotpath.html)
+Related topics: [dotpath](dotpath.html), [frame](frame.html)
+
 

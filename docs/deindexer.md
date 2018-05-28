@@ -19,3 +19,5 @@ Deindexer removes records from an index. It requires a list of keys in a key fil
     dataset deindexer author-title.bleve titles-to-delete.txt
 ```
 
+Related topics: [indexer](indexer.html), [find](find.html)
+

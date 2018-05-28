@@ -21,3 +21,5 @@ Collection names are "MyRecordCollection.ds" and "MyBookCollection.ds".
     dataset status MyRecordCollection.ds MyBookCollection.ds
 ```
 
+Related topic: [init](init.html)
+

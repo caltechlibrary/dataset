@@ -28,3 +28,4 @@ Count records where the `.published` field is true.
     dataset "publications.ds" count '(eq .published true)'
 ```
 
+Related topic: [keys](keys.html)

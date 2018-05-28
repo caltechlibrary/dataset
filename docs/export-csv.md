@@ -30,5 +30,5 @@ collection is "publications.ds".
 	dataset publications.ds export-csv titles.csv true '._id,.title,.pubDate' 'id,title,publication date' > output.csv
 ```
 
-Related topics: extract, import-csv, import-gsheets, export-gsheets
+Related topics: [import-csv](import-csv.html), [import-gsheets](import-gsheet.html), [export-gsheets](export-gsheet.html)
 

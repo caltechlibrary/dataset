@@ -23,3 +23,5 @@ of "r1". Our collection name is "data.ds".
     dataset data.ds path r1
 ```
 
+Related topics: [keys](keys.html), [read](read.html)
+

@@ -54,40 +54,40 @@ Options are shared between all actions and must precede the action on the comman
 ## ACTIONS
 
 ```
-    attach          Attach a document (file) to a JSON record in a collection
-    attachments     List of attachments associated with a JSON record in a collection
-    check           Check the health of a dataset collection
-    clone           Clone a collection from a list of keys into a new collection
-    clone-sample    Clone a collection into a sample size based training collection and test collection
-    count           Counts the number of records in a collection, accepts a filter for sub-counts
-    create          Create a JSON record in a collection
-    deindexer       (experimental) Remove record(s) from an index for a collection
-    delete          Delete a JSON record (and attachments) from a collection
-    delete-frame    remove a frame from a collection
-    detach          Copy an attach out of an associated JSON record in a collection
-    export-csv      Export a JSON records from a collection to a CSV file
-    export-gsheet   Export a collection's JSON records to a GSheet
-    find            (experimental) Query an index(es) associated with a collection
-    frame           define or retrieve a frame from a collection
-    frame-labels    define explicitly the labels associated with a frame
-    frame-types     define explicitly the column type names associated with a frame
-    frames          list the available frames in a collection
-    grid            Creates a data grid from a list keys of dot paths
-    haskey          Returns true if key is in collection, false otherwise
-    import-csv      Import a CSV file's rows as JSON records into a collection
-    import-gsheet   Import a GSheet rows as JSON records into a collection
-    indexer         (experimental) Create/Update an index of a collection
-    init            Initialize a dataset collection
-    join            Join a JSON record with a new JSON object in a collection
-    keys            List the keys in a collection, support filtering and sorting
-    list            List the JSON records as an array for provided record ids
-    path            Show the file system path to a JSON record in a collection
-    prune           Remove attachments from a JSON record in a collection
-    read            Read back a JSON record from a collection
-    reframe         re-generate a frame with existing or provided key list
-    repair          Try to repair a damaged dataset collection
-    status          Checks to see if a collection name contains a 'collection.json' file
-    update          Update a JSON record in a collection
+    attach         Attach a document (file) to a JSON record in a collection
+    attachments    List of attachments associated with a JSON record in a collection
+    check          Check the health of a dataset collection
+    clone          Clone a collection from a list of keys into a new collection
+    clone-sample   Clone a collection into a sample size based training collection and test collection
+    count          Counts the number of records in a collection, accepts a filter for sub-counts
+    create         Create a JSON record in a collection
+    deindexer      (experimental) Remove record(s) from an index for a collection
+    delete         Delete a JSON record (and attachments) from a collection
+    delete-frame   remove a frame from a collection
+    detach         Copy an attach out of an associated JSON record in a collection
+    export-csv     Export a JSON records from a collection to a CSV file
+    export-gsheet  Export a collection's JSON records to a GSheet
+    find           (experimental) Query an index(es) associated with a collection
+    frame          define or retrieve a frame from a collection
+    frame-labels   define explicitly the labels associated with a frame
+    frame-types    define explicitly the column type names associated with a frame
+    frames         list the available frames in a collection
+    grid           Creates a data grid from a list keys of dot paths
+    haskey         Returns true if key is in collection, false otherwise
+    import-csv     Import a CSV file's rows as JSON records into a collection
+    import-gsheet  Import a GSheet rows as JSON records into a collection
+    indexer        (experimental) Create/Update an index of a collection
+    init           Initialize a dataset collection
+    join           Join a JSON record with a new JSON object in a collection
+    keys           List the keys in a collection, support filtering and sorting
+    list           List the JSON records as an array for provided record ids
+    path           Show the file system path to a JSON record in a collection
+    prune          Remove attachments from a JSON record in a collection
+    read           Read back a JSON record from a collection
+    reframe        re-generate a frame with existing or provided key list
+    repair         Try to repair a damaged dataset collection
+    status         Checks to see if a collection name contains a 'collection.json' file
+    update         Update a JSON record in a collection
 ```
 
 

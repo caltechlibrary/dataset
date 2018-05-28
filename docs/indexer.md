@@ -28,3 +28,5 @@ Our collection name in this example is "publications.ds"
     dataset publications.ds indexer author-title.bleve author-title.json
 ```
 
+Related topics: [dotpath](dotpath.html), [find](find.html)
+
