@@ -827,7 +827,7 @@ In the example the index will be created for a collection called *characters.ds*
 ```
 
 This will build a Bleve index called "email-index" based on the index defined
-in "email-mapping.json" (more on mapping indexes at [docs/defining-indexes.md](../docs/defining-indexes.html)).
+in "email-mapping.json" (more on mapping indexes at [defining-indexes](../docs/defining-indexes.html)).
 
 You can build multiple indexes by having multiple index definitions. For large
 JSON documents with lots of text this may let you more efficiently create the indexes.
@@ -853,6 +853,6 @@ information about characters, scenes, etc.  If you want to search both *characte
 and *audiodramas.bleve* separate them a colon and include both with your _find_ command.
 
 ```shell
-    dataset find 'characters.bleve:audiodramas.bleve' "Jack Flanders"
+    dataset find "characters.bleve:audiodramas.bleve" "Jack Flanders"
 ```
 

@@ -818,7 +818,7 @@ collection (or collections).</p>
 </code></pre>
 
 <p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
-in &ldquo;email-mapping.json&rdquo; (more on mapping indexes at <a href="../docs/defining-indexes.html">docs/defining-indexes.md</a>).</p>
+in &ldquo;email-mapping.json&rdquo; (more on mapping indexes at <a href="../docs/defining-indexes.html">defining-indexes</a>).</p>
 
 <p>You can build multiple indexes by having multiple index definitions. For large
 JSON documents with lots of text this may let you more efficiently create the indexes.
@@ -841,7 +841,7 @@ returning records that matched based on how the index was defined.</p>
 information about characters, scenes, etc.  If you want to search both <em>characters.bleve</em>
 and <em>audiodramas.bleve</em> separate them a colon and include both with your <em>find</em> command.</p>
 
-<pre><code class="language-shell">    dataset find 'characters.bleve:audiodramas.bleve' &quot;Jack Flanders&quot;
+<pre><code class="language-shell">    dataset find &quot;characters.bleve:audiodramas.bleve&quot; &quot;Jack Flanders&quot;
 </code></pre>
 
 </section>
