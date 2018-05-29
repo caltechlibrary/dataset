@@ -51,8 +51,8 @@
         print(msg)
         sys.exit(1)
         
-    err = dataset.init('friends.ds')
-    if err != '':
+    err = dataset.init(&quot;friends.ds&quot;)
+    if err != &quot;&quot;:
         stop(err)
 </code></pre>
 
@@ -72,77 +72,75 @@ save some of their info in our collection called <strong>friends.ds</strong>. I 
 <pre><code class="language-bash">    dataset friends.ds create frieda '{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
 </code></pre>
 
-<p>Notice the “OK”. Just like <strong>init</strong> the <strong>create</strong> verb returns a status. “OK” means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.</p>
+<p>Notice the &ldquo;OK&rdquo;. Just like <strong>init</strong> the <strong>create</strong> verb returns a status. &ldquo;OK&rdquo; means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.</p>
 
-<pre><code class="language-python">    err = dataset.create('friends.ds', 'frieda', {&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;})
-    if err != '':
+<pre><code class="language-python">    err = dataset.create(&quot;friends.ds&quot;, &quot;frieda&quot;, {&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;})
+    if err != &quot;&quot;:
         stop(msg)
 </code></pre>
 
-<p>With create we need to provide a collection name, a key (e.g. ‘frieda’) and Python
-dict (which becomes our JSON object). Now let’s add records for Mojo Sam and Jack Flanders.</p>
+<p>With create we need to provide a collection name, a key (e.g. &ldquo;frieda&rdquo;) and Python
+dict (which becomes our JSON object). Now let&rsquo;s add records for Mojo Sam and Jack Flanders.</p>
 
-<p>command line —</p>
+<p>command line &ndash;</p>
 
-<pre><code class="language-bash">    dataset friends.ds create 'mojo' '{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}'
-    dataset friends.ds create 'jack' '{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}'
+<pre><code class="language-bash">    dataset friends.ds create &quot;mojo&quot; '{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}'
+    dataset friends.ds create &quot;jack&quot; '{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}'
 </code></pre>
 
-<p>in python —</p>
+<p>in python &ndash;</p>
 
 <pre><code class="language-python">    err = dataset.create(&quot;friends.ds&quot;, &quot;mojo&quot;, {&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;})
-    if err != '': 
+    if err != &quot;&quot;: 
         stop(err)
     err = dataset.create(&quot;friends.ds&quot;, &quot;jack&quot;, {&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;})
-    if err != '': 
+    if err != &quot;&quot;: 
         stop(err)
 </code></pre>
 
 <h3>read</h3>
 
-<p>We have three records in our <strong>friends.ds</strong> collection — ‘frieda’, ‘mojo’, and ‘jack’.  Let’s see what they look like with the <strong>read</strong> verb.</p>
+<p>We have three records in our <strong>friends.ds</strong> collection — &ldquo;frieda&rdquo;, &ldquo;mojo&rdquo;, and &ldquo;jack&rdquo;.  Let&rsquo;s see what they look like with the <strong>read</strong> verb.</p>
 
-<p>command line —</p>
+<p>command line &ndash;</p>
 
 <pre><code class="language-bash">    dataset friends.ds read frieda
 </code></pre>
 
-<p>This command emitts a JSON object. The JSON  is somewhat hard to read.  To get a pretty version of the JSON object used the ‘-p’  option.</p>
+<p>This command emitts a JSON object. The JSON  is somewhat hard to read. To get a pretty version of the JSON object used the &ldquo;-p&rdquo;  option.</p>
 
 <pre><code class="language-bash">    dataset -p friends.ds read frieda
 </code></pre>
 
-<p>On the command line you can easily pipe the results to a file for latter modification. Let’s do this for each of the records we have created so far.</p>
+<p>On the command line you can easily pipe the results to a file for latter modification. Let&rsquo;s do this for each of the records we have created so far.</p>
 
 <pre><code class="language-bash">    dataset -p friends.ds read frieda &gt; frieda-profile.json
     dataset -p friends.ds read mojo &gt; mojo-profile.json
     dataset -p friends.ds read jack &gt; jack-profile.json
-```bash
+</code></pre>
 
-Working in python is similar but rather than write out our JSON structures to a file we’re going to 
-keep them in memory as Python dict.
+<p>Working in python is similar but rather than write out our JSON structures to a file we&rsquo;re going to
+keep them in memory as Python dict.</p>
 
-In Python — 
+<p>In Python &ndash;</p>
 
-
-```python
-    (frieda_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;frieda&quot;)
-    if err != '':
+<pre><code class="language-python">    (frieda_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;frieda&quot;)
+    if err != &quot;&quot;:
         stop(err)
     (mojo_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;mojo&quot;)
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
     (jack_profile, err) = dataset.read(&quot;friends.ds&quot;, &quot;jack&quot;)
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
 </code></pre>
 
-<p>In Python, just like with <strong>init</strong> and <strong>create</strong>  the <strong>read</strong> verb returns a tuple of the value and err. Notice a pattern?</p>
+<p>In Python, just like with <strong>init</strong> and <strong>create</strong> the <strong>read</strong> verb returns a tuple of the value and err. Notice a pattern?</p>
 
 <h3>update</h3>
 
-<p>Next we can modify the profiles (the *.json files for the command line version). We’re going to add a key/value pair for “catch_phrase” associated with each JSON object in <strong>friends.ds</strong>.  For
-Little Frieda edit freida-profile.json to look like —</p>
+<p>Next we can modify the profiles (the *.json files for the command line version). We&rsquo;re going to add a key/value pair for &ldquo;catch_phrase&rdquo; associated with each JSON object in <strong>friends.ds</strong>.  For
+Little Frieda edit freida-profile.json to look like &ndash;</p>
 
 <pre><code class="language-json">    {
         &quot;_Key&quot;: &quot;frieda&quot;,
@@ -152,7 +150,7 @@ Little Frieda edit freida-profile.json to look like —</p>
     }
 </code></pre>
 
-<p>For Mojo’s mojo-profile.json —</p>
+<p>For Mojo&rsquo;s mojo-profile.json &ndash;</p>
 
 <pre><code class="language-json">    {
         &quot;_Key&quot;: &quot;mojo&quot;,
@@ -162,7 +160,7 @@ Little Frieda edit freida-profile.json to look like —</p>
     }
 </code></pre>
 
-<p>An Jack’s jack-profile.json —</p>
+<p>An Jack&rsquo;s jack-profile.json &ndash;</p>
 
 <pre><code class="language-json">    {
         &quot;_Key&quot;: &quot;jack&quot;,
@@ -173,14 +171,14 @@ Little Frieda edit freida-profile.json to look like —</p>
 
 </code></pre>
 
-<p>On the command line we can read in the updated JSON objects and save the results in the collection with the <strong>update</strong> verb. Like with <strong>init</strong> and <strong>create</strong>  the <strong>update</strong> verb will return an “OK” or error message. Let’s update each of our JSON objects.</p>
+<p>On the command line we can read in the updated JSON objects and save the results in the collection with the <strong>update</strong> verb. Like with <strong>init</strong> and <strong>create</strong>  the <strong>update</strong> verb will return an “OK” or error message. Let&rsquo;s update each of our JSON objects.</p>
 
 <pre><code class="language-bash">    dataset friends.ds update freida frieda-profile.json
     dataset friends.ds update mojo mojo-profile.json
     dataset friends.ds update jack jack-profile.json
 </code></pre>
 
-<p><strong>TIP</strong>: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a ‘{‘ and ended with a ‘}’ it would assume you were using an explicit JSON expression.</p>
+<p><strong>TIP</strong>: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a &ldquo;{&rdquo; and ended with a &ldquo;}&rdquo; it would assume you were using an explicit JSON expression.</p>
 
 <p>In Python we can work with each of the dictionaries variables we save from our previous <strong>read</strong> example.  We add our “catch_phrase” attribute then <strong>update</strong> each record.</p>
 
@@ -188,14 +186,14 @@ Little Frieda edit freida-profile.json to look like —</p>
     mojo_profile[&quot;catch_phrase&quot;] = &quot;Feet Don't Fail Me Now!&quot;
     jack_profile[&quot;catch_phrase&quot;] = &quot;What is coming at you is coming from you&quot;
     
-    err = dataset.update('friends.ds', 'frieda', frieda_profile)
-    if err != '':
+    err = dataset.update(&quot;friends.ds&quot;, &quot;frieda&quot;, frieda_profile)
+    if err != &quot;&quot;:
         stop(err)
-    err = dataset.update('friends.ds', 'mojo', mojo_profile)
-    if err != '':
+    err = dataset.update(&quot;friends.ds&quot;, &quot;mojo&quot;, mojo_profile)
+    if err != &quot;&quot;:
         stop(err)
-    err = dataset.update('friends.ds', 'jack', jack_profile)
-    if err != '':
+    err = dataset.update(&quot;friends.ds&quot;, &quot;jack&quot;, jack_profile)
+    if err != &quot;&quot;:
         stop(err)
 </code></pre>
 
@@ -203,19 +201,19 @@ Little Frieda edit freida-profile.json to look like —</p>
 
 <h3>delete</h3>
 
-<p>Eventually you might want to remove a JSON object from the collection. Let’s remove Jack Flander’s record for now.</p>
+<p>Eventually you might want to remove a JSON object from the collection. Let&rsquo;s remove Jack Flander&rsquo;s record for now.</p>
 
-<p>command line —</p>
+<p>command line &ndash;</p>
 
 <pre><code class="language-bash">    dataset friends.ds delete jack
 </code></pre>
 
-<p>Notice the “OK” in this case it means we’ve successfully delete the JSON object from the collection.</p>
+<p>Notice the “OK” in this case it means we&rsquo;ve successfully delete the JSON object from the collection.</p>
 
-<p>An perhaps as you’ve already guessed working in Python looks like —</p>
+<p>An perhaps as you&rsquo;ve already guessed working in Python looks like &ndash;</p>
 
-<pre><code class="language-python">    err = dataset.delete('friends.ds', 'jack')
-    if err != '':
+<pre><code class="language-python">    err = dataset.delete(&quot;friends.ds&quot;, &quot;jack&quot;)
+    if err != &quot;&quot;:
        stop(err)
 </code></pre>
 
@@ -224,16 +222,16 @@ Little Frieda edit freida-profile.json to look like —</p>
 <p>Eventually you have lots of objects in your collection. You are not going to be able to remember all the keys. dataset provides a <strong>keys</strong> function for getting a list of keys as well as a <strong>count</strong> to give you a
 total number of keys.</p>
 
-<p>Now that we’ve deleted a few things let’s see how many keys are in <strong>friends.ds</strong>. We can do that with the <strong>count</strong> verb.</p>
+<p>Now that we&rsquo;ve deleted a few things let&rsquo;s see how many keys are in <strong>friends.ds</strong>. We can do that with the <strong>count</strong> verb.</p>
 
-<p>Command line —</p>
+<p>Command line &ndash;</p>
 
 <pre><code class="language-bash">    dataset friends.ds count
 </code></pre>
 
-<p>In Python —</p>
+<p>In Python &ndash;</p>
 
-<pre><code class="language-python">    cnt = dataset.count('friends.ds')
+<pre><code class="language-python">    cnt = dataset.count(&quot;friends.ds&quot;)
     print(f&quot;Total Records Now: {cnt}&quot;)
 </code></pre>
 
@@ -244,18 +242,18 @@ total number of keys.</p>
 
 <p>If you are following along in Python then you can just save the keys to a variable called keys.</p>
 
-<pre><code class="language-python">    keys = dataset.keys('friends.ds')
+<pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
     print(&quot;\n&quot;.join(keys))
 </code></pre>
 
 <h2>grids and frames</h2>
 
 <p>One of the challenges in working on JSON objects is their tree like structure. When tabulating or
-comparing values it is often easier to work in a spreadsheet like grid.  <strong>grid</strong> is dataset’s verb for taking a list of keys, a list of dot paths into the JSON objects and returning a 2D grid of the results. This is handy when generating reports. A <strong>grid</strong> unlike <strong>frame</strong> which we will see shortly doesn’t enforce any specifics on the columns and rows. It only contains the values you specify.</p>
+comparing values it is often easier to work in a spreadsheet like grid.  <strong>grid</strong> is dataset&rsquo;s verb for taking a list of keys, a list of dot paths into the JSON objects and returning a 2D grid of the results. This is handy when generating reports. A <strong>grid</strong> unlike <strong>frame</strong> which we will see shortly doesn&rsquo;t enforce any specifics on the columns and rows. It only contains the values you specify.</p>
 
 <h3>grid</h3>
 
-<p>Let’s create a <strong>grid</strong> from our <em>friends.ds</em> collection.</p>
+<p>Let&rsquo;s create a <strong>grid</strong> from our <em>friends.ds</em> collection.</p>
 
 <pre><code class="language-bash">    dataset friends.ds keys &gt; fiends.keys
     dataset friends.ds grid friends.keys .name .email .catch_phrase
@@ -268,22 +266,22 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>Notice we make a list of keys first and save those to a file. Then we use that list of keys and create our grid.  The grid output is in JSON notation. In Python making a grid follows a similar patter, generate a list of keys, use those keys and a list of dot paths to define the grid.</p>
 
-<pre><code class="language-python">    keys = dataset.keys('friends.ds')
-    (g, err) = dataset.grid('friends.ds', keys, ['.name', '.email', 'catch_phrase'])
-    if err != '':
+<pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
+    (g, err) = dataset.grid(&quot;friends.ds&quot;, keys, [&quot;.name&quot;, &quot;.email&quot;, &quot;catch_phrase&quot;])
+    if err != &quot;&quot;:
         stop(err)
     print(json.dumps(g, indent = 4))
 </code></pre>
 
-<p>In python <strong>grid</strong> like <strong>create</strong> and <strong>update</strong> returns a tuple that has your result and an error status. Finally we print our result using the JSON module’s <strong>dumps</strong>.</p>
+<p>In python <strong>grid</strong> like <strong>create</strong> and <strong>update</strong> returns a tuple that has your result and an error status. Finally we print our result using the JSON module&rsquo;s <strong>dumps</strong>.</p>
 
 <h3>frame</h3>
 
-<p>dataset also comes with a <strong>frame</strong> verb.  A <strong>frame</strong> is like a grid plus additional matadata. It enforces a structure such on its grid. Column 1 of the <strong>frame</strong>’s internal grid element always has the keys associated with the collection. A <strong>frame</strong> will also derive heading labels from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a <strong>frame</strong> stays with the collection. Frames are persistent and can be easily recalculated based on collection updates. Finally frames as used by more complex verbs such as <strong>export-csv</strong>, <strong>export-gsheet</strong>, and <strong>indexer</strong> we’ll be covering later.</p>
+<p>dataset also comes with a <strong>frame</strong> verb.  A <strong>frame</strong> is like a grid plus additional matadata. It enforces a structure such on its grid. Column 1 of the <strong>frame</strong>&rsquo;s internal grid element always has the keys associated with the collection. A <strong>frame</strong> will also derive heading labels from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a <strong>frame</strong> stays with the collection. Frames are persistent and can be easily recalculated based on collection updates. Finally frames as used by more complex verbs such as <strong>export-csv</strong>, <strong>export-gsheet</strong>, and <strong>indexer</strong> we&rsquo;ll be covering later.</p>
 
 <p>To define a frame we only need one additional piece of information besides what we used for a grid. We need a name for the frame.</p>
 
-<p>Working from our previous <strong>grid</strong> example, let’s call this frame “name-and-email”.</p>
+<p>Working from our previous <strong>grid</strong> example, let&rsquo;s call this frame &ldquo;name-and-email&rdquo;.</p>
 
 <pre><code class="language-bash">    dataset friends.ds frame &quot;name-and-email&quot; fiends.keys .name .email .catch_phrase
 </code></pre>
@@ -292,7 +290,7 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
     err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;,  keys, [ &quot;.name&quot;, &quot;.email&quot;, &quot;.catch_phrase&quot;])
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
 </code></pre>
 
@@ -301,17 +299,17 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 <pre><code class="language-bash">    dataset friends.ds frame &quot;name-and-email&quot;
 </code></pre>
 
-<p>In Python it’d look like</p>
+<p>In Python it&rsquo;d look like</p>
 
 <pre><code class="language-python">    (f, err) = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
     print(json.dumps(f, indent = 4))
 </code></pre>
 
 <p>Looking at the resulting JSON object you see many other attribute beyond the grid of values. These are what simplify some of dataset more complex interactions.</p>
 
-<p>Let’s add back the Jack record we deleted a few sections again and “reframe” our “name-and-email” frame.</p>
+<p>Let&rsquo;s add back the Jack record we deleted a few sections again and “reframe” our “name-and-email” frame.</p>
 
 <pre><code class="language-bash">    # Adding back Jack
     dataset friends.ds create jack jack-profile.json
@@ -325,17 +323,17 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>Like with <strong>grid</strong> and <strong>read</strong> before it the “-p” option will cause the JSON representation of the frame to be pretty printed.</p>
 
-<p>Let’s try the same thing in Python</p>
+<p>Let&rsquo;s try the same thing in Python</p>
 
 <pre><code class="language-python">    err = dataset.create(&quot;friends.ds&quot;, &quot;jack&quot;, jack_profile)
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
     keys = dataset.keys(&quot;friends.ds&quot;)
     err = dataset.reframe(&quot;friends.ds&quot;, &quot;name-and-email&quot;, keys)
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
     (f, err) = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
-    if err != '':
+    if err != &quot;&quot;:
         stop(err)
     print(json.dumps(f, indent = 4))
 </code></pre>
@@ -361,11 +359,11 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 <p>Or in Python</p>
 
 <pre><code class="language-python">    err = dataset.delete_frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
-    if err != '':
+    if err != &quot;&quot;:
           stop(err)
 </code></pre>
 
-<p><strong>TIP</strong>: Frames like collections have a number of operations. Here’s the list</p>
+<p><strong>TIP</strong>: Frames like collections have a number of operations. Here&rsquo;s the list</p>
 
 <ol>
 <li><strong>frame</strong> will set you define a frame</li>
@@ -381,8 +379,8 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 <ul>
 <li><a href="indexing-and-search.html">Indexing and Search</a></li>
 <li><a href="working-with-csv.html">Working with CSV</a></li>
-<li>[Working with GSheets]()</li>
-<li>[Working with Cloud Storage]()</li>
+<li><a href="working-with-gsheets.html">Working with GSheets</a></li>
+<li><a href="working-with-cloud-storage.html">Working with Cloud Storage</a></li>
 </ul>
 
 </section>

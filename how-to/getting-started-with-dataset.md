@@ -31,8 +31,8 @@ Working in Python is similar to the command line we do need to import some modul
         print(msg)
         sys.exit(1)
         
-    err = dataset.init('friends.ds')
-    if err != '':
+    err = dataset.init("friends.ds")
+    if err != "":
         stop(err)
 ```
 
@@ -55,91 +55,91 @@ save some of their info in our collection called **friends.ds**. I am going to s
     dataset friends.ds create frieda '{"name":"Little Frieda","email":"frieda@inverness.example.org"}'
 ```
 
-Notice the “OK”. Just like **init** the **create** verb returns a status. “OK” means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.
+Notice the "OK". Just like **init** the **create** verb returns a status. "OK" means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.
 
 
 ```python
-    err = dataset.create('friends.ds', 'frieda', {"name":"Little Frieda","email":"frieda@inverness.example.org"})
-    if err != '':
+    err = dataset.create("friends.ds", "frieda", {"name":"Little Frieda","email":"frieda@inverness.example.org"})
+    if err != "":
         stop(msg)
 ```
 
-With create we need to provide a collection name, a key (e.g. ‘frieda’) and Python
-dict (which becomes our JSON object). Now let’s add records for Mojo Sam and Jack Flanders.
+With create we need to provide a collection name, a key (e.g. "frieda") and Python
+dict (which becomes our JSON object). Now let's add records for Mojo Sam and Jack Flanders.
 
-command line — 
+command line -- 
 
 
 ```bash
-    dataset friends.ds create 'mojo' '{"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"}'
-    dataset friends.ds create 'jack' '{"name": "Jack Flanders", "email": "capt-jack@cosmic-voyager.example.org"}'
+    dataset friends.ds create "mojo" '{"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"}'
+    dataset friends.ds create "jack" '{"name": "Jack Flanders", "email": "capt-jack@cosmic-voyager.example.org"}'
 ```
 
-in python — 
+in python -- 
 
 
 ```python
     err = dataset.create("friends.ds", "mojo", {"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"})
-    if err != '': 
+    if err != "": 
         stop(err)
     err = dataset.create("friends.ds", "jack", {"name": "Jack Flanders", "email": "capt-jack@cosmic-voyager.example.org"})
-    if err != '': 
+    if err != "": 
         stop(err)
 ```
 
 
 ### read
 
-We have three records in our **friends.ds** collection — ‘frieda’, ‘mojo’, and ‘jack’.  Let’s see what they look like with the **read** verb.
+We have three records in our **friends.ds** collection — "frieda", "mojo", and "jack".  Let's see what they look like with the **read** verb.
 
-command line — 
+command line -- 
 
 
 ```bash
     dataset friends.ds read frieda
 ```
 
-This command emitts a JSON object. The JSON  is somewhat hard to read.  To get a pretty version of the JSON object used the ‘-p’  option.
+This command emitts a JSON object. The JSON  is somewhat hard to read. To get a pretty version of the JSON object used the "-p"  option.
 
 
 ```bash
     dataset -p friends.ds read frieda
 ```
 
-On the command line you can easily pipe the results to a file for latter modification. Let’s do this for each of the records we have created so far.
+On the command line you can easily pipe the results to a file for latter modification. Let's do this for each of the records we have created so far.
 
 
 ```bash
     dataset -p friends.ds read frieda > frieda-profile.json
     dataset -p friends.ds read mojo > mojo-profile.json
     dataset -p friends.ds read jack > jack-profile.json
-```bash
+```
 
-Working in python is similar but rather than write out our JSON structures to a file we’re going to 
+Working in python is similar but rather than write out our JSON structures to a file we're going to 
 keep them in memory as Python dict.
 
-In Python — 
+In Python -- 
 
 
 ```python
     (frieda_profile, err) = dataset.read("friends.ds", "frieda")
-    if err != '':
+    if err != "":
         stop(err)
     (mojo_profile, err) = dataset.read("friends.ds", "mojo")
-    if err != '':
+    if err != "":
         stop(err)
     (jack_profile, err) = dataset.read("friends.ds", "jack")
-    if err != '':
+    if err != "":
         stop(err)
 ```
 
-In Python, just like with **init** and **create**  the **read** verb returns a tuple of the value and err. Notice a pattern?
+In Python, just like with **init** and **create** the **read** verb returns a tuple of the value and err. Notice a pattern?
 
 
 ### update
 
-Next we can modify the profiles (the *.json files for the command line version). We’re going to add a key/value pair for “catch_phrase” associated with each JSON object in **friends.ds**.  For 
-Little Frieda edit freida-profile.json to look like — 
+Next we can modify the profiles (the *.json files for the command line version). We're going to add a key/value pair for "catch_phrase" associated with each JSON object in **friends.ds**.  For 
+Little Frieda edit freida-profile.json to look like -- 
 
 
 ```json
@@ -151,7 +151,7 @@ Little Frieda edit freida-profile.json to look like —
     }
 ```
 
-For Mojo’s mojo-profile.json — 
+For Mojo's mojo-profile.json -- 
 
 
 ```json
@@ -163,7 +163,7 @@ For Mojo’s mojo-profile.json —
     }
 ```
 
-An Jack’s jack-profile.json — 
+An Jack's jack-profile.json -- 
 
 
 ```json
@@ -176,7 +176,7 @@ An Jack’s jack-profile.json —
 
 ```
 
-On the command line we can read in the updated JSON objects and save the results in the collection with the **update** verb. Like with **init** and **create**  the **update** verb will return an “OK” or error message. Let’s update each of our JSON objects.
+On the command line we can read in the updated JSON objects and save the results in the collection with the **update** verb. Like with **init** and **create**  the **update** verb will return an “OK” or error message. Let's update each of our JSON objects.
 
 
 ```bash
@@ -185,7 +185,7 @@ On the command line we can read in the updated JSON objects and save the results
     dataset friends.ds update jack jack-profile.json
 ```
 
-**TIP**: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a ‘{‘ and ended with a ‘}’ it would assume you were using an explicit JSON expression.
+**TIP**: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a "{" and ended with a "}" it would assume you were using an explicit JSON expression.
 
 In Python we can work with each of the dictionaries variables we save from our previous **read** example.  We add our “catch_phrase” attribute then **update** each record.
 
@@ -195,14 +195,14 @@ In Python we can work with each of the dictionaries variables we save from our p
     mojo_profile["catch_phrase"] = "Feet Don't Fail Me Now!"
     jack_profile["catch_phrase"] = "What is coming at you is coming from you"
     
-    err = dataset.update('friends.ds', 'frieda', frieda_profile)
-    if err != '':
+    err = dataset.update("friends.ds", "frieda", frieda_profile)
+    if err != "":
         stop(err)
-    err = dataset.update('friends.ds', 'mojo', mojo_profile)
-    if err != '':
+    err = dataset.update("friends.ds", "mojo", mojo_profile)
+    if err != "":
         stop(err)
-    err = dataset.update('friends.ds', 'jack', jack_profile)
-    if err != '':
+    err = dataset.update("friends.ds", "jack", jack_profile)
+    if err != "":
         stop(err)
 ```
 
@@ -211,23 +211,23 @@ As an exercise how would you read back the updated version on the command line o
 
 ### delete
 
-Eventually you might want to remove a JSON object from the collection. Let’s remove Jack Flander’s record for now.
+Eventually you might want to remove a JSON object from the collection. Let's remove Jack Flander's record for now.
 
-command line — 
+command line -- 
 
 
 ```bash
     dataset friends.ds delete jack
 ```
 
-Notice the “OK” in this case it means we’ve successfully delete the JSON object from the collection.
+Notice the “OK” in this case it means we've successfully delete the JSON object from the collection.
 
-An perhaps as you’ve already guessed working in Python looks like — 
+An perhaps as you've already guessed working in Python looks like -- 
 
 
 ```python
-    err = dataset.delete('friends.ds', 'jack')
-    if err != '':
+    err = dataset.delete("friends.ds", "jack")
+    if err != "":
        stop(err)
 ```
 
@@ -237,20 +237,20 @@ An perhaps as you’ve already guessed working in Python looks like —
 Eventually you have lots of objects in your collection. You are not going to be able to remember all the keys. dataset provides a **keys** function for getting a list of keys as well as a **count** to give you a 
 total number of keys.
 
-Now that we’ve deleted a few things let’s see how many keys are in **friends.ds**. We can do that with the **count** verb.
+Now that we've deleted a few things let's see how many keys are in **friends.ds**. We can do that with the **count** verb.
 
-Command line — 
+Command line -- 
 
  
 ```bash
     dataset friends.ds count
 ```
 
-In Python — 
+In Python -- 
 
 
 ```python
-    cnt = dataset.count('friends.ds')
+    cnt = dataset.count("friends.ds")
     print(f"Total Records Now: {cnt}")
 ```
 
@@ -265,7 +265,7 @@ If you are following along in Python then you can just save the keys to a variab
 
 
 ```python
-    keys = dataset.keys('friends.ds')
+    keys = dataset.keys("friends.ds")
     print("\n".join(keys))
 ```
 
@@ -273,12 +273,12 @@ If you are following along in Python then you can just save the keys to a variab
 ## grids and frames
 
 One of the challenges in working on JSON objects is their tree like structure. When tabulating or
-comparing values it is often easier to work in a spreadsheet like grid.  **grid** is dataset’s verb for taking a list of keys, a list of dot paths into the JSON objects and returning a 2D grid of the results. This is handy when generating reports. A **grid** unlike **frame** which we will see shortly doesn’t enforce any specifics on the columns and rows. It only contains the values you specify.
+comparing values it is often easier to work in a spreadsheet like grid.  **grid** is dataset's verb for taking a list of keys, a list of dot paths into the JSON objects and returning a 2D grid of the results. This is handy when generating reports. A **grid** unlike **frame** which we will see shortly doesn't enforce any specifics on the columns and rows. It only contains the values you specify.
 
 
 ### grid
 
-Let’s create a **grid** from our *friends.ds* collection.
+Let's create a **grid** from our *friends.ds* collection.
 
 
 ```bash
@@ -297,23 +297,23 @@ Notice we make a list of keys first and save those to a file. Then we use that l
 
 
 ```python
-    keys = dataset.keys('friends.ds')
-    (g, err) = dataset.grid('friends.ds', keys, ['.name', '.email', 'catch_phrase'])
-    if err != '':
+    keys = dataset.keys("friends.ds")
+    (g, err) = dataset.grid("friends.ds", keys, [".name", ".email", "catch_phrase"])
+    if err != "":
         stop(err)
     print(json.dumps(g, indent = 4))
 ```
 
-In python **grid** like **create** and **update** returns a tuple that has your result and an error status. Finally we print our result using the JSON module’s **dumps**.
+In python **grid** like **create** and **update** returns a tuple that has your result and an error status. Finally we print our result using the JSON module's **dumps**.
 
 
 ### frame
 
-dataset also comes with a **frame** verb.  A **frame** is like a grid plus additional matadata. It enforces a structure such on its grid. Column 1 of the **frame**’s internal grid element always has the keys associated with the collection. A **frame** will also derive heading labels from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a **frame** stays with the collection. Frames are persistent and can be easily recalculated based on collection updates. Finally frames as used by more complex verbs such as **export-csv**, **export-gsheet**, and **indexer** we’ll be covering later. 
+dataset also comes with a **frame** verb.  A **frame** is like a grid plus additional matadata. It enforces a structure such on its grid. Column 1 of the **frame**'s internal grid element always has the keys associated with the collection. A **frame** will also derive heading labels from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a **frame** stays with the collection. Frames are persistent and can be easily recalculated based on collection updates. Finally frames as used by more complex verbs such as **export-csv**, **export-gsheet**, and **indexer** we'll be covering later. 
 
 To define a frame we only need one additional piece of information besides what we used for a grid. We need a name for the frame. 
 
-Working from our previous **grid** example, let’s call this frame “name-and-email”.
+Working from our previous **grid** example, let's call this frame "name-and-email".
 
 
 ```bash
@@ -326,7 +326,7 @@ In python it would look like
 ```python
     keys = dataset.keys("friends.ds")
     err = dataset.frame("friends.ds", "name-and-email",  keys, [ ".name", ".email", ".catch_phrase"])
-    if err != '':
+    if err != "":
         stop(err)
 ```
 
@@ -337,12 +337,12 @@ To see the contents of a frame we only need to support the collection name and f
     dataset friends.ds frame "name-and-email"
 ```
 
-In Python it’d look like
+In Python it'd look like
 
 
 ```python
     (f, err) = dataset.frame("friends.ds", "name-and-email")
-    if err != '':
+    if err != "":
         stop(err)
     print(json.dumps(f, indent = 4))
 ```
@@ -351,7 +351,7 @@ Looking at the resulting JSON object you see many other attribute beyond the gri
 
 
 
-Let’s add back the Jack record we deleted a few sections again and “reframe” our “name-and-email” frame.
+Let's add back the Jack record we deleted a few sections again and “reframe” our “name-and-email” frame.
 
 
 ```bash
@@ -367,19 +367,19 @@ Let’s add back the Jack record we deleted a few sections again and “reframe�
 
 Like with **grid** and **read** before it the “-p” option will cause the JSON representation of the frame to be pretty printed.
 
-Let’s try the same thing in Python
+Let's try the same thing in Python
 
 
 ```python
     err = dataset.create("friends.ds", "jack", jack_profile)
-    if err != '':
+    if err != "":
         stop(err)
     keys = dataset.keys("friends.ds")
     err = dataset.reframe("friends.ds", "name-and-email", keys)
-    if err != '':
+    if err != "":
         stop(err)
     (f, err) = dataset.frame("friends.ds", "name-and-email")
-    if err != '':
+    if err != "":
         stop(err)
     print(json.dumps(f, indent = 4))
 ```
@@ -413,11 +413,11 @@ Or in Python
 
 ```python
     err = dataset.delete_frame("friends.ds", "name-and-email")
-    if err != '':
+    if err != "":
           stop(err)
 ```
 
-**TIP**: Frames like collections have a number of operations. Here’s the list
+**TIP**: Frames like collections have a number of operations. Here's the list
 
 1. **frame** will set you define a frame
 2. **frame** will also let you read back a frame
@@ -432,7 +432,7 @@ Continue exploring dataset with
 
 - [Indexing and Search](indexing-and-search.html)
 - [Working with CSV](working-with-csv.html)
-- [Working with GSheets]()
-- [Working with Cloud Storage]()
+- [Working with GSheets](working-with-gsheets.html)
+- [Working with Cloud Storage](working-with-cloud-storage.html)
 
 
