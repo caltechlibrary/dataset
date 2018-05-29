@@ -430,8 +430,8 @@ Or in Python
 
 Continue exploring dataset with
 
-- [Indexing and Search]()
-- [Working with CSV]()
+- [Indexing and Search](indexing-and-search.html)
+- [Working with CSV](working-with-csv.html)
 - [Working with GSheets]()
 - [Working with Cloud Storage]()
 
