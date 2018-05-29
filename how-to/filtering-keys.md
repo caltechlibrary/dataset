@@ -2,7 +2,7 @@
 ## Filters and sorts
 
 _dataset keys_ can be used to to filter and sort a key list. 
-Here's is a simple case for match records in a collection named *characters.ds* 
+Here's is a simple case for match records in a collection named **characters.ds** 
 where the given name is equal to "Mojo". We will save the result in a file called _mojo.keys_.
 
 ```shell
