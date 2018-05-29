@@ -26,29 +26,26 @@
 <section>
 <h2>File system layout</h2>
 
-<p>dataset (directory on file system)</p>
+<p>dataset provides a standardize way of organizing your JSON Objects, their attachments and
+data frames.</p>
+
+<p>The directory layout looks like:</p>
 
 <ul>
 <li>collection (directory on file system)
 
 <ul>
-<li>collection.json - metadata about collection
+<li>a file, collection.json, holding metadata about collection
 
 <ul>
-<li>maps the filename of the JSON blob stored to a bucket in the collection</li>
-<li>e.g. file &ldquo;mydocs.jons&rdquo; stored in bucket &ldquo;aa&rdquo; would have a map of {&ldquo;mydocs.json&rdquo;: &ldquo;aa&rdquo;}</li>
+<li>includes a map of filenames and buckets</li>
+<li>frame names mapped to frame metadata files</li>
 </ul></li>
-<li>keys.json - a list of keys in the collection (it is the default select list)</li>
-<li>BUCKETS - a sequence of alphabet names for buckets holding JSON documents and their attachments
+<li>a dircectory named &ldquo;_frames&rdquo; - any defined frames for the collection.</li>
+<li>BUCKETS - a sequence of alphabet names (AA to ZZ) for buckets holding JSON documents and their attachments
 
 <ul>
 <li>Buckets let supporting common commands like ls, tree, etc. when the doc count is high</li>
-</ul></li>
-<li>SELECT_LIST.json - a JSON document holding an array of keys
-
-<ul>
-<li>the default select list is &ldquo;keys&rdquo;, it is not mutable by Push, Pop, Shift and Unshift</li>
-<li>select lists cannot be named &ldquo;keys&rdquo; or &ldquo;collection&rdquo;</li>
 </ul></li>
 </ul></li>
 </ul>

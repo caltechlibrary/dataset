@@ -24,20 +24,163 @@
 </nav>
 
 <section>
-<h1>Google Spreadsheet Integration</h1>
+<h1>Working with GSheets</h1>
 
-<p><em>dataset</em> provides for importing from and export to a Google spreadsheet (i.e. GSheet).
-This does require some setup for this to work.  <em>dataset</em> needs to beable to access
-the Google Sheets API for reading and writing. You can find documentation on setting
-up access in &ldquo;step 1&rdquo; at <a href="https://developers.google.com/sheets/api/quickstart/go">https://developers.google.com/sheets/api/quickstart/go</a>.</p>
+<h2>A walking through the process</h2>
 
-<p>You&rsquo;ll need a &ldquo;client_secret.json&rdquo; file and OAuth authorization for access to be permitted.
-If credentials for the OAuth part are usually stored in your <code>$HOME/.credentials</code> directory
-as sheets.googleapis.com-dataset.json.  If this file doesn&rsquo;t exist then the first time you
-run the <em>dataset</em> command with a GSheet option it&rsquo;ll prompt you to use your web browser
-to authorize <em>dataset</em> to access your Google spreadsheet.</p>
+<p>In this walk through we will create some data in a Google Sheet, import it into a collection
+we&rsquo;ve created. Modify it and send it back to our Google Sheet. As part of the procees we will
+need to authorize our <em>dataset</em> tool and setup access.</p>
 
-<h2>FIXME: need to walk through a couple use cases so it makes sense to most people</h2>
+<h3>Setup a local collection</h3>
+
+<p>Setup our local collection. Create a new dataset collection named &ldquo;ZBS-Character-List.ds&rdquo;</p>
+
+<pre><code class="language-shell">    dataset init zbs-cast-list.ds
+</code></pre>
+
+<p>Download <a href="zbs-cast-list.csv">zbs-cast-list.csv</a>.  We will use this when we create our
+Google Sheet for this walk through.</p>
+
+<h3>Setting up our Google Sheet</h3>
+
+<p>Open your browser and create a new Google Sheet by going to <a href="https://sheets.google.com">https://sheets.google.com</a>. You
+can pick the &ldquo;Blank&rdquo; sheet from the template gallery under &ldquo;Start a new spreadsheet&rdquo;.
+This should you a new untitled spreadsheet.  Set the title to something meaninful, I&rsquo;m
+going to set my title to &ldquo;zbs-cast-list&rdquo;.</p>
+
+<h3>loading some sample data</h3>
+
+<p>In Google Sheets go to the file menu and select &ldquo;import&rdquo;.  Select the &ldquo;upload&rdquo; tab, find
+<em>zbs-cast-list.csv</em> and &ldquo;open&rdquo; it. You should then see an &ldquo;Import file&rdquo; dialog, select
+&ldquo;Replace current sheet&rdquo; then press &ldquo;Import Data&rdquo; button at the bottom of the box.</p>
+
+<p>You should wind up with a spreadsheet that starts out something like this &ndash;</p>
+
+<pre><code class="language-csv">    id,name,title,year
+    1,Jack Flanders,The Fourth Tower of Inverness,1972
+    2,Little Freida,The Fourth Tower of Inverness,1972
+    3,Dr. Mazoola,The Fourth Tower of Inverness,1972
+    4,The Madonna Vampyra,The Fourth Tower of Inverness,1972
+    5,Chief Wampum,The Fourth Tower of Inverness,1972
+    6,Old Far-Seeing Art,The Fourth Tower of Inverness,1972
+    7,Lord Henry Jowls,The Fourth Tower of Inverness,1972
+    8,Meanie Eenie,The Fourth Tower of Inverness,1972
+    9,Lady Sarah Jowls,The Fourth Tower of Inverness,1972
+    ...
+</code></pre>
+
+<p>You sheet should have four columns A to D (id, name, title, year) and 195 rows
+with id ranging from 1 to 194 in column 1. You can describe the range of your sheet as
+A1:D195 (A 1 through D 195). We&rsquo;re going to use this range when importing and exporting.</p>
+
+<h3>Finding your sheet&rsquo;s ID and sheet name</h3>
+
+<p>Look at the URL for your Google Sheet. It&rsquo;ll be similar to mine</p>
+
+<pre><code>    https://docs.google.com/spreadsheets/d/1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc/edit#gid=0
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+</code></pre>
+
+<p>Notice the part of the URL between &ldquo;/d/&rdquo; and &ldquo;/edit&rdquo;. For my sheet it is
+&ldquo;1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc&rdquo;. This is the sheet ID. It is unique to my spreadsheet
+so yours will be different. We are going to need that number later.</p>
+
+<p>Look at the bottom of the Google Sheet window. You&rsquo;ll see the tab for your sheet. By default this
+is named &ldquo;Sheet1&rdquo;. You&rsquo;ll also need to know this name.</p>
+
+<h3>Setting up authorization to access your Google Sheet</h3>
+
+<p>This is the hardest part of the process. Google sometimes updates this procedure. These are
+the steps I took on 05/29/2018. You might have to make adjustments in the future.</p>
+
+<p>We need to get some credentials and authorization keys to access your Google Sheet
+before we can import it into our dataset collection.  If you have not done this previously go to
+<a href="https://developers.google.com/sheets/api/quickstart/go">https://developers.google.com/sheets/api/quickstart/go</a>. Our goal is to complete &ldquo;Step 1&rdquo;.
+As of today, 05/29/2007, the instructions are a touch confusing.
+In the letter &ldquo;a&rdquo; section you click &ldquo;this wizard&rdquo; link.
+This should open a new window/tab in your browser. We&rsquo;ll be referring back to &ldquo;Step 1&rdquo;
+page for letters &ldquo;b&rdquo; to &ldquo;h&rdquo;.</p>
+
+<p>The instructions under &ldquo;Step 1&rdquo; letter &ldquo;a&rdquo; say to continue to &ldquo;Go to credentials&rdquo;
+but it isn&rsquo;t visible on the page. You need to click on the page&rsquo;s pull out menu (the three horizontal
+lines in the upper right of the page, sometimes referred to as a &ldquo;hamburger&rdquo; menu).</p>
+
+<p><img src="./Wizard-Page-01.png" alt="Image of hamburger menu cicle in red" title="Image hamburger menu circled in red" /></p>
+
+<p>Click the menu.  Then click &ldquo;APIs &amp; Services&rdquo;.</p>
+
+<p><img src="./Wizard-Page-02.png" alt="Image &quot;API &amp; Services&quot; circled in red" title="Image, API &amp; Services, circled in red" /></p>
+
+<p>Now click the key symbol</p>
+
+<p><img src="./Wizard-Page-03.png" alt="Image key symbol circled in red" title="Image key symbol circled in red" /></p>
+
+<p>and you can follow the instructions starting at letter &ldquo;c&rdquo; and continuing through &ldquo;h&rdquo;.</p>
+
+<h3>Authorizing dataset access</h3>
+
+<p>Once your &ldquo;client_secret.json&rdquo; file is generated and downloaded to your working directory
+you need to trigger authorization for <em>dataset</em>. To do so we type in for importing our spreadsheet
+into our local collection.  The first time we do this a link (URL) will be displayed. Copy that
+link into your web browser. You will goto a page that allows you to &ldquo;authorize&rdquo; the application.
+Follow the instructions.</p>
+
+<pre><code>NOTE: The &quot;client_secret.json&quot; file and OAuth authorization is required for data to access your 
+Google Sheet.  The OAuth authorization process uses the &quot;client_secret.json&quot; file to 
+get a token to use on subsequent access by _dataset_. This OAuth token is 
+usually stored in your `$HOME/.credentials` directory as sheets.googleapis.com-dataset.json.
+If this file doesn't exist then the first time you run the _dataset_ command with a GSheet option 
+it'll prompt you to use your web browser to authorize _dataset_ to access your Google spreadsheet.
+</code></pre>
+
+<p>The command that will trigger the authorization process the first time is also the command we will
+eventually use to import our data. Replace SHEET_ID with the number we see in the URL and SHEET_NAME
+with the name of the spreadsheet. Our CELL_RANGE will be &ldquo;A1:D195&rdquo; and our COL_NP_FOR_ID will be 1</p>
+
+<pre><code class="language-shell">    dataset zbs-cast-lis.ds import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
+</code></pre>
+
+<p>For my URL, SHEET_ID, SHEET_NAME, CELL_RANGE and COL_NO_FOR_ID looked like</p>
+
+<pre><code class="language-shell">    dataset zbs-cast-lis.ds import-gsheet &quot;1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc&quot; &quot;Sheet1&quot; &quot;A1:D192&quot; 1
+</code></pre>
+
+<p>Yours will have a different SHEET_ID.</p>
+
+<p>After your authorize the sheet access via your web browser then next time you run the command you&rsquo;ll
+see data imported into <em>zbs-cast-list.ds</em>. You can count the keys to see what was imported.</p>
+
+<pre><code class="language-shell">    dataset zbs-cast-list.ds count
+</code></pre>
+
+<p>You are now ready to modify and update your local collection.</p>
+
+<h2>Exporting a collection to a Google Sheet</h2>
+
+<p>To send our collection data to a Google sheet the sheet needs to exist already. Note that writing
+to the Google Sheet our data will replace (overwrite) all the rows in the CELL_RANGE we provide.
+This means any sorting column ordering changes will be overwritten by the cells we&rsquo;re writing.</p>
+
+<p>This command to export our collection into Google sheets looks like</p>
+
+<pre><code class="language-shell">    dataset COLLECTION_NAME export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
+</code></pre>
+
+<p>Notice FILTER_EXPR, FIELDS_TO_EXPORT and COLUMN_NAMES. A FILTER_EXPR is an expression that selects which records are uploaded
+from the collection. If you want the whole collection then include the word &ldquo;true&rdquo;. If you wanted only rows for
+year 1982 then the expression would look like &ldquo;(eq .year 1982)&rdquo;.  For this example just use true so we export all records
+as rows in our spreadsheet. FIELDS_TO_EXPORT are the <a href="../docs/dotpath.html">dotpath</a> into our records and the COLUMN_NAMES
+are the column names that will be written in first row of our exported records.</p>
+
+<p>My export command looks like</p>
+
+<pre><code class="language-shell">    dataset zbs-cast-lis.ds export-gsheet &quot;1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc&quot; &quot;Sheet1&quot; &quot;A1:D192&quot; true &quot;.id,.name,.title,year&quot; &quot;ID,Name,Title,Year&quot;
+</code></pre>
+
+<p>If you look at your spreadsheet you should see the updated spreadsheet.</p>
+
+<p>Related topics: <a href="../docs/dotpath.html">dotpath</a>, <a href="../docs/export-csv.html">export-csv</a>, <a href="../docs/import-csv.html">import-csv</a>, <a href="../docs/import-gsheet.html">import-gsheet</a> and <a href="../docs/export-gsheet.html">export-gsheet</a></p>
 
 </section>
 

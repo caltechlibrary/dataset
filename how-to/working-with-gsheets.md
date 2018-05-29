@@ -1,125 +1,169 @@
 
-# Google Spreadsheet Integration
+# Working with GSheets
 
-_dataset_ provides for importing from and export to a Google spreadsheet (i.e. GSheet). 
-There is required setup for this to work.  _dataset_ needs to beable to access
-the Google Sheets API for reading and writing. You can find documentation on setting
-up access in "step 1" at https://developers.google.com/sheets/api/quickstart/go.
+## A walking through the process
 
-You'll need a "client_secret.json" file and OAuth authorization for access to be permitted.
-If credentials for the OAuth part are usually stored in your `$HOME/.credentials` directory
-as sheets.googleapis.com-dataset.json.  If this file doesn't exist then the first time you
-run the _dataset_ command with a GSheet option it'll prompt you to use your web browser
-to authorize _dataset_ to access your Google spreadsheet.
+In this walk through we will create some data in a Google Sheet, import it into a collection
+we've created. Modify it and send it back to our Google Sheet. As part of the procees we will
+need to authorize our _dataset_ tool and setup access.
 
+### Setup a local collection
 
-## import-gsheet
-
-This is place holder for documentation on import Google Sheets into a _dataset_ collction.
-
-### Syntax
-
-```
-    dataset COLLECTION_NAME import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
-```
-
-+ COLLECTION_NAME is the collection we are going to import into
-+ SHEET_ID is the hash id Google assignes, it looks like a long string with numbers and letters in 
-  the URL when you edit your sheet
-+ SHEET_NAME is a string name of the sheet. The default name is usually "Sheet1" it is seen at the 
-  lower part of the spreadsheet page in Google Sheets edit view
-+ CELL_RANGE is a range of cells to import, typically this is "A1:Z" but maybe adjusted (e.g. if you
-  want to skip the first row then you might use "A2:Z")
-+ COL_NO_FOR_ID is the column number to use for the unique ID name of the JSON document. It should
-  be an integer starting with "1".
-
-
-### Description
-
-_dataset_ supports importing data from a single sheet at a time from a Google Sheets document. To
-do this you need to beable to authenticate with the Google Sheets v4 API and an account with the
-permissions allowing it to read the Google Sheets document.  Google Sheets like Excel workbooks
-include multiple talbes in a single document. This is usually called a _sheet_. When importing
-a Google Sheet into a _dataset_ collection the collection needs to exist and you need to identity
-the source of the key. If none is provided the key will be created as the row number of each 
-JSON document constructed from the column header and cell value. This is problematic if someome
-sorts the sheet differently and then re-imports the data into the collection.  So usually you
-want to explicitly set the column that will be used as as the record key in the collection. That
-way you can re-import the sheet's data into your collection and replacing the stale data.
-
-### Example
-
-In this example we're using the example Google Sheet from the Golang Google Sheets API v4 
-Quickstart. You'll first need to have created a *client_secret.json* file as described in
-the Step 1 of the [Google Cloud SDK docs](https://developers.google.com/sheets/api/quickstart/go)
-and placed it in *etc/client_secret.json*.  Our collection name is "DemoStudentList.ds".
+Setup our local collection. Create a new dataset collection named "ZBS-Character-List.ds"
 
 ```shell
-    export GOOGLE_CLIENT_SECRET_JSON="etc/client_secret.json"
-    dataset DemoStudentList.ds init
-    dataset DemoStudentList.ds import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A1:Z" 1
-    dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read "${KY}"; done
+    dataset init zbs-cast-list.ds
 ```
 
-In this example we've used the row number as the ID for the JSON document created. This isn't
-ideal in production as someone may re-sort the spreadsheet thus changing the number relationship
-between the row number and the document in your _dataset_ collection.
+Download [zbs-cast-list.csv](zbs-cast-list.csv).  We will use this when we create our
+Google Sheet for this walk through.
 
-In this version we've not used the first row as field names in the JSON record. How does 
-it look different? What does "-use-header-row=false" mean? Why is the range different?
+### Setting up our Google Sheet
+
+Open your browser and create a new Google Sheet by going to https://sheets.google.com. You 
+can pick the "Blank" sheet from the template gallery under "Start a new spreadsheet". 
+This should you a new untitled spreadsheet.  Set the title to something meaninful, I'm 
+going to set my title to "zbs-cast-list".
+
+### loading some sample data
+
+In Google Sheets go to the file menu and select "import".  Select the "upload" tab, find 
+_zbs-cast-list.csv_ and "open" it. You should then see an "Import file" dialog, select 
+"Replace current sheet" then press "Import Data" button at the bottom of the box.
+
+You should wind up with a spreadsheet that starts out something like this --
+
+```csv
+    id,name,title,year
+    1,Jack Flanders,The Fourth Tower of Inverness,1972
+    2,Little Freida,The Fourth Tower of Inverness,1972
+    3,Dr. Mazoola,The Fourth Tower of Inverness,1972
+    4,The Madonna Vampyra,The Fourth Tower of Inverness,1972
+    5,Chief Wampum,The Fourth Tower of Inverness,1972
+    6,Old Far-Seeing Art,The Fourth Tower of Inverness,1972
+    7,Lord Henry Jowls,The Fourth Tower of Inverness,1972
+    8,Meanie Eenie,The Fourth Tower of Inverness,1972
+    9,Lady Sarah Jowls,The Fourth Tower of Inverness,1972
+    ...
+```
+
+You sheet should have four columns A to D (id, name, title, year) and 195 rows
+with id ranging from 1 to 194 in column 1. You can describe the range of your sheet as
+A1:D195 (A 1 through D 195). We're going to use this range when importing and exporting.
+
+
+### Finding your sheet's ID and sheet name
+
+Look at the URL for your Google Sheet. It'll be similar to mine
+
+```
+    https://docs.google.com/spreadsheets/d/1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc/edit#gid=0
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+```
+
+Notice the part of the URL between "/d/" and "/edit". For my sheet it is 
+"1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc". This is the sheet ID. It is unique to my spreadsheet
+so yours will be different. We are going to need that number later.
+
+Look at the bottom of the Google Sheet window. You'll see the tab for your sheet. By default this
+is named "Sheet1". You'll also need to know this name.
+
+### Setting up authorization to access your Google Sheet
+
+This is the hardest part of the process. Google sometimes updates this procedure. These are
+the steps I took on 05/29/2018. You might have to make adjustments in the future.
+
+We need to get some credentials and authorization keys to access your Google Sheet
+before we can import it into our dataset collection.  If you have not done this previously go to 
+https://developers.google.com/sheets/api/quickstart/go. Our goal is to complete "Step 1". 
+As of today, 05/29/2007, the instructions are a touch confusing.
+In the letter "a" section you click "this wizard" link. 
+This should open a new window/tab in your browser. We'll be referring back to "Step 1" 
+page for letters "b" to "h".
+
+The instructions under "Step 1" letter "a" say to continue to "Go to credentials" 
+but it isn't visible on the page. You need to click on the page's pull out menu (the three horizontal 
+lines in the upper right of the page, sometimes referred to as a "hamburger" menu).
+
+![Image of hamburger menu cicle in red](./Wizard-Page-01.png "Image hamburger menu circled in red")
+
+Click the menu.  Then click "APIs & Services". 
+
+![Image "API & Services" circled in red](./Wizard-Page-02.png "Image, API & Services, circled in red")
+
+Now click the key symbol 
+
+![Image key symbol circled in red](./Wizard-Page-03.png "Image key symbol circled in red")
+
+and you can follow the instructions starting at letter "c" and continuing through "h".
+
+
+### Authorizing dataset access
+
+Once your "client_secret.json" file is generated and downloaded to your working directory
+you need to trigger authorization for _dataset_. To do so we type in for importing our spreadsheet
+into our local collection.  The first time we do this a link (URL) will be displayed. Copy that
+link into your web browser. You will goto a page that allows you to "authorize" the application.
+Follow the instructions.
+
+    NOTE: The "client_secret.json" file and OAuth authorization is required for data to access your 
+    Google Sheet.  The OAuth authorization process uses the "client_secret.json" file to 
+    get a token to use on subsequent access by _dataset_. This OAuth token is 
+    usually stored in your `$HOME/.credentials` directory as sheets.googleapis.com-dataset.json.
+    If this file doesn't exist then the first time you run the _dataset_ command with a GSheet option 
+    it'll prompt you to use your web browser to authorize _dataset_ to access your Google spreadsheet.
+
+The command that will trigger the authorization process the first time is also the command we will
+eventually use to import our data. Replace SHEET_ID with the number we see in the URL and SHEET_NAME
+with the name of the spreadsheet. Our CELL_RANGE will be "A1:D195" and our COL_NP_FOR_ID will be 1
 
 ```shell
-    dataset -use-header-row=false DemoStudentList.ds import-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" "Class Data" "A2:Z" 1
-    dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read "${KY}"; done
+    dataset zbs-cast-lis.ds import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
 ```
 
+For my URL, SHEET_ID, SHEET_NAME, CELL_RANGE and COL_NO_FOR_ID looked like
 
-## export-gsheet
-
-### Syntax
-
+```shell
+    dataset zbs-cast-lis.ds import-gsheet "1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc" "Sheet1" "A1:D192" 1
 ```
+
+Yours will have a different SHEET_ID.
+
+After your authorize the sheet access via your web browser then next time you run the command you'll
+see data imported into _zbs-cast-list.ds_. You can count the keys to see what was imported.
+
+```shell
+    dataset zbs-cast-list.ds count
+```
+
+You are now ready to modify and update your local collection.
+
+## Exporting a collection to a Google Sheet
+
+To send our collection data to a Google sheet the sheet needs to exist already. Note that writing
+to the Google Sheet our data will replace (overwrite) all the rows in the CELL_RANGE we provide.
+This means any sorting column ordering changes will be overwritten by the cells we're writing.
+
+This command to export our collection into Google sheets looks like
+
+```shell
     dataset COLLECTION_NAME export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
 ```
 
-### Description
+Notice FILTER_EXPR, FIELDS_TO_EXPORT and COLUMN_NAMES. A FILTER_EXPR is an expression that selects which records are uploaded
+from the collection. If you want the whole collection then include the word "true". If you wanted only rows for
+year 1982 then the expression would look like "(eq .year 1982)".  For this example just use true so we export all records
+as rows in our spreadsheet. FIELDS_TO_EXPORT are the [dotpath](../docs/dotpath.html) into our records and the COLUMN_NAMES
+are the column names that will be written in first row of our exported records.
 
-export-gsheet will write the exported records and exported fields to a Google Sheets sheet in the given cell range.
-
-SHEET_ID is the google sheet id, usually a very long alpha numeric string. If your URL looks like
-
-```
-    https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-```
-
-The Sheet ID would be
-
-```
-    1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
-```
-
-CELL_RANGE is expressed in a letter colum row fashion E.g. A1:B10 would refer to 
-the grid starting in the first column (i.e. A) and row (i.a. 1) moving to the lower left with the grid
-ending in column 2 (i.e. B) row 10. This forms the grid that will be written out. Typically this would be something
-like "A1:Z" which would translate start in the upper right cell of the spreadsheet and replace all cells
-to column Z going down.
- 
-FILTER_EXPR is an expression that evaluates to _true_ or _false_ based on Golang template expressions
-(see `dataset -help filter` for more explanation).
-
-FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. .id,.title,.pubDate) in the JSON documents
-in the collection (see `dataset -help dotpath` for more explanation)
-
-### Usage
-
-In the following examples we will "filter" for all records in a collection so we use the string "true". 
-The following fields are being exported - .name and .contact with the following headings --
-Name, Contact. Collection name is "people.ds".
+My export command looks like
 
 ```shell
-	dataset people.ds export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
+    dataset zbs-cast-lis.ds export-gsheet "1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc" "Sheet1" "A1:D192" true ".id,.name,.title,year" "ID,Name,Title,Year"
 ```
 
+If you look at your spreadsheet you should see the updated spreadsheet.
 
-Related topics: [dotpath](../docs/dotpath.html), [../docs/export-csv](export-csv.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html) and [export-gsheet](../docs/export-gsheet.html)
+
+Related topics: [dotpath](../docs/dotpath.html), [export-csv](../docs/export-csv.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html) and [export-gsheet](../docs/export-gsheet.html)
 

@@ -15,19 +15,18 @@
 
 - [keys and filters](../how-to/filtering-keys.html)
 - [taking samples](../how-to/taking-samples.html)
-- [cloning and samples](../how-to/clone-and-samples.html)
+- [cloning and samples](../how-to/cloning-and-samples.html)
 
 ## Attachments and storage
 
 - [File system layout](../how-to/file-system-layout.html)
 - [Managing attachments](../how-to/managing-attachments.html)
-- [Working with Cloud Storage](../how-to/working-with-cloud-storage.md)
+- [Working with Cloud Storage](../how-to/working-with-cloud-storage.html)
 
 ## Import/Export
 
-- [import CSV rows as JSON objects](../how-to/import-csv-rows-as-json-documents.html)
-- [import and export](../how-to/imports-and-exports.html)
-- [Google Sheet integration](../how-to/gsheet-integration.html)
+- [Working with CSV](../how-to/working-with-csv.html)
+- [Working with Google Sheets](../how-to/working-with-gsheets.html)
 
 ## Search
 
