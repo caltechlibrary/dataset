@@ -293,7 +293,7 @@ def has_key(collection_name, key):
 # Create a JSON record in a Dataset Collectin
 def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
-    if not isinstance(key, str) == True:
+    if isinstance(key, str) == False:
         key = f"{key}"
     ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
