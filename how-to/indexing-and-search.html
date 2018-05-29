@@ -29,6 +29,8 @@
 <p><em>dataset indexer &hellip;</em> builds an index from an index map file.  A map defines the structure of the index. The definition file is a JSON document.
 <em>dataset indexer &hellip;</em> supports two types of map files. A simple version and also the more complicated version native to the Bleve search package.</p>
 
+<p>NOTE: Indexes and search are experimental and are subject to change. Our hope to simplify the process of defining and managing indexes</p>
+
 <h2>The Simple index map</h2>
 
 <p><em>dataset indexer &hellip;</em> works from a index definition expressed as a JSON document. The most important of the definition is to map
@@ -262,8 +264,6 @@ would like to make the index slightly smaller then you could set this to false.<
 <p>The &ldquo;date_format&rdquo; string is used to indentify how to parse the date. The formatting pattern is based on Go&rsquo;s time.Parse()
 module. You can read more about that here at <a href="https://golang.org/pkg/time/#pkg-constants">https://golang.org/pkg/time/#pkg-constants</a>. If you&rsquo;re using the &ldquo;datetime&rdquo;
 field mapping for a field you should probably set the &ldquo;date_format&rdquo; too since dates can be written so many ways.</p>
-
-<p>FIXME: This is expeculation on how defining complex indexes might work.</p>
 
 <h2>Indexing more complex JSON documents</h2>
 

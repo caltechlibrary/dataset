@@ -4,6 +4,9 @@
 _dataset indexer ..._ builds an index from an index map file.  A map defines the structure of the index. The definition file is a JSON document.
 _dataset indexer ..._ supports two types of map files. A simple version and also the more complicated version native to the Bleve search package.
 
+NOTE: Indexes and search are experimental and are subject to change. Our hope to simplify the process of defining and managing indexes
+
+
 ## The Simple index map
 
 _dataset indexer ..._ works from a index definition expressed as a JSON document. The most important of the definition is to map
@@ -247,8 +250,6 @@ module. You can read more about that here at https://golang.org/pkg/time/#pkg-co
 field mapping for a field you should probably set the "date_format" too since dates can be written so many ways.
 
 
-FIXME: This is expeculation on how defining complex indexes might work.
-
 ## Indexing more complex JSON documents
 
 One of the reason JSON is used for serialization of data is that it can represent many of the common types
@@ -381,8 +382,7 @@ If your JSON data document looks like
     }
 ```
 
-You could create an index of last name and date of birth (e.g. `last_name-dob.bmap`)  
-with the following definition
+You could create an index of last name and date of birth (e.g. `last_name-dob.bmap`) with the following definition
 
 ```json
     {
