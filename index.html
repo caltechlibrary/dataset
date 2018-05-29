@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">README</a></li>
+<li><a href="license.html">LICENSE</a></li>
+<li><a href="install.html">INSTALL</a></li>
+<li><a href="docs/">Documentation</a></li>
+<li><a href="how-to/">Tutorials</a></li>
+<li><a href="docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>dataset   <a href="https://data.caltech.edu/badge/latestdoi/79394591"><img src="https://data.caltech.edu/badge/79394591.svg" alt="DOI" /></a></h1>
+
+<p><em>dataset</em> is a command line tool, Go package, shared library and Python package for working with <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> objects as collection. Collections can be stored on disc, in S3 or Google Cloud Storage.
+JSON objects are stored in collections as plain UTF-8 text. This means the objects can be accessed with common Unix text processing tools as well as
+most programming languages with text processing support.</p>
+
+<p>The <a href="docs/dataset.html">dataset</a> command line tool supports common data manage operations such as initialization of collections, creation, reading, updating and deleting JSON objects in the collection. Some of its enhanced features include the ability to generate data <a href="docs/grid.html">grids</a> and <a href="docs/frame.html">frames</a>, the ability to import and export JSON object to and from CSV files and Google Sheets.  It even includes an experimental search feature by the integrating <a href="http://www.blevesearch.com">Blevesearch</a> indexing and search engine library developed for <a href="http://couchdb.apache.org/">CouchDB</a>.</p>
+
+<p>In addition to the command line tool dataset includes a C shared library called libdataset which is used for integration in a Python module of the same name.  <em>dataset</em> itself is written in a <a href="https://golang.org">Go</a> package which can also in other Go based projects.  <em>libdataset</em> could be used as a bases for integration with other languages that support a C API (e.g. <a href="https://julialang.org/">Julia</a>).</p>
+
+<p>See <a href="how-to/getting-started-with-dataset.html">getting-started-with-datataset.md</a> for a tour and tutorial.</p>
+
+<h2>Origin story</h2>
+
+<p>The inspiration for creating <em>dataset</em> was the desire to process metadata as JSON object collections using simple Unix shell utilities and data pipelines. The core use case evolved at <a href="https://library.caltech.edu">Caltech Library</a> working with various repository systems&rsquo; API (e.g. <a href="https://en.wikipedia.org/wiki/EPrints">EPrints</a> and and <a href="https://en.wikipedia.org/wiki/Invenio">Invenio</a>). It has allowed the library to build an aggregated view of heterogeneous content (see <a href="https://feeds.library.caltech.edu">https://feeds.library.caltech.edu</a>) as well as facilitate ad-hoc analysis and data enhancement for a number of internal library projects.</p>
+
+<h2>Design choices</h2>
+
+<p><em>dataset</em> isn&rsquo;t a database or repository system. It is intended to be simple and easier to use with minimal setup (e.g. <code>dataset init mycollection.ds</code> would create a new collection called &lsquo;mycollection.ds&rsquo;).  It built around a few abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON file called collections.json and buckets containing the JSON objects and any attachments, the collections.json file describes the mapping of keys to buckets).  It takes minimal system resources
+and keeps all content, except JSON object attachments, in plain UTF-8 text (attachments are kept in tar files).</p>
+
+<p>A the typical library processing pattern is to write a &ldquo;harvester&rdquo; which stores it results in a <em>dataset</em> collection, the use either a shell script or Python program to transform the collections content and finally redeploy the augmented results.</p>
+
+<p>Care has been taken to keep <em>dataset</em> simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi while being equally comfortable on a more resource rich server or desktop environment.</p>
+
+<h2>Features</h2>
+
+<p><a href="docs/dataset">dataset</a> supports</p>
+
+<ul>
+<li>Basic storage actions (<a href="docs/create.html">create</a>, <a href="docs/read.html">read</a>, <a href="docs/update.html">update</a> and <a href="docs/delete.html">delete</a>)</li>
+<li>listing of collection <a href="docs/keys.html">keys</a> (including filtering and sorting)</li>
+<li>import/export  of <a href="how-to/import-csv-rows-as-json-documents.html">CSV</a> files and <a href="how-to/gsheet-integration.html">Google Sheets</a></li>
+<li>An experimental full text <a href="how-to/searchable-datasets.html">search</a> interface based on <a href="https://blevesearch.com">Blevesearch</a></li>
+<li>The ability to reshape data by performing simple object <a href="docs/join.html">joins</a></li>
+<li>The ability to create data <a href="docs/grid.html">grids</a> and <a href="docs/frame.html">frames</a> from collections based
+on keys lists and <a href="docs/dotpath.html">dot paths</a> into the JSON objects stored</li>
+</ul>
+
+<p>You can work with dataset collections via the <a href="docs/dataset.html">command line tool</a>, via Go using the
+<a href="https://godoc.org/github.com/caltechlibrary/dataset">dataset package</a> or in
+Python 3.6 using a python package.  <em>dataset</em> is useful for general data science applications which
+need intermediate JSON object storage but not a full blown database.</p>
+
+<h3>Limitations of <em>dataset</em></h3>
+
+<p><em>dataset</em> has many limitations, some are listed below</p>
+
+<ul>
+<li>it is not a multi-process, multi-user data store (it&rsquo;s just files on disc without any locking)</li>
+<li>it is not a repository management system</li>
+<li>it is not a general purpose multi-user database system</li>
+<li>it does not supply version control on collections or objects (though integrating it with git, mercurial or subversion would be trivial)</li>
+</ul>
+
+<h2>Example</h2>
+
+<p>Below is a simple example of shell based interaction with dataset collations using the command line dataset tool.</p>
+
+<pre><code class="language-shell">    # Create a collection &quot;friends.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that's the collection to use. 
+    bin/dataset friends.ds init
+    # if successful then you should see an OK otherwise an error message
+
+    # Create a JSON document 
+    bin/dataset friends.ds create frieda '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
+    # If successful then you should see an OK otherwise an error message
+
+    # Read a JSON document
+    bin/dataset friends.ds read frieda
+    
+    # Path to JSON document
+    bin/dataset friends.ds path frieda
+
+    # Update a JSON document
+    bin/dataset friends.ds update frieda '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}'
+    # If successful then you should see an OK or an error message
+
+    # List the keys in the collection
+    bin/dataset friends.ds keys
+
+    # Get keys filtered for the name &quot;frieda&quot;
+    bin/dataset friends.ds keys '(eq .name &quot;frieda&quot;)'
+
+    # Join frieda-profile.json with &quot;frieda&quot; adding unique key/value pairs
+    bin/dataset friends.ds join append frieda frieda-profile.json
+
+    # Join frieda-profile.json overwriting in commont key/values adding unique key/value pairs
+    # from frieda-profile.json
+    bin/dataset friends.ds join overwrite frieda frieda-profile.json
+
+    # Delete a JSON document
+    bin/dataset friends.ds delete frieda
+
+    # Import data from a CSV file using column 1 as key
+    bin/dataset -quiet -nl=false friends.ds import-csv my-data.csv 1
+
+    # To remove the collection just use the Unix shell command
+    rm -fR friends.ds
+</code></pre>
+
+<h2>Releases</h2>
+
+<p>Compiled versions are provided for Linux (amd64), Mac OS X (amd64), Windows 10 (amd64) and Raspbian (ARM7).
+See <a href="https://github.com/caltechlibrary/dataset/releases">https://github.com/caltechlibrary/dataset/releases</a>.</p>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
