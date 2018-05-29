@@ -113,7 +113,7 @@ On the command line you can easily pipe the results to a file for latter modific
     dataset -p friends.ds read frieda > frieda-profile.json
     dataset -p friends.ds read mojo > mojo-profile.json
     dataset -p friends.ds read jack > jack-profile.json
-```bash
+```
 
 Working in python is similar but rather than write out our JSON structures to a file we’re going to 
 keep them in memory as Python dict.
@@ -432,7 +432,7 @@ Continue exploring dataset with
 
 - [Indexing and Search](indexing-and-search.html)
 - [Working with CSV](working-with-csv.html)
-- [Working with GSheets]()
-- [Working with Cloud Storage]()
+- [Working with GSheets](working-with-gsheets.html)
+- [Working with Cloud Storage](working-with-cloud-storage.html)
 
 
