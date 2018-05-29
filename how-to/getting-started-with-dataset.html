@@ -66,8 +66,7 @@
 
 <p>As with many systems that store information dataset provides for basic operations of creating, updating and deleting. In the following section we will work with the <strong>friends.ds</strong> collection and <strong>favorites.ds</strong> collection we created previously.</p>
 
-<p>I have some friends who are characters in <a href="https://zbs.org">ZBS</a> radio plays. I am going to create
-save some of their info in our collection called <strong>friends.ds</strong>. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.</p>
+<p>I have some friends who are characters in <a href="https://zbs.org">ZBS</a> radio plays. I am going to create and save some of their info in our collection called <strong>friends.ds</strong>. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.</p>
 
 <pre><code class="language-bash">    dataset friends.ds create frieda '{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
 </code></pre>
@@ -349,7 +348,7 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
     print(&quot;\n&quot;.join(frame_names))
 </code></pre>
 
-<p>In our frame we have previously defined three columns, looking at the JSON representation of the frame we also see three labels and three “types”.  Labels are used when exporting frames to spreadsheets. They are also used as the field names when we get to indexes and search. The types are used when defining indexes for searching. The values in types should correspond to either JSON types or the types supported by the search system (e.g. keyword, datetime, geolocation).have three fields in our frame. We will work with both labels and types when we are using the other commands to export and indexes.</p>
+<p>In our frame we have previously defined three columns, looking at the JSON representation of the frame we also see three &ldquo;labels&rdquo; and three &ldquo;types&rdquo;.  These properties are for future use. Our plan is to leverage them when exporting to spreadsheets as well as when definining search indexes. E.g. labels could be used as column names when synchronizing a spreadsheet with collection values and the types fields would be helpful when defining search indexes.</p>
 
 <p>Finally the last thing we need to be able to do is delete a frame. Delete frames work very similar to deleting a JSON record.</p>
 

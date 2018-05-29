@@ -158,7 +158,7 @@ section h2 {
 
 section h3 {
     font-size: 1em;
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
 }
 
 section p {

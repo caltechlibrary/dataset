@@ -47,8 +47,7 @@ There is no dataset  verb to remove a collection. A collection is just a folder 
 
 As with many systems that store information dataset provides for basic operations of creating, updating and deleting. In the following section we will work with the **friends.ds** collection and **favorites.ds** collection we created previously.
 
-I have some friends who are characters in [ZBS](https://zbs.org) radio plays. I am going to create
-save some of their info in our collection called **friends.ds**. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.
+I have some friends who are characters in [ZBS](https://zbs.org) radio plays. I am going to create and save some of their info in our collection called **friends.ds**. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.
 
 
 ```bash
@@ -399,7 +398,7 @@ In Python
     print("\n".join(frame_names))
 ```
 
-In our frame we have previously defined three columns, looking at the JSON representation of the frame we also see three labels and three “types”.  Labels are used when exporting frames to spreadsheets. They are also used as the field names when we get to indexes and search. The types are used when defining indexes for searching. The values in types should correspond to either JSON types or the types supported by the search system (e.g. keyword, datetime, geolocation).have three fields in our frame. We will work with both labels and types when we are using the other commands to export and indexes.
+In our frame we have previously defined three columns, looking at the JSON representation of the frame we also see three "labels" and three "types".  These properties are for future use. Our plan is to leverage them when exporting to spreadsheets as well as when definining search indexes. E.g. labels could be used as column names when synchronizing a spreadsheet with collection values and the types fields would be helpful when defining search indexes.
 
 Finally the last thing we need to be able to do is delete a frame. Delete frames work very similar to deleting a JSON record.
 
