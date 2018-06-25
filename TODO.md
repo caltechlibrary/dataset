@@ -35,6 +35,8 @@
 
 ## Someday, Maybe
 
+- [ ] `dataset COLLECTION_NAME index-frame INDEX_NAME` - generate a Lunrjs or Bleve Index for search
+- [ ] `dataset COLLECTION_NAME crate KEY_LIST_FILE CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
 - [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
 - [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections

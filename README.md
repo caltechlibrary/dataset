@@ -19,7 +19,7 @@ The inspiration for creating _dataset_ was the desire to process metadata as JSO
 
 ## Design choices
 
-_dataset_ isn't a database or repository system. It is intended to be simple and easier to use with minimal setup (e.g. `dataset init mycollection.ds` would create a new collection called 'mycollection.ds').  It built around a few abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON file called collections.json and buckets containing the JSON objects and any attachments, the collections.json file describes the mapping of keys to buckets).  It takes minimal system resources
+_dataset_ isn't a database or repository system. It is intended to be simple and easier to use with minimal setup (e.g. `dataset init mycollection.ds` would create a new collection called 'mycollection.ds').  It is built around a few abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON file called collections.json and buckets, buckets containing the JSON objects and any attachments, the collections.json file describes the mapping of keys to buckets).  It takes minimal system resources
 and keeps all content, except JSON object attachments, in plain UTF-8 text (attachments are kept in tar files).
 
 A the typical library processing pattern is to write a "harvester" which stores it results in a _dataset_ collection, the use either a shell script or Python program to transform the collections content and finally redeploy the augmented results.
