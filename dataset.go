@@ -42,7 +42,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.42`
+	Version = `v0.0.43`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -501,6 +501,8 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 		err        error
 	)
 	r := csv.NewReader(buf)
+	r.FieldsPerRecord = -1
+	r.TrimLeadingSpace = true
 	lineNo := 0
 	if skipHeaderRow == true {
 		lineNo++
