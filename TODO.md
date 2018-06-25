@@ -35,6 +35,7 @@
 
 ## Someday, Maybe
 
+- [ ] change from aa-zz buckets to a pairtree bucket, e.g. https://pypi.org/project/Pairtree/
 - [ ] `dataset COLLECTION_NAME index-frame INDEX_NAME` - generate a Lunrjs or Bleve Index for search
 - [ ] `dataset COLLECTION_NAME crate KEY_LIST_FILE CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
