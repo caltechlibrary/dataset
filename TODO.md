@@ -35,7 +35,7 @@
 
 ## Someday, Maybe
 
-- [ ] Consider changing from aa-zz round robin buckets to a pairtree buckets, e.g. https://pypi.org/project/Pairtree/ or `go get github.com/tidwall/pairtree` for in memory examples 
+- [ ] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
 - [ ] `dataset COLLECTION_NAME index-frame INDEX_NAME` - generate a Lunrjs or Bleve Index for search
 - [ ] `dataset COLLECTION_NAME crate KEY_LIST_FILE CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
