@@ -8,11 +8,12 @@
 
 ## Next (prep for v0.1.0)
 
-- [ ] Evaluate switching from aa to zz buckets to pairtree ppath 
+- [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
 - [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
 - [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
 - [ ] Evaluate moving attachments as tar ball into an "a" directory following OCFL suggestions
 - [ ] Documentation updates
+    - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 - [ ] Confirm consensus on the minor release version number bump
 
 
