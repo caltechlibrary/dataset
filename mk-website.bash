@@ -37,6 +37,9 @@ findfile -s ".md" . | while read P; do
 				HTML_NAME="${DNAME}/README.html"
 			fi
 			;;
+        "INSTALL.md")
+            HTML_NAME="${DNAME}/install.html"
+            ;;
 		*)
 			HTML_NAME=$(echo "$P" | sed -E 's/.md$/.html/g')
 			;;

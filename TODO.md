@@ -7,8 +7,17 @@
 
 ## Next (prep for v0.1.0)
 
+- [ ] Evaluate moving buckets into a "payload" (i.e. "data") folder for easier Bagging
+- [ ] Evaluate namaste support for collections
+    - `dataset COLLECT_NAME namaste who "Doiel, R. S."`
+    - namaste feilds should be added in collection.json too
+- [ ] Evaluate switching from aa to zz buckets to pairtree ppath 
+- [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
+- [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
+- [ ] Evaluate moving attachments as tar ball into an "a" directory following OCFL suggestions
 - [ ] Documentation updates
 - [ ] Confirm consensus on the minor release version number bump
+
 
 ## Roadmap (v0.2.x)
 
@@ -35,9 +44,11 @@
 
 ## Someday, Maybe
 
-- [ ] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
+- [ ] Consider implementing Sword importer(s)/exporter(s) (v3? when spec is settled)
+- [ ] Consider implementing an EPrint 3.x importer/exporter
+- [x] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
 - [ ] `dataset COLLECTION_NAME index-frame INDEX_NAME` - generate a Lunrjs or Bleve Index for search
-- [ ] `dataset COLLECTION_NAME crate KEY_LIST_FILE CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
+- [ ] `dataset COLLECTION_NAME crate FRAME_NAME CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
 - [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
 - [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections
