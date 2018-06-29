@@ -7,10 +7,10 @@
 
 ## Next (prep for v0.1.0)
 
+- [ ] Evaluate moving buckets into a "payload" (i.e. "data") folder for easier Bagging
 - [ ] Evaluate namaste support for collections
     - `dataset COLLECT_NAME namaste who "Doiel, R. S."`
     - namaste feilds should be added in collection.json too
-- [ ] Evaluate moving buckets into a "payload" (i.e. "data") folder for easier Bagging
 - [ ] Evaluate switching from aa to zz buckets to pairtree ppath 
 - [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
 - [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
