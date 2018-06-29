@@ -43,7 +43,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.43`
+	Version = `v0.1.0-alpha`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -241,7 +241,7 @@ func create(name string, bucketNames []string) (*Collection, error) {
 	// Save the metadata for collection
 	err = c.saveMetadata()
 	// Add Namaste type record
-	namaste.DirType(name, fmt.Sprintf("dataset_%v", Version))
+	namaste.DirType(name, fmt.Sprintf("dataset-collection_%v", Version[1:]))
 	namaste.When(name, time.Now().Format("2006-01-02"))
 	return c, err
 }
@@ -300,7 +300,7 @@ func (c *Collection) saveMetadata() error {
 func (c *Collection) DocPath(name string) (string, error) {
 	keyName, name := keyAndFName(name)
 	if bucketName, ok := c.KeyMap[keyName]; ok == true {
-		return path.Join(c.Name, bucketName, name), nil
+		return path.Join(c.Name, "data", bucketName, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
 }
@@ -352,7 +352,7 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 	}
 
 	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
-	p := path.Join(c.Name, bucketName)
+	p := path.Join(c.Name, "data", bucketName)
 	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
 		return fmt.Errorf("mkdir %s %s", p, err)
@@ -378,7 +378,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, FName))
+	src, err := c.Store.ReadFile(path.Join(c.Name, "data", bucketName, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -409,7 +409,8 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
 	}
 
-	p := path.Join(c.Name, bucketName)
+	//NOTE: This is where Pairtree code would go instead of bucketName
+	p := path.Join(c.Name, "data", bucketName)
 	err := c.Store.MkdirAll(p, 0770)
 	if err != nil {
 		return fmt.Errorf("Update (mkdir) %s %s", p, err)
@@ -463,11 +464,11 @@ func (c *Collection) Delete(name string) error {
 
 	//NOTE: Need to remove any stale tarball before removing our record!
 	tarball := keyName + ".tar"
-	p := path.Join(c.Name, bucketName, tarball)
+	p := path.Join(c.Name, "data", bucketName, tarball)
 	if err := c.Store.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
 	}
-	p = path.Join(c.Name, bucketName, FName)
+	p = path.Join(c.Name, "data", bucketName, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}

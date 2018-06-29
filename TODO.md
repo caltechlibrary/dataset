@@ -3,14 +3,11 @@
 
 ## Bugs
 
-- [ ] Source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
+- [ ] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
+- [ ] repair/check should handle old and new file layout (e.g. moving buckets under "data" on upgrade) 
 
 ## Next (prep for v0.1.0)
 
-- [ ] Evaluate moving buckets into a "payload" (i.e. "data") folder for easier Bagging
-- [ ] Evaluate namaste support for collections
-    - `dataset COLLECT_NAME namaste who "Doiel, R. S."`
-    - namaste feilds should be added in collection.json too
 - [ ] Evaluate switching from aa to zz buckets to pairtree ppath 
 - [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
 - [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
@@ -44,6 +41,9 @@
 
 ## Someday, Maybe
 
+- [ ] Evaluate adding namaste verb for collections
+    - `dataset COLLECT_NAME namaste who "Doiel, R. S."`
+    - namaste feilds should be added in collection.json too
 - [ ] Consider implementing Sword importer(s)/exporter(s) (v3? when spec is settled)
 - [ ] Consider implementing an EPrint 3.x importer/exporter
 - [x] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
@@ -84,6 +84,8 @@
 
 ## Completed
 
+- [x] Evaluate moving buckets into a "payload" (i.e. "data") folder for easier Bagging
+- [x] Added namaste type and when on dataset init
 - [x] Fix attachment handling so listing attachment names are fast (move out of tarball and save as a subdirectory using ID as name)
 - [x] Add clone verb to _dataset_ command, clone will copy a repository if the -sample option is used it will copy a sample of the source repository if two destination repositories are provided and sample is choosen then the first will contain the sample (training set) and second records not included in the first (the test set)
 - [x] change dataset join update to dataset join append
