@@ -157,8 +157,8 @@ func Analyzer(collectionName string) error {
 	// Find buckets
 	buckets, err = findBuckets(path.Join(collectionName, "data"))
 	if err != nil {
-		log.Printf("ERROR: No buckets found for %s, %s", collectionName, err)
-		eCnt++
+		log.Printf("No buckets found for %s, %s", collectionName, err)
+		wCnt++
 	}
 	// Check if buckets match
 	log.Printf("Checking buckets")
