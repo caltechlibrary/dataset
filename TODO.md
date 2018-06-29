@@ -7,8 +7,13 @@
 
 ## Next (prep for v0.1.0)
 
+- [ ] Add namaste support for collections
+- [ ] Evaluate switching from aa to zz buckets to pairtree ppath 
+- [ ] Evaluate migrating dataset collections into a datacrate/bagit compatible file heirarchy
+    - [ ] Evaluate moving "attachments" out of tar balls into a [payload]/[pairtree] folder
 - [ ] Documentation updates
 - [ ] Confirm consensus on the minor release version number bump
+
 
 ## Roadmap (v0.2.x)
 
@@ -35,6 +40,8 @@
 
 ## Someday, Maybe
 
+- [ ] Consider implementing a Sword v1,2,3 importer(s)/exporter(s)
+- [ ] Consider implementing an EPrint 3.x importer/exporter
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
 - [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
 - [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections
