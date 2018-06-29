@@ -35,6 +35,7 @@ import (
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
@@ -239,6 +240,8 @@ func create(name string, bucketNames []string) (*Collection, error) {
 	c.Store = store
 	// Save the metadata for collection
 	err = c.saveMetadata()
+	// Add Namaste type record
+	namaste.DirType(name, fmt.Sprintf("dataset_%v", Version))
 	return c, err
 }
 
