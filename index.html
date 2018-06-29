@@ -41,10 +41,10 @@ most programming languages with text processing support.</p>
 
 <h2>Design choices</h2>
 
-<p><em>dataset</em> isn&rsquo;t a database or repository system. It is intended to be simple and easier to use with minimal setup (e.g. <code>dataset init mycollection.ds</code> would create a new collection called &lsquo;mycollection.ds&rsquo;).  It built around a few abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON file called collections.json and buckets containing the JSON objects and any attachments, the collections.json file describes the mapping of keys to buckets).  It takes minimal system resources
+<p><em>dataset</em> isn&rsquo;t a database or repository system. It is intended to be simple and easier to use with minimal setup (e.g. <code>dataset init mycollection.ds</code> would create a new collection called &lsquo;mycollection.ds&rsquo;).  It is built around a few abstractions (e.g. dataset stores JSON objects in collections, collections are a folder containing a JSON file called collections.json and buckets, buckets containing the JSON objects and any attachments, the collections.json file describes the mapping of keys to buckets).  It takes minimal system resources
 and keeps all content, except JSON object attachments, in plain UTF-8 text (attachments are kept in tar files).</p>
 
-<p>A the typical library processing pattern is to write a &ldquo;harvester&rdquo; which stores it results in a <em>dataset</em> collection, the use either a shell script or Python program to transform the collections content and finally redeploy the augmented results.</p>
+<p>A typical library processing pattern is to write a &ldquo;harvester&rdquo; which stores it results in a <em>dataset</em> collection, this uses either a shell or Python script to transform the collections content and finally redeploy the augmented results.</p>
 
 <p>Care has been taken to keep <em>dataset</em> simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi while being equally comfortable on a more resource rich server or desktop environment.</p>
 

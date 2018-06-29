@@ -40,8 +40,14 @@
 
 ## Someday, Maybe
 
+<<<<<<< HEAD
 - [ ] Consider implementing a Sword v1,2,3 importer(s)/exporter(s)
 - [ ] Consider implementing an EPrint 3.x importer/exporter
+=======
+- [ ] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
+- [ ] `dataset COLLECTION_NAME index-frame INDEX_NAME` - generate a Lunrjs or Bleve Index for search
+- [ ] `dataset COLLECTION_NAME crate KEY_LIST_FILE CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
+>>>>>>> 28fd005914322aa80a35f3bdf78f5ea0f266ccf8
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
 - [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
 - [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections
