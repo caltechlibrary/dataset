@@ -155,7 +155,7 @@ func Analyzer(collectionName string) error {
 	}
 
 	// Find buckets
-	buckets, err = findBuckets(path.Join(collectionName, "data"))
+	buckets, err = findBuckets(collectionName)
 	if err != nil {
 		log.Printf("No buckets found for %s, %s", collectionName, err)
 		wCnt++
@@ -176,7 +176,7 @@ func Analyzer(collectionName string) error {
 	// Check to see if records can be found in their buckets
 	log.Printf("Checking for %d keys from keymaps against their buckets", len(c.KeyMap))
 	for ky, bucket := range c.KeyMap {
-		if docPath, exists := checkFileExists(path.Join(collectionName, "data", bucket, ky+".json")); exists == false {
+		if docPath, exists := checkFileExists(path.Join(collectionName, bucket, ky+".json")); exists == false {
 			log.Printf("ERROR: %s is missing", docPath)
 			eCnt++
 		}
@@ -191,16 +191,16 @@ func Analyzer(collectionName string) error {
 	log.Printf("Scanning buckets for orphaned and duplicate records")
 	kCnt = 0
 	for j, bck := range buckets {
-		if jsonDocs, err := findJSONDocs(path.Join(collectionName, "data", bck)); err == nil {
+		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
 			for _, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(path.Base(jsonDoc), ".json")
 				if val, ok := c.KeyMap[ky]; ok == true {
 					if val != bck {
-						log.Printf("%s is a duplicate", path.Join(collectionName, "data", val, jsonDoc))
+						log.Printf("%s is a duplicate", path.Join(collectionName, val, jsonDoc))
 						wCnt++
 					}
 				} else {
-					log.Printf("ERROR: %s is an orphaned JSON Doc", path.Join(collectionName, "data", bck, jsonDoc))
+					log.Printf("ERROR: %s is an orphaned JSON Doc", path.Join(collectionName, bck, jsonDoc))
 					eCnt++
 				}
 				kCnt++
@@ -268,7 +268,7 @@ func Repair(collectionName string) error {
 	}
 	c.Version = Version
 	log.Printf("Getting a list of buckets")
-	if buckets, err := findBuckets(path.Join(collectionName, "data")); err == nil {
+	if buckets, err := findBuckets(collectionName); err == nil {
 		c.Buckets = buckets
 	} else {
 		return err
@@ -278,13 +278,13 @@ func Repair(collectionName string) error {
 		if c.KeyMap == nil {
 			c.KeyMap = map[string]string{}
 		}
-		if jsonDocs, err := findJSONDocs(path.Join(collectionName, "data", bck)); err == nil {
+		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
 			for i, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(jsonDoc, ".json")
 				if strings.TrimSpace(ky) != "" {
 					if val, ok := c.KeyMap[ky]; ok == true {
-						if stat1, err := os.Stat(path.Join(collectionName, "data", bck, ky+".json")); err == nil {
-							if stat2, err := os.Stat(path.Join(collectionName, "data", val, ky+".json")); err == nil {
+						if stat1, err := os.Stat(path.Join(collectionName, bck, ky+".json")); err == nil {
+							if stat2, err := os.Stat(path.Join(collectionName, val, ky+".json")); err == nil {
 								m1 := stat1.ModTime()
 								m2 := stat2.ModTime()
 								if m1.Unix() > m2.Unix() {

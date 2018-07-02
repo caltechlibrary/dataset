@@ -8,6 +8,7 @@
 
 ## Next (prep for v0.1.0)
 
+- [ ] Moving object tree out of "data", leave "data" empty to be compatible with other bagit tools
 - [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
 - [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
 - [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 

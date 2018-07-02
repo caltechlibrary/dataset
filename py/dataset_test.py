@@ -62,7 +62,7 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = "/".join([collection_name,"data","aa", (key+".json")])
+    expected_s = "/".join([collection_name,"aa", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
