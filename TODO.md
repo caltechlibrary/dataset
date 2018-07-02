@@ -8,6 +8,7 @@
 ## Next (prep for v0.1.0)
 
 + [ ] Generate codemeta.json in collection folder
+    + https://codemeta.github.io/terms 
 + [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
     + [ ] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
     + [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
