@@ -4,14 +4,14 @@
 ## Bugs
 
 + [ ] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
-+ [ ] repair/check should handle old and new file layout (e.g. moving buckets under "data" on upgrade) 
 
 ## Next (prep for v0.1.0)
 
 + [ ] Generate codemeta.json in collection folder
 + [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
-+ [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
-+ [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
+    + [ ] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
+    + [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
+    + [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
 + [ ] Evaluate moving attachments as tar ball into an "a" directory following OCFL suggestions
 + [ ] Documentation updates
     - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
