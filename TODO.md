@@ -9,11 +9,11 @@
 
 + [ ] Generate codemeta.json in collection folder
     + https://codemeta.github.io/terms 
++ [ ] Repair/check should work on S3 and Google Cloud Storage
 + [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
     + [ ] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
-    + [ ] Evaluate moving JSON object from [ID].json to [ID]/o.json
-    + [ ] Evaluate moving "attachments" into a [payload]/[pairtree]/[ID]/a.tar folder 
-+ [ ] Evaluate moving attachments as tar ball into an "a" directory following OCFL suggestions
+    + [ ] Evaluate moving JSON object from [ID].json to [ID].json
+    + [ ] Evaluate moving "attachments" into a [collection_name]/[pairtree]/[ID]/[relative path for objects] (i.e. drop making tar balls) 
 + [ ] Documentation updates
     - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 + [ ] Confirm consensus on the minor release version number bump
