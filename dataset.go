@@ -241,7 +241,7 @@ func create(name string, bucketNames []string) (*Collection, error) {
 	// Save the metadata for collection
 	err = c.saveMetadata()
 	// Add Namaste type record
-	namaste.DirType(name, fmt.Sprintf("dataset-collection_%v", Version[1:]))
+	namaste.DirType(name, fmt.Sprintf("dataset-collection_%s", Version[1:]))
 	namaste.When(name, time.Now().Format("2006-01-02"))
 	return c, err
 }

@@ -26,14 +26,150 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"time"
 
 	// CaltechLibrary packages
+	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/storage"
 )
 
 //
+// Exported functions for dataset cli usage
+//
+
+//
+// Analyzer checks the collection version and either calls
+// bucketAnalyzer or pairtreeAnalyzer as appropriate.
+//
+func Analyzer(collectionName string) error {
+	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	if err != nil {
+		return err
+	}
+	files, err := store.ReadDir(collectionName)
+	if err != nil {
+		return err
+	}
+	hasNamaste := false
+	hasCollectionJSON := false
+	hasPairtree := false
+	hasBuckets := false
+	for _, file := range files {
+		fname := file.Name()
+		switch {
+		case strings.HasPrefix(fname, "0=dataset-collection_"):
+			hasNamaste = true
+		case fname == "collection.json":
+			hasCollectionJSON = true
+		case fname == "pairtree" && file.IsDir() == true:
+			hasPairtree = true
+		case fname == "aa" && file.IsDir() == true:
+			hasBuckets = true
+		}
+	}
+	// NOTE: Check for Namaste 0=, warn if missing
+	if hasNamaste == false {
+		log.Printf("Missing Namaste 0=dataset-collection_%s\n", Version[1:])
+	}
+
+	// NOTE: Check to see if we have a collections.json
+	if hasCollectionJSON == false {
+		log.Printf("Missing collection.json\n")
+	}
+
+	// NOTE: We must check for a pairtree then...
+	if hasPairtree == true {
+		if err := pairtreeAnalyzer(collectionName); err != nil {
+			return err
+		}
+	}
+	// NOTE: We're working with buckets (e.g. aa, ab, exists)
+	if hasBuckets {
+		if err := bucketAnalyzer(collectionName); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+//
+// Repair takes a collection name and calls
+// wither bucketRepair or pairtreeRepair as appropriate.
+//
+func Repair(collectionName string) error {
+	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	if err != nil {
+		return err
+	}
+	files, err := store.ReadDir(collectionName)
+	if err != nil {
+		return err
+	}
+	hasNamaste := false
+	hasCollectionJSON := false
+	hasPairtree := false
+	hasBuckets := false
+	for _, file := range files {
+		fname := file.Name()
+		switch {
+		case strings.HasPrefix(fname, "0=dataset"):
+			hasNamaste = true
+		case fname == "collection.json":
+			hasCollectionJSON = true
+		case fname == "pairtree" && file.IsDir() == true:
+			hasPairtree = true
+		case fname == "aa" && file.IsDir() == true:
+			hasBuckets = true
+		}
+	}
+	// NOTE: Check for Namaste 0=, warn and create if missing
+	if hasNamaste == false {
+		// Add Namaste type record
+		namaste.DirType(collectionName, fmt.Sprintf("dataset-collection_%s\n", Version[1:]))
+		namaste.When(collectionName, time.Now().Format("2006-01-02"))
+	}
+	// NOTE: Check to see if we have a collections.json, warn and create if missing
+	if hasCollectionJSON == false {
+		log.Printf("Missing collection.json, will be regenerating it")
+	}
+
+	// NOTE: We're working with buckets (e.g. aa, ab, exists)
+	if hasBuckets {
+		if err := bucketRepair(collectionName); err != nil {
+			return err
+		}
+		// QUESTION: Should we automigrate to pairtree? ...
+		//return migrateToPairtree(collectionName)
+	}
+
+	// NOTE: if we're this fair we should repair the pairtree
+	if hasPairtree {
+		if err := pairtreeRepair(collectionName); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+//
 // Helper functions
 //
+
+// migrateToPairtree will migrate JSON objects and attachments from
+// a bucket oriented collection to a pairtree.
+func migrateToPairtree(collectionName string) error {
+	return fmt.Errorf("migrateToPairtree() not implemented.")
+}
+
+// pairtreeAnalyzer will scan a pairtree based collection for errors.
+func pairtreeAnalyzer(collectionName string) error {
+	return fmt.Errorf("pairtreeAnalyzer() not implemented.")
+}
+
+// pairtreeRepair will scan an repair a pairtree based collection
+func pairtreeRepair(collectionName string) error {
+	return fmt.Errorf("pairtreeRepair() not implemented.")
+}
 
 func keyFound(s string, l []string) bool {
 	for _, ky := range l {
@@ -92,11 +228,7 @@ func checkFileExists(p string) (string, bool) {
 	return p, true
 }
 
-//
-// Exported functionds for dataset cli usage
-//
-
-// Analyzer checks a collection for problems
+// bucketAnalyzer checks a collection for problems
 //
 // + checks if collection.json exists and is valid
 // + checks version of collection and version of dataset tool running
@@ -106,7 +238,7 @@ func checkFileExists(p string) (string, bool) {
 // + checks for unaccounted for keys in buckets
 // + checks for keys in multiple buckets and reports duplicate record modified times
 //
-func Analyzer(collectionName string) error {
+func bucketAnalyzer(collectionName string) error {
 	var (
 		eCnt    int
 		wCnt    int
@@ -119,7 +251,7 @@ func Analyzer(collectionName string) error {
 
 	store, err := storage.Init(storage.StorageType(collectionName), nil)
 	if err != nil {
-		return fmt.Errorf("Analyzer does not support storage type, %s", err)
+		return fmt.Errorf("Bucket Analyzer does not support storage type, %s", err)
 	}
 
 	// Check of collections.json
@@ -153,13 +285,15 @@ func Analyzer(collectionName string) error {
 		return fmt.Errorf("ERROR: Open %s, %s", collectionName, err)
 	}
 	defer c.Close()
-	if c.Store.Type != storage.FS {
-		return fmt.Errorf("Analyzer only works on local disc storage")
+	if c.Store.Type == storage.UNSUPPORTED {
+		return fmt.Errorf("Analyzer only works on supported storage")
 	}
 	if c.Version != Version {
 		log.Printf("WARNING: Version mismatch collection %s, dataset %s", c.Version, Version)
 		wCnt++
 	}
+
+	// FIXME: Do we have buckets or a pairtree (> v0.0.45)? or buckets?
 
 	// Find buckets
 	buckets, err = findBuckets(collectionName)
@@ -237,9 +371,9 @@ func hasBucket(l []string, s string) bool {
 	return false
 }
 
-// Repair will take a collection name and attempt to recreate
+// bucketRepair will take a collection name and attempt to recreate
 // valid collection.json from content in discovered buckets and attached documents
-func Repair(collectionName string) error {
+func bucketRepair(collectionName string) error {
 	var (
 		c   *Collection
 		err error
@@ -268,8 +402,8 @@ func Repair(collectionName string) error {
 	}
 	defer c.Close()
 
-	if c.Store.Type != storage.FS {
-		return fmt.Errorf("Repair only works on local disc storage")
+	if c.Store.Type == storage.UNSUPPORTED {
+		return fmt.Errorf("Repair only works on supported storage")
 	}
 	if c.Version != Version {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)
