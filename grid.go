@@ -43,10 +43,8 @@ func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]i
 			value, err := dotpath.Eval(dpath, rec)
 			if err == nil {
 				rows[i][j] = value
-			} else {
-				if verbose {
-					log.Printf("(pid: %d) WARNING: skipped %s for cell %d row %d, %s", pid, dpath, j, i, err)
-				}
+			} else if verbose == true {
+				log.Printf("(pid: %d) WARNING: skipped %s for cell %d row %d, %s", pid, dpath, j, i, err)
 			}
 		}
 		if verbose && (i > 0) && ((i % 1000) == 0) {

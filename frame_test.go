@@ -74,7 +74,7 @@ func TestFrame(t *testing.T) {
 		}
 	}
 
-	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, true)
+	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, false)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

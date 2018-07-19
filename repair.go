@@ -21,7 +21,6 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -47,8 +46,11 @@ func keyFound(s string, l []string) bool {
 
 func findBuckets(p string) ([]string, error) {
 	var buckets []string
-
-	dirInfo, err := ioutil.ReadDir(p)
+	store, err := storage.Init(storage.StorageType(p), nil)
+	if err != nil {
+		return buckets, err
+	}
+	dirInfo, err := store.ReadDir(p)
 	if err != nil {
 		return buckets, err
 	}
@@ -63,7 +65,11 @@ func findBuckets(p string) ([]string, error) {
 func findJSONDocs(p string) ([]string, error) {
 	var jsonDocs []string
 
-	dirInfo, err := ioutil.ReadDir(p)
+	store, err := storage.Init(storage.StorageType(p), nil)
+	if err != nil {
+		return jsonDocs, err
+	}
+	dirInfo, err := store.ReadDir(p)
 	if err != nil {
 		return jsonDocs, err
 	}
@@ -111,8 +117,9 @@ func Analyzer(collectionName string) error {
 		err     error
 	)
 
-	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
-		return fmt.Errorf("Analyzer only works on local disc storage")
+	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	if err != nil {
+		return fmt.Errorf("Analyzer does not support storage type, %s", err)
 	}
 
 	// Check of collections.json
@@ -125,7 +132,7 @@ func Analyzer(collectionName string) error {
 			return fmt.Errorf("%q does not exist", collectionName)
 		} else {
 			// Make sure we can JSON parse the file
-			if src, err := ioutil.ReadFile(docPath); err == nil {
+			if src, err := store.ReadFile(docPath); err == nil {
 				if err := json.Unmarshal(src, &data); err == nil {
 					// release the memory
 					data = nil
@@ -238,15 +245,16 @@ func Repair(collectionName string) error {
 		err error
 	)
 
-	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
-		return fmt.Errorf("Repair only works on local disc storage")
+	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	if err != nil {
+		return fmt.Errorf("Repair only works supported storage types, %s", err)
 	}
 
 	// See if we can open a collection, if not then create an empty struct
 	c, err = Open(collectionName)
 	if err != nil {
 		log.Printf("Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = ioutil.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		err = store.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
 			log.Printf("Can't re-initilize %s, %s", collectionName, err)
 			return err

@@ -74,7 +74,7 @@ func TestGrid(t *testing.T) {
 		}
 	}
 
-	g, err := c.Grid(keys, []string{"._Key", ".one", ".two", ".three", ".four"}, true)
+	g, err := c.Grid(keys, []string{"._Key", ".one", ".two", ".three", ".four"}, false)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -90,5 +90,4 @@ func TestGrid(t *testing.T) {
 	if len(src) == 0 {
 		t.Errorf("expected content marshaled for grid, got none")
 	}
-	//	log.Printf("DEBUG grid src:\n%s", src)
 }
