@@ -30,7 +30,7 @@ func TestRepair(t *testing.T) {
 	// Setup a test collection and data
 	cName := "test_repair.ds"
 	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
+	c, err := InitCollection(cName, BUCKETS_LAYOUT)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

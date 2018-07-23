@@ -67,6 +67,7 @@ var (
 	overwrite         bool
 	batchSize         int
 	keyFName          string
+	collectionLayout  = "buckets" // Default collection file layout
 
 	// Search specific options, application Options
 	showHighlight  bool
@@ -164,14 +165,25 @@ func repairCollection(params ...string) (string, error) {
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc
 func collectionInit(params ...string) (string, error) {
+	var cLayout int
+
 	if collectionName == "" && len(params) == 0 {
 		return "", fmt.Errorf("missing a collection name")
 	}
 	if collectionName != "" {
 		params = append(params, collectionName)
 	}
+	// Set the collection layout
+	switch strings.ToLower(collectionLayout) {
+	case "buckets":
+		cLayout = dataset.BUCKETS_LAYOUT
+	case "pairtree":
+		cLayout = dataset.PAIRTREE_LAYOUT
+	default:
+		return "", fmt.Errorf("unknown collection layout, %q", collectionLayout)
+	}
 	for _, cName := range params {
-		c, err := dataset.InitCollection(cName)
+		c, err := dataset.InitCollection(cName, cLayout)
 		if err != nil {
 			return "", err
 		}
@@ -1487,6 +1499,7 @@ func main() {
 
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
+	app.StringVar(&collectionLayout, "layout", collectionLayout, "set file layout for a new collection (i.e. \"buckets\" or \"pairtree\")")
 	app.BoolVar(&useHeaderRow, "use-header-row", true, "(import) use the header row as attribute names in the JSON document")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")

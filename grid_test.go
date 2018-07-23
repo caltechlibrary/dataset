@@ -28,7 +28,7 @@ import (
 func TestGrid(t *testing.T) {
 	os.RemoveAll("grid_test.ds")
 	cName := "grid_test.ds"
-	c, err := InitCollection(cName)
+	c, err := InitCollection(cName, BUCKETS_LAYOUT)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

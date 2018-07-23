@@ -55,7 +55,7 @@ go_verbose_off = lib.verbose_off
 go_verbose_off.restype = ctypes.c_int
 
 go_init = lib.init_collection
-go_init.argtypes = [ctypes.c_char_p]
+go_init.argtypes = [ctypes.c_char_p, ctypes.c_int]
 go_init.restype = ctypes.c_int
 
 go_create_record = lib.create_record
@@ -280,7 +280,7 @@ def version():
 # Initializes a Dataset Collection
 def init(collection_name):
     '''initialize a dataset collection with the given name'''
-    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')))
+    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_int(1))
     if ok == 1:
         return ''
     return error_message()
