@@ -121,7 +121,7 @@ func normalizeKeyName(s string) string {
 func collectionNameFromPath(p string) string {
 	if strings.Contains(p, "://") {
 		u, _ := url.Parse(p)
-		return u.Path
+		return path.Base(u.Path)
 	}
 	return strings.TrimSpace(p)
 }

@@ -193,9 +193,9 @@ func TestIndexingSearch(t *testing.T) {
 
 func TestIndexerDeindexer(t *testing.T) {
 	for _, cLayout := range layouts {
-		cName := "test_index.ds"
-		indexName := "test_index.bleve"
-		indexMapName := "test_index_map.json"
+		cName := path.Join("testdata", "test_index.ds")
+		indexName := path.Join("testdata", "test_index.bleve")
+		indexMapName := path.Join("testdata", "test_index_map.json")
 		os.RemoveAll(cName)
 		os.RemoveAll(indexName)
 		os.RemoveAll(indexMapName)

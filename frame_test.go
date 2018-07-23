@@ -19,74 +19,80 @@
 package dataset
 
 import (
-	//"log"
 	"os"
+	"path"
 	"testing"
 )
 
 func TestFrame(t *testing.T) {
-	os.RemoveAll("frame_test.ds")
-	cName := "frame_test.ds"
-	c, err := InitCollection(cName, BUCKETS_LAYOUT)
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
+	layouts := []int{
+		BUCKETS_LAYOUT,
+		PAIRTREE_LAYOUT,
 	}
-	defer c.Close()
-
-	//NOTE: test data and to load into collection and generate grid
-	tRecords := []map[string]interface{}{
-		map[string]interface{}{
-			"_Key":  "A",
-			"id":    "A",
-			"one":   "one",
-			"two":   22,
-			"three": 3.0,
-			"four":  []string{"one", "two", "three"},
-		},
-		map[string]interface{}{
-			"_Key":  "B",
-			"id":    "B",
-			"two":   2000,
-			"three": 3000.1,
-		},
-		map[string]interface{}{
-			"_Key": "C",
-			"id":   "C",
-		},
-		map[string]interface{}{
-			"_Key":  "D",
-			"id":    "D",
-			"one":   "ONE",
-			"two":   20,
-			"three": 334.1,
-			"four":  []string{},
-		},
-	}
-	keys := []string{}
-	for _, rec := range tRecords {
-		key := rec["_Key"].(string)
-		keys = append(keys, key)
-		err := c.Create(key, rec)
+	for _, cLayout := range layouts {
+		os.RemoveAll(path.Join("testdata", "frame_test.ds"))
+		cName := path.Join("testdata", "frame_test.ds")
+		c, err := InitCollection(cName, cLayout)
 		if err != nil {
 			t.Error(err)
 			t.FailNow()
 		}
-	}
+		defer c.Close()
 
-	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, false)
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	expected := "frame-1"
-	result := f.Name
-	if expected != result {
-		t.Errorf("expected %q, got %q, for %s", expected, result, f)
-	}
-	expected = "frame_test.ds"
-	result = f.CollectionName
-	if expected != result {
-		t.Errorf("expected %q, got %q, for %s", expected, result, f)
+		//NOTE: test data and to load into collection and generate grid
+		tRecords := []map[string]interface{}{
+			map[string]interface{}{
+				"_Key":  "A",
+				"id":    "A",
+				"one":   "one",
+				"two":   22,
+				"three": 3.0,
+				"four":  []string{"one", "two", "three"},
+			},
+			map[string]interface{}{
+				"_Key":  "B",
+				"id":    "B",
+				"two":   2000,
+				"three": 3000.1,
+			},
+			map[string]interface{}{
+				"_Key": "C",
+				"id":   "C",
+			},
+			map[string]interface{}{
+				"_Key":  "D",
+				"id":    "D",
+				"one":   "ONE",
+				"two":   20,
+				"three": 334.1,
+				"four":  []string{},
+			},
+		}
+		keys := []string{}
+		for _, rec := range tRecords {
+			key := rec["_Key"].(string)
+			keys = append(keys, key)
+			err := c.Create(key, rec)
+			if err != nil {
+				t.Error(err)
+				t.FailNow()
+			}
+		}
+
+		f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, false)
+		if err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+		expected := "frame-1"
+		result := f.Name
+		if expected != result {
+			t.Errorf("expected %q, got %q, for %s", expected, result, f)
+		}
+		expected = cName // e.g. "testdata/frame_test.ds"
+		result = f.CollectionName
+		if expected != result {
+			t.Errorf("expected %q, got %q, for %s", expected, result, f)
+		}
 	}
 }

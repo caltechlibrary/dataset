@@ -27,8 +27,8 @@ import (
 
 func TestCollection(t *testing.T) {
 	layouts := map[string]int{
-		"testdata/pairtree_layout/col1": PAIRTREE_LAYOUT,
-		"testdata/buckets_layout/col1":  BUCKETS_LAYOUT,
+		"testdata/pairtree_layout/col1.ds": PAIRTREE_LAYOUT,
+		"testdata/buckets_layout/col1.ds":  BUCKETS_LAYOUT,
 	}
 	for colName, colLayout := range layouts {
 		// Remove any pre-existing test data
@@ -95,23 +95,23 @@ func TestCollection(t *testing.T) {
 				id := k.(string)
 				err = collection.Create(id, rec)
 				if err != nil {
-					t.Errorf("collection.Create(), %s", err)
+					t.Errorf("%q: collection.Create(), %s", collection.Name, err)
 					t.FailNow()
 				}
 				p, err := collection.DocPath(id)
 				if err != nil {
-					t.Errorf("Should have docpath for %s, %s", id, err)
+					t.Errorf("%q: Should have docpath for %s, %s", collection.Name, id, err)
 					t.FailNow()
 				}
 				if _, err := os.Stat(p); os.IsNotExist(err) == true {
-					t.Errorf("Should have saved %s to disc at %s", id, p)
+					t.Errorf("%q: Should have saved %s to disc at %s", collection.Name, id, p)
 					t.FailNow()
 				}
 			}
 		}
 
 		if len(collection.KeyMap) != 3 {
-			t.Errorf("expected 1 key, got %+v", collection)
+			t.Errorf("%q: expected 1 key, got %+v", collection.Name, collection)
 			t.FailNow()
 		}
 		keys := collection.Keys()
@@ -125,31 +125,31 @@ func TestCollection(t *testing.T) {
 		rec2 := map[string]interface{}{}
 		err = collection.Read(keyName, rec2)
 		if err != nil {
-			t.Errorf("Read(), %s", err)
+			t.Errorf("%q: Read(), %s", collection.Name, err)
 			t.FailNow()
 		}
 		rec1 := testData[0]
 		for k, expected := range rec1 {
 			if val, ok := rec2[k]; ok == true {
 				if expected != val {
-					t.Errorf("expected %s in record, got, %s", expected, val)
+					t.Errorf("%q: expected %s in record, got, %s", collection.Name, expected, val)
 					t.FailNow()
 				}
 			} else {
-				t.Errorf("Read() missing %s in %+v, %+v", k, rec1, rec2)
+				t.Errorf("%q: Read() missing %s in %+v, %+v", collection.Name, k, rec1, rec2)
 				t.FailNow()
 			}
 		}
 		// Should trigger update if a duplicate record
 		err = collection.Create(keyName, rec2)
 		if err == nil {
-			t.Errorf("Create not allow creationg on an existing record, %s --> %+v", keyName, rec2)
+			t.Errorf("%q: Create not allow creationg on an existing record, %s --> %+v", collection.Name, keyName, rec2)
 			t.FailNow()
 		}
 
 		rec3 := map[string]interface{}{}
 		if err := collection.Read(keyName, rec3); err != nil {
-			t.Errorf("Should have found freda in collection, %s", err)
+			t.Errorf("%q: Should have found freda in collection, %s", collection.Name, err)
 			t.FailNow()
 		}
 		for k2, v2 := range rec2 {
@@ -165,7 +165,7 @@ func TestCollection(t *testing.T) {
 		rec2["email"] = "freda@collectivo.example.org"
 		err = collection.Update(keyName, rec2)
 		if err != nil {
-			t.Errorf("Could not update %s, %s", "freda", err)
+			t.Errorf("%s (%d): Could not update %s, %s", collection.Name, collection.Layout, "freda", err)
 			t.FailNow()
 		}
 

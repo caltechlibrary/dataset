@@ -42,7 +42,7 @@ import (
 // bucketAnalyzer or pairtreeAnalyzer as appropriate.
 //
 func Analyzer(collectionName string) error {
-	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	store, err := storage.GetStore(collectionName)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func Analyzer(collectionName string) error {
 	for _, file := range files {
 		fname := file.Name()
 		switch {
-		case strings.HasPrefix(fname, "0=dataset-collection_"):
+		case strings.HasPrefix(fname, "0=dataset_"):
 			hasNamaste = true
 		case fname == "collection.json":
 			hasCollectionJSON = true
@@ -69,7 +69,7 @@ func Analyzer(collectionName string) error {
 	}
 	// NOTE: Check for Namaste 0=, warn if missing
 	if hasNamaste == false {
-		log.Printf("Missing Namaste 0=dataset-collection_%s\n", Version[1:])
+		log.Printf("Missing Namaste 0=dataset_%s\n", Version[1:])
 	}
 
 	// NOTE: Check to see if we have a collections.json
@@ -97,7 +97,7 @@ func Analyzer(collectionName string) error {
 // wither bucketRepair or pairtreeRepair as appropriate.
 //
 func Repair(collectionName string) error {
-	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	store, err := storage.GetStore(collectionName)
 	if err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func Repair(collectionName string) error {
 	// NOTE: Check for Namaste 0=, warn and create if missing
 	if hasNamaste == false {
 		// Add Namaste type record
-		namaste.DirType(collectionName, fmt.Sprintf("dataset-collection_%s\n", Version[1:]))
+		namaste.DirType(collectionName, fmt.Sprintf("dataset_%s\n", Version[1:]))
 		namaste.When(collectionName, time.Now().Format("2006-01-02"))
 	}
 	// NOTE: Check to see if we have a collections.json, warn and create if missing
@@ -138,8 +138,6 @@ func Repair(collectionName string) error {
 		if err := bucketRepair(collectionName); err != nil {
 			return err
 		}
-		// QUESTION: Should we automigrate to pairtree? ...
-		//return migrateToPairtree(collectionName)
 	}
 
 	// NOTE: if we're this fair we should repair the pairtree

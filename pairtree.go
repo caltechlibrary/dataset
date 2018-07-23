@@ -96,13 +96,13 @@ func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
-	p, ok := c.KeyMap[keyName]
+	pair, ok := c.KeyMap[keyName]
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, p, FName))
+	src, err := c.Store.ReadFile(path.Join(c.Name, pair, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
 	}
 	// Make sure Key exists before proceeding with update
 	name = normalizeKeyName(name)
-	keyName, FName := keyAndFName(name)
+	keyName, fName := keyAndFName(name)
 
 	// Make sure we have an "object" not an array object in JSON notation
 	if bytes.HasPrefix(src, []byte(`{`)) == false {
@@ -137,7 +137,7 @@ func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
 	if err != nil {
 		return fmt.Errorf("Update (mkdir) %s %s", p, err)
 	}
-	return c.Store.WriteFile(path.Join(c.Name, p, FName), src, 0664)
+	return c.Store.WriteFile(path.Join(c.Name, pair, fName), src, 0664)
 }
 
 // pairtreeDelete removes a JSON doc from a collection
