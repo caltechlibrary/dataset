@@ -3,6 +3,7 @@
 
 ## Bugs
 
++ [ ] If collections.json is missing layouts and buckets exists then type get set to BUCKETS_LAYOUT
 + [ ] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
 
 ## Next (prep for v0.1.0)
