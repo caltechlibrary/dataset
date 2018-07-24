@@ -10,6 +10,7 @@
 
 + [ ] Generate codemeta.json in collection folder
     + https://codemeta.github.io/terms 
+* [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Repair/check should work on S3 and Google Cloud Storage
 + [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
     + [ ] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
