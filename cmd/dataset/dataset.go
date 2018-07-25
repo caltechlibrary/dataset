@@ -158,6 +158,9 @@ func repairCollection(params ...string) (string, error) {
 		if err := dataset.Repair(cName); err != nil {
 			return "", err
 		}
+		// FIXME: Need to check Layout option to see if we need to
+		// migrate the content from Buckets to Pairtree
+		// After initially repairing collection
 	}
 	return "OK", nil
 }
