@@ -2,8 +2,13 @@ package dataset
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/url"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	// Caltech Library Packages
@@ -166,4 +171,214 @@ func (c *Collection) pairtreeDelete(name string) error {
 
 	delete(c.KeyMap, keyName)
 	return c.saveMetadata()
+}
+
+// migrateToPairtree will migrate JSON objects and attachments from
+// a bucket oriented collection to a pairtree.
+func migrateToPairtree(collectionName string) error {
+	return fmt.Errorf("migrateToPairtree() not implemented.")
+}
+
+// pairtreeAnalyzer will scan a pairtree based collection for errors.
+func pairtreeAnalyzer(collectionName string) error {
+	var (
+		eCnt int
+		wCnt int
+		kCnt int
+		data interface{}
+		c    *Collection
+		err  error
+	)
+
+	store, err := storage.GetStore(collectionName)
+	if err != nil {
+		return err
+	}
+	// Make sure collectionName exists
+	if store.IsDir(collectionName) == false {
+		return fmt.Errorf("Missing %q", collectionName)
+	}
+	// Make sure ${collectionName}/collection.json
+	docPath := path.Join(collectionName, "collection.json")
+	if store.IsFile(docPath) == false {
+		return fmt.Errorf("%q is not a collection", collectionName)
+	} else {
+		// Make sure we can JSON parse the file
+		if src, err := store.ReadFile(docPath); err == nil {
+			if err := json.Unmarshal(src, &data); err == nil {
+				// release the memory
+				data = nil
+			} else {
+				log.Printf("ERROR: parsing %s, %s", docPath, err)
+				eCnt++
+			}
+		} else {
+			log.Printf("ERROR: opening %s, %s", docPath, err)
+			eCnt++
+		}
+	}
+
+	// Make sure that ${collectionName}/pairtree exists
+	if store.IsDir(path.Join(collectionName, "pairtree")) == false {
+		return fmt.Errorf("No pairtree found")
+	}
+	// Now try to open the collection ...
+	c, err = Open(collectionName)
+	if err != nil {
+		return err
+	}
+	if c.Store.Type != storage.FS {
+		return fmt.Errorf("Analyzer only works on local file system")
+	}
+
+	switch c.Layout {
+	case PAIRTREE_LAYOUT:
+	case BUCKETS_LAYOUT:
+		log.Printf("ERROR: bucket layout found")
+		return fmt.Errorf("bucket layout found")
+	default:
+		log.Printf("WARNING: unknown layout setting")
+		wCnt++
+	}
+	// Set layout to PAIRTREE_LAYOUT
+	c.Layout = PAIRTREE_LAYOUT
+	// Make sure we have all the known pairs in the pairtree
+	// Check to see if records can be found in their buckets
+	log.Printf("Checking for %d keys from keymaps against pairtree", len(c.KeyMap))
+	for k, v := range c.KeyMap {
+		dirPath := path.Join(collectionName, v)
+		// NOTE: k needs to be urlencoded before checking for file
+		fname := url.QueryEscape(k) + ".json"
+		docPath := path.Join(collectionName, v, fname)
+		if store.IsDir(dirPath) == false {
+			log.Printf("ERROR: %s is missing (%q)", k, dirPath)
+			eCnt++
+		} else if store.IsFile(docPath) == false {
+			log.Printf("ERROR: %s is missing (%q)", k, docPath)
+			eCnt++
+		}
+		kCnt++
+		if (kCnt % 5000) == 0 {
+			log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+		}
+	}
+	log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+
+	// Check sub-directories in pairtree find but not in KeyMap
+	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	if err != nil {
+		log.Printf("ERROR: unable to walk pairtree, %s", err)
+		eCnt++
+	} else {
+		for _, pair := range pairs {
+			key := pairtree.Decode(pair)
+			if _, exists := c.KeyMap[key]; exists == false {
+				log.Printf("WARNING: %s found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
+				wCnt++
+			}
+		}
+	}
+	// FIXME: need to check for attachments and make sure they are record OK
+
+	if eCnt > 0 || wCnt > 0 {
+		return fmt.Errorf("%d errors, %d warnings detected", eCnt, wCnt)
+	}
+	return nil
+}
+
+func pairtreeRepair(collectionName string) error {
+	var (
+		c   *Collection
+		err error
+	)
+
+	store, err := storage.GetStore(collectionName)
+	if err != nil {
+		return fmt.Errorf("Repair only works supported storage types, %s", err)
+	}
+	if store.Type != storage.FS {
+		return fmt.Errorf("Repair only works on local file system")
+	}
+
+	// See if we can open a collection, if not then create an empty struct
+	c, err = Open(collectionName)
+	if err != nil {
+		log.Printf("Open %s error, %s, attempting to re-create collection.json", collectionName, err)
+		err = store.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		if err != nil {
+			log.Printf("Can't re-initilize %s, %s", collectionName, err)
+			return err
+		}
+		log.Printf("Attempting to re-open %s", collectionName)
+		c, err = Open(collectionName)
+		if err != nil {
+			log.Printf("Failed to re-open %s, %s", collectionName, err)
+			return err
+		}
+	}
+	defer c.Close()
+
+	if c.Version != Version {
+		log.Printf("Migrating format from %s to %s", c.Version, Version)
+	}
+	c.Version = Version
+	log.Printf("Getting a list of pairs")
+	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	if err != nil {
+		log.Printf("ERROR: unable to walk pairtree, %s", err)
+		return err
+	}
+	log.Printf("Adding missing pairs")
+	for _, pair := range pairs {
+		key := pairtree.Decode(pair)
+		if _, exists := c.KeyMap[key]; exists == false {
+			c.KeyMap[key] = path.Join("pairtree", pair)
+		}
+	}
+	log.Printf("%d keys in pairtree", len(c.KeyMap))
+	keyList := c.Keys()
+	log.Printf("checking that each key resolves to a value on disc")
+	for _, key := range keyList {
+		p, err := c.DocPath(key)
+		if err != nil {
+			break
+		}
+		if _, err := store.Stat(p); os.IsNotExist(err) == true {
+			log.Printf("Removing %s from %s, %s does not exist", key, collectionName, p)
+			delete(c.KeyMap, key)
+		}
+	}
+	log.Printf("Saving metadata for %s", collectionName)
+	return c.saveMetadata()
+}
+
+//
+// Helper functions
+//
+
+// walkPairtree takes a store, a start path and returns a list
+// of pairs found that also contain a pair's ${ID}.json file
+func walkPairtree(startPath string) ([]string, error) {
+	// pairs holds a list of discovered pairs
+	pairs := []string{}
+	err := filepath.Walk(startPath, func(p string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Printf("skipping path %q: %v\n", p, err)
+			return err
+		}
+		if info.IsDir() == false {
+			f := path.Base(p)
+			e := path.Ext(f)
+			if e == ".json" {
+				//NOTE: should be URL encoded at this point.
+				key := strings.TrimSuffix(f, e)
+				pair := pairtree.Encode(key)
+				if strings.Contains(p, path.Join("pairtree", pair, f)) {
+					pairs = append(pairs, pair)
+				}
+			}
+		}
+		return nil
+	})
+	return pairs, err
 }

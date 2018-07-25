@@ -3,12 +3,13 @@
 
 ## Bugs
 
++ [ ] Implement repair and anlaysis for PAIRTREEs
 + [ ] If collections.json is missing layouts and buckets exists then type get set to BUCKETS_LAYOUT
 + [ ] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
 
 ## Next (prep for v0.1.0)
 
-+ [ ] Generate codemeta.json in collection folder
++ [ ] Generate a codemeta.json in collection folder
     + https://codemeta.github.io/terms 
 * [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Repair/check should work on S3 and Google Cloud Storage
@@ -23,6 +24,8 @@
 
 ## Roadmap (v0.2.x)
 
++ [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
++ [ ] Add an option for Oxford Common File Layout in addition to buckets and pairtree
 + [ ] Replace import/export with sync for CSV and Google Sheet
     - a collection frame defines/controls the relationship between a spreadsheet's rows/columns and a collection's records/field values
     - a collection's frame labels are expected to match column names in row zero of spreadsheet
