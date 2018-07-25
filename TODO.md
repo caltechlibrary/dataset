@@ -3,9 +3,11 @@
 
 ## Bugs
 
-+ [ ] Implement repair and anlaysis for PAIRTREEs
-+ [ ] If collections.json is missing layouts and buckets exists then type get set to BUCKETS_LAYOUT
++ [ ] Implement Buckets to Pair migration option
 + [ ] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
+    + collection detection should check for the collection.json document
+    + namaste type
+    + Use storage.StoreType() to determine type info from path
 
 ## Next (prep for v0.1.0)
 
@@ -92,6 +94,8 @@
 
 ## Completed
 
++ [x] If collections.json is missing layouts and buckets exists then type get set to BUCKETS_LAYOUT
++ [x] Implement repair and anlaysis for PAIRTREEs
 + [x] Moving object tree out of "data", leave "data" empty to be compatible with other bagit tools
 + [x] Evaluate moving buckets into a "payload" (i.e. "data") folder for easier Bagging
 + [x] Added namaste type and when on dataset init

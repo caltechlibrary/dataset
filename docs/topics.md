@@ -21,6 +21,7 @@
 
 - [File system layout](../how-to/file-system-layout.html)
 - [Managing attachments](../how-to/managing-attachments.html)
+- [Upgrading a collection](../how-to/upgrading-a-collection.html)
 - [Working with Cloud Storage](../how-to/working-with-cloud-storage.html)
 
 ## Import/Export

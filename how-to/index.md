@@ -23,4 +23,5 @@ with _dataset_ or explore a specific topic.
 - [Managing attachments](managing-attachments.html)
 - [Reshape JSON collections](reshape-json-collections.html)
 - [Taking Samples](taking-samples.html)
+- [Upgrading a collection](upgrading-a-collection.html)
 

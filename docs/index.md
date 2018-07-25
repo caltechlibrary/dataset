@@ -14,6 +14,7 @@ of "how to" style examples.
 ## Internal project concepts
 
 + [file system layout](../how-to/file-system-layout.html) - Describes how collections are organized
++ [upgrading a collection](../how-to/upgrading-a-collection.html) - Describes how to upgrade a collection from a previous version of dataset to a new one
 
 ## _dataset_ Operations
 
