@@ -3,6 +3,7 @@
 
 ## Bugs
 
++ [ ] A raw pairtree is being generated in the repo directory by test!
 + [ ] Implement Buckets to Pair migration option
 
 ## Next (prep for v0.1.0)
