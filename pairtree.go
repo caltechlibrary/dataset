@@ -81,7 +81,7 @@ func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
 	pair := path.Join("pairtree", pairtree.Encode(key))
 	err := c.Store.MkdirAll(path.Join(c.Name, pair), 0770)
 	if err != nil {
-		return fmt.Errorf("mkdir %s %s", pair, err)
+		return fmt.Errorf("mkdir %s %s", path.Join(c.Name, pair), err)
 	}
 
 	// We've almost made it, save the key's bucket name and write the blob to bucket
@@ -171,12 +171,6 @@ func (c *Collection) pairtreeDelete(name string) error {
 
 	delete(c.KeyMap, keyName)
 	return c.saveMetadata()
-}
-
-// migrateToPairtree will migrate JSON objects and attachments from
-// a bucket oriented collection to a pairtree.
-func migrateToPairtree(collectionName string) error {
-	return fmt.Errorf("migrateToPairtree() not implemented.")
 }
 
 // pairtreeAnalyzer will scan a pairtree based collection for errors.
@@ -360,6 +354,58 @@ func pairtreeRepair(collectionName string) error {
 	}
 	log.Printf("Saving metadata for %s", collectionName)
 	return c.saveMetadata()
+}
+
+// migrateToPairtree will migrate JSON objects and attachments from
+// a bucket oriented collection to a pairtree.
+func migrateToPairtree(collectionName string) error {
+	// Open existing collection, get objects and attachments
+	// and manually place in new layout updating nc.
+	c, err := Open(collectionName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	keyMap := c.KeyMap
+	store := c.Store
+
+	// Create a new collection struct, set to Buckets layout
+	nc := new(Collection)
+	nc.Layout = PAIRTREE_LAYOUT
+	nc.Version = Version
+	nc.Buckets = nil
+	nc.Store, _ = storage.GetStore(collectionName)
+	nc.KeyMap = map[string]string{}
+
+	for key, p := range keyMap {
+		_, FName := keyAndFName(key)
+		src, err := store.ReadFile(path.Join(collectionName, p, FName))
+		if err != nil {
+			return err
+		}
+		// Write object to the new location
+		err = nc.pairtreeCreateJSON(key, src)
+		if err != nil {
+			return err
+		}
+
+		// Check for and handle any attachments
+		tarDoc := path.Join(collectionName, p, strings.TrimSuffix(FName, ".json")+".tar")
+		if store.IsFile(tarDoc) {
+			// Move the tarball from one layout to the other
+			buf, err := store.ReadFile(tarDoc)
+			if err != nil {
+				return err
+			}
+			docPath, err := nc.DocPath(key)
+			tarDoc = path.Join(collectionName, strings.TrimSuffix(docPath, ".json")+".tar")
+			err = store.WriteFile(tarDoc, buf, 0664)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 //

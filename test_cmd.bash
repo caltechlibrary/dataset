@@ -196,69 +196,70 @@ function test_issue19() {
 }
 
 function test_readme () {
-    echo "Tests from README.md"
-    if [[ -d "mystuff.ds" ]]; then
-        rm -fR mystuff.ds
+    echo "Tests based on README.md"
+    mkdir -p testdata
+    if [[ -d "testdata/mystuff.ds" ]]; then
+        rm -fR testdata/mystuff.ds
     fi
 
-    # Create a collection "mystuff.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
-    bin/dataset -quiet -nl=false mystuff.ds init
+    # Create a collection "testdata/mystuff.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
+    bin/dataset -quiet -nl=false init testdata/mystuff.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not init mystuff.ds'
+        echo 'test_readme (206): could not init mystuff.ds'
         exit 1
     fi
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    bin/dataset -quiet -nl=false mystuff.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
+    bin/dataset -quiet -nl=false testdata/mystuff.ds create freda '{"name":"freda","email":"freda@inverness.example.org"}'
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not create freda.json'
+        echo 'test_readme (216): could not create freda.json'
         exit 1
     fi
     # If successful then you should see an OK otherwise an error message
 
     # Make sure we have a record called freda
-    bin/dataset -quiet -nl="false" mystuff.ds haskey freda
+    bin/dataset -quiet -nl="false" testdata/mystuff.ds haskey freda
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: (failed) mystuff.ds haskey freda'
+        echo 'test_readme (222): (failed) testdata/mystuff.ds haskey freda'
         exit 1
     fi
 
 
     # Read a JSON document
-    bin/dataset -quiet -nl=false mystuff.ds read freda
+    bin/dataset -quiet -nl=false testdata/mystuff.ds read freda
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not read freda.json'
+        echo 'test_readme (232): could not read freda.json'
         exit 1
     fi
     
     # Path to JSON document
-    bin/dataset -quiet -nl=false mystuff.ds path freda
+    bin/dataset -quiet -nl=false testdata/mystuff.ds path freda
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not path freda.json'
+        echo 'test_readme (237): could not path freda.json'
         exit 1
     fi
 
     # Update a JSON document
-    bin/dataset -quiet -nl=false mystuff.ds update freda '{"name":"freda","email":"freda@zbs.example.org", "count": 2}'
+    bin/dataset -quiet -nl=false testdata/mystuff.ds update freda '{"name":"freda","email":"freda@zbs.example.org", "count": 2}'
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not update freda.json'
+        echo 'test_readme (244): could not update freda.json'
         exit 1
     fi
     
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    bin/dataset -quiet -nl=false mystuff.ds keys
+    bin/dataset -quiet -nl=false testdata/mystuff.ds keys
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not keys'
+        echo 'test_readme (253): could not keys'
         exit 1
     fi
 
     # Get keys filtered for the name "freda"
-    bin/dataset -nl=false -quiet mystuff.ds keys '(eq .name "freda")'
+    bin/dataset -nl=false -quiet testdata/mystuff.ds keys '(eq .name "freda")'
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not keys'
+        echo 'test_readme (260): could not keys'
         exit 1
     fi
 
@@ -267,9 +268,9 @@ function test_readme () {
 {"name": "little freda", "office": "SFL", "count": 3}
 EOT
 
-    bin/dataset -quiet -nl=false mystuff.ds join append freda freda-profile.json
+    bin/dataset -quiet -nl=false testdata/mystuff.ds join append freda freda-profile.json
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not join update'
+        echo 'test_readme (271): could not join update'
         exit 1
     fi
 
@@ -279,16 +280,16 @@ EOT
 {"name": "little freda", "office": "SFL", "count": 4}
 EOT
 
-    bin/dataset -quiet -nl=false mystuff.ds join overwrite freda freda-profile.json
+    bin/dataset -quiet -nl=false testdata/mystuff.ds join overwrite freda freda-profile.json
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not join overwrite'
+        echo 'test_readme (283): could not join overwrite'
         exit 1
     fi
 
     # Delete a JSON document
-    bin/dataset -quiet -nl=false mystuff.ds delete freda
+    bin/dataset -quiet -nl=false testdata/mystuff.ds delete freda
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: could not join overwrite'
+        echo 'test_readme (290): could not join overwrite'
         exit 1
     fi
 
@@ -298,14 +299,14 @@ Name,EMail,Office,Count
 freda,freda@inverness.example.edu,4th Tower,1
 EOT
 
-    bin/dataset -quiet -nl=false mystuff.ds "import-csv" my-data.csv 1
+    bin/dataset -quiet -nl=false testdata/mystuff.ds "import-csv" my-data.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme: (failed) mystuff.ds import-csv my-data.csv 1'
+        echo 'test_readme (302): (failed) mystuff.ds import-csv my-data.csv 1'
         exit 1
     fi
 
     # To remove the collection just use the Unix shell command
-    rm -fR mystuff.ds
+    rm -fR testdata/mystuff.ds
     rm freda-profile.json
     rm my-data.csv
 }
@@ -369,9 +370,9 @@ function test_attachments() {
     if [[ -d "mydata.ds" ]]; then
         rm -fR mydata.ds
     fi
-    bin/dataset -quiet -nl=false mydata.ds init
+    bin/dataset -quiet -nl=false init mydata.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: could not mydata.ds init'
+        echo 'test_attachments (375): could not mydata.ds init'
         exit 1
     fi
 
@@ -387,27 +388,27 @@ EOT
 
     bin/dataset -quiet -nl=false mydata.ds import-csv freda.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds import-csv freda.csv 1'
+        echo 'test_attachments (389): (failed) mydata.ds import-csv freda.csv 1'
         exit 1
     fi
     bin/dataset -quiet -nl=false mydata.ds attach freda freda.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds attach freda freda.csv 1'
+        echo 'test_attachments (395): (failed) mydata.ds attach freda freda.csv 1'
         exit 1
     fi
     bin/dataset -quiet -nl=false mydata.ds import-csv mojo.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds import-csv mojo.csv 1'
+        echo 'test_attachments (399): (failed) mydata.ds import-csv mojo.csv 1'
         exit 1
     fi
     bin/dataset -quiet -nl=false mydata.ds attach mojo mojo.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds attach mojo.csv'
+        echo 'test_attachments (404): (failed) mydata.ds attach mojo.csv'
         exit 1
     fi
     bin/dataset -quiet -nl=false mydata.ds attachments mojo
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds attachments mojo'
+        echo 'test_attachments (410): (failed) mydata.ds attachments mojo'
         exit 1
     fi
     if [[ -f "mojo.csv" ]]; then
@@ -415,16 +416,16 @@ EOT
     fi
     bin/dataset -quiet -nl=false mydata.ds detach mojo mojo.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds attachments mojo mojo.csv'
+        echo 'test_attachments (417): (failed) mydata.ds attachments mojo mojo.csv'
         exit 1
     fi
     if [[ ! -f "mojo.csv" ]]; then
-        echo 'test_attachments: (failed) mydata.ds detach mojo mojo.csv'
+        echo 'test_attachments (417): (failed) mydata.ds detach mojo mojo.csv'
         exit 1
     fi
     bin/dataset -quiet -nl=false mydata.ds prune freda freda.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments: (failed) mydata.ds prune freda freda.csv'
+        echo 'test_attachments (426): (failed) mydata.ds prune freda freda.csv'
         exit 1
     fi
 
@@ -442,7 +443,7 @@ Name,EMail,Office,Count
 freda,freda@inverness.example.edu,4th Tower,1
 mojo,mojo.sam@sams-splace.example.org,piano,2
 EOT
-    bin/dataset -quiet -nl=false myfix.ds init
+    bin/dataset -quiet -nl=false init myfix.ds
     if [[ "$?" != "0" ]]; then
         echo 'test_check_and_repair: (failed) myfix.ds init'
         exit 1
@@ -495,9 +496,9 @@ EOT
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false count.ds init
+    bin/dataset -quiet -nl=false init count.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_count: (failed) count.ds init'
+        echo 'test_count: (failed) init count.ds'
         exit 1
     fi
     bin/dataset -quiet -nl=false count.ds import-csv count.csv 1
@@ -551,9 +552,9 @@ EOT
 }
 EOT
 
-    bin/dataset -quiet -nl=false search.ds init 
+    bin/dataset -quiet -nl=false init search.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) search.ds init'
+        echo 'test_search: (failed) init search.ds'
         exit 1
     fi
     bin/dataset -quiet -nl=false search.ds import-csv search.csv 1
@@ -614,9 +615,9 @@ id,title,type,date_type,date
 8488,Non-Gaussian covariance of CMB B modes of polarization and parameter degradation,article,published,2007-04-15
 EOT
 
-    bin/dataset -quiet -nl=false pubs.ds init
+    bin/dataset -quiet -nl=false init pubs.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_import_export: (failed) pubs.ds init'
+        echo 'test_import_export: (failed) init pubs.ds'
         exit 1
     fi
 

@@ -20,13 +20,6 @@ package dataset
 
 import (
 	"fmt"
-	"log"
-	"strings"
-	"time"
-
-	// CaltechLibrary packages
-	"github.com/caltechlibrary/namaste"
-	"github.com/caltechlibrary/storage"
 )
 
 //
@@ -55,54 +48,34 @@ func Analyzer(collectionName string) error {
 // wither bucketRepair or pairtreeRepair as appropriate.
 //
 func Repair(collectionName string) error {
-	store, err := storage.GetStore(collectionName)
-	if err != nil {
-		return err
+	var err error
+	switch CollectionLayout(collectionName) {
+	case BUCKETS_LAYOUT:
+		err = bucketRepair(collectionName)
+	case PAIRTREE_LAYOUT:
+		err = pairtreeRepair(collectionName)
+	default:
+		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
 	}
-	files, err := store.ReadDir(collectionName)
-	if err != nil {
-		return err
-	}
-	hasNamaste := false
-	hasCollectionJSON := false
-	hasPairtree := false
-	hasBuckets := false
-	for _, file := range files {
-		fname := file.Name()
-		switch {
-		case strings.HasPrefix(fname, "0=dataset"):
-			hasNamaste = true
-		case fname == "collection.json":
-			hasCollectionJSON = true
-		case fname == "pairtree" && file.IsDir() == true:
-			hasPairtree = true
-		case fname == "aa" && file.IsDir() == true:
-			hasBuckets = true
-		}
-	}
-	// NOTE: Check for Namaste 0=, warn and create if missing
-	if hasNamaste == false {
-		// Add Namaste type record
-		namaste.DirType(collectionName, fmt.Sprintf("dataset_%s\n", Version[1:]))
-		namaste.When(collectionName, time.Now().Format("2006-01-02"))
-	}
-	// NOTE: Check to see if we have a collections.json, warn and create if missing
-	if hasCollectionJSON == false {
-		log.Printf("Missing collection.json, will be regenerating it")
-	}
+	return err
+}
 
-	// NOTE: We're working with buckets (e.g. aa, ab, exists)
-	if hasBuckets {
-		if err := bucketRepair(collectionName); err != nil {
-			return err
-		}
+//
+//
+func Migrate(collectionName string, newLayout int) error {
+	currentLayout := CollectionLayout(collectionName)
+	if currentLayout == UNKNOWN_LAYOUT {
+		return fmt.Errorf("Can't migrated from an unknown file layout")
 	}
-
-	// NOTE: if we're this fair we should repair the pairtree
-	if hasPairtree {
-		if err := pairtreeRepair(collectionName); err != nil {
-			return err
-		}
+	if currentLayout == newLayout {
+		return nil
 	}
-	return nil
+	switch newLayout {
+	case PAIRTREE_LAYOUT:
+		return migrateToPairtree(collectionName)
+	case BUCKETS_LAYOUT:
+		return migrateToBuckets(collectionName)
+	default:
+		return fmt.Errorf("Can't migrate to an unknown file layout")
+	}
 }

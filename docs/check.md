@@ -26,4 +26,4 @@ it is possible that the JSON file `collection.json` will become inaccurate.
 ```
 
 
-Related topics: [repair](repair.html)
+Related topics: [repair](repair.html), [migrate](migrate.html)

@@ -7,16 +7,10 @@
 
 ## Next (prep for v0.1.0)
 
+* [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Generate a codemeta.json in collection folder
     + https://codemeta.github.io/terms 
-* [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Repair/check should work on S3 and Google Cloud Storage
-+ [ ] Evaluate switching from aa to zz buckets to pairtree ppath under data
-    + [ ] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
-    + [ ] Evaluate moving JSON object from [ID].json to [ID].json
-    + [ ] Evaluate moving "attachments" into a [collection_name]/[pairtree]/[ID]/[relative path for objects] (i.e. drop making tar balls) 
-+ [ ] Documentation updates
-    - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 + [ ] Confirm consensus on the minor release version number bump
 
 
@@ -47,6 +41,8 @@
 
 ## Someday, Maybe
 
++ [ ] Documentation updates
+    - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 + [ ] Evaluate adding namaste verb for collections
     - `dataset COLLECT_NAME namaste who "Doiel, R. S."`
     - namaste feilds should be added in collection.json too
@@ -90,6 +86,10 @@
 
 ## Completed
 
++ [x] Evaluate switching from aa to zz buckets to pairtree ppath under data
+    + [x] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
+    + [x] Evaluate moving JSON object from [ID].json to [ID].json
+    + [x] Evaluate moving "attachments" into a [collection_name]/[pairtree]/[ID]/[relative path for objects] (i.e. drop making tar balls) 
 + [x] If collections.json is missing layouts and buckets exists then type get set to BUCKETS_LAYOUT
 + [x] Implement repair and anlaysis for PAIRTREEs
 + [x] Moving object tree out of "data", leave "data" empty to be compatible with other bagit tools

@@ -15,35 +15,34 @@
 <li><a href="../">README</a></li>
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h1>repair</h1>
+<h1>Migrating your dataset collection file layout</h1>
 
-<h2>Syntax</h2>
+<p>The <em>dataset</em> Go package is still rapidly evolving though it is
+now commonly used in Caltech Library. As a result of this evolution
+we are experimenting with two different file layouts currentely.
+The older layout is called &ldquo;buckets&rdquo;, the newer layout is a
+&ldquo;pairtree&rdquo;. Currently &ldquo;buckets&rdquo; is the default but you can migrate
+your collection form one to the other.  Below is an example
+of migrating to the &ldquo;pairtree&rdquo; file layout.</p>
 
-<pre><code>    dataset repair COLLECTION_NAME
+<pre><code>    # Migrating to a pairtree layout
+    dataset migrate mycollection.ds pairtree
 </code></pre>
 
-<h2>Description</h2>
+<p>To migrate from a &ldquo;pairtree&rdquo; to a bucket follows the same process.</p>
 
-<p><em>repair</em> trys to repair a collection correcting as best it can the <code>collection.json</code> file defining
-where things are to be found.</p>
-
-<h2>Usage</h2>
-
-<p>Our collection name is &ldquo;MyCollectiond.ds&rdquo;.</p>
-
-<pre><code>   dataset repair MyCollection.ds
+<pre><code>    # Migrating to a bucket layout
+    dataset migrate mycollection.ds buckets
 </code></pre>
-
-<p>Related topic: <a href="check.html">check</a>, <a href="migrate.html">migrate</a></p>
 
 </section>
 

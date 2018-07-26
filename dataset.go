@@ -649,7 +649,7 @@ func IsCollection(p string) bool {
 	if err != nil {
 		return false
 	}
-	if store.IsFile(p + "/collection.json") {
+	if store.IsFile(path.Join(p, "collection.json")) {
 		return true
 	}
 	return false
