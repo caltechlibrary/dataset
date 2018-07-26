@@ -38,54 +38,16 @@ import (
 // bucketAnalyzer or pairtreeAnalyzer as appropriate.
 //
 func Analyzer(collectionName string) error {
-	store, err := storage.GetStore(collectionName)
-	if err != nil {
-		return err
+	var err error
+	switch CollectionLayout(collectionName) {
+	case BUCKETS_LAYOUT:
+		err = bucketAnalyzer(collectionName)
+	case PAIRTREE_LAYOUT:
+		err = pairtreeAnalyzer(collectionName)
+	default:
+		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
 	}
-	files, err := store.ReadDir(collectionName)
-	if err != nil {
-		return err
-	}
-	hasNamaste := false
-	hasCollectionJSON := false
-	hasPairtree := false
-	hasBuckets := false
-	for _, file := range files {
-		fname := file.Name()
-		switch {
-		case strings.HasPrefix(fname, "0=dataset_"):
-			hasNamaste = true
-		case fname == "collection.json":
-			hasCollectionJSON = true
-		case fname == "pairtree" && file.IsDir() == true:
-			hasPairtree = true
-		case fname == "aa" && file.IsDir() == true:
-			hasBuckets = true
-		}
-	}
-	// NOTE: Check for Namaste 0=, warn if missing
-	if hasNamaste == false {
-		log.Printf("Missing Namaste 0=dataset_%s\n", Version[1:])
-	}
-
-	// NOTE: Check to see if we have a collections.json
-	if hasCollectionJSON == false {
-		log.Printf("Missing collection.json\n")
-	}
-
-	// NOTE: We must check for a pairtree then...
-	if hasPairtree == true {
-		if err := pairtreeAnalyzer(collectionName); err != nil {
-			return err
-		}
-	}
-	// NOTE: We're working with buckets (e.g. aa, ab, exists)
-	if hasBuckets {
-		if err := bucketAnalyzer(collectionName); err != nil {
-			return err
-		}
-	}
-	return nil
+	return err
 }
 
 //

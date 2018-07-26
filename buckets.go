@@ -320,20 +320,42 @@ func bucketAnalyzer(collectionName string) error {
 		err     error
 	)
 
-	store, err := storage.Init(storage.StorageType(collectionName), nil)
+	store, err := storage.GetStore(collectionName)
 	if err != nil {
-		return fmt.Errorf("Bucket Analyzer does not support storage type, %s", err)
+		return err
+	}
+	files, err := store.ReadDir(collectionName)
+	if err != nil {
+		return err
+	}
+	hasNamaste := false
+	hasCollectionJSON := false
+	for _, file := range files {
+		fname := file.Name()
+		switch {
+		case strings.HasPrefix(fname, "0=dataset_"):
+			hasNamaste = true
+		case fname == "collection.json":
+			hasCollectionJSON = true
+		}
+		if hasNamaste && hasCollectionJSON {
+			break
+		}
 	}
 
-	// Check of collection.json
-	if store.IsDir(collectionName) == false {
-		return fmt.Errorf("%q does not exist", collectionName)
+	// NOTE: Check for Namaste 0=, warn if missing
+	if hasNamaste == false {
+		log.Printf("WARNING: Missing Namaste 0=dataset_%s\n", Version[1:])
+		wCnt++
 	}
-	docPath := path.Join(collectionName, "collection.json")
-	if store.IsFile(docPath) == false {
-		return fmt.Errorf("%q is not a collection", collectionName)
+
+	// NOTE: Check to see if we have a collections.json
+	if hasCollectionJSON == false {
+		log.Printf("WARNING: Missing collection.json\n")
+		wCnt++
 	} else {
 		// Make sure we can JSON parse the file
+		docPath := path.Join(collectionName, "collection.json")
 		if src, err := store.ReadFile(docPath); err == nil {
 			if err := json.Unmarshal(src, &data); err == nil {
 				// release the memory
@@ -369,7 +391,6 @@ func bucketAnalyzer(collectionName string) error {
 		wCnt++
 	}
 	// Check if buckets match
-	log.Printf("Checking buckets")
 	for i, bck := range buckets {
 		if bucketKeyFound(bck, c.Buckets) == false {
 			log.Printf("ERROR: %s is missing from collection bucket list", bck)
@@ -379,10 +400,11 @@ func bucketAnalyzer(collectionName string) error {
 			log.Printf("%d buckets matched", i)
 		}
 	}
-	log.Printf("%d buckets matched", len(buckets))
+	if len(buckets) > 0 {
+		log.Printf("%d buckets matched", len(buckets))
+	}
 
 	// Check to see if records can be found in their buckets
-	log.Printf("Checking for %d keys from keymaps against their buckets", len(c.KeyMap))
 	for ky, bucket := range c.KeyMap {
 		docPath := path.Join(collectionName, bucket, ky+".json")
 		if store.IsFile(docPath) == false {
@@ -394,10 +416,11 @@ func bucketAnalyzer(collectionName string) error {
 			log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
 		}
 	}
-	log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+	if len(c.KeyMap) > 0 {
+		log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+	}
 
 	// Check for duplicate records and orphaned records
-	log.Printf("Scanning buckets for orphaned and duplicate records")
 	kCnt = 0
 	for j, bck := range buckets {
 		if jsonDocs, err := store.FindByExt(path.Join(collectionName, bck), ".json"); err == nil {
@@ -422,7 +445,9 @@ func bucketAnalyzer(collectionName string) error {
 			log.Printf("%d json docs in %d buckets processed", kCnt, j)
 		}
 	}
-	log.Printf("%d docs in %d buckets processed", kCnt, len(buckets))
+	if len(buckets) > 0 {
+		log.Printf("%d docs in %d buckets processed", kCnt, len(buckets))
+	}
 
 	if eCnt > 0 || wCnt > 0 {
 		return fmt.Errorf("%d errors, %d warnings detected", eCnt, wCnt)

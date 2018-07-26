@@ -130,11 +130,11 @@ func checkCollection(params ...string) (string, error) {
 	if len(params) == 0 && collectionName == "" {
 		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
+	// Check first collection name
 	if collectionName != "" {
-		if err := dataset.Analyzer(collectionName); err != nil {
-			return "", err
-		}
+		params = append([]string{collectionName}, params[:]...)
 	}
+	// Check any additional collection names
 	for _, cName := range params {
 		if err := dataset.Analyzer(cName); err != nil {
 			return "", err
@@ -158,10 +158,10 @@ func repairCollection(params ...string) (string, error) {
 		if err := dataset.Repair(cName); err != nil {
 			return "", err
 		}
-		// FIXME: Need to check Layout option to see if we need to
-		// migrate the content from Buckets to Pairtree
-		// After initially repairing collection
 	}
+	// FIXME: Need to check Layout option to see if we need to
+	// migrate the content from Buckets to Pairtree
+	// After initially repairing collection
 	return "OK", nil
 }
 

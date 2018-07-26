@@ -194,16 +194,38 @@ func pairtreeAnalyzer(collectionName string) error {
 	if err != nil {
 		return err
 	}
-	// Make sure collectionName exists
-	if store.IsDir(collectionName) == false {
-		return fmt.Errorf("Missing %q", collectionName)
+	files, err := store.ReadDir(collectionName)
+	if err != nil {
+		return err
 	}
-	// Make sure ${collectionName}/collection.json
-	docPath := path.Join(collectionName, "collection.json")
-	if store.IsFile(docPath) == false {
-		return fmt.Errorf("%q is not a collection", collectionName)
+	hasNamaste := false
+	hasCollectionJSON := false
+	for _, file := range files {
+		fname := file.Name()
+		switch {
+		case strings.HasPrefix(fname, "0=dataset_"):
+			hasNamaste = true
+		case fname == "collection.json":
+			hasCollectionJSON = true
+		}
+		if hasNamaste && hasCollectionJSON {
+			break
+		}
+	}
+
+	// NOTE: Check for Namaste 0=, warn if missing
+	if hasNamaste == false {
+		log.Printf("WARNING: Missing Namaste 0=dataset_%s\n", Version[1:])
+		wCnt++
+	}
+
+	// NOTE: Check to see if we have a collections.json
+	if hasCollectionJSON == false {
+		log.Printf("WARNING: Missing collection.json\n")
+		wCnt++
 	} else {
 		// Make sure we can JSON parse the file
+		docPath := path.Join(collectionName, "collection.json")
 		if src, err := store.ReadFile(docPath); err == nil {
 			if err := json.Unmarshal(src, &data); err == nil {
 				// release the memory
@@ -218,10 +240,6 @@ func pairtreeAnalyzer(collectionName string) error {
 		}
 	}
 
-	// Make sure that ${collectionName}/pairtree exists
-	if store.IsDir(path.Join(collectionName, "pairtree")) == false {
-		return fmt.Errorf("No pairtree found")
-	}
 	// Now try to open the collection ...
 	c, err = Open(collectionName)
 	if err != nil {
@@ -231,20 +249,10 @@ func pairtreeAnalyzer(collectionName string) error {
 		return fmt.Errorf("Analyzer only works on local file system")
 	}
 
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-	case BUCKETS_LAYOUT:
-		log.Printf("ERROR: bucket layout found")
-		return fmt.Errorf("bucket layout found")
-	default:
-		log.Printf("WARNING: unknown layout setting")
-		wCnt++
-	}
 	// Set layout to PAIRTREE_LAYOUT
 	c.Layout = PAIRTREE_LAYOUT
 	// Make sure we have all the known pairs in the pairtree
 	// Check to see if records can be found in their buckets
-	log.Printf("Checking for %d keys from keymaps against pairtree", len(c.KeyMap))
 	for k, v := range c.KeyMap {
 		dirPath := path.Join(collectionName, v)
 		// NOTE: k needs to be urlencoded before checking for file
@@ -262,11 +270,13 @@ func pairtreeAnalyzer(collectionName string) error {
 			log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
 		}
 	}
-	log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+	if len(c.KeyMap) > 0 {
+		log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
 	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
-	if err != nil {
+	if err != nil && len(c.KeyMap) > 0 {
 		log.Printf("ERROR: unable to walk pairtree, %s", err)
 		eCnt++
 	} else {
@@ -363,7 +373,6 @@ func walkPairtree(startPath string) ([]string, error) {
 	pairs := []string{}
 	err := filepath.Walk(startPath, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("skipping path %q: %v\n", p, err)
 			return err
 		}
 		if info.IsDir() == false {

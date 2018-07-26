@@ -654,3 +654,42 @@ func IsCollection(p string) bool {
 	}
 	return false
 }
+
+// CollectionLayout returns the numeric type
+// association with the collection (e.g BUCKETS_LAYOUT,
+// PAIRTREE_LAYOUT).
+func CollectionLayout(p string) int {
+	store, err := storage.GetStore(p)
+	if err != nil {
+		return UNKNOWN_LAYOUT
+	}
+	if store.IsDir(path.Join(p, "pairtree")) {
+		return PAIRTREE_LAYOUT
+	}
+	if store.IsDir(path.Join(p, "aa")) {
+		return BUCKETS_LAYOUT
+	}
+	if store.IsFile(path.Join(p, "collection.json")) {
+		src, err := store.ReadFile(path.Join(p, "collection.json"))
+		if err != nil {
+			return UNKNOWN_LAYOUT
+		}
+		c := new(Collection)
+		err = json.Unmarshal(src, &c)
+		if err != nil {
+			return UNKNOWN_LAYOUT
+		}
+		switch c.Layout {
+		case BUCKETS_LAYOUT:
+			return BUCKETS_LAYOUT
+		case PAIRTREE_LAYOUT:
+			return PAIRTREE_LAYOUT
+		default:
+			if len(c.Buckets) > 0 {
+				return BUCKETS_LAYOUT
+			}
+			return UNKNOWN_LAYOUT
+		}
+	}
+	return UNKNOWN_LAYOUT
+}
