@@ -4,10 +4,6 @@
 ## Bugs
 
 + [ ] Implement Buckets to Pair migration option
-+ [ ] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
-    + collection detection should check for the collection.json document
-    + namaste type
-    + Use storage.StoreType() to determine type info from path
 
 ## Next (prep for v0.1.0)
 
@@ -249,3 +245,7 @@
 + [x] Drop uuid integration for import/export
 + [x] Mark _indexer_, _deindexer_ and _find_ experimental features
 + [x] Remove extract as it is easier to filter via Python and grids or frames
++ [x] source collection, isn't being respected when using the -c, -collection option for collections that aren't s3, google cloud or `*.ds` in v0.0.39
+    + collection detection should check for the collection.json document
+    + namaste type
+    + Use storage.StoreType() to determine type info from path

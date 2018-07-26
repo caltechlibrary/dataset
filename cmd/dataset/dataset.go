@@ -1622,7 +1622,7 @@ func main() {
 	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
 	if collectionName == "" {
 		for i, arg := range args {
-			if strings.HasSuffix(arg, ".ds") || strings.HasSuffix(arg, ".dataset") || strings.HasPrefix(arg, "gs://") || strings.HasPrefix(arg, "s3://") {
+			if dataset.IsCollection(arg) {
 				collectionName = arg
 				if i < len(args) {
 					if i == 0 {

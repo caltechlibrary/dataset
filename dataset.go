@@ -641,3 +641,16 @@ func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, 
 	}
 	return nil
 }
+
+// IsCollection checks to see if a given path contains a
+// collection.json file
+func IsCollection(p string) bool {
+	store, err := storage.GetStore(p)
+	if err != nil {
+		return false
+	}
+	if store.IsFile(p + "/collection.json") {
+		return true
+	}
+	return false
+}
