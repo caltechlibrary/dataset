@@ -1,7 +1,8 @@
 
 # deindexer
 
-This is an experimental feature of dataset and maybe removed in the future.
+This is an experimental feature of dataset and maybe removed 
+in the future.
 
 ## Syntax
 
@@ -11,7 +12,8 @@ This is an experimental feature of dataset and maybe removed in the future.
 
 ## Description
 
-Deindexer removes records from an index. It requires a list of keys in a key file, one key per line.
+Deindexer removes records from an index. It requires a list of 
+keys in a key file, one key per line.
 
 ## Usage
 

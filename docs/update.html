@@ -33,18 +33,20 @@
 
 <h2>Description</h2>
 
-<p>update will replace a JSON document in a dataset collection for a given KEY.
-By default the JSON document is read from standard input but you can specific a spefic
-file with the &ldquo;-input&rdquo; option. The JSON document should aready exist in the collection
+<p><em>update</em> will replace a JSON document in a dataset collection for
+a given KEY.  By default the JSON document is read from standard
+input but you can specific a spefic file with the &ldquo;-input&rdquo;
+option. The JSON document should aready exist in the collection
 when you use update.</p>
 
 <h2>Usage</h2>
 
-<p>In this example we assume there is a JSON document on local disc named <em>jane-doe.json</em>. It
-contains <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code> and the KEY is &ldquo;jane.doe&rdquo;. In the first
-one we specify the full JSON document via the command line after the KEY.
-In the second example we read the data from <em>jane-doe.json</em>. Finally in the last we
-read the JSON document from standard input and save the update to &ldquo;jane.doe&rdquo;.
+<p>In this example we assume there is a JSON document on local disc
+named <em>jane-doe.json</em>. It contains <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code> and the
+KEY is &ldquo;jane.doe&rdquo;. In the first one we specify the full JSON document
+via the command line after the KEY.  In the second example we read the
+data from <em>jane-doe.json</em>. Finally in the last we read the JSON
+document from standard input and save the update to &ldquo;jane.doe&rdquo;.
 The collection name is &ldquo;people.ds&rdquo;.</p>
 
 <pre><code class="language-shell">    dataset people.ds update jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'

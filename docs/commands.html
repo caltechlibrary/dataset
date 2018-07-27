@@ -27,8 +27,8 @@
 <h1>commands</h1>
 
 <p>Documentation on individual commands can be see with
-<code>dataset -help COMMAND_NAME</code> where &ldquo;COMMAND_NAME&rdquo; is replaced with one of
-the commands below &ndash;</p>
+<code>dataset -help COMMAND_NAME</code> where &ldquo;COMMAND_NAME&rdquo; is
+replaced with one of the commands below &ndash;</p>
 
 <ul>
 <li><a href="init.html">init</a> - initialize a new collection if none exists, requires a
@@ -73,12 +73,15 @@ the associated dot path described in the JSON docs
 <ul>
 <li><a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)</li>
 </ul></li>
+<li><a href="check.html">check</a> - will check a collection against current version</li>
+<li><a href="repair.html">repair</a> - will attempt to repair/upgrade a collection</li>
+<li><a href="migrate.md">migrate</a> - will migrate the file layout (e.g. buckets, pairtree)</li>
 </ul>
 
-<p>NOTE: The options create, update can read JSON documents piped from standard in
-if you use the &lsquo;-i -&rsquo; or &lsquo;-include -&rsquo; option. Likewise keys can be read from
-standard input with the &lsquo;-i -&rsquo; or &lsquo;-include -&rsquo; options for read, list,
-keys and count.</p>
+<p>NOTE: The options create, update can read JSON documents piped
+from standard in if you use the &lsquo;-i -&rsquo; or &lsquo;-include -&rsquo; option.
+Likewise keys can be read from standard input with the &lsquo;-i -&rsquo;
+or &lsquo;-include -&rsquo; options for read, list, keys and count.</p>
 
 </section>
 

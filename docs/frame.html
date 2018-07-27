@@ -27,10 +27,11 @@
 <h1>frame</h1>
 
 <p>This command will define a frame or return the contents of a frame.
-To define a new frame you need to provide a filename with a list of keys (one per line)
-and followed by a list of dotpaths. In this example we are creating a
-frame called &ldquo;title-authors-year&rdquo; based on the titles, authors and publication year from a dataset collection
-called <code>pubs.ds</code>.</p>
+To define a new frame you need to provide a filename with a list
+of keys (one per line) and followed by a list of dotpaths. In this
+example we are creating a frame called &ldquo;title-authors-year&rdquo; based
+on the titles, authors and publication year from a dataset
+collection called <code>pubs.ds</code>.</p>
 
 <pre><code class="language-shell">    dataset pubs.ds keys &gt; title-authors-year.keys
     dataset pubs.ds frame  &quot;title-authors-year&quot; title-authors-year.keys .title .authors .publication_year

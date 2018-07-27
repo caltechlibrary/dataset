@@ -9,8 +9,9 @@
 
 ## Description
 
-Checks to see if a `collection.json` file is associated with the COLLECTION_NAME. Can work on multiple
-collection names. Returns "OK" if it is.
+Checks to see if a `collection.json` file is associated with 
+the COLLECTION_NAME. Can work on multiple collection names. 
+Returns "OK" if it is.
 
 ## Usage
 

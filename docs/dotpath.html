@@ -30,35 +30,37 @@
 
 <h3>Basic</h3>
 
-<p>A dotpath is a notation to reference elements of a JSON object. It includes
-the ability to traverse nested arrays.  The root of a is a leading dot. A dot is
-typed as a period (i.e. &ldquo;.&rdquo;). Given the following the dot path to the &ldquo;name&rdquo; field
-would be &ldquo;.name&rdquo;.</p>
+<p>A <em>dotpath</em> is a notation to reference elements of a JSON object.
+It includes the ability to traverse nested arrays.  The root of a
+is a leading dot. A dot is typed as a period (i.e. &ldquo;.&rdquo;). Given
+the following the dot path to the &ldquo;name&rdquo; field would be &ldquo;.name&rdquo;.</p>
 
 <pre><code class="language-json">    {&quot;name&quot;:&quot;Jane Doe&quot;}
 </code></pre>
 
-<p>The dotpath <code>.name</code> would return the value &ldquo;Jane Doe&rdquo;.</p>
+<p>The <em>dotpath</em> <code>.name</code> would return the value &ldquo;Jane Doe&rdquo;.</p>
 
 <h3>Arrays</h3>
 
-<p>Arrays are designated with square brackets (E.g. [0] would reference the first
-element of an array, arrays are number from zero).</p>
+<p>Arrays are designated with square brackets (e.g. [0] would reference
+the first element of an array, arrays are number from zero).</p>
 
 <pre><code class="language-json">    [&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]
 </code></pre>
 
-<p>The dotpath of <code>[0]</code> would correspond to the value &ldquo;one&rdquo;, <code>[1]</code> would
-correspond to the value &ldquo;two&rdquo; and <code>[2]</code> would refer to the value &ldquo;three&rdquo;. If
-you wish to include all the elements of an array you would use <code>[:]</code>. This
-would return the full array.  Likewise if you need the second until end of the
-array you would get the values with <code>[2:]</code>.  Finally if you only wanted the
-first and second element you could refere to it with the dotpath <code>[0:1]</code>.</p>
+<p>The dotpath of <code>[0]</code> would correspond to the value &ldquo;one&rdquo;, <code>[1]</code>
+would correspond to the value &ldquo;two&rdquo; and <code>[2]</code> would refer to the
+value &ldquo;three&rdquo;. If you wish to include all the elements of an array
+you would use <code>[:]</code>. This would return the full array.  Likewise if
+you need the second until end of the array you would get the values
+with <code>[2:]</code>.  Finally if you only wanted the first and second element
+you could refere to it with the dotpath <code>[0:1]</code>.</p>
 
 <h3>Putting it all together.</h3>
 
-<p>Often you have more complex objects including some level of nesting.  Element(s)
-can be reference by combine the dotpaths into more complex expressions.</p>
+<p>Often you have more complex objects including some level of nesting.
+Element(s) can be reference by combine the dotpaths into more complex
+expressions.</p>
 
 <pre><code class="language-json">    {
         &quot;title&quot;: &quot;Introducing dataset&quot;,
@@ -69,9 +71,9 @@ can be reference by combine the dotpaths into more complex expressions.</p>
     }
 </code></pre>
 
-<p>You would reference the title with <code>.title</code>, the first author&rsquo;s family name with
-<code>.authors[0].family_name</code> or get an array of authors family names with
-<code>.authors[:].fmaily_name</code>.</p>
+<p>You would reference the title with <code>.title</code>, the first author&rsquo;s
+family name with <code>.authors[0].family_name</code> or get an array of
+authors family names with <code>.authors[:].fmaily_name</code>.</p>
 
 <p>Related topics: <a href="export-csv.html">export-csv</a>, <a href="frame.html">frame</a>, <a href="grid.html">grid</a>, <a href="import-csv.html">import-csv</a>, <a href="indexer.html">indexer</a></p>
 

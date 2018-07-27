@@ -43,9 +43,10 @@ cell.</p>
 <h2>Usage</h2>
 
 <p>In this example we&rsquo;re turning a small subset of fields available in
-collection called &ldquo;publications.ds&rdquo; into JSON structure suitable for sorting
-in python. We are pull the pub date, title, and orcid fields into a grid
-structure. Note that in our example below the orcid itself is an array.</p>
+collection called &ldquo;publications.ds&rdquo; into JSON structure suitable for
+sorting in python. We are pull the pub date, title, and orcid fields
+into a grid structure. Note that in our example below the orcid
+itself is an array.</p>
 
 <pre><code class="language-shell">    dataset publications.ds grid .pub_date .title .creators[:].orcid
 </code></pre>

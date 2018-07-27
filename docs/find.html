@@ -26,7 +26,8 @@
 <section>
 <h1>find</h1>
 
-<p>This is an experimental feature of dataset and maybe removed in the future.</p>
+<p>This is an experimental feature of dataset and maybe removed
+in the future.</p>
 
 <h2>Syntax</h2>
 
@@ -35,11 +36,15 @@
 
 <h2>Description</h2>
 
-<p><em>find</em> adds support for full text searching of a collection based on <a href="https://www.blevesearch.com">Bleve</a> search
-engine indexes.  It supports a <a href="http://www.blevesearch.com/docs/Query-String-Query/">query string language</a>
-similar to elastic search. Additionally <em>find</em> can render the results in various formats include plain text, JSON, and CSV.</p>
+<p><em>find</em> adds support for full text searching of a collection
+based on <a href="https://www.blevesearch.com">Bleve</a> search engine
+indexes.  It supports a
+<a href="http://www.blevesearch.com/docs/Query-String-Query/">query string language</a>
+similar to elastic search. Additionally <em>find</em> can render the
+results in various formats include plain text, JSON, and CSV.</p>
 
-<p><em>find</em> supports using multiple indexes. List the index names separated by colons.</p>
+<p><em>find</em> supports using multiple indexes. List the index names
+separated by colons.</p>
 
 <h2>Usage</h2>
 
@@ -50,7 +55,8 @@ similar to elastic search. Additionally <em>find</em> can render the results in 
     dataset find authors-title.bleve '+orcid:&quot;0000-0003-0900-6903&quot;'
 </code></pre>
 
-<p>Multi index examples (using authors-title.bleve and abstracts.bleve indexes)</p>
+<p>Multi index examples (using authors-title.bleve and abstracts.bleve
+indexes)</p>
 
 <pre><code>    dataset find 'authors-title.bleve:abstracts.bleve' 'Robert Doiel'
     dataset find 'authors-title.bleve:abstracts.bleve' '+family:&quot;Doiel&quot; given:&quot;R&quot;'

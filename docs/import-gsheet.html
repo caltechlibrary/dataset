@@ -26,7 +26,8 @@
 <section>
 <h1>import-gsheet</h1>
 
-<p>This is place holder for documentation on import Google Sheets into a <em>dataset</em> collction.</p>
+<p>This is place holder for documentation on import Google Sheets
+into a <em>dataset</em> collection.</p>
 
 <h2>Syntax</h2>
 
@@ -47,23 +48,30 @@ be an integer starting with &ldquo;1&rdquo;.</li>
 
 <h2>Description</h2>
 
-<p><em>dataset</em> supports importing data from a single sheet at a time from a Google Sheets document. To
-do this you need to beable to authenticate with the Google Sheets v4 API and an account with the
-permissions allowing it to read the Google Sheets document.  Google Sheets like Excel workbooks
-include multiple talbes in a single document. This is usually called a <em>sheet</em>. When importing
-a Google Sheet into a <em>dataset</em> collection the collection needs to exist and you need to identity
-the source of the key. If none is provided the key will be created as the row number of each
-JSON document constructed from the column header and cell value. This is problematic if someome
-sorts the sheet differently and then re-imports the data into the collection.  So usually you
-want to explicitly set the column that will be used as as the record key in the collection. That
-way you can re-import the sheet&rsquo;s data into your collection and replacing the stale data.</p>
+<p><em>dataset</em> supports importing data from a single sheet at a time
+from a Google Sheets document. To do this you need to beable to
+authenticate with the Google Sheets v4 API and an account with the
+permissions allowing it to read the Google Sheets document.
+Google Sheets like Excel workbooks include multiple talbes in a
+single document. This is usually called a <em>sheet</em>. When importing
+a Google Sheet into a <em>dataset</em> collection the collection needs to
+exist and you need to identity the source of the key. If none is
+provided the key will be created as the row number of each JSON
+document constructed from the column header and cell value. This
+is problematic if someome sorts the sheet differently and then
+re-imports the data into the collection.  So usually you want to
+explicitly set the column that will be used as as the record key in
+the collection. That way you can re-import the sheet&rsquo;s data into
+your collection and replacing the stale data.</p>
 
 <h2>Example</h2>
 
-<p>In this example we&rsquo;re using the example Google Sheet from the Golang Google Sheets API v4
-Quickstart. You&rsquo;ll first need to have created a <em>client_secret.json</em> file as described in
-the Step 1 of the <a href="https://developers.google.com/sheets/api/quickstart/go">Google Cloud SDK docs</a>
-and placed it in <em>etc/client_secret.json</em>.  Our collection name is &ldquo;DemoStudentList.ds&rdquo;.</p>
+<p>In this example we&rsquo;re using the example Google Sheet from the
+Golang Google Sheets API v4 Quickstart. You&rsquo;ll first need to have
+created a <em>client_secret.json</em> file as described in the Step 1 of the
+<a href="https://developers.google.com/sheets/api/quickstart/go">Google Cloud SDK docs</a>
+and placed it in <em>etc/client_secret.json</em>.  Our collection name
+is &ldquo;DemoStudentList.ds&rdquo;.</p>
 
 <pre><code class="language-shell">    export GOOGLE_CLIENT_SECRET_JSON=&quot;etc/client_secret.json&quot;
     dataset DemoStudentList.ds init
@@ -71,12 +79,14 @@ and placed it in <em>etc/client_secret.json</em>.  Our collection name is &ldquo
     dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read &quot;${KY}&quot;; done
 </code></pre>
 
-<p>In this example we&rsquo;ve used the row number as the ID for the JSON document created. This isn&rsquo;t
-ideal in production as someone may re-sort the spreadsheet thus changing the number relationship
+<p>In this example we&rsquo;ve used the row number as the ID for the JSON
+document created. This isn&rsquo;t ideal in production as someone may
+re-sort the spreadsheet thus changing the number relationship
 between the row number and the document in your <em>dataset</em> collection.</p>
 
-<p>In this version we&rsquo;ve not used the first row as field names in the JSON record. How does
-it look different? What does &ldquo;-use-header-row=false&rdquo; mean? Why is the range different?</p>
+<p>In this version we&rsquo;ve not used the first row as field names in the
+JSON record. How does it look different? What does &ldquo;-use-header-row=false&rdquo;
+mean? Why is the range different?</p>
 
 <pre><code class="language-shell">    dataset -use-header-row=false DemoStudentList.ds import-gsheet &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; &quot;Class Data&quot; &quot;A2:Z&quot; 1
     dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read &quot;${KY}&quot;; done

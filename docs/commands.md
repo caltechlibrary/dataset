@@ -2,8 +2,8 @@
 # commands
 
 Documentation on individual commands can be see with
-`dataset -help COMMAND_NAME` where "COMMAND_NAME" is replaced with one of
-the commands below --
+`dataset -help COMMAND_NAME` where "COMMAND_NAME" is 
+replaced with one of the commands below --
 
 + [init](init.html) - initialize a new collection if none exists, requires a
   path to collection
@@ -35,10 +35,12 @@ the commands below --
 + [extract](extract.html) - will return a unique list of unique values based on
   the associated dot path described in the JSON docs
     + [dotpath](dotpath.html) - reach into an object to return a value(s)
++ [check](check.html) - will check a collection against current version
++ [repair](repair.html) - will attempt to repair/upgrade a collection
++ [migrate](migrate.md) - will migrate the file layout (e.g. buckets, pairtree)
 
-
-NOTE: The options create, update can read JSON documents piped from standard in
-if you use the '-i -' or '-include -' option. Likewise keys can be read from
-standard input with the '-i -' or '-include -' options for read, list,
-keys and count.
+NOTE: The options create, update can read JSON documents piped 
+from standard in if you use the '-i -' or '-include -' option. 
+Likewise keys can be read from standard input with the '-i -' 
+or '-include -' options for read, list, keys and count.
 

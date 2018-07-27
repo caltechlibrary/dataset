@@ -12,14 +12,17 @@
 
 ## Description
 
-create adds or replaces a JSON document to a collection. The JSON document can be read from a 
-standard in, a named file (with a ".json" file extension) or expressed literally on the command line.
+create adds or replaces a JSON document to a collection. The JSON 
+document can be read from a standard in, a named file (with a 
+".json" file extension) or expressed literally on the command line.
 
 ## Usage
 
-In the following four examples *jane-doe.json* is a file on the local file system
-contains JSON data containing the JSON_VALUE of `{"name":"Jane Doe"}`.  The KEY we will 
-create is _r1_. Collection is "people.ds".  The following are equivalent in resulting record.
+In the following four examples *jane-doe.json* is a file on the 
+local file system contains JSON data containing the JSON_VALUE 
+of `{"name":"Jane Doe"}`.  The KEY we will create is _r1_. 
+Collection is "people.ds".  The following are equivalent in 
+resulting record.
 
 ```shell
     cat jane-doe.json | dataset people.ds create r1

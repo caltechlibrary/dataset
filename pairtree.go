@@ -370,7 +370,7 @@ func migrateToPairtree(collectionName string) error {
 		oldKeyMap[k] = v
 	}
 	c.Close()
-	oldStore, err := storage.GetStore(collectionName)
+	store, err := storage.GetStore(collectionName)
 	if err != nil {
 		return err
 	}
@@ -386,7 +386,7 @@ func migrateToPairtree(collectionName string) error {
 
 	for key, oldPath := range oldKeyMap {
 		_, FName := keyAndFName(key)
-		src, err := oldStore.ReadFile(path.Join(collectionName, oldPath, FName))
+		src, err := store.ReadFile(path.Join(collectionName, oldPath, FName))
 		if err != nil {
 			return err
 		}
@@ -399,9 +399,9 @@ func migrateToPairtree(collectionName string) error {
 		// Check for and handle any attachments
 		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
 		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
-		if oldStore.IsFile(oldTarballPath) {
+		if store.IsFile(oldTarballPath) {
 			// Move the tarball from one layout to the other
-			buf, err := oldStore.ReadFile(oldTarballPath)
+			buf, err := store.ReadFile(oldTarballPath)
 			if err != nil {
 				return err
 			}
@@ -412,6 +412,13 @@ func migrateToPairtree(collectionName string) error {
 			if err != nil {
 				return err
 			}
+		}
+	}
+	// OK, if all buckets processed, we can remove all the paths.
+	for _, oldPath := range oldKeyMap {
+		err = store.RemoveAll(path.Join(collectionName, oldPath))
+		if err != nil {
+			return fmt.Errorf("Cleaning after migration, %s", err)
 		}
 	}
 	return nil
