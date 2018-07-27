@@ -26,137 +26,140 @@ import (
 )
 
 func TestAttachments(t *testing.T) {
-	colName := "testdata/col3.ds"
-	alphabet := "ab"
-	buckets := generateBucketNames(alphabet, 2)
+	layouts := map[string]int{
+		"testdata/pairtree_layout/col3.ds": PAIRTREE_LAYOUT,
+		"testdata/buckets_layout/col3.ds":  BUCKETS_LAYOUT,
+	}
+	for cName, cLayout := range layouts {
 
-	os.RemoveAll(colName)
+		os.RemoveAll(cName)
 
-	collection, err := create(colName, buckets)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-
-	record := map[string]interface{}{
-		"name":  "freda",
-		"motto": "it's all about what you sense when you've have sense to sense it",
-	}
-	data := &Attachment{
-		Name: "impressed.txt",
-		Body: []byte("Wowie Zowie!"),
-	}
-
-	if err := collection.Create("freda", record); err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	if err := collection.attach("freda", data); err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	if files, err := collection.Attachments("freda"); err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	} else {
-		if len(files) != 1 {
-			t.Errorf("Expected one file attached, %+v", files)
+		c, err := InitCollection(cName, cLayout)
+		if err != nil {
+			t.Errorf("Can't create collection %q (%d), %s", cName, cLayout, err)
 			t.FailNow()
 		}
-		if files[0] != "impressed.txt 12" {
-			t.Errorf("Expected files[0] to be impressed, got %+v", files)
+
+		record := map[string]interface{}{
+			"name":  "freda",
+			"motto": "it's all about what you sense when you've have sense to sense it",
+		}
+		data := &Attachment{
+			Name: "impressed.txt",
+			Body: []byte("Wowie Zowie!"),
+		}
+
+		if err := c.Create("freda", record); err != nil {
+			t.Errorf("failed to create freda in %s, %s", c.Name, err)
 			t.FailNow()
 		}
-	}
-	if attachments, err := collection.getAttached("freda"); err != nil {
-		t.Errorf("Expected attachments, %s", err)
-		t.FailNow()
-	} else {
-		if len(attachments) != 1 {
-			t.Errorf("Expected one attachment, %+v\n", attachments)
+		if err := c.attach("freda", data); err != nil {
+			t.Errorf("failed to add attachments to %s, %s", c.Name, err)
 			t.FailNow()
 		}
-		for _, a := range attachments {
-			if (a.Name == "impressed.txt" && bytes.Compare(a.Body, []byte("Wowie Zowie!")) == 0) == false {
-				t.Errorf("Expected impressed.txt, got %+v", a)
+		if files, err := c.Attachments("freda"); err != nil {
+			t.Errorf("can't list attachments for freda in %s, %s", c.Name, err)
+			t.FailNow()
+		} else {
+			if len(files) != 1 {
+				t.Errorf("Expected one file attached, %+v", files)
+				t.FailNow()
+			}
+			if files[0] != "impressed.txt 12" {
+				t.Errorf("Expected files[0] to be impressed, got %+v", files)
 				t.FailNow()
 			}
 		}
-	}
-
-	if attachments, err := collection.getAttached("freda", "impressed.txt"); err != nil {
-		t.Errorf("Expected attachments, %s", err)
-		t.FailNow()
-	} else {
-		if len(attachments) != 1 {
-			t.Errorf("Expected one attachment, %+v\n", attachments)
+		if attachments, err := c.getAttached("freda"); err != nil {
+			t.Errorf("Expected attachments, %s", err)
 			t.FailNow()
-		}
-		for _, a := range attachments {
-			if (a.Name == "impressed.txt" && bytes.Compare(a.Body, []byte("Wowie Zowie!")) == 0) == false {
-				t.Errorf("Expected impressed.txt, got %+v", a)
+		} else {
+			if len(attachments) != 1 {
+				t.Errorf("Expected one attachment, %+v\n", attachments)
 				t.FailNow()
 			}
-		}
-	}
-
-	if err := collection.attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
-		t.Errorf("Appending attachment, %s", err)
-		t.FailNow()
-	}
-
-	if files, err := collection.Attachments("freda"); err != nil {
-		t.Errorf("Attachments after append, %+v %s", files, err)
-		t.FailNow()
-	} else {
-		if len(files) != 1 {
-			t.Errorf("Should have one file after appending an attachment (each call to attach should generate a fresh tarball)")
-		}
-		for _, s := range files {
-			if s != "impressed.txt" && s != "what/she/smokes.txt 14" {
-				t.Errorf("Unexpected file in list, %s", s)
+			for _, a := range attachments {
+				if (a.Name == "impressed.txt" && bytes.Compare(a.Body, []byte("Wowie Zowie!")) == 0) == false {
+					t.Errorf("Expected impressed.txt, got %+v", a)
+					t.FailNow()
+				}
 			}
 		}
-	}
 
-	if attachments, err := collection.getAttached("freda", "what/she/smokes.txt"); err != nil {
-		t.Errorf("Expected attachments, %s", err)
-		t.FailNow()
-	} else {
-		if len(attachments) != 1 {
-			t.Errorf("Expected one attachment, %+v\n", attachments)
+		if attachments, err := c.getAttached("freda", "impressed.txt"); err != nil {
+			t.Errorf("Expected attachments, %s", err)
 			t.FailNow()
-		}
-		for _, a := range attachments {
-			if (a.Name == "what/she/smokes.txt" && bytes.Compare(a.Body, []byte("A Havana Cigar")) == 0) == false {
-				t.Errorf("Expected what/she/smokes.txt, got %+v", a)
+		} else {
+			if len(attachments) != 1 {
+				t.Errorf("Expected one attachment, %+v\n", attachments)
 				t.FailNow()
 			}
+			for _, a := range attachments {
+				if (a.Name == "impressed.txt" && bytes.Compare(a.Body, []byte("Wowie Zowie!")) == 0) == false {
+					t.Errorf("Expected impressed.txt, got %+v", a)
+					t.FailNow()
+				}
+			}
 		}
-	}
 
-	if err := collection.Prune("freda", "what/she/smokes.txt"); err != nil {
-		t.Errorf("Delete one file, %s", err)
-	}
-	tarDocPath, err := collection.DocPath("freda")
-	if err != nil {
-		t.Errorf("Should have gotten docpath for freda, %s", err)
-		t.FailNow()
-	}
-	tarDocPath = strings.TrimSuffix(tarDocPath, ".json") + ".tar"
+		if err := c.attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
+			t.Errorf("Appending attachment, %s", err)
+			t.FailNow()
+		}
 
-	if _, err := os.Stat(tarDocPath); err != nil {
-		t.Errorf("Shouldn't have deleted %s, %s", tarDocPath, err)
-		t.FailNow()
-	}
+		if files, err := c.Attachments("freda"); err != nil {
+			t.Errorf("Attachments after append, %+v %s", files, err)
+			t.FailNow()
+		} else {
+			if len(files) != 1 {
+				t.Errorf("Should have one file after appending an attachment (each call to attach should generate a fresh tarball)")
+			}
+			for _, s := range files {
+				if s != "impressed.txt" && s != "what/she/smokes.txt 14" {
+					t.Errorf("Unexpected file in list, %s", s)
+				}
+			}
+		}
 
-	if err := collection.Prune("freda"); err != nil {
-		t.Errorf("Delete whole tarball, %s", err)
-		t.FailNow()
-	}
+		if attachments, err := c.getAttached("freda", "what/she/smokes.txt"); err != nil {
+			t.Errorf("Expected attachments, %s", err)
+			t.FailNow()
+		} else {
+			if len(attachments) != 1 {
+				t.Errorf("Expected one attachment, %+v\n", attachments)
+				t.FailNow()
+			}
+			for _, a := range attachments {
+				if (a.Name == "what/she/smokes.txt" && bytes.Compare(a.Body, []byte("A Havana Cigar")) == 0) == false {
+					t.Errorf("Expected what/she/smokes.txt, got %+v", a)
+					t.FailNow()
+				}
+			}
+		}
 
-	if _, err := os.Stat(tarDocPath); os.IsNotExist(err) == false {
-		t.Errorf("Should have deleted %s, %s", tarDocPath, err)
-		t.FailNow()
+		if err := c.Prune("freda", "what/she/smokes.txt"); err != nil {
+			t.Errorf("Delete one file, %s", err)
+		}
+		tarDocPath, err := c.DocPath("freda")
+		if err != nil {
+			t.Errorf("Should have gotten docpath for freda, %s", err)
+			t.FailNow()
+		}
+		tarDocPath = strings.TrimSuffix(tarDocPath, ".json") + ".tar"
+
+		if _, err := os.Stat(tarDocPath); err != nil {
+			t.Errorf("Shouldn't have deleted %s, %s", tarDocPath, err)
+			t.FailNow()
+		}
+
+		if err := c.Prune("freda"); err != nil {
+			t.Errorf("Delete whole tarball, %s", err)
+			t.FailNow()
+		}
+
+		if _, err := os.Stat(tarDocPath); os.IsNotExist(err) == false {
+			t.Errorf("Should have deleted %s, %s", tarDocPath, err)
+			t.FailNow()
+		}
 	}
 }

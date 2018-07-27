@@ -15,35 +15,29 @@
 <li><a href="../">README</a></li>
 <li><a href="../license.html">LICENSE</a></li>
 <li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 </ul>
 
 </nav>
 
 <section>
-<h1>repair</h1>
+<h1>Upgrading your dataset collection(s)</h1>
 
-<h2>Syntax</h2>
+<p>The <em>dataset</em> Go package is still rapidly evolving though it is
+now commonly used at Caltech Library. As a result we&rsquo;ve developed
+an easy method for migration collections from an old version to
+a new version. There &ldquo;usual&rdquo; to upgrading your is to use
+use the &ldquo;check&rdquo; and &ldquo;repair&rdquo; features of the <em>dataset</em> command
+line tool.</p>
 
-<pre><code>    dataset repair COLLECTION_NAME
+<pre><code>    dataset check mycollection.ds
+    # you'll get a verbose report to the console
+    dataset repair mycollection.ds
+    # dataset will not attempt to &quot;repair&quot; including upgrade, your collection
 </code></pre>
-
-<h2>Description</h2>
-
-<p><em>repair</em> trys to repair a collection correcting as best it can the <code>collection.json</code> file defining
-where things are to be found.</p>
-
-<h2>Usage</h2>
-
-<p>Our collection name is &ldquo;MyCollectiond.ds&rdquo;.</p>
-
-<pre><code>   dataset repair MyCollection.ds
-</code></pre>
-
-<p>Related topic: <a href="check.html">check</a>, <a href="migrate.html">migrate</a></p>
 
 </section>
 

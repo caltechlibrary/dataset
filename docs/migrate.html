@@ -24,26 +24,32 @@
 </nav>
 
 <section>
-<h1>repair</h1>
+<h1>migrate</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset repair COLLECTION_NAME
+<pre><code>    dataset migrate COLLECTION_NAME LAYOUT_NAME
 </code></pre>
 
 <h2>Description</h2>
 
-<p><em>repair</em> trys to repair a collection correcting as best it can the <code>collection.json</code> file defining
-where things are to be found.</p>
+<p><em>migrate</em> trys to convert a collection&rsquo;s file layout. Two layouts
+are currently support. The older, default layout is &ldquo;buckets&rdquo; and
+the new layout is &ldquo;pairtree&rdquo;.  It is expected that &ldquo;pairtree&rdquo; will
+become the default layout in the future as the <em>dataset</em> command
+evolves.</p>
 
 <h2>Usage</h2>
 
-<p>Our collection name is &ldquo;MyCollectiond.ds&rdquo;.</p>
+<p>Our collection name is &ldquo;MyCollectiond.ds&rdquo;. The type
+of layout we migrating to in this case is &ldquo;pairtree&rdquo;.
+&ldquo;pairtree&rdquo; and &ldquo;buckets&rdquo; are the two currently supported
+file layout scheme.</p>
 
-<pre><code>   dataset repair MyCollection.ds
+<pre><code>   dataset migrate MyCollection.ds pairtree
 </code></pre>
 
-<p>Related topic: <a href="check.html">check</a>, <a href="migrate.html">migrate</a></p>
+<p>Related topic: <a href="check.html">check</a>, <a href="repair.html">repair</a></p>
 
 </section>
 

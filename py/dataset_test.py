@@ -62,7 +62,7 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = collection_name+"/aa/"+key+".json"
+    expected_s = "/".join([collection_name,"aa", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
@@ -313,11 +313,14 @@ def test_check_repair(t, collection_name):
         t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
         return
 
+    if dataset.has_key(collection_name, 'one') == False:
+        dataset.create(collection_name, 'one', {"one": 1})
     t.print("Testing check on", collection_name)
     # Check our collection
     ok = dataset.check(collection_name)
     if ok == False:
         t.error("Failed, expected check", collection_name, "to return True, got", ok)
+        return
 
     # Break and recheck our collection
     if os.path.exists(collection_name + "/collection.json"):

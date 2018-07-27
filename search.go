@@ -365,7 +365,7 @@ func Deindexer(idxName string, keys []string, batchSize int) error {
 		cnt++
 		if (cnt % batchSize) == 0 {
 			// Execute out batch!!
-			log.Println("Executing patch inside loop")
+			//log.Println("executing batch inside loop")
 			if err := idx.Batch(batchIdx); err != nil {
 				log.Fatal(err)
 			}
@@ -377,7 +377,7 @@ func Deindexer(idxName string, keys []string, batchSize int) error {
 		}
 	}
 	if batchIdx.Size() > 0 {
-		log.Println("Executing patch outside loop")
+		//log.Println("executing batch outside loop")
 		if err := idx.Batch(batchIdx); err != nil {
 			log.Fatal(err)
 		}

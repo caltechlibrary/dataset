@@ -1,5 +1,5 @@
 //
-// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
+// buckets_test.go is part of the dataset package and includes test buckets specific functions
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -19,37 +19,29 @@
 package dataset
 
 import (
-	"log"
-	"os"
-
-	// Caltech Library Packages
-	"github.com/caltechlibrary/dotpath"
+	"testing"
 )
 
-// Grid takes a set of collection keys and builds a grid (a 2D array cells)
-// from the array of keys and dot paths provided
-func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]interface{}, error) {
-	pid := os.Getpid()
-	rows := make([][]interface{}, len(keys))
-	col_cnt := len(dotPaths)
-	for i, key := range keys {
-		rec := map[string]interface{}{}
-		err := c.Read(key, rec)
-		if err != nil {
-			return nil, err
-		}
-		rows[i] = make([]interface{}, col_cnt)
-		for j, dpath := range dotPaths {
-			value, err := dotpath.Eval(dpath, rec)
-			if err == nil {
-				rows[i][j] = value
-			} else if verbose == true {
-				log.Printf("(pid: %d) WARNING: skipped %s for cell %d row %d, %s", pid, dpath, j, i, err)
-			}
-		}
-		if verbose && (i > 0) && ((i % 1000) == 0) {
-			log.Printf("(pid: %d) %d keys processed", pid, i)
+func TestBucketNames(t *testing.T) {
+	buckets := generateBucketNames(DefaultAlphabet, 3)
+	for _, val := range buckets {
+		if len(val) != 3 {
+			t.Errorf("Should have a name of length 3. %q", val)
 		}
 	}
-	return rows, nil
+}
+
+func TestPickBucketName(t *testing.T) {
+	alphabet := "ab"
+	buckets := generateBucketNames(alphabet, 2)
+	expected := []string{"aa", "ab", "ba", "bb"}
+
+	for i, expect := range expected {
+		// simulate document count of doc added
+		docNo := i
+		result := pickBucket(buckets, docNo)
+		if result != expect {
+			t.Errorf("docNo %d expect %s, got %s", docNo, expect, result)
+		}
+	}
 }

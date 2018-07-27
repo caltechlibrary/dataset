@@ -20,5 +20,5 @@ Our collection name is "MyCollectiond.ds".
    dataset repair MyCollection.ds
 ```
 
-Related topic: [check](check.html)
+Related topic: [check](check.html), [migrate](migrate.html)
 

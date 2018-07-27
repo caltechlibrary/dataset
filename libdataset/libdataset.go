@@ -96,12 +96,13 @@ func version() *C.char {
 }
 
 //export init_collection
-func init_collection(name *C.char) C.int {
+func init_collection(name *C.char, cLayout C.int) C.int {
 	collectionName := C.GoString(name)
+	layout := int(cLayout)
 	if verbose == true {
-		messagef("creating %s\n", collectionName)
+		messagef("creating %s type %d\n", collectionName, layout)
 	}
-	_, err := dataset.InitCollection(collectionName)
+	_, err := dataset.InitCollection(collectionName, layout)
 	if err != nil {
 		error_dispatch(err, "Cannot create collection %s, %s", collectionName, err)
 		return C.int(0)

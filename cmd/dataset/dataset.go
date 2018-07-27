@@ -67,6 +67,7 @@ var (
 	overwrite         bool
 	batchSize         int
 	keyFName          string
+	collectionLayout  = "" // Default collection file layout
 
 	// Search specific options, application Options
 	showHighlight  bool
@@ -104,6 +105,7 @@ var (
 		"export-csv":    exportCSV,
 		"check":         checkCollection,
 		"repair":        repairCollection,
+		"migrate":       migrateCollection,
 		"import-gsheet": importGSheet,
 		"export-gsheet": exportGSheet,
 		"indexer":       indexer,
@@ -127,13 +129,13 @@ var (
 // checkCollection takes a collection name and checks for problems
 func checkCollection(params ...string) (string, error) {
 	if len(params) == 0 && collectionName == "" {
-		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
+		return "", fmt.Errorf("syntax: %s check COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
+	// Check first collection name
 	if collectionName != "" {
-		if err := dataset.Analyzer(collectionName); err != nil {
-			return "", err
-		}
+		params = append([]string{collectionName}, params[:]...)
 	}
+	// Check any additional collection names
 	for _, cName := range params {
 		if err := dataset.Analyzer(cName); err != nil {
 			return "", err
@@ -146,14 +148,14 @@ func checkCollection(params ...string) (string, error) {
 // based on what it finds on disc
 func repairCollection(params ...string) (string, error) {
 	if len(params) == 0 && collectionName == "" {
-		return "", fmt.Errorf("syntax: %s COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
+		return "", fmt.Errorf("syntax: %s repair COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
+
 	if collectionName != "" {
-		if err := dataset.Repair(collectionName); err != nil {
-			return "", err
-		}
+		params = append([]string{collectionName}, params[:]...)
 	}
 	for _, cName := range params {
+		// Repair collection
 		if err := dataset.Repair(cName); err != nil {
 			return "", err
 		}
@@ -161,17 +163,58 @@ func repairCollection(params ...string) (string, error) {
 	return "OK", nil
 }
 
+// migrateCollection a collection name and a target layout and converts
+// a collection from the existing layout to the target layout.
+func migrateCollection(params ...string) (string, error) {
+	var cLayout int
+	if collectionName != "" {
+		params = append([]string{collectionName}, params[:]...)
+	}
+	if len(params) != 2 {
+		return "", fmt.Errorf("syntax: %s migrate COLLECTION_NAME LAYOUT_NAME", path.Base(os.Args[0]))
+	}
+	cName := params[0]
+	switch strings.ToLower(params[1]) {
+	case "buckets":
+		cLayout = dataset.BUCKETS_LAYOUT
+	case "pairtree":
+		cLayout = dataset.PAIRTREE_LAYOUT
+	default:
+		return "", fmt.Errorf("Unsported layout %q", params[1])
+	}
+	// Repair collection as prep for migration
+	if err := dataset.Repair(cName); err != nil {
+		return "", err
+	}
+	if err := dataset.Migrate(cName, cLayout); err != nil {
+		return "", err
+	}
+	return "OK", nil
+}
+
 // collectionInit takes a name (e.g. directory path dataset/mycollection) and
 // creates a new collection structure on disc
 func collectionInit(params ...string) (string, error) {
+	var cLayout int
+
 	if collectionName == "" && len(params) == 0 {
-		return "", fmt.Errorf("missing a collection name")
+		return "", fmt.Errorf("syntax: %s init COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
 	if collectionName != "" {
 		params = append(params, collectionName)
 	}
+	// Set the collection layout
+	switch strings.ToLower(collectionLayout) {
+	case "buckets":
+		cLayout = dataset.BUCKETS_LAYOUT
+	case "pairtree":
+		cLayout = dataset.PAIRTREE_LAYOUT
+	default:
+		// NOTE: Buckets are still the default layout
+		cLayout = dataset.BUCKETS_LAYOUT
+	}
 	for _, cName := range params {
-		c, err := dataset.InitCollection(cName)
+		c, err := dataset.InitCollection(cName, cLayout)
 		if err != nil {
 			return "", err
 		}
@@ -185,14 +228,15 @@ func collectionStatus(params ...string) (string, error) {
 	if len(params) == 1 && collectionName == "" {
 		return "", fmt.Errorf("syntax: %s status COLLECTION_NAME [COLLECTION_NAME ...]", path.Base(os.Args[0]))
 	}
-	if len(params) == 0 {
-		params = []string{collectionName}
-	}
+	params = append([]string{collectionName}, params[:]...)
+	layouts := []string{"unknown", "buckets", "pairtree"}
 	for _, cName := range params {
 		c, err := dataset.Open(cName)
 		if err != nil {
 			return "", fmt.Errorf("%s: %s", cName, err)
 		}
+		fmt.Printf("%s, layout %s, version %s\n",
+			collectionName, layouts[c.Layout], c.Version)
 		c.Close()
 	}
 	return "OK", nil
@@ -1487,6 +1531,7 @@ func main() {
 
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
+	app.StringVar(&collectionLayout, "layout", "", "set file layout for a new collection (i.e. \"buckets\" or \"pairtree\")")
 	app.BoolVar(&useHeaderRow, "use-header-row", true, "(import) use the header row as attribute names in the JSON document")
 	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
 	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
@@ -1510,7 +1555,7 @@ func main() {
 	// Action verbs (e.g. app.AddAction(STRING_VERB, FUNC_POINTER, STRING_DESCRIPTION)
 	// NOTE: Sense dataset cli was developed pre-existed cli v0.0.6 we're only document our actions and not run them via cli.
 	app.AddVerb("init", "Initialize a dataset collection")
-	app.AddVerb("status", "Checks to see if a collection name contains a 'collection.json' file")
+	app.AddVerb("status", `Checks for a collection's layout and version`)
 	app.AddVerb("create", "Create a JSON record in a collection")
 	app.AddVerb("read", "Read back a JSON record from a collection")
 	app.AddVerb("list", "List the JSON records as an array for provided record ids")
@@ -1529,6 +1574,7 @@ func main() {
 	app.AddVerb("export-csv", "Export a JSON records from a collection to a CSV file")
 	app.AddVerb("check", "Check the health of a dataset collection")
 	app.AddVerb("repair", "Try to repair a damaged dataset collection")
+	app.AddVerb("migrate", `Migrate file layout, e.g. "buckets", "pairtree"`)
 	app.AddVerb("import-gsheet", "Import a GSheet rows as JSON records into a collection")
 	app.AddVerb("export-gsheet", "Export a collection's JSON records to a GSheet")
 	app.AddVerb("clone", "Clone a collection from a list of keys into a new collection")
@@ -1606,7 +1652,7 @@ func main() {
 	// Trival check, look for *.ds, s3://, gs:// in the args and use that for collection name if present.
 	if collectionName == "" {
 		for i, arg := range args {
-			if strings.HasSuffix(arg, ".ds") || strings.HasSuffix(arg, ".dataset") || strings.HasPrefix(arg, "gs://") || strings.HasPrefix(arg, "s3://") {
+			if dataset.IsCollection(arg) {
 				collectionName = arg
 				if i < len(args) {
 					if i == 0 {

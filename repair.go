@@ -19,322 +19,63 @@
 package dataset
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"path"
-	"sort"
-	"strings"
-
-	// CaltechLibrary packages
-	"github.com/caltechlibrary/storage"
 )
 
 //
-// Helper functions
+// Exported functions for dataset cli usage
 //
 
-func keyFound(s string, l []string) bool {
-	for _, ky := range l {
-		if ky == s {
-			return true
-		}
-	}
-	return false
-}
-
-func findBuckets(p string) ([]string, error) {
-	var buckets []string
-
-	dirInfo, err := ioutil.ReadDir(p)
-	if err != nil {
-		return buckets, err
-	}
-	for _, item := range dirInfo {
-		if item.IsDir() == true {
-			buckets = append(buckets, item.Name())
-		}
-	}
-	return buckets, nil
-}
-
-func findJSONDocs(p string) ([]string, error) {
-	var jsonDocs []string
-
-	dirInfo, err := ioutil.ReadDir(p)
-	if err != nil {
-		return jsonDocs, err
-	}
-	for _, item := range dirInfo {
-		if item.IsDir() == false {
-			jname := item.Name()
-			if ext := path.Ext(jname); ext == ".json" {
-				jsonDocs = append(jsonDocs, jname)
-			}
-		}
-	}
-	return jsonDocs, nil
-}
-
-func checkFileExists(p string) (string, bool) {
-	_, err := os.Stat(p)
-	if os.IsNotExist(err) {
-		return p, false
-	}
-	return p, true
-}
-
 //
-// Exported functionds for dataset cli usage
-//
-
-// Analyzer checks a collection for problems
-//
-// + checks if collection.json exists and is valid
-// + checks version of collection and version of dataset tool running
-// + checks if all collection.buckets exist
-// + checks for unaccounted for buckets
-// + checks if all keys in collection.keymap exist
-// + checks for unaccounted for keys in buckets
-// + checks for keys in multiple buckets and reports duplicate record modified times
+// Analyzer checks the collection version and either calls
+// bucketAnalyzer or pairtreeAnalyzer as appropriate.
 //
 func Analyzer(collectionName string) error {
-	var (
-		eCnt    int
-		wCnt    int
-		kCnt    int
-		data    interface{}
-		buckets []string
-		c       *Collection
-		err     error
-	)
-
-	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
-		return fmt.Errorf("Analyzer only works on local disc storage")
+	var err error
+	switch CollectionLayout(collectionName) {
+	case BUCKETS_LAYOUT:
+		err = bucketAnalyzer(collectionName)
+	case PAIRTREE_LAYOUT:
+		err = pairtreeAnalyzer(collectionName)
+	default:
+		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
 	}
-
-	// Check of collections.json
-	for _, fname := range []string{"collection.json"} {
-		if _, exists := checkFileExists(collectionName); exists == false {
-			return fmt.Errorf("%q does not exist", collectionName)
-		}
-		if docPath, exists := checkFileExists(path.Join(collectionName, fname)); exists == false {
-			log.Printf("Missing %s", docPath)
-			return fmt.Errorf("%q does not exist", collectionName)
-		} else {
-			// Make sure we can JSON parse the file
-			if src, err := ioutil.ReadFile(docPath); err == nil {
-				if err := json.Unmarshal(src, &data); err == nil {
-					// release the memory
-					data = nil
-				} else {
-					log.Printf("Error parsing %s, %s", docPath, err)
-					eCnt++
-				}
-			} else {
-				log.Printf("Error opening %s, %s", docPath, err)
-				eCnt++
-			}
-		}
-	}
-
-	// See if we can open a collection, if not then create an empty struct
-	c, err = Open(collectionName)
-	if err != nil {
-		return fmt.Errorf("ERROR: Open %s, %s", collectionName, err)
-	}
-	defer c.Close()
-	if c.Store.Type != storage.FS {
-		return fmt.Errorf("Analyzer only works on local disc storage")
-	}
-	if c.Version != Version {
-		log.Printf("WARNING: Version mismatch collection %s, dataset %s", c.Version, Version)
-		wCnt++
-	}
-
-	// Find buckets
-	buckets, err = findBuckets(collectionName)
-	if err != nil {
-		log.Printf("No buckets found for %s, %s", collectionName, err)
-		eCnt++
-	}
-	// Check if buckets match
-	log.Printf("Checking buckets")
-	for i, bck := range buckets {
-		if keyFound(bck, c.Buckets) == false {
-			log.Printf("%s is missing from collection bucket list", bck)
-			eCnt++
-		}
-		if i > 0 && (i%100) == 0 {
-			log.Printf("%d buckets matched", i)
-		}
-	}
-	log.Printf("%d buckets matched", len(buckets))
-
-	// Check to see if records can be found in their buckets
-	log.Printf("Checking for %d keys from keymaps against their buckets", len(c.KeyMap))
-	for ky, bucket := range c.KeyMap {
-		if docPath, exists := checkFileExists(path.Join(collectionName, bucket, ky+".json")); exists == false {
-			log.Printf("%s is missing", docPath)
-			eCnt++
-		}
-		kCnt++
-		if (kCnt % 5000) == 0 {
-			log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
-		}
-	}
-	log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
-
-	// Check for duplicate records and orphaned records
-	log.Printf("Scanning buckets for orphaned and duplicate records")
-	kCnt = 0
-	for j, bck := range buckets {
-		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
-			for _, jsonDoc := range jsonDocs {
-				ky := strings.TrimSuffix(path.Base(jsonDoc), ".json")
-				if val, ok := c.KeyMap[ky]; ok == true {
-					if val != bck {
-						log.Printf("%s is a duplicate", path.Join(collectionName, val, jsonDoc))
-						wCnt++
-					}
-				} else {
-					log.Printf("%s is an orphaned JSON Doc", path.Join(collectionName, bck, jsonDoc))
-					eCnt++
-				}
-				kCnt++
-			}
-		} else {
-			log.Printf("Can't open bucket %s, %s", bck, err)
-			eCnt++
-		}
-		if (kCnt % 5000) == 0 {
-			log.Printf("%d json docs in %d buckets processed", kCnt, j)
-		}
-	}
-	log.Printf("%d docs in %d buckets processed", kCnt, len(buckets))
-
-	if eCnt > 0 || wCnt > 0 {
-		return fmt.Errorf("%d errors, %d warnings detected", eCnt, wCnt)
-	}
-	return nil
+	return err
 }
 
-func hasBucket(l []string, s string) bool {
-	for _, v := range l {
-		if v == s {
-			return true
-		}
-	}
-	return false
-}
-
-// Repair will take a collection name and attempt to recreate
-// valid collection.json from content in discovered buckets and attached documents
+//
+// Repair takes a collection name and calls
+// wither bucketRepair or pairtreeRepair as appropriate.
+//
 func Repair(collectionName string) error {
-	var (
-		c   *Collection
-		err error
-	)
+	var err error
+	switch CollectionLayout(collectionName) {
+	case BUCKETS_LAYOUT:
+		err = bucketRepair(collectionName)
+	case PAIRTREE_LAYOUT:
+		err = pairtreeRepair(collectionName)
+	default:
+		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
+	}
+	return err
+}
 
-	if strings.HasPrefix(collectionName, "s3://") || strings.HasPrefix(collectionName, "gs://") {
-		return fmt.Errorf("Repair only works on local disc storage")
+//
+//
+func Migrate(collectionName string, newLayout int) error {
+	currentLayout := CollectionLayout(collectionName)
+	if currentLayout == UNKNOWN_LAYOUT {
+		return fmt.Errorf("Can't migrated from an unknown file layout")
 	}
-
-	// See if we can open a collection, if not then create an empty struct
-	c, err = Open(collectionName)
-	if err != nil {
-		log.Printf("Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = ioutil.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
-		if err != nil {
-			log.Printf("Can't re-initilize %s, %s", collectionName, err)
-			return err
-		}
-		log.Printf("Attempting to re-open %s", collectionName)
-		c, err = Open(collectionName)
-		if err != nil {
-			log.Printf("Failed to re-open %s, %s", collectionName, err)
-			return err
-		}
+	if currentLayout == newLayout {
+		return nil
 	}
-	defer c.Close()
-
-	if c.Store.Type != storage.FS {
-		return fmt.Errorf("Repair only works on local disc storage")
+	switch newLayout {
+	case PAIRTREE_LAYOUT:
+		return migrateToPairtree(collectionName)
+	case BUCKETS_LAYOUT:
+		return migrateToBuckets(collectionName)
+	default:
+		return fmt.Errorf("Can't migrate to an unknown file layout")
 	}
-	if c.Version != Version {
-		log.Printf("Migrating format from %s to %s", c.Version, Version)
-	}
-	c.Version = Version
-	log.Printf("Getting a list of buckets")
-	if buckets, err := findBuckets(path.Join(collectionName)); err == nil {
-		c.Buckets = buckets
-	} else {
-		return err
-	}
-	log.Printf("Finding JSON docs in buckets")
-	for j, bck := range c.Buckets {
-		if c.KeyMap == nil {
-			c.KeyMap = map[string]string{}
-		}
-		if jsonDocs, err := findJSONDocs(path.Join(collectionName, bck)); err == nil {
-			for i, jsonDoc := range jsonDocs {
-				ky := strings.TrimSuffix(jsonDoc, ".json")
-				if strings.TrimSpace(ky) != "" {
-					if val, ok := c.KeyMap[ky]; ok == true {
-						if stat1, err := os.Stat(path.Join(collectionName, bck, ky+".json")); err == nil {
-							if stat2, err := os.Stat(path.Join(collectionName, val, ky+".json")); err == nil {
-								m1 := stat1.ModTime()
-								m2 := stat2.ModTime()
-								if m1.Unix() > m2.Unix() {
-									log.Printf("Switching key %s from %s (%s) to  %s (%s)", ky, val, m2, bck, m1)
-									c.KeyMap[ky] = bck
-								}
-							}
-						}
-					} else {
-						c.KeyMap[ky] = bck
-					}
-				}
-				if i > 0 && (i%5000) == 0 {
-					log.Printf("Saving %d items in bucket %s", i, bck)
-					if err := c.saveMetadata(); err != nil {
-						return err
-					}
-				}
-			}
-		} else {
-			return err
-		}
-		log.Printf("Saving bucket %s (%d of %d)", bck, j, len(c.Buckets))
-		if err := c.saveMetadata(); err != nil {
-			return err
-		}
-	}
-	log.Printf("%d keys in %d buckets", len(c.KeyMap), len(c.Buckets))
-	keyList := c.Keys()
-	log.Printf("checking that each key resolves to a value on disc")
-	for _, key := range keyList {
-		p, err := c.DocPath(key)
-		if err != nil {
-			break
-		}
-		if _, err := os.Stat(p); os.IsNotExist(err) == true {
-			log.Printf("Removing %s from %s, %s does not exist", key, collectionName, p)
-			delete(c.KeyMap, key)
-		}
-	}
-	log.Printf("Saving metadata for %s", collectionName)
-	if len(c.Buckets) < len(DefaultBucketNames) {
-		log.Printf("Adding missing buckets")
-		for _, bucket := range DefaultBucketNames {
-			if hasBucket(c.Buckets, bucket) == false {
-				c.Buckets = append(c.Buckets, bucket)
-			}
-		}
-		log.Printf("Re-sorting buckets")
-		sort.Strings(c.Buckets)
-	}
-	return c.saveMetadata()
 }

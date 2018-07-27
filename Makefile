@@ -25,7 +25,7 @@ cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
 	git add cmd/dataset/assets.go
 
-bin/dataset$(EXT): dataset.go attachments.go grid.go frame.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go pairtree.go buckets.go attachments.go grid.go frame.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
 build: $(PROJECT_LIST) python
@@ -43,26 +43,6 @@ test: clean bin/dataset$(EXT)
 	go test
 	bash test_cmd.bash
 	cd py && $(MAKE) test
-
-format:
-	gofmt -w dataset.go
-	gofmt -w dataset_test.go
-	gofmt -w attachments.go
-	gofmt -w attachments_test.go
-	gofmt -w search.go
-	gofmt -w search_test.go
-	gofmt -w formats.go
-	gofmt -w cmd/dataset/dataset.go
-
-lint:
-	golint dataset.go
-	golint dataset_test.go
-	golint attachments.go
-	golint attachments_test.go
-	golint search.go
-	golint search_test.go
-	golint formats.go
-	golint cmd/dataset/dataset.go
 
 clean: 
 	if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi

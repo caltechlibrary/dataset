@@ -20,65 +20,116 @@ package dataset
 
 import (
 	"os"
+	"path"
 	"testing"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/storage"
 )
 
 func TestRepair(t *testing.T) {
-	o := map[string]interface{}{}
-	o["a"] = 1
+	layouts := []int{
+		BUCKETS_LAYOUT,
+		PAIRTREE_LAYOUT,
+	}
 
-	// Setup a test collection and data
-	cName := "test_repair.ds"
-	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
+	for _, cLayout := range layouts {
+		o := map[string]interface{}{}
+		o["a"] = 1
+
+		// Setup a test collection and data
+		cName := path.Join("testdata", "test_repair.ds")
+		os.RemoveAll(cName)
+		c, err := InitCollection(cName, cLayout)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		err = c.Create("a", o)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		o["b"] = 2
+		err = c.Create("b", o)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		o["c"] = 3
+		err = c.Create("c", o)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		// Break the collection by removing a file from disc.
+		p, err := c.DocPath("b")
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		os.Remove(p)
+		cnt := c.Length()
+		if cnt != 3 {
+			t.Errorf("Expected 3, got %d", cnt)
+			t.FailNow()
+		}
+		c.Close()
+		err = Repair(cName)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		c, err = Open(cName)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		defer c.Close()
+		cnt = c.Length()
+		if cnt != 2 {
+			t.Errorf("Expected 2, got %d", cnt)
+			t.FailNow()
+		}
+	}
+}
+
+func TestMigration(t *testing.T) {
+	obj := map[string]interface{}{
+		"one": 1,
+	}
+
+	options := map[string]int{
+		"testdata/test1b.ds": BUCKETS_LAYOUT,
+		"testdata/test1p.ds": PAIRTREE_LAYOUT,
+	}
+
+	store, err := storage.GetStore(cName)
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Error(err)
 		t.FailNow()
 	}
-	err = c.Create("a", o)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
+	// Setup test repositories and test conversion
+	for cName, cLayout := range options {
+		// Clean up stale data
+		store.RemoveAll(cName)
+		c, err := InitCollection(cName, cLayout)
+		if err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+		c.Create("one", obj)
+		c.Close()
+		if cLayout == BUCKETS_LAYOUT {
+			cLayout = PAIRTREE_LAYOUT
+		} else {
+			cLayout = BUCKETS_LAYOUT
+		}
+		err = Migrate(cName, cLayout)
+		if err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
 	}
-	o["b"] = 2
-	err = c.Create("b", o)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	o["c"] = 3
-	err = c.Create("c", o)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	// Break the collection by removing a file from disc.
-	p, err := c.DocPath("b")
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	os.Remove(p)
-	cnt := c.Length()
-	if cnt != 3 {
-		t.Errorf("Expected 3, got %d", cnt)
-		t.FailNow()
-	}
-	c.Close()
-	err = Repair(cName)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	c, err = Open(cName)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	defer c.Close()
-	cnt = c.Length()
-	if cnt != 2 {
-		t.Errorf("Expected 2, got %d", cnt)
-		t.FailNow()
-	}
+
 }

@@ -1,30 +1,31 @@
 
 # Release Process and tags
 
+dataset is going through rapid development and changes as we 
+evolve the software to meet the needs of the DLD group in Caltech Library.
+Below is our current policy regarding releases.
+
 ## Preleases and production releases
 
-This describes a simple release process organized around semantic versioned tags.
+All releases to should a semantic version number (i.e. [semvar]()).
+Releases that are largely patches, bug improvements or experimental
+are tagged "pre-release" on Github.  If they are expected to be used
+outside the immediate DLD group at Caltech Library then they will
+not be tagged "pre-release" on Github.
 
-When a new release is ready it should be tag as v0.XX.XX-pre (where XX is a number) and published as a 'pre-release' on
-Github. Send a note to the development group so someone other than the proposer of the release will be able to 
-indepentently evaluate the release changes.  At a minimum they should run `bash test_cmds.bash` and walk through some 
-of the documentation examples. If the release is verified as ready then a new release will be cut with a tag like
-v0.XX.XX (there the XX are the same as in v0.XX.XX-pre). E.g. v0.0.10-pre would become v0.0.10 on success.
+### Pre-releases
 
-If the release fails verification, bugs need to be fixed and a new release proposed create after the fixes. 
-The "patch" number persion should be incremented in v0.XX.XX-pre (e.g. v0.0.10-pre would be followed by 
-v0.0.11-pre indicating that patches). 
+Pre-releases may or may not have zip'ed executables ready for installion.
+Where they do we are currently targetting Linux on AMD64, Raspbian on ARM 7, Mac OS X on AMD64 and Windows 10 (for use from Window's command prompt)
+on AMD 64.  From time to time preleases may also include an experiemental
+Python module compiled for Mac OS X and Linux.
 
-NOTE: This means there their can be skips in the production patch numbers between release. E.g. v.0.0.9 might
-be followed by v0.0.10-pre, v0.0.11-pre, v0.0.12-pre before a v0.0.12 appears as a production release.
+### Production releases
 
-Production and pre-releases should include Zip files of the compiled cli to be tested by `bash test_cmds.bash`.
-
-## Dev releases
-
-Dev release may happend from time to time as needed. They should always end in a '-dev' version number (e.g. v0.0.10-dev). 
-They normally should not have any pre-compiled binaries to avoid confusion. They should be flagged as draft (pre-release)
-on Github.
+Production releases will include zip files for installing pre-compiled
+binaries for Linux on AMD64, Mac OS X AMD 64, Windows 10 on AMD 64 and
+Raspberry Pi on ARM 7. Production release may include experiement code
+or utilities like the Python module for dataset.
 
 ## Making a release
 

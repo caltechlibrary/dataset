@@ -35,6 +35,7 @@ import (
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
@@ -42,7 +43,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.43`
+	Version = `v0.0.45`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -62,216 +63,73 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `
 
-	DefaultAlphabet = `abcdefghijklmnopqrstuvwxyz`
-
+	// Sort directions
 	ASC  = iota
 	DESC = iota
 )
 
-// countToBucketID turns a count assigns it to a letter sequence (e.g. 0-999 is aa, 1000 - 1999 is ab, etc)
-func countToBucketID(i int, bucketNames []string) string {
-	bucketsize := len(bucketNames)
-	// Calculate bucket number
-	bucketIndex := i % bucketsize
-	return bucketNames[bucketIndex]
-}
+// Supported file layout types
+const (
+	// Assume an unknown layout is zero, then add consts in order of adoption
+	UNKNOWN_LAYOUT = iota
 
-// generateCombinations from an alphabet and length
-//
-// this function is based on example at https://play.golang.org/p/0bWDCibSUJ
-func generateCombinations(alphabet string, length int) <-chan string {
-	c := make(chan string)
+	// Buckets is the first file layout implemented when dataset started
+	BUCKETS_LAYOUT = iota
 
-	// Starting a separate goroutine that will create all the combinations,
-	// feeding them to the channel c
-	go func(c chan string) {
-		defer close(c) // Once the iteration function is finished, we close the channel
-
-		addLetter(c, "", alphabet, length) // We start by feeding it an empty string
-	}(c)
-
-	return c // Return the channel to the calling function
-}
-
-// addLetter adds a letter to the combination to create a new combination.
-// This new combination is passed on to the channel before we call AddLetter once again
-// to add yet another letter to the new combination in case length allows it
-//
-// this function is based on gist at https://play.golang.org/p/0bWDCibSUJ
-func addLetter(c chan string, combo string, alphabet string, length int) {
-	// Check if we reached the length limit
-	// If so, we just return without adding anything
-	if length <= 0 {
-		return
-	}
-
-	var newCombo string
-	for _, ch := range alphabet {
-		newCombo = combo + string(ch)
-		c <- newCombo
-		addLetter(c, newCombo, alphabet, length-1)
-	}
-}
-
-// pickBucket converts takes the number of picks and the
-// count of JSON docs and returns a bucket name.
-func pickBucket(buckets []string, docNo int) string {
-	bucketCount := len(buckets)
-	return buckets[(docNo % bucketCount)]
-}
-
-// generateBucketNames provides a list of permutations of requested length to use as bucket names
-func generateBucketNames(alphabet string, length int) []string {
-	l := []string{}
-	for combo := range generateCombinations(alphabet, length) {
-		if len(combo) == length {
-			l = append(l, combo)
-		}
-	}
-	return l
-}
+	// Pairtree is the perferred file layout moving forward
+	PAIRTREE_LAYOUT = iota
+)
 
 // Collection is the container holding buckets which in turn hold JSON docs
 type Collection struct {
 	// Version of collection being stored
 	Version string `json:"version"`
+
 	// Name of collection
 	Name string `json:"name"`
-	// Buckets is a list of bucket names used by collection
-	Buckets []string `json:"buckets"`
-	// KeyMap holds the document name to bucket map for the collection
+
+	// Type allows for transitioning from bucket layout to pairtree layout for collections.
+	Layout int `json:"layout"`
+
+	// Buckets is a list of bucket names used by collection (depreciated, will be removed after migration to pairtree)
+	Buckets []string `json:"buckets,omitempty"`
+
+	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
+
 	// Store holds the storage system information (e.g. local disc, S3, GS)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
-	// FullPath is the fully qualified path on disc or URI to S3 or GS bucket
-	FullPath string `json:"-"`
+
 	// FrameMap is a list of frame names and with rel path to the frame defined in the collection
 	FrameMap map[string]string `json:"frames"`
 }
 
-// getStore returns a store object, collectionName from name
-func getStore(name string) (*storage.Store, string, error) {
-	var (
-		collectionName string
-		store          *storage.Store
-		err            error
-	)
-	// Pick storage based on name
-	switch {
-	case strings.HasPrefix(name, "s3://") == true:
-		// NOTE: Attempting to overwrite the lack of an environment variable AWS_SDK_LOAD_CONFIG=1
-		if os.Getenv("AWS_SDK_LOAD_CONFIG") == "" {
-			os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
-		}
-		u, _ := url.Parse(name)
-		opts := storage.EnvToOptions(os.Environ())
-		opts["AwsBucket"] = u.Host
-		store, err = storage.Init(storage.S3, opts)
-		if err != nil {
-			return nil, "", err
-		}
-		p := u.Path
-		if strings.HasPrefix(p, "/") {
-			p = p[1:]
-		}
-		collectionName = p
-	case strings.HasPrefix(name, "gs://") == true:
-		u, _ := url.Parse(name)
-		opts := storage.EnvToOptions(os.Environ())
-		opts["GoogleBucket"] = u.Host
-		store, err = storage.Init(storage.GS, opts)
-		if err != nil {
-			return nil, "", err
-		}
-		p := u.Path
-		if strings.HasPrefix(p, "/") {
-			p = p[1:]
-		}
-		collectionName = p
-	default:
-		// Regular file system storage.
-		store, err = storage.Init(storage.FS, map[string]interface{}{})
-		if err != nil {
-			return nil, "", err
-		}
-		collectionName = name
-	}
-
-	return store, collectionName, nil
-}
+//
+// internal utility functions
+//
 
 // normalizeKeyName() trims leading and trailing spaces
 func normalizeKeyName(s string) string {
 	return strings.TrimSpace(s)
 }
 
-// InitCollection - creates a new collection with default alphabet and names of length 2.
-func InitCollection(name string) (*Collection, error) {
-	return create(name, DefaultBucketNames)
+// collectionNameFromPath takes a path and normalized a collection name.
+func collectionNameFromPath(p string) string {
+	if strings.Contains(p, "://") {
+		u, _ := url.Parse(p)
+		return path.Base(u.Path)
+	}
+	return strings.TrimSpace(p)
 }
 
-// create - create a new collection structure on disc
-// name should be filesystem friendly
-func create(name string, bucketNames []string) (*Collection, error) {
-	if len(name) == 0 {
-		return nil, fmt.Errorf("missing a collection name")
+// keyAndFName converts a key (which may have things like slashes) into a disc friendly name and key value
+func keyAndFName(name string) (string, string) {
+	var keyName string
+	if strings.HasSuffix(name, ".json") == true {
+		return keyName, name
 	}
-	store, collectionName, err := getStore(name)
-	if err != nil {
-		return nil, err
-	}
-	// See if we need an open or continue with create
-	if store.Type == storage.S3 || store.Type == storage.GS {
-		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
-			return Open(name)
-		}
-	} else {
-		if _, err := store.Stat(collectionName); err == nil {
-			return Open(name)
-		}
-	}
-	c := new(Collection)
-	c.Version = Version
-	c.Name = collectionName
-	c.Buckets = bucketNames
-	c.KeyMap = map[string]string{}
-	c.Store = store
-	// Save the metadata for collection
-	err = c.saveMetadata()
-	return c, err
-}
-
-// Open reads in a collection's metadata and returns and new collection structure and err
-func Open(name string) (*Collection, error) {
-	store, collectionName, err := getStore(name)
-	if err != nil {
-		return nil, err
-	}
-	src, err := store.ReadFile(path.Join(collectionName, "collection.json"))
-	if err != nil {
-		return nil, err
-	}
-	c := new(Collection)
-	if err := json.Unmarshal(src, &c); err != nil {
-		return nil, err
-	}
-	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
-	c.Name = collectionName
-	c.Store = store
-	return c, nil
-}
-
-// Delete an entire collection
-func Delete(name string) error {
-	store, collectionName, err := getStore(name)
-	if err != nil {
-		return err
-	}
-	if err := store.RemoveAll(collectionName); err != nil {
-		return err
-	}
-	return nil
+	return name, url.QueryEscape(name) + ".json"
 }
 
 // saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
@@ -292,11 +150,73 @@ func (c *Collection) saveMetadata() error {
 	return nil
 }
 
+//
+// Public interface for dataset
+//
+
+// InitCollection - creates a new collection with default alphabet and names of length 2.
+// NOTE: layoutType is provided to allow for future changes in the file layout of a collection.
+func InitCollection(name string, layoutType int) (*Collection, error) {
+	var (
+		c   *Collection
+		err error
+	)
+	switch layoutType {
+	case PAIRTREE_LAYOUT:
+		c, err = pairtreeCreateCollection(name)
+	case BUCKETS_LAYOUT:
+		c, err = bucketCreateCollection(name, DefaultBucketNames)
+	default:
+		c, err = bucketCreateCollection(name, DefaultBucketNames)
+	}
+	if err != nil {
+		return nil, err
+	}
+	// Add Namaste type record
+	namaste.DirType(name, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(name, time.Now().Format("2006-01-02"))
+	return c, nil
+}
+
+// Open reads in a collection's metadata and returns and new collection structure and err
+func Open(name string) (*Collection, error) {
+	store, err := storage.GetStore(name)
+	if err != nil {
+		return nil, err
+	}
+	collectionName := collectionNameFromPath(name)
+	src, err := store.ReadFile(path.Join(collectionName, "collection.json"))
+	if err != nil {
+		return nil, err
+	}
+	c := new(Collection)
+	if err := json.Unmarshal(src, &c); err != nil {
+		return nil, err
+	}
+	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
+	c.Name = collectionName
+	c.Store = store
+	return c, nil
+}
+
+// Delete an entire collection
+func Delete(name string) error {
+	store, err := storage.GetStore(name)
+	if err != nil {
+		return err
+	}
+	collectionName := collectionNameFromPath(name)
+	if err := store.RemoveAll(collectionName); err != nil {
+		return err
+	}
+	return nil
+}
+
 // DocPath returns a full path to a key or an error if not found
 func (c *Collection) DocPath(name string) (string, error) {
 	keyName, name := keyAndFName(name)
-	if bucketName, ok := c.KeyMap[keyName]; ok == true {
-		return path.Join(c.Name, bucketName, name), nil
+	if p, ok := c.KeyMap[keyName]; ok == true {
+		return path.Join(c.Name, p, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
 }
@@ -311,106 +231,40 @@ func (c *Collection) Close() error {
 	return nil
 }
 
-// keyAndFName converts a key (which may have things like slashes) into a disc friendly name and key value
-func keyAndFName(name string) (string, string) {
-	var keyName string
-	if strings.HasSuffix(name, ".json") == true {
-		return keyName, name
-	}
-	return name, url.QueryEscape(name) + ".json"
-}
-
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
-	key = strings.TrimSpace(key)
-	if key == "" || key == ".json" {
-		return fmt.Errorf("must not be empty")
+	switch c.Layout {
+	case PAIRTREE_LAYOUT:
+		return c.pairtreeCreateJSON(key, src)
+	case BUCKETS_LAYOUT:
+		return c.bucketCreateJSON(key, src)
+	default:
+		return c.bucketCreateJSON(key, src)
 	}
-	// NOTE: Make sure collection exists before doing anything else!!
-	if len(c.Buckets) == 0 {
-		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
-	}
-
-	// Enforce the _Key attribute is unique and does not exist in collection already
-	key = normalizeKeyName(key)
-	keyName, FName := keyAndFName(key)
-	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
-		return fmt.Errorf("%s already exists in collection %s", key, c.Name)
-	}
-
-	// Make sure we have an "object" not an array object in JSON notation
-	if bytes.HasPrefix(src, []byte(`{`)) == false {
-		return fmt.Errorf("dataset can only stores JSON objects")
-	}
-	// Add a _Key value if needed in the JSON source
-	if bytes.Contains(src, []byte(`"_Key"`)) == false {
-		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
-	}
-
-	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
-	p := path.Join(c.Name, bucketName)
-	err := c.Store.MkdirAll(p, 0770)
-	if err != nil {
-		return fmt.Errorf("mkdir %s %s", p, err)
-	}
-
-	// We've almost made it, save the key's bucket name and write the blob to bucket
-	c.KeyMap[keyName] = path.Join(bucketName)
-	err = c.Store.WriteFile(path.Join(p, FName), src, 0664)
-	if err != nil {
-		return err
-	}
-	return c.saveMetadata()
 }
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
-	name = normalizeKeyName(name)
-	// Handle potentially URL encoded names
-	keyName, FName := keyAndFName(name)
-	bucketName, ok := c.KeyMap[keyName]
-	if ok != true {
-		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
+	switch c.Layout {
+	case PAIRTREE_LAYOUT:
+		return c.pairtreeReadJSON(name)
+	case BUCKETS_LAYOUT:
+		return c.bucketReadJSON(name)
+	default:
+		return c.bucketReadJSON(name)
 	}
-	// NOTE: c.Name is the path to the collection not the name of JSON document
-	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, FName))
-	if err != nil {
-		return nil, err
-	}
-	return src, nil
 }
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) UpdateJSON(name string, src []byte) error {
-	// NOTE: Make sure collection exists before doing anything else!!
-	if len(c.Buckets) == 0 {
-		return fmt.Errorf("collection %q is not valid, zero buckets", c.Name)
+	switch c.Layout {
+	case PAIRTREE_LAYOUT:
+		return c.pairtreeUpdateJSON(name, src)
+	case BUCKETS_LAYOUT:
+		return c.bucketUpdateJSON(name, src)
+	default:
+		return c.bucketUpdateJSON(name, src)
 	}
-
-	// Make sure Key exists before proceeding with update
-	name = normalizeKeyName(name)
-	keyName, FName := keyAndFName(name)
-	bucketName, ok := c.KeyMap[keyName]
-	if ok != true {
-		return fmt.Errorf("%q does not exist", keyName)
-	}
-
-	// Make sure we have an "object" not an array object in JSON notation
-	if bytes.HasPrefix(src, []byte(`{`)) == false {
-		return fmt.Errorf("dataset can only stores JSON objects")
-	}
-	// Add a _Key value if needed in the JSON source
-	if bytes.Contains(src, []byte(`"_Key"`)) == false {
-		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
-	}
-
-	p := path.Join(c.Name, bucketName)
-	err := c.Store.MkdirAll(p, 0770)
-	if err != nil {
-		return fmt.Errorf("Update (mkdir) %s %s", p, err)
-	}
-	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
 }
 
 // Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
@@ -449,27 +303,14 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	name = normalizeKeyName(name)
-	keyName, FName := keyAndFName(name)
-
-	bucketName, ok := c.KeyMap[keyName]
-	if ok != true {
-		return fmt.Errorf("%q key not found", keyName)
+	switch c.Layout {
+	case PAIRTREE_LAYOUT:
+		return c.pairtreeDelete(name)
+	case BUCKETS_LAYOUT:
+		return c.bucketDelete(name)
+	default:
+		return c.bucketDelete(name)
 	}
-
-	//NOTE: Need to remove any stale tarball before removing our record!
-	tarball := keyName + ".tar"
-	p := path.Join(c.Name, bucketName, tarball)
-	if err := c.Store.RemoveAll(p); err != nil {
-		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
-	}
-	p = path.Join(c.Name, bucketName, FName)
-	if err := c.Store.Remove(p); err != nil {
-		return fmt.Errorf("Error removing %q, %s", p, err)
-	}
-
-	delete(c.KeyMap, keyName)
-	return c.saveMetadata()
 }
 
 // Keys returns a list of keys in a collection
@@ -484,6 +325,7 @@ func (c *Collection) Keys() []string {
 // HasKey returns true if key is in collection's KeyMap, false otherwise
 func (c *Collection) HasKey(key string) bool {
 	_, hasKey := c.KeyMap[key]
+	//FIXME: if pairtree then we can also check by calculating the path and checking the storage system.
 	return hasKey
 }
 
@@ -745,7 +587,8 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
-	clone, err := InitCollection(cloneName)
+	//NOTE: this should create a collection using the same layout we cloning from
+	clone, err := InitCollection(cloneName, c.Layout)
 	if err != nil {
 		return err
 	}
@@ -794,4 +637,56 @@ func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, 
 		}
 	}
 	return nil
+}
+
+// IsCollection checks to see if a given path contains a
+// collection.json file
+func IsCollection(p string) bool {
+	store, err := storage.GetStore(p)
+	if err != nil {
+		return false
+	}
+	if store.IsFile(path.Join(p, "collection.json")) {
+		return true
+	}
+	return false
+}
+
+// CollectionLayout returns the numeric type
+// association with the collection (e.g BUCKETS_LAYOUT,
+// PAIRTREE_LAYOUT).
+func CollectionLayout(p string) int {
+	store, err := storage.GetStore(p)
+	if err != nil {
+		return UNKNOWN_LAYOUT
+	}
+	if store.IsDir(path.Join(p, "pairtree")) {
+		return PAIRTREE_LAYOUT
+	}
+	if store.IsDir(path.Join(p, "aa")) {
+		return BUCKETS_LAYOUT
+	}
+	if store.IsFile(path.Join(p, "collection.json")) {
+		src, err := store.ReadFile(path.Join(p, "collection.json"))
+		if err != nil {
+			return UNKNOWN_LAYOUT
+		}
+		c := new(Collection)
+		err = json.Unmarshal(src, &c)
+		if err != nil {
+			return UNKNOWN_LAYOUT
+		}
+		switch c.Layout {
+		case BUCKETS_LAYOUT:
+			return BUCKETS_LAYOUT
+		case PAIRTREE_LAYOUT:
+			return PAIRTREE_LAYOUT
+		default:
+			if len(c.Buckets) > 0 {
+				return BUCKETS_LAYOUT
+			}
+			return UNKNOWN_LAYOUT
+		}
+	}
+	return UNKNOWN_LAYOUT
 }
