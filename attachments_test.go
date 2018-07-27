@@ -30,13 +30,13 @@ func TestAttachments(t *testing.T) {
 		"testdata/pairtree_layout/col3.ds": PAIRTREE_LAYOUT,
 		"testdata/buckets_layout/col3.ds":  BUCKETS_LAYOUT,
 	}
-	for colName, colLayout := range layouts {
+	for cName, cLayout := range layouts {
 
-		os.RemoveAll(colName)
+		os.RemoveAll(cName)
 
-		collection, err := InitCollection(colName, colLayout)
+		c, err := InitCollection(cName, cLayout)
 		if err != nil {
-			t.Errorf("%s", err)
+			t.Errorf("Can't create collection %q (%d), %s", cName, cLayout, err)
 			t.FailNow()
 		}
 
@@ -49,16 +49,16 @@ func TestAttachments(t *testing.T) {
 			Body: []byte("Wowie Zowie!"),
 		}
 
-		if err := collection.Create("freda", record); err != nil {
-			t.Errorf("%s", err)
+		if err := c.Create("freda", record); err != nil {
+			t.Errorf("failed to create freda in %s, %s", c.Name, err)
 			t.FailNow()
 		}
-		if err := collection.attach("freda", data); err != nil {
-			t.Errorf("%s", err)
+		if err := c.attach("freda", data); err != nil {
+			t.Errorf("failed to add attachments to %s, %s", c.Name, err)
 			t.FailNow()
 		}
-		if files, err := collection.Attachments("freda"); err != nil {
-			t.Errorf("%s", err)
+		if files, err := c.Attachments("freda"); err != nil {
+			t.Errorf("can't list attachments for freda in %s, %s", c.Name, err)
 			t.FailNow()
 		} else {
 			if len(files) != 1 {
@@ -70,7 +70,7 @@ func TestAttachments(t *testing.T) {
 				t.FailNow()
 			}
 		}
-		if attachments, err := collection.getAttached("freda"); err != nil {
+		if attachments, err := c.getAttached("freda"); err != nil {
 			t.Errorf("Expected attachments, %s", err)
 			t.FailNow()
 		} else {
@@ -86,7 +86,7 @@ func TestAttachments(t *testing.T) {
 			}
 		}
 
-		if attachments, err := collection.getAttached("freda", "impressed.txt"); err != nil {
+		if attachments, err := c.getAttached("freda", "impressed.txt"); err != nil {
 			t.Errorf("Expected attachments, %s", err)
 			t.FailNow()
 		} else {
@@ -102,12 +102,12 @@ func TestAttachments(t *testing.T) {
 			}
 		}
 
-		if err := collection.attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
+		if err := c.attach("freda", &Attachment{Name: "what/she/smokes.txt", Body: []byte("A Havana Cigar")}); err != nil {
 			t.Errorf("Appending attachment, %s", err)
 			t.FailNow()
 		}
 
-		if files, err := collection.Attachments("freda"); err != nil {
+		if files, err := c.Attachments("freda"); err != nil {
 			t.Errorf("Attachments after append, %+v %s", files, err)
 			t.FailNow()
 		} else {
@@ -121,7 +121,7 @@ func TestAttachments(t *testing.T) {
 			}
 		}
 
-		if attachments, err := collection.getAttached("freda", "what/she/smokes.txt"); err != nil {
+		if attachments, err := c.getAttached("freda", "what/she/smokes.txt"); err != nil {
 			t.Errorf("Expected attachments, %s", err)
 			t.FailNow()
 		} else {
@@ -137,10 +137,10 @@ func TestAttachments(t *testing.T) {
 			}
 		}
 
-		if err := collection.Prune("freda", "what/she/smokes.txt"); err != nil {
+		if err := c.Prune("freda", "what/she/smokes.txt"); err != nil {
 			t.Errorf("Delete one file, %s", err)
 		}
-		tarDocPath, err := collection.DocPath("freda")
+		tarDocPath, err := c.DocPath("freda")
 		if err != nil {
 			t.Errorf("Should have gotten docpath for freda, %s", err)
 			t.FailNow()
@@ -152,7 +152,7 @@ func TestAttachments(t *testing.T) {
 			t.FailNow()
 		}
 
-		if err := collection.Prune("freda"); err != nil {
+		if err := c.Prune("freda"); err != nil {
 			t.Errorf("Delete whole tarball, %s", err)
 			t.FailNow()
 		}

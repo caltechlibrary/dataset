@@ -575,47 +575,62 @@ func bucketRepair(collectionName string) error {
 }
 
 func migrateToBuckets(collectionName string) error {
-	// Create a new collection struct, set to Buckets layout
-	nc := new(Collection)
-	nc.Layout = BUCKETS_LAYOUT
-	nc.Buckets = DefaultBucketNames[:]
-
 	// Open existing collection, get objects and attachments
 	// and manually place in new layout updating nc.
 	c, err := Open(collectionName)
 	if err != nil {
 		return err
 	}
-	keyMap := c.KeyMap
-	store := c.Store
+	oldKeyMap := map[string]string{}
+	for k, v := range c.KeyMap {
+		oldKeyMap[k] = v
+	}
 	c.Close()
-	for key, p := range keyMap {
+
+	store, err := storage.GetStore(collectionName)
+	if err != nil {
+		return err
+	}
+
+	// Create a new collection struct, set to Buckets layout
+	nc := new(Collection)
+	nc.Name = collectionName
+	nc.Layout = BUCKETS_LAYOUT
+	nc.Buckets = DefaultBucketNames[:]
+	nc.KeyMap = map[string]string{}
+	nc.Store, _ = storage.GetStore(collectionName)
+
+	for key, oldPath := range oldKeyMap {
 		_, FName := keyAndFName(key)
-		src, err := store.ReadFile(path.Join(collectionName, p, FName))
+		src, err := store.ReadFile(path.Join(collectionName, oldPath, FName))
 		if err != nil {
 			return err
 		}
 		// Write object to the new location
+		fmt.Printf("DEBUG CreateJSON(%q, ...) in %q\n", key, collectionName)
 		err = nc.CreateJSON(key, src)
 		if err != nil {
 			return err
 		}
 
 		// Check for and handle any attachments
-		tarDoc := path.Join(collectionName, p, strings.TrimSuffix(FName, ".json")+".tar")
-		if store.IsFile(tarDoc) {
+		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
+		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
+		if store.IsFile(oldTarballPath) {
+			fmt.Printf("Moving tarball %q\n", oldTarballPath)
 			// Move the tarball from one layout to the other
-			buf, err := store.ReadFile(tarDoc)
+			buf, err := store.ReadFile(oldTarballPath)
 			if err != nil {
 				return err
 			}
 			// Find the new location
 			docPath, err := nc.DocPath(key)
+			fmt.Printf("DEBUG docPath (buckets): %q\n", docPath)
 			if err != nil {
 				return err
 			}
-			tarDoc = path.Join(collectionName, strings.TrimSuffix(docPath, ".json")+".tar")
-			err = store.WriteFile(tarDoc, buf, 0664)
+			newTarballPath := path.Join(collectionName, docPath, tarballFName)
+			err = store.WriteFile(newTarballPath, buf, 0664)
 			if err != nil {
 				return err
 			}

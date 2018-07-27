@@ -78,15 +78,16 @@ func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
 		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
 	}
 
-	pair := path.Join("pairtree", pairtree.Encode(key))
-	err := c.Store.MkdirAll(path.Join(c.Name, pair), 0770)
+	pair := pairtree.Encode(key)
+	pairPath := path.Join("pairtree", pair)
+	err := c.Store.MkdirAll(path.Join(c.Name, pairPath), 0770)
 	if err != nil {
-		return fmt.Errorf("mkdir %s %s", path.Join(c.Name, pair), err)
+		return fmt.Errorf("mkdir %s %s", path.Join(c.Name, pairPath), err)
 	}
 
 	// We've almost made it, save the key's bucket name and write the blob to bucket
-	c.KeyMap[keyName] = pair
-	err = c.Store.WriteFile(path.Join(c.Name, pair, FName), src, 0664)
+	c.KeyMap[keyName] = pairPath
+	err = c.Store.WriteFile(path.Join(c.Name, pairPath, FName), src, 0664)
 	if err != nil {
 		return err
 	}
@@ -101,13 +102,13 @@ func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
-	pair, ok := c.KeyMap[keyName]
+	pairPath, ok := c.KeyMap[keyName]
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, pair, FName))
+	src, err := c.Store.ReadFile(path.Join(c.Name, pairPath, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -133,16 +134,15 @@ func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
 	}
 
 	//NOTE: KeyMap should include pairtree path (e.g. pairtree/AA/BB/CC...)
-	pair, ok := c.KeyMap[keyName]
+	pairPath, ok := c.KeyMap[keyName]
 	if ok != true {
-		return fmt.Errorf("%q does not exist", keyName)
+		return fmt.Errorf("%q does not exist in %q", keyName, c.Name)
 	}
-	p := path.Join(c.Name, pair)
-	err := c.Store.MkdirAll(p, 0770)
+	err := c.Store.MkdirAll(path.Join(c.Name, pairPath), 0770)
 	if err != nil {
-		return fmt.Errorf("Update (mkdir) %s %s", p, err)
+		return fmt.Errorf("Update (mkdir) %q, %s", path.Join(c.Name, pairPath), err)
 	}
-	return c.Store.WriteFile(path.Join(c.Name, pair, fName), src, 0664)
+	return c.Store.WriteFile(path.Join(c.Name, pairPath, fName), src, 0664)
 }
 
 // pairtreeDelete removes a JSON doc from a collection
@@ -153,18 +153,18 @@ func (c *Collection) pairtreeDelete(name string) error {
 	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
 
-	pair, ok := c.KeyMap[keyName]
+	pairPath, ok := c.KeyMap[keyName]
 	if ok != true {
-		return fmt.Errorf("%q key not found", keyName)
+		return fmt.Errorf("%q key not found in %q", keyName, c.Name)
 	}
 
 	//NOTE: Need to remove any stale tarball before removing our record!
-	tarball := keyName + ".tar"
-	p := path.Join(c.Name, pair, tarball)
+	tarball := strings.TrimSuffix(FName, ".json") + ".tar"
+	p := path.Join(c.Name, pairPath, tarball)
 	if err := c.Store.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
 	}
-	p = path.Join(c.Name, pair, FName)
+	p = path.Join(c.Name, pairPath, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
@@ -365,41 +365,50 @@ func migrateToPairtree(collectionName string) error {
 	if err != nil {
 		return err
 	}
-	defer c.Close()
-	keyMap := c.KeyMap
-	store := c.Store
+	oldKeyMap := map[string]string{}
+	for k, v := range c.KeyMap {
+		oldKeyMap[k] = v
+	}
+	c.Close()
+	oldStore, err := storage.GetStore(collectionName)
+	if err != nil {
+		return err
+	}
 
 	// Create a new collection struct, set to Buckets layout
 	nc := new(Collection)
 	nc.Layout = PAIRTREE_LAYOUT
+	nc.Name = collectionName
 	nc.Version = Version
 	nc.Buckets = nil
 	nc.Store, _ = storage.GetStore(collectionName)
 	nc.KeyMap = map[string]string{}
 
-	for key, p := range keyMap {
+	for key, oldPath := range oldKeyMap {
 		_, FName := keyAndFName(key)
-		src, err := store.ReadFile(path.Join(collectionName, p, FName))
+		src, err := oldStore.ReadFile(path.Join(collectionName, oldPath, FName))
 		if err != nil {
 			return err
 		}
 		// Write object to the new location
-		err = nc.pairtreeCreateJSON(key, src)
+		err = nc.CreateJSON(key, src)
 		if err != nil {
 			return err
 		}
 
 		// Check for and handle any attachments
-		tarDoc := path.Join(collectionName, p, strings.TrimSuffix(FName, ".json")+".tar")
-		if store.IsFile(tarDoc) {
+		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
+		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
+		if oldStore.IsFile(oldTarballPath) {
 			// Move the tarball from one layout to the other
-			buf, err := store.ReadFile(tarDoc)
+			buf, err := oldStore.ReadFile(oldTarballPath)
 			if err != nil {
 				return err
 			}
-			docPath, err := nc.DocPath(key)
-			tarDoc = path.Join(collectionName, strings.TrimSuffix(docPath, ".json")+".tar")
-			err = store.WriteFile(tarDoc, buf, 0664)
+			pair := pairtree.Encode(key)
+			pairPath := path.Join("pairtree", pair)
+			newTarballPath := path.Join(collectionName, pairPath, tarballFName)
+			err = nc.Store.WriteFile(newTarballPath, buf, 0664)
 			if err != nil {
 				return err
 			}

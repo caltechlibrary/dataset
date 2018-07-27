@@ -48,10 +48,10 @@ var (
 418925,,,National food situation,
 415750,0007-6597,,BCD : business conditions digest,
 `
-	cName  = "testdata/search-test.ds"
-	mbName = "testdata/search-test.bmap"
-	mName  = "testdata/search-test.json"
-	iName  = "testdata/search-test.bleve"
+	cName  = path.Join("testdata", "search-test.ds")
+	mbName = path.Join("testdata", "search-test.bmap")
+	mName  = path.Join("testdata", "search-test.json")
+	iName  = path.Join("testdata", "search-test.bleve")
 
 	layouts = []int{
 		PAIRTREE_LAYOUT,
@@ -305,9 +305,9 @@ func TestIndexerDeindexer(t *testing.T) {
 
 func TestSearchSort(t *testing.T) {
 	for _, cLayout := range layouts {
-		cName := "test_search_sort.ds"
-		iName := "test_search_sort.bleve"
-		iMapName := "test_search_sort_map.json"
+		cName := path.Join("testdata", "test_search_sort.ds")
+		iName := path.Join("testdata", "test_search_sort.bleve")
+		iMapName := path.Join("testdata", "test_search_sort_map.json")
 		os.RemoveAll(cName)
 		os.RemoveAll(iName)
 		os.RemoveAll(iMapName)

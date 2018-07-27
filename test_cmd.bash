@@ -27,8 +27,8 @@ function assert_equal() {
 # Tests
 #
 function test_dataset() {
-	if [[ -f "test1.ds/collection.json" ]]; then
-		rm -fR test1.ds
+	if [[ -f "testdata/test1.ds/collection.json" ]]; then
+		rm -fR testdata/test1.ds
 	fi
 	EXT=".exe"
 	OS=$(uname)
@@ -48,13 +48,13 @@ function test_dataset() {
 
 	# Test init
 	EXPECTED="OK"
-	RESULT=$(bin/dataset init test1.ds)
-	assert_equal "init test1.ds" "$EXPECTED" "$RESULT"
-	assert_exists "collection create" "test1.ds"
-	assert_exists "collection created metadata" "test1.ds/collection.json"
+	RESULT=$(bin/dataset init testdata/test1.ds)
+	assert_equal "init testdata/test1.ds" "$EXPECTED" "$RESULT"
+	assert_exists "collection create" "testdata/test1.ds"
+	assert_exists "collection created metadata" "testdata/test1.ds/collection.json"
 
 	# Set environment and then continue with tests
-	export DATASET="test1.ds"
+	export DATASET="testdata/test1.ds"
 
 	# Test create
 	EXPECTED="OK"
@@ -84,8 +84,8 @@ function test_dataset() {
 	EXPECTED="1 "
 	RESULT=$(bin/dataset keys '(eq .one 1)' | sort | tr "\n" " ")
 
-	if [ -f "test1.ds/collection.json" ]; then
-		rm -fR test1.ds
+	if [ -f "testdata/test1.ds/collection.json" ]; then
+		rm -fR testdata/test1.ds
 	fi
 	echo "Test dataset successful"
 }
@@ -108,19 +108,19 @@ function test_gsheet() {
     cd gsheet || exit 1
     go test -client-secret "../${CLIENT_SECRET_JSON}" -spreadsheet-id "${SPREADSHEET_ID}"
     cd ..
-	if [[ -d "test_gsheet.ds" ]]; then
-		rm -fR test_gsheet.ds
+	if [[ -d "testdata/test_gsheet.ds" ]]; then
+		rm -fR testdata/test_gsheet.ds
 	fi
-	bin/dataset -nl=false -quiet init "test_gsheet.ds"
+	bin/dataset -nl=false -quiet init "testdata/test_gsheet.ds"
 	if [[ "$?" != "0" ]]; then
-		echo "Count not initialize test_gsheet.ds"
+		echo "Count not initialize testdata/test_gsheet.ds"
 		exit 1
 	fi
-	export DATASET="test_gsheet.ds"
+	export DATASET="testdata/test_gsheet.ds"
 
 	bin/dataset -nl=false -quiet create "Wilson1930" '{"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"}'
 	if [[ "$?" != "0" ]]; then
-		echo "Could not create test record in test_gsheet.ds"
+		echo "Could not create test record in testdata/test_gsheet.ds"
 		exit 1
 	fi
 	CNT=$(bin/dataset -nl=false count)
@@ -167,32 +167,32 @@ function test_gsheet() {
 
 
 function test_issue19() {
-	if [[ -d "test_issue19.ds" ]]; then
-		rm -fR test_issue19.ds
+	if [[ -d "testdata/test_issue19.ds" ]]; then
+		rm -fR testdata/test_issue19.ds
 	fi
-	bin/dataset -nl=false -quiet init "test_issue19.ds"
-	bin/dataset -nl=false -quiet -c test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":1}'
+	bin/dataset -nl=false -quiet init "testdata/test_issue19.ds"
+	bin/dataset -nl=false -quiet -c testdata/test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":1}'
 	if [[ "$?" != "0" ]]; then
 		echo "Failed, should be able to create the record in an empty collection"
 		exit 1
 	fi
 
 	# Now try creating the record again without -overwrite
-	bin/dataset -nl=false -quiet -c test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
+	bin/dataset -nl=false -quiet -c testdata/test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
 	if [[ "$?" == "0" ]]; then
 		echo "Failed, should NOT be able to create the record when it exists in an empty collection without -overwrite"
 		exit 1
 	fi
 
 	# Now try to create the record with -overwrite
-	bin/dataset -nl=false -quiet -overwrite -c test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
+	bin/dataset -nl=false -quiet -overwrite -c testdata/test_issue19.ds create freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
 	if [[ "$?" != "0" ]]; then
 		echo "Failed, should be able to create the record with -overwite!"
 		exit 1
 	fi
 
 	echo "Test issue 19 fix OK"
-	rm -fR "test_issue19.ds"
+	rm -fR "testdata/test_issue19.ds"
 }
 
 function test_readme () {
@@ -264,11 +264,11 @@ function test_readme () {
     fi
 
     # Join freda-profile.json with "freda" adding unique key/value pairs
-    cat << EOT > freda-profile.json
+    cat << EOT > testdata/freda-profile.json
 {"name": "little freda", "office": "SFL", "count": 3}
 EOT
 
-    bin/dataset -quiet -nl=false testdata/mystuff.ds join append freda freda-profile.json
+    bin/dataset -quiet -nl=false testdata/mystuff.ds join append freda testdata/freda-profile.json
     if [[ "$?" != "0" ]]; then
         echo 'test_readme (271): could not join update'
         exit 1
@@ -276,11 +276,11 @@ EOT
 
     # Join freda-profile.json overwriting in commont key/values adding unique key/value pairs
     # from freda-profile.json
-    cat << EOT > freda-profile.json
+    cat << EOT > testdata/freda-profile.json
 {"name": "little freda", "office": "SFL", "count": 4}
 EOT
 
-    bin/dataset -quiet -nl=false testdata/mystuff.ds join overwrite freda freda-profile.json
+    bin/dataset -quiet -nl=false testdata/mystuff.ds join overwrite freda testdata/freda-profile.json
     if [[ "$?" != "0" ]]; then
         echo 'test_readme (283): could not join overwrite'
         exit 1
@@ -294,247 +294,247 @@ EOT
     fi
 
     # Import from a CSV file
-    cat << EOT > my-data.csv
+    cat << EOT > testdata/my-data.csv
 Name,EMail,Office,Count
 freda,freda@inverness.example.edu,4th Tower,1
 EOT
 
-    bin/dataset -quiet -nl=false testdata/mystuff.ds "import-csv" my-data.csv 1
+    bin/dataset -quiet -nl=false testdata/mystuff.ds "import-csv" testdata/my-data.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_readme (302): (failed) mystuff.ds import-csv my-data.csv 1'
+        echo 'test_readme (302): (failed) testdata/mystuff.ds import-csv testdata/my-data.csv 1'
         exit 1
     fi
 
     # To remove the collection just use the Unix shell command
     rm -fR testdata/mystuff.ds
-    rm freda-profile.json
-    rm my-data.csv
+    rm testdata/freda-profile.json
+    rm testdata/my-data.csv
 }
 
 function test_getting_started() {
     echo "Tests from Getting Started with Dataset"
-    if [[ -d "FavoriteThings.ds" ]]; then
-        rm -fR FavoriteThings.ds
+    if [[ -d "testdata/FavoriteThings.ds" ]]; then
+        rm -fR testdata/FavoriteThings.ds
     fi
-    bin/dataset -quiet -nl=false init FavoriteThings.ds
+    bin/dataset -quiet -nl=false init testdata/FavoriteThings.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_getting_started: could not init FavoriteThings.ds'
+        echo 'test_getting_started: could not init testdata/FavoriteThings.ds'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false FavoriteThings.ds create beverage '{"thing":"coffee"}'
+    bin/dataset -quiet -nl=false testdata/FavoriteThings.ds create beverage '{"thing":"coffee"}'
     if [[ "$?" != "0" ]]; then
-        echo 'test_getting_started: could not FavoriteThings.ds create beverage'
+        echo 'test_getting_started: could not testdata/FavoriteThings.ds create beverage'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false FavoriteThings.ds read beverage
+    bin/dataset -quiet -nl=false testdata/FavoriteThings.ds read beverage
     if [[ "$?" != "0" ]]; then
-        echo 'test_getting_started: could not FavoriteThings.ds read beverage'
+        echo 'test_getting_started: could not testdata/FavoriteThings.ds read beverage'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false FavoriteThings.ds keys
+    bin/dataset -quiet -nl=false testdata/FavoriteThings.ds keys
     if [[ "$?" != "0" ]]; then
-        echo 'test_getting_started: could not FavoriteThings.ds keys'
+        echo 'test_getting_started: could not testdata/FavoriteThings.ds keys'
         exit 1
     fi
 
-    cat << EOT > jazz-notes.json
+    cat << EOT > testdata/jazz-notes.json
 {
     "songs": ["Blue Rondo al la Turk", "Bernie's Tune", "Perdido"],
     "pianist": [ "Dave Brubeck" ],
     "trumpet": [ "Dirk Fischer", "Dizzy Gillespie" ]
 }
 EOT
-    bin/dataset -quiet -nl=false FavoriteThings.ds create "jazz-notes" jazz-notes.json
+    bin/dataset -quiet -nl=false testdata/FavoriteThings.ds create "jazz-notes" testdata/jazz-notes.json
     if [[ "$?" != "0" ]]; then
         echo 'test_getting_started: could not create jazz-notes'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false FavoriteThings.ds keys
+    bin/dataset -quiet -nl=false testdata/FavoriteThings.ds keys
     if [[ "$?" != "0" ]]; then
         echo 'test_getting_started: could not keys'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false FavoriteThings.ds list beverage jazz-notes
+    bin/dataset -quiet -nl=false testdata/FavoriteThings.ds list beverage jazz-notes
     # Cleanup after tests
-    rm -fR FavoriteThings.ds
-    rm jazz-notes.json
+    rm -fR testdata/FavoriteThings.ds
+    rm testdata/jazz-notes.json
 }
 
 function test_attachments() {
     echo 'Test attachments'
-    if [[ -d "mydata.ds" ]]; then
-        rm -fR mydata.ds
+    if [[ -d "testdata/mydata.ds" ]]; then
+        rm -fR testdata/mydata.ds
     fi
-    bin/dataset -quiet -nl=false init mydata.ds
+    bin/dataset -quiet -nl=false init testdata/mydata.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (375): could not mydata.ds init'
+        echo 'test_attachments (375): could not testdata/mydata.ds init'
         exit 1
     fi
 
-    cat << EOT > freda.csv
+    cat << EOT > testdata/freda.csv
 Name,EMail,Office,Count
 freda,freda@inverness.example.edu,4th Tower,1
 EOT
 
-    cat << EOT > mojo.csv
+    cat << EOT > testdata/mojo.csv
 Name,EMail,Office,Count
 mojo,mojo.sam@sams-splace.example.org,piano,2
 EOT
 
-    bin/dataset -quiet -nl=false mydata.ds import-csv freda.csv 1
+    bin/dataset -quiet -nl=false testdata/mydata.ds import-csv testdata/freda.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (389): (failed) mydata.ds import-csv freda.csv 1'
+        echo 'test_attachments (389): (failed) testdata/mydata.ds import-csv testdata/freda.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false mydata.ds attach freda freda.csv
+    bin/dataset -quiet -nl=false testdata/mydata.ds attach freda testdata/freda.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (395): (failed) mydata.ds attach freda freda.csv 1'
+        echo 'test_attachments (395): (failed) testdata/mydata.ds attach freda testdata/freda.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false mydata.ds import-csv mojo.csv 1
+    bin/dataset -quiet -nl=false testdata/mydata.ds import-csv testdata/mojo.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (399): (failed) mydata.ds import-csv mojo.csv 1'
+        echo 'test_attachments (399): (failed) testdata/mydata.ds import-csv testdata/mojo.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false mydata.ds attach mojo mojo.csv
+    bin/dataset -quiet -nl=false testdata/mydata.ds attach mojo testdata/mojo.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (404): (failed) mydata.ds attach mojo.csv'
+        echo 'test_attachments (404): (failed) testdata/mydata.ds attach testdata/mojo.csv'
         exit 1
     fi
-    bin/dataset -quiet -nl=false mydata.ds attachments mojo
+    bin/dataset -quiet -nl=false testdata/mydata.ds attachments mojo
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (410): (failed) mydata.ds attachments mojo'
+        echo 'test_attachments (410): (failed) testdata/mydata.ds attachments mojo'
         exit 1
     fi
-    if [[ -f "mojo.csv" ]]; then
-        rm mojo.csv
+    if [[ -f "testdata/mojo.csv" ]]; then
+        rm testdata/mojo.csv
     fi
-    bin/dataset -quiet -nl=false mydata.ds detach mojo mojo.csv
+    bin/dataset -quiet -nl=false testdata/mydata.ds detach mojo testdata/mojo.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (417): (failed) mydata.ds attachments mojo mojo.csv'
+        echo 'test_attachments (417): (failed) testdata/mydata.ds attachments mojo testdata/mojo.csv'
         exit 1
     fi
-    if [[ ! -f "mojo.csv" ]]; then
-        echo 'test_attachments (417): (failed) mydata.ds detach mojo mojo.csv'
+    if [[ ! -f "testdata/mojo.csv" ]]; then
+        echo 'test_attachments (417): (failed) testdata/mydata.ds detach mojo testdata/mojo.csv'
         exit 1
     fi
-    bin/dataset -quiet -nl=false mydata.ds prune freda freda.csv
+    bin/dataset -quiet -nl=false testdata/mydata.ds prune freda testdata/freda.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (426): (failed) mydata.ds prune freda freda.csv'
+        echo 'test_attachments (426): (failed) testdata/mydata.ds prune freda testdata/freda.csv'
         exit 1
     fi
 
     # Success, cleanup our test data
-    rm freda.csv mojo.csv
-    rm -fR mydata.ds
+    rm testdata/freda.csv testdata/mojo.csv
+    rm -fR testdata/mydata.ds
 }
 
 function test_check_and_repair() {
-    if [[ -d "myfix.ds" ]]; then
-        rm -fR myfix.ds
+    if [[ -d "testdata/myfix.ds" ]]; then
+        rm -fR testdata/myfix.ds
     fi
-    cat << EOT > myfix.csv
+    cat << EOT > testdata/myfix.csv
 Name,EMail,Office,Count
 freda,freda@inverness.example.edu,4th Tower,1
 mojo,mojo.sam@sams-splace.example.org,piano,2
 EOT
-    bin/dataset -quiet -nl=false init myfix.ds
+    bin/dataset -quiet -nl=false init testdata/myfix.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) myfix.ds init'
+        echo 'test_check_and_repair: (failed) testdata/myfix.ds init'
         exit 1
     fi
-    bin/dataset -quiet -nl=false myfix.ds import-csv myfix.csv 1
+    bin/dataset -quiet -nl=false testdata/myfix.ds import-csv testdata/myfix.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) myfix.ds import-csv myfix.csv 1'
+        echo 'test_check_and_repair: (failed) testdata/myfix.ds import-csv testdata/myfix.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false myfix.ds check
+    bin/dataset -quiet -nl=false testdata/myfix.ds check
     if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) myfix.ds check'
+        echo 'test_check_and_repair: (failed) testdata/myfix.ds check'
         exit 1
     fi
-    echo '{}' > myfix.ds/collection.json
-    bin/dataset -quiet -nl=false myfix.ds check
+    echo '{}' > testdata/myfix.ds/collection.json
+    bin/dataset -quiet -nl=false testdata/myfix.ds check
     if [[ "$?" != "1" ]]; then
-        echo 'test_check_and_repair: (failed, expected exit code 1) myfix.ds check'
+        echo 'test_check_and_repair: (failed, expected exit code 1) testdata/myfix.ds check'
         exit 1
     fi
-    bin/dataset -quiet -nl=false myfix.ds repair
+    bin/dataset -quiet -nl=false testdata/myfix.ds repair
     if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) myfix.ds repair'
+        echo 'test_check_and_repair: (failed) testdata/myfix.ds repair'
         exit 1
     fi
     bin/dataset -quiet -nl=false keys
     if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) myfix.ds repair'
+        echo 'test_check_and_repair: (failed) testdata/myfix.ds repair'
         exit 1
     fi
    
     # Success, cleanup
-    rm -fR myfix.ds
-    rm myfix.csv
+    rm -fR testdata/myfix.ds
+    rm testdata/myfix.csv
 }
 
 function test_count() {
     echo 'Test dataset count'
-    if [[ -d "count.ds" ]]; then
-        rm -fR count.ds
+    if [[ -d "testdata/count.ds" ]]; then
+        rm -fR testdata/count.ds
     fi
-    cat << EOT > count.csv
+    cat << EOT > testdata/count.csv
 Name,EMail,Office,Count,published
 freda,freda@inverness.example.edu,4th Tower,1,true
 mojo,mojo.sam@sams-splace.example.org,piano,2,false
 EOT
  
-    if [[ ! -f "count.csv" ]]; then
-        echo 'test_count: (failed) could not create count.csv'
+    if [[ ! -f "testdata/count.csv" ]]; then
+        echo 'test_count: (failed) could not create testdata/count.csv'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false init count.ds
+    bin/dataset -quiet -nl=false init testdata/count.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_count: (failed) init count.ds'
+        echo 'test_count: (failed) init testdata/count.ds'
         exit 1
     fi
-    bin/dataset -quiet -nl=false count.ds import-csv count.csv 1
+    bin/dataset -quiet -nl=false testdata/count.ds import-csv testdata/count.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_count: (failed) count.ds import-csv count.csv 1'
+        echo 'test_count: (failed) testdata/count.ds import-csv testdata/count.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false count.ds count
+    bin/dataset -quiet -nl=false testdata/count.ds count
     if [[ "$?" != "0" ]]; then
-        echo 'test_count: (failed) count.ds count'
+        echo 'test_count: (failed) testdata/count.ds count'
         exit 1
     fi
-    bin/dataset -quiet -nl=false count.ds count '(eq .published true)'
+    bin/dataset -quiet -nl=false testdata/count.ds count '(eq .published true)'
     if [[ "$?" != "0" ]]; then
-        echo 'test_count: (failed) count.ds count "(eq .published true)"'
+        echo 'test_count: (failed) testdata/count.ds count "(eq .published true)"'
         exit 1
     fi
 
     # Success, cleanup
-    rm -fR count.ds
-    rm count.csv
+    rm -fR testdata/count.ds
+    rm testdata/count.csv
 }
 
 function test_search() {
     echo 'Testing indexing and find'
-    if [[ -d "search.ds" ]]; then
-        rm -fR search.ds
+    if [[ -d "testdata/search.ds" ]]; then
+        rm -fR testdata/search.ds
     fi
-    cat << EOT > search.csv
+    cat << EOT > testdata/search.csv
 id,title,type,published,author
 a1,4th Tower of Inverness,audio play,true,Tom Lopez
 n1,"20,000 leagues under the Sea",novel,true,Jules Verne
 s1,Our Person in Avalon,screenplay,false,R. S. Doiel
 EOT
     
-    cat << EOT > search.json
+    cat << EOT > testdata/search.json
 {
     "title": {
         "object_path": ".title"
@@ -552,57 +552,57 @@ EOT
 }
 EOT
 
-    bin/dataset -quiet -nl=false init search.ds
+    bin/dataset -quiet -nl=false init testdata/search.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) init search.ds'
+        echo 'test_search: (failed) init testdata/search.ds'
         exit 1
     fi
-    bin/dataset -quiet -nl=false search.ds import-csv search.csv 1
+    bin/dataset -quiet -nl=false testdata/search.ds import-csv testdata/search.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) search.ds import-csv search.csv 1'
+        echo 'test_search: (failed) testdata/search.ds import-csv testdata/search.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false search.ds indexer search.json search.bleve
+    bin/dataset -quiet -nl=false testdata/search.ds indexer testdata/search.json testdata/search.bleve
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) search.ds indexer search.json search.bleve'
+        echo 'test_search: (failed) testdata/search.ds indexer testdata/search.json testdata/search.bleve'
         exit 1
     fi
-    bin/dataset -quiet -nl=false find search.bleve 'screenplay' 
+    bin/dataset -quiet -nl=false find testdata/search.bleve 'screenplay' 
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) search.ds find "screenplay"'
+        echo 'test_search: (failed) testdata/search.ds find "screenplay"'
         exit 1
     fi
-    bin/dataset -quiet -nl=false find search.bleve '+published:true' 
+    bin/dataset -quiet -nl=false find testdata/search.bleve '+published:true' 
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) search.ds find "+published:true"'
+        echo 'test_search: (failed) testdata/search.ds find "+published:true"'
         exit 1
     fi
-    bin/dataset -quiet -nl=false find search.bleve 'Tower'
+    bin/dataset -quiet -nl=false find testdata/search.bleve 'Tower'
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) search.ds find "Tower"'
+        echo 'test_search: (failed) testdata/search.ds find "Tower"'
         exit 1
     fi
-    echo 'a1' > list.keys
-    bin/dataset -quiet -nl=false deindexer search.bleve list.keys
+    echo 'a1' > testdata/list.keys
+    bin/dataset -quiet -nl=false deindexer testdata/search.bleve testdata/list.keys
     if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) deindexer search.bleve list.keys' 
+        echo 'test_search: (failed) deindexer testdata/search.bleve testdata/list.keys' 
         exit 1
     fi
 
     # Success, cleanup
-    rm -fR search.ds
-    rm -fR search.bleve
-    rm search.json
-    rm search.csv
-    rm list.keys
+    rm -fR testdata/search.ds
+    rm -fR testdata/search.bleve
+    rm testdata/search.json
+    rm testdata/search.csv
+    rm testdata/list.keys
 }
 
 function test_import_export() {
     echo 'Test import-csv, export-csv'
-    if [[ -d "pubs.ds" ]]; then
-        rm -fR "pubs.ds"
+    if [[ -d "testdata/pubs.ds" ]]; then
+        rm -fR "testdata/pubs.ds"
     fi
-    cat << EOT > in.csv
+    cat << EOT > testdata/in.csv
 id,title,type,date_type,date
 44088,Application of a laser induced fluorescence model to the numerical simulation of detonation waves in hydrogen-oxygen-diluent mixtures,article,published,2014-04-04
 46001,Leaderless Deterministic Chemical Reaction Networks,book_section,published,2013
@@ -615,32 +615,32 @@ id,title,type,date_type,date
 8488,Non-Gaussian covariance of CMB B modes of polarization and parameter degradation,article,published,2007-04-15
 EOT
 
-    bin/dataset -quiet -nl=false init pubs.ds
+    bin/dataset -quiet -nl=false init testdata/pubs.ds
     if [[ "$?" != "0" ]]; then
-        echo 'test_import_export: (failed) init pubs.ds'
+        echo 'test_import_export: (failed) init testdata/pubs.ds'
         exit 1
     fi
 
-    bin/dataset -quiet -nl=false pubs.ds "import-csv" in.csv 1
+    bin/dataset -quiet -nl=false testdata/pubs.ds "import-csv" testdata/in.csv 1
     if [[ "$?" != "0" ]]; then
-        echo 'test_import_export: (failed) pubs.ds import-csv in.csv 1'
+        echo 'test_import_export: (failed) testdata/pubs.ds import-csv testdata/in.csv 1'
         exit 1
     fi
-    bin/dataset -quiet -nl=false pubs.ds keys
+    bin/dataset -quiet -nl=false testdata/pubs.ds keys
     if [[ "$?" != "0" ]]; then
-        echo 'test_import_export: (failed) pubs.ds keys'
+        echo 'test_import_export: (failed) testdata/pubs.ds keys'
         exit 1
     fi
-    bin/dataset -quiet -nl=false pubs.ds "export-csv" "out.csv" "true" '._Key,.title,.type,.date_type,.date' 'EPrint ID,Title,Type, Date Type,Date'
+    bin/dataset -quiet -nl=false testdata/pubs.ds "export-csv" "testdata/out.csv" "true" '._Key,.title,.type,.date_type,.date' 'EPrint ID,Title,Type, Date Type,Date'
     if [[ "$?" != "0" ]]; then
-        echo 'test_import_export: (failed) pubs.ds export-csv out.csv true "._Key,.title,.type,.date_type,.date" "EPrint ID,Title,Type,Date Type,Date"'
+        echo 'test_import_export: (failed) testdata/pubs.ds export-csv testdata/out.csv true "._Key,.title,.type,.date_type,.date" "EPrint ID,Title,Type,Date Type,Date"'
         exit 1
     fi
 
     # Success, cleanup
-    rm -fR data.ds
-    rm in.csv
-    rm out.csv
+    rm -fR testdata/data.ds
+    rm testdata/in.csv
+    rm testdata/out.csv
 }
 
 echo "Testing command line tools"
