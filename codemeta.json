@@ -6,7 +6,7 @@
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "0.0.44",
+    "version": "0.0.45",
     "author": [
         {
             "@type": "Person",
