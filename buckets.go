@@ -607,7 +607,6 @@ func migrateToBuckets(collectionName string) error {
 			return err
 		}
 		// Write object to the new location
-		fmt.Printf("DEBUG CreateJSON(%q, ...) in %q\n", key, collectionName)
 		err = nc.CreateJSON(key, src)
 		if err != nil {
 			return err
@@ -625,7 +624,6 @@ func migrateToBuckets(collectionName string) error {
 			}
 			// Find the new location
 			docPath, err := nc.DocPath(key)
-			fmt.Printf("DEBUG docPath (buckets): %q\n", docPath)
 			if err != nil {
 				return err
 			}

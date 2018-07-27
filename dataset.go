@@ -85,9 +85,6 @@ type Collection struct {
 	// Version of collection being stored
 	Version string `json:"version"`
 
-	//(DEBUG appears unused!)  FullPath is the fully qualified path on disc or URI to S3 or GS bucket
-	//FullPath string `json:"-"`
-
 	// Name of collection
 	Name string `json:"name"`
 
