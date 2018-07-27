@@ -10,12 +10,13 @@
 
 ## Description
 
-detach writes out (to local disc) the items that have been attached to a JSON record in the collection with
-the matching KEY
+_detach_ writes out (to local disc) the items that have been 
+attached to a JSON record in the collection with the matching KEY
 
 ## Usage
 
-Write out all the attached files for k1 in collection named "publications.ds"
+Write out all the attached files for k1 in collection named 
+"publications.ds"
 
 ```shell
     dataset publications.ds detach k1

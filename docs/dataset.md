@@ -6,18 +6,20 @@
 ## SYNOPSIS
 
 
-dataset is a command line tool demonstrating dataset package for managing 
-JSON documents stored on disc. A dataset is organized around collections,
-collections contain buckets holding specific JSON documents and related content.
-In addition to the JSON documents dataset maintains metadata for management
-of the documents, their attachments as well as a ability to generate select lists
-based JSON document keys (aka JSON document names).
+dataset is a command line tool demonstrating dataset package for 
+managing JSON documents stored on disc. A dataset is organized 
+around collections, collections contain buckets holding specific 
+JSON documents and related content.  In addition to the JSON 
+documents dataset maintains metadata for management of the 
+documents, their attachments as well as a ability to generate 
+select lists based JSON document keys (aka JSON document names).
 
 
 
 ## OPTIONS
 
-Options are shared between all actions and must precede the action on the command line.
+Options are shared between all actions and must precede the action 
+on the command line.
 
 ```
     -batch, -size             (indexer, deindexer, find) set the number of records per response
@@ -38,6 +40,7 @@ Options are shared between all actions and must precede the action on the comman
     -json                     (find) format results as a JSON document
     -key-file                 operate on the record keys contained in file, one key per line
     -l, -license              display license
+    -layout                   set file layout for a new collection (i.e. "buckets" or "pairtree")
     -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -overwrite                overwrite will treat a create as update if the record exists
@@ -81,16 +84,17 @@ Options are shared between all actions and must precede the action on the comman
     join           Join a JSON record with a new JSON object in a collection
     keys           List the keys in a collection, support filtering and sorting
     list           List the JSON records as an array for provided record ids
+    migrate        Migrate file layout, e.g. "buckets", "pairtree"
     path           Show the file system path to a JSON record in a collection
     prune          Remove attachments from a JSON record in a collection
     read           Read back a JSON record from a collection
     reframe        re-generate a frame with existing or provided key list
     repair         Try to repair a damaged dataset collection
-    status         Checks to see if a collection name contains a 'collection.json' file
+    status         Checks for a collection's layout and version
     update         Update a JSON record in a collection
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [migrate](migrate.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 
-dataset v0.0.42-rc2
+dataset v0.0.45

@@ -9,8 +9,8 @@
 
 ## Description
 
-Checks if a given key is in the a collection. Returns "true" if found, "false" otherwise.
-The collection name is "people.ds"
+Checks if a given key is in the a collection. Returns "true" if 
+found, "false" otherwise. The collection name is "people.ds"
 
 ## Usage
 
@@ -20,3 +20,4 @@ The collection name is "people.ds"
 ```
 
 Related topics: [keys](keys.html)
+

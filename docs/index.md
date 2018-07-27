@@ -1,8 +1,8 @@
 
 # Documentation for dataset
 
-The documentation is organized around the command line options and as a series
-of "how to" style examples.
+The documentation is organized around the command line options 
+and as a series of "how to" style examples.
 
 + [getting started with dataset](../how-to/getting-started-with-dataset.html) (covers both Bash and Python)
 + Explore additional other [tutorials](../how-to/)
@@ -19,7 +19,8 @@ of "how to" style examples.
 
 ## _dataset_ Operations
 
-The basic operations support by *dataset* are listed below organized by collection and JSON document level.
+The basic operations support by *dataset* are listed below organized 
+by collection and JSON document level.
 
 ### Collection Level
 
@@ -69,4 +70,10 @@ The basic operations support by *dataset* are listed below organized by collecti
 + [sample](sample.html) - getting a random sample of keys
 + [clone](clone.html) - clone a repository
 + [clone-sample](clone-sample.html) - cloning a respository into training and test collections
+
+### Collection health
+
++ [check](check.html) - checks a collection against the current version of tools
++ [repair](repair.html) - repairs/upgrades a collection based on the current verison of the tool
++ [migrate](migrate.html) - migrates from one file layout to another (e.g. bucekts and pairtree)
 

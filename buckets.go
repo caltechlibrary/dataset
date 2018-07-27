@@ -595,6 +595,7 @@ func migrateToBuckets(collectionName string) error {
 	// Create a new collection struct, set to Buckets layout
 	nc := new(Collection)
 	nc.Name = collectionName
+	nc.Version = Version
 	nc.Layout = BUCKETS_LAYOUT
 	nc.Buckets = DefaultBucketNames[:]
 	nc.KeyMap = map[string]string{}
@@ -614,9 +615,10 @@ func migrateToBuckets(collectionName string) error {
 
 		// Check for and handle any attachments
 		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
+		fmt.Printf("DEBUG oldPath: %q FName: %q, tarballFName: %q\n", oldPath, FName, tarballFName)
 		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
 		if store.IsFile(oldTarballPath) {
-			fmt.Printf("Moving tarball %q\n", oldTarballPath)
+			fmt.Printf("DEBUG Moving tarball %q\n", oldTarballPath)
 			// Move the tarball from one layout to the other
 			buf, err := store.ReadFile(oldTarballPath)
 			if err != nil {
@@ -627,10 +629,27 @@ func migrateToBuckets(collectionName string) error {
 			if err != nil {
 				return err
 			}
-			newTarballPath := path.Join(collectionName, docPath, tarballFName)
+			newTarballPath := path.Join(strings.TrimSuffix(docPath, FName), tarballFName)
+			fmt.Printf("DEBUG Writing buffer to %q\n", newTarballPath)
 			err = store.WriteFile(newTarballPath, buf, 0664)
 			if err != nil {
 				return err
+			}
+		}
+	}
+	// OK, if all buckets processed, we can remove all the paths.
+	for _, oldPath := range oldKeyMap {
+		if strings.HasPrefix(oldPath, "pairtree") {
+			err = store.RemoveAll(path.Join(collectionName, "pairtree"))
+			if err != nil {
+				return fmt.Errorf("Cleaning after migration, %s", err)
+			}
+			break
+		} else {
+			fmt.Printf("DEBUG Cleaning up oldPath: %q\n", oldPath)
+			err = store.RemoveAll(path.Join(collectionName, oldPath))
+			if err != nil {
+				return fmt.Errorf("Cleaning after migration, %s", err)
 			}
 		}
 	}
