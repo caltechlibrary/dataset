@@ -56,6 +56,7 @@ var (
 	quiet                bool
 	prettyPrint          bool
 	generateMarkdownDocs bool
+	generateManPage      bool
 
 	// App Specific Options
 	collectionName    string
@@ -1528,6 +1529,7 @@ func main() {
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
+	app.BoolVar(&generateManPage, "generate-manpage", false, "output manpage")
 
 	// Application Options
 	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
@@ -1610,6 +1612,10 @@ func main() {
 	// Handle options
 	if generateMarkdownDocs {
 		app.GenerateMarkdownDocs(app.Out)
+		os.Exit(0)
+	}
+	if generateManPage {
+		app.GenerateManPage(app.Out)
 		os.Exit(0)
 	}
 	if showHelp {
