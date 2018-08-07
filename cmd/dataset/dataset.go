@@ -46,17 +46,17 @@ import (
 
 var (
 	// Standard Options
-	showHelp             bool
-	showLicense          bool
-	showVersion          bool
-	showExamples         bool
-	inputFName           string
-	outputFName          string
-	newLine              bool
-	quiet                bool
-	prettyPrint          bool
-	generateMarkdownDocs bool
-	generateManPage      bool
+	showHelp         bool
+	showLicense      bool
+	showVersion      bool
+	showExamples     bool
+	inputFName       string
+	outputFName      string
+	newLine          bool
+	quiet            bool
+	prettyPrint      bool
+	generateMarkdown bool
+	generateManPage  bool
 
 	// App Specific Options
 	collectionName    string
@@ -1514,8 +1514,13 @@ func main() {
 	for k, v := range Help {
 		app.AddHelp(k, v)
 	}
+	examples := []string{}
 	for k, v := range Examples {
 		app.AddHelp(k, v)
+		examples = append(examples, k)
+	}
+	if len(Examples) > 0 {
+		app.AddHelp("examples", []byte(fmt.Sprintf(`To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one of the following: %s`, strings.Join(examples, ", "))))
 	}
 
 	// Standard Options
@@ -1528,7 +1533,7 @@ func main() {
 	app.BoolVar(&newLine, "nl,newline", true, "if set to false suppress the trailing newline")
 	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
-	app.BoolVar(&generateMarkdownDocs, "generate-markdown-docs", false, "output documentation in Markdown")
+	app.BoolVar(&generateMarkdown, "generate-markdown", false, "output documentation in Markdown")
 	app.BoolVar(&generateManPage, "generate-manpage", false, "output manpage")
 
 	// Application Options
@@ -1610,8 +1615,8 @@ func main() {
 	defer cli.CloseFile(outputFName, app.Out)
 
 	// Handle options
-	if generateMarkdownDocs {
-		app.GenerateMarkdownDocs(app.Out)
+	if generateMarkdown {
+		app.GenerateMarkdown(app.Out)
 		os.Exit(0)
 	}
 	if generateManPage {
