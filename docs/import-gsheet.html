@@ -26,9 +26,6 @@
 <section>
 <h1>import-gsheet</h1>
 
-<p>This is place holder for documentation on import Google Sheets
-into a <em>dataset</em> collection.</p>
-
 <h2>Syntax</h2>
 
 <pre><code>    dataset COLLECTION_NAME import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
@@ -44,6 +41,12 @@ lower part of the spreadsheet page in Google Sheets edit view</li>
 want to skip the first row then you might use &ldquo;A2:Z&rdquo;)</li>
 <li>COL_NO_FOR_ID is the column number to use for the unique ID name of the JSON document. It should
 be an integer starting with &ldquo;1&rdquo;.</li>
+</ul>
+
+<h2>Options</h2>
+
+<ul>
+<li>-overwrite=true Allows dataset to overwrite existing values in a collection</li>
 </ul>
 
 <h2>Description</h2>

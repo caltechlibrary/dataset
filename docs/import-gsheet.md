@@ -1,9 +1,6 @@
 
 # import-gsheet
 
-This is place holder for documentation on import Google Sheets 
-into a _dataset_ collection.
-
 ## Syntax
 
 ```
@@ -20,6 +17,9 @@ into a _dataset_ collection.
 + COL_NO_FOR_ID is the column number to use for the unique ID name of the JSON document. It should
   be an integer starting with "1".
 
+## Options
+
++ -overwrite=true Allows dataset to overwrite existing values in a collection
 
 ## Description
 
