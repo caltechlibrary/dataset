@@ -70,33 +70,20 @@ is named "Sheet1". You'll also need to know this name.
 
 ### Setting up authorization to access your Google Sheet
 
-This is the hardest part of the process. Google sometimes updates this procedure. These are
-the steps I took on 05/29/2018. You might have to make adjustments in the future.
+This is the hardest part of the process. Google sometimes updates this
+procedure, and this worked as of 08/08/2018. You might have to make adjustments in the future.
 
 We need to get some credentials and authorization keys to access your Google Sheet
 before we can import it into our dataset collection.  If you have not done this previously go to 
-https://developers.google.com/sheets/api/quickstart/go. Our goal is to complete "Step 1". 
-As of today, 05/29/2007, the instructions are a touch confusing.
-In the letter "a" section you click "this wizard" link. 
-This should open a new window/tab in your browser. We'll be referring back to "Step 1" 
-page for letters "b" to "h".
+https://developers.google.com/sheets/api/quickstart/go. We only need to complete "Step 1". 
 
-The instructions under "Step 1" letter "a" say to continue to "Go to credentials" 
-but it isn't visible on the page. You need to click on the page's pull out menu (the three horizontal 
-lines in the upper right of the page, sometimes referred to as a "hamburger" menu).
+Click the blue button labeled `Enable the Google Sheets API`
 
-![Image of hamburger menu cicle in red](./Wizard-Page-01.png "Image hamburger menu circled in red")
+Make up a project name (it doesn't matter).  
 
-Click the menu.  Then click "APIs & Services". 
+Click the blue button labeled `Download Client Configuration`
 
-![Image "API & Services" circled in red](./Wizard-Page-02.png "Image, API & Services, circled in red")
-
-Now click the key symbol 
-
-![Image key symbol circled in red](./Wizard-Page-03.png "Image key symbol circled in red")
-
-and you can follow the instructions starting at letter "c" and continuing through "h".
-
+Currently, you need to copy and rename this file to `/etc/client_secret.json`
 
 ### Authorizing dataset access
 

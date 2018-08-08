@@ -91,32 +91,20 @@ is named &ldquo;Sheet1&rdquo;. You&rsquo;ll also need to know this name.</p>
 
 <h3>Setting up authorization to access your Google Sheet</h3>
 
-<p>This is the hardest part of the process. Google sometimes updates this procedure. These are
-the steps I took on 05/29/2018. You might have to make adjustments in the future.</p>
+<p>This is the hardest part of the process. Google sometimes updates this
+procedure, and this worked as of 08/08/2018. You might have to make adjustments in the future.</p>
 
 <p>We need to get some credentials and authorization keys to access your Google Sheet
 before we can import it into our dataset collection.  If you have not done this previously go to
-<a href="https://developers.google.com/sheets/api/quickstart/go">https://developers.google.com/sheets/api/quickstart/go</a>. Our goal is to complete &ldquo;Step 1&rdquo;.
-As of today, 05/29/2007, the instructions are a touch confusing.
-In the letter &ldquo;a&rdquo; section you click &ldquo;this wizard&rdquo; link.
-This should open a new window/tab in your browser. We&rsquo;ll be referring back to &ldquo;Step 1&rdquo;
-page for letters &ldquo;b&rdquo; to &ldquo;h&rdquo;.</p>
+<a href="https://developers.google.com/sheets/api/quickstart/go">https://developers.google.com/sheets/api/quickstart/go</a>. We only need to complete &ldquo;Step 1&rdquo;.</p>
 
-<p>The instructions under &ldquo;Step 1&rdquo; letter &ldquo;a&rdquo; say to continue to &ldquo;Go to credentials&rdquo;
-but it isn&rsquo;t visible on the page. You need to click on the page&rsquo;s pull out menu (the three horizontal
-lines in the upper right of the page, sometimes referred to as a &ldquo;hamburger&rdquo; menu).</p>
+<p>Click the blue button labeled <code>Enable the Google Sheets API</code></p>
 
-<p><img src="./Wizard-Page-01.png" alt="Image of hamburger menu cicle in red" title="Image hamburger menu circled in red" /></p>
+<p>Make up a project name (it doesn&rsquo;t matter).</p>
 
-<p>Click the menu.  Then click &ldquo;APIs &amp; Services&rdquo;.</p>
+<p>Click the blue button labeled <code>Download Client Configuration</code></p>
 
-<p><img src="./Wizard-Page-02.png" alt="Image &quot;API &amp; Services&quot; circled in red" title="Image, API &amp; Services, circled in red" /></p>
-
-<p>Now click the key symbol</p>
-
-<p><img src="./Wizard-Page-03.png" alt="Image key symbol circled in red" title="Image key symbol circled in red" /></p>
-
-<p>and you can follow the instructions starting at letter &ldquo;c&rdquo; and continuing through &ldquo;h&rdquo;.</p>
+<p>Currently, you need to copy and rename this file to <code>/etc/client_secret.json</code></p>
 
 <h3>Authorizing dataset access</h3>
 
