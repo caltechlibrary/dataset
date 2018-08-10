@@ -53,3 +53,4 @@ py/test_*
 idxdefs/*
 *.bak
 *.pdf
+man
