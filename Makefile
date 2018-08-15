@@ -32,6 +32,8 @@ build: $(PROJECT_LIST) python
 
 install: 
 	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
+	if [ "$(OS)" != "Windows" ]; then mkdir -p $(GOPATH)/man/man1; fi
+	if [ "$(OS)" != "Windows" ]; then $(GOPATH)/bin/dataset -generate-manpage | nroff -Tutf8 -man > $(GOPATH)/man/man1/dataset.1; fi
 
 python:
 	cd py && $(MAKE)
