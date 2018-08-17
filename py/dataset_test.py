@@ -62,7 +62,7 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = "/".join([collection_name,"aa", (key+".json")])
+    expected_s = "/".join([collection_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
@@ -201,6 +201,9 @@ def test_issue32(t, collection_name):
 #
 def test_gsheet(t, collection_name, setup_bash):
     '''if setup_bash exists, run Google Sheets tests'''
+    if os.path.exists("../etc/client_secret.json") == False:
+        t.print("Skipping test_gsheet(), no ../etc/client_secret.json")
+        return
     if os.path.exists(setup_bash) == False:
         t.verbose_on()
         t.print("Skipping test_gsheet(", collection_name, setup_bash, ")")
@@ -233,7 +236,7 @@ def test_gsheet(t, collection_name, setup_bash):
         sheet_id = cfg.get("spreadsheet_id")
     client_secret_name = "../" + client_secret_name
 
-    err = dataset.init(collection_name)
+    err = dataset.init(collection_name, "pairtree")
     if err != '':
         t.error("Failed, could not create collection, ", err)
         return
@@ -297,7 +300,7 @@ def test_gsheet(t, collection_name, setup_bash):
 def test_setup(t, collection_name):
     if os.path.exists(collection_name):
         shutil.rmtree(collection_name)
-    err = dataset.init(collection_name)
+    err = dataset.init(collection_name, "pairtree")
     if err != '':
         t.error("Failed, could not create collection, ", err)
         return
@@ -306,8 +309,9 @@ def test_setup(t, collection_name):
 def test_check_repair(t, collection_name):
     t.print("Testing status on", collection_name)
     # Make sure we have a left over collection to check and repair
-    if os.path.exists(collection_name) == False:
-        dataset.init(collection_name)
+    if os.path.exists(collection_name) == True:
+        shutil.rmtree(collection_name)
+    dataset.init(collection_name, "pairtree")
     ok = dataset.status(collection_name)
     if ok == False:
         t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
@@ -335,6 +339,8 @@ def test_check_repair(t, collection_name):
     err = dataset.repair(collection_name)
     if err != '':
         t.error("Failed, expected repair to return True, got, ", err)
+    if os.path.exists(collection_name + "/collection.json") == False:
+        t.error(f"Failed, expected recreated {collection_name}/collection.json")
  
         
 def test_attachments(t, collection_name):
@@ -418,6 +424,9 @@ def test_attachments(t, collection_name):
 
 def test_s3(t):
     collection_name = os.getenv("DATASET", "")
+    if collection_name == "":
+        t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
+        return
     if collection_name[0:5] != "s3://":
         t.verbose_on()
         t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
@@ -426,7 +435,7 @@ def test_s3(t):
     ok = dataset.status(collection_name)
     if ok == False:
         t.print("Missing", collection_name, "attempting to initialize", collection_name)
-        err = dataset.init(collection_name)
+        err = dataset.init(collection_name, "pairtree")
         if err != '':
             t.error("Aborting, couldn't initialize", collection_name, ', ', err)
             return
@@ -515,7 +524,7 @@ def test_issue43(t, collection_name, csv_name):
         shutil.rmtree(collection_name)
     if os.path.exists(csv_name):
         os.remove(csv_name)
-    err = dataset.init(collection_name)
+    err = dataset.init(collection_name, "pairtree")
     if err != '':
         t.error(f'Failed, need a {collection_name} to run test')
         return
@@ -583,7 +592,7 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
 def test_grid(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name)
+    err = dataset.init(c_name, "pairtree")
     if err != '':
         t.error(err)
         return
@@ -606,7 +615,7 @@ def test_grid(t, c_name):
 def test_frame(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name)
+    err = dataset.init(c_name, "pairtree")
     if err != '':
         t.error(err)
         return
@@ -697,6 +706,8 @@ class TestRunner:
             error_count = t.error_count()
             if error_count > 0:
                 print(f"\t\t{fn_name} failed, {error_count} errors found")
+            else:
+                print(f"\t\t{fn_name} OK")
             self._error_count += error_count
         error_count = self._error_count
         set_name = self._set_name

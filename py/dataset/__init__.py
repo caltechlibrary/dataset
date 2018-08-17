@@ -278,9 +278,14 @@ def version():
     return value.decode() 
 
 # Initializes a Dataset Collection
-def init(collection_name):
+def init(collection_name, layout = "buckets"):
     '''initialize a dataset collection with the given name'''
-    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_int(1))
+    collection_layout = 0
+    if layout == "buckets":
+        collection_layout = 1
+    elif layout == "pairtree":
+        collection_layout = 2
+    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_int(collection_layout))
     if ok == 1:
         return ''
     return error_message()

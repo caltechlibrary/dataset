@@ -660,12 +660,6 @@ func CollectionLayout(p string) int {
 	if err != nil {
 		return UNKNOWN_LAYOUT
 	}
-	if store.IsDir(path.Join(p, "pairtree")) {
-		return PAIRTREE_LAYOUT
-	}
-	if store.IsDir(path.Join(p, "aa")) {
-		return BUCKETS_LAYOUT
-	}
 	if store.IsFile(path.Join(p, "collection.json")) {
 		src, err := store.ReadFile(path.Join(p, "collection.json"))
 		if err != nil {
@@ -685,8 +679,13 @@ func CollectionLayout(p string) int {
 			if len(c.Buckets) > 0 {
 				return BUCKETS_LAYOUT
 			}
-			return UNKNOWN_LAYOUT
 		}
+	}
+	if store.IsDir(path.Join(p, "pairtree")) {
+		return PAIRTREE_LAYOUT
+	}
+	if store.IsDir(path.Join(p, "aa")) {
+		return BUCKETS_LAYOUT
 	}
 	return UNKNOWN_LAYOUT
 }
