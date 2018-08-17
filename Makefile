@@ -43,6 +43,7 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 
 test: clean bin/dataset$(EXT)
 	go test
+	cd gsheet && go test && cd ..
 	bash test_cmd.bash
 	cd py && $(MAKE) test
 

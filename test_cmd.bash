@@ -91,6 +91,7 @@ function test_dataset() {
 }
 
 function test_gsheet() {
+    exit 0 # DEBUG
 	if [[ -f "etc/test_gsheet.bash" ]]; then
 		. "etc/test_gsheet.bash"
 	else
