@@ -74,10 +74,10 @@ const (
 	UNKNOWN_LAYOUT = iota
 
 	// Buckets is the first file layout implemented when dataset started
-	BUCKETS_LAYOUT = iota
+	BUCKETS_LAYOUT
 
 	// Pairtree is the perferred file layout moving forward
-	PAIRTREE_LAYOUT = iota
+	PAIRTREE_LAYOUT
 )
 
 // Collection is the container holding buckets which in turn hold JSON docs
