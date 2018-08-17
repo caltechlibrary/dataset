@@ -645,7 +645,7 @@ EOT
 
 echo "Testing command line tools"
 test_dataset
-test_gsheet
+#test_gsheet
 test_issue19
 test_readme
 test_getting_started

@@ -117,14 +117,8 @@ func bucketCreateCollection(name string, bucketNames []string) (*Collection, err
 		return nil, err
 	}
 	// See if we need an open or continue with create
-	if store.Type == storage.S3 || store.Type == storage.GS {
-		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
-			return Open(name)
-		}
-	} else {
-		if _, err := store.Stat(collectionName); err == nil {
-			return Open(name)
-		}
+	if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
+		return Open(name)
 	}
 	c := new(Collection)
 	c.Version = Version
@@ -615,10 +609,10 @@ func migrateToBuckets(collectionName string) error {
 
 		// Check for and handle any attachments
 		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
-		fmt.Printf("DEBUG oldPath: %q FName: %q, tarballFName: %q\n", oldPath, FName, tarballFName)
+		//fmt.Printf("DEBUG oldPath: %q FName: %q, tarballFName: %q\n", oldPath, FName, tarballFName)
 		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
 		if store.IsFile(oldTarballPath) {
-			fmt.Printf("DEBUG Moving tarball %q\n", oldTarballPath)
+			//fmt.Printf("DEBUG Moving tarball %q\n", oldTarballPath)
 			// Move the tarball from one layout to the other
 			buf, err := store.ReadFile(oldTarballPath)
 			if err != nil {
@@ -630,7 +624,7 @@ func migrateToBuckets(collectionName string) error {
 				return err
 			}
 			newTarballPath := path.Join(strings.TrimSuffix(docPath, FName), tarballFName)
-			fmt.Printf("DEBUG Writing buffer to %q\n", newTarballPath)
+			//fmt.Printf("DEBUG Writing buffer to %q\n", newTarballPath)
 			err = store.WriteFile(newTarballPath, buf, 0664)
 			if err != nil {
 				return err
@@ -646,7 +640,7 @@ func migrateToBuckets(collectionName string) error {
 			}
 			break
 		} else {
-			fmt.Printf("DEBUG Cleaning up oldPath: %q\n", oldPath)
+			//fmt.Printf("DEBUG Cleaning up oldPath: %q\n", oldPath)
 			err = store.RemoveAll(path.Join(collectionName, oldPath))
 			if err != nil {
 				return fmt.Errorf("Cleaning after migration, %s", err)

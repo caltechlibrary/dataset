@@ -32,14 +32,8 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 		return nil, err
 	}
 	// See if we need an open or continue with create
-	if store.Type == storage.S3 || store.Type == storage.GS {
-		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
-			return Open(name)
-		}
-	} else {
-		if _, err := store.Stat(collectionName); err == nil {
-			return Open(name)
-		}
+	if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
+		return Open(name)
 	}
 	c := new(Collection)
 	c.Version = Version
@@ -326,6 +320,9 @@ func pairtreeRepair(collectionName string) error {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)
 	}
 	c.Version = Version
+	if c.Layout == UNKNOWN_LAYOUT {
+		c.Layout = PAIRTREE_LAYOUT
+	}
 	log.Printf("Getting a list of pairs")
 	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
 	if err != nil {
@@ -333,6 +330,9 @@ func pairtreeRepair(collectionName string) error {
 		return err
 	}
 	log.Printf("Adding missing pairs")
+	if c.KeyMap == nil {
+		c.KeyMap = map[string]string{}
+	}
 	for _, pair := range pairs {
 		key := pairtree.Decode(pair)
 		if _, exists := c.KeyMap[key]; exists == false {
