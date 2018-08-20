@@ -243,6 +243,7 @@ def version():
 
 def error_message():
     value = go_error_message()
+    print(f"DEBUG {value}")
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode() 
