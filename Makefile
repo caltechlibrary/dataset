@@ -19,7 +19,7 @@ ifeq ($(OS), Windows)
 endif
 
 
-dataset$(EXT): bin/dataset$(EXT)
+dataset$(EXT): bin/dataset$(EXT) bin/ds$(EXT)
 
 cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
@@ -27,6 +27,9 @@ cmd/dataset/assets.go:
 
 bin/dataset$(EXT): dataset.go pairtree.go buckets.go attachments.go grid.go frame.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
+
+bin/ds$(EXT):
+	go build -o bin/ds$(EXT) cmd/ds/ds.go
 
 build: $(PROJECT_LIST) python
 

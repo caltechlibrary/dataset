@@ -19,13 +19,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
+	//"io/ioutil"
 	"os"
-	"strings"
+	//"strings"
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/cli"
+	"github.com/caltechlibrary/dataset"
 )
 
 var (
@@ -141,11 +144,217 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	generateManPage  bool
 
 	// Application Options
+
+	// Application Verbs
+	vInit        *cli.Verb // init
+	vStatus      *cli.Verb // status
+	vCreate      *cli.Verb // create
+	vRead        *cli.Verb // read
+	vUpdate      *cli.Verb // update
+	vDelete      *cli.Verb // delete
+	vJoin        *cli.Verb // join
+	vKeys        *cli.Verb // keys
+	vHasKey      *cli.Verb // haskey
+	vCount       *cli.Verb // count
+	vPath        *cli.Verb // path
+	vAttach      *cli.Verb // attach
+	vAttachments *cli.Verb // attachments
+	vDetach      *cli.Verb // detach
+	vPrune       *cli.Verb // prune
+	vGrid        *cli.Verb // grid
+	vImport      *cli.Verb // import
+	vExport      *cli.Verb // export
+	vCheck       *cli.Verb // check
+	vRepair      *cli.Verb // repair
+	vMigrate     *cli.Verb // migrate
+	vIndexer     *cli.Verb // indexer
+	vDeindexer   *cli.Verb // deindexer
+	vFind        *cli.Verb // find
+	vCloneSample *cli.Verb // clone-sample
+	vClone       *cli.Verb // clone
+	vFrame       *cli.Verb // frame
+	vFrames      *cli.Verb // frames
+	vReframe     *cli.Verb // reframe
+	vFrameLabels *cli.Verb // frame-labels
+	vFrameTypes  *cli.Verb // frame-types
+	vFrameDelete *cli.Verb // delete-frame
+	vSyncSend    *cli.Verb // sync-send
+	vSyncRecieve *cli.Verb // sync-recieve
 )
+
+func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnInit() not implemented\n")
+	return 1
+}
+
+func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnStatus() not implemented\n")
+	return 1
+}
+
+func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnCreate() not implemented\n")
+	return 1
+}
+
+func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnRead() not implemented\n")
+	return 1
+}
+
+func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnUpdate() not implemented\n")
+	return 1
+}
+
+func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnDelete() not implemented\n")
+	return 1
+}
+
+func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnJoin() not implemented\n")
+	return 1
+}
+
+func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnKeys() not implemented\n")
+	return 1
+}
+
+func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnHasKeys() not implemented\n")
+	return 1
+}
+
+func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnHasKeys() not implemented\n")
+	return 1
+}
+
+func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnPath() not implemented\n")
+	return 1
+}
+
+func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnAttach() not implemented\n")
+	return 1
+}
+
+func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnAttachments() not implemented\n")
+	return 1
+}
+
+func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnDetach() not implemented\n")
+	return 1
+}
+
+func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnPrune() not implemented\n")
+	return 1
+}
+
+func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnGrid() not implemented\n")
+	return 1
+}
+
+func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnImport() not implemented\n")
+	return 1
+}
+
+func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnExport() not implemented\n")
+	return 1
+}
+
+func fnCheck(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnCheck() not implemented\n")
+	return 1
+}
+
+func fnRepair(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnRepair() not implemented\n")
+	return 1
+}
+
+func fnMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnMigrate() not implemented\n")
+	return 1
+}
+
+func fnIndexer(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnIndexer() not implemented\n")
+	return 1
+}
+
+func fnDeindexer(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnDeindexer() not implemented\n")
+	return 1
+}
+
+func fnFind(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnFind() not implemented\n")
+	return 1
+}
+
+func fnCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnCloneSample() not implemented\n")
+	return 1
+}
+
+func fnClone(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnClone() not implemented\n")
+	return 1
+}
+
+func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnFrame() not implemented\n")
+	return 1
+}
+
+func fnFrames(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnFrames() not implemented\n")
+	return 1
+}
+
+func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnReframe() not implemented\n")
+	return 1
+}
+
+func fnFrameLabels(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnFrameLabels() not implemented\n")
+	return 1
+}
+
+func fnFrameTypes(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnFrameTypes() not implemented\n")
+	return 1
+}
+
+func fnFrameDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnFrameDelete() not implemented\n")
+	return 1
+}
+
+func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnSyndSend() not implemented\n")
+	return 1
+}
+
+func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnSyndRecieve() not implemented\n")
+	return 1
+}
 
 func main() {
 	//FIXME: Replace with your base package .Version attribute
-	app := cli.NewCli("v0.0.0")
+	app := cli.NewCli(dataset.Version)
 	//FIXME: if you need the app name then...
 	//appName := app.AppName()
 
@@ -175,6 +384,40 @@ func main() {
 	// Application Verbs
 	//FIXME: If the application is verb based add your verbs here
 	//(e.g. app.NewVerb(STRING_VERB, STRING_DESCRIPTION, FUNC_POINTER)
+	vInit = app.NewVerb("init", "initialize a collection", fnInit)
+	vStatus = app.NewVerb("status", "collection status", fnStatus)
+	vCreate = app.NewVerb("create", "create a JSON object", fnCreate)
+	vRead = app.NewVerb("read", "read a JSON object", fnRead)
+	vUpdate = app.NewVerb("update", "update a JSON object", fnUpdate)
+	vDelete = app.NewVerb("delete", "delete a JSON object", fnDelete)
+	vJoin = app.NewVerb("join", "join data to a JSON object", fnJoin)
+	vKeys = app.NewVerb("keys", "list keys in collection", fnKeys)
+	vHasKey = app.NewVerb("haskey", "check for key in collection", fnHasKey)
+	vCount = app.NewVerb("count", "count JSON objects", fnCount)
+	vPath = app.NewVerb("path", "path to JSON object", fnPath)
+	vAttach = app.NewVerb("attach", "attach a file to JSON object", fnAttach)
+	vAttachments = app.NewVerb("attachments", "list attachments for a JSON object", fnAttachments)
+	vDetach = app.NewVerb("detach", "detach a copy of the attachment from a JSON object", fnDetach)
+	vPrune = app.NewVerb("prune", "prune an the attachment to a JSON object", fnPrune)
+	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
+	vImport = app.NewVerb("import", "import a table (CSV, GSheet) as JSON bject into a collection", fnImport)
+	vExport = app.NewVerb("export", "export a table (CSV, GSheet) from a collection of JSON objects", fnExport)
+	vCheck = app.NewVerb("check", "check a collection for errors", fnCheck)
+	vRepair = app.NewVerb("repair", "repair a collection", fnRepair)
+	vMigrate = app.NewVerb("migrate", "migrate a collection's layout", fnMigrate)
+	vIndexer = app.NewVerb("indexer", "index a JSON object in a collection", fnIndexer)
+	vDeindexer = app.NewVerb("deindex", "remove a JSON object from an index", fnDeindexer)
+	vFind = app.NewVerb("find", "find a JSON object base on a dot path and value", fnFind)
+	vCloneSample = app.NewVerb("clone-sample", "clone a sample from a collection", fnCloneSample)
+	vClone = app.NewVerb("clone", "clone a collection", fnClone)
+	vFrame = app.NewVerb("frame", "create a data frame", fnFrame)
+	vFrames = app.NewVerb("frames", "list frames in a collection", fnFrames)
+	vReframe = app.NewVerb("reframe", "re-create an existing frame", fnReframe)
+	vFrameLabels = app.NewVerb("frame-labels", "set labels for a frame", fnFrameLabels)
+	vFrameTypes = app.NewVerb("frame-types", "set the types for columns in a frame", fnFrameTypes)
+	vFrameDelete = app.NewVerb("delete-frame", "delete a frame from a collection", fnFrameDelete)
+	vSyncSend = app.NewVerb("sync-send", "sync from a collection to a target (e.g. CSV, GSheet)", fnSyncSend)
+	vSyncRecieve = app.NewVerb("sync-recieve", "sync a collection from a source table (e.g. CSV, GSheet)", fnSyncRecieve)
 
 	// We're ready to process args
 	app.Parse()
