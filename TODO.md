@@ -3,16 +3,16 @@
 
 ## Bugs
 
-+ [ ] A raw pairtree is being generated in the repo directory by test!
-+ [ ] Implement Buckets to Pair migration option
-
 ## Next (prep for v0.1.0)
 
-* [ ] Generate CATALOG.json and index.html in collection for Data Create support
++ [ ] sync command needs to be implemented for GSheet but also csv/Excel interactions
++ [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Generate a codemeta.json in collection folder
     + https://codemeta.github.io/terms 
 + [ ] Repair/check should work on S3 and Google Cloud Storage
+    + needs testing
 + [ ] Confirm consensus on the minor release version number bump
+
 
 
 ## Roadmap (v0.2.x)
@@ -87,6 +87,8 @@
 
 ## Completed
 
++ [x] A raw pairtree is being generated in the repo directory by test!
++ [x] Implement Buckets to Pair migration option
 + [x] Evaluate switching from aa to zz buckets to pairtree ppath under data
     + [x] Repair/check should handle old and new file layout (e.g. moving buckets to pairtree on upgrade) 
     + [x] Evaluate moving JSON object from [ID].json to [ID].json
