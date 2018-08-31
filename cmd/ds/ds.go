@@ -33,14 +33,14 @@ import (
 
 var (
 	synopsis = `
-_dataset_ is a command line tool for working with JSON objects as 
+_dataset_ is a command line tool for working with JSON objects as
 collections on disc, in an S3 bucket or in Cloud Storage.
 `
 
 	description = `
-The [dataset](docs/dataset.html) command line tool supports 
+The [dataset](docs/dataset.html) command line tool supports
 common data management operations for JSON objects stored
-as collections.  
+as collections.
 
 Features:
 
@@ -49,33 +49,33 @@ Features:
 - Import/Export to/from CSV and Google Sheets
 - An experimental full text search interface
 - The ability to reshape data by performing simple object *joins*
-- The ability to create data *grids* and *frames* from 
+- The ability to create data *grids* and *frames* from
   keys lists and "dot paths" using a collections' JSON objects
 
 Limitations:
 
 _dataset_ has many limitations, some are listed below
 
-- it is not a multi-process, multi-user data store 
+- it is not a multi-process, multi-user data store
   (it's files on "disc" without any locking)
 `
 
 	examples = `
-Below is a simple example of shell based interaction with dataset 
+Below is a simple example of shell based interaction with dataset
 a collection using the command line dataset tool.
 
 ` + "```shell" + `
-    # Create a collection "friends.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
+    # Create a collection "friends.ds", the ".ds" lets the bin/dataset command know that's the collection to use.
     dataset init friends.ds
     # if successful then you should see an OK otherwise an error message
 
-    # Create a JSON document 
+    # Create a JSON document
     dataset friends.ds create frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
     dataset friends.ds read frieda
-    
+
     # Path to JSON document
     dataset friends.ds path frieda
 
@@ -144,6 +144,29 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	generateManPage  bool
 
 	// Application Options
+	collectionName    string
+	useHeaderRow      bool
+	useUUID           bool
+	showVerbose       bool
+	sampleSize        int
+	clientSecretFName string
+	overwrite         bool
+	batchSize         int
+	keyFName          string
+	collectionLayout  = "" // Default collection file layout
+
+	// Search specific options, application Options
+	showHighlight  bool
+	setHighlighter string
+	resultFields   string
+	sortBy         string
+	jsonFormat     bool
+	csvFormat      bool
+	csvSkipHeader  bool
+	idsOnly        bool
+	size           int
+	from           int
+	explain        bool // Note: will be force results to be in JSON format
 
 	// Application Verbs
 	vInit        *cli.Verb // init
@@ -353,10 +376,8 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 }
 
 func main() {
-	//FIXME: Replace with your base package .Version attribute
 	app := cli.NewCli(dataset.Version)
-	//FIXME: if you need the app name then...
-	//appName := app.AppName()
+	app.AddParams("VERB", "[VERB_OPTIONS]", "[VERB_PARAMETERS ...]")
 
 	// Add Help Docs
 	app.SectionNo = 1 // The manual page section number
@@ -379,11 +400,29 @@ func main() {
 	app.BoolVar(&generateManPage, "generate-manpage", false, "output manpage markup")
 
 	// Application Options
-	//FIXME: Add any application specific options
+	app.StringVar(&collectionName, "c,collection", "", "sets the collection to be used")
+	app.StringVar(&collectionLayout, "layout", "", "set file layout for a new collection (i.e. \"buckets\" or \"pairtree\")")
+	app.BoolVar(&useHeaderRow, "use-header-row", true, "(import) use the header row as attribute names in the JSON document")
+	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
+	app.IntVar(&sampleSize, "sample", 0, "set the sample size when listing keys")
+	app.StringVar(&clientSecretFName, "client-secret", "", "(import-gsheet, export-gsheet) set the client secret path and filename for GSheet access")
+	app.BoolVar(&overwrite, "overwrite", false, "overwrite will treat a create as update if the record exists")
+	app.IntVar(&batchSize, "batch,size", 0, "(indexer, deindexer, find) set the number of records per response")
+	app.StringVar(&keyFName, "key-file", "", "operate on the record keys contained in file, one key per line")
+
+	// Search specific application options
+	app.StringVar(&sortBy, "sort", "", "(find) a comma delimited list of field names to sort by")
+	app.BoolVar(&showHighlight, "highlight", false, "(find) display highlight in search results")
+	app.StringVar(&setHighlighter, "highlighter", "", "(find) set the highlighter (ansi,html) for search results")
+	app.StringVar(&resultFields, "fields", "", "(find) comma delimited list of fields to display in the results")
+	app.BoolVar(&jsonFormat, "json", false, "(find) format results as a JSON document")
+	app.BoolVar(&csvFormat, "csv", false, "(find) format results as a CSV document, used with fields option")
+	app.BoolVar(&csvSkipHeader, "csv-skip-header", false, "(find) don't output a header row, only values for csv output")
+	app.BoolVar(&idsOnly, "ids,ids-only", false, "(find) output only a list of ids from results")
+	app.IntVar(&from, "from", 0, "(find) return the result starting with this result number")
+	app.BoolVar(&explain, "explain", false, "(find) explain results in a verbose JSON document")
 
 	// Application Verbs
-	//FIXME: If the application is verb based add your verbs here
-	//(e.g. app.NewVerb(STRING_VERB, STRING_DESCRIPTION, FUNC_POINTER)
 	vInit = app.NewVerb("init", "initialize a collection", fnInit)
 	vStatus = app.NewVerb("status", "collection status", fnStatus)
 	vCreate = app.NewVerb("create", "create a JSON object", fnCreate)
