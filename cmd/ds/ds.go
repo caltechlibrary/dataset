@@ -449,18 +449,219 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 }
 
 func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnUpdate() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		key            string
+		src            []byte
+		c              *dataset.Collection
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprint(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch len(args) {
+	case 0:
+		fmt.Fprintf(eout, "Missing collection name, key and JSON source\n")
+		return 1
+	case 1:
+		fmt.Fprintf(eout, "Missing key and JSON source\n")
+		return 1
+	case 2:
+		collectionName, key = args[0], args[1]
+		if inputFName == "" {
+			fmt.Fprintf(eout, "Missing JSON source\n")
+			return 1
+		}
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	case 3:
+		collectionName, key, src = args[0], args[1], []byte(args[2])
+	default:
+		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+	if strings.HasSuffix(key, ".json") {
+		key = strings.TrimSuffix(key, ".json")
+	}
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+	m := map[string]interface{}{}
+	if err := json.Unmarshal(src, &m); err != nil {
+		fmt.Fprintf(eout, "%s must be a valid JSON Object", key)
+		return 1
+	}
+	if err := c.Update(key, m); err != nil {
+		fmt.Fprintf(eout, "failed to update %s in %s, %s\n", key, collectionName, err)
+		return 1
+	}
+	fmt.Fprint(out, "OK")
+	return 0
 }
 
 func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnDelete() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		keys           []string
+		src            []byte
+		c              *dataset.Collection
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprint(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		if inputFName == "" {
+			fmt.Fprintf(eout, "Missing key(s)\n")
+			return 1
+		}
+		collectionName = args[0]
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		for _, line := range strings.Split(string(src), "\n") {
+			s := strings.TrimSpace(line)
+			if len(s) > 0 {
+				keys = append(keys, s)
+			}
+		}
+	case len(args) >= 2:
+		collectionName, keys = args[0], args[1:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	for _, key := range keys {
+		err := c.Delete(key)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+	fmt.Fprintf(out, "OK")
+	return 0
 }
 
 func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnJoin() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		key            string
+		src            []byte
+		c              *dataset.Collection
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprint(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch len(args) {
+	case 0:
+		fmt.Fprintf(eout, "Missing collection name, key and JSON source\n")
+		return 1
+	case 1:
+		fmt.Fprintf(eout, "Missing key and JSON source\n")
+		return 1
+	case 2:
+		collectionName, key = args[0], args[1]
+		if inputFName == "" {
+			fmt.Fprintf(eout, "Missing JSON source\n")
+			return 1
+		}
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	case 3:
+		collectionName, key, src = args[0], args[1], []byte(args[2])
+	default:
+		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+	if strings.HasSuffix(key, ".json") {
+		key = strings.TrimSuffix(key, ".json")
+	}
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+	// unmarshal new object
+	newObj := map[string]interface{}{}
+	if err := json.Unmarshal(src, &newObj); err != nil {
+		fmt.Fprintf(eout, "%s must be a valid JSON Object", key)
+		return 1
+	}
+	// Get existing object
+	obj := map[string]interface{}{}
+	err = c.Read(key, obj)
+	if err != nil {
+		fmt.Fprintf(eout, "%s", err)
+		return 1
+	}
+
+	// Merge object (e.g. append or overwrite)
+	if overwrite {
+		// Replace attributes
+		for k, v := range newObj {
+			obj[k] = v
+		}
+	} else {
+		// Only append new attributes
+		for k, v := range newObj {
+			if _, hasKey := obj[k]; hasKey == false {
+				obj[k] = v
+			}
+		}
+	}
+
+	// Update object
+	if err := c.Update(key, obj); err != nil {
+		fmt.Fprintf(eout, "failed to join %s in %s, %s\n", key, collectionName, err)
+		return 1
+	}
+	fmt.Fprint(out, "OK")
+	return 0
 }
 
 func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
@@ -666,10 +867,10 @@ func main() {
 	vDelete.AddParams("COLLECTION", "KEY", "[KEY ...]")
 	vDelete.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
-	vJoin = app.NewVerb("join", "join data to a JSON object", fnJoin)
+	vJoin = app.NewVerb("join", "join attributes to a JSON object", fnJoin)
 	vJoin.AddParams("COLLECTION", "KEY", "[JSON_SRC]")
 	vJoin.StringVar(&inputFName, "i,input", "", "read JSON source from file")
-	vJoin.BoolVar(&overwrite, "overwrite", false, "overwrite will replace common attributes on join")
+	vJoin.BoolVar(&overwrite, "overwrite", false, "if true replace attributes otherwise append only new attributes")
 
 	vKeys = app.NewVerb("keys", "list keys in collection", fnKeys)
 	vKeys.AddParams("COLLECTION", "[FILTER_EXPR]", "[SORT_EXPR]")
