@@ -1507,8 +1507,8 @@ func main() {
 	// We require an "ACTION" or verb for command to work.
 	app.ActionsRequired = true
 
-	// Add command line parameters.
-	app.AddParams("COLLECTION_NAME")
+	// Set command line parameters.
+	app.SetParams("COLLECTION_NAME", "[ACTION]", "[ACTION PARAMETERS ...]")
 
 	// Add Help Docs
 	for k, v := range Help {
