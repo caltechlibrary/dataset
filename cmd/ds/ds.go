@@ -1237,8 +1237,81 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 }
 
 func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnGrid() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		c              *dataset.Collection
+		keys           []string
+		dotPaths       []string
+		src            []byte
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key list filename, and dot path(s)\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing dot paths\n")
+		return 1
+	case len(args) >= 2:
+		collectionName, dotPaths = args[0], args[1:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+	// NOTE: If no keylist provided, assume grid on all records in collection
+	if len(inputFName) == 0 {
+		keys = c.Keys()
+	} else {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+
+	// Apply Sample Size
+	if sampleSize > 0 {
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		shuffle.Strings(keys, random)
+		if sampleSize <= len(keys) {
+			keys = keys[0:sampleSize]
+		}
+	}
+
+	g, err := c.Grid(keys, dotPaths, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if prettyPrint {
+		src, err = json.MarshalIndent(g, "", "    ")
+	} else {
+		src, err = json.Marshal(g)
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "%s", src)
+	return 0
 }
 
 func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
@@ -1478,6 +1551,11 @@ func main() {
 	// Frames and Grid
 	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
 	vGrid.AddParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
+	vGrid.StringVar(&inputFName, "i,input", "", "read keys list, one per line, from a file")
+	vGrid.IntVar(&sampleSize, "sample", sampleSize, "make grid from sample of given size")
+	vGrid.BoolVar(&showVerbose, "verbose", showVerbose, "verbose reporting for grid generation")
+	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
+
 	vFrame = app.NewVerb("frame", "create a data frame", fnFrame)
 	vFrame.AddParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
 	vFrame.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
