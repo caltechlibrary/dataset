@@ -536,7 +536,7 @@ func joinJSONDoc(params ...string) (string, error) {
 // If a 'filter expression' is provided it will return a filtered list of keys.
 // Filters with like Go's text/template if statement where the 'filter expression' is
 // the condititional expression in a if/else statement. If the expression evaluates to "true"
-// then the kehy is included in the list of keys If the expression evaluates to "false" then
+// then the key is included in the list of keys If the expression evaluates to "false" then
 // it is excluded for the list of keys.
 // If a 'sort expression' is provided then the resulting keys are ordered by that expression.
 func collectionKeys(args ...string) (string, error) {

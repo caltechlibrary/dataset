@@ -24,12 +24,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/shuffle"
 )
 
 var (
@@ -151,6 +154,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	clientSecretFName string
 	overwrite         bool
 	batchSize         int
+	sampleSize        int
 	keyFName          string
 	collectionLayout  = "pairtree" // Default collection file layout
 
@@ -204,15 +208,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vSyncRecieve *cli.Verb // sync-recieve
 )
 
+// keysFromSrc takes a byte splice, splits them on "\n" and converts any
+// non-empty line string appended to the keys slice
+func keysFromSrc(src []byte) []string {
+	var keys []string
+	for _, line := range strings.Split(string(src), "\n") {
+		s := strings.TrimSpace(line)
+		if len(s) > 0 {
+			keys = append(keys, s)
+		}
+	}
+	return keys
+}
+
 func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		c   *dataset.Collection
 		err error
 	)
-	fmt.Fprintf(out, "DEBUG args: %s\n", strings.Join(args, " "))
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 	if len(args) == 0 {
@@ -226,7 +242,7 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		case "buckets":
 			c, err = dataset.InitCollection(collectionName, dataset.BUCKETS_LAYOUT)
 		default:
-			fmt.Fprint(eout, "%s is an unknown layout\n", collectionLayout)
+			fmt.Fprintf(eout, "%s is an unknown layout\n", collectionLayout)
 			return 1
 		}
 		if err != nil {
@@ -246,7 +262,7 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 	if len(args) == 0 {
@@ -287,10 +303,9 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
-	args = flagSet.Args()
 	switch len(args) {
 	case 0:
 		fmt.Fprintf(eout, "Missing collection name, key and JSON source\n")
@@ -360,7 +375,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 	args = flagSet.Args()
@@ -383,12 +398,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
-		for _, line := range strings.Split(string(src), "\n") {
-			s := strings.TrimSpace(line)
-			if len(s) > 0 {
-				keys = append(keys, s)
-			}
-		}
+		keys = keysFromSrc(src)
 	case len(args) >= 2:
 		collectionName, keys = args[0], args[1:]
 	default:
@@ -458,7 +468,7 @@ func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 	args = flagSet.Args()
@@ -522,20 +532,11 @@ func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 	args = flagSet.Args()
-	switch {
-	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
-		return 1
-	case len(args) == 1:
-		if inputFName == "" {
-			fmt.Fprintf(eout, "Missing key(s)\n")
-			return 1
-		}
-		collectionName = args[0]
+	if len(inputFName) > 0 {
 		if inputFName == "-" {
 			src, err = ioutil.ReadAll(in)
 		} else {
@@ -545,12 +546,18 @@ func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
-		for _, line := range strings.Split(string(src), "\n") {
-			s := strings.TrimSpace(line)
-			if len(s) > 0 {
-				keys = append(keys, s)
-			}
+		keys = keysFromSrc(src)
+	}
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		if len(keys) == 0 {
+			fmt.Fprintf(eout, "Missing key(s)\n")
+			return 1
 		}
+		collectionName = args[0]
 	case len(args) >= 2:
 		collectionName, keys = args[0], args[1:]
 	default:
@@ -585,7 +592,7 @@ func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
-		fmt.Fprint(eout, "%s\n", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 	args = flagSet.Args()
@@ -664,44 +671,569 @@ func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
+// fnKeys returns the keys in a collection
+// If a 'filter expression' is provided it will return a filtered list of keys.
+// Filters with like Go's text/template if statement where the 'filter expression' is
+// the condititional expression in a if/else statement. If the expression evaluates to "true"
+// then the key is included in the list of keys If the expression evaluates to "false" then
+// it is excluded for the list of keys.
+// If a 'sort expression' is provided then the resulting keys are ordered by that expression.
 func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnKeys() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		keys           []string
+		c              *dataset.Collection
+		err            error
+		src            []byte
+		filterExpr     string
+		sortExpr       string
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		collectionName = args[0]
+	case len(args) == 2:
+		collectionName, filterExpr = args[0], args[1]
+	case len(args) == 3:
+		collectionName, filterExpr, sortExpr = args[0], args[1], args[2]
+	case len(args) > 3:
+		collectionName, filterExpr, sortExpr, keys = args[0], args[1], args[2], args[3:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	// If we don't have a sub selection of keys, get a complete list of keys
+	if len(keys) == 0 {
+		keys = c.Keys()
+	}
+
+	// Process the filter against the keys if necessary
+	if len(filterExpr) > 0 && filterExpr != "true" {
+		keys, err = c.KeyFilter(keys[:], filterExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+
+	// Apply Sample Size
+	if sampleSize > 0 {
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		shuffle.Strings(keys, random)
+		if sampleSize <= len(keys) {
+			keys = keys[0:sampleSize]
+		}
+	}
+
+	// If now sort we're done
+	if len(sortExpr) == 0 {
+		fmt.Fprintf(out, "%s", strings.Join(keys, "\n"))
+		return 0
+	}
+
+	// We still have sorting to do.
+	keys, err = c.KeySortByExpression(keys, sortExpr)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, strings.Join(keys, "\n"))
+	return 0
 }
 
 func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnHasKeys() not implemented\n")
-	return 1
+	var (
+		c              *dataset.Collection
+		collectionName string
+		keys           []string
+		err            error
+		src            []byte
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	// Read in any key list from a file.
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+	// Process positional parameters
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		collectionName = args[0]
+		if len(keys) == 0 {
+			fmt.Fprintf(eout, "Missing key(s)\n")
+			return 1
+		}
+	case len(args) >= 2:
+		collectionName = args[0]
+		keys = append(keys, args[1:]...)
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	for i, key := range keys {
+		if i > 0 {
+			fmt.Fprintf(out, "\n")
+		}
+		if c.HasKey(key) {
+			fmt.Fprintf(out, "true")
+		} else {
+			fmt.Fprintf(out, "false")
+		}
+	}
+	return 0
 }
 
 func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnHasKeys() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		keys           []string
+		c              *dataset.Collection
+		err            error
+		src            []byte
+		filterExpr     string
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		collectionName = args[0]
+	case len(args) == 2:
+		collectionName, filterExpr = args[0], args[1]
+	case len(args) > 2:
+		collectionName, filterExpr, keys = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	// If we don't have a sub selection of keys, get a list of keys
+	if len(keys) == 0 {
+		keys = c.Keys()
+	}
+
+	// Process the filter against the keys if necessary
+	if len(filterExpr) > 0 && filterExpr != "true" {
+		keys, err = c.KeyFilter(keys[:], filterExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+	fmt.Fprintf(out, "%d", len(keys))
+	return 0
 }
 
 func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnPath() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		c              *dataset.Collection
+		keys           []string
+		src            []byte
+		docPath        string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		if len(keys) == 0 {
+			fmt.Fprintf(eout, "Missing key(s)\n")
+			return 1
+		}
+		collectionName = args[0]
+	case len(args) >= 2:
+		collectionName, keys = args[0], args[1:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	errCnt := 0
+	for i, key := range keys {
+		if i > 0 {
+			fmt.Fprintf(out, "\n")
+		}
+		docPath, err = c.DocPath(key)
+		if err != nil {
+			fmt.Fprintf(eout, "key %q, %s\n", key, err)
+			errCnt++
+		} else {
+			fmt.Fprintf(out, "%s", docPath)
+		}
+	}
+	return errCnt
 }
 
 func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnAttach() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		c              *dataset.Collection
+		key            string
+		src            []byte
+		fNames         []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fNames = keysFromSrc(src)
+	}
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key and attachment name(s)\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing key and attachment name(s)\n")
+		return 1
+	case len(args) == 2:
+		if len(fNames) == 0 {
+			fmt.Fprintf(eout, "Missing attachment name(s)\n")
+			return 1
+		}
+		collectionName, key = args[0], args[1]
+	case len(args) >= 3:
+		collectionName, key, fNames = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	if c.HasKey(key) == false {
+		fmt.Fprintf(eout, "%q is not in %s\n", key, collectionName)
+		return 1
+	}
+	for _, fname := range fNames {
+		if _, err := os.Stat(fname); os.IsNotExist(err) {
+			fmt.Fprintf(eout, "%s does not exist\n", fname)
+			return 1
+		}
+	}
+	err = c.AttachFiles(key, fNames...)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	return 0
 }
 
 func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnAttachments() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		c              *dataset.Collection
+		keys           []string
+		src            []byte
+		attachments    []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
+		return 1
+	case len(args) == 1:
+		if len(keys) == 0 {
+			fmt.Fprintf(eout, "Missing key(s)\n")
+			return 1
+		}
+		collectionName = args[0]
+	case len(args) >= 2:
+		collectionName, keys = args[0], args[1:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	errCnt := 0
+	for i, key := range keys {
+		if i > 0 {
+			fmt.Fprintf(out, "\n")
+		}
+		attachments, err = c.Attachments(key)
+		if err != nil {
+			fmt.Fprintf(eout, "key %q, %s\n", key, err)
+			errCnt++
+		} else {
+			fmt.Fprintf(out, "%s", strings.Join(attachments, "\n"))
+		}
+	}
+	return errCnt
 }
 
 func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnDetach() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		c              *dataset.Collection
+		key            string
+		src            []byte
+		fNames         []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fNames = keysFromSrc(src)
+	}
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and key\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing key\n")
+		return 1
+	case len(args) == 2:
+		collectionName, key = args[0], args[1]
+	case len(args) >= 3:
+		collectionName, key, fNames = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	if c.HasKey(key) == false {
+		fmt.Fprintf(eout, "%q is not in %s", key, collectionName)
+		return 1
+	}
+	err = c.GetAttachedFiles(key, fNames...)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprint(out, "OK")
+	return 0
 }
 
 func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnPrune() not implemented\n")
-	return 1
+	var (
+		collectionName string
+		c              *dataset.Collection
+		key            string
+		src            []byte
+		fNames         []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fNames = keysFromSrc(src)
+	}
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and key\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing key\n")
+		return 1
+	case len(args) == 2:
+		collectionName, key = args[0], args[1]
+	case len(args) >= 3:
+		collectionName, key, fNames = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	if c.HasKey(key) == false {
+		fmt.Fprintf(eout, "%q is not in %s", key, collectionName)
+		return 1
+	}
+	err = c.Prune(key, fNames...)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprint(out, "OK")
+	return 0
 }
 
 func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
@@ -847,7 +1379,7 @@ func main() {
 	vCloneSample = app.NewVerb("clone-sample", "clone a sample from a collection", fnCloneSample)
 	vCloneSample.AddParams("SOURCE_COLLECTION", "SAMPLE_SIZE", "SAMPLE_COLLECTION", "[TEST_COLLECTION]")
 	vClone = app.NewVerb("clone", "clone a collection", fnClone)
-	vClone.AddParams("SOURCE_COLLECTION", "DESTINATION_COLLECTION")
+	vClone.AddParams("SRC_COLLECTION", "DEST_COLLECTION")
 
 	// Object oriented functions
 	vCreate = app.NewVerb("create", "create a JSON object", fnCreate)
@@ -856,7 +1388,7 @@ func main() {
 	vCreate.BoolVar(&overwrite, "overwrite", false, "overwrite treat a create an update if record already exists")
 
 	vRead = app.NewVerb("read", "read a JSON object from key(s)", fnRead)
-	vRead.AddParams("COLLECTION", "KEY", "[KEY ...]")
+	vRead.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vRead.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vUpdate = app.NewVerb("update", "update a JSON object", fnUpdate)
@@ -864,7 +1396,7 @@ func main() {
 	vUpdate.StringVar(&inputFName, "i,input", "", "input file to read JSON object source from")
 
 	vDelete = app.NewVerb("delete", "delete a JSON object", fnDelete)
-	vDelete.AddParams("COLLECTION", "KEY", "[KEY ...]")
+	vDelete.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vDelete.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vJoin = app.NewVerb("join", "join attributes to a JSON object", fnJoin)
@@ -873,25 +1405,38 @@ func main() {
 	vJoin.BoolVar(&overwrite, "overwrite", false, "if true replace attributes otherwise append only new attributes")
 
 	vKeys = app.NewVerb("keys", "list keys in collection", fnKeys)
-	vKeys.AddParams("COLLECTION", "[FILTER_EXPR]", "[SORT_EXPR]")
+	vKeys.AddParams("COLLECTION", "[FILTER_EXPR]", "[SORT_EXPR]", "[KEY ...]")
+	vKeys.IntVar(&sampleSize, "sample", 0, "set a sample size for keys returned")
+	vKeys.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
-	vHasKey = app.NewVerb("haskey", "check for key in collection", fnHasKey)
-	vHasKey.AddParams("COLLECTION", "KEY")
+	vHasKey = app.NewVerb("haskey", "check for key(s) in collection", fnHasKey)
+	vHasKey.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
+	vHasKey.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vCount = app.NewVerb("count", "count JSON objects", fnCount)
-	vCount.AddParams("COLLECTION", "[FILTER_EXPR]")
+	vCount.AddParams("COLLECTION", "[FILTER_EXPR]", "[KEY ...]")
+	vCount.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vPath = app.NewVerb("path", "path to JSON object", fnPath)
-	vPath.AddParams("COLLECTION", "[FILTER_EXPR]")
+	vPath.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
+	vPath.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
+	// Attachment handling
 	vAttach = app.NewVerb("attach", "attach a file to JSON object", fnAttach)
-	vAttach.AddParams("COLLECTION", "KEY", "FILENAMES")
+	vAttach.AddParams("COLLECTION", "KEY", "[FILENAMES]")
+	vAttach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
+
 	vAttachments = app.NewVerb("attachments", "list attachments for a JSON object", fnAttachments)
 	vAttachments.AddParams("COLLECTION", "KEY")
+	vAttachments.StringVar(&inputFName, "i,input", "", "read keys(s), one per line, from a file")
+
 	vDetach = app.NewVerb("detach", "detach a copy of the attachment from a JSON object", fnDetach)
 	vDetach.AddParams("COLLECTION", "KEY", "[FILENAMES]")
+	vDetach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
+
 	vPrune = app.NewVerb("prune", "prune an the attachment to a JSON object", fnPrune)
 	vPrune.AddParams("COLLECTION", "KEY", "[FILENAMES]")
+	vPrune.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	// Import/export collections from/into tables
 	vImport = app.NewVerb("import", "import a table (CSV, GSheet) as JSON bject into a collection", fnImport)
@@ -909,9 +1454,9 @@ func main() {
 	vSyncRecieve.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
 	vSyncRecieve.StringVar(&clientSecretFName, "client-secret", "", "(sync-receive from a GSheet) set the client secret path and filename for GSheet access")
 
-	// Search Verbs and options
+	// Search and indexing
 	vFind = app.NewVerb("find", "find a JSON object base on a dot path and value", fnFind)
-	vFind.AddParams("ONE_OR_MORE_INDEX_NAMES", "SEARCH_TERMS")
+	vFind.AddParams("INDEX_NAME(S)", "QUERY_STRING")
 	vFind.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	vFind.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
 	vFind.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
@@ -988,6 +1533,12 @@ func main() {
 	if showVersion {
 		fmt.Fprintln(app.Out, app.Version())
 		os.Exit(0)
+	}
+
+	// Insert collectionName as position 1 arg in args if set with global -c,-collection flag
+	if collectionName != "" {
+		args = append([]string{args[0], collectionName}, args[1:]...)
+		collectionName = ""
 	}
 
 	// Application Logic
