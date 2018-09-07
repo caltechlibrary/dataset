@@ -30,19 +30,34 @@ import (
 )
 
 type DataFrame struct {
-	// Explicit at creator
+	// Explicit at creation
 	Name           string   `json:"frame_name"`
 	CollectionName string   `json:"collection_name"`
 	DotPaths       []string `json:"dot_paths"`
-	// NOTE: Keys may be deprecaited as _Key as column zero of the grid is a requirement of Frames.
+	// NOTE: Keys should hold the same values as column zero of the grid.
+	// Keys controls the order of rows in a grid when reframing.
 	Keys    []string        `json:"keys"`
 	Grid    [][]interface{} `json:"grid"`
 	Created time.Time       `json:"created"`
 	Updated time.Time       `json:"updated,omitempty"`
 
+	// NOTE: these values effect how Reframe works
+	AllKeys    bool   `json:"use_all_keys"`
+	FilterExpr string `json:"filter_expr"`
+	SampleSize int    `json:"sample_size"`
+
 	// Derived or explicitly set after creation
 	Labels      []string `json:"labels,omitempty"`
 	ColumnTypes []string `json:"column_types,omitempty"`
+}
+
+// hasFrame checks if a frame is defined already
+func (c *Collection) hasFrame(key string) bool {
+	if c.FrameMap == nil {
+		return false
+	}
+	_, hasFrame := c.FrameMap[key]
+	return hasFrame
 }
 
 // getFrame retrieves a frame by frame name from a collection.
@@ -114,13 +129,14 @@ func (c *Collection) rmFrame(key string) error {
 
 // Frame takes a set of collection keys and dotpaths, builds a grid and assembles
 // the grid and metadata returning a new CollectionFrame and error. Frames are
-// assoicated with the collection.
+// associated with the collection and can be re-generated.
 func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbose bool) (*DataFrame, error) {
-	// Read an existing frame or return error
-	if len(keys) == 0 || len(dotPaths) == 0 {
+	// If frame exists return the existing frame
+	if c.hasFrame(name) {
 		return c.getFrame(name)
 	}
-	// Case of new Frame Build our Grid.
+
+	// Case of new Frame and building our Grid.
 
 	// NOTE: we need to enforce that column zero is explicitly ._Key
 	hasKeyColumn := false
@@ -162,6 +178,11 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbos
 	f.ColumnTypes = colTypes[:]
 	err = c.setFrame(name, f)
 	return f, err
+}
+
+// HasFrame checkes to see if a frame is already defined.
+func (c *Collection) HasFrame(name string) bool {
+	return c.hasFrame(name)
 }
 
 // Frames retrieves a list of available frames associated with a collection
@@ -214,6 +235,11 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 		return err
 	}
 	f.Grid = g
+	return c.setFrame(name, f)
+}
+
+// SaveFrame saves a frame in a collection or returns an error
+func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 	return c.setFrame(name, f)
 }
 

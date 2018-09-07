@@ -150,6 +150,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	// Application Options
 	collectionName    string
+	useAllKeys        bool
 	useHeaderRow      bool
 	clientSecretFName string
 	overwrite         bool
@@ -157,6 +158,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	sampleSize        int
 	keyFName          string
 	collectionLayout  = "pairtree" // Default collection file layout
+	filterExpr        string
+	sortExpr          string
 
 	// Search specific options, application Options
 	showHighlight  bool
@@ -199,6 +202,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vCloneSample *cli.Verb // clone-sample
 	vClone       *cli.Verb // clone
 	vFrame       *cli.Verb // frame
+	vHasFrame    *cli.Verb // has-frame
 	vFrames      *cli.Verb // frames
 	vReframe     *cli.Verb // reframe
 	vFrameLabels *cli.Verb // frame-labels
@@ -221,6 +225,7 @@ func keysFromSrc(src []byte) []string {
 	return keys
 }
 
+// fnInit - create a dataset collection
 func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		c   *dataset.Collection
@@ -255,6 +260,7 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
+// fnStatus - given a path see if it is a collection by attempting to "open" it
 func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		c   *dataset.Collection
@@ -293,6 +299,7 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnCreate - add a new JSON document in  collection
 func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -365,6 +372,7 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnRead - retreive a JSON document from a collection
 func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -458,6 +466,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
+// fnUpdate - replace a JSON document in a collection
 func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -522,6 +531,7 @@ func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnDelete - remove a JSON document from a collection
 func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -582,6 +592,8 @@ func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnJoin - joins a JSON object in the collection with a new JSON object appending
+// new attributes and optionally overwriting existing attribute in common.
 func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -685,8 +697,6 @@ func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		c              *dataset.Collection
 		err            error
 		src            []byte
-		filterExpr     string
-		sortExpr       string
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
@@ -694,19 +704,6 @@ func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	args = flagSet.Args()
-
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = keysFromSrc(src)
-	}
 
 	switch {
 	case len(args) == 0:
@@ -736,8 +733,20 @@ func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	if len(keys) == 0 {
 		keys = c.Keys()
 	}
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
 
-	// Process the filter against the keys if necessary
+	// Apply Filter Expression
 	if len(filterExpr) > 0 && filterExpr != "true" {
 		keys, err = c.KeyFilter(keys[:], filterExpr)
 		if err != nil {
@@ -771,6 +780,7 @@ func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
+// fnHasKey - check if a key to an object exists in a collection optionally matching keys and a filter expression
 func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		c              *dataset.Collection
@@ -786,19 +796,6 @@ func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	}
 	args = flagSet.Args()
 
-	// Read in any key list from a file.
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = keysFromSrc(src)
-	}
 	// Process positional parameters
 	switch {
 	case len(args) == 0:
@@ -811,11 +808,24 @@ func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			return 1
 		}
 	case len(args) >= 2:
-		collectionName = args[0]
-		keys = append(keys, args[1:]...)
+		collectionName, keys = args[0], args[1:]
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	// Read in any key list from a file.
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = append(keys, keysFromSrc(src)...)
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -838,6 +848,7 @@ func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnCount - count objects in a collection, optionally matching keys and a filter expression
 func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -845,7 +856,6 @@ func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		c              *dataset.Collection
 		err            error
 		src            []byte
-		filterExpr     string
 	)
 	err = flagSet.Parse(args)
 	if err != nil {
@@ -853,19 +863,6 @@ func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	}
 	args = flagSet.Args()
-
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = keysFromSrc(src)
-	}
 
 	switch {
 	case len(args) == 0:
@@ -880,6 +877,20 @@ func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	// Read keys from inputFName
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = append(keys, keysFromSrc(src)...)
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -906,6 +917,7 @@ func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	return 0
 }
 
+// fnPath - return a path(s) to an object(s) given a key(s)
 func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -921,18 +933,7 @@ func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	args = flagSet.Args()
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = keysFromSrc(src)
-	}
+
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
@@ -949,6 +950,21 @@ func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
+
+	// Read keys from inputFName
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = append(keys, keysFromSrc(src)...)
+	}
+
 	c, err = dataset.Open(collectionName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
@@ -972,6 +988,7 @@ func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return errCnt
 }
 
+// fnAttach - attach a file(s) to an object
 func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -987,18 +1004,7 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	args = flagSet.Args()
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		fNames = keysFromSrc(src)
-	}
+
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name, key and attachment name(s)\n")
@@ -1017,6 +1023,20 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	// Read filenames from inputFName
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fNames = append(fNames, keysFromSrc(src)...)
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -1044,6 +1064,7 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnAttachments - list the attachments of an object(s) given a key(s)
 func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -1059,18 +1080,7 @@ func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		return 1
 	}
 	args = flagSet.Args()
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = keysFromSrc(src)
-	}
+
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name, key(s)\n")
@@ -1087,6 +1097,21 @@ func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
+
+	// Read keys from inputFName
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = append(keys, keysFromSrc(src)...)
+	}
+
 	c, err = dataset.Open(collectionName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
@@ -1110,6 +1135,7 @@ func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 	return errCnt
 }
 
+// fnDetach - return a file(s) attached to an object(s) for a given key
 func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -1125,18 +1151,7 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	args = flagSet.Args()
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		fNames = keysFromSrc(src)
-	}
+
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name and key\n")
@@ -1151,6 +1166,20 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	// Read filenames from inputFName
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fNames = append(fNames, keysFromSrc(src)...)
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -1173,6 +1202,7 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
+// fnPrune - remove a file(s) attached to an object for a given key
 func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -1188,18 +1218,7 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	}
 	args = flagSet.Args()
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		fNames = keysFromSrc(src)
-	}
+
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name and key\n")
@@ -1214,6 +1233,20 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	// Read filenames from inputFName
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fNames = append(fNames, keysFromSrc(src)...)
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -1236,6 +1269,11 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	return 0
 }
 
+// fnGrid - generate a grid (2D array) based on a list of key(s) and dotpath(s).
+// Keys map to rows, dotpaths map to columns
+//
+// Command Syntax: [VERB_OPTIONS] COLLECTION_NAME DOTPATH [DOTPATH ...]
+// Verb Options: filter-expression (-filter) , key list filename (-i,-input), sample size (-sample), verbose (-v, verbose)
 func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -1271,10 +1309,12 @@ func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	defer c.Close()
-	// NOTE: If no keylist provided, assume grid on all records in collection
-	if len(inputFName) == 0 {
+
+	// Get all keys or read from inputFName
+	if useAllKeys && len(inputFName) == 0 {
 		keys = c.Keys()
-	} else {
+	}
+	if len(inputFName) > 0 {
 		if inputFName == "-" {
 			src, err = ioutil.ReadAll(in)
 		} else {
@@ -1284,7 +1324,16 @@ func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
-		keys = keysFromSrc(src)
+		keys = append(keys, keysFromSrc(src)...)
+	}
+
+	// Apply Filter Expression
+	if len(filterExpr) > 0 && filterExpr != "true" {
+		keys, err = c.KeyFilter(keys[:], filterExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
 	}
 
 	// Apply Sample Size
@@ -1314,28 +1363,528 @@ func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
+// fnFrame - define a data frame and populate it with a list of keys and doptpaths
+// syntax: [VERB_OPTIONS] COLLECTION_NAME FRAME_NAME DOTPATH [DOTPATH ...]
+// Verb Options: filter-expression (e.g. -filter) , key list filename (e.g. -i), sample size (e.g. -sample)
+// labels (e.g. -labels)
+func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		frameName      string
+		f              *dataset.DataFrame
+		c              *dataset.Collection
+		keys           []string
+		dotPaths       []string
+		//labels         []string
+		src []byte
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name\n")
+		return 1
+	case len(args) == 2:
+		collectionName, frameName = args[0], args[1]
+	case len(args) >= 3:
+		collectionName, frameName, dotPaths = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	// Check to see if frame exists...
+	if c.HasFrame(frameName) {
+		if len(dotPaths) > 0 || len(filterExpr) > 0 {
+			fmt.Fprintf(eout, "frame %q already exists\n", frameName)
+			return 1
+		}
+		f, err = c.Frame(frameName, nil, nil, showVerbose)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		// Handle pretty printing
+		if prettyPrint {
+			src, err = json.MarshalIndent(f, "", "    ")
+		} else {
+			src, err = json.Marshal(f)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		fmt.Fprintf(out, "%s", src)
+		return 0
+	}
+
+	// Get all keys or read from inputFName
+	if useAllKeys {
+		keys = c.Keys()
+	}
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+
+	// Apply Filter Expression
+	if len(filterExpr) > 0 {
+		keys, err = c.KeyFilter(keys[:], filterExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+
+	// Apply Sample Size
+	if sampleSize > 0 {
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		shuffle.Strings(keys, random)
+		if sampleSize <= len(keys) {
+			keys = keys[0:sampleSize]
+		}
+	}
+
+	// Run a sanity check before we create a new frame...
+	if len(dotPaths) == 0 {
+		fmt.Fprintf(eout, "No dotpaths, frame creation aborted\n")
+		return 1
+	}
+	if len(keys) == 0 {
+		fmt.Fprintf(eout, "No keys, frame creation aborted\n")
+		return 1
+	}
+
+	// NOTE: See if we are reading a frame back or define one.
+	f, err = c.Frame(frameName, keys, dotPaths, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	// NOTE: Make need to make sure we save our additional
+	// settings - useAllKeys, sampleSize and filterExpr
+	f.AllKeys = useAllKeys
+	f.FilterExpr = filterExpr
+	f.SampleSize = sampleSize
+
+	// Handle pretty printing
+	if prettyPrint {
+		src, err = json.MarshalIndent(f, "", "    ")
+	} else {
+		src, err = json.Marshal(f)
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "%s", src)
+	return 0
+}
+
+// fnFrames - list the frames defined in a collection.
+func fnFrames(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		c              *dataset.Collection
+		frameNames     []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		collectionName = args[0]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	frameNames = c.Frames()
+	if len(frameNames) > 0 {
+		fmt.Fprintf(out, "%s", strings.Join(frameNames, "\n"))
+	}
+	return 0
+}
+
+// fnFrameLabels - set the labels (column headings) associated with a frame's grid.
+func fnFrameLabels(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		c              *dataset.Collection
+		frameName      string
+		labels         []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, frame name and labels\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name and labels\n")
+		return 1
+	case len(args) == 2:
+		fmt.Fprintf(eout, "labels\n")
+		return 1
+	case len(args) >= 3:
+		collectionName, frameName, labels = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	err = c.FrameLabels(frameName, labels)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "OK")
+	return 0
+}
+
+// fnFrameTypes - set the column types (for column values) associated with a frame's grid.
+func fnFrameTypes(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		c              *dataset.Collection
+		frameName      string
+		types          []string
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name, frame name and types\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name and types\n")
+		return 1
+	case len(args) == 2:
+		fmt.Fprintf(eout, "types\n")
+		return 1
+	case len(args) >= 3:
+		collectionName, frameName, types = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	err = c.FrameTypes(frameName, types)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "OK")
+	return 0
+}
+
+// fnHasFrame - check if a frame has been defined in collection
+func fnHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		frameName      string
+		c              *dataset.Collection
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name\n")
+		return 1
+	case len(args) == 2:
+		collectionName, frameName = args[0], args[1]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	if c.HasFrame(frameName) {
+		fmt.Fprintf(out, "true")
+	} else {
+		fmt.Fprintf(out, "false")
+	}
+	return 0
+}
+
+// fnFrameDelete - remove a frame from a collection
+func fnFrameDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		frameName      string
+		c              *dataset.Collection
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name\n")
+		return 1
+	case len(args) == 2:
+		collectionName, frameName = args[0], args[1]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	err = c.DeleteFrame(frameName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "OK")
+	return 0
+}
+
+func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		frameName      string
+		f              *dataset.DataFrame
+		c              *dataset.Collection
+		keys           []string
+		dotPaths       []string
+		frameUpdated   bool
+		src            []byte
+		err            error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name\n")
+		return 1
+	case len(args) == 2:
+		collectionName, frameName = args[0], args[1]
+	case len(args) >= 3:
+		collectionName, frameName, dotPaths = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	// Check to see if frame exists...
+	if c.HasFrame(frameName) == false {
+		fmt.Fprintf(eout, "Frame %q not defined in %s\n", frameName, collectionName)
+		return 1
+	}
+
+	f, err = c.Frame(frameName, nil, nil, false)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	// Update frame settings
+	frameUpdated = false
+
+	if useAllKeys {
+		f.AllKeys = true
+		keys = c.Keys()
+		frameUpdated = true
+	} else {
+		keys = f.Keys[:]
+	}
+
+	// Read from inputFName, update frame's keys
+	if len(inputFName) > 0 {
+		f.AllKeys = false
+		frameUpdated = true
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+
+	// Apply Filter Expression
+	if len(filterExpr) > 0 {
+		frameUpdated = true
+		keys, err = c.KeyFilter(keys[:], filterExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		f.FilterExpr = filterExpr
+	}
+
+	// Apply Sample Size
+	if sampleSize > 0 {
+		frameUpdated = true
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		shuffle.Strings(keys, random)
+		if sampleSize <= len(keys) {
+			keys = keys[0:sampleSize]
+		}
+		f.SampleSize = sampleSize
+	}
+
+	// NOTE: See if we are reading a frame back or define one.
+	if len(dotPaths) > 0 {
+		frameUpdated = true
+		f.DotPaths = dotPaths
+	}
+
+	// Save the updated frame definition
+	if frameUpdated {
+		err = c.SaveFrame(frameName, f)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+
+	// Now regenerate grid content with Reframe
+	err = c.Reframe(frameName, keys, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "OK")
+	return 0
+}
+
+// fnImport - import a CSV file or GSheet into a collection
 func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	// for GSheet: SHEET_ID SHEET_NAME FRAME_NAME
+	// for CSV: FILENAME FRAME_NAME
 	fmt.Fprintf(eout, "fnImport() not implemented\n")
 	return 1
 }
 
+// fnExport - export collection records to a CSV file or GSheet
 func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	// for GSheet: SHEET_ID SHEET_NAME FRAME_NAME
+	// for CSV: FILENAME FRAME_NAME
 	fmt.Fprintf(eout, "fnExport() not implemented\n")
 	return 1
 }
 
-func fnCheck(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnCheck() not implemented\n")
+// fnSyncSend - synchronize a frame sending data to a CSV file or GSheet
+func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	// for GSheet: SHEET_ID SHEET_NAME FRAME_NAME
+	// for CSV: FILENAME FRAME_NAME
+	fmt.Fprintf(eout, "fnSyndSend() not implemented\n")
 	return 1
 }
 
-func fnRepair(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnRepair() not implemented\n")
-	return 1
-}
-
-func fnMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnMigrate() not implemented\n")
+// fnSyncRecieve - synchronize a frame receiving data from a CSV file or GSheet
+func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	// for GSheet: SHEET_ID SHEET_NAME FRAME_NAME
+	// for CSV: FILENAME FRAME_NAME
+	fmt.Fprintf(eout, "fnSyndRecieve() not implemented\n")
 	return 1
 }
 
@@ -1354,6 +1903,21 @@ func fnFind(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 1
 }
 
+func fnCheck(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnCheck() not implemented\n")
+	return 1
+}
+
+func fnRepair(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnRepair() not implemented\n")
+	return 1
+}
+
+func fnMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	fmt.Fprintf(eout, "fnMigrate() not implemented\n")
+	return 1
+}
+
 func fnCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	fmt.Fprintf(eout, "fnCloneSample() not implemented\n")
 	return 1
@@ -1361,46 +1925,6 @@ func fnCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 
 func fnClone(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	fmt.Fprintf(eout, "fnClone() not implemented\n")
-	return 1
-}
-
-func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnFrame() not implemented\n")
-	return 1
-}
-
-func fnFrames(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnFrames() not implemented\n")
-	return 1
-}
-
-func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnReframe() not implemented\n")
-	return 1
-}
-
-func fnFrameLabels(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnFrameLabels() not implemented\n")
-	return 1
-}
-
-func fnFrameTypes(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnFrameTypes() not implemented\n")
-	return 1
-}
-
-func fnFrameDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnFrameDelete() not implemented\n")
-	return 1
-}
-
-func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnSyndSend() not implemented\n")
-	return 1
-}
-
-func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	fmt.Fprintf(eout, "fnSyndRecieve() not implemented\n")
 	return 1
 }
 
@@ -1462,7 +1986,7 @@ func main() {
 
 	vRead = app.NewVerb("read", "read a JSON object from key(s)", fnRead)
 	vRead.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
-	vRead.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
+	vRead.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
 
 	vUpdate = app.NewVerb("update", "update a JSON object", fnUpdate)
 	vUpdate.AddParams("COLLECTION", "KEY", "[JSON_SRC]")
@@ -1511,21 +2035,50 @@ func main() {
 	vPrune.AddParams("COLLECTION", "KEY", "[FILENAMES]")
 	vPrune.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
-	// Import/export collections from/into tables
-	vImport = app.NewVerb("import", "import a table (CSV, GSheet) as JSON bject into a collection", fnImport)
-	vImport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "[RANGE]", "[KEY_COLUMN_NO]")
-	vImport.StringVar(&clientSecretFName, "client-secret", "", "(import from GSheet) set the client secret path and filename for GSheet access")
-	vImport.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON object")
-	vExport = app.NewVerb("export", "export a table (CSV, GSheet) from a collection of JSON objects", fnExport)
-	vExport.StringVar(&clientSecretFName, "client-secret", "", "(export into a GSheet) set the client secret path and filename for GSheet access")
+	// Frames and Grid
+	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
+	vGrid.AddParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
+	vGrid.BoolVar(&useAllKeys, "a,all", false, "use all keys in a collection")
+	vGrid.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
+	vGrid.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in grid")
+	vGrid.IntVar(&sampleSize, "s,sample", sampleSize, "make grid based on a key sample of a given size")
+	vGrid.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for grid generation")
+	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
-	// Sync send/receive collections from/to tables
-	vSyncSend = app.NewVerb("sync-send", "sync a collection using a data frame sending data to a table (e.g. CSV, GSheet)", fnSyncSend)
-	vSyncSend.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
-	vSyncSend.StringVar(&clientSecretFName, "client-secret", "", "(sync-send to a GSheet) set the client secret path and filename for GSheet access")
-	vSyncRecieve = app.NewVerb("sync-recieve", "sync a collection using a data frame with recieve data from a table (e.g. CSV, GSheet)", fnSyncRecieve)
-	vSyncRecieve.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
-	vSyncRecieve.StringVar(&clientSecretFName, "client-secret", "", "(sync-receive from a GSheet) set the client secret path and filename for GSheet access")
+	vFrame = app.NewVerb("frame", "create or retrieve a data frame", fnFrame)
+	vFrame.AddParams("COLLECTION", "FRAME_NAME", "[DOTPATH]", "[DOTPATH ...]")
+	vFrame.BoolVar(&useAllKeys, "a,all", false, "use all keys in collection")
+	vFrame.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
+	vFrame.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in frame")
+	vFrame.IntVar(&sampleSize, "s,sample", sampleSize, "make frame based on a key sample of a given size")
+	vFrame.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for frame generation")
+	vFrame.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
+
+	// NOTE: Labels are used with sync-send/sync-receive to map dotpaths to column names
+	vFrameLabels = app.NewVerb("frame-labels", "set labels for all columns in a frame", fnFrameLabels)
+	vFrameLabels.AddParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
+
+	// NOTE: Types are used  when defining search indexes
+	vFrameTypes = app.NewVerb("frame-types", "set the types for all columns in a frame", fnFrameTypes)
+	vFrameTypes.AddParams("COLLECTION", "FRAME_NAME", "TYPE", "[TYPE ...]")
+
+	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
+	vReframe.AddParams("COLLECTION", "FRAME_NAME")
+	vReframe.BoolVar(&useAllKeys, "a,all", false, "update frame using all keys in collection")
+	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
+	vReframe.StringVar(&filterExpr, "filter", "", "apply and replace filter expression")
+	vReframe.IntVar(&sampleSize, "s,sample", sampleSize, "reframe based on a key sample of a given size")
+	vReframe.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
+	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
+
+	vFrames = app.NewVerb("frames", "list frames in a collection", fnFrames)
+	vFrames.AddParams("COLLECTION")
+
+	vHasFrame = app.NewVerb("hasframe", "see if a frame has been defined", fnHasFrame)
+	vHasFrame.AddParams("COLLECTION", "FRAME_NAME")
+
+	vFrameDelete = app.NewVerb("delete-frame", "delete a frame from a collection", fnFrameDelete)
+	vFrameDelete.AddParams("COLLECTION", "FRAME_NAME")
 
 	// Search and indexing
 	vFind = app.NewVerb("find", "find a JSON object base on a dot path and value", fnFind)
@@ -1544,32 +2097,27 @@ func main() {
 	vIndexer = app.NewVerb("indexer", "index a JSON object in a collection", fnIndexer)
 	vIndexer.AddParams("COLLECTION", "INDEX_NAME", "INDEX_MAP_FILE")
 	vIndexer.IntVar(&batchSize, "batch,size", 100, "set the number of records per response")
+	vIndexer.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vDeindexer = app.NewVerb("deindex", "remove a JSON object from an index", fnDeindexer)
 	vDeindexer.AddParams("INDEX_NAME", "KEY")
 	//vDeindexer.IntVar(&batchSize, "batch,size", 100, "set the number of records per response")
 
-	// Frames and Grid
-	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
-	vGrid.AddParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
-	vGrid.StringVar(&inputFName, "i,input", "", "read keys list, one per line, from a file")
-	vGrid.IntVar(&sampleSize, "sample", sampleSize, "make grid from sample of given size")
-	vGrid.BoolVar(&showVerbose, "verbose", showVerbose, "verbose reporting for grid generation")
-	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
+	// Import/export collections from/into tables
+	vImport = app.NewVerb("import", "import from a table (CSV, GSheet) into a collection of JSON objects", fnImport)
+	vImport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "[RANGE]", "[KEY_COLUMN_NO]")
+	vImport.StringVar(&clientSecretFName, "client-secret", "", "(import from GSheet) set the client secret path and filename for GSheet access")
+	vImport.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON object")
+	vExport = app.NewVerb("export", "export into a table (CSV, GSheet) from a collection of JSON objects", fnExport)
+	vExport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "[RANGE]", "[KEY_COLUMN_NO]")
+	vExport.StringVar(&clientSecretFName, "client-secret", "", "(export into a GSheet) set the client secret path and filename for GSheet access")
 
-	vFrame = app.NewVerb("frame", "create a data frame", fnFrame)
-	vFrame.AddParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
-	vFrame.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
-	vFrames = app.NewVerb("frames", "list frames in a collection", fnFrames)
-	vFrames.AddParams("COLLECTION")
-	vReframe = app.NewVerb("reframe", "re-create an existing frame", fnReframe)
-	vReframe.AddParams("COLLECTION", "FRAME_NAME")
-	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
-	vFrameLabels = app.NewVerb("frame-labels", "set labels for all columns in a frame", fnFrameLabels)
-	vFrameLabels.AddParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
-	vFrameTypes = app.NewVerb("frame-types", "set the types for all columns in a frame", fnFrameTypes)
-	vFrameTypes.AddParams("COLLECTION", "FRAME_NAME", "TYPE", "[TYPE ...]")
-	vFrameDelete = app.NewVerb("delete-frame", "delete a frame from a collection", fnFrameDelete)
-	vFrameDelete.AddParams("COLLECTION", "FRAME_NAME")
+	// Synchronize (send/receive) collections of objects with tables using frames
+	vSyncSend = app.NewVerb("sync-send", "sync a frame of objects sending data to a table (e.g. CSV, GSheet)", fnSyncSend)
+	vSyncSend.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
+	vSyncSend.StringVar(&clientSecretFName, "client-secret", "", "(sync-send to a GSheet) set the client secret path and filename for GSheet access")
+	vSyncRecieve = app.NewVerb("sync-recieve", "sync a frame of objects recieving data from a table (e.g. CSV, GSheet)", fnSyncRecieve)
+	vSyncRecieve.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
+	vSyncRecieve.StringVar(&clientSecretFName, "client-secret", "", "(sync-receive from a GSheet) set the client secret path and filename for GSheet access")
 
 	// We're ready to process args
 	app.Parse()
