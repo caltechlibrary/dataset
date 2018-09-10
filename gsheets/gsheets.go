@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	// Google Sheets packages
 	"golang.org/x/net/context"
@@ -94,6 +95,34 @@ func saveToken(file string, token *oauth2.Token) {
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
+}
+
+// ColNoToColLetters converts a zero based column index to a spreadsheet
+// style letter sequence (e.g. 0 -> A, 26 -> AB, 52 -> BA, ..)
+// If colNo is legative then an empty string is returned.
+func ColNoToColLetters(colNo int) string {
+	alpha := []string{
+		"A", "B", "C", "D", "E",
+		"F", "G", "H", "I", "J",
+		"K", "L", "M", "N", "O",
+		"P", "Q", "R", "S", "T",
+		"U", "V", "W", "X", "Y",
+		"Z",
+	}
+	c := len(alpha)
+	out := []string{}
+	i := colNo
+	m := 0
+	for i >= 0 {
+		if i < c {
+			out = append([]string{alpha[i]}, out...)
+			break
+		}
+		m = i % c
+		i = (i - c) / c
+		out = append([]string{alpha[m]}, out...)
+	}
+	return strings.Join(out, "")
 }
 
 func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([][]string, error) {

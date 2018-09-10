@@ -37,7 +37,7 @@ import (
 	// CaltechLibrary Packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/gsheet"
+	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/shuffle"
 	//"github.com/caltechlibrary/storage"
@@ -61,7 +61,6 @@ var (
 	// App Specific Options
 	collectionName    string
 	useHeaderRow      bool
-	useUUID           bool
 	showVerbose       bool
 	sampleSize        int
 	clientSecretFName string
@@ -284,9 +283,6 @@ func createJSONDoc(params ...string) (string, error) {
 	m := map[string]interface{}{}
 	if err := json.Unmarshal(src, &m); err != nil {
 		return "", fmt.Errorf("%s must be a valid JSON Object", key)
-	}
-	if useUUID == true {
-		m["_UUID"] = key
 	}
 	if overwrite == true && collection.HasKey(key) == true {
 		if err := collection.Update(key, m); err != nil {
@@ -822,7 +818,7 @@ func importCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, showVerbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, idCol, useHeaderRow, overwrite, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't import CSV, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
@@ -864,7 +860,7 @@ func importGSheet(params ...string) (string, error) {
 		return "", err
 	}
 
-	if linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, showVerbose); err != nil {
+	if linesNo, err := collection.ImportTable(table, idCol, useHeaderRow, overwrite, showVerbose); err != nil {
 		return "", fmt.Errorf("Errors importing %s, %s", sheetName, err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)
@@ -1002,7 +998,12 @@ func exportCSV(params ...string) (string, error) {
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, showVerbose); err != nil {
+	frame := new(dataset.DataFrame)
+	frame.AllKeys = true
+	frame.FilterExpr = filterExpr
+	frame.DotPaths = dotExprs
+	frame.Labels = colNames
+	if linesNo, err := collection.ExportCSV(fp, os.Stderr, frame, showVerbose); err != nil {
 		return "", fmt.Errorf("Can't export CSV, %s", err)
 	} else if showVerbose == true {
 		log.Printf("%d total rows processed", linesNo)

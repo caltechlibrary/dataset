@@ -336,10 +336,10 @@ func (c *Collection) Length() int {
 
 // ImportCSV takes a reader and iterates over the rows and imports them as
 // a JSON records into dataset.
-func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
+func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, overwrite bool, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
-		jsonFName  string
+		key        string
 		err        error
 	)
 	r := csv.NewReader(buf)
@@ -365,13 +365,13 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 {
-			jsonFName = fmt.Sprintf("%d", lineNo)
+			key = fmt.Sprintf("%d", lineNo)
 		}
 		for i, val := range row {
 			if i < len(fieldNames) {
 				fieldName = fieldNames[i]
 				if idCol == i {
-					jsonFName = val
+					key = val
 				}
 			} else {
 				fieldName = fmt.Sprintf("col_%d", i+1)
@@ -385,9 +385,16 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 				record[fieldName] = val
 			}
 		}
-		err = c.Create(jsonFName, record)
-		if err != nil {
-			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		if overwrite == true && c.HasKey(key) == true {
+			err = c.Update(key, record)
+			if err != nil {
+				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+			}
+		} else {
+			err = c.Create(key, record)
+			if err != nil {
+				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+			}
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
 			log.Printf("%d rows processed", lineNo)
@@ -396,9 +403,9 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 	return lineNo, nil
 }
 
-// ImportTable takes a [][]string and iterates over the rows and imports them as
-// a JSON records into dataset.
-func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID, overwrite, verboseLog bool) (int, error) {
+// ImportTable takes a [][]string and iterates over the rows and
+// imports them as a JSON records into dataset.
+func (c *Collection) ImportTable(table [][]string, idCol int, skipHeaderRow bool, overwrite, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
 		key        string
@@ -490,12 +497,19 @@ func colToString(cell interface{}) string {
 	return s
 }
 
-// ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
-func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	keys, err := c.KeyFilter(c.Keys(), filterExpr)
+// ExportCSV takes a reader and frame and iterates over the objects
+// generating rows and exports then as a CSV file
+func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verboseLog bool) (int, error) {
+	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
+	if f.AllKeys == true {
+		f.Keys = c.Keys()
+	}
+	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
 	if err != nil {
 		return 0, err
 	}
+	dotExpr := f.DotPaths
+	colNames := f.Labels
 
 	// write out colNames
 	w := csv.NewWriter(fp)
@@ -551,16 +565,73 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	return cnt, nil
 }
 
+// ExportTable takes a reader and frame and iterates over the objects
+// generating rows and exports then as a CSV file
+func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) (int, [][]interface{}, error) {
+	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
+	if f.AllKeys == true {
+		f.Keys = c.Keys()
+	}
+	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
+	if err != nil {
+		return 0, nil, err
+	}
+	dotExpr := f.DotPaths
+	colNames := f.Labels
+
+	var (
+		cnt           int
+		row           []interface{}
+		readErrors    int
+		dotpathErrors int
+	)
+	table := [][]interface{}{}
+	// Copy column names to table
+	for _, colName := range colNames {
+		table[0] = append(table[0], colName)
+	}
+	for _, key := range keys {
+		data := map[string]interface{}{}
+		if err := c.Read(key, data); err == nil {
+			// write row out.
+			row = []interface{}{}
+			for _, colPath := range dotExpr {
+				col, err := dotpath.Eval(colPath, data)
+				if err == nil {
+					row = append(row, col)
+				} else {
+					if verboseLog == true {
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.Name, err)
+					}
+					dotpathErrors++
+					row = append(row, nil)
+				}
+			}
+			table = append(table, row)
+			cnt++
+			data = nil
+		} else {
+			log.Printf("error reading %s %q, %s\n", c.Name, key, err)
+			readErrors++
+		}
+	}
+	if (readErrors > 0 || dotpathErrors > 0) && verboseLog == true {
+		log.Printf("warning %d read error, %d dotpath errors in table export from %s", readErrors, dotpathErrors, c.Name)
+	}
+	return cnt, table, nil
+}
+
 // KeyFilter takes a list of keys and  filter expression and returns the list of keys passing
 // through the filter or an error
 func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
-	// Handle the trivial case of filter == "true"
-	if filterExpr == "true" {
+	// Handle the trivial case of filter resolving to true
+	// NOTE: empty filter is treated as "true"
+	if filterExpr == "true" || filterExpr == "" {
 		return keyList, nil
 	}
 
 	// Some sort of filter is involved
-	f, err := tmplfn.ParseFilter(filterExpr)
+	filter, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
 		return nil, err
 	}
@@ -571,7 +642,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 		if len(key) > 0 {
 			m := map[string]interface{}{}
 			if err := c.Read(key, m); err == nil {
-				if ok, err := f.Apply(m); err == nil && ok == true {
+				if ok, err := filter.Apply(m); err == nil && ok == true {
 					keys = append(keys, key)
 				}
 			}
