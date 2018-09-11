@@ -28,7 +28,7 @@ import (
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/gsheet"
+	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/tmplfn"
 )
@@ -555,7 +555,7 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, verbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, idCol, useHeaderRow, verbose); err != nil {
 		error_dispatch(err, "Can't import CSV, %s", err)
 		return C.int(0)
 	} else {

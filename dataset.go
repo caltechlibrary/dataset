@@ -654,7 +654,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // Clone copies the current collection records into a newly initialized collection given a list of keys
 // and new collection name. Returns an error value if there is a problem. Clone does NOT copy
 // attachments, only the JSON records.
-func (c *Collection) Clone(keys []string, cloneName string) error {
+func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error {
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
@@ -663,6 +663,7 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 	if err != nil {
 		return err
 	}
+	i := 0
 	for _, key := range keys {
 		src, err := c.ReadJSON(key)
 		if err != nil {
@@ -672,6 +673,13 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 		if err != nil {
 			return err
 		}
+		i++
+		if verbose && (i%100) == 0 {
+			log.Printf("%d objects processed\n", i)
+		}
+	}
+	if verbose {
+		log.Printf("%d total objects processed\n", i)
 	}
 	return nil
 }
@@ -683,11 +691,13 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 //
 // If the test collection name is not an empty string it will be created and any records not in the training
 // collection will be cloned from the current collection into the test collection.
-func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, testCollectionName string) error {
+func (c *Collection) CloneSample(trainingCollectionName string, testCollectionName string, keys []string, sampleSize int, verbose bool) error {
 	if sampleSize < 1 {
 		return fmt.Errorf("sample size should be greater than zero")
 	}
-	keys := c.Keys()
+	if len(keys) == 0 {
+		keys = c.Keys()
+	}
 	if sampleSize >= len(keys) {
 		return fmt.Errorf("sample size too big, %s has %d keys", c.Name, len(keys))
 	}
@@ -698,12 +708,12 @@ func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	shuffle.Strings(keys, random)
 	trainingKeys := keys[0:sampleSize]
-	if err := c.Clone(trainingKeys, trainingCollectionName); err != nil {
+	if err := c.Clone(trainingCollectionName, trainingKeys, verbose); err != nil {
 		return err
 	}
 	if len(testCollectionName) > 0 {
 		testKeys := keys[sampleSize:]
-		if err := c.Clone(testKeys, testCollectionName); err != nil {
+		if err := c.Clone(testCollectionName, testKeys, verbose); err != nil {
 			return err
 		}
 	}

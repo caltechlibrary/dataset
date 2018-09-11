@@ -317,7 +317,8 @@ func TestCloneSample(t *testing.T) {
 		cnt := c.Length()
 		trainingSize := 4
 		testSize := cnt - trainingSize
-		if err := c.CloneSample(trainingSize, trainingName, testName); err != nil {
+		keys := c.Keys()
+		if err := c.CloneSample(trainingName, testName, keys, trainingSize, false); err != nil {
 			t.Errorf("Failed to create samples %s (%d) and %s, %s", trainingName, trainingSize, testName, err)
 		}
 		training, err := Open(trainingName)
@@ -340,7 +341,7 @@ func TestCloneSample(t *testing.T) {
 			t.Errorf("Expected %d, got %d for %s", testSize, test.Length(), testName)
 		}
 
-		keys := c.Keys()
+		keys = c.Keys()
 		for _, key := range keys {
 			switch {
 			case training.HasKey(key) == true:

@@ -72,7 +72,7 @@ func TestBleveMapIndexingSearch(t *testing.T) {
 			t.FailNow()
 		}
 
-		lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
+		lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
 		if err != nil {
 			t.Errorf("Error import csvtable, %s", err)
 			t.FailNow()
@@ -138,7 +138,7 @@ func TestIndexingSearch(t *testing.T) {
 			t.FailNow()
 		}
 
-		lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
+		lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
 		if err != nil {
 			t.Errorf("Error import csvtable, %s", err)
 			t.FailNow()

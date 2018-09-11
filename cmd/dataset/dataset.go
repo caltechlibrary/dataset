@@ -1264,7 +1264,7 @@ func clone(params ...string) (string, error) {
 		return "", err
 	}
 	keys := strings.Split(strings.TrimSpace(fmt.Sprintf("%s", src)), "\n")
-	err = c.Clone(keys, dName)
+	err = c.Clone(dName, keys, showVerbose)
 	if err != nil {
 		return "", err
 	}
@@ -1297,7 +1297,8 @@ func cloneSample(params ...string) (string, error) {
 		return "", err
 	}
 	defer c.Close()
-	err = c.CloneSample(size, trainingName, testName)
+	keys := c.Keys()
+	err = c.CloneSample(trainingName, testName, keys, size, showVerbose)
 	if err != nil {
 		return "", err
 	}
