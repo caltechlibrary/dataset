@@ -166,7 +166,7 @@ go_clone.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_clone.restype = ctypes.c_int
 
 go_clone_sample = lib.clone_sample
-go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_char_p]
+go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int ]
 go_clone_sample.restype = ctypes.c_int
 
 go_grid = lib.grid
@@ -416,16 +416,16 @@ def find(index_names, query_string, options = {}):
     return json.loads(rval), err
 
 
-def import_csv(collection_name, csv_name, id_col, use_header_row = True, use_uuid = False):
+def import_csv(collection_name, csv_name, id_col, use_header_row = True, overwrite = False):
     if use_header_row == True:
         i_use_header_row = 1
     else:
         i_use_header_row = 0
-    if use_uuid == True:
-        i_use_uuid = 1
+    if overwrite == True:
+        i_overwrite = 1
     else:
-        i_use_uuid = 0
-    ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctyles.c_int(i_use_uuid))
+        i_overwrite = 0
+    ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctyles.c_int(i_overwrite))
     if ok == 1:
         return ''
     return error_message()
@@ -438,21 +438,17 @@ def export_csv(collection_name, csv_name, filter_expr = 'true', dot_exprs = [], 
         return ''
     return error_message()
 
-def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col, use_header_row = True, use_uuid = False, overwrite = True):
+def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col, use_header_row = True, overwrite = True):
     if use_header_row == True:
         i_use_header_row = 1
     else:
         i_use_header_row = 0
-    if use_uuid == True:
-        i_use_uuid = 1
-    else:
-        i_use_uuid = 0
     if overwrite == True:
         i_overwrite = 1
     else:
         i_overwrite = 0
 
-    ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctypes.c_int(i_use_uuid), ctypes.c_int(i_overwrite))
+    ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctypes.c_int(i_overwrite))
     if ok == 1:
         return ''
     return error_message()
@@ -538,8 +534,8 @@ def clone(collection_name, keys, destination_name):
         return ''
     return error_message()
 
-def clone_sample(collection_name, sample_size, training_name, test_name = ""):
-    ok = go_clone_sample(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_int(sample_size), ctypes.c_char_p(training_name.encode('utf-8')), ctypes.c_char_p(test_name.encode('utf-8')))
+def clone_sample(collection_name, training_name, test_name = "", sample_size = 0):
+    ok = go_clone_sample( ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(training_name.encode('utf-8')), ctypes.c_char_p(test_name.encode('utf-8')), ctypes.c_int(sample_size))
     if ok == 1:
         return ''
     return error_message()

@@ -568,7 +568,7 @@ def test_issue43(t, collection_name, csv_name):
     dataset.use_strict_dotpath(False)
     err = dataset.export_csv(collection_name, csv_name, "true", ["._Key",".c1",".c2",".c3",".c4"])
     if err != '':
-       t.error(f'csv_export({collection_name}, {csv_name} should have emitted warnings, not error')
+       t.error(f'export_csv({collection_name}, {csv_name} should have emitted warnings, not error')
        return
     with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
         rows = f.read()
@@ -585,7 +585,7 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
         shutil.rmtree(training_name)
     if os.path.exists(test_name):
         shutil.rmtree(test_name)
-    err = dataset.clone_sample(c_name, sample_size, training_name, test_name)
+    err = dataset.clone_sample(c_name, training_name, test_name, sample_size)
     if err != '':
         t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
 

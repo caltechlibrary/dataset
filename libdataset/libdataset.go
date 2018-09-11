@@ -525,13 +525,13 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 }
 
 //export import_csv
-func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cUseUUID C.int) C.int {
+func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	// Covert options
 	collectionName := C.GoString(cName)
 	csvFName := C.GoString(cCSVFName)
 	idCol := int(cIDCol)
 	useHeaderRow := (int(cUseHeaderRow) == 1)
-	useUUID := (int(cUseUUID) == 1)
+	overwrite := (int(cOverwrite) == 1)
 
 	error_clear()
 	collection, err := dataset.Open(collectionName)
@@ -555,7 +555,7 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ImportCSV(fp, idCol, useHeaderRow, verbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose); err != nil {
 		error_dispatch(err, "Can't import CSV, %s", err)
 		return C.int(0)
 	} else {
@@ -604,7 +604,12 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 	}
 	defer fp.Close()
 
-	linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, verbose)
+	frame := new(dataset.DataFrame)
+	frame.FilterExpr = filterExpr
+	frame.DotPaths = dotExprs
+	frame.Labels = colNames
+
+	linesNo, err := collection.ExportCSV(fp, os.Stderr, frame, verbose)
 	if err != nil {
 		error_dispatch(err, "Can't export CSV, %s", err)
 		return C.int(0)
@@ -614,7 +619,7 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 }
 
 //export import_gsheet
-func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C.char, cIDCol C.int, cUseHeaderRow C.int, cUseUUID C.int, cOverwrite C.int) C.int {
+func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	collectionName := C.GoString(cName)
 	clientSecretJSON := C.GoString(cClientSecretJSON)
 	sheetID := C.GoString(cSheetID)
@@ -622,7 +627,6 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 	cellRange := C.GoString(cCellRange)
 	idCol := int(cIDCol)
 	useHeaderRow := (C.int(cUseHeaderRow) == 1)
-	useUUID := (C.int(cUseUUID) == 1)
 	overwrite := (C.int(cOverwrite) == 1)
 
 	error_clear()
@@ -642,7 +646,7 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 		return C.int(0)
 	}
 
-	linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, verbose)
+	linesNo, err := collection.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		error_dispatch(err, "Errors importing %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
@@ -991,7 +995,7 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 		error_dispatch(err, "Can't unmarshal keys, %s", err)
 		return C.int(0)
 	}
-	err = c.Clone(keys, destName)
+	err = c.Clone(destName, keys, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -1000,7 +1004,7 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 }
 
 //export clone_sample
-func clone_sample(cName *C.char, cSampleSize C.int, cTrainingName *C.char, cTestName *C.char) C.int {
+func clone_sample(cName *C.char, cTrainingName *C.char, cTestName *C.char, cSampleSize C.int) C.int {
 	collectionName := C.GoString(cName)
 	sampleSize := int(cSampleSize)
 	trainingName := C.GoString(cTrainingName)
@@ -1013,7 +1017,8 @@ func clone_sample(cName *C.char, cSampleSize C.int, cTrainingName *C.char, cTest
 		return C.int(0)
 	}
 	defer c.Close()
-	err = c.CloneSample(sampleSize, trainingName, testName)
+	keys := c.Keys()
+	err = c.CloneSample(trainingName, testName, keys, sampleSize, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
