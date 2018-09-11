@@ -3,6 +3,8 @@
 
 ## Bugs
 
++ [ ] We have a regression in support S3 buckets, might actually be a problem with check and types, need to investigate
+
 ## Next (prep for v0.1.0)
 
 + [ ] sync command needs to be implemented for GSheet but also csv/Excel interactions
