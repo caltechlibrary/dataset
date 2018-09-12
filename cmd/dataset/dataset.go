@@ -19,6 +19,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -82,33 +84,33 @@ a collection using the command line dataset tool.
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    dataset friends.ds read frieda
+    dataset read friends.ds frieda
 
     # Path to JSON document
-    dataset friends.ds path frieda
+    dataset path friends.ds frieda
 
     # Update a JSON document
-    dataset friends.ds update frieda '{"name":"frieda","email":"frieda@zbs.example.org", "count": 2}'
+    dataset update friends.ds frieda '{"name":"frieda","email":"frieda@zbs.example.org", "count": 2}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    dataset friends.ds keys
+    dataset keys friends.ds
 
     # Get keys filtered for the name "frieda"
-    dataset friends.ds keys '(eq .name "frieda")'
+    dataset keys friends.ds '(eq .name "frieda")'
 
     # Join frieda-profile.json with "frieda" adding unique key/value pairs
-    dataset friends.ds join append frieda frieda-profile.json
+    dataset join friends.ds frieda frieda-profile.json
 
     # Join frieda-profile.json overwriting in commont key/values adding unique key/value pairs
     # from frieda-profile.json
-    dataset friends.ds join -overwrite frieda frieda-profile.json
+    dataset join -overwrite friends.ds frieda frieda-profile.json
 
     # Delete a JSON document
-    dataset friends.ds delete frieda
+    dataset delete friends.ds frieda
 
     # Import data from a CSV file using column 1 as key
-    dataset -quiet -nl=false friends.ds import my-data.csv 1
+    dataset import friends.ds my-data.csv 1
 
     # To remove the collection just use the Unix shell command
     rm -fR friends.ds
@@ -153,7 +155,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	showVerbose      bool
 
 	// Application Options
-	collectionName    string
+	collectionName string
+	// NOTE: setAllKeys is used by Reframe,
+	// Reframe to explicitly set the Frame.AllKeys value
+	setAllKeys string
+	// One time use of all keys to create a Frame
 	useAllKeys        bool
 	useHeaderRow      bool
 	clientSecretFName string
@@ -704,34 +710,13 @@ func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		fmt.Fprintf(eout, "%s must be a valid JSON Object", key)
 		return 1
 	}
-	// Get existing object
-	obj := map[string]interface{}{}
-	err = c.Read(key, obj)
+	// Join the object
+	err = c.Join(key, newObj, overwrite)
 	if err != nil {
-		fmt.Fprintf(eout, "%s", err)
+		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 
-	// Merge object (e.g. append or overwrite)
-	if overwrite {
-		// Replace attributes
-		for k, v := range newObj {
-			obj[k] = v
-		}
-	} else {
-		// Only append new attributes
-		for k, v := range newObj {
-			if _, hasKey := obj[k]; hasKey == false {
-				obj[k] = v
-			}
-		}
-	}
-
-	// Update object
-	if err := c.Update(key, obj); err != nil {
-		fmt.Fprintf(eout, "failed to join %s in %s, %s\n", key, collectionName, err)
-		return 1
-	}
 	if quiet == false {
 		fmt.Fprint(out, "OK")
 	}
@@ -1505,6 +1490,18 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 
 	// Get all keys or read from inputFName
+	if setAllKeys != "" {
+		setAllKeys = strings.TrimSpace(setAllKeys)
+		switch strings.ToLower(setAllKeys) {
+		case "true":
+			useAllKeys = true
+		case "false":
+			useAllKeys = false
+		default:
+			fmt.Fprintf(eout, "-set-all-keys expectes 'true' or 'false'\n")
+			return 1
+		}
+	}
 	if useAllKeys {
 		keys = c.Keys()
 	}
@@ -1539,6 +1536,15 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		}
 	}
 
+	// Apply SortExpr to key order
+	if sortExpr != "" {
+		keys, err = c.KeySortByExpression(keys, sortExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+
 	// Run a sanity check before we create a new frame...
 	if len(dotPaths) == 0 {
 		fmt.Fprintf(eout, "No dotpaths, frame creation aborted\n")
@@ -1557,9 +1563,10 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 
 	// NOTE: Make need to make sure we save our additional
-	// settings - useAllKeys, sampleSize and filterExpr
+	// settings - useAllKeys, sampleSize, sortExpr and filterExpr
 	f.AllKeys = useAllKeys
 	f.FilterExpr = filterExpr
+	f.SortExpr = sortExpr
 	f.SampleSize = sampleSize
 
 	// Handle pretty printing
@@ -1872,8 +1879,22 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	// Update frame settings
 	frameUpdated = false
 
-	if useAllKeys {
-		f.AllKeys = true
+	if setAllKeys != "" {
+		setAllKeys = strings.TrimSpace(setAllKeys)
+		switch strings.ToLower(setAllKeys) {
+		case "true":
+			f.AllKeys = true
+		case "false":
+			f.AllKeys = false
+		default:
+			fmt.Fprintf(eout, "-set-all-keys value should be 'true' or 'false'")
+			return 1
+		}
+		frameUpdated = true
+	}
+
+	// Now we can rebuild frame...
+	if f.AllKeys || useAllKeys {
 		keys = c.Keys()
 		frameUpdated = true
 	} else {
@@ -1898,13 +1919,13 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 
 	// Apply Filter Expression
 	if len(filterExpr) > 0 {
-		frameUpdated = true
 		keys, err = c.KeyFilter(keys[:], filterExpr)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
 		f.FilterExpr = filterExpr
+		frameUpdated = true
 	}
 
 	// Apply Sample Size
@@ -1916,12 +1937,34 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 			keys = keys[0:sampleSize]
 		}
 		f.SampleSize = sampleSize
+		frameUpdated = true
+	}
+
+	// Apply SortExpr
+	if sortExpr != "" {
+		f.SortExpr = sortExpr
+		keys, err = c.KeySortByExpression(keys, sortExpr)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		frameUpdated = true
 	}
 
 	// NOTE: See if we are reading a frame back or define one.
 	if len(dotPaths) > 0 {
-		frameUpdated = true
 		f.DotPaths = dotPaths
+		frameUpdated = true
+	}
+
+	// Finally run some sanity checks before updating frame...
+	if len(f.DotPaths) == 0 {
+		fmt.Fprintf(eout, "Missing dotpaths in frame definition\n")
+		return 1
+	}
+	if len(keys) == 0 {
+		fmt.Fprintf(eout, "No keys available to update frame\n")
+		return 1
 	}
 
 	// Save the updated frame definition
@@ -2187,54 +2230,239 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 }
 
 // fnSyncSend - synchronize a frame sending data to a CSV file or GSheet
+// syntax: COLLECTION FRAME [CSV_FILENAME|GSHEET SHEET ID]
+//
 func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	// for GSheet: SHEET_ID SHEET_NAME FRAME_NAME
-	// for CSV: FILENAME FRAME_NAME
+	var (
+		collectionName string
+		frameName      string
+		csvFilename    string
+		gSheetID       string
+		gSheetName     string
+		cellRange      string
+		c              *dataset.Collection
+		src            []byte
+		err            error
+	)
 
-	// CSV specific processing
-	// If CSV file exits turn CSV contents into a [][]interevace{}{} and merge
-	// Else generate an empty [][]interface{}{}
-	// merge (overwrite) [][]interface{}{} with frame content
-	//       adding extra columns/rows if needed
-	// Write [][]interface{}{} out as a CSV file
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
 
-	// GSheet specific processing
-	// If GSheet exists get the sheet structure as a [][]interface{}{}
-	// Else generate an empty [][]intervace{}{}
-	// merge (overwrite) [][]interface{}{} with frame content
-	//       adding extra columns/rows if needed
-	// Write [][]interface{}{} out as a CSV file
+	switch len(args) {
+	case 0:
+		fmt.Fprintf(eout, "Missing collection name, frame name and csv filename or gsheet id and gsheet name\n")
+		return 1
+	case 1:
+		fmt.Fprintf(eout, "Missing frame name and csv filename or gsheet id with sheet name\n")
+		return 1
+	case 2:
+		collectionName, frameName = args[0], args[1]
+		if inputFName == "" {
+			fmt.Fprintf(eout, "Missing csv filename or gsheet id with sheet name\n")
+			return 1
+		}
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	case 3:
+		collectionName, frameName, csvFilename = args[0], args[1], args[2]
+		src, err = ioutil.ReadFile(csvFilename)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	case 4:
+		collectionName, frameName, gSheetID, gSheetName = args[0], args[1], args[2], args[3]
+		cellRange = "A1:Z"
+	case 5:
+		collectionName, frameName, gSheetID, gSheetName, cellRange = args[0], args[1], args[2], args[3], cellRange
+	default:
+		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
 
-	fmt.Fprintf(eout, "fnSyndSend() not implemented\n")
-	return 1
+	table := [][]string{}
+	// Populate table to sync
+	if len(src) > 0 {
+		// for CSV
+		r := csv.NewReader(bytes.NewReader(src))
+		table, err = r.ReadAll()
+	} else {
+		// for GSheet
+		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+		if clientSecretFName != "" {
+			clientSecretJSON = clientSecretFName
+		}
+		if clientSecretJSON == "" {
+			clientSecretJSON = "client_secret.json"
+		}
+		table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	// Merge collection content into table
+	table, err = c.MergeFrameIntoTable(frameName, table, overwrite, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	// Save the resulting table
+	if len(src) > 0 {
+		w := csv.NewWriter(out)
+		w.WriteAll(table)
+		err = w.Error()
+	} else {
+		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+		if clientSecretFName != "" {
+			clientSecretJSON = clientSecretFName
+		}
+		if clientSecretJSON == "" {
+			clientSecretJSON = "client_secret.json"
+		}
+		// NOTE: WriteSheet expects a [][]interface{} not [][]string,
+		// need to convert. This is a hack...
+		t := [][]interface{}{}
+		for _, row := range table {
+			cells := []interface{}{}
+			for _, cell := range row {
+				cells = append(cells, cell)
+			}
+			t = append(t, cells)
+		}
+		err = gsheets.WriteSheet(clientSecretJSON, gSheetID, gSheetName, cellRange, t)
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	if quiet == false {
+		fmt.Fprintf(out, "OK")
+	}
+	return 0
 }
 
 // fnSyncRecieve - synchronize a frame receiving data from a CSV file or GSheet
 func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	// for GSheet: SHEET_ID SHEET_NAME FRAME_NAME
-	// for CSV: FILENAME FRAME_NAME
+	var (
+		collectionName string
+		frameName      string
+		csvFilename    string
+		gSheetID       string
+		gSheetName     string
+		cellRange      string
+		c              *dataset.Collection
+		src            []byte
+		err            error
+	)
 
-	// Create an empty table ([][]interface{}{})
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
 
-	// if CSV processing
-	//    if CSV file exists read it into [][]interface{}{}
-	//    else return an error
+	switch len(args) {
+	case 0:
+		fmt.Fprintf(eout, "Missing collection name, frame name and csv filename or gsheet id and gsheet name\n")
+		return 1
+	case 1:
+		fmt.Fprintf(eout, "Missing frame name and csv filename or gsheet id with sheet name\n")
+		return 1
+	case 2:
+		collectionName, frameName = args[0], args[1]
+		if inputFName == "" {
+			fmt.Fprintf(eout, "Missing csv filename or gsheet id with sheet name\n")
+			return 1
+		}
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	case 3:
+		collectionName, frameName, csvFilename = args[0], args[1], args[2]
+		src, err = ioutil.ReadFile(csvFilename)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	case 4:
+		collectionName, frameName, gSheetID, gSheetName = args[0], args[1], args[2], args[3]
+		cellRange = "A1:Z"
+	case 5:
+		collectionName, frameName, gSheetID, gSheetName, cellRange = args[0], args[1], args[2], args[3], cellRange
+	default:
+		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
 
-	// if GSheet processing
-	//    if GSheet/sheet name exists
-	//        read into row with columns pos mapped to label positions
-	//        append row to table (i.e. [][]interface{}{})
-	//    else return an error
+	table := [][]string{}
+	// Populate table to sync
+	if len(src) > 0 {
+		// for CSV
+		r := csv.NewReader(bytes.NewReader(src))
+		table, err = r.ReadAll()
+	} else {
+		// for GSheet
+		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+		if clientSecretFName != "" {
+			clientSecretJSON = clientSecretFName
+		}
+		if clientSecretJSON == "" {
+			clientSecretJSON = "client_secret.json"
+		}
+		table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
 
-	// for each row in [][]interface{}{}
-	//     convert row into a JSON object mapping column position to dotpath
-	//     Look up JSON object
-	//     if JSON object is found
-	//     		JOIN object overwrite common attributes and add missing ones
-	//     else create a new JSON object
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
 
-	fmt.Fprintf(eout, "fnSyndRecieve() not implemented\n")
-	return 1
+	// Merge table contents into Collection and Frame
+	err = c.MergeFromTable(frameName, table, overwrite, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	if quiet == false {
+		fmt.Fprintf(out, "OK")
+	}
+	return 0
 }
 
 func fnIndexer(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
@@ -2902,10 +3130,12 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vFrame = app.NewVerb("frame", "create or retrieve a data frame", fnFrame)
-	vFrame.AddParams("COLLECTION", "FRAME_NAME", "[DOTPATH]", "[DOTPATH ...]")
-	vFrame.BoolVar(&useAllKeys, "a,all", false, "use all keys in collection")
+	vFrame.AddParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
+	vFrame.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
+	vFrame.StringVar(&setAllKeys, "set-all-keys", "", "set all keys for frame (persistant)")
 	vFrame.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
 	vFrame.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in frame")
+	vFrame.StringVar(&sortExpr, "sort", "", "apply sort expression for keys/grid in frame")
 	vFrame.IntVar(&sampleSize, "s,sample", sampleSize, "make frame based on a key sample of a given size")
 	vFrame.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for frame generation")
 	vFrame.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
@@ -2920,9 +3150,11 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
 	vReframe.AddParams("COLLECTION", "FRAME_NAME")
-	vReframe.BoolVar(&useAllKeys, "a,all", false, "update frame using all keys in collection")
+	vReframe.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
+	vReframe.StringVar(&setAllKeys, "set-all-keys", "", "set all keys for frame (persistant)")
 	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
 	vReframe.StringVar(&filterExpr, "filter", "", "apply and replace filter expression")
+	vReframe.StringVar(&sortExpr, "sort", "", "apply sort expression for keys/grid in frame")
 	vReframe.IntVar(&sampleSize, "s,sample", sampleSize, "reframe based on a key sample of a given size")
 	vReframe.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
 	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
@@ -2976,11 +3208,19 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// Synchronize (send/receive) collections of objects with tables using frames
 	vSyncSend = app.NewVerb("sync-send", "sync a frame of objects sending data to a table (e.g. CSV, GSheet)", fnSyncSend)
-	vSyncSend.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
+	vSyncSend.AddParams("COLLECTION", "FRAME_NAME", "[CSV_FILENAME|GSHEET_ID SHEET_NAME [CELL_RANGE]]")
 	vSyncSend.StringVar(&clientSecretFName, "client-secret", "", "(sync-send to a GSheet) set the client secret path and filename for GSheet access")
+	vSyncSend.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
+	vSyncSend.StringVar(&outputFName, "o,output", "", "write CSV content to a file")
+	vSyncSend.BoolVar(&overwrite, "O,overwrite", true, "overwrite existing cells in table")
+	vSyncSend.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
+
 	vSyncRecieve = app.NewVerb("sync-recieve", "sync a frame of objects recieving data from a table (e.g. CSV, GSheet)", fnSyncRecieve)
 	vSyncRecieve.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
 	vSyncRecieve.StringVar(&clientSecretFName, "client-secret", "", "(sync-receive from a GSheet) set the client secret path and filename for GSheet access")
+	vSyncRecieve.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
+	vSyncRecieve.BoolVar(&overwrite, "O,overwrite", true, "overwrite existing cells in frame")
+	vSyncRecieve.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
 	// We're ready to process args
 	app.Parse()

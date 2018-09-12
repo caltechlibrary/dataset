@@ -770,3 +770,30 @@ func CollectionLayout(p string) int {
 	}
 	return UNKNOWN_LAYOUT
 }
+
+// Join takes a key, a map[string]interface{}{} and overwrite bool
+// and merges the map with an existing JSON object in the collection.
+// BUG: This is a naive join, it assumes the keys in object are top
+// level properties.
+func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool) error {
+	if c.HasKey(key) == false {
+		return c.Create(key, obj)
+	}
+	record := map[string]interface{}{}
+	err := c.Read(key, record)
+	if err != nil {
+		return err
+	}
+
+	// Merge object
+	for k, v := range obj {
+		if overwrite == true {
+			record[k] = v
+		} else if _, hasProperty := record[k]; hasProperty == false {
+			record[k] = v
+		}
+	}
+
+	// Update record and return
+	return c.Update(key, record)
+}

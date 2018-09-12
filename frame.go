@@ -43,7 +43,8 @@ type DataFrame struct {
 
 	// NOTE: these values effect how Reframe works
 	AllKeys    bool   `json:"use_all_keys"`
-	FilterExpr string `json:"filter_expr"`
+	FilterExpr string `json:"filter_expr,omitempty"`
+	SortExpr   string `json:"sort_expr,omitempty"`
 	SampleSize int    `json:"sample_size"`
 
 	// Derived or explicitly set after creation
@@ -227,7 +228,13 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 		f.Labels = labels[:]
 	}
 	if len(keys) > 0 {
-		f.Keys = keys[:]
+		if len(f.SortExpr) > 0 {
+			keys, err = c.KeySortByExpression(keys, f.SortExpr)
+			if err != nil {
+				return err
+			}
+		}
+		f.Keys = keys
 	}
 	f.Updated = time.Now()
 	g, err := c.Grid(f.Keys, f.DotPaths, verbose)
