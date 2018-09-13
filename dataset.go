@@ -391,10 +391,14 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 			}
 		}
 		if len(key) > 0 {
-			if overwrite == true && c.HasKey(key) == true {
-				err = c.Update(key, record)
-				if err != nil {
-					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+			if c.HasKey(key) {
+				if overwrite == true {
+					err = c.Update(key, record)
+					if err != nil {
+						return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+					}
+				} else if verboseLog {
+					log.Printf("Skipping row %d, key %q, already exists", lineNo, key)
 				}
 			} else {
 				err = c.Create(key, record)
