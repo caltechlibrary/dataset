@@ -1,9 +1,36 @@
 package dataset
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
+
+	// Caltech Library Packages
+	"github.com/caltechlibrary/dotpath"
 )
+
+// normalizeValue - takes a interface{} and renders it as a string
+func normalizeValue(val interface{}) (string, error) {
+	switch val.(type) {
+	case string:
+		return val.(string), nil
+	case json.Number:
+		return val.(json.Number).String(), nil
+	case int:
+		return fmt.Sprintf("%d", val), nil
+	case int64:
+		return fmt.Sprintf("%d", val), nil
+	case float64:
+		return fmt.Sprintf("%f", val), nil
+	case rune:
+		return fmt.Sprintf("%s", val), nil
+	case byte:
+		return fmt.Sprintf("%d", val), nil
+	default:
+		return "", fmt.Errorf("unknown type conversion, %T", val)
+	}
+}
 
 // findLabel looks through an array of string for a specific label
 func findLabel(labels []string, label string) (int, bool) {
@@ -80,14 +107,115 @@ func rowToObj(key string, dotPathToCols map[string]int, row []string) map[string
 	return obj
 }
 
-// MergeFrameIntoTable - uses a DataFrame associated in the collection
+// hasKey takes a list of keys (string) and sees if key is in list
+func hasKey(keys []string, key string) bool {
+	for _, item := range keys {
+		if item == key {
+			return true
+		}
+	}
+	return false
+}
+
+// MergeIntoTable - uses a DataFrame associated in the collection
 // to map attributes into table appending new content and optionally
 // overwriting existing content for rows with matching ids. Returns
 // a new table (i.e. [][]string) or error.
-func (c *Collection) MergeFrameIntoTable(frameName string, table [][]string, overwrite bool, verbose bool) ([][]string, error) {
-	// MergeFrameIntoTable (overwrite) [][]interface{}{} with frame content
-	//       adding extra columns/rows if needed
-	return nil, fmt.Errorf("c.MergeFrameIntoTable() not implemented")
+func (c *Collection) MergeIntoTable(frameName string, table [][]string, overwrite bool, verbose bool) ([][]string, error) {
+	// Build Map dotpath to column position
+	//
+	// For each data row of table (i.e. row 1 through last row)
+	//    get ID value
+	//    if has ID && overwrite == true then replace cells values
+	//    else save id for append to table
+	// Update table
+	f, err := c.getFrame(frameName)
+	if err != nil {
+		return table, err
+	}
+	m, err := dotPathToColumnMap(f, table)
+	if err != nil {
+		return table, err
+	}
+	keyCol, _ := m["._Key"]
+	key := ""
+	tableKeys := []string{}
+	for i, row := range table {
+		//NOTE: we skip the header row
+		if i == 0 {
+			continue
+		}
+		// Get ID from row
+		if keyCol < len(row) {
+			key = row[keyCol]
+			// collect the tables' row keys
+			tableKeys = append(tableKeys, key)
+		} else {
+			key = ""
+		}
+		if key == "" {
+			if verbose {
+				log.Printf("skipping row %d, no key found in column %d", i, keyCol)
+			}
+			continue
+		}
+		if c.HasKey(key) {
+			obj := map[string]interface{}{}
+			err := c.Read(key, obj)
+			if err != nil {
+				return table, fmt.Errorf("Can't read %s from row %d in collection", key, i)
+			}
+			// For each row replace cells in dotPath map to column number
+			for p, j := range m {
+				// Pad cells in row if necessary
+				for j >= len(row) {
+					row = append(row, "")
+				}
+				val, err := dotpath.Eval(p, obj)
+				if err == nil {
+					cell, err := normalizeValue(val)
+					if err == nil {
+						row[j] = string(cell)
+					} else if verbose {
+						log.Printf("skipping row %d, column %d, can't convert value %+v", i, j, val)
+					}
+				}
+			}
+			// update row in table
+			table[i] = row
+		} else if verbose {
+			log.Printf("skipping row %d, key %s not found in collection %s", i, key, c.Name)
+		}
+	}
+	// Append rows to table if needed
+	for _, key := range f.Keys {
+		if hasKey(tableKeys, key) == false {
+			obj := map[string]interface{}{}
+			err = c.Read(key, obj)
+			if err != nil {
+				return table, fmt.Errorf("failed to read %q in %s, %s\n", key, c.Name, err)
+			}
+			row := []string{}
+			// For each row replace cells in dotPath map to column number
+			for p, j := range m {
+				val, err := dotpath.Eval(p, obj)
+				if err == nil {
+					// Pad cells in row if necessary
+					for j >= len(row) {
+						row = append(row, "")
+					}
+					cell, err := normalizeValue(val)
+					if err == nil {
+						row[j] = string(cell)
+					} else if verbose {
+						log.Printf("skipping row %d, column %d, can't convert value %+v", len(table), j, val)
+					}
+				}
+			}
+			table = append(table, row)
+		}
+	}
+	return table, nil
 }
 
 // MergeFromTable - uses a DataFrame associated in the collection

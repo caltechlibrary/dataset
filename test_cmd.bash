@@ -187,7 +187,8 @@ function test_issue19() {
 	# Now try creating the record again without -overwrite
     echo "NOTE: expecting an error message on next line"
 	bin/dataset -nl=false -quiet create testdata/test_issue19.ds freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
-	if [[ "$?" == "0" ]]; then
+	if [[ "$?" != "1" ]]; then
+        echo "Expected return value 1, got $?"
 		echo "Failed, should NOT be able to create the record when it exists in a collection without -overwrite"
 		exit 1
 	fi

@@ -325,7 +325,6 @@ func (c *Collection) Keys() []string {
 // HasKey returns true if key is in collection's KeyMap, false otherwise
 func (c *Collection) HasKey(key string) bool {
 	_, hasKey := c.KeyMap[key]
-	//FIXME: if pairtree then we can also check by calculating the path and checking the storage system.
 	return hasKey
 }
 

@@ -90,6 +90,9 @@ func (c *Collection) setFrame(key string, f *DataFrame) error {
 			return err
 		}
 	}
+	// Sanity check on frameName and collectionName
+	f.CollectionName = c.Name
+	f.Name = key
 
 	// render DataFrame to JSON for storage
 	src, err := json.Marshal(f)

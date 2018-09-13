@@ -156,14 +156,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	// Application Options
 	collectionName string
-	// NOTE: setAllKeys is used by Reframe,
-	// Reframe to explicitly set the Frame.AllKeys value
-	setAllKeys string
-	// One time use of all keys to create a Frame
+	// NOTE: setAllKeys is used by Reframe to persist an useAllKeys value
+	setAllKeys bool
+	// One time use of all keys in grid, a newly created Frame or Reframe
 	useAllKeys        bool
 	useHeaderRow      bool
 	clientSecretFName string
 	overwrite         bool
+	syncOverwrite     bool
 	batchSize         int
 	sampleSize        int
 	keyFName          string
@@ -390,18 +390,20 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	if c.HasKey(key) == true && overwrite == true {
+		fmt.Printf("DEBUG running update with overwrite\n")
 		if err := c.Update(key, m); err != nil {
-			fmt.Fprintf(eout, "failed to create %s in %s, %s\n", key, collectionName, err)
+			fmt.Fprintf(eout, "failed to create %q in %s, %s\n", key, collectionName, err)
 			return 1
 		}
 		if quiet == false {
 			fmt.Fprintf(out, "OK")
 		}
+		fmt.Printf("DEBUG return value zero!\n")
 		return 0
 	}
 
 	if err := c.Create(key, m); err != nil {
-		fmt.Fprintf(eout, "failed to create %s in %s, %s\n", key, collectionName, err)
+		fmt.Fprintf(eout, "failed to create %q in %s, %s\n", key, collectionName, err)
 		return 1
 	}
 	if quiet == false {
@@ -1490,18 +1492,6 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 
 	// Get all keys or read from inputFName
-	if setAllKeys != "" {
-		setAllKeys = strings.TrimSpace(setAllKeys)
-		switch strings.ToLower(setAllKeys) {
-		case "true":
-			useAllKeys = true
-		case "false":
-			useAllKeys = false
-		default:
-			fmt.Fprintf(eout, "-set-all-keys expectes 'true' or 'false'\n")
-			return 1
-		}
-	}
 	if useAllKeys {
 		keys = c.Keys()
 	}
@@ -1567,7 +1557,9 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	f.AllKeys = useAllKeys
 	f.FilterExpr = filterExpr
 	f.SortExpr = sortExpr
-	f.SampleSize = sampleSize
+	if sampleSize >= 0 {
+		f.SampleSize = sampleSize
+	}
 
 	// Handle pretty printing
 	if prettyPrint {
@@ -1879,17 +1871,8 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	// Update frame settings
 	frameUpdated = false
 
-	if setAllKeys != "" {
-		setAllKeys = strings.TrimSpace(setAllKeys)
-		switch strings.ToLower(setAllKeys) {
-		case "true":
-			f.AllKeys = true
-		case "false":
-			f.AllKeys = false
-		default:
-			fmt.Fprintf(eout, "-set-all-keys value should be 'true' or 'false'")
-			return 1
-		}
+	if setAllKeys == true {
+		f.AllKeys = useAllKeys
 		frameUpdated = true
 	}
 
@@ -1929,7 +1912,10 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	}
 
 	// Apply Sample Size
-	if sampleSize > 0 {
+	if sampleSize > -1 {
+		f.SampleSize = sampleSize
+	}
+	if f.SampleSize > 0 {
 		frameUpdated = true
 		random := rand.New(rand.NewSource(time.Now().UnixNano()))
 		shuffle.Strings(keys, random)
@@ -2321,7 +2307,7 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 	defer c.Close()
 
 	// Merge collection content into table
-	table, err = c.MergeFrameIntoTable(frameName, table, overwrite, showVerbose)
+	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2453,7 +2439,7 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 	defer c.Close()
 
 	// Merge table contents into Collection and Frame
-	err = c.MergeFromTable(frameName, table, overwrite, showVerbose)
+	err = c.MergeFromTable(frameName, table, syncOverwrite, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -3059,7 +3045,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vCloneSample = app.NewVerb("clone-sample", "clone a sample from a collection", fnCloneSample)
 	vCloneSample.AddParams("SOURCE_COLLECTION", "SAMPLE_COLLECTION", "[TEST_COLLECTION]")
 	vCloneSample.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
-	vCloneSample.IntVar(&size, "sample", 0, "set sample size")
+	vCloneSample.IntVar(&size, "sample", -1, "set sample size")
 	vCloneSample.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
 	// Object oriented functions
@@ -3087,7 +3073,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	vKeys = app.NewVerb("keys", "list keys in collection", fnKeys)
 	vKeys.AddParams("COLLECTION", "[FILTER_EXPR]", "[SORT_EXPR]", "[KEY ...]")
-	vKeys.IntVar(&sampleSize, "sample", 0, "set a sample size for keys returned")
+	vKeys.IntVar(&sampleSize, "sample", -1, "set a sample size for keys returned")
 	vKeys.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vHasKey = app.NewVerb("haskey", "check for key(s) in collection", fnHasKey)
@@ -3125,18 +3111,17 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vGrid.BoolVar(&useAllKeys, "a,all", false, "use all keys in a collection")
 	vGrid.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
 	vGrid.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in grid")
-	vGrid.IntVar(&sampleSize, "s,sample", sampleSize, "make grid based on a key sample of a given size")
+	vGrid.IntVar(&sampleSize, "s,sample", -1, "make grid based on a key sample of a given size")
 	vGrid.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for grid generation")
 	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vFrame = app.NewVerb("frame", "create or retrieve a data frame", fnFrame)
 	vFrame.AddParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
 	vFrame.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
-	vFrame.StringVar(&setAllKeys, "set-all-keys", "", "set all keys for frame (persistant)")
 	vFrame.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
 	vFrame.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in frame")
 	vFrame.StringVar(&sortExpr, "sort", "", "apply sort expression for keys/grid in frame")
-	vFrame.IntVar(&sampleSize, "s,sample", sampleSize, "make frame based on a key sample of a given size")
+	vFrame.IntVar(&sampleSize, "s,sample", -1, "make frame based on a key sample of a given size")
 	vFrame.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for frame generation")
 	vFrame.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
@@ -3151,11 +3136,11 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
 	vReframe.AddParams("COLLECTION", "FRAME_NAME")
 	vReframe.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
-	vReframe.StringVar(&setAllKeys, "set-all-keys", "", "set all keys for frame (persistant)")
+	vReframe.BoolVar(&setAllKeys, "set-all-keys", false, "persist all keys setting")
 	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
 	vReframe.StringVar(&filterExpr, "filter", "", "apply and replace filter expression")
 	vReframe.StringVar(&sortExpr, "sort", "", "apply sort expression for keys/grid in frame")
-	vReframe.IntVar(&sampleSize, "s,sample", sampleSize, "reframe based on a key sample of a given size")
+	vReframe.IntVar(&sampleSize, "s,sample", -1, "reframe based on a key sample of a given size")
 	vReframe.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
 	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
@@ -3212,14 +3197,14 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vSyncSend.StringVar(&clientSecretFName, "client-secret", "", "(sync-send to a GSheet) set the client secret path and filename for GSheet access")
 	vSyncSend.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
 	vSyncSend.StringVar(&outputFName, "o,output", "", "write CSV content to a file")
-	vSyncSend.BoolVar(&overwrite, "O,overwrite", true, "overwrite existing cells in table")
+	vSyncSend.BoolVar(&syncOverwrite, "O,overwrite", true, "overwrite existing cells in table")
 	vSyncSend.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
 	vSyncRecieve = app.NewVerb("sync-recieve", "sync a frame of objects recieving data from a table (e.g. CSV, GSheet)", fnSyncRecieve)
 	vSyncRecieve.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
 	vSyncRecieve.StringVar(&clientSecretFName, "client-secret", "", "(sync-receive from a GSheet) set the client secret path and filename for GSheet access")
 	vSyncRecieve.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
-	vSyncRecieve.BoolVar(&overwrite, "O,overwrite", true, "overwrite existing cells in frame")
+	vSyncRecieve.BoolVar(&syncOverwrite, "O,overwrite", true, "overwrite existing cells in frame")
 	vSyncRecieve.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
 	// We're ready to process args
