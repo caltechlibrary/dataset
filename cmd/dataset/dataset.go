@@ -464,7 +464,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	if len(keys) == 1 {
 		m := map[string]interface{}{}
 		if err := c.Read(keys[0], m); err != nil {
-			fmt.Fprintf(eout, "%s must be a valid JSON Object", keys[0])
+			fmt.Fprintf(eout, "%s, %s\n", keys[0], err)
 			return 1
 		}
 		if prettyPrint {
@@ -2007,10 +2007,10 @@ func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		fmt.Fprintf(eout, "Missing collection name, filename (gSheet ID and Sheet name), ID col no\n")
 		return 1
 	case len(args) == 1:
-		fmt.Fprintf(eout, "Missing frame name and table details\n")
+		fmt.Fprintf(eout, "Missing filename and table details\n")
 		return 1
 	case len(args) < 3:
-		fmt.Fprintf(eout, "Missing table details \n")
+		fmt.Fprintf(eout, "Missing table details (e.g. ID_COL_NO) \n")
 		return 1
 	case len(args) == 3:
 		collectionName, csvFName, idColNoString = args[0], args[1], args[2]
@@ -3179,7 +3179,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// Import/export collections from/into tables
 	vImport = app.NewVerb("import", "import from a table (CSV, GSheet) into a collection of JSON objects", fnImport)
-	vImport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "OD_COL_NO", "[CELL_RANGE]")
+	vImport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "ID_COL_NO", "[CELL_RANGE]")
 	vImport.StringVar(&clientSecretFName, "client-secret", "", "(import from GSheet) set the client secret path and filename for GSheet access")
 	vImport.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON object")
 	vImport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing JSON objects")

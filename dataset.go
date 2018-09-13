@@ -245,6 +245,9 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
+	if c.HasKey(name) == false {
+		return nil, fmt.Errorf("key not found")
+	}
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeReadJSON(name)
@@ -257,6 +260,9 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) UpdateJSON(name string, src []byte) error {
+	if c.HasKey(name) == false {
+		return fmt.Errorf("key not found")
+	}
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeUpdateJSON(name, src)
@@ -384,16 +390,20 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 				record[fieldName] = val
 			}
 		}
-		if overwrite == true && c.HasKey(key) == true {
-			err = c.Update(key, record)
-			if err != nil {
-				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+		if len(key) > 0 {
+			if overwrite == true && c.HasKey(key) == true {
+				err = c.Update(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
+			} else {
+				err = c.Create(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
 			}
-		} else {
-			err = c.Create(key, record)
-			if err != nil {
-				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
-			}
+		} else if verboseLog {
+			log.Printf("Skipping row %d, key value missing", lineNo)
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
 			log.Printf("%d rows processed", lineNo)
