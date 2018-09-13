@@ -341,6 +341,7 @@ func (c *Collection) Length() int {
 
 // ImportCSV takes a reader and iterates over the rows and imports them as
 // a JSON records into dataset.
+//BUG: returns lines processed should probably return number of rows imported
 func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, overwrite bool, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
