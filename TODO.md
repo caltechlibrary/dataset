@@ -3,16 +3,15 @@
 
 ## Bugs
 
++ [ ] Sync: When you add columns to Spreadsheet in Frame need to make sure the order is consistent and update the Header row to reflect it.
 + [ ] We have a regression in support S3 buckets, might actually be a problem with check and types, need to investigate
 
 ## Next (prep for v0.1.0)
 
-+ [ ] sync command needs to be implemented for GSheet but also csv/Excel interactions
++ [ ] sync command needs to be implemented for GSheet but also csv interactions
 + [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Generate a codemeta.json in collection folder
     + https://codemeta.github.io/terms 
-+ [ ] Repair/check should work on S3 and Google Cloud Storage
-    + needs testing
 + [ ] Confirm consensus on the minor release version number bump
 
 
@@ -89,6 +88,8 @@
 
 ## Completed
 
++ [x] Repair/check should work on S3 and Google Cloud Storage
+    + needs testing
 + [x] A raw pairtree is being generated in the repo directory by test!
 + [x] Implement Buckets to Pair migration option
 + [x] Evaluate switching from aa to zz buckets to pairtree ppath under data
