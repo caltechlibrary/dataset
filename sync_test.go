@@ -254,8 +254,6 @@ func TestMerge(t *testing.T) {
 	rTable, err = c.MergeIntoTable(frameName, table, overwrite, verbose)
 	if len(rTable) != (len(table) + 1) {
 		t.Errorf("expected %d rows, got %d", len(table)+1, len(rTable))
-		//fmt.Printf("\n\trTable\n%+v\n", rTable)
-		//fmt.Printf("\ttable\n%+v\n", table)
 		t.FailNow()
 	}
 	for i, row := range table {
@@ -269,8 +267,13 @@ func TestMerge(t *testing.T) {
 	tRow := []string{"10", "1", "2", "3", "", "4"}
 	if len(tRow) != len(rTable[lastRow]) {
 		t.Errorf("appended row, expected length %d, got %d", len(tRow), len(rTable[lastRow]))
-		fmt.Printf("\texpected: %+v\n", tRow)
-		fmt.Printf("\t     got: %+v\n", rTable[lastRow])
+		w := csv.NewWriter(os.Stdout)
+		fmt.Printf("table:\n")
+		w.WriteAll(table)
+		w.Flush()
+		fmt.Printf("rTable:\n")
+		w.WriteAll(rTable)
+		w.Flush()
 		t.FailNow()
 	}
 	row := rTable[lastRow]
@@ -279,4 +282,157 @@ func TestMerge(t *testing.T) {
 			t.Errorf("row %d, col %d, excepted %q, got %q", lastRow, j, tCell, row[j])
 		}
 	}
+}
+
+func TestAddedColumns(t *testing.T) {
+	expectedCSV := []byte(`
+id,one,two,three,four,five
+0,A,B,C,D,E
+1,B,C,D,E,F
+2,C,D,E,F,G
+3,D,E,F,G,H
+4,E,F,G,H,I
+`)
+
+	initialCSV := []byte(`
+id,one,two
+0,A,B
+1,B,C
+2,C,D
+3,D,E
+4,E,F
+`)
+
+	r := csv.NewReader(bytes.NewBuffer(initialCSV))
+	initialTbl, err := r.ReadAll()
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	r = csv.NewReader(bytes.NewBuffer(expectedCSV))
+	expectedTbl, err := r.ReadAll()
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	collectionName := "testdata/merge2.ds"
+	frameName := "f1"
+	useHeaderRow := true
+	overwrite := true
+	verbose := true
+
+	if _, err := os.Stat(collectionName); err == nil {
+		err = os.RemoveAll(collectionName)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+	}
+	c, err := InitCollection(collectionName, PAIRTREE_LAYOUT)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	buf := bytes.NewBuffer(initialCSV)
+	_, err = c.ImportCSV(buf, 0, useHeaderRow, overwrite, verbose)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	keys := c.Keys()
+	if len(keys) == 0 {
+		t.Errorf("Import failed")
+		t.FailNow()
+	}
+
+	f, err := c.Frame(frameName, keys, []string{"._Key", ".one", ".two"}, verbose)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	f.AllKeys = true
+	f.Labels = []string{"id", "one", "two"}
+	f.ColumnTypes = []string{"string", "string", "string"}
+	err = c.SaveFrame(frameName, f)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	// Setup collection updates to test MergeIntoTable()
+	keys = c.Keys()
+	fieldVals := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"}
+	for i, key := range []string{"0", "1", "2", "3", "4"} {
+		obj := map[string]interface{}{}
+		err = c.Read(key, obj)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		obj["one"] = fieldVals[i]
+		obj["two"] = fieldVals[i+1]
+		obj["three"] = fieldVals[i+2]
+		obj["four"] = fieldVals[i+3]
+		obj["five"] = fieldVals[i+4]
+
+		err = c.Update(key, obj)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+	}
+	f.AllKeys = true
+	f.DotPaths = []string{"._Key", ".one", ".two", ".three", ".four", ".five"}
+	f.Labels = []string{"id", "one", "two", "three", "four", "five"}
+	f.ColumnTypes = []string{"string", "string", "string", "string", "string", "string"}
+	err = c.SaveFrame(frameName, f)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	resultTbl, err := c.MergeIntoTable(frameName, initialTbl, overwrite, verbose)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	// Verify resulting table
+	if len(expectedTbl) != len(resultTbl) {
+		t.Errorf("expected table is not same size as result table")
+		t.FailNow()
+	}
+	// Compare cell by cell
+	for i, row := range expectedTbl {
+		if len(resultTbl[i]) != len(row) {
+			t.Errorf("row %d is different lengths, %+v, got %+v", i, expectedTbl[i], resultTbl[i])
+			w := csv.NewWriter(os.Stdout)
+			fmt.Printf("expectedTbl:\n")
+			w.WriteAll(expectedTbl)
+			w.Flush()
+			fmt.Printf("resultTbl:\n")
+			w.WriteAll(resultTbl)
+			w.Flush()
+			t.FailNow()
+		}
+		for j, cell := range row {
+			if cell != resultTbl[i][j] {
+				t.Errorf("row %d, col %d, expected %q, got %q", i, j, cell, resultTbl[i][j])
+				w := csv.NewWriter(os.Stdout)
+				fmt.Printf("expectedTbl:\n")
+				w.WriteAll(expectedTbl)
+				w.Flush()
+				fmt.Printf("resultTbl:\n")
+				w.WriteAll(resultTbl)
+				w.Flush()
+				t.FailNow()
+			}
+
+		}
+	}
+
 }

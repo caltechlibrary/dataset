@@ -67,6 +67,22 @@ func mergeKeys(sorted []string, unsorted []string) []string {
 	return sorted
 }
 
+// labelsToHeaderRow checks the labels of a frame to make sure
+// all labels are in table's header row. If not it appends the
+// missing columns to the end of the header row and returns
+// new header row and true if a change is needed.
+func labelsToHeaderRow(f *DataFrame, table [][]string) ([]string, bool) {
+	header := table[0]
+	changed := false
+	for _, label := range f.Labels {
+		if strInArray(header, label) == false {
+			header = append(header, label)
+			changed = true
+		}
+	}
+	return header, changed
+}
+
 // dotPathToColumnMap creates a mapping from dotpath in collection
 // to column number in table by matching header row values with
 // a frame's labels. Returns an error if ._Key is not identified.
@@ -133,10 +149,19 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]string, overwrit
 	if err != nil {
 		return table, err
 	}
+	// Makesure we have a header that supports all the Frame's
+	// dotPaths and label
+	headerRow, changed := labelsToHeaderRow(f, table)
+	if changed {
+		table[0] = headerRow
+	}
+	// Based on table's new header, calc the map of dotpath to
+	// column no.
 	m, err := dotPathToColumnMap(f, table)
 	if err != nil {
 		return table, err
 	}
+	dotPaths := f.DotPaths
 	keyCol, _ := m["._Key"]
 	key := ""
 	tableKeys := []string{}
@@ -146,30 +171,33 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]string, overwrit
 			continue
 		}
 		// Get ID from row
-		if keyCol < len(row) {
+		if keyCol < len(row) && row[keyCol] != "" {
 			key = row[keyCol]
 			// collect the tables' row keys
 			tableKeys = append(tableKeys, key)
 		} else {
-			key = ""
-		}
-		if key == "" {
 			if verbose {
 				log.Printf("skipping row %d, no key found in column %d", i, keyCol)
 			}
 			continue
 		}
 		if c.HasKey(key) {
+			// Pad cells in row if necessary
+			for i := len(row); i < len(headerRow); i++ {
+				row = append(row, "")
+			}
 			obj := map[string]interface{}{}
 			err := c.Read(key, obj)
 			if err != nil {
 				return table, fmt.Errorf("Can't read %s from row %d in collection", key, i)
 			}
 			// For each row replace cells in dotPath map to column number
-			for p, j := range m {
-				// Pad cells in row if necessary
-				for j >= len(row) {
-					row = append(row, "")
+			for _, p := range dotPaths {
+				//NOTE: need to do this in order, so iterate over
+				// f.DotPaths then get j from map m.
+				j, ok := m[p]
+				if ok == false {
+					continue
 				}
 				val, err := dotpath.Eval(p, obj)
 				if err == nil {
@@ -190,12 +218,14 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]string, overwrit
 	// Append rows to table if needed
 	for _, key := range f.Keys {
 		if hasKey(tableKeys, key) == false {
+			// Generate a row to add
+			row := make([]string, len(headerRow)-1)
+			// Get the data for the row
 			obj := map[string]interface{}{}
 			err = c.Read(key, obj)
 			if err != nil {
 				return table, fmt.Errorf("failed to read %q in %s, %s\n", key, c.Name, err)
 			}
-			row := []string{}
 			// For each row replace cells in dotPath map to column number
 			for p, j := range m {
 				val, err := dotpath.Eval(p, obj)
