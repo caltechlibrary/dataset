@@ -3,20 +3,20 @@
 
 ## Bugs
 
-+ [ ] Sync: When you add columns to Spreadsheet in Frame need to make sure the order is consistent and update the Header row to reflect it.
 + [ ] We have a regression in support S3 buckets, might actually be a problem with check and types, need to investigate
 
-## Next (prep for v0.1.0)
+## Next (prep for v1.0.0)
 
-+ [ ] sync command needs to be implemented for GSheet but also csv interactions
++ [x] sync command needs to be implemented for csv based tables
++ [ ] sync command needs to be implemented for GSheet based tables
 + [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Generate a codemeta.json in collection folder
     + https://codemeta.github.io/terms 
-+ [ ] Confirm consensus on the minor release version number bump
++ [ ] Confirm consensus on the release version v1.0.0 
 
 
 
-## Roadmap (v0.2.x)
+## Roadmap (v2.0.0)
 
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
 + [ ] Add an option for Oxford Common File Layout in addition to buckets and pairtree
@@ -88,6 +88,7 @@
 
 ## Completed
 
++ [x] Sync: When you add columns to Spreadsheet in Frame need to make sure the order is consistent and update the Header row to reflect it.
 + [x] Repair/check should work on S3 and Google Cloud Storage
     + needs testing
 + [x] A raw pairtree is being generated in the repo directory by test!
