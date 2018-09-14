@@ -699,6 +699,46 @@ EOT
     echo 'test_import_export, OK'
 }
 
+function test_sync() {
+	echo "test_sync()"
+	mkdir -p testdata
+	cat << EOF > testdata/expected.csv
+id,one,two,three,four,five
+0,A,B,C,D,E
+1,B,C,D,E,F
+2,C,D,E,F,G
+3,D,E,F,G,H
+4,E,F,G,H,I
+EOF
+
+	cat << EOF > testdata/initial.csv
+id,one,two
+0,A,B
+1,B,C
+2,C,D
+3,D,E
+4,E,F
+EOF
+
+	if [[ -d testdata/merge4.ds ]]; then
+		rm -fR testdata/merge4.ds
+	fi
+	bin/dataset -quiet -nl=false init testdata/merge4.ds
+	bin/dataset -quiet -nl=false import testdata/merge4.ds testdata/initial.csv 1
+	bin/dataset -quiet -nl=false frame -a testdata/merge4.ds f4 "._Key" ".one" ".two" ".three" ".four" ".five" >/dev/null
+        bin/dataset -quiet -nl=false frame-labels testdata/merge4.ds f4 "id" "one" "two" "three" "four" "five"
+
+	# Now generate an updated result CSV
+	cp testdata/initial.csv testdata/result.csv
+	cat testdata/expected.csv | bin/dataset -quiet -nl=false sync-send -i - testdata/merge4.ds f4 \
+            >testdata/result.csv
+
+	if diff testdata/expected.csv testdata/result.csv; then
+		exit 1
+	fi
+	echo "test_sync, OK"
+}
+
 echo "Testing command line tools"
 test_dataset
 test_issue19
@@ -711,5 +751,6 @@ test_import_export
 test_gsheet etc/client_secret.json
 test_search
 test_check_and_repair
+test_sync
 echo 'PASS'
 echo "Ok $(basename "$0")"

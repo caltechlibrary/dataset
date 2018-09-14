@@ -390,7 +390,6 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	if c.HasKey(key) == true && overwrite == true {
-		fmt.Printf("DEBUG running update with overwrite\n")
 		if err := c.Update(key, m); err != nil {
 			fmt.Fprintf(eout, "failed to create %q in %s, %s\n", key, collectionName, err)
 			return 1
@@ -398,7 +397,6 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		if quiet == false {
 			fmt.Fprintf(out, "OK")
 		}
-		fmt.Printf("DEBUG return value zero!\n")
 		return 0
 	}
 
@@ -2265,6 +2263,10 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 		src, err = ioutil.ReadFile(csvFilename)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		if len(src) == 0 {
+			fmt.Fprintf(eout, "No data in csv file %s\n", csvFilename)
 			return 1
 		}
 	case 4:
