@@ -3,7 +3,11 @@
 
 ## Bugs
 
-+ [ ] We have a regression in support S3 buckets, might actually be a problem with check and types, need to investigate
++ [ ] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
+    + [x] confirm init for s3:// collections
+    + [ ] confirm check for s3:// collections
+    + [ ] confirm repair for s3:// collections
+    + [ ] confirm migrate for s3:// collections
 
 ## Next (prep for v1.0.0)
 

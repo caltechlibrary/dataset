@@ -776,6 +776,7 @@ func CollectionLayout(p string) int {
 			}
 		}
 	}
+	fmt.Printf("DEBUG p: %q\n", p)
 	if store.IsDir(path.Join(p, "pairtree")) {
 		return PAIRTREE_LAYOUT
 	}

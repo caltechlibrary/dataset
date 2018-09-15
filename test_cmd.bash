@@ -733,9 +733,15 @@ EOF
 	cat testdata/expected.csv | bin/dataset -quiet -nl=false sync-send -i - testdata/merge4.ds f4 \
             >testdata/result.csv
 
-	if diff testdata/expected.csv testdata/result.csv; then
+    #FIXME: need to check to see if our tables make sense
+    T=$(diff testdata/expected.csv testdata/result.csv)
+    if [[ "$?" != "0" ]]; then
 		exit 1
-	fi
+    fi
+    if [[ "$T" != "" ]]; then
+        echo "Diff found: $T"
+        exit 1
+    fi
 	echo "test_sync, OK"
 }
 
