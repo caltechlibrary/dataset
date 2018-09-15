@@ -6,8 +6,11 @@
 + [ ] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
     + [x] confirm init for s3:// collections
     + [ ] confirm check for s3:// collections
+        - need something other than a file walker for S3 and GS storage ...
     + [ ] confirm repair for s3:// collections
+        - need something other than a file walker for S3 and GS storage ...
     + [ ] confirm migrate for s3:// collections
+        - need something other than a file walker for S3 and GS storage ...
 
 ## Next (prep for v1.0.0)
 

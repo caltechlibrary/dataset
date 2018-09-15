@@ -167,7 +167,7 @@ func InitCollection(name string, layoutType int) (*Collection, error) {
 	case BUCKETS_LAYOUT:
 		c, err = bucketCreateCollection(name, DefaultBucketNames)
 	default:
-		c, err = bucketCreateCollection(name, DefaultBucketNames)
+		c, err = pairtreeCreateCollection(name)
 	}
 	if err != nil {
 		return nil, err
@@ -776,12 +776,22 @@ func CollectionLayout(p string) int {
 			}
 		}
 	}
-	fmt.Printf("DEBUG p: %q\n", p)
-	if store.IsDir(path.Join(p, "pairtree")) {
+	if store.Type == storage.FS {
+		if store.IsDir(path.Join(p, "pairtree")) {
+			return PAIRTREE_LAYOUT
+		}
+		if store.IsDir(path.Join(p, "aa")) {
+			return BUCKETS_LAYOUT
+		}
+	} else {
+		l, err := store.FindByExt(path.Join(p, "aa"), ".json")
+		if err != nil {
+			return PAIRTREE_LAYOUT
+		}
+		if len(l) > 0 {
+			return BUCKETS_LAYOUT
+		}
 		return PAIRTREE_LAYOUT
-	}
-	if store.IsDir(path.Join(p, "aa")) {
-		return BUCKETS_LAYOUT
 	}
 	return UNKNOWN_LAYOUT
 }

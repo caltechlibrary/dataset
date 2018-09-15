@@ -31,8 +31,16 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
+	if store.Type == storage.FS {
+		// Check to see if collectionName path exists, if not we need to create it.
+		_, err := os.Stat(collectionName)
+		if err != nil {
+			os.MkdirAll(collectionName, 0775)
+		}
+	}
 	// See if we need an open or continue with create
-	if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
+	_, err = store.Stat(collectionName + "/collection.json")
+	if err == nil {
 		return Open(name)
 	}
 	c := new(Collection)
@@ -41,8 +49,21 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 	c.Layout = PAIRTREE_LAYOUT
 	c.KeyMap = map[string]string{}
 	c.Store = store
-	// Save the metadata for collection
 	err = c.saveMetadata()
+	if err != nil {
+		return nil, err
+	}
+	/*
+		// Save the metadata for collection
+		src, err := json.Marshal(c)
+		if err != nil {
+			return nil, fmt.Errorf("Can't marshal metadata for %s, %s", name, err)
+		}
+		err = store.WriteFile(path.Join(c.Name, "collection.json"), src, 0664)
+		if err != nil {
+			return nil, fmt.Errorf("Can't store collection metadata, %s", err)
+		}
+	*/
 	return c, err
 }
 
