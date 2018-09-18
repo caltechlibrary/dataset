@@ -24,19 +24,19 @@ func TestPairtree(t *testing.T) {
 		t.FailNow()
 	}
 	pair := pairtree.Encode(key)
-	stat, err := os.Stat(path.Join(cName, "pairtree", pair))
+	stat, err := os.Stat(path.Join(c.workPath, "pairtree", pair))
 	if err != nil {
 		t.Errorf("failed to find %q, %s", key, err)
 		t.FailNow()
 	}
 	if stat.IsDir() == false {
-		t.Errorf("expected true, got false for %q", path.Join(cName, "pairtree", pair))
+		t.Errorf("expected true, got false for %q", path.Join(c.workPath, "pairtree", pair))
 	}
 	stat, err = os.Stat(path.Join(cName, "pairtree", pair, key+".json"))
 	if err != nil {
-		t.Errorf("Expected to find %q, errored out with %s", path.Join(cName, "pairtree", pair, key+"json"), err)
+		t.Errorf("Expected to find %q, errored out with %s", path.Join(c.workPath, "pairtree", pair, key+"json"), err)
 		t.FailNow()
 	}
 	// Looks like we passed so clean things up...
-	os.RemoveAll(path.Join(cName))
+	os.RemoveAll(path.Join(c.workPath))
 }

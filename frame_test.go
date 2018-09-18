@@ -89,7 +89,7 @@ func TestFrame(t *testing.T) {
 		if expected != result {
 			t.Errorf("expected %q, got %q, for %s", expected, result, f)
 		}
-		expected = cName // e.g. "testdata/frame_test.ds"
+		expected = c.Name // e.g. "frame_test.ds from  "testdata/frame_test.ds"
 		result = f.CollectionName
 		if expected != result {
 			t.Errorf("expected %q, got %q, for %s", expected, result, f)

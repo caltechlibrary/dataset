@@ -88,6 +88,9 @@ type Collection struct {
 	// Name of collection
 	Name string `json:"name"`
 
+	// workPath holds the path (i.e. non-protocol and hostname, in URI)
+	workPath string `json:"-"`
+
 	// Type allows for transitioning from bucket layout to pairtree layout for collections.
 	Layout int `json:"layout"`
 
@@ -114,11 +117,12 @@ func normalizeKeyName(s string) string {
 	return strings.TrimSpace(s)
 }
 
-// collectionNameFromPath takes a path and normalized a collection name.
-func collectionNameFromPath(p string) string {
+// collectionNameAsPath takes a uri and normalizes collection name
+// to a path
+func collectionNameAsPath(p string) string {
 	if strings.Contains(p, "://") {
 		u, _ := url.Parse(p)
-		return path.Base(u.Path)
+		return u.Path
 	}
 	return strings.TrimSpace(p)
 }
@@ -132,19 +136,21 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
-// saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
+// saveMetadata writes the collection's metadata to  c.Store and c.workPath
 func (c *Collection) saveMetadata() error {
 	// Check to see if collection exists, if not create it!
-	if _, err := c.Store.Stat(c.Name); err != nil {
-		if err := c.Store.MkdirAll(c.Name, 0775); err != nil {
-			return err
+	if c.Store.Type == storage.FS {
+		if _, err := c.Store.Stat(c.workPath); err != nil {
+			if err := c.Store.MkdirAll(c.workPath, 0775); err != nil {
+				return err
+			}
 		}
 	}
 	src, err := json.Marshal(c)
 	if err != nil {
 		return fmt.Errorf("Can't marshal metadata, %s", err)
 	}
-	if err := c.Store.WriteFile(path.Join(c.Name, "collection.json"), src, 0664); err != nil {
+	if err := c.Store.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
 	}
 	return nil
@@ -162,10 +168,10 @@ func InitCollection(name string, layoutType int) (*Collection, error) {
 		err error
 	)
 	switch layoutType {
-	case PAIRTREE_LAYOUT:
-		c, err = pairtreeCreateCollection(name)
 	case BUCKETS_LAYOUT:
 		c, err = bucketCreateCollection(name, DefaultBucketNames)
+	case PAIRTREE_LAYOUT:
+		c, err = pairtreeCreateCollection(name)
 	default:
 		c, err = pairtreeCreateCollection(name)
 	}
@@ -184,7 +190,7 @@ func Open(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
-	collectionName := collectionNameFromPath(name)
+	collectionName := collectionNameAsPath(name)
 	src, err := store.ReadFile(path.Join(collectionName, "collection.json"))
 	if err != nil {
 		return nil, err
@@ -194,7 +200,8 @@ func Open(name string) (*Collection, error) {
 		return nil, err
 	}
 	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
-	c.Name = collectionName
+	c.Name = path.Base(collectionName)
+	c.workPath = collectionName
 	c.Store = store
 	return c, nil
 }
@@ -205,7 +212,7 @@ func Delete(name string) error {
 	if err != nil {
 		return err
 	}
-	collectionName := collectionNameFromPath(name)
+	collectionName := collectionNameAsPath(name)
 	if err := store.RemoveAll(collectionName); err != nil {
 		return err
 	}
@@ -216,7 +223,7 @@ func Delete(name string) error {
 func (c *Collection) DocPath(name string) (string, error) {
 	keyName, name := keyAndFName(name)
 	if p, ok := c.KeyMap[keyName]; ok == true {
-		return path.Join(c.Name, p, name), nil
+		return path.Join(c.workPath, p, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
 }
@@ -226,6 +233,7 @@ func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
 	c.Buckets = []string{}
 	c.Name = ""
+	c.workPath = ""
 	c.KeyMap = map[string]string{}
 	c.Store = nil
 	return nil
@@ -549,7 +557,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verbo
 					row = append(row, colToString(col))
 				} else {
 					if verboseLog == true {
-						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.Name, err)
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.workPath, err)
 					}
 					dotpathErrors++
 					row = append(row, "")
@@ -559,18 +567,18 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verbo
 				cnt++
 			} else {
 				if verboseLog == true {
-					log.Printf("error writing row %d from %s key %q, %s\n", i+1, c.Name, key, err)
+					log.Printf("error writing row %d from %s key %q, %s\n", i+1, c.workPath, key, err)
 				}
 				writeErrors++
 			}
 			data = nil
 		} else {
-			log.Printf("error reading %s %q, %s\n", c.Name, key, err)
+			log.Printf("error reading %s %q, %s\n", c.workPath, key, err)
 			readErrors++
 		}
 	}
 	if readErrors > 0 || writeErrors > 0 || dotpathErrors > 0 && verboseLog == true {
-		log.Printf("warning %d read error, %d write errors, %d dotpath errors in CSV export from %s", readErrors, writeErrors, dotpathErrors, c.Name)
+		log.Printf("warning %d read error, %d write errors, %d dotpath errors in CSV export from %s", readErrors, writeErrors, dotpathErrors, c.workPath)
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
@@ -615,7 +623,7 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 					row = append(row, col)
 				} else {
 					if verboseLog == true {
-						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.Name, err)
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.workPath, err)
 					}
 					dotpathErrors++
 					row = append(row, nil)
@@ -625,12 +633,12 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 			cnt++
 			data = nil
 		} else {
-			log.Printf("error reading %s %q, %s\n", c.Name, key, err)
+			log.Printf("error reading %s %q, %s\n", c.workPath, key, err)
 			readErrors++
 		}
 	}
 	if (readErrors > 0 || dotpathErrors > 0) && verboseLog == true {
-		log.Printf("warning %d read error, %d dotpath errors in table export from %s", readErrors, dotpathErrors, c.Name)
+		log.Printf("warning %d read error, %d dotpath errors in table export from %s", readErrors, dotpathErrors, c.workPath)
 	}
 	return cnt, table, nil
 }
@@ -751,47 +759,29 @@ func IsCollection(p string) bool {
 // association with the collection (e.g BUCKETS_LAYOUT,
 // PAIRTREE_LAYOUT).
 func CollectionLayout(p string) int {
+	workPath := collectionNameAsPath(p)
 	store, err := storage.GetStore(p)
 	if err != nil {
 		return UNKNOWN_LAYOUT
 	}
-	if store.IsFile(path.Join(p, "collection.json")) {
-		src, err := store.ReadFile(path.Join(p, "collection.json"))
-		if err != nil {
-			return UNKNOWN_LAYOUT
-		}
+	src, err := store.ReadFile(path.Join(workPath, "collection.json"))
+	if err == nil {
 		c := new(Collection)
 		err = json.Unmarshal(src, &c)
 		if err != nil {
 			return UNKNOWN_LAYOUT
 		}
-		switch c.Layout {
-		case BUCKETS_LAYOUT:
-			return BUCKETS_LAYOUT
-		case PAIRTREE_LAYOUT:
-			return PAIRTREE_LAYOUT
-		default:
-			if len(c.Buckets) > 0 {
-				return BUCKETS_LAYOUT
-			}
-		}
-	}
-	if store.Type == storage.FS {
-		if store.IsDir(path.Join(p, "pairtree")) {
-			return PAIRTREE_LAYOUT
-		}
-		if store.IsDir(path.Join(p, "aa")) {
-			return BUCKETS_LAYOUT
-		}
-	} else {
-		l, err := store.FindByExt(path.Join(p, "aa"), ".json")
-		if err != nil {
-			return PAIRTREE_LAYOUT
-		}
-		if len(l) > 0 {
+		if len(c.Buckets) > 0 {
 			return BUCKETS_LAYOUT
 		}
 		return PAIRTREE_LAYOUT
+	}
+	l, err := store.FindByExt(path.Join(workPath, "aa"), ".json")
+	if err != nil {
+		return PAIRTREE_LAYOUT
+	}
+	if len(l) > 0 {
+		return BUCKETS_LAYOUT
 	}
 	return UNKNOWN_LAYOUT
 }

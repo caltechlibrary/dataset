@@ -111,7 +111,7 @@ func bucketCreateCollection(name string, bucketNames []string) (*Collection, err
 	if len(name) == 0 {
 		return nil, fmt.Errorf("missing a collection name")
 	}
-	collectionName := collectionNameFromPath(name)
+	collectionName := collectionNameAsPath(name)
 	store, err := storage.GetStore(name)
 	if err != nil {
 		return nil, err
@@ -123,13 +123,14 @@ func bucketCreateCollection(name string, bucketNames []string) (*Collection, err
 	c := new(Collection)
 	c.Version = Version
 	c.Layout = BUCKETS_LAYOUT
-	c.Name = collectionName
+	c.Name = path.Base(collectionName)
+	c.workPath = collectionName
 	c.Buckets = bucketNames
 	c.KeyMap = map[string]string{}
 	c.Store = store
 	// Save the metadata for collection
 	err = c.saveMetadata()
-	return c, err
+	return c, nil
 }
 
 // bucketCreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
@@ -162,11 +163,14 @@ func (c *Collection) bucketCreateJSON(key string, src []byte) error {
 		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
 	}
 
+	var err error
 	bucketName := pickBucket(c.Buckets, len(c.KeyMap))
-	p := path.Join(c.Name, bucketName)
-	err := c.Store.MkdirAll(p, 0770)
-	if err != nil {
-		return fmt.Errorf("mkdir %s %s", p, err)
+	p := path.Join(c.workPath, bucketName)
+	if c.Store.Type == storage.FS {
+		err = c.Store.MkdirAll(p, 0770)
+		if err != nil {
+			return fmt.Errorf("mkdir %s %s", p, err)
+		}
 	}
 
 	// We've almost made it, save the key's bucket name and write the blob to bucket
@@ -192,7 +196,7 @@ func (c *Collection) bucketReadJSON(name string) ([]byte, error) {
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, bucketName, FName))
+	src, err := c.Store.ReadFile(path.Join(c.workPath, bucketName, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -226,11 +230,13 @@ func (c *Collection) bucketUpdateJSON(name string, src []byte) error {
 		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
 	}
 
-	//NOTE: This is where Pairtree code would go instead of bucketName
-	p := path.Join(c.Name, bucketName)
-	err := c.Store.MkdirAll(p, 0770)
-	if err != nil {
-		return fmt.Errorf("Update (mkdir) %s %s", p, err)
+	//NOTE: This is Buckets diverge from Pairtree
+	p := path.Join(c.workPath, bucketName)
+	if c.Store.Type == storage.FS {
+		err := c.Store.MkdirAll(p, 0770)
+		if err != nil {
+			return fmt.Errorf("Update (mkdir) %s %s", p, err)
+		}
 	}
 	return c.Store.WriteFile(path.Join(p, FName), src, 0664)
 }
@@ -250,11 +256,11 @@ func (c *Collection) bucketDelete(name string) error {
 
 	//NOTE: Need to remove any stale tarball before removing our record!
 	tarball := keyName + ".tar"
-	p := path.Join(c.Name, bucketName, tarball)
+	p := path.Join(c.workPath, bucketName, tarball)
 	if err := c.Store.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
 	}
-	p = path.Join(c.Name, bucketName, FName)
+	p = path.Join(c.workPath, bucketName, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
@@ -275,13 +281,9 @@ func bucketKeyFound(s string, l []string) bool {
 	return false
 }
 
-func findBuckets(p string) ([]string, error) {
+func findBuckets(store *storage.Store, p string) ([]string, error) {
 	var buckets []string
-	store, err := storage.Init(storage.StorageType(p), nil)
-	if err != nil {
-		return buckets, err
-	}
-	dirInfo, err := store.ReadDir(p)
+	dirInfo, err := store.ReadDir(strings.TrimPrefix(p, "/"))
 	if err != nil {
 		return buckets, err
 	}
@@ -314,54 +316,58 @@ func bucketAnalyzer(collectionName string) error {
 		err     error
 	)
 
+	workPath := collectionNameAsPath(collectionName)
+
 	store, err := storage.GetStore(collectionName)
 	if err != nil {
 		return err
 	}
-	files, err := store.ReadDir(collectionName)
-	if err != nil {
-		return err
-	}
-	hasNamaste := false
-	hasCollectionJSON := false
-	for _, file := range files {
-		fname := file.Name()
-		switch {
-		case strings.HasPrefix(fname, "0=dataset_"):
-			hasNamaste = true
-		case fname == "collection.json":
-			hasCollectionJSON = true
+	if store.Type == storage.FS {
+		files, err := store.ReadDir(workPath)
+		if err != nil {
+			return err
 		}
-		if hasNamaste && hasCollectionJSON {
-			break
+		hasNamaste := false
+		hasCollectionJSON := false
+		for _, file := range files {
+			fname := file.Name()
+			switch {
+			case strings.HasPrefix(fname, "0=dataset_"):
+				hasNamaste = true
+			case fname == "collection.json":
+				hasCollectionJSON = true
+			}
+			if hasNamaste && hasCollectionJSON {
+				break
+			}
 		}
 	}
 
-	// NOTE: Check for Namaste 0=, warn if missing
-	if hasNamaste == false {
-		log.Printf("WARNING: Missing Namaste 0=dataset_%s\n", Version[1:])
+	namaste0 := path.Join(workPath, "0=dataset_"+Version[1:])
+	if _, err := store.Stat(namaste0); err != nil {
+		log.Printf("WARNING: Missing %s, %s\n", collectionName, err)
 		wCnt++
 	}
 
 	// NOTE: Check to see if we have a collections.json
-	if hasCollectionJSON == false {
-		log.Printf("WARNING: Missing collection.json\n")
+	if _, err := store.Stat(path.Join(workPath, "collection.json")); err != nil {
+		log.Printf("WARNING: Missing %s, %s\n", collectionName, err)
 		wCnt++
-	} else {
-		// Make sure we can JSON parse the file
-		docPath := path.Join(collectionName, "collection.json")
-		if src, err := store.ReadFile(docPath); err == nil {
-			if err := json.Unmarshal(src, &data); err == nil {
-				// release the memory
-				data = nil
-			} else {
-				log.Printf("ERROR: parsing %s, %s", docPath, err)
-				eCnt++
-			}
+	}
+
+	// Make sure we can JSON parse the file
+	docPath := path.Join(workPath, "collection.json")
+	if src, err := store.ReadFile(docPath); err == nil {
+		if err := json.Unmarshal(src, &data); err == nil {
+			// release the memory
+			data = nil
 		} else {
-			log.Printf("ERROR: opening %s, %s", docPath, err)
+			log.Printf("ERROR: parsing %s, %s", docPath, err)
 			eCnt++
 		}
+	} else {
+		log.Printf("ERROR: opening %s, %s", docPath, err)
+		eCnt++
 	}
 
 	// See if we can open a collection, if not then create an empty struct
@@ -370,16 +376,13 @@ func bucketAnalyzer(collectionName string) error {
 		return fmt.Errorf("ERROR: Open %s, %s", collectionName, err)
 	}
 	defer c.Close()
-	if c.Store.Type != storage.FS {
-		return fmt.Errorf("Analyzer only works on local file system")
-	}
 	if c.Version != Version {
 		log.Printf("WARNING: Version mismatch collection %s, dataset %s", c.Version, Version)
 		wCnt++
 	}
 
 	// Find buckets
-	buckets, err = findBuckets(collectionName)
+	buckets, err = findBuckets(c.Store, c.workPath)
 	if err != nil {
 		log.Printf("No buckets found for %s, %s", collectionName, err)
 		wCnt++
@@ -387,7 +390,7 @@ func bucketAnalyzer(collectionName string) error {
 	// Check if buckets match
 	for i, bck := range buckets {
 		if bucketKeyFound(bck, c.Buckets) == false {
-			log.Printf("ERROR: %s is missing from collection bucket list", bck)
+			log.Printf("ERROR: %s is missing from collection.json bucket list", bck)
 			eCnt++
 		}
 		if i > 0 && (i%100) == 0 {
@@ -400,9 +403,9 @@ func bucketAnalyzer(collectionName string) error {
 
 	// Check to see if records can be found in their buckets
 	for ky, bucket := range c.KeyMap {
-		docPath := path.Join(collectionName, bucket, ky+".json")
-		if store.IsFile(docPath) == false {
-			log.Printf("ERROR: %s is missing", docPath)
+		docPath := path.Join(c.workPath, bucket, ky+".json")
+		if _, err := c.Store.Stat(docPath); err != nil {
+			log.Printf("ERROR (%d): %s is missing", c.Store.Type, docPath)
 			eCnt++
 		}
 		kCnt++
@@ -470,15 +473,12 @@ func bucketRepair(collectionName string) error {
 	if err != nil {
 		return fmt.Errorf("Repair only works supported storage types, %s", err)
 	}
-	if store.Type != storage.FS {
-		return fmt.Errorf("Repair only works on local file system")
-	}
 
 	// See if we can open a collection, if not then create an empty struct
 	c, err = Open(collectionName)
 	if err != nil {
 		log.Printf("Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = store.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		err = store.WriteFile(path.Join(c.workPath, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
 			log.Printf("Can't re-initilize %s, %s", collectionName, err)
 			return err
@@ -497,7 +497,7 @@ func bucketRepair(collectionName string) error {
 	}
 	c.Version = Version
 	log.Printf("Getting a list of buckets")
-	if buckets, err := findBuckets(collectionName); err == nil {
+	if buckets, err := findBuckets(c.Store, c.workPath); err == nil {
 		c.Buckets = buckets
 	} else {
 		return err
@@ -507,13 +507,13 @@ func bucketRepair(collectionName string) error {
 		if c.KeyMap == nil {
 			c.KeyMap = map[string]string{}
 		}
-		if jsonDocs, err := store.FindByExt(path.Join(collectionName, bck), ".json"); err == nil {
+		if jsonDocs, err := store.FindByExt(path.Join(c.workPath, bck), ".json"); err == nil {
 			for i, jsonDoc := range jsonDocs {
 				ky := strings.TrimSuffix(jsonDoc, ".json")
 				if strings.TrimSpace(ky) != "" {
 					if val, ok := c.KeyMap[ky]; ok == true {
-						if stat1, err := os.Stat(path.Join(collectionName, bck, ky+".json")); err == nil {
-							if stat2, err := os.Stat(path.Join(collectionName, val, ky+".json")); err == nil {
+						if stat1, err := os.Stat(path.Join(c.workPath, bck, ky+".json")); err == nil {
+							if stat2, err := os.Stat(path.Join(c.workPath, val, ky+".json")); err == nil {
 								m1 := stat1.ModTime()
 								m2 := stat2.ModTime()
 								if m1.Unix() > m2.Unix() {
@@ -550,7 +550,7 @@ func bucketRepair(collectionName string) error {
 			break
 		}
 		if _, err := os.Stat(p); os.IsNotExist(err) == true {
-			log.Printf("Removing %s from %s, %s does not exist", key, collectionName, p)
+			log.Printf("Removing %s from %s, %s does not exist", key, c.workPath, p)
 			delete(c.KeyMap, key)
 		}
 	}
@@ -579,7 +579,7 @@ func migrateToBuckets(collectionName string) error {
 	for k, v := range c.KeyMap {
 		oldKeyMap[k] = v
 	}
-	c.Close()
+	defer c.Close()
 
 	store, err := storage.GetStore(collectionName)
 	if err != nil {
@@ -588,7 +588,8 @@ func migrateToBuckets(collectionName string) error {
 
 	// Create a new collection struct, set to Buckets layout
 	nc := new(Collection)
-	nc.Name = collectionName
+	nc.Name = c.Name
+	nc.workPath = c.workPath
 	nc.Version = Version
 	nc.Layout = BUCKETS_LAYOUT
 	nc.Buckets = DefaultBucketNames[:]
@@ -597,7 +598,7 @@ func migrateToBuckets(collectionName string) error {
 
 	for key, oldPath := range oldKeyMap {
 		_, FName := keyAndFName(key)
-		src, err := store.ReadFile(path.Join(collectionName, oldPath, FName))
+		src, err := store.ReadFile(path.Join(c.workPath, oldPath, FName))
 		if err != nil {
 			return err
 		}
@@ -609,7 +610,7 @@ func migrateToBuckets(collectionName string) error {
 
 		// Check for and handle any attachments
 		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
-		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
+		oldTarballPath := path.Join(c.workPath, oldPath, tarballFName)
 		if store.IsFile(oldTarballPath) {
 			// Move the tarball from one layout to the other
 			buf, err := store.ReadFile(oldTarballPath)
@@ -631,13 +632,13 @@ func migrateToBuckets(collectionName string) error {
 	// OK, if all buckets processed, we can remove all the paths.
 	for _, oldPath := range oldKeyMap {
 		if strings.HasPrefix(oldPath, "pairtree") {
-			err = store.RemoveAll(path.Join(collectionName, "pairtree"))
+			err = store.RemoveAll(path.Join(c.workPath, "pairtree"))
 			if err != nil {
 				return fmt.Errorf("Cleaning after migration, %s", err)
 			}
 			break
 		} else {
-			err = store.RemoveAll(path.Join(collectionName, oldPath))
+			err = store.RemoveAll(path.Join(c.workPath, oldPath))
 			if err != nil {
 				return fmt.Errorf("Cleaning after migration, %s", err)
 			}
