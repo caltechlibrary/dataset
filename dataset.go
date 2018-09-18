@@ -43,7 +43,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.46`
+	Version = `v0.0.47`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -395,11 +395,18 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 				record[fieldName] = i
 			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
 				record[fieldName] = f
+			} else if strings.ToLower(val) == "true" {
+				record[fieldName] = true
+			} else if strings.ToLower(val) == "false" {
+				record[fieldName] = false
 			} else {
-				record[fieldName] = val
+				val = strings.TrimSpace(val)
+				if len(val) > 0 {
+					record[fieldName] = val
+				}
 			}
 		}
-		if len(key) > 0 {
+		if len(key) > 0 && len(record) > 0 {
 			if c.HasKey(key) {
 				if overwrite == true {
 					err = c.Update(key, record)
@@ -480,18 +487,23 @@ func (c *Collection) ImportTable(table [][]string, idCol int, skipHeaderRow bool
 			} else if strings.ToLower(val) == "false" {
 				record[fieldName] = false
 			} else {
-				record[fieldName] = val
+				val = strings.TrimSpace(val)
+				if len(val) > 0 {
+					record[fieldName] = val
+				}
 			}
 		}
-		if overwrite == true && c.HasKey(key) == true {
-			err = c.Update(key, record)
-			if err != nil {
-				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
-			}
-		} else {
-			err = c.Create(key, record)
-			if err != nil {
-				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+		if len(key) > 0 && len(record) > 0 {
+			if overwrite == true && c.HasKey(key) == true {
+				err = c.Update(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
+			} else {
+				err = c.Create(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
 			}
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {

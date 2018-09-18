@@ -2062,7 +2062,8 @@ func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			clientSecretJSON = clientSecretFName
 		}
 		if clientSecretJSON == "" {
-			clientSecretJSON = "client_secret.json"
+			//clientSecretJSON = "client_secret.json"
+			clientSecretJSON = "credentials.json"
 		}
 		table, err := gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
 		if err != nil {
@@ -2181,7 +2182,8 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			clientSecretJSON = clientSecretFName
 		}
 		if clientSecretJSON == "" {
-			clientSecretJSON = "client_secret.json"
+			//clientSecretJSON = "client_secret.json"
+			clientSecretJSON = "credentials.json"
 		}
 		// gSheet expects a cell range, so we will generate one if needed.
 		if cellRange == "" {
@@ -2292,7 +2294,8 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 			clientSecretJSON = clientSecretFName
 		}
 		if clientSecretJSON == "" {
-			clientSecretJSON = "client_secret.json"
+			//clientSecretJSON = "client_secret.json"
+			clientSecretJSON = "credentials.json"
 		}
 		table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
 	}
@@ -2326,7 +2329,8 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 			clientSecretJSON = clientSecretFName
 		}
 		if clientSecretJSON == "" {
-			clientSecretJSON = "client_secret.json"
+			//clientSecretJSON = "client_secret.json"
+			clientSecretJSON = "credentials.json"
 		}
 		// NOTE: WriteSheet expects a [][]interface{} not [][]string,
 		// need to convert. This is a hack...
@@ -2424,7 +2428,8 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 			clientSecretJSON = clientSecretFName
 		}
 		if clientSecretJSON == "" {
-			clientSecretJSON = "client_secret.json"
+			//clientSecretJSON = "client_secret.json"
+			clientSecretJSON = "credentials.json"
 		}
 		table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
 	}

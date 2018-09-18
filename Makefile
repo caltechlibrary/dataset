@@ -46,6 +46,7 @@ test: clean bin/dataset$(EXT)
 	cd gsheets && go test && cd ..
 	bash test_cmd.bash
 	cd py && $(MAKE) test
+	if [ "$(s3)" != "" ]; then go test -s3 "$(s3)"; fi
 
 clean: 
 	if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi
