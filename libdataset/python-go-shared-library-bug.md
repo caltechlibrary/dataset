@@ -1,7 +1,7 @@
 
 # Go based C-Shared libraries on Mac OS X 10.x
 
-When I use multiple Go based C-Shared libraries from Python 3.6 I get a runtime error, "runtime/cgo: could not obtain pthread_keys". 
+When I use multiple Go based C-Shared libraries from Python 3.7 I get a runtime error, "runtime/cgo: could not obtain pthread keys". 
 This appears to be a Go linking issue for Mac OS X 10.x and Go 1.10.x. It appears that when the go runtime starts on the second 
 shared library that it can't find the **pthread_keys** entry point.  This appears to be a known but unresolved, see issue
 [#17200](https://github.com/golang/go/issues/17200) in Go's Github repository. It appears this problem goes back several years

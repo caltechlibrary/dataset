@@ -1,7 +1,7 @@
 
 # Getting started with dataset
 
-**dataset** is designed to easily manage collections of JSON objects. Objects are associated with a unique key you provide. The objects themselves are stored on disc in a bucket folder inside the collection folder. The collection folder contains a JSON object document called *collection.json*. This file stores metadata about the collection including the association of keys with paths to their objects.  **dataset** comes in several flavors — a command line program called **dataset**, a Go langauge package also called dataset, a shared library called libdataset and a Python 3.6 package called **dataset**. This tutorial talks about the command line program and the Python package.
+**dataset** is designed to easily manage collections of JSON objects. Objects are associated with a unique key you provide. The objects themselves are stored on disc in a bucket folder inside the collection folder. The collection folder contains a JSON object document called *collection.json*. This file stores metadata about the collection including the association of keys with paths to their objects.  **dataset** comes in several flavors — a command line program called **dataset**, a Go langauge package also called dataset, a shared library called libdataset and a Python 3.7 package called **dataset**. This tutorial talks about the command line program and the Python package.
 
 
 ## Create a collection with init
