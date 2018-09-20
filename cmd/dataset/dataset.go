@@ -3034,87 +3034,87 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// Collection oriented functions
 	vInit = app.NewVerb("init", "initialize a collection", fnInit)
-	vInit.AddParams("COLLECTION")
+	vInit.SetParams("COLLECTION")
 	vInit.StringVar(&collectionLayout, "layout", "pairtree", "set file layout for a new collection (i.e. \"buckets\" or \"pairtree\")")
 	vStatus = app.NewVerb("status", "collection status", fnStatus)
-	vStatus.AddParams("COLLECTION")
+	vStatus.SetParams("COLLECTION")
 	vCheck = app.NewVerb("check", "check a collection for errors", fnCheck)
-	vCheck.AddParams("COLLECTION", "[COLLECTION ...]")
+	vCheck.SetParams("COLLECTION", "[COLLECTION ...]")
 	vRepair = app.NewVerb("repair", "repair a collection", fnRepair)
-	vRepair.AddParams("COLLECTION")
+	vRepair.SetParams("COLLECTION")
 	vMigrate = app.NewVerb("migrate", "migrate a collection's layout", fnMigrate)
-	vMigrate.AddParams("COLLECTION", "LAYOUT")
+	vMigrate.SetParams("COLLECTION", "LAYOUT")
 	vClone = app.NewVerb("clone", "clone a collection", fnClone)
-	vClone.AddParams("SRC_COLLECTION", "DEST_COLLECTION")
+	vClone.SetParams("SRC_COLLECTION", "DEST_COLLECTION")
 	vClone.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
 
 	vClone.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vCloneSample = app.NewVerb("clone-sample", "clone a sample from a collection", fnCloneSample)
-	vCloneSample.AddParams("SOURCE_COLLECTION", "SAMPLE_COLLECTION", "[TEST_COLLECTION]")
+	vCloneSample.SetParams("SOURCE_COLLECTION", "SAMPLE_COLLECTION", "[TEST_COLLECTION]")
 	vCloneSample.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
 	vCloneSample.IntVar(&size, "sample", -1, "set sample size")
 	vCloneSample.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
 	// Object oriented functions
 	vCreate = app.NewVerb("create", "create a JSON object", fnCreate)
-	vCreate.AddParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")
+	vCreate.SetParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")
 	vCreate.StringVar(&inputFName, "i,input", "", "input file to read JSON object source from")
 	vCreate.BoolVar(&overwrite, "O,overwrite", false, "treat as an update if object already exists")
 
 	vRead = app.NewVerb("read", "read a JSON object from key(s)", fnRead)
-	vRead.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
+	vRead.SetParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vRead.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
 
 	vUpdate = app.NewVerb("update", "update a JSON object", fnUpdate)
-	vUpdate.AddParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")
+	vUpdate.SetParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")
 	vUpdate.StringVar(&inputFName, "i,input", "", "input file to read JSON object source from")
 
 	vDelete = app.NewVerb("delete", "delete a JSON object", fnDelete)
-	vDelete.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
+	vDelete.SetParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vDelete.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vJoin = app.NewVerb("join", "join attributes to a JSON object", fnJoin)
-	vJoin.AddParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")
+	vJoin.SetParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")
 	vJoin.StringVar(&inputFName, "i,input", "", "read JSON source from file")
 	vJoin.BoolVar(&overwrite, "overwrite", false, "if true replace attributes otherwise append only new attributes")
 
 	vKeys = app.NewVerb("keys", "list keys in collection", fnKeys)
-	vKeys.AddParams("COLLECTION", "[FILTER_EXPR]", "[SORT_EXPR]", "[KEY ...]")
+	vKeys.SetParams("COLLECTION", "[FILTER_EXPR]", "[SORT_EXPR]", "[KEY ...]")
 	vKeys.IntVar(&sampleSize, "sample", -1, "set a sample size for keys returned")
 	vKeys.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vHasKey = app.NewVerb("haskey", "check for key(s) in collection", fnHasKey)
-	vHasKey.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
+	vHasKey.SetParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vHasKey.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vCount = app.NewVerb("count", "count JSON objects", fnCount)
-	vCount.AddParams("COLLECTION", "[FILTER_EXPR]", "[KEY ...]")
+	vCount.SetParams("COLLECTION", "[FILTER_EXPR]", "[KEY ...]")
 	vCount.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	vPath = app.NewVerb("path", "path to JSON object", fnPath)
-	vPath.AddParams("COLLECTION", "[KEY]", "[KEY ...]")
+	vPath.SetParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vPath.StringVar(&inputFName, "i,input", "", "read keys, one per line, from a file")
 
 	// Attachment handling
 	vAttach = app.NewVerb("attach", "attach a file to JSON object", fnAttach)
-	vAttach.AddParams("COLLECTION", "KEY", "[FILENAMES]")
+	vAttach.SetParams("COLLECTION", "KEY", "[FILENAMES]")
 	vAttach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	vAttachments = app.NewVerb("attachments", "list attachments for a JSON object", fnAttachments)
-	vAttachments.AddParams("COLLECTION", "KEY")
+	vAttachments.SetParams("COLLECTION", "KEY")
 	vAttachments.StringVar(&inputFName, "i,input", "", "read keys(s), one per line, from a file")
 
 	vDetach = app.NewVerb("detach", "detach a copy of the attachment from a JSON object", fnDetach)
-	vDetach.AddParams("COLLECTION", "KEY", "[FILENAMES]")
+	vDetach.SetParams("COLLECTION", "KEY", "[FILENAMES]")
 	vDetach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	vPrune = app.NewVerb("prune", "prune an the attachment to a JSON object", fnPrune)
-	vPrune.AddParams("COLLECTION", "KEY", "[FILENAMES]")
+	vPrune.SetParams("COLLECTION", "KEY", "[FILENAMES]")
 	vPrune.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	// Frames and Grid
 	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
-	vGrid.AddParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
+	vGrid.SetParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
 	vGrid.BoolVar(&useAllKeys, "a,all", false, "use all keys in a collection")
 	vGrid.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
 	vGrid.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in grid")
@@ -3123,7 +3123,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vFrame = app.NewVerb("frame", "create or retrieve a data frame", fnFrame)
-	vFrame.AddParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
+	vFrame.SetParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
 	vFrame.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
 	vFrame.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
 	vFrame.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in frame")
@@ -3134,14 +3134,14 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// NOTE: Labels are used with sync-send/sync-receive to map dotpaths to column names
 	vFrameLabels = app.NewVerb("frame-labels", "set labels for all columns in a frame", fnFrameLabels)
-	vFrameLabels.AddParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
+	vFrameLabels.SetParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
 
 	// NOTE: Types are used  when defining search indexes
 	vFrameTypes = app.NewVerb("frame-types", "set the types for all columns in a frame", fnFrameTypes)
-	vFrameTypes.AddParams("COLLECTION", "FRAME_NAME", "TYPE", "[TYPE ...]")
+	vFrameTypes.SetParams("COLLECTION", "FRAME_NAME", "TYPE", "[TYPE ...]")
 
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
-	vReframe.AddParams("COLLECTION", "FRAME_NAME")
+	vReframe.SetParams("COLLECTION", "FRAME_NAME")
 	vReframe.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
 	vReframe.BoolVar(&setAllKeys, "set-all-keys", false, "persist all keys setting")
 	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
@@ -3152,17 +3152,17 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vFrames = app.NewVerb("frames", "list frames in a collection", fnFrames)
-	vFrames.AddParams("COLLECTION")
+	vFrames.SetParams("COLLECTION")
 
 	vHasFrame = app.NewVerb("hasframe", "see if a frame has been defined", fnHasFrame)
-	vHasFrame.AddParams("COLLECTION", "FRAME_NAME")
+	vHasFrame.SetParams("COLLECTION", "FRAME_NAME")
 
 	vFrameDelete = app.NewVerb("delete-frame", "delete a frame from a collection", fnFrameDelete)
-	vFrameDelete.AddParams("COLLECTION", "FRAME_NAME")
+	vFrameDelete.SetParams("COLLECTION", "FRAME_NAME")
 
 	// Search and indexing
 	vFind = app.NewVerb("find", "find a JSON object base on a dot path and value", fnFind)
-	vFind.AddParams("INDEX_NAME(S)", "QUERY_STRING")
+	vFind.SetParams("INDEX_NAME(S)", "QUERY_STRING")
 	vFind.StringVar(&sortBy, "sort", "", "a comma delimited list of field names to sort by")
 	vFind.BoolVar(&showHighlight, "highlight", false, "display highlight in search results")
 	vFind.StringVar(&setHighlighter, "highlighter", "", "set the highlighter (ansi,html) for search results")
@@ -3175,24 +3175,24 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vFind.BoolVar(&explain, "explain", false, "explain results in a verbose JSON document")
 	vFind.IntVar(&batchSize, "batch,size", 100, "set the number of objects per response")
 	vIndexer = app.NewVerb("indexer", "index JSON object(s) in a collection", fnIndexer)
-	vIndexer.AddParams("COLLECTION", "INDEX_NAME", "INDEX_MAP_FILE", "[KEY ...]")
+	vIndexer.SetParams("COLLECTION", "INDEX_NAME", "INDEX_MAP_FILE", "[KEY ...]")
 	vIndexer.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
 	vIndexer.IntVar(&batchSize, "batch,size", 100, "set the number of objects per response")
 	vIndexer.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vDeindexer = app.NewVerb("deindexer", "remove a JSON object from an index", fnDeindexer)
-	vDeindexer.AddParams("INDEX_NAME", "[KEY]", "[KEY ...]")
+	vDeindexer.SetParams("INDEX_NAME", "[KEY]", "[KEY ...]")
 	vDeindexer.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
 	vDeindexer.IntVar(&batchSize, "batch,size", 0, "set the number of objects per response")
 
 	// Import/export collections from/into tables
 	vImport = app.NewVerb("import", "import from a table (CSV, GSheet) into a collection of JSON objects", fnImport)
-	vImport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "ID_COL_NO", "[CELL_RANGE]")
+	vImport.SetParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "ID_COL_NO", "[CELL_RANGE]")
 	vImport.StringVar(&clientSecretFName, "client-secret", "", "(import from GSheet) set the client secret path and filename for GSheet access")
 	vImport.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON object")
 	vImport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing JSON objects")
 	vImport.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vExport = app.NewVerb("export", "export a collection's frame of JSON objects into a table (CSV, GSheet)", fnExport)
-	vExport.AddParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "FRAME_NAME")
+	vExport.SetParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "FRAME_NAME")
 	vExport.StringVar(&clientSecretFName, "client-secret", "", "(export into a GSheet) set the client secret path and filename for GSheet access")
 	vExport.BoolVar(&useHeaderRow, "use-header-row", true, "insert a header row in sheet")
 	vExport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing cells")
@@ -3200,7 +3200,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// Synchronize (send/receive) collections of objects with tables using frames
 	vSyncSend = app.NewVerb("sync-send", "sync a frame of objects sending data to a table (e.g. CSV, GSheet)", fnSyncSend)
-	vSyncSend.AddParams("COLLECTION", "FRAME_NAME", "[CSV_FILENAME|GSHEET_ID SHEET_NAME [CELL_RANGE]]")
+	vSyncSend.SetParams("COLLECTION", "FRAME_NAME", "[CSV_FILENAME|GSHEET_ID SHEET_NAME [CELL_RANGE]]")
 	vSyncSend.StringVar(&clientSecretFName, "client-secret", "", "(sync-send to a GSheet) set the client secret path and filename for GSheet access")
 	vSyncSend.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
 	vSyncSend.StringVar(&outputFName, "o,output", "", "write CSV content to a file")
@@ -3208,7 +3208,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vSyncSend.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
 	vSyncRecieve = app.NewVerb("sync-recieve", "sync a frame of objects recieving data from a table (e.g. CSV, GSheet)", fnSyncRecieve)
-	vSyncRecieve.AddParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
+	vSyncRecieve.SetParams("COLLECTION", "FRAME_NAME", "CSV_FILENAME|GSHEET_ID SHEET_NAME")
 	vSyncRecieve.StringVar(&clientSecretFName, "client-secret", "", "(sync-receive from a GSheet) set the client secret path and filename for GSheet access")
 	vSyncRecieve.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
 	vSyncRecieve.BoolVar(&syncOverwrite, "O,overwrite", true, "overwrite existing cells in frame")
