@@ -596,6 +596,7 @@ func migrateToBuckets(collectionName string) error {
 	nc.KeyMap = map[string]string{}
 	nc.Store, _ = storage.GetStore(collectionName)
 
+	i := 0
 	for key, oldPath := range oldKeyMap {
 		_, FName := keyAndFName(key)
 		src, err := store.ReadFile(path.Join(c.workPath, oldPath, FName))
@@ -628,6 +629,12 @@ func migrateToBuckets(collectionName string) error {
 				return err
 			}
 		}
+		if (i % 1000) == 0 {
+			log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
+		}
+	}
+	if (i % 1000) != 0 {
+		log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
 	}
 	// OK, if all buckets processed, we can remove all the paths.
 	for _, oldPath := range oldKeyMap {
