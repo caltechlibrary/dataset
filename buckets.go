@@ -28,8 +28,10 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"time"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/storage"
 )
 
@@ -493,7 +495,7 @@ func bucketRepair(collectionName string) error {
 	defer c.Close()
 
 	if c.Version != Version {
-		log.Printf("Migrating format from %s to %s", c.Version, Version)
+		log.Printf("Migrating collection.json from %s to %s", c.Version, Version)
 	}
 	c.Version = Version
 	log.Printf("Getting a list of buckets")
@@ -565,7 +567,14 @@ func bucketRepair(collectionName string) error {
 		log.Printf("Re-sorting buckets")
 		sort.Strings(c.Buckets)
 	}
-	return c.saveMetadata()
+	err = c.saveMetadata()
+	if err != nil {
+		return err
+	}
+	// Update Namaste entries
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
+	return nil
 }
 
 func migrateToBuckets(collectionName string) error {
@@ -651,5 +660,8 @@ func migrateToBuckets(collectionName string) error {
 			}
 		}
 	}
+	// Update Namaste entries
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }

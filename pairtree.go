@@ -10,8 +10,10 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	// Caltech Library Packages
+	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
 	"github.com/caltechlibrary/storage"
 )
@@ -361,7 +363,14 @@ func pairtreeRepair(collectionName string) error {
 		}
 	}
 	log.Printf("Saving metadata for %s", collectionName)
-	return c.saveMetadata()
+	err = c.saveMetadata()
+	if err != nil {
+		return err
+	}
+	// Update Namaste entries
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
+	return nil
 }
 
 // migrateToPairtree will migrate JSON objects and attachments from
@@ -438,6 +447,9 @@ func migrateToPairtree(collectionName string) error {
 			return fmt.Errorf("Cleaning after migration, %s", err)
 		}
 	}
+	// Update Namaste entries
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }
 

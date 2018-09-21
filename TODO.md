@@ -3,6 +3,7 @@
 
 ## Bugs
 
++ [ ] Namaste isn't being written to on repair
 + [ ] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
     + [x] confirm init for s3:// collections
     + [ ] confirm check for s3:// collections

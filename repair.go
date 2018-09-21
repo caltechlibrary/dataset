@@ -63,6 +63,7 @@ func Repair(collectionName string) error {
 //
 //
 func Migrate(collectionName string, newLayout int) error {
+	var err error
 	currentLayout := CollectionLayout(collectionName)
 	if currentLayout == UNKNOWN_LAYOUT {
 		return fmt.Errorf("Can't migrated from an unknown file layout")
@@ -72,10 +73,11 @@ func Migrate(collectionName string, newLayout int) error {
 	}
 	switch newLayout {
 	case PAIRTREE_LAYOUT:
-		return migrateToPairtree(collectionName)
+		err = migrateToPairtree(collectionName)
 	case BUCKETS_LAYOUT:
-		return migrateToBuckets(collectionName)
+		err = migrateToBuckets(collectionName)
 	default:
-		return fmt.Errorf("Can't migrate to an unknown file layout")
+		err = fmt.Errorf("Can't migrate to an unknown file layout")
 	}
+	return err
 }
