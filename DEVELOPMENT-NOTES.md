@@ -5,7 +5,7 @@
 
 Compiler requirements
 
-+ go1.10.2 or better
++ go1.11 or better
 
 Package assumptions
 

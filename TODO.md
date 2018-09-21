@@ -3,7 +3,6 @@
 
 ## Bugs
 
-+ [ ] Namaste isn't being written to on repair
 + [ ] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
     + [x] confirm init for s3:// collections
     + [ ] confirm check for s3:// collections
@@ -51,6 +50,7 @@
 
 ## Someday, Maybe
 
++ [x] Namaste isn't being written to on repair
 + [ ] Documentation updates
     - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 + [ ] Evaluate adding namaste verb for collections
