@@ -48,9 +48,11 @@ test: clean bin/dataset$(EXT)
 	cd py && $(MAKE) test
 	if [ "$(s3)" != "" ]; then go test -s3 "$(s3)"; fi
 
+cleanweb:
+	if [ -f index.html ]; then rm *.html; fi
+
 clean: 
 	if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi
-	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
 	if [ -d man ]; then rm -fR man; fi

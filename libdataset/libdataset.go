@@ -227,10 +227,10 @@ func delete_record(name, key *C.char) C.int {
 }
 
 //export join
-func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
+func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-	adverb := C.GoString(cAdverb)
+	overwrite := (cOverwrite == 1)
 	objectSrc := C.GoString(cObjSrc)
 
 	error_clear()
@@ -253,20 +253,16 @@ func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
-	switch adverb {
-	case "append":
+	if overwrite {
+		for k, v := range newObject {
+			outObject[k] = v
+		}
+	} else {
 		for k, v := range newObject {
 			if _, ok := outObject[k]; ok != true {
 				outObject[k] = v
 			}
 		}
-	case "overwrite":
-		for k, v := range newObject {
-			outObject[k] = v
-		}
-	default:
-		error_dispatch(err, "Unknown join type %q", adverb)
-		return C.int(0)
 	}
 	if err := c.Update(key, outObject); err != nil {
 		error_dispatch(err, "%s", err)

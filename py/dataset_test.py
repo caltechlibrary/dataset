@@ -487,33 +487,30 @@ def test_join(t, collection_name):
     else:
         err = dataset.create(collection_name, key, obj1)
     if err != '':
-        t.error('Failed, could not add record for test', collection, key, obj1, ', ', err)
+        t.error(f'Failed, could not add record for test ({collection_name}, {key}, {obj1}), {err}')
         return
-    err = dataset.join(collection_name, key, "append", obj2)
+    err = dataset.join(collection_name, key, obj2, overwrite = False)
     if err != '':
-        t.error('Failed, join for', collection_name, key, 'append', obj2, ', ', err)
+        t.error(f'Failed, join for {collection_name}, {key}, {obj2}, overwrite = False -> {err}')
     obj_result, err = dataset.read(collection_name, key)
     if err != '':
         t.error(f'Unexpected error for {key} in {collection_name}, {err}')
     if obj_result.get('one') != 1:
-        t.error('Failed to join append key', key, obj_result)
+        t.error(f'Failed to join append key {key}, {obj_result}')
     if obj_result.get("two") != 2:
-        t.error("Failed to join append key", key, obj_result)
+        t.error(f'Failed to join append key {key}, {obj_result}')
     obj2['one'] = 3
     obj2['two'] = 3
     obj2['three'] = 3
-    err = dataset.join(collection_name, key, 'overwrite', obj2)
+    err = dataset.join(collection_name, key, obj2, overwrite = True)
     if err != '':
-        t.error('Failed to join overwrite', collection_name, key, 'overwrite', obj2)
+        t.error(f'Failed to join overwrite {collection_name}, {key}, {obj2}, overwrite = True -> {err}')
     obj_result, err = dataset.read(collection_name, key)
     if err != '':
         t.error(f'Unexpected error for {key} in {collection_name}, {err}')
     for k in obj_result:
         if k != '_Key' and obj_result[k] != 3:
             t.error('Failed to update value in join overwrite', k, obj_result)
-    err = dataset.join(collection_name, key, 'fred and mary', obj2)
-    if err != '':
-        t.error("Failed, expected error for join type 'fred and mary'")
     
 #
 # test_issue43() When exporting records to a table using
