@@ -3064,6 +3064,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vRead = app.NewVerb("read", "read a JSON object from key(s)", fnRead)
 	vRead.SetParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vRead.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
+	vRead.BoolVar(&prettyPrint, "p,pretty", false, "pretty print JSON output")
 
 	vUpdate = app.NewVerb("update", "update a JSON object", fnUpdate)
 	vUpdate.SetParams("COLLECTION", "KEY", "[JSON_SRC|JSON_FILENAME]")

@@ -622,8 +622,10 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 	table := [][]interface{}{}
 	// Copy column names to table
 	for _, colName := range colNames {
-		table[0] = append(table[0], colName)
+		row = append(row, colName)
 	}
+	table = append(table, row)
+
 	for _, key := range keys {
 		data := map[string]interface{}{}
 		if err := c.Read(key, data); err == nil {
