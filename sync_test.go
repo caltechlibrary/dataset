@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	// Caltech Library Packages
+	"github.com/caltechlibrary/dataset/tbl"
 )
 
 /*
@@ -80,11 +83,12 @@ func TestMerge(t *testing.T) {
 `)
 	testKeys := []string{"0", "1", "2"}
 	r := csv.NewReader(bytes.NewBuffer(src))
-	table, err := r.ReadAll()
+	csvTable, err := r.ReadAll()
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	table := tbl.TableStringToInterface(csvTable)
 	collectionName := "testdata/merge1.ds"
 	frameName := "f1"
 	overwrite := true
@@ -117,6 +121,14 @@ func TestMerge(t *testing.T) {
 	keys := c.Keys()
 	if len(keys) != len(testKeys) {
 		t.Errorf("expected %d keys, got %+v", len(testKeys), keys)
+
+		w := csv.NewWriter(os.Stdout)
+		fmt.Printf("table:\n")
+		w.WriteAll(tbl.TableInterfaceToString(table))
+		w.Flush()
+		fmt.Printf("testKeys: %+v\n", testKeys)
+		fmt.Printf("collection name: %s\n", collectionName)
+
 		t.FailNow()
 	}
 
@@ -130,7 +142,7 @@ func TestMerge(t *testing.T) {
 	// NOTE: for non-header rows check the value against what we stored in
 	// our collection
 	for i, row := range table[1:] {
-		key := row[0]
+		key := fmt.Sprintf("%s", row[0])
 		obj := map[string]interface{}{}
 		err = c.Read(key, obj)
 		if err != nil {
@@ -187,7 +199,7 @@ func TestMerge(t *testing.T) {
 
 	// Now reconcile table and collection objects
 	for i, row := range table[1:] {
-		key := row[0]
+		key := fmt.Sprintf("%s", row[0])
 		obj := map[string]interface{}{}
 		err = c.Read(key, obj)
 		if err != nil {
@@ -267,14 +279,15 @@ func TestMerge(t *testing.T) {
 		t.Errorf("expected %d rows, got %d", len(table), len(rTable))
 	}
 	// Make sure all table cells are accounted for
+	var cVal interface{}
 	for i, row := range table {
 		if len(row) != len(rTable[i]) {
 			t.Errorf("expected %d columns in row %d, got %d", len(row), i, len(rTable[i]))
 		} else {
 			for j, cell := range row {
-				sVal = table[i][j]
-				if cell != sVal {
-					t.Errorf("expected row %d column %d %q, got %q", i, j, sVal, cell)
+				cVal = table[i][j]
+				if cell != cVal {
+					t.Errorf("expected row %d column %d %+v, got %+v", i, j, cVal, cell)
 				}
 			}
 		}
@@ -326,10 +339,10 @@ func TestMerge(t *testing.T) {
 		t.Errorf("appended row, expected length %d, got %d", len(tRow), len(rTable[lastRow]))
 		w := csv.NewWriter(os.Stdout)
 		fmt.Printf("table:\n")
-		w.WriteAll(table)
+		w.WriteAll(tbl.TableInterfaceToString(table))
 		w.Flush()
 		fmt.Printf("rTable:\n")
-		w.WriteAll(rTable)
+		w.WriteAll(tbl.TableInterfaceToString(rTable))
 		w.Flush()
 		t.FailNow()
 	}
@@ -361,18 +374,20 @@ id,one,two
 `)
 
 	r := csv.NewReader(bytes.NewBuffer(initialCSV))
-	initialTbl, err := r.ReadAll()
+	csvTable, err := r.ReadAll()
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	initialTbl := tbl.TableStringToInterface(csvTable)
 
 	r = csv.NewReader(bytes.NewBuffer(expectedCSV))
-	expectedTbl, err := r.ReadAll()
+	csvTable, err = r.ReadAll()
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	expectedTbl := tbl.TableStringToInterface(csvTable)
 
 	collectionName := "testdata/merge2.ds"
 	frameName := "f1"
@@ -469,10 +484,10 @@ id,one,two
 			t.Errorf("row %d is different lengths, %+v, got %+v", i, expectedTbl[i], resultTbl[i])
 			w := csv.NewWriter(os.Stdout)
 			fmt.Printf("expectedTbl:\n")
-			w.WriteAll(expectedTbl)
+			w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
 			w.Flush()
 			fmt.Printf("resultTbl:\n")
-			w.WriteAll(resultTbl)
+			w.WriteAll(tbl.TableInterfaceToString(resultTbl))
 			w.Flush()
 			t.FailNow()
 		}
@@ -481,10 +496,10 @@ id,one,two
 				t.Errorf("row %d, col %d, expected %q, got %q", i, j, cell, resultTbl[i][j])
 				w := csv.NewWriter(os.Stdout)
 				fmt.Printf("expectedTbl:\n")
-				w.WriteAll(expectedTbl)
+				w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
 				w.Flush()
 				fmt.Printf("resultTbl:\n")
-				w.WriteAll(resultTbl)
+				w.WriteAll(tbl.TableInterfaceToString(resultTbl))
 				w.Flush()
 				t.FailNow()
 			}

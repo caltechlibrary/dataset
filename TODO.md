@@ -15,10 +15,11 @@
 ## Next (prep for v1.0.0)
 
 + [x] sync command needs to be implemented for csv based tables
-+ [ ] sync command needs to be implemented for GSheet based tables
-+ [ ] Generate CATALOG.json and index.html in collection for Data Create support
-+ [ ] Generate a codemeta.json in collection folder
++ [x] sync command needs to be implemented for GSheet based tables
++ [ ] Import/Generate a codemeta.json in collection folder
     + https://codemeta.github.io/terms 
++ [ ] Generate CATALOG.json and index.html in collection for Data Create support
++ [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
 
 

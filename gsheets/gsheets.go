@@ -125,7 +125,7 @@ func ColNoToColLetters(colNo int) string {
 	return strings.Join(out, "")
 }
 
-func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([][]string, error) {
+func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([][]interface{}, error) {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile(clientSecretJSON)
@@ -148,22 +148,13 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 
 	// Prints the columns from sheet described by spreadSheetId
 	readRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
-	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).Do()
+	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).ValueRenderOption("FORMULA").Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve data from sheet. %s", err)
 	}
 
 	if len(resp.Values) > 0 {
-		table := [][]string{}
-		for _, row := range resp.Values {
-			cells := []string{}
-			for _, val := range row {
-				cell := val.(string)
-				cells = append(cells, cell)
-			}
-			table = append(table, cells)
-		}
-		return table, nil
+		return resp.Values, nil
 	}
 	return nil, fmt.Errorf("No data found")
 }
@@ -197,7 +188,7 @@ func WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string, ta
 		vr.Values = append(vr.Values, row)
 	}
 	writeRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
-	if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("RAW").Do(); err != nil {
+	if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("USER_ENTERED").Do(); err != nil {
 		return fmt.Errorf("Unable to write sheet %s. %s", writeRange, err)
 	}
 	return nil

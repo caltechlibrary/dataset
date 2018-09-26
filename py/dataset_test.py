@@ -327,12 +327,15 @@ def test_check_repair(t, collection_name):
         return
 
     # Break and recheck our collection
+    print(f"Removing {collection_name}/collection.json to cause a fail")
     if os.path.exists(collection_name + "/collection.json"):
         os.remove(collection_name + "/collection.json")
-    t.print("Testing check on (broken)", collection_name)
+    print(f"Testing check on (broken) {collection_name}")
     ok = dataset.check(collection_name)
     if ok == True:
         t.error("Failed, expected check", collection_name, "to return False, got", ok)
+    else:
+        t.print(f"Should have see error output for broken {collection_name}")
 
     # Repair our collection
     t.print("Testing repair on", collection_name)

@@ -38,6 +38,7 @@ import (
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/gsheets"
+	"github.com/caltechlibrary/dataset/tbl"
 	"github.com/caltechlibrary/shuffle"
 )
 
@@ -2281,12 +2282,15 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 		return 1
 	}
 
-	table := [][]string{}
+	table := [][]interface{}{}
 	// Populate table to sync
 	if len(src) > 0 {
 		// for CSV
 		r := csv.NewReader(bytes.NewReader(src))
-		table, err = r.ReadAll()
+		csvTable, err := r.ReadAll()
+		if err == nil {
+			table = tbl.TableStringToInterface(csvTable)
+		}
 	} else {
 		// for GSheet
 		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
@@ -2321,7 +2325,7 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 	// Save the resulting table
 	if len(src) > 0 {
 		w := csv.NewWriter(out)
-		w.WriteAll(table)
+		w.WriteAll(tbl.TableInterfaceToString(table))
 		err = w.Error()
 	} else {
 		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
@@ -2415,12 +2419,17 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		return 1
 	}
 
-	table := [][]string{}
+	table := [][]interface{}{}
 	// Populate table to sync
 	if len(src) > 0 {
 		// for CSV
 		r := csv.NewReader(bytes.NewReader(src))
-		table, err = r.ReadAll()
+		csvTable, err := r.ReadAll()
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		table = tbl.TableStringToInterface(csvTable)
 	} else {
 		// for GSheet
 		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
@@ -2432,10 +2441,10 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 			clientSecretJSON = "credentials.json"
 		}
 		table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
-	}
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
 	}
 
 	c, err = dataset.Open(collectionName)

@@ -34,6 +34,7 @@ import (
 	"time"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/tbl"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/shuffle"
@@ -66,10 +67,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	// Sort directions
 	ASC  = iota
 	DESC = iota
-)
 
-// Supported file layout types
-const (
+	// Supported file layout types
 	// Assume an unknown layout is zero, then add consts in order of adoption
 	UNKNOWN_LAYOUT = iota
 
@@ -78,6 +77,9 @@ const (
 
 	// Pairtree is the perferred file layout moving forward
 	PAIRTREE_LAYOUT
+
+	// internal virtualize column name format string
+	fmtColumnName = `column_%03d`
 )
 
 // Collection is the container holding buckets which in turn hold JSON docs
@@ -388,7 +390,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 					key = val
 				}
 			} else {
-				fieldName = fmt.Sprintf("col_%d", i+1)
+				fieldName = fmt.Sprintf(fmtColumnName, i+1)
 			}
 			//Note: We need to convert the value
 			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
@@ -432,9 +434,9 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 	return lineNo, nil
 }
 
-// ImportTable takes a [][]string and iterates over the rows and
+// ImportTable takes a [][]interface{} and iterates over the rows and
 // imports them as a JSON records into dataset.
-func (c *Collection) ImportTable(table [][]string, idCol int, skipHeaderRow bool, overwrite, verboseLog bool) (int, error) {
+func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow bool, overwrite, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
 		key        string
@@ -445,12 +447,14 @@ func (c *Collection) ImportTable(table [][]string, idCol int, skipHeaderRow bool
 	}
 	lineNo := 0
 	// i.e. use the header row for field names
-	if skipHeaderRow == true {
-		for i, field := range table[lineNo] {
-			if strings.TrimSpace(field) == "" {
-				fieldNames = append(fieldNames, fmt.Sprintf("column_%03d", i))
+	if useHeaderRow == true {
+		fieldNames := []string{}
+		for i, val := range table[0] {
+			cell, err := tbl.ValueAsString(val)
+			if err == nil && strings.TrimSpace(cell) != "" {
+				fieldNames = append(fieldNames, cell)
 			} else {
-				fieldNames = append(fieldNames, strings.TrimSpace(field))
+				fieldNames = append(fieldNames, fmt.Sprintf(fmtColumnName, i))
 			}
 		}
 		lineNo++
@@ -468,30 +472,20 @@ func (c *Collection) ImportTable(table [][]string, idCol int, skipHeaderRow bool
 		if idCol < 0 {
 			key = fmt.Sprintf("%d", lineNo)
 		}
+		// Find the key and setup record to save
 		for i, val := range row {
 			if i < len(fieldNames) {
 				fieldName = fieldNames[i]
 				if idCol == i {
-					key = val
+					key, err = tbl.ValueAsString(val)
+					if err != nil {
+						key = ""
+					}
 				}
 			} else {
-				fieldName = fmt.Sprintf("column_%03d", i+1)
+				fieldName = fmt.Sprintf(fmtColumnName, i+1)
 			}
-			//Note: We need to convert the value
-			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
-				record[fieldName] = i
-			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
-				record[fieldName] = f
-			} else if strings.ToLower(val) == "true" {
-				record[fieldName] = true
-			} else if strings.ToLower(val) == "false" {
-				record[fieldName] = false
-			} else {
-				val = strings.TrimSpace(val)
-				if len(val) > 0 {
-					record[fieldName] = val
-				}
-			}
+			record[fieldName] = val
 		}
 		if len(key) > 0 && len(record) > 0 {
 			if overwrite == true && c.HasKey(key) == true {
