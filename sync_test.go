@@ -3,6 +3,7 @@ package dataset
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -142,31 +143,34 @@ func TestMerge(t *testing.T) {
 	// NOTE: for non-header rows check the value against what we stored in
 	// our collection
 	for i, row := range table[1:] {
-		key := fmt.Sprintf("%s", row[0])
+		key, err := tbl.ValueInterfaceToString(row[0])
+		if err != nil {
+			t.Errorf("Expected row %d, key (%T) %+v to be string, %s", i, key, key, err)
+		}
 		obj := map[string]interface{}{}
 		err = c.Read(key, obj)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
 		// Check h1 value
-		sVal = "1"
+		sVal := "1"
 		if cell, ok := obj["h1"]; ok == true {
-			if cell != sVal {
-				t.Errorf("(h1) row %d, key %s, expected %s, got %s", i, key, sVal, cell)
+			if cell.(json.Number).String() != sVal {
+				t.Errorf("(h1) row %d, key %s, expected %s, got (%T) %+v", i, key, sVal, cell, cell)
 			}
 		} else {
 			t.Errorf("Missing h1 in row %d, key %s, obj -> %+v", i, key, obj)
 		}
 		// Check h2 doesn't exist
 		if cell, ok := obj["h2"]; ok == true {
-			t.Errorf("(h2) row %d, key %s, Unexpected value, got %s", i, key, cell)
+			t.Errorf("(h2) row %d, key %s, Unexpected value, got (%T) %+v", i, key, cell, cell)
 		}
 		// Check h3 value
 		iVal, _ = strconv.Atoi(key)
 		sVal = fmt.Sprintf("%d", iVal+10)
 		if cell, ok := obj["h3"]; ok == true {
-			if sVal != cell {
-				t.Errorf("(h3) row %d, key %s, expected %s, got %s", i, key, sVal, cell)
+			if cell.(json.Number).String() != sVal {
+				t.Errorf("(h3) row %d, key %s, expected %s, got (%T) %s", i, key, sVal, cell, cell)
 			}
 		} else {
 			t.Errorf("Missing h3 in row %d, key %s, obj -> %+v", i, key, obj)
@@ -199,7 +203,10 @@ func TestMerge(t *testing.T) {
 
 	// Now reconcile table and collection objects
 	for i, row := range table[1:] {
-		key := fmt.Sprintf("%s", row[0])
+		key, err := tbl.ValueInterfaceToString(row[0])
+		if err != nil {
+			t.Errorf("Expected row %d, key (%T) %+v, of type string,%s", i, key, key, err)
+		}
 		obj := map[string]interface{}{}
 		err = c.Read(key, obj)
 		if err != nil {
@@ -218,7 +225,7 @@ func TestMerge(t *testing.T) {
 		iVal, _ = strconv.Atoi(key)
 		sVal = fmt.Sprintf("%d", iVal*20)
 		if cell, ok := obj["h2"]; ok == true {
-			if sVal != cell {
+			if cell.(json.Number).String() != sVal {
 				t.Errorf("(h2) row %d, key %s, expected %s, got %s", i, key, sVal, cell)
 			}
 		} else {
@@ -228,7 +235,7 @@ func TestMerge(t *testing.T) {
 		iVal, _ = strconv.Atoi(key)
 		sVal = fmt.Sprintf("%d", iVal+10)
 		if cell, ok := obj["h3"]; ok == true {
-			if sVal != cell {
+			if cell.(json.Number).String() != sVal {
 				t.Errorf("(h3) row %d, key %s, expected %s, got %s", i, key, sVal, cell)
 			}
 		} else {
@@ -492,8 +499,16 @@ id,one,two
 			t.FailNow()
 		}
 		for j, cell := range row {
-			if cell != resultTbl[i][j] {
-				t.Errorf("row %d, col %d, expected %q, got %q", i, j, cell, resultTbl[i][j])
+			// NOTE: In our test cases column 0 is key and
+			// will be a string regardless of either it is numeric.
+			if j == 0 {
+				sCell, _ := tbl.ValueInterfaceToString(cell)
+				rCell, _ := tbl.ValueInterfaceToString(resultTbl[i][j])
+				if sCell != rCell {
+					t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j])
+				}
+			} else if cell != resultTbl[i][j] {
+				t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j])
 				w := csv.NewWriter(os.Stdout)
 				fmt.Printf("expectedTbl:\n")
 				w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
@@ -503,7 +518,6 @@ id,one,two
 				w.Flush()
 				t.FailNow()
 			}
-
 		}
 	}
 

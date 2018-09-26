@@ -450,7 +450,7 @@ func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow 
 	if useHeaderRow == true {
 		fieldNames := []string{}
 		for i, val := range table[0] {
-			cell, err := tbl.ValueAsString(val)
+			cell, err := tbl.ValueInterfaceToString(val)
 			if err == nil && strings.TrimSpace(cell) != "" {
 				fieldNames = append(fieldNames, cell)
 			} else {
@@ -477,7 +477,7 @@ func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow 
 			if i < len(fieldNames) {
 				fieldName = fieldNames[i]
 				if idCol == i {
-					key, err = tbl.ValueAsString(val)
+					key, err = tbl.ValueInterfaceToString(val)
 					if err != nil {
 						key = ""
 					}

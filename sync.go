@@ -53,7 +53,7 @@ func labelsToHeaderRow(f *DataFrame, table [][]interface{}) ([]string, bool) {
 	changed := false
 	header := []string{}
 	for i, cell := range table[0] {
-		val, err := tbl.ValueAsString(cell)
+		val, err := tbl.ValueInterfaceToString(cell)
 		if err == nil {
 			header = append(header, val)
 		} else {
@@ -82,7 +82,7 @@ func dotPathToColumnMap(f *DataFrame, table [][]interface{}) (map[string]int, er
 		return m, fmt.Errorf("table is empty")
 	}
 	for i, val := range table[0] {
-		label, err := tbl.ValueAsString(val)
+		label, err := tbl.ValueInterfaceToString(val)
 		if err == nil && strings.TrimSpace(label) != "" {
 			if pos, hasLabel := findLabel(f.Labels, label); hasLabel == true {
 				// Find the dotpath matching the label
@@ -163,7 +163,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 		}
 		// Get ID from row
 		if keyCol < len(row) {
-			key, err = tbl.ValueAsString(row[keyCol])
+			key, err = tbl.ValueInterfaceToString(row[keyCol])
 			if err == nil && key != "" {
 				// collect the tables' row keys
 				tableKeys = append(tableKeys, key)
@@ -264,7 +264,7 @@ func (c *Collection) MergeFromTable(frameName string, table [][]interface{}, ove
 	for i, row := range table[1:] {
 		// get Key
 		if keyCol < len(row) {
-			key, err = tbl.ValueAsString(row[keyCol])
+			key, err = tbl.ValueInterfaceToString(row[keyCol])
 			if err != nil {
 				if verbose {
 					log.Printf("skipping row %d, invalid key found in column %d, %+v, %T, %s", i+2, keyCol, row[keyCol], row[keyCol], err)
