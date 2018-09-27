@@ -14,8 +14,7 @@ import (
 	"github.com/caltechlibrary/dataset/tbl"
 )
 
-/*
-func TestImportColumnBehavior(t *testing.T) {
+func TestTableColumnBehavior(t *testing.T) {
 	src := []byte(`
 first, second,third, fourth
 1,,3,
@@ -24,52 +23,54 @@ first, second,third, fourth
 `)
 	r := csv.NewReader(bytes.NewBuffer(src))
 	r.FieldsPerRecord = -1
-	table, err := r.ReadAll()
+	csvTable, err := r.ReadAll()
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	table := tbl.TableStringToInterface(csvTable)
 
-	expectedObjs := map[string]map[string]string{}
-	expectedObjs["1"] = map[string]string{
+	expectedObjs := map[string]map[string]interface{}{}
+	expectedObjs["1"] = map[string]interface{}{
 		"_Key":  "1",
-		"first": "1",
-		"third": "3",
+		"first": 1,
+		"third": 3,
 	}
-	expectedObjs["2"] = map[string]string{
+	expectedObjs["2"] = map[string]interface{}{
 		"_Key":   "2",
-		"first":  "2",
-		"second": "2",
-		"third":  "2",
+		"first":  2,
+		"second": 2,
+		"third":  2,
 	}
-	expectedObjs["3"] = map[string]string{
+	expectedObjs["3"] = map[string]interface{}{
 		"_Key":   "3",
-		"first":  "3",
-		"second": "3",
+		"first":  3,
+		"second": 3,
 	}
 
 	for i, row := range table {
 		if i > 0 {
-			key := row[0]
-			if eObj, ok := expectedObjs[key]; ok == true {
-				obj := eObj
-				for j, key := range []string{"first", "second", "third", "fourth"} {
-					if j >= len(row) {
-						t.Errorf("row %d is short cells %+v", i, row)
-					} else {
-						if obj[key] != row[j] {
-							t.Errorf("row %d, col %d, expected %q, got %q", i, j, obj[key], row[j])
-						}
+			key, err := tbl.ValueInterfaceToString(row[0])
+			if err != nil {
+				t.Errorf("expected (%T) %+v to be convertable to string, %s", row[0], row[0], err)
+				continue
+			}
+			for j, fieldName := range []string{"first", "second", "third", "fourth"} {
+				if eObj, ok := expectedObjs[key]; ok == true {
+					obj := eObj
+					if len(obj) > len(row) {
+						t.Errorf("row %d is short cells, obj %+v, row %+v", i, obj, row)
 					}
+					if val, ok := obj[fieldName]; ok == true && val != row[j] {
+						t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, val, val, row[j], row[j])
+					}
+				} else {
+					t.Errorf("unexpected key %q in row %d table %+v\n", key, i, table)
 				}
-			} else {
-				t.Errorf("unexpected key %q in row %d table %+v\n", key, i, table)
 			}
 		}
 	}
-
 }
-*/
 
 func TestMerge(t *testing.T) {
 	var (
