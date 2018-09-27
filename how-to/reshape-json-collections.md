@@ -174,11 +174,11 @@ We can check to make sure it worked with `dataset read 12345`. You should see so
     }
 ```
 
-Notice we now have a new `.author_display_names` attribute in our object. We still see our old `.authors`. The *join update* function
+Notice we now have a new `.author_display_names` attribute in our object. We still see our old `.authors`. The *join* function
 will not overwriting fields nor trim others.  It adds the attributes of one object to the other.
 
 Now let's say you decide you'd rather have the names in "family, given" order for the individual names.
-Using *join overwrite* we can replace the value in `.author_display_names` with a new one.
+Using *join -overwrite* we can replace the value in `.author_display_names` with a new one.
 
 **flatten.tmpl** should now look like
 

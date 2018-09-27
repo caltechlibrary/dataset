@@ -51,7 +51,7 @@ I have some friends who are characters in [ZBS](https://zbs.org) radio plays. I 
 
 
 ```bash
-    dataset friends.ds create frieda '{"name":"Little Frieda","email":"frieda@inverness.example.org"}'
+    dataset create friends.ds frieda '{"name":"Little Frieda","email":"frieda@inverness.example.org"}'
 ```
 
 Notice the "OK". Just like **init** the **create** verb returns a status. "OK" means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.
@@ -70,8 +70,8 @@ command line --
 
 
 ```bash
-    dataset friends.ds create "mojo" '{"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"}'
-    dataset friends.ds create "jack" '{"name": "Jack Flanders", "email": "capt-jack@cosmic-voyager.example.org"}'
+    dataset create friends.ds "mojo" '{"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"}'
+    dataset create friends.ds "jack" '{"name": "Jack Flanders", "email": "capt-jack@cosmic-voyager.example.org"}'
 ```
 
 in python -- 
@@ -95,23 +95,23 @@ command line --
 
 
 ```bash
-    dataset friends.ds read frieda
+    dataset read friends.ds frieda
 ```
 
 This command emitts a JSON object. The JSON  is somewhat hard to read. To get a pretty version of the JSON object used the "-p"  option.
 
 
 ```bash
-    dataset -p friends.ds read frieda
+    dataset read -p friends.ds frieda
 ```
 
 On the command line you can easily pipe the results to a file for latter modification. Let's do this for each of the records we have created so far.
 
 
 ```bash
-    dataset -p friends.ds read frieda > frieda-profile.json
-    dataset -p friends.ds read mojo > mojo-profile.json
-    dataset -p friends.ds read jack > jack-profile.json
+    dataset read -p friends.ds frieda >frieda-profile.json
+    dataset read -p friends.ds mojo >mojo-profile.json
+    dataset read -p friends.ds jack >jack-profile.json
 ```
 
 Working in python is similar but rather than write out our JSON structures to a file we're going to 
@@ -179,9 +179,9 @@ On the command line we can read in the updated JSON objects and save the results
 
 
 ```bash
-    dataset friends.ds update freida frieda-profile.json
-    dataset friends.ds update mojo mojo-profile.json
-    dataset friends.ds update jack jack-profile.json
+    dataset update friends.ds freida frieda-profile.json
+    dataset update friends.ds mojo mojo-profile.json
+    dataset update friends.ds jack jack-profile.json
 ```
 
 **TIP**: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a "{" and ended with a "}" it would assume you were using an explicit JSON expression.
@@ -216,7 +216,7 @@ command line --
 
 
 ```bash
-    dataset friends.ds delete jack
+    dataset delete friends.ds jack
 ```
 
 Notice the “OK” in this case it means we've successfully delete the JSON object from the collection.
@@ -242,7 +242,7 @@ Command line --
 
  
 ```bash
-    dataset friends.ds count
+    dataset count friends.ds
 ```
 
 In Python -- 
@@ -257,7 +257,7 @@ Likewise we can get a list of the keys with the **keys** verb.
 
 
 ```bash
-    dataset friends.ds keys
+    dataset keys friends.ds
 ```
 
 If you are following along in Python then you can just save the keys to a variable called keys.
@@ -281,15 +281,15 @@ Let's create a **grid** from our *friends.ds* collection.
 
 
 ```bash
-    dataset friends.ds keys > fiends.keys
-    dataset friends.ds grid friends.keys .name .email .catch_phrase
+    dataset keys friends.ds keys >fiends.keys
+    dataset grid -i=friends.keys friends.ds .name .email .catch_phrase
 ```
 
 As with **read** the **grid** verb can take the “-p” option to make the JSON grid a little easier to read.
 
 
 ```bash
-    dataset -p friends.ds grid friends.keys .name .email .catch_phrase
+    dataset grid -p -i=friends.keys friends.ds .name .email .catch_phrase
 ```
 
 Notice we make a list of keys first and save those to a file. Then we use that list of keys and create our grid.  The grid output is in JSON notation. In Python making a grid follows a similar patter, generate a list of keys, use those keys and a list of dot paths to define the grid.
@@ -316,7 +316,7 @@ Working from our previous **grid** example, let's call this frame "name-and-emai
 
 
 ```bash
-    dataset friends.ds frame "name-and-email" fiends.keys .name .email .catch_phrase
+    dataset frame -i=friends.keys friends.ds "name-and-email" .name .email .catch_phrase
 ```
 
 In python it would look like
@@ -333,7 +333,7 @@ To see the contents of a frame we only need to support the collection name and f
 
 
 ```bash
-    dataset friends.ds frame "name-and-email"
+    dataset frame friends.ds "name-and-email"
 ```
 
 In Python it'd look like
@@ -355,13 +355,13 @@ Let's add back the Jack record we deleted a few sections again and “reframe”
 
 ```bash
     # Adding back Jack
-    dataset friends.ds create jack jack-profile.json
+    dataset create friends.ds jack jack-profile.json
     # Save all the keys in the collection
-    dataset friends.ds keys > friends.keys
+    dataset keys friends.ds >friends.keys
     # Now reframe "name-and-email" with the updated friends.keys
-    dataset friends.ds reframe "name-and-email" friends.keys
+    dataset reframe -i=friends.keys friends.ds "name-and-email" 
     # Now let's take a look at the frame
-    dataset -p friends.ds frame  "name-and-email"
+    dataset frame -p friends.ds "name-and-email"
 ```
 
 Like with **grid** and **read** before it the “-p” option will cause the JSON representation of the frame to be pretty printed.
@@ -387,7 +387,7 @@ We can list the frames in the collection using the **frames** verb.
 
 
 ```bash
-    dataset friends.ds frames
+    dataset frames friends.ds
 ```
 
 In Python
@@ -404,7 +404,7 @@ Finally the last thing we need to be able to do is delete a frame. Delete frames
 
 
 ```bash
-    dataset friends.ds delete-frame "name-and-email"
+    dataset delete-frame friends.ds "name-and-email"
 ```
 
 Or in Python
@@ -422,7 +422,6 @@ Or in Python
 2. **frame** will also let you read back a frame
 3. **frames** will list the frames defined in the collection
 4. **frame-labels** will let you replace the labels values for all columns in a frame
-5. **frame-types** will let you replace the type values for all columns in a frame
 6. **delete-frame** will remove the frame from the collection
 
 

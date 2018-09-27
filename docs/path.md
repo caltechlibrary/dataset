@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLETION_NAME path KEY
+    dataset path COLLETION_NAME KEY
 ```
 
 ## Description
@@ -21,7 +21,7 @@ In this example we are trying to find the full path to a JSON
 document with an KEY of "r1". Our collection name is "data.ds".
 
 ```shell
-    dataset data.ds path r1
+    dataset path data.ds r1
 ```
 
 Related topics: [keys](keys.html), [read](read.html)

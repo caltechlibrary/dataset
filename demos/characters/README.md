@@ -1,12 +1,12 @@
 
 # The Character Demo
 
-This is a demonstration of a "character" dataset in different forms. Each 
-version of the dataset is derived from the _character.csv_ file with 
+This is a demonstration of a "character.ds" dataset in different forms. 
+Each version of the dataset is derived from the _character.csv_ file with 
 different options for importing the content.
 
 Additionally a set of example index definition files are included for
-exploring _dataset indexer_, _dataset find_ and _dsws_ utilities.
+exploring _dataset indexer_ and _dataset find_.
 
 ## Try things out
 
@@ -14,11 +14,11 @@ Try _demo.bash_
 
 ```shell
     #!/bin/bash
-    if [ -d characters ]; then
-        rm -fR characters
+    if [[ -d characters.ds ]]; then
+        rm -fR characters.ds
     fi
-    $(dataset init characters)
-    dataset -uuid import characters.csv
+    dataset init characters.ds
+    dataset import characters.ds characters.csv 1
     dataset indexer characters.json
     dataset indexer names.json
     dataset indexer emails.json

@@ -4,10 +4,11 @@
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME join JOIN_TYPE KEY JSON_EXPRESSION
-    dataset COLLECTION_NAME join JOIN_TYPE KEY JSON_FILENAME
-    dataset -i JSON_DOCUMENT_NAME COLLECTION_NAME join JOIN_TYPE KEY
-    cat JSON_DOCUMENT_NAME | dataset COLLECTION_NAME join JOIN_TYPE KEY
+    dataset join [OPTION] COLLECTION_NAME KEY JSON_EXPRESSION
+    dataset join [OPTION] COLLECTION_NAME KEY JSON_FILENAME
+    dataset join -overwrite COLLECTION_NAME KEY JSON_FILENAME
+    dataset join -i JSON_DOCUMENT_NAME COLLECTION_NAME KEY
+    cat JSON_DOCUMENT_NAME | dataset join -i - COLLECTION_NAME KEY
 ```
 
 ## Description
@@ -42,7 +43,7 @@ existing jane.doe record (where the existing record id is "jane.doe").
 The collection is "people.ds"
 
 ```shell
-    dataset people.ds join append jane.doe profile.json
+    dataset join people.ds jane.doe profile.json
 ```
 
 The result would look like
@@ -54,7 +55,7 @@ The result would look like
 If you wanted to overwrite the common fields you would use 'join overwrite'
 
 ```shell
-    dataset people.ds join overwrite jane.doe profile.json
+    dataset join -overwrite people.ds jane.doe profile.json
 ```
 
 Which would result in a record like

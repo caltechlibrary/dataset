@@ -4,7 +4,7 @@
 ## Syntax 
 
 ```
-    dataset COLLECTION_NAME attach KEY FILENAME(S)
+    dataset attach COLLECTION_NAME KEY FILENAME(S)
 ```
 
 ## Description

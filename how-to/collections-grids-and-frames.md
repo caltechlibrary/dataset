@@ -54,8 +54,8 @@ This example creates a two column grid with *DOI* and *titles* from a dataset co
 
 
 ```shell
-    dataset Pubs.ds keys >pubs.keys
-    dataset Pubs.ds grid pubs.keys .doi .title
+    dataset keys Pubs.ds >pubs.keys
+    dataset grid Pubs.ds pubs.keys .doi .title
 ```
 
 The 2D JSON array is easy to process in programming languages like Python. Below is an example of using a *grid* for sorting across an entire collection leveraging Python's standard sort method for lists.
@@ -126,8 +126,8 @@ Example creating a frame named "titles-and-dois"
 
 
 ```shell
-    dataset Pubs.ds keys >pubs.keys
-    dataset Pubs.ds frame titles-and-dois pubs.keys .doi .title
+    dataset keys Pubs.ds >pubs.keys
+    dataset frame -i pubs.keys Pubs.ds titles-and-dois .doi .title
 ```
 
 Or in python
@@ -144,7 +144,7 @@ Or in python
 Example of getting the contents of an existing frame.
 
 ```shell
-    dataset Pubs.ds frame titles-and-dois
+    dataset frame Pubs.ds titles-and-dois
 ```
 
 Or in python
@@ -159,7 +159,7 @@ Or in python
 Regenerating "titles-and-dois".
 
 ```shell
-    dataset Pubs.ds reframe titles-and-dois
+    dataset reframe Pubs.ds titles-and-dois
 ```
 
 Or in python
@@ -173,7 +173,7 @@ Or in python
 
 ```shell
     dataset Pubs.ds keys >updated.keys
-    dataset Pubs.ds reframe titles-and-dios updated.keys
+    dataset reframe -i updated.keys Pubs.ds reframe titles-and-dios
 ```
 
 In python
@@ -188,7 +188,7 @@ In python
 Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns.
 
 ```shell
-    dataset Pubs.ds frame-labels titles-and-dois '["Column 1", "Column 2"]'
+    dataset frame-labels Pubs.ds titles-and-dois '["Column 1", "Column 2"]'
 ```
 
 In python
@@ -197,21 +197,6 @@ In python
     err = dataset.frame_labels('Pubs.ds', 'titles-and-dois', ["Column 1", "Column 2"])
 ```
 
-
-### Updating column types
-
-Column types are represented as a JSON array. Column types provide hints to the indexer when indexing a collection or frame. The standard JSON types are supported (e.g. string, number, object, list) plus keyword, number, datetime, and geolocation. In this example we will change are
-will change the column types from `[``"``string``"``,` `"``string``"``]` to `[``"``string``"``,``"``keyword``"``]`
-
-```shell
-    err = dataset Pubs.ds frame-types titles-and-dois '["string", "keyword"]'
-```
-
-In python
-
-```python
-    err = dataset.frame_types('Pubs.ds', 'titles-and-dois', ["string","keyword"])
-```
 
 ### Removing a frame
 
@@ -228,7 +213,7 @@ Or in python
 ## Listing available frames
 
 ```shell
-    dataset Pubs.ds frames
+    dataset frames Pubs.ds
 ```
 
 Or in python
@@ -271,7 +256,7 @@ In both examples the JSON representing our raw data seen in the file
 From an existing collection, `grid_test.ds`, create a list of keys.
 
 ```shell
-    dataset grid_test.ds keys > grid_test.keys
+    dataset keys grid_test.ds >grid_test.keys
 ```
 
 ### Check a few records to see which will go into our grid.
@@ -282,7 +267,7 @@ in our grid (notice we're using the `-p` option to pretty print
 the JSON record).
 
 ```shell
-    dataset -p grid_test.ds read "gutenberg:21489"
+    dataset read -p grid_test.ds "gutenberg:21489"
 ```
 
 The fields that we're interested in are "._Key", ".title", ".authors",
@@ -293,7 +278,7 @@ Now that we have a list of keys we're interested and and know the
 dot paths to the fields we're interested in we can create our grid.
 
 ```shell
-    dataset -p grid_test.ds grid grid_test.keys "._Key" ".title" ".authors" 
+    dataset grid -p -i=grid_test.keys grid_test.ds "._Key" ".title" ".authors" 
 ```
 
 The results are a 2D array wich rows for each key and cells matching the

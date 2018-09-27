@@ -26,8 +26,8 @@ _friends-sample.ds_
 On the command line --
 
 ```shell
-    dataset -sample=5 friends.ds keys > sample.keys
-    dataset friends.ds clone sample.keys friends-sample.ds
+    dataset keys -sample=5 friends.ds > sample.keys
+    dataset clone -i sample.keys friends.ds friends-sample.ds
 ```
 
 In Python I am assuming you have defined a function called "get_sample_keys()" your self.
@@ -52,7 +52,7 @@ apply statistical methods.
 Let's take a shorten version of generating a sample of size 5 for our friends collection.
 
 ```shell
-    dataset friends.ds clone-sample 5 friends-sample.ds
+    dataset clone-sample -size=5 friends.ds friends-sample.ds
 ```
 
 Likewise in python this becomes
@@ -71,7 +71,7 @@ _training.ds_ and _test.ds_.
 
 
 ```shell
-    dataset friends.ds clone-sample 5 training.ds test.ds
+    dataset clone-sample -size=5 friends.ds training.ds test.ds
 ```
 
 ```python

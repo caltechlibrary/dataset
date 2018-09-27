@@ -12,8 +12,8 @@ existing keys while the anod the second is of replace the keys of
 the frame before regenerating it.
 
 ```shell
-    dataset example.ds reframe f1
-    dataset example.ds reframe f1 subset.keys
+    dataset reframe example.ds f1
+    dataset reframe example.ds f1 subset.keys
 ```
 
 In python

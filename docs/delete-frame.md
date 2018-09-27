@@ -4,10 +4,10 @@
 This is used to removed a frame from a collection.
 
 ```shell
-    dataset example.ds delete-frame f1
+    dataset delete-frame example.ds f1
 ```
 
-    delete frame f1 from collection called example.ds
+delete frame f1 from collection called example.ds
 
 In python
 

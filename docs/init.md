@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLECT_NAME init
+    dataset init COLLECT_NAME
 ```
 
 ## Description
@@ -21,7 +21,7 @@ for Google Cloud Storage the prefix is gs://.
 ## Usage
 
 The following three example commands create a dataset collection 
-named "data".  First one local disc in the current currectory, 
+named "data.ds".  First one local disc in the current currectory, 
 then in S3 and again in Google Cloud Storage. In the case of S3 
 and Google Cloud Storage the buckets exist and are named 
 "stuff.example.org". Also for both remote storage options it is 
@@ -29,9 +29,9 @@ assumed you've authenticated and have your environment setup
 correctly.
 
 ```
-    dataset data init
-    dataset s3://stuff.example.org/data init
-    dataset gs://stuff.example.org/data init
+    dataset init data.ds
+    dataset init s3://stuff.example.org/data.ds
+    dataset init gs://stuff.example.org/data.ds
 ```
 
 NOTE: After each envocation of `dataset init` if all went well 
@@ -40,22 +40,22 @@ set the environment variable DATASET.  For our examples above
 that would look like
 
 ```
-    dataset data init
-    export DATASET="data"
+    dataset init data.ds
+    export DATASET="data.ds"
 ```
 
 or for the Amazon S3 example
 
 ```
-    dataset s3://stuff.example.org/data init
-    export DATASET="s3://stuff.example.org/data"
+    dataset init s3://stuff.example.org/data.ds
+    export DATASET="s3://stuff.example.org/data.ds"
 ```
 
 or for the Google storage example
 
 ```
-    dataset gs://stuff.example.org/data init
-    export DATASET="gs://stuff.example.org/data"
+    dataset init gs://stuff.example.org/data.ds
+    export DATASET="gs://stuff.example.org/data.ds"
 ```
 
 ### S3 environment example

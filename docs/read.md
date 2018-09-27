@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME read KEY
+    dataset read COLLECTION_NAME KEY
 ```
 
 ## Description
@@ -19,7 +19,7 @@ An example we're assuming there is a JSON document with a KEY
 of "r1". Our collection name is "data.ds"
 
 ```shell
-    dataset data.ds read r1
+    dataset read data.ds r1
 ```
 
 Related topics: [keys](keys.html), [create](create.html), [update](update.html), [delete](delete.html)

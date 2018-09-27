@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset [OPTIONS] COLLECTION_NAME haskey KEY_TO_CHECK_FOR
+    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
 ```
 
 ## Description
@@ -15,8 +15,8 @@ found, "false" otherwise. The collection name is "people.ds"
 ## Usage
 
 ```
-    dataset people.ds haskey '0000-0003-0900-6903'
-    dataset people.ds haskey r1
+    dataset haskey people.ds '0000-0003-0900-6903'
+    dataset haskey people.ds r1
 ```
 
 Related topics: [keys](keys.html)

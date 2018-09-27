@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME attachments KEY
+    dataset attachments COLLECTION_NAME KEY
 ```
 
 ## Description
@@ -17,7 +17,7 @@ in the collection.
 List all the attachments for _k1_ in collection "stats.ds".
 
 ```shell
-    dataset stats.ds attachments k1
+    dataset attachments stats.ds k1
 ```
 
 Related topics: [attach](attach.html), [detach](detach.html) and [prune](prune.html)

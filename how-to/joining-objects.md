@@ -21,7 +21,7 @@ You also have an external JSON document called profile.json. It looks like
 You can merge the unique fields in profile.json with your existing jane.doe record
 
 ```shell
-    dataset people.ds join update jane.doe profile.json
+    dataset join people.ds jane.doe profile.json
 ```
 
 The result would look like
@@ -33,7 +33,7 @@ The result would look like
 If you wanted to overwrite the common fields you would use 'join overwrite'
 
 ```shell
-    dataset people.ds join overwrite jane.doe profile.json
+    dataset join -overwrite people.ds jane.doe profile.json
 ```
 
 Which would result in a record like

@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME update KEY
+    dataset update COLLECTION_NAME KEY
 ```
 
 ## Description
@@ -27,10 +27,10 @@ document from standard input and save the update to "jane.doe".
 The collection name is "people.ds".
 
 ```shell
-    dataset people.ds update jane.doe '{"name":"Jane Doiel"}'
-    dataset people.ds update jane.doe jane-doe.json
-    dataset -i jane-doe.json people.ds update jane.doe
-    cat jane-doe.json | dataset people.ds update jane.doe
+    dataset update people.ds jane.doe '{"name":"Jane Doiel"}'
+    dataset update people.ds jane.doe jane-doe.json
+    dataset update -i jane-doe.json people.ds jane.doe
+    cat jane-doe.json | dataset update people.ds jane.doe
 ```
 
 Related topics: [keys](keys.html), [create](create.html), [read](read.html), [delete](delete.html)

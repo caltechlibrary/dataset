@@ -3,14 +3,11 @@
 
 ## Bugs
 
-+ [ ] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
-    + [x] confirm init for s3:// collections
++ [ ] check, repair and migrate are failing for cloud storage
+    + [ ] need a working file walker for S3 and GS storage ...
     + [ ] confirm check for s3:// collections
-        - need something other than a file walker for S3 and GS storage ...
     + [ ] confirm repair for s3:// collections
-        - need something other than a file walker for S3 and GS storage ...
     + [ ] confirm migrate for s3:// collections
-        - need something other than a file walker for S3 and GS storage ...
 
 ## Next (prep for v1.0.0)
 
@@ -28,18 +25,6 @@
 
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
 + [ ] Add an option for Oxford Common File Layout in addition to buckets and pairtree
-+ [ ] Replace import/export with sync for CSV and Google Sheet
-    - a collection frame defines/controls the relationship between a spreadsheet's rows/columns and a collection's records/field values
-    - a collection's frame labels are expected to match column names in row zero of spreadsheet
-    - a frame's grid's zero column (collection keys) map to/from column zero of the spreadsheeet
-    - order of args determines source and target when copying rows between a frame and spreadsheet
-        - `dataset sync-csv MyCollection.ds MySpreadsheet.csv` would copy data from collection to spreadsheet
-        - `dataset sync-csv MySpreadsheet.csv MyCollections.ds` would copy data from collection to spreadsheet
-        - `daatset sync-csv -prune MyCollectiond.ds MySpreadsheet.csv` would remove rows from spreadsheet that didn't have matching records in collection
-    + [ ] In _dataset_ add `sync-gsheet` for interactive with GSheets (replacing import/export)
-    + [ ] In _dataset_ add `sync-csv` for interactiving with CSV rows (replacing import/export)
-+ [ ] Add support for generating Lunrjs indexes automatically inside the collection folder
-    + [ ] build a simple web UI for exploring collection (read only) via web browser
 + [ ] Sort out cross compiling libdataset shared library for Python module
 + [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
 + [ ] Add Experimental R _dataset_ module for scripting collection management in R
@@ -55,15 +40,13 @@
 + [ ] Documentation updates
     - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 + [ ] Evaluate adding namaste verb for collections
-    - `dataset COLLECT_NAME namaste who "Doiel, R. S."`
+    - `dataset namaste COLLECT_NAME who "Doiel, R. S."`
     - namaste feilds should be added in collection.json too
 + [ ] Consider implementing Sword importer(s)/exporter(s) (v3? when spec is settled)
 + [ ] Consider implementing an EPrint 3.x importer/exporter
-+ [x] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
-+ [ ] `dataset COLLECTION_NAME index-frame INDEX_NAME` - generate a Lunrjs or Bleve Index for search
-+ [ ] `dataset COLLECTION_NAME crate FRAME_NAME CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
++ [ ] `dataset index-frame COLLECTION_NAME FRAME_NAME INDEX_NAME` - generate a Lunrjs or Bleve Index for search
++ [ ] `dataset ccreate COLLECTION_NAME FRAME_NAME CRATE_NAME` - generate a [datacreate](http://ptsefton.com/2017/10/19/datacrate.htm) from a collection for given keys
 + [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
-+ [ ] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
 + [ ] dataset explorer tool, possibly electron base for single user exploration of dataset collections
     - Browser based for UI, localhost restrict server for interacting with file system
     - Interactively build up of command strings, display results and saving off commands to runnable Bash scripts
@@ -97,6 +80,10 @@
 
 ## Completed
 
++ [x] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
+    + [x] confirm init for s3:// collections
++ [x] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities
++ [x] Consider changing from aa-zz round robin buckets to a [pairtree](https://confluence.ucop.edu/display/Curation/PairTree) as buckets per OCFL
 + [x] Sync: When you add columns to Spreadsheet in Frame need to make sure the order is consistent and update the Header row to reflect it.
 + [x] Repair/check should work on S3 and Google Cloud Storage
     + needs testing
