@@ -59,6 +59,7 @@
 - [gsheet integration](../how-to/gsheet-integration.html)
 - [getting-started-with-dataset](../how-to/getting-started-with-dataset.html)
 - [grid](grid.html)
+- [hasframe](hasframe.html)
 - [haskey](haskey.html)
 - [import](import-csv.html) (csv)
 - [import](import-gsheet.html) (gsheet)

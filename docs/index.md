@@ -40,6 +40,7 @@ by collection and JSON document level.
     + [reframe](reframe.html)
     + [frame-labels](frame-labels.html)
     + [delete-frame](delete-frame.html)
+    + [hasframe](hasframe.html)
 
 ### JSON Document level
 

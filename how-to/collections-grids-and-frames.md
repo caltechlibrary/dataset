@@ -1,28 +1,39 @@
 
 # COLLECTIONS, GRIDS AND FRAMES
 
-*dataset* stores JSON objects and can store a form of data frame based on grids of data. This document outlines
-the ideas behings *grid* and *frame* support in *dataset*.
+*dataset* stores JSON objects and can store a form of data frame based 
+on grids of data. This document outlines the ideas behings *grid* and 
+*frame* support in *dataset*.
 
 ## COLLECTIONS
 
-Collections are at the core of the *dataset* tool. A collection is a bucketed directory structure storing a JSON 
-objects in plaintext with optional attachments. The root folder for the collection contains a _collection.json_ file
-with the metadata associating a name to a bucket for the store json object. One of the guiding ideas behind dataset
-was to keep everything as plain text whenever reasonable.  The dataset project provides Go package for working
-with dataset collections, a python package (based on a shared library with the Go package) and command line tool.
+Collections are at the core of the *dataset* tool. A collection is a 
+bucketed directory structure storing a JSON objects in plaintext with 
+optional attachments. The root folder for the collection contains a 
+_collection.json_ file with the metadata associating a name to a bucket 
+for the store json object. One of the guiding ideas behind dataset was to 
+keep everything as plain text whenever reasonable.  The dataset project 
+provides Go package for working with dataset collections, a python package 
+(based on a shared library with the Go package) and command line tool.
 
-Dataset collections are typically stored on your local disc but may be stored easily in Amazon's S3 (or compatible
-platform) or Google's cloud storage. Dataset and also import and export to/from a Google sheet or Excel file.
+Dataset collections are typically stored on your local disc but may be 
+stored easily in Amazon's S3 (or compatible platform) or Google's cloud 
+storage. Dataset and also import and export to/from a Google sheet or CSV
+file.
 
-Dataset isn't a database (there are plenty of JSON oriented databases out there, e.g. CouchDB, MongoDB). Rather
-the focus is on providing a mechanism to manage JSON objects, group them and to provide alternative data shapes for
-the viewing the collection (e.g. frames, grids).
+Dataset isn't a database (there are plenty of JSON oriented databases out 
+there, e.g. CouchDB, MongoDB). Rather the focus is on providing a 
+mechanism to manage JSON objects, group them and to provide alternative 
+data shapes for the viewing the collection (e.g. frames, grids).
 
 
 ## GRIDS
 
-A *grid* is a 2D JSON array based on combining a set of keys (rows) and a list of dot paths (columns).  It is similar to the data shape you'd use in spreadsheets. It is a convenient data shape for build indexes, filtering and sorting.  *grid* support is also available in *dataset*'s Python 3 package  
+A *grid* is a 2D JSON array based on combining a set of keys (rows) and a 
+list of dot paths (columns).  It is similar to the data shape you'd use in 
+spreadsheets. It is a convenient data shape for build indexes, filtering 
+and sorting.  *grid* support is also available in *dataset*'s Python 3.7 
+package  
 
 Here's an example of a possible grid for titles and authors.
 
@@ -50,15 +61,28 @@ we've added a link to Project Gutenberg as a third column.
 
 ### A SIMPLE GRID EXAMPLE
 
-This example creates a two column grid with *DOI* and *titles* from a dataset collection called *Pubs.ds* using the *dataset* command. Step one, generate a list of keys saving them to a file and step two is using that file of keys to generate the grid specifying the “.doi” and “.title” fields found in the JSON objects stored in the Pub.ds collection. If either “.doi” or “.title” is missing in a JSON object then a “null” value will be used. This way the grid rows retain the same number of cells.
+This example creates a two column grid with *DOI* and *titles* from a 
+dataset collection called *Pubs.ds* using the *dataset* command. Step one, 
+generate a list of keys piping them into dataset using the grid verb.
+If you didn't want to use a pipe you could also use an option to read
+the keys from a file or to use all keys. The dataset keys command sends
+the keys to standard out one key per line, the dataset grid command reads
+the keys from standard input (one per line) and then creates a 
+corresponding grid based on the dotpaths provided. In this example
+we're using the paths ".doi" and ".title" from our "Pub.ds" collection.
+If either “.doi” or “.title” is missing in a JSON object then a “null” 
+value will be used. This way the grid rows retain the same number of 
+cells.
 
 
 ```shell
-    dataset keys Pubs.ds >pubs.keys
-    dataset grid Pubs.ds pubs.keys .doi .title
+    dataset keys Pubs.ds |\
+        dataset grid Pubs.ds .doi .title
 ```
 
-The 2D JSON array is easy to process in programming languages like Python. Below is an example of using a *grid* for sorting across an entire collection leveraging Python's standard sort method for lists.
+The 2D JSON array is easy to process in programming languages like Python. 
+Below is an example of using a *grid* for sorting across an entire 
+collection leveraging Python's standard sort method for lists.
 
 ```python
     import sys
@@ -80,44 +104,40 @@ The 2D JSON array is easy to process in programming languages like Python. Below
 
 ## THINKING ABOUT FRAMES
 
-Implementing the grid verb started me thinking about the similarity to data frames in Python, Julia and Octave. A *frame* could be defined as a *grid* plus *metadata* about the *grid*. In this context *dataset* could operate on *grid*s stored as one or more *frame*s. This in turn could lead to interesting processing pipelines, e.g. object(s) to collections, collections to grids, grids to frames which can then be stored back as objects in collections.
+Implementing the grid verb started me thinking about the similarity to 
+data frames in Python, Julia and Octave. A *frame* is defined as a *grid* 
+plus *metadata* about how the *grid* was created. In this context 
+*dataset*  stores the *grid*s in the collection so it will persist for
+later processing. 
 
-To make a *frame* from a *grid* we add the missing bits of useful metadata. At a glance the dot paths that define the columns of the grid, likewise the record keys for creating the rows are useful metadata. Both could be captured when the grid was created. It also would be useful to include labels for exporting to spreadsheets. A cell's label could be automatically generated by running a dot path through a translation function. You could include the time the grid was generated as well as the collection name of its origin. It would be handy if you could name the frame too. 
+To make a *frame* from a *grid* we add the missing bits of useful metadata. 
+At a glance the dot paths that define the columns of the grid, likewise 
+the record keys for creating the rows are useful metadata. Both are 
+captured when the grid (i.e. frame) is created. We also have the option
+of adding labels for moving data to and from spreadsheets. A cell's label 
+could be automatically generated by running a dot path through a 
+translation function. Finally because a frame persists is needs a name.
 
-The *frame_name* is the only missing information from the *grid* command and is easy enough to add from it's syntax.
+Putting all this together we defined a persistant grid (frame) by
+providing a frame name, a list of dotpaths to populate columns of the
+grid and a list of keys (usually read from standard input). We can
+optionally set labels for the columns that are useful when 
+exporting or synchronizing data with a spreadsheet (e.g. a CSV file or 
+Google Sheet).
 
-
-Defining the *frame*'s metadata manually could get cumbersome. It feels like a similar problem as defining search indexes. If we start with a rich context at *grid* creation fleshing out the *frame* definition would be adding the frame's name.
-
-A system of *frame*s could be stored alongside *dataset*'s collection.json file. This allows *frame* definitions to travel with the collection for later reuse or to be automatically refreshed.
-
-
-```json
-    {
-       "frame_name": ...,
-       "collection_name": ...,
-       "updated": TIMESTAMP,
-       "created": TIMESTAMP,
-       "labels": [ ... ],
-       "dot_paths": [ ... ],
-       "column_types": [ ... ],
-       "grid":  [[ ... ], ... ]
-    }
-```
-
-    sketch of frame structure
-
-*frame* definitions plus column type detection may allow  for  automatic index definition generation to be used by Bleve, Solr, and Lunr based search engines.
-
+The a map to frame names is stored in our collection's collection.json
+Each frame itself is stored in a subdirectory of our collection. If you
+copy/clone a collection the frames can travel with it.
 
 ## FRAME OPERATIONS
 
-- frame (read, define a frame)
-- frames (return a list of frame names)
-- reframe (refresh the content of a frame’s grid optionally replacing the keys associated in the frame)
-- frame-labels (explicitly set the labels for a frame)
-- frame-types (explicitly set the column types for a frame, e.g. datetime, geoloc, keyword)
-- delete-frame
++ frame (read, define a frame)
++ frames (return a list of frame names)
++ reframe (refresh the content of a frame’s grid optionally replacing 
+  the keys associated in the frame)
++ frame-labels (explicitly set the labels for a frame)
++ hasframe (check to see if a frame exists in the collection)
++ delete-frame
 
 
 ### Create a frame
@@ -201,13 +221,13 @@ In python
 ### Removing a frame
 
 ```shell
-    dataset Pubs.ds remove-frame titles-and-dios
+    dataset delete-frame Pubs.ds titles-and-dios
 ```
 
 Or in python
 
 ```python
-    err = dataset.remove_frame('Pubs.ds', 'titles-and-dois')
+    err = dataset.delete_frame('Pubs.ds', 'titles-and-dois')
 ```
 
 ## Listing available frames
@@ -223,17 +243,23 @@ Or in python
 ```
 
 
-## Other possibilities
+## A future possibility
 
-One possible use of frames would be in rendering search indexes like pthose used by [Bleve](https://blevesearch.com)
-or [Lunrjs](https://lunrjs.com). A frame proves all information needed for transforming the frame's. value (i.e. grid) into minimalist documents for indexing.  One workflow for creating a searchable collection might be
+One possible use of frames would be in rendering search indexes like 
+those used by [Bleve](https://blevesearch.com) or 
+[Lunrjs](https://lunrjs.com). A frame proves most of the information 
+needed for transforming the frame's. value (i.e. grid) into minimalist 
+documents for indexing.  One workflow for creating a searchable collection 
+might be
 
 
 1. Harvest your JSON records into a dataset collection
 2. Generate a list of keys for the JSON documents you want to search
-3. With the list of keys generate a frame for the columns that you want to index
-4. Update labels and column types as necessary
-5. Run a conversion script to convert the frame into the index definition used by our search platform (e.g. pre-calucate Lunrjs indexes or write a Bleve index)
+3. Generate a frame for the columns that you want to index
+4. Update labels as necessary
+5. Run a conversion script to convert the frame into the index definition 
+   used by our search platform (e.g. pre-calucate Lunrjs indexes or write 
+   a Bleve index)
 
 
 # Data Grids
@@ -262,9 +288,10 @@ From an existing collection, `grid_test.ds`, create a list of keys.
 ### Check a few records to see which will go into our grid.
 
 We have the following keys  in our collection "gutenberg:21489",
-"gutenberg:2488", "gutenberg:21839", "gutenberg:3186", "hathi:uc1321060001561131". Let's pick the first one and see what fields we might want
-in our grid (notice we're using the `-p` option to pretty print
-the JSON record).
+"gutenberg:2488", "gutenberg:21839", "gutenberg:3186", 
+"hathi:uc1321060001561131". Let's pick the first one and see what fields 
+we might want in our grid (notice we're using the `-p` option to pretty 
+print the JSON record).
 
 ```shell
     dataset read -p grid_test.ds "gutenberg:21489"
