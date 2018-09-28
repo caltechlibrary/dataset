@@ -31,8 +31,8 @@
 <p>In this example we create a list of keys using the <code>-sample</code> option
 and then clone those keys into a new collection called <em>sample.ds</em>.</p>
 
-<pre><code class="language-shell">    dataset -sample=3 mycollection.ds keys &gt; sample.keys
-    dataset mycollection.ds clone sample.keys sample.ds
+<pre><code class="language-shell">    dataset keys -sample=3 mycollection.ds &gt; sample.keys
+    dataset clone -i sample.keys mycollection.ds sample.ds
 </code></pre>
 
 <p>Related topics: <a href="clone-sample.html">clone-sample</a></p>

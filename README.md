@@ -6,8 +6,7 @@ library for working with [JSON](https://en.wikipedia.org/wiki/JSON)
 objects as collections. Collections can be stored on disc or in 
 Cloud Storage.  JSON objects are stored in collections as 
 plain UTF-8 text. This means the objects can be accessed with common 
-Unix text processing tools as well as most programming languages with 
-text processing support. 
+Unix text processing tools as well as most programming languages.
 
 The [dataset](docs/dataset.html) command line tool supports common data 
 manage operations such as initialization of collections, creation, 
@@ -45,21 +44,26 @@ except JSON object attachments, in plain UTF-8 text. Attachments
 are stored using the venerable "tar" archive format. 
 
 The choice of plain UTF-8 and tar balls is intended to help future 
-proof reading dataset collections well into the future.
-Care has been taken to keep _dataset_ simple enough and light weight 
-enough that it will run on a machine as small as a Raspberry Pi while 
-being equally comfortable on a more resource rich server or desktop 
-environment.
+proof reading dataset collections.  Care has been taken to keep 
+_dataset_ simple enough and light weight enough that it will run 
+on a machine as small as a Raspberry Pi while being equally 
+comfortable on a more resource rich server or desktop 
+environment. It should be easy to do alternative implementations
+in any language that has good string, JSON support and memory
+management.
 
 
 ## Workflows
 
 A typical library processing pattern is to write a "harvester" 
-which then stores it results in a _dataset_ collection. The harvesters
-we use are written either as simple shell scripts, Python programs or
-Go programs. Once you have your JSON objects in a dataset collection
-it is easy to iterate over them and augment them further from the shell,
-Python or other Go based programs.
+which then stores it results in a _dataset_ collection. Write something
+that transforms or aggregates harvested options and then write
+a final rendering program to prepare the data for the web. The
+the hearvesters are typically written in Python or as a simple Bash
+script storing the results in dataset. Depending on the performance
+needs our transform and aggregates stage are written either in Python
+or Go and our final rendering stages are typically written in Python or
+as simple Bash scripts.
 
 
 ## Features

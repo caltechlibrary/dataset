@@ -217,7 +217,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vFrames      *cli.Verb // frames
 	vReframe     *cli.Verb // reframe
 	vFrameLabels *cli.Verb // frame-labels
-	vFrameTypes  *cli.Verb // frame-types
 	vFrameDelete *cli.Verb // delete-frame
 	vSyncSend    *cli.Verb // sync-send
 	vSyncRecieve *cli.Verb // sync-recieve
@@ -1667,58 +1666,6 @@ func fnFrameLabels(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 	return 0
 }
 
-// fnFrameTypes - set the column types (for column values) associated with a frame's grid.
-func fnFrameTypes(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	var (
-		collectionName string
-		c              *dataset.Collection
-		frameName      string
-		types          []string
-		err            error
-	)
-
-	err = flagSet.Parse(args)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	args = flagSet.Args()
-
-	switch {
-	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name, frame name and types\n")
-		return 1
-	case len(args) == 1:
-		fmt.Fprintf(eout, "Missing frame name and types\n")
-		return 1
-	case len(args) == 2:
-		fmt.Fprintf(eout, "types\n")
-		return 1
-	case len(args) >= 3:
-		collectionName, frameName, types = args[0], args[1], args[2:]
-	default:
-		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
-		return 1
-	}
-
-	c, err = dataset.Open(collectionName)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	defer c.Close()
-
-	err = c.FrameTypes(frameName, types)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	if quiet == false {
-		fmt.Fprintf(out, "OK")
-	}
-	return 0
-}
-
 // fnHasFrame - check if a frame has been defined in collection
 func fnHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
@@ -3145,10 +3092,6 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// NOTE: Labels are used with sync-send/sync-receive to map dotpaths to column names
 	vFrameLabels = app.NewVerb("frame-labels", "set labels for all columns in a frame", fnFrameLabels)
 	vFrameLabels.SetParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
-
-	// NOTE: Types are used  when defining search indexes
-	vFrameTypes = app.NewVerb("frame-types", "set the types for all columns in a frame", fnFrameTypes)
-	vFrameTypes.SetParams("COLLECTION", "FRAME_NAME", "TYPE", "[TYPE ...]")
 
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
 	vReframe.SetParams("COLLECTION", "FRAME_NAME")

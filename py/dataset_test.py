@@ -645,8 +645,6 @@ def test_frame(t, c_name):
     err = dataset.frame_labels(c_name, f_name, labels)
     if err != '':
         t.error(err)
-    f_types = ['string', 'string', 'number', 'string', 'composite']
-    err = dataset.frame_types(c_name, f_name, f_types)
     if err != '':
         t.error(err)
     err = dataset.delete_frame(c_name, f_name)

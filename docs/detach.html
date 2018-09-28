@@ -28,8 +28,8 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME detach KEY
-    dataset COLLECTION_NAME detach KEY ATTACHMENT_NAME
+<pre><code>    dataset detach COLLECTION_NAME KEY
+    dataset detach COLLECTION_NAME KEY ATTACHMENT_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -42,12 +42,12 @@ attached to a JSON record in the collection with the matching KEY</p>
 <p>Write out all the attached files for k1 in collection named
 &ldquo;publications.ds&rdquo;</p>
 
-<pre><code class="language-shell">    dataset publications.ds detach k1
+<pre><code class="language-shell">    dataset detach publications.ds k1
 </code></pre>
 
 <p>Write out only the <em>stats.xlsx</em> file attached to k1</p>
 
-<pre><code class="language-shell">    dataset publications.ds detach k1 stats.xlsx
+<pre><code class="language-shell">    dataset detach publications.ds k1 stats.xlsx
 </code></pre>
 
 <p>Related topics: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, and <a href="prune.html">prune</a></p>

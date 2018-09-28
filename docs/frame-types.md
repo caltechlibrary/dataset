@@ -1,19 +1,16 @@
 
-# frames-types
+# hasframe
 
-Set the types associated with the dotpath in the frame. If 
-the frame "f1" has the following dotpaths - .title, .authors, and .year
-then set the types as string, string and year. Not the order
-the dotpaths are defined is the order you're apply the types.
+Check to see if a frame name exists in a collection.
 
 ```shell
-    dataset pubs.ds frame-types f1 string string year
+    dataset hasframe pubs.ds f1
 ```
 
 In python
 
 ```python
-    err = dataset.frame_types('pubs.ds', 'f1', ['string', 'string', 'year'])
+    err = dataset.has_frame('pubs.ds', 'f1')
 ```
 
 Related topics: [frame](frame.html), [frames](frames.html), [frame-labels](frame-labels.html), [reframe](reframe.html), [delete-frame](delete-frame.html)

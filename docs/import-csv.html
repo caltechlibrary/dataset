@@ -24,16 +24,17 @@
 </nav>
 
 <section>
-<h1>import-csv</h1>
+<h1>import</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME import-csv CSV_FILENAME COLUMN_NO_AS_KEY
+<pre><code>    dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER
+    dataset import GSHEET_ID_AND_SHEET_NAME ID_COLUMN_NO [CELL_RANGE]
 </code></pre>
 
 <h2>Description</h2>
 
-<p><em>import-csv</em> adds JSON documents to a collection from a CSV table.</p>
+<p><em>import</em> adds JSON documents to a collection from a CSV table.</p>
 
 <h2>Usage</h2>
 
@@ -41,14 +42,14 @@
 The first column (column 1) is used as the value for KEY if
 specified.  Our collection is named &ldquo;data.ds&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset data.ds import-csv data.csv 1
+<pre><code class="language-shell">    dataset import data.ds data.csv 1
 </code></pre>
 
 <p>By default the header row of the table (the first row of the table)
 is used as the attribute names of the JSON document you create on
 import.  If you don&rsquo;t want that behavior you can use
 the &ldquo;-use-header-row=false&rdquo; option and the fields will be in the
-form of &ldquo;column_IDNO&rdquo; where IDNO is replaced with a left zero
+form of &ldquo;column_NO&rdquo; where &ldquo;NO&rdquo; is replaced with a left zero
 padded column number (e.g. column_001, column_002, column_003).</p>
 
 <p>Related topics: <a href="export-csv.html">export-csv</a>, <a href="import-gsheets.html">import-gsheets</a>, <a href="export-gsheet.html">export-gsheets</a></p>

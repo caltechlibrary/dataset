@@ -48,8 +48,7 @@ type DataFrame struct {
 	SampleSize int    `json:"sample_size"`
 
 	// Derived or explicitly set after creation
-	Labels      []string `json:"labels,omitempty"`
-	ColumnTypes []string `json:"column_types,omitempty"`
+	Labels []string `json:"labels,omitempty"`
 }
 
 // hasFrame checks if a frame is defined already
@@ -169,17 +168,12 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbos
 	}
 	f.Grid = g
 	labels := []string{}
-	colTypes := []string{}
 	// NOTE: derive labels from dotPaths and default column types to string
 	for _, p := range dotPaths {
 		l := dotpath.ToLabel(p)
 		labels = append(labels, l)
-		// Set a default column type of string
-		colTypes = append(colTypes, "string")
 	}
 	f.Labels = labels[:]
-	// FIXME: Derive column types from grid values
-	f.ColumnTypes = colTypes[:]
 	err = c.setFrame(name, f)
 	return f, err
 }
@@ -263,20 +257,6 @@ func (c *Collection) FrameLabels(name string, labels []string) error {
 		return fmt.Errorf("number of columns (%d) does not match the number of labels (%d)", len(f.DotPaths), len(labels))
 	}
 	f.Labels = labels[:]
-	f.Updated = time.Now()
-	return c.setFrame(name, f)
-}
-
-// FrameTypes sets the types associated with a frame's columns, types list must match the number of dot paths (columns) in the frame.
-func (c *Collection) FrameTypes(name string, columnTypes []string) error {
-	f, err := c.getFrame(name)
-	if err != nil {
-		return err
-	}
-	if len(f.DotPaths) != len(columnTypes) {
-		return fmt.Errorf("number of columns (%d) does not match the number of column types (%d)", len(f.DotPaths), len(columnTypes))
-	}
-	f.ColumnTypes = columnTypes[:]
 	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }

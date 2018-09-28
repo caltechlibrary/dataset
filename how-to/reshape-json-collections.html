@@ -181,11 +181,11 @@ into an object. Updating our template the curly brackets and attribute nations g
     }
 </code></pre>
 
-<p>Notice we now have a new <code>.author_display_names</code> attribute in our object. We still see our old <code>.authors</code>. The <em>join update</em> function
+<p>Notice we now have a new <code>.author_display_names</code> attribute in our object. We still see our old <code>.authors</code>. The <em>join</em> function
 will not overwriting fields nor trim others.  It adds the attributes of one object to the other.</p>
 
 <p>Now let&rsquo;s say you decide you&rsquo;d rather have the names in &ldquo;family, given&rdquo; order for the individual names.
-Using <em>join overwrite</em> we can replace the value in <code>.author_display_names</code> with a new one.</p>
+Using <em>join -overwrite</em> we can replace the value in <code>.author_display_names</code> with a new one.</p>
 
 <p><strong>flatten.tmpl</strong> should now look like</p>
 

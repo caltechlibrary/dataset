@@ -73,8 +73,8 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 
 <p>This example creates a two column grid with <em>DOI</em> and <em>titles</em> from a dataset collection called <em>Pubs.ds</em> using the <em>dataset</em> command. Step one, generate a list of keys saving them to a file and step two is using that file of keys to generate the grid specifying the “.doi” and “.title” fields found in the JSON objects stored in the Pub.ds collection. If either “.doi” or “.title” is missing in a JSON object then a “null” value will be used. This way the grid rows retain the same number of cells.</p>
 
-<pre><code class="language-shell">    dataset Pubs.ds keys &gt;pubs.keys
-    dataset Pubs.ds grid pubs.keys .doi .title
+<pre><code class="language-shell">    dataset keys Pubs.ds &gt;pubs.keys
+    dataset grid Pubs.ds pubs.keys .doi .title
 </code></pre>
 
 <p>The 2D JSON array is easy to process in programming languages like Python. Below is an example of using a <em>grid</em> for sorting across an entire collection leveraging Python&rsquo;s standard sort method for lists.</p>
@@ -139,8 +139,8 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 
 <p>Example creating a frame named &ldquo;titles-and-dois&rdquo;</p>
 
-<pre><code class="language-shell">    dataset Pubs.ds keys &gt;pubs.keys
-    dataset Pubs.ds frame titles-and-dois pubs.keys .doi .title
+<pre><code class="language-shell">    dataset keys Pubs.ds &gt;pubs.keys
+    dataset frame -i pubs.keys Pubs.ds titles-and-dois .doi .title
 </code></pre>
 
 <p>Or in python</p>
@@ -153,7 +153,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 
 <p>Example of getting the contents of an existing frame.</p>
 
-<pre><code class="language-shell">    dataset Pubs.ds frame titles-and-dois
+<pre><code class="language-shell">    dataset frame Pubs.ds titles-and-dois
 </code></pre>
 
 <p>Or in python</p>
@@ -165,7 +165,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 
 <p>Regenerating &ldquo;titles-and-dois&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset Pubs.ds reframe titles-and-dois
+<pre><code class="language-shell">    dataset reframe Pubs.ds titles-and-dois
 </code></pre>
 
 <p>Or in python</p>
@@ -176,7 +176,7 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 <h3>Updating keys associated with the frame</h3>
 
 <pre><code class="language-shell">    dataset Pubs.ds keys &gt;updated.keys
-    dataset Pubs.ds reframe titles-and-dios updated.keys
+    dataset reframe -i updated.keys Pubs.ds reframe titles-and-dios
 </code></pre>
 
 <p>In python</p>
@@ -188,25 +188,12 @@ we&rsquo;ve added a link to Project Gutenberg as a third column.</p>
 
 <p>Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns.</p>
 
-<pre><code class="language-shell">    dataset Pubs.ds frame-labels titles-and-dois '[&quot;Column 1&quot;, &quot;Column 2&quot;]'
+<pre><code class="language-shell">    dataset frame-labels Pubs.ds titles-and-dois '[&quot;Column 1&quot;, &quot;Column 2&quot;]'
 </code></pre>
 
 <p>In python</p>
 
 <pre><code class="language-python">    err = dataset.frame_labels('Pubs.ds', 'titles-and-dois', [&quot;Column 1&quot;, &quot;Column 2&quot;])
-</code></pre>
-
-<h3>Updating column types</h3>
-
-<p>Column types are represented as a JSON array. Column types provide hints to the indexer when indexing a collection or frame. The standard JSON types are supported (e.g. string, number, object, list) plus keyword, number, datetime, and geolocation. In this example we will change are
-will change the column types from <code>[</code><code>&quot;</code><code>string</code><code>&quot;</code><code>,</code> <code>&quot;</code><code>string</code><code>&quot;</code><code>]</code> to <code>[</code><code>&quot;</code><code>string</code><code>&quot;</code><code>,</code><code>&quot;</code><code>keyword</code><code>&quot;</code><code>]</code></p>
-
-<pre><code class="language-shell">    err = dataset Pubs.ds frame-types titles-and-dois '[&quot;string&quot;, &quot;keyword&quot;]'
-</code></pre>
-
-<p>In python</p>
-
-<pre><code class="language-python">    err = dataset.frame_types('Pubs.ds', 'titles-and-dois', [&quot;string&quot;,&quot;keyword&quot;])
 </code></pre>
 
 <h3>Removing a frame</h3>
@@ -221,7 +208,7 @@ will change the column types from <code>[</code><code>&quot;</code><code>string<
 
 <h2>Listing available frames</h2>
 
-<pre><code class="language-shell">    dataset Pubs.ds frames
+<pre><code class="language-shell">    dataset frames Pubs.ds
 </code></pre>
 
 <p>Or in python</p>
@@ -261,7 +248,7 @@ is available in the Python module for dataset so we&rsquo;ll show that too.</p>
 
 <p>From an existing collection, <code>grid_test.ds</code>, create a list of keys.</p>
 
-<pre><code class="language-shell">    dataset grid_test.ds keys &gt; grid_test.keys
+<pre><code class="language-shell">    dataset keys grid_test.ds &gt;grid_test.keys
 </code></pre>
 
 <h3>Check a few records to see which will go into our grid.</h3>
@@ -271,7 +258,7 @@ is available in the Python module for dataset so we&rsquo;ll show that too.</p>
 in our grid (notice we&rsquo;re using the <code>-p</code> option to pretty print
 the JSON record).</p>
 
-<pre><code class="language-shell">    dataset -p grid_test.ds read &quot;gutenberg:21489&quot;
+<pre><code class="language-shell">    dataset read -p grid_test.ds &quot;gutenberg:21489&quot;
 </code></pre>
 
 <p>The fields that we&rsquo;re interested in are &ldquo;._Key&rdquo;, &ldquo;.title&rdquo;, &ldquo;.authors&rdquo;,</p>
@@ -281,7 +268,7 @@ the JSON record).</p>
 <p>Now that we have a list of keys we&rsquo;re interested and and know the
 dot paths to the fields we&rsquo;re interested in we can create our grid.</p>
 
-<pre><code class="language-shell">    dataset -p grid_test.ds grid grid_test.keys &quot;._Key&quot; &quot;.title&quot; &quot;.authors&quot; 
+<pre><code class="language-shell">    dataset grid -p -i=grid_test.keys grid_test.ds &quot;._Key&quot; &quot;.title&quot; &quot;.authors&quot; 
 </code></pre>
 
 <p>The results are a 2D array wich rows for each key and cells matching the

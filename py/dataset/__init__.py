@@ -255,11 +255,6 @@ go_frame_labels.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_frame_labels.restype = ctypes.c_int
 
-go_frame_types = lib.frame_types
-# Args: collection_name (string), frame_name (string), type_values (JSON array of string source)
-go_frame_types.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_frame_types.restype = ctypes.c_int
 
 go_delete_frame = lib.delete_frame
 # Args: collection_name (string), frame_name (string)
@@ -661,22 +656,10 @@ def frame_labels(collection_name, frame_name, labels):
         return ''
     return error_message()
 
-def frame_types(collection_name, frame_name, types):
-    src_types = json.dumps(types)
-    ok = go_frame_types(ctypes.c_char_p(collection_name.encode('utf-8')),
-        ctypes.c_char_p(frame_name.encode('utf-8')),
-        ctypes.c_char_p(src_types.encode('utf-8')))
-    if ok == 1:
-        return ''
-    return error_message()
-
 def delete_frame(collection_name, frame_name):
     ok = go_delete_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')))
     if ok == 1:
         return ''
     return error_message()
-
-
-
 

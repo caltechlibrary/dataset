@@ -24,11 +24,11 @@
 </nav>
 
 <section>
-<h1>import-gsheet</h1>
+<h1>import</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
+<pre><code>    dataset import COLLECTION_NAME SHEET_ID SHEET_NAME ID_COL_NO [CELL_RANGE]
 </code></pre>
 
 <ul>
@@ -39,8 +39,7 @@ the URL when you edit your sheet</li>
 lower part of the spreadsheet page in Google Sheets edit view</li>
 <li>CELL_RANGE is a range of cells to import, typically this is &ldquo;A1:Z&rdquo; but maybe adjusted (e.g. if you
 want to skip the first row then you might use &ldquo;A2:Z&rdquo;)</li>
-<li>COL_NO_FOR_ID is the column number to use for the unique ID name of the JSON document. It should
-be an integer starting with &ldquo;1&rdquo;.</li>
+<li>ID_COL_NO is the column number to use for the unique ID name of the JSON document. It should be an integer starting with &ldquo;1&rdquo;.</li>
 </ul>
 
 <h2>Options</h2>
@@ -71,28 +70,15 @@ your collection and replacing the stale data.</p>
 
 <p>In this example we&rsquo;re using the example Google Sheet from the
 Golang Google Sheets API v4 Quickstart. You&rsquo;ll first need to have
-created a <em>client_secret.json</em> file as described in the Step 1 of the
+created a <em>credentials.json</em> file as described in the Step 1 of the
 <a href="https://developers.google.com/sheets/api/quickstart/go">Google Cloud SDK docs</a>
-and placed it in <em>etc/client_secret.json</em>.  Our collection name
+and placed it in <em>etc/credentials.json</em>.  Our collection name
 is &ldquo;DemoStudentList.ds&rdquo;.</p>
 
-<pre><code class="language-shell">    export GOOGLE_CLIENT_SECRET_JSON=&quot;etc/client_secret.json&quot;
+<pre><code class="language-shell">    export GOOGLE_CLIENT_SECRET_JSON=&quot;etc/credentials.json&quot;
     dataset DemoStudentList.ds init
-    dataset DemoStudentList.ds import-gsheet &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; &quot;Class Data&quot; &quot;A1:Z&quot; 1
-    dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read &quot;${KY}&quot;; done
-</code></pre>
-
-<p>In this example we&rsquo;ve used the row number as the ID for the JSON
-document created. This isn&rsquo;t ideal in production as someone may
-re-sort the spreadsheet thus changing the number relationship
-between the row number and the document in your <em>dataset</em> collection.</p>
-
-<p>In this version we&rsquo;ve not used the first row as field names in the
-JSON record. How does it look different? What does &ldquo;-use-header-row=false&rdquo;
-mean? Why is the range different?</p>
-
-<pre><code class="language-shell">    dataset -use-header-row=false DemoStudentList.ds import-gsheet &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; &quot;Class Data&quot; &quot;A2:Z&quot; 1
-    dataset DemoStudentList.ds keys | while read KY; do dataset DemoStudentList.ds read &quot;${KY}&quot;; done
+    dataset import DemoStudentList.ds &quot;1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms&quot; 1 &quot;A1:Z&quot; 
+    dataset keys DemoStudentList.ds | while read KY; do dataset read DemoStudentList.ds &quot;${KY}&quot;; done
 </code></pre>
 
 <p>Related topics: <a href="dotpath.html">dotpath</a>, <a href="export-csv.html">export-csv</a>, <a href="import-csv.html">import-csv</a>, and <a href="export-gsheet.html">export-gsheet</a></p>

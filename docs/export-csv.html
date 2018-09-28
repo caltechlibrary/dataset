@@ -24,36 +24,35 @@
 </nav>
 
 <section>
-<h1>export-csv</h1>
+<h1>export</h1>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME export-csv OUTPUT_NAME FILTER_EXPR FIELDS_TO_EXPORT COLUMN_HEADINGS
+<pre><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
+    dataset export COLLECTION_NAME FRAME_NAME GSHEET_ID GSHEET_NAME [CELL_RANGE]
 </code></pre>
 
 <h2>Description</h2>
 
-<p><em>export-csv</em> will render the contents of a collection as a CSV file.</p>
-
-<p>FILTER_EXPR is an expression that evaluates to <em>true</em> or <em>false</em>
-based on Golang template expressions (see <code>dataset -help filter</code>
-for more explanation).</p>
-
-<p>FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g.
-.id,.title,.pubDate) in the collection&rsquo;s JSON documents.
-(see <code>dataset -help dotpath</code> for more explanation of dotpaths)</p>
+<p><em>export</em> will render the contents of a collection as a CSV file
+or export to a Google Sheet based on a frame defined in the
+collection.</p>
 
 <h2>Usage</h2>
 
-<p>In the following examples we will &ldquo;filter&rdquo; for all records in a
-collection so we use the string &ldquo;true&rdquo;.  The following fields are
-being exported - ._id,.title, and .pubDate with the following
-headings &ndash; id, title and publication date.</p>
+<p>In the following examples we will be using a newly defined
+&ldquo;frame&rdquo; named &ldquo;my-report&rdquo;.  The frame will have the following fields are
+being exported - ._Key,.title, and .pubDate with the following
+labels for those fields &ndash; id, title and publication date.</p>
+
+<pre><code class="language-shell">    dataset frame publications.ds my-report &quot;._Key&quot; &quot;.title&quot; &quot;.pubDate&quot;
+    dataset frame-labels publications.ds my-report &quot;id&quot; &quot;title&quot; &quot;publication date&quot;
+</code></pre>
 
 <p>The example blow creates a CSV file named &lsquo;output.csv&rsquo;. The collection
 is &ldquo;publications.ds&rdquo;.</p>
 
-<pre><code class="language-shell">	dataset publications.ds export-csv titles.csv true '._id,.title,.pubDate' 'id,title,publication date' &gt; output.csv
+<pre><code class="language-shell">	dataset export publications.ds my-report &gt; output.csv
 </code></pre>
 
 <p>Related topics: <a href="import-csv.html">import-csv</a>, <a href="import-gsheet.html">import-gsheets</a>, <a href="export-gsheet.html">export-gsheets</a></p>

@@ -43,7 +43,7 @@ name, email, age.</p>
 
 <p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
 
-<pre><code class="language-shell">    dataset people.ds join update jane.doe profile.json
+<pre><code class="language-shell">    dataset join people.ds jane.doe profile.json
 </code></pre>
 
 <p>The result would look like</p>
@@ -53,7 +53,7 @@ name, email, age.</p>
 
 <p>If you wanted to overwrite the common fields you would use &lsquo;join overwrite&rsquo;</p>
 
-<pre><code class="language-shell">    dataset people.ds join overwrite jane.doe profile.json
+<pre><code class="language-shell">    dataset join -overwrite people.ds jane.doe profile.json
 </code></pre>
 
 <p>Which would result in a record like</p>

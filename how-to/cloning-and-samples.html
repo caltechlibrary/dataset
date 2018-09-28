@@ -50,8 +50,8 @@ you need to supply your own function to get a sample list of keys.</p>
 
 <p>On the command line &ndash;</p>
 
-<pre><code class="language-shell">    dataset -sample=5 friends.ds keys &gt; sample.keys
-    dataset friends.ds clone sample.keys friends-sample.ds
+<pre><code class="language-shell">    dataset keys -sample=5 friends.ds &gt; sample.keys
+    dataset clone -i sample.keys friends.ds friends-sample.ds
 </code></pre>
 
 <p>In Python I am assuming you have defined a function called &ldquo;get_sample_keys()&rdquo; your self.</p>
@@ -73,7 +73,7 @@ apply statistical methods.</p>
 
 <p>Let&rsquo;s take a shorten version of generating a sample of size 5 for our friends collection.</p>
 
-<pre><code class="language-shell">    dataset friends.ds clone-sample 5 friends-sample.ds
+<pre><code class="language-shell">    dataset clone-sample -size=5 friends.ds friends-sample.ds
 </code></pre>
 
 <p>Likewise in python this becomes</p>
@@ -89,7 +89,7 @@ apply statistical methods.</p>
 and test collection. Here&rsquo;s an example with our <em>friends.ds</em> collection creating
 <em>training.ds</em> and <em>test.ds</em>.</p>
 
-<pre><code class="language-shell">    dataset friends.ds clone-sample 5 training.ds test.ds
+<pre><code class="language-shell">    dataset clone-sample -size=5 friends.ds training.ds test.ds
 </code></pre>
 
 <pre><code class="language-python">    err = dataset.clone_sample('friends.ds', 5, 'training.ds', 'test.ds')

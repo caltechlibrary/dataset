@@ -1179,33 +1179,6 @@ func frame_labels(cName *C.char, cFName *C.char, cLabels *C.char) C.int {
 	return C.int(0)
 }
 
-//export frame_types
-func frame_types(cName *C.char, cFName *C.char, cTypes *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	srcTypes := C.GoString(cTypes)
-	error_clear()
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.int(1)
-	}
-	defer c.Close()
-	types := []string{}
-	err = json.Unmarshal([]byte(srcTypes), &types)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal frame types, %s", err)
-		return C.int(1)
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	err = c.FrameTypes(frameName, types)
-	if err != nil {
-		error_dispatch(err, "failed set frame types, %s", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
 //export delete_frame
 func delete_frame(cName *C.char, cFName *C.char) C.int {
 	collectionName := C.GoString(cName)

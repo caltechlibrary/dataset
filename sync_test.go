@@ -436,7 +436,6 @@ id,one,two
 	}
 	f.AllKeys = true
 	f.Labels = []string{"id", "one", "two"}
-	f.ColumnTypes = []string{"string", "string", "string"}
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -468,7 +467,6 @@ id,one,two
 	f.AllKeys = true
 	f.DotPaths = []string{"._Key", ".one", ".two", ".three", ".four", ".five"}
 	f.Labels = []string{"id", "one", "two", "three", "four", "five"}
-	f.ColumnTypes = []string{"string", "string", "string", "string", "string", "string"}
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
 		t.Errorf("%s", err)

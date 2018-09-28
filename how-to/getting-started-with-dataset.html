@@ -68,7 +68,7 @@
 
 <p>I have some friends who are characters in <a href="https://zbs.org">ZBS</a> radio plays. I am going to create and save some of their info in our collection called <strong>friends.ds</strong>. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.</p>
 
-<pre><code class="language-bash">    dataset friends.ds create frieda '{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
+<pre><code class="language-bash">    dataset create friends.ds frieda '{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
 </code></pre>
 
 <p>Notice the &ldquo;OK&rdquo;. Just like <strong>init</strong> the <strong>create</strong> verb returns a status. &ldquo;OK&rdquo; means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.</p>
@@ -83,8 +83,8 @@ dict (which becomes our JSON object). Now let&rsquo;s add records for Mojo Sam a
 
 <p>command line &ndash;</p>
 
-<pre><code class="language-bash">    dataset friends.ds create &quot;mojo&quot; '{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}'
-    dataset friends.ds create &quot;jack&quot; '{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}'
+<pre><code class="language-bash">    dataset create friends.ds &quot;mojo&quot; '{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}'
+    dataset create friends.ds &quot;jack&quot; '{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}'
 </code></pre>
 
 <p>in python &ndash;</p>
@@ -103,19 +103,19 @@ dict (which becomes our JSON object). Now let&rsquo;s add records for Mojo Sam a
 
 <p>command line &ndash;</p>
 
-<pre><code class="language-bash">    dataset friends.ds read frieda
+<pre><code class="language-bash">    dataset read friends.ds frieda
 </code></pre>
 
 <p>This command emitts a JSON object. The JSON  is somewhat hard to read. To get a pretty version of the JSON object used the &ldquo;-p&rdquo;  option.</p>
 
-<pre><code class="language-bash">    dataset -p friends.ds read frieda
+<pre><code class="language-bash">    dataset read -p friends.ds frieda
 </code></pre>
 
 <p>On the command line you can easily pipe the results to a file for latter modification. Let&rsquo;s do this for each of the records we have created so far.</p>
 
-<pre><code class="language-bash">    dataset -p friends.ds read frieda &gt; frieda-profile.json
-    dataset -p friends.ds read mojo &gt; mojo-profile.json
-    dataset -p friends.ds read jack &gt; jack-profile.json
+<pre><code class="language-bash">    dataset read -p friends.ds frieda &gt;frieda-profile.json
+    dataset read -p friends.ds mojo &gt;mojo-profile.json
+    dataset read -p friends.ds jack &gt;jack-profile.json
 </code></pre>
 
 <p>Working in python is similar but rather than write out our JSON structures to a file we&rsquo;re going to
@@ -172,9 +172,9 @@ Little Frieda edit freida-profile.json to look like &ndash;</p>
 
 <p>On the command line we can read in the updated JSON objects and save the results in the collection with the <strong>update</strong> verb. Like with <strong>init</strong> and <strong>create</strong>  the <strong>update</strong> verb will return an “OK” or error message. Let&rsquo;s update each of our JSON objects.</p>
 
-<pre><code class="language-bash">    dataset friends.ds update freida frieda-profile.json
-    dataset friends.ds update mojo mojo-profile.json
-    dataset friends.ds update jack jack-profile.json
+<pre><code class="language-bash">    dataset update friends.ds freida frieda-profile.json
+    dataset update friends.ds mojo mojo-profile.json
+    dataset update friends.ds jack jack-profile.json
 </code></pre>
 
 <p><strong>TIP</strong>: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a &ldquo;{&rdquo; and ended with a &ldquo;}&rdquo; it would assume you were using an explicit JSON expression.</p>
@@ -204,7 +204,7 @@ Little Frieda edit freida-profile.json to look like &ndash;</p>
 
 <p>command line &ndash;</p>
 
-<pre><code class="language-bash">    dataset friends.ds delete jack
+<pre><code class="language-bash">    dataset delete friends.ds jack
 </code></pre>
 
 <p>Notice the “OK” in this case it means we&rsquo;ve successfully delete the JSON object from the collection.</p>
@@ -225,7 +225,7 @@ total number of keys.</p>
 
 <p>Command line &ndash;</p>
 
-<pre><code class="language-bash">    dataset friends.ds count
+<pre><code class="language-bash">    dataset count friends.ds
 </code></pre>
 
 <p>In Python &ndash;</p>
@@ -236,7 +236,7 @@ total number of keys.</p>
 
 <p>Likewise we can get a list of the keys with the <strong>keys</strong> verb.</p>
 
-<pre><code class="language-bash">    dataset friends.ds keys
+<pre><code class="language-bash">    dataset keys friends.ds
 </code></pre>
 
 <p>If you are following along in Python then you can just save the keys to a variable called keys.</p>
@@ -254,13 +254,13 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>Let&rsquo;s create a <strong>grid</strong> from our <em>friends.ds</em> collection.</p>
 
-<pre><code class="language-bash">    dataset friends.ds keys &gt; fiends.keys
-    dataset friends.ds grid friends.keys .name .email .catch_phrase
+<pre><code class="language-bash">    dataset keys friends.ds keys &gt;fiends.keys
+    dataset grid -i=friends.keys friends.ds .name .email .catch_phrase
 </code></pre>
 
 <p>As with <strong>read</strong> the <strong>grid</strong> verb can take the “-p” option to make the JSON grid a little easier to read.</p>
 
-<pre><code class="language-bash">    dataset -p friends.ds grid friends.keys .name .email .catch_phrase
+<pre><code class="language-bash">    dataset grid -p -i=friends.keys friends.ds .name .email .catch_phrase
 </code></pre>
 
 <p>Notice we make a list of keys first and save those to a file. Then we use that list of keys and create our grid.  The grid output is in JSON notation. In Python making a grid follows a similar patter, generate a list of keys, use those keys and a list of dot paths to define the grid.</p>
@@ -282,7 +282,7 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>Working from our previous <strong>grid</strong> example, let&rsquo;s call this frame &ldquo;name-and-email&rdquo;.</p>
 
-<pre><code class="language-bash">    dataset friends.ds frame &quot;name-and-email&quot; fiends.keys .name .email .catch_phrase
+<pre><code class="language-bash">    dataset frame -i=friends.keys friends.ds &quot;name-and-email&quot; .name .email .catch_phrase
 </code></pre>
 
 <p>In python it would look like</p>
@@ -295,7 +295,7 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>To see the contents of a frame we only need to support the collection name and frame name.</p>
 
-<pre><code class="language-bash">    dataset friends.ds frame &quot;name-and-email&quot;
+<pre><code class="language-bash">    dataset frame friends.ds &quot;name-and-email&quot;
 </code></pre>
 
 <p>In Python it&rsquo;d look like</p>
@@ -311,13 +311,13 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 <p>Let&rsquo;s add back the Jack record we deleted a few sections again and “reframe” our “name-and-email” frame.</p>
 
 <pre><code class="language-bash">    # Adding back Jack
-    dataset friends.ds create jack jack-profile.json
+    dataset create friends.ds jack jack-profile.json
     # Save all the keys in the collection
-    dataset friends.ds keys &gt; friends.keys
+    dataset keys friends.ds &gt;friends.keys
     # Now reframe &quot;name-and-email&quot; with the updated friends.keys
-    dataset friends.ds reframe &quot;name-and-email&quot; friends.keys
+    dataset reframe -i=friends.keys friends.ds &quot;name-and-email&quot; 
     # Now let's take a look at the frame
-    dataset -p friends.ds frame  &quot;name-and-email&quot;
+    dataset frame -p friends.ds &quot;name-and-email&quot;
 </code></pre>
 
 <p>Like with <strong>grid</strong> and <strong>read</strong> before it the “-p” option will cause the JSON representation of the frame to be pretty printed.</p>
@@ -339,7 +339,7 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>We can list the frames in the collection using the <strong>frames</strong> verb.</p>
 
-<pre><code class="language-bash">    dataset friends.ds frames
+<pre><code class="language-bash">    dataset frames friends.ds
 </code></pre>
 
 <p>In Python</p>
@@ -352,7 +352,7 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 
 <p>Finally the last thing we need to be able to do is delete a frame. Delete frames work very similar to deleting a JSON record.</p>
 
-<pre><code class="language-bash">    dataset friends.ds delete-frame &quot;name-and-email&quot;
+<pre><code class="language-bash">    dataset delete-frame friends.ds &quot;name-and-email&quot;
 </code></pre>
 
 <p>Or in Python</p>
@@ -369,7 +369,6 @@ comparing values it is often easier to work in a spreadsheet like grid.  <strong
 <li><strong>frame</strong> will also let you read back a frame</li>
 <li><strong>frames</strong> will list the frames defined in the collection</li>
 <li><strong>frame-labels</strong> will let you replace the labels values for all columns in a frame</li>
-<li><strong>frame-types</strong> will let you replace the type values for all columns in a frame</li>
 <li><strong>delete-frame</strong> will remove the frame from the collection</li>
 </ol>
 
