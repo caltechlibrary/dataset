@@ -641,6 +641,7 @@ func migrateToBuckets(collectionName string) error {
 		if (i % 1000) == 0 {
 			log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
 		}
+		i++
 	}
 	if (i % 1000) != 0 {
 		log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
