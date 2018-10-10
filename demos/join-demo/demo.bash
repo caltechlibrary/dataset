@@ -2,7 +2,6 @@
 
 # Setup our collection
 dataset init JoinDemo.ds
-export DATASET="JoinDemo.ds"
 
 cat <<EOF
 
@@ -17,15 +16,15 @@ EOF
 
 # Create a Jane Doe profile record from profile.json
 echo "Creating a record called Jane.Doe from person.json"
-dataset -i person.json create Jane.Doe 
+dataset create JoinDemo.ds Jane.Doe person.json 
 echo "Reading it back..."
-dataset read Jane.Doe
+dataset read JoinDemo.ds Jane.Doe
 
 # read it back
 echo "Join profile.json using 'join update'..."
-dataset join update Jane.Doe profile.json
+dataset join JoinDemo.ds Jane.Doe profile.json
 echo "Reading it back..."
-dataset read Jane.Doe
+dataset read JoinDemo.ds Jane.Doe
 echo "Join profile.json using 'join overwrite'..."
-dataset join overwrite Jane.Doe profile.json
-dataset read Jane.Doe
+dataset join -overwrite JoinDemo.ds Jane.Doe profile.json
+dataset read JoinDemo.ds Jane.Doe

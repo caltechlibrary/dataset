@@ -2,9 +2,9 @@
 
 # Initialize the collection and set the DATASET environment variable
 echo "Initializing collection testdataset/noaaweather.ds"
-E=$(dataset init testdataset/noaaweather.ds)
-$E
-if [ "$DATASET" = "" ]; then
+export DATASET="testdataset/noaaweather.ds"
+OK=dataset init testdataset/noaaweather.ds
+if [[ "$OK" != "OK" ]]; then
 	echo "Something went wrong DATASET not set."
 	exit 1
 fi
@@ -17,26 +17,27 @@ curl -L -o pasadena-ca-forecast.json 'http://forecast.weather.gov/MapClick.php?l
 curl -L -o pasadena-ca-forecast.xml 'http://forecast.weather.gov/MapClick.php?lat=34.1478&lon=-118.1445&unit=0&lg=english&FcstType=dwml'
 
 echo "Saving pasadena-ca-forecast.json as pasadena-ca to dataset/noaaweather)"
-dataset -i pasadena-ca-forecast.json create pasadena-ca
+dataset create "${DATASET}" pasadena-ca pasadena-ca-forecast.json 
 echo "Attaching other data files: pasadena-ca-weather-codes.html pasadena-ca-forecast.xml"
-dataset attach pasadena-ca pasadena-ca-weather-codes.html pasadena-ca-forecast.xml
+dataset attach  "${DATASET}" pasadena-ca pasadena-ca-weather-codes.html pasadena-ca-forecast.xml
 
 echo "Removing downloaded files"
 /bin/rm pasadena-ca-weather-codes.html pasadena-ca-forecast.json pasadena-ca-forecast.xml
 
 echo "Reading back new record"
-dataset read pasadena-ca
+dataset read "${DATASET}" pasadena-ca
 
 echo "Listing attachments for pasadena-ca"
-dataset attachments pasadena-ca
+dataset attachments "${DATASET}" pasadena-ca
 
 cat<<EOF
 
 Try the following commands and see what happens in your shell
 
     ls -l
-    \$(dataset init testdataset/noaaweather)
-    dataset attached pasadena-ca pasadena-ca-forecast.xml
+    \$(dataset init testdataset/noaaweather.ds)
+    dataset attached testdataset/noaaweather.ds pasadena-ca \
+    pasadena-ca-forecast.xml
     ls -l
 
 EOF

@@ -19,17 +19,16 @@ Try _demo.bash_
     fi
     dataset init characters.ds
     dataset import characters.ds characters.csv 1
-    dataset indexer characters.json
-    dataset indexer names.json
-    dataset indexer emails.json
-    dataset find "Mojo Sam"
-    dataset find -indexes=characters.bleve "Mojo Sam"
-    dataset find -indexes=emails.bleve "Mojo Sam"
-    dataset find -indexes=emails.bleve "mojo.sam"
-    dataset find -indexes=emails.bleve "zbs.example.org"
-    dataset find -indexes=names.bleve "Mojo Sam"
-    dataset find -indexes=names.bleve:emails.bleve "Mojo Sam" 
-    dataset find -sort='-name'  -indexes=characters.bleve:names.bleve:emails.bleve "email:zbs.example.org"
+    dataset indexer characters.ds characters.json
+    dataset indexer characters.ds names.json
+    dataset indexer characters.ds emails.json
+    dataset find characters.bleve "Mojo Sam"
+    dataset find emails.bleve "Mojo Sam"
+    dataset find emails.bleve "mojo.sam"
+    dataset find emails.bleve "zbs.example.org"
+    dataset find names.bleve "Mojo Sam"
+    dataset find names.bleve:emails.bleve "Mojo Sam" 
+    dataset find -sort='-name'  characters.bleve:names.bleve:emails.bleve "email:zbs.example.org"
 ```
 
 ## the files

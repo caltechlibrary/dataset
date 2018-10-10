@@ -247,49 +247,60 @@ cat<<DEF3 > datatypes.json
 DEF3
 
 # Initialize an empty repository
-$(dataset init characters.ds)
+dataset init characters.ds
 # Load the data
-dataset -uuid import characters.csv
-dsindexer characters.json
-$(dataset init plays.ds)
-dataset -uuid import plays.csv
-dsindexer plays.json
-$(dataset init datatypes.ds)
-dataset -uuid import datatypes.csv
-dsindexer datatypes.json
+dataset import characters.ds characters.csv #FIXME: need column of key
+dataset indexer characters.ds characters.json characters.bleve
+dataset init plays.ds
+dataset import plays.ds plays.csv #FIXME: need column of key
+dataset indexer characters.ds plays.json plays.bleve
+dataset init datatypes.ds
+dataset import datatypes.ds datatypes.csv #FIXME: need column of key
+dataset indexer datatypes.ds datatypes.json datatypes.bleve
 unset DATASET
 echo
 
 echo "Sorting records by ascending name (simple analyzer)"
 echo
-dsfind -indexes="characters.bleve" -size 25 -sort="+name" -csv -fields="name,email" "*"
+dataset find -size 25 -sort="+name" -csv -fields="name,email" "*" \
+    characters.bleve
 echo
 
 echo "Combining indexes query for \"Jack ZBS\" in characters.bleve and plays.bleve (sort by title,name)"
 echo
-dsfind -indexes="plays.bleve,characters.bleve" -size 100 -csv -fields="uuid,title,year,characters,name,email" -sort="title,name" "+Jack +ZBS"
+dataset find -size 100 -csv \
+    -fields="_Key,title,year,characters,name,email" \
+    -sort="title,name" \
+    plays.bleve characters.bleve \
+    "+Jack +ZBS"
 echo
 
 #
 # Demonstrate formats and interactions with query strings for datatype collection
 #
-export DATASET=datatypes
 echo "Listing datatypes indexes, sort by descending year"
 echo
-dsfind -csv -fields="uuid,string,year,int,float,date" -sort="-year" "*"
+dataset find -csv -fields="_Key,string,year,int,float,date" \
+    -sort="-year" datatypes.bleve "*"
 echo
 
 echo "Listing datatypes indexes, sort by descending year, for range 1700 to 1902"
 echo
-dsfind -csv -fields="uuid,string,year,int,float,date" -sort="-year" "+year:>=1700 +year:<=1902"
+dataset find -csv -fields="_Key,string,year,int,float,date" \
+    -sort="-year" datatypes.bleve "+year:>=1700 +year:<=1902" 
 echo
 
 echo "Listing in date range 1700 to 1910, ascending dates"
 echo
-dsfind -csv -fields="uuid,string,year,int,float,date" -sort="+date" '+date:>="1700-01-01" +date:<="1910-12-31"'
+dataset find -csv -fields="_Key,string,year,int,float,date"\
+    -sort="+date" \
+    datatypes.bleve \
+    '+date:>="1700-01-01" +date:<="1910-12-31"'
 echo
 
 echo "Looking for Caltech, Pasadena, CA, USA"
 echo
-dsfind -indexes="datatypes.bleve" -csv -fields="uuid,string,date,geo.lat,geo.lng" -sort="+geo.lat,+geo.lng" '+geo.lat:34.138 +geo.lng:-118.125'
+dataset find -csv -fields="_Key,string,date,geo.lat,geo.lng" \
+    -sort="+geo.lat,+geo.lng" \
+    datatypes.bleve '+geo.lat:34.138 +geo.lng:-118.125'
 echo 
