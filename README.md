@@ -13,7 +13,7 @@ manage operations such as initialization of collections, creation,
 reading, updating and deleting JSON objects in the collection. Some of 
 its enhanced features include the ability to generate data 
 [frames](docs/frame.html) as well as the ability to 
-import and export JSON object to and from CSV files and Google Sheets.
+import and export JSON objects to and from CSV files and Google Sheets.
 
 _dataset_ is written in the [Go](https://golang.org) programming language.
 It can be used as a Go package by other Go based software. Go supports
@@ -32,10 +32,10 @@ See [getting-started-with-datataset.md](how-to/getting-started-with-dataset.html
 
 _dataset_ isn't a database or a replacement for repository systems. 
 It is guided by the idea that you should be able to work with text 
-files (e.g. JSON object documents) with standard Unix text utilities.  
+files, the JSON objects documents, with standard Unix text utilities.
 It is intended to be simple to use with minimal setup (e.g. 
 `dataset init mycollection.ds` would create a new collection called 
-'mycollection.ds').  It is built around a few abstractions --
+'mycollection.ds'). It is built around a few abstractions --
 dataset stores JSON objects in collections, collections are a folder(s) 
 containing the JSON object documents and any attachments, a 
 collections.json file describes the mapping of keys to folder locations).

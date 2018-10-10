@@ -27,10 +27,10 @@
 <h2>File system layout</h2>
 
 <p>dataset provides a two ways to organize your JSON Objects. The original
-was a &ldquo;buckets&rdquo; oriented layout. The newer versions of file layout uses
-a <a href="https://tools.ietf.org/html/draft-kunze-pairtree-01">pairtree</a>.
+was a &ldquo;buckets&rdquo; oriented layout. The newer layout is a
+<a href="https://tools.ietf.org/html/draft-kunze-pairtree-01">pairtree</a>.
 Both are managed/described by the collection.json document
-at in the root folder the the collection. Both file layouts currently
+located in the root folder of the collection. Both file layouts currently
 support &ldquo;attachments&rdquo; as a tar ball of with the same basename as the JSON
 object document (e.g. hello-world.json would have attachments stored as
 hello-world.tar). Attachments are experimental and how they are handled
@@ -45,10 +45,13 @@ of dataset should ease the migration process.</p>
 <li>collection (directory on the file system)
 
 <ul>
-<li><a href="https://confluence.ucop.edu/display/Curation/Namaste">namaste</a> records identifying the collection</li>
+<li><a href="https://confluence.ucop.edu/display/Curation/Namaste">namaste</a>
+records identifying the collection</li>
 <li>a file, collection.json, holding metadata about the collection</li>
-<li>a directory named &ldquo;_frames&rdquo; holding frame definitions for the collection</li>
-<li>a directory named &ldquo;pairtree&rdquo; holding the pairtree where the JSON document and attachmetns are stored.</li>
+<li>a directory named &ldquo;_frames&rdquo; holding frame definitions for the
+collection</li>
+<li>a directory named &ldquo;pairtree&rdquo; holding the pairtree where the
+JSON document and attachmetns are stored.</li>
 </ul></li>
 </ul>
 
@@ -60,7 +63,8 @@ of dataset should ease the migration process.</p>
 <li>collection (directory on file system)
 
 <ul>
-<li><a href="https://confluence.ucop.edu/display/Curation/Namaste">namaste</a> records identifying the collection</li>
+<li><a href="https://confluence.ucop.edu/display/Curation/Namaste">namaste</a>
+records identifying the collection</li>
 <li>a file, collection.json, holding metadata about collection
 
 <ul>
@@ -68,17 +72,20 @@ of dataset should ease the migration process.</p>
 <li>frame names mapped to frame metadata files</li>
 </ul></li>
 <li>a dircectory named &ldquo;_frames&rdquo; - any defined frames for the collection.</li>
-<li>BUCKETS - a sequence of alphabet names (AA to ZZ) for buckets holding JSON documents and their attachments
+<li>BUCKETS - a sequence of alphabet names (AA to ZZ) for buckets holding
+JSON documents and their attachments
 
 <ul>
-<li>Buckets let supporting common commands like ls, tree, etc. when the doc count is high</li>
+<li>Buckets let supporting common commands like ls, tree, etc.
+when the doc count is high</li>
 </ul></li>
 </ul></li>
 </ul>
 
-<p>BUCKETS are names without meaning normally using Alphabetic characters. A dataset defined with four buckets
-might looks like aa, ab, ba, bb. These directories will contains JSON documents and a tar file if the document
-has attachments.</p>
+<p>BUCKETS are names without meaning normally using alphabetic characters.
+A dataset defined with four buckets might looks like aa, ab, ba, bb.
+These directories will contains JSON documents and a tar file if the
+document has attachments.</p>
 
 </section>
 

@@ -26,16 +26,21 @@
 <section>
 <h1>Defining Indexes</h1>
 
-<p><em>dataset indexer &hellip;</em> builds an index from an index map file.  A map defines the structure of the index. The definition file is a JSON document.
-<em>dataset indexer &hellip;</em> supports two types of map files. A simple version and also the more complicated version native to the Bleve search package.</p>
+<p><em>dataset indexer &hellip;</em> builds an index from an index map file.  A map
+defines the structure of the index. The definition file is a JSON
+document.  <em>dataset indexer &hellip;</em> supports two types of map files.
+A simple version and also the more complicated version native to the
+Bleve search package.</p>
 
-<p>NOTE: Indexes and search are experimental and are subject to change. Our hope to simplify the process of defining and managing indexes</p>
+<p>NOTE: Indexes and search are experimental and are subject to change.
+Our hope to simplify the process of defining and managing indexes</p>
 
 <h2>The Simple index map</h2>
 
-<p><em>dataset indexer &hellip;</em> works from a index definition expressed as a JSON document. The most important of the definition is to map
-a indexed field name to a path in the JSON document being index. This is done with dotpath notation as the value associated
-with a field name in the index.</p>
+<p><em>dataset indexer &hellip;</em> works from a index definition expressed as a
+JSON document. The most important of the definition is to map a indexed
+field name to a path in the JSON document being index. This is done with
+dotpath notation as the value associated with a field name in the index.</p>
 
 <p>If your JSON document looks like</p>
 
@@ -53,7 +58,8 @@ with a field name in the index.</p>
     }
 </code></pre>
 
-<p>You could create an index of last name and date of birth with the following definition</p>
+<p>You could create an index of last name and date of birth with the
+following definition</p>
 
 <pre><code class="language-json">    {
         &quot;last_name&quot;: {
@@ -65,16 +71,18 @@ with a field name in the index.</p>
     }
 </code></pre>
 
-<p>The dotpath notation lets you reach into a nested JSON property and bring it out into a field that will
-be indexed.</p>
+<p>The dotpath notation lets you reach into a nested JSON property and
+bring it out into a field that will be indexed.</p>
 
 <h3>Working with field mappings</h3>
 
-<p>In our example of above we have three types of data in our JSON document.  The name properties are
-strings. The date of birth property is a date in YYYY-MM-DD format and finally we have an email
-address. In our initial index definition we treat all these values as strings.  This is fine for
-the names and email address but if we want to work with date ranges then the date of birth should
-be handled differently. It should be handled as a date.</p>
+<p>In our example of above we have three types of data in our JSON document.<br />
+The name properties are strings. The date of birth property is a date in
+YYYY-MM-DD format and finally we have an email address. In our initial
+index definition we treat all these values as strings.  This is fine for
+the names and email address but if we want to work with date ranges then
+the date of birth should be handled differently. It should be handled
+as a date.</p>
 
 <p>Here&rsquo;s a revised definition</p>
 
@@ -99,7 +107,8 @@ be handled differently. It should be handled as a date.</p>
 <li>geopoint - use this for indexing Geo Point data</li>
 </ul>
 
-<p>If we want to expand our definition to include the location of Smiley&rsquo;s birth we add the geocordinates too.</p>
+<p>If we want to expand our definition to include the location of Smiley&rsquo;s
+birth we add the geocordinates too.</p>
 
 <pre><code class="language-json">    {
         &quot;last_name&quot;: {
@@ -118,20 +127,26 @@ be handled differently. It should be handled as a date.</p>
 
 <h3>Working with analyzers</h3>
 
-<p>In addition to setting the controlling how the values are mapped into the index you can control the analysis
-that are applied when building your index (see <a href="http://www.blevesearch.com/docs/Analyzers/">http://www.blevesearch.com/docs/Analyzers/</a> for details).
-Analyzers include applying language rules for understanding the text analyzed. This includes handling things
-like stop word removal, language settings.</p>
+<p>In addition to setting the controlling how the values are mapped into
+the index you can control the analysis that are applied when building
+your index (see <a href="http://www.blevesearch.com/docs/Analyzers/">http://www.blevesearch.com/docs/Analyzers/</a> for details).
+Analyzers include applying language rules for understanding the text
+analyzed. This includes handling things like stop word removal, language
+settings.</p>
 
 <p><em>dataset indexer</em> support the following types of analyzers</p>
 
 <ul>
-<li>keyword - performs zero analysis, use this if you want to treat the value as is</li>
-<li>simple - performs minimal analysis, tokenizes using Unicode and lowercases the value</li>
+<li>keyword - performs zero analysis, use this if you want to treat the
+value as is</li>
+<li>simple - performs minimal analysis, tokenizes using Unicode and
+lowercases the value</li>
 <li>standard - is like simple but adds English stop word removal</li>
-<li>web - tries to determine the language then applies that languages analyzer applying its rules (e.g. if
-the language detected was German then German stop words, analysis would be performed)</li>
-<li>lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, fr)</li>
+<li>web - tries to determine the language then applies that languages
+analyzer applying its rules (e.g. if the language detected was
+German then German stop words, analysis would be performed)</li>
+<li>lang - will look use a language specific analyzer (relying on the
+lang property for language name, e.g. en, es, de, fr)</li>
 </ul>
 
 <p>Some of the language analyzers current supported are -</p>
@@ -169,7 +184,8 @@ the language detected was German then German stop words, analysis would be perfo
     }
 </code></pre>
 
-<p>The default language analyzer is English (en) but you can explicitly indicate that with this definition</p>
+<p>The default language analyzer is English (en) but you can explicitly
+indicate that with this definition</p>
 
 <pre><code class="language-json">    {
         &quot;author&quot;: {
@@ -190,7 +206,8 @@ the language detected was German then German stop words, analysis would be perfo
     }
 </code></pre>
 
-<p>If your content was in Spanish you could use the Spanish language analyzer.</p>
+<p>If your content was in Spanish you could use the Spanish language
+analyzer.</p>
 
 <pre><code class="language-json">    {
         &quot;author&quot;: {
@@ -213,7 +230,8 @@ the language detected was German then German stop words, analysis would be perfo
     }
 </code></pre>
 
-<p>If knew our documents were in German we could try something like this definition&ndash;</p>
+<p>If knew our documents were in German we could try something like this
+definition&ndash;</p>
 
 <pre><code class="language-json">    {
         &quot;author&quot;: {
@@ -240,41 +258,50 @@ the language detected was German then German stop words, analysis would be perfo
 
 <h3>Additoinal configuration</h3>
 
-<p>This additional configuration is useful for managing the size your of your index(es) on disc as
-well as impact the ammount of time it takes to index your data.</p>
+<p>This additional configuration is useful for managing the size your of
+your index(es) on disc as well as impact the ammount of time it takes to
+index your data.</p>
 
 <h4>Storing the field values in the index</h4>
 
-<p>As we define the numbers of fields in our index the size the index will also grow.  If you don&rsquo;t need to
-see the field in the results you can choose not to store it in the index.  This is done with the &ldquo;store&rdquo;
+<p>As we define the numbers of fields in our index the size the index will
+also grow.  If you don&rsquo;t need to see the field in the results you can
+choose not to store it in the index.  This is done with the &ldquo;store&rdquo;
 attribute in the field&rsquo;s definition. The value can be true/false.</p>
 
 <h3>Include Term Vectors</h3>
 
-<p>You can choose to include term vectors in your index. This is set by the field property called &ldquo;include_term_vectors&rdquo;
-and like &ldquo;store&rdquo; it can be either true/false.</p>
+<p>You can choose to include term vectors in your index. This is set by
+the field property called &ldquo;include_term_vectors&rdquo; and like &ldquo;store&rdquo; it
+can be either true/false.</p>
 
 <h3>Include In all</h3>
 
-<p>&ldquo;include_in_all&rdquo;, indicates to include any composite fields named &ldquo;_all&rdquo;, defaults to true, if you don&rsquo;t need this and
-would like to make the index slightly smaller then you could set this to false.</p>
+<p>&ldquo;include_in_all&rdquo;, indicates to include any composite fields named
+&ldquo;_all&rdquo;, defaults to true, if you don&rsquo;t need this and would like to
+make the index slightly smaller then you could set this to false.</p>
 
 <h3>Date Format</h3>
 
-<p>The &ldquo;date_format&rdquo; string is used to indentify how to parse the date. The formatting pattern is based on Go&rsquo;s time.Parse()
-module. You can read more about that here at <a href="https://golang.org/pkg/time/#pkg-constants">https://golang.org/pkg/time/#pkg-constants</a>. If you&rsquo;re using the &ldquo;datetime&rdquo;
-field mapping for a field you should probably set the &ldquo;date_format&rdquo; too since dates can be written so many ways.</p>
+<p>The &ldquo;date_format&rdquo; string is used to indentify how to parse the date. The
+formatting pattern is based on Go&rsquo;s time.Parse() module. You can read
+more about that here at <a href="https://golang.org/pkg/time/#pkg-constants">https://golang.org/pkg/time/#pkg-constants</a>. If
+you&rsquo;re using the &ldquo;datetime&rdquo; field mapping for a field you should probably
+set the &ldquo;date_format&rdquo; too since dates can be written so many ways.</p>
 
 <h2>Indexing more complex JSON documents</h2>
 
-<p>One of the reason JSON is used for serialization of data is that it can represent many of the common types
-of data structures in addition to primitive data types like string and number.  We&rsquo;ve already seen how to
-work with simple JSON structures as an object. The JSON object (or map) presents data as a series
-of key and value pairs.  Another common data structure represented in JSON is that of an array. An
-array can be thought of as a list containing some other data types. An array often contains strings or
-numbers but it can also contain objects and other arrays.  In this way JSON documents can describe the
-relatationship between say an article, it&rsquo;s title and the authors who wrote it. It can even describe
-unique identifiers for authors as well as variation of their names. Here&rsquo;s an example</p>
+<p>One of the reason JSON is used for serialization of data is that it can
+represent many of the common types of data structures in addition to
+primitive data types like string and number.  We&rsquo;ve already seen how to
+work with simple JSON structures as an object. The JSON object (or map)
+presents data as a series of key and value pairs.  Another common data
+structure represented in JSON is that of an array. An array can be
+thought of as a list containing some other data types. An array often contains strings or numbers but it can also contain objects and other arrays.<br />
+In this way JSON documents can describe the relatationship between say an
+article, it&rsquo;s title and the authors who wrote it. It can even describe
+unique identifiers for authors as well as variation of their names.
+Here&rsquo;s an example</p>
 
 <pre><code class="language-json">    {
         &quot;title&quot;: &quot;Analysis of literary dog commentary of Summer '17&quot;,
@@ -303,8 +330,9 @@ unique identifiers for authors as well as variation of their names. Here&rsquo;s
     }
 </code></pre>
 
-<p>I this data example we have three authors along two fields about an article written by two canines and a human.
-In our simple approach we could describe the title and three authors explicitly like this.</p>
+<p>I this data example we have three authors along two fields about an
+article written by two canines and a human.  In our simple approach we
+could describe the title and three authors explicitly like this.</p>
 
 <pre><code class="language-json">   {
        &quot;title&quot;: {
@@ -322,14 +350,19 @@ In our simple approach we could describe the title and three authors explicitly 
    }
 </code></pre>
 
-<p>The trouble is what if we want to index display name and sort name independantly? What if we have 100 authors instread of three.
-This simple approach of explicit paths quickly becomes problematic. What we need to do is beable to describe to Bleve how to reach
-into our tree and pull out the pieces we&rsquo;re interested in. It&rsquo;s a problem of notation really. If your writing a custom indexer in
-Go the Bleve package has functions for handling but this leaves us with the problem of how do we easily describe in our
-definition file those more complex relationships?</p>
+<p>The trouble is what if we want to index display name and sort name
+independantly? What if we have 100 authors instread of three.  This
+simple approach of explicit paths quickly becomes problematic. What
+we need to do is beable to describe to Bleve how to reach into our tree
+and pull out the pieces we&rsquo;re interested in. It&rsquo;s a problem of notation
+really. If your writing a custom indexer in Go the Bleve package has
+functions for handling but this leaves us with the problem of how do
+we easily describe in our definition file those more complex
+relationships?</p>
 
-<p>The approach <em>dataset</em> takes when describing the index structure is to nest the definitions just like the data structure we&rsquo;re
-describing. Let&rsquo;s take another pass at describing our article metadata.</p>
+<p>The approach <em>dataset</em> takes when describing the index structure is to
+nest the definitions just like the data structure we&rsquo;re describing.
+Let&rsquo;s take another pass at describing our article metadata.</p>
 
 <p>index can reach into</p>
 
@@ -349,12 +382,16 @@ describing. Let&rsquo;s take another pass at describing our article metadata.</p
     }
 </code></pre>
 
-<p>Notice that we&rsquo;ve create an array os the value for &ldquo;authors&rdquo;.  In the array we have a single object that describes what the array
-is holding. If we&rsquo;re working with an array objects then an anonymous object is described with each property of the object
-named and defined with a dot path in relationship to the object. If we were describing an array of strings we&rsquo;d still describe
-it with an anonymous object but the dotpath would only contain a single period &ldquo;.&rdquo; as its relative root.</p>
+<p>Notice that we&rsquo;ve create an array os the value for &ldquo;authors&rdquo;.  In the
+array we have a single object that describes what the array is holding. If
+we&rsquo;re working with an array objects then an anonymous object is described
+with each property of the object named and defined with a dot path in
+relationship to the object. If we were describing an array of strings we&rsquo;d
+still describe it with an anonymous object but the dotpath would only
+contain a single period &ldquo;.&rdquo; as its relative root.</p>
 
-<p>Here&rsquo;s an example where what an array of years might look like as a definition</p>
+<p>Here&rsquo;s an example where what an array of years might look like as a
+definition</p>
 
 <pre><code class="language-json">       &quot;years&quot;: {
           &quot;object_path&quot;: &quot;.years[:]&quot;,
@@ -363,14 +400,17 @@ it with an anonymous object but the dotpath would only contain a single period &
     }
 </code></pre>
 
-<p><em>dataset indexer</em> will only index arrays that containing a single data type.  So if you have an array that has an object,
-a numeric value and a string you&rsquo;re out of luck or you&rsquo;ll need to index each type separately.</p>
+<p><em>dataset indexer</em> will only index arrays that containing a single data
+type.  So if you have an array that has an object, a numeric value and a
+string you&rsquo;re out of luck or you&rsquo;ll need to index each type separately.</p>
 
 <h2>The Bleve native index map</h2>
 
-<p><em>dataset indexer</em> works from a index definition expressed as a JSON document. It is the same format as Bleve&rsquo;s native
-index definition in JSON. Bleve native indexes are distinguished by the file extension <code>.bmap</code>.  Bleve supports complex
-including things like facetted search.  In our example we&rsquo;ll keep it simple indexing only two specfic fields &ndash;
+<p><em>dataset indexer</em> works from a index definition expressed as a JSON
+document. It is the same format as Bleve&rsquo;s native index definition in
+JSON. Bleve native indexes are distinguished by the file extension
+<code>.bmap</code>.  Bleve supports complex including things like facetted search.<br />
+In our example we&rsquo;ll keep it simple indexing only two specfic fields &ndash;
 last_name ad date_of_birth.</p>
 
 <p>If your JSON data document looks like</p>
@@ -389,7 +429,8 @@ last_name ad date_of_birth.</p>
     }
 </code></pre>
 
-<p>You could create an index of last name and date of birth (e.g. <code>last_name-dob.bmap</code>) with the following definition</p>
+<p>You could create an index of last name and date of birth (e.g.
+<code>last_name-dob.bmap</code>) with the following definition</p>
 
 <pre><code class="language-json">    {
         &quot;types&quot;: {
@@ -418,11 +459,13 @@ last_name ad date_of_birth.</p>
 
 <h3>Working with field mappings</h3>
 
-<p>In our example of above we have three types of data in our JSON document.  The name properties are
-strings. The date of birth property is a date in YYYY-MM-DD format and finally we have an email
-address. In our initial index definition we treat all these values as strings.  This is fine for
-the names and email address but if we want to work with date ranges then the date of birth should
-be handled differently. It should be handled as a date.</p>
+<p>In our example of above we have three types of data in our JSON document.<br />
+The name properties are strings. The date of birth property is a date in
+YYYY-MM-DD format and finally we have an email address. In our initial
+index definition we treat all these values as strings.  This is fine for
+the names and email address but if we want to work with date ranges then
+the date of birth should be handled differently. It should be handled
+as a date.</p>
 
 <p>Here&rsquo;s a revised definition</p>
 
@@ -453,13 +496,16 @@ be handled differently. It should be handled as a date.</p>
 <ul>
 <li>custom - to define a custom analyzer</li>
 <li>simple - a simple text analyzer</li>
-<li>standard - the standard full text analyzer (this is usually what you start with)</li>
+<li>standard - the standard full text analyzer (this is usually what
+you start with)</li>
 <li>keyword - keyword analysis</li>
-<li>web - web content analyzer (e.g. you might use if you had HTML embedded in a JSON property)</li>
+<li>web - web content analyzer (e.g. you might use if you had HTML
+embedded in a JSON property)</li>
 </ul>
 
-<p>Bleve indexes also support languages specific analyzers. Here&rsquo;s below is an example of our initial
-index definition with all the defaults showning.</p>
+<p>Bleve indexes also support languages specific analyzers. Here&rsquo;s below
+is an example of our initial index definition with all the
+defaults showning.</p>
 
 <pre><code class="language-json">    {
         &quot;types&quot;: {
@@ -509,20 +555,26 @@ index definition with all the defaults showning.</p>
 
 <h3>Working with analyzers</h3>
 
-<p>In addition to setting the controlling how the values are mapped into the index you can control the analysis
-that are applied when building your index (see <a href="http://www.blevesearch.com/docs/Analyzers/">http://www.blevesearch.com/docs/Analyzers/</a> for details).
-Analyzers include applying language rules for understanding the text analyzed. This includes handling things
-like stop word removal, language settings.</p>
+<p>In addition to setting the controlling how the values are mapped into
+the index you can control the analysis that are applied when building
+your index (see <a href="http://www.blevesearch.com/docs/Analyzers/">http://www.blevesearch.com/docs/Analyzers/</a> for details).
+Analyzers include applying language rules for understanding the text
+analyzed. This includes handling things like stop word removal,
+language settings.</p>
 
 <p><em>dataset indexer</em> support the following types of analyzers</p>
 
 <ul>
-<li>keyword - performs zero analysis, use this if you want to treat the value as is</li>
-<li>simple - performs minimal analysis, tokenizes using Unicode and lowercases the value</li>
+<li>keyword - performs zero analysis, use this if you want to treat
+the value as is</li>
+<li>simple - performs minimal analysis, tokenizes using Unicode and
+lowercases the value</li>
 <li>standard - is like simple but adds English stop word removal</li>
-<li>web - tries to determine the language then applies that languages analyzer applying its rules (e.g. if
-the language detected was German then German stop words, analysis would be performed)</li>
-<li>lang - will look use a language specific analyzer (relying on the lang property for language name, e.g. en, es, de, fr)</li>
+<li>web - tries to determine the language then applies that languages
+analyzer applying its rules (e.g. if the language detected was
+German then German stop words, analysis would be performed)</li>
+<li>lang - will look use a language specific analyzer (relying on the
+lang property for language name, e.g. en, es, de, fr)</li>
 </ul>
 
 <p>Example of language analyzers supported are -</p>
@@ -560,7 +612,8 @@ the language detected was German then German stop words, analysis would be perfo
     }
 </code></pre>
 
-<p>The default language analyzer is English (en) but you can explicitly indicate that with this definition</p>
+<p>The default language analyzer is English (en) but you can explicitly
+indicate that with this definition</p>
 
 <pre><code class="language-json">    {
         &quot;types&quot;: {
@@ -587,7 +640,8 @@ the language detected was German then German stop words, analysis would be perfo
     }
 </code></pre>
 
-<p>If your content was in Spanish you could use the Spanish language analyzer.</p>
+<p>If your content was in Spanish you could use the Spanish
+language analyzer.</p>
 
 <pre><code class="language-json">    {
         &quot;types&quot;: {
@@ -616,7 +670,8 @@ the language detected was German then German stop words, analysis would be perfo
     }
 </code></pre>
 
-<p>If knew our documents were in German we could try something like this definition&ndash;</p>
+<p>If knew our documents were in German we could try something like this
+definition&ndash;</p>
 
 <pre><code class="language-json">    {
         &quot;types&quot;: {
@@ -649,43 +704,55 @@ the language detected was German then German stop words, analysis would be perfo
 
 <h3>Additoinal configuration</h3>
 
-<p>This additional configuration is useful for managing the size your of your index(es) on disc as
-well as impact the ammount of time it takes to index your data.</p>
+<p>This additional configuration is useful for managing the size your of
+your index(es) on disc as well as impact the ammount of time it takes
+to index your data.</p>
 
 <h4>Storing the field values in the index</h4>
 
-<p>As we define the numbers of fields in our index the size the index will also grow.  If you don&rsquo;t need to
-see the field in the results you can choose not to store it in the index.  This is done with the &ldquo;store&rdquo;
+<p>As we define the numbers of fields in our index the size the index will
+also grow.  If you don&rsquo;t need to see the field in the results you can
+choose not to store it in the index.  This is done with the &ldquo;store&rdquo;
 attribute in the field&rsquo;s definition. The value can be true/false.</p>
 
 <h3>Include Term Vectors</h3>
 
-<p>You can choose to include term vectors in your index. This is set by the field property called &ldquo;include_term_vectors&rdquo;
-and like &ldquo;store&rdquo; it can be either true/false.</p>
+<p>You can choose to include term vectors in your index. This is set by the
+field property called &ldquo;include_term_vectors&rdquo; and like &ldquo;store&rdquo; it can be
+either true/false.</p>
 
 <h3>Include In all</h3>
 
-<p>&ldquo;include_in_all&rdquo;, indicates to include any composite fields named &ldquo;_all&rdquo;, defaults to true, if you don&rsquo;t need this and
-would like to make the index slightly smaller then you could set this to false.</p>
+<p>&ldquo;include_in_all&rdquo;, indicates to include any composite fields named
+&ldquo;_all&rdquo;, defaults to true, if you don&rsquo;t need this and would like to make
+the index slightly smaller then you could set this to false.</p>
 
 <h3>Date Format</h3>
 
-<p>The &ldquo;date_format&rdquo; string is used to indentify how to parse the date. The formatting pattern is based on Go&rsquo;s time.Parse()
-module. You can read more about that here at <a href="https://golang.org/pkg/time/#pkg-constants">https://golang.org/pkg/time/#pkg-constants</a>. If you&rsquo;re using the &ldquo;datetime&rdquo;
-field mapping for a field you should probably set the &ldquo;date_format&rdquo; too since dates can be written so many ways.</p>
+<p>The &ldquo;date_format&rdquo; string is used to indentify how to parse the date.
+The formatting pattern is based on Go&rsquo;s time.Parse() module. You can
+read more about that here at <a href="https://golang.org/pkg/time/#pkg-constants">https://golang.org/pkg/time/#pkg-constants</a>.
+If you&rsquo;re using the &ldquo;datetime&rdquo; field mapping for a field you should
+probably set the &ldquo;date_format&rdquo; too since dates can be written so
+many ways.</p>
 
 <h2>Indexing more complex JSON documents</h2>
 
-<p>FIXME: This needs to be updated to show how to define and index sub-documents</p>
+<p>FIXME: This needs to be updated to show how to define and index
+sub-documents</p>
 
-<p>One of the reason JSON is used for serialization of data is that it can represent many of the common types
-of data structures in addition to primitive data types like string and number.  We&rsquo;ve already seen how to
-work with simple JSON structures as an object. The JSON object (or map) presents data as a series
-of key and value pairs.  Another common data structure represented in JSON is that of an array. An
-array can be thought of as a list containing some other data types. An array often contains strings or
-numbers but it can also contain objects and other arrays.  In this way JSON documents can describe the
-relatationship between say an article, it&rsquo;s title and the authors who wrote it. It can even describe
-unique identifiers for authors as well as variation of their names. Here&rsquo;s an example</p>
+<p>One of the reason JSON is used for serialization of data is that it can
+represent many of the common types of data structures in addition to
+primitive data types like string and number.  We&rsquo;ve already seen how to
+work with simple JSON structures as an object. The JSON object (or map)
+presents data as a series of key and value pairs.  Another common data
+structure represented in JSON is that of an array. An array can be thought
+of as a list containing some other data types. An array often contains
+strings or numbers but it can also contain objects and other arrays.<br />
+In this way JSON documents can describe the relatationship between say
+an article, it&rsquo;s title and the authors who wrote it. It can even describe
+unique identifiers for authors as well as variation of their names.
+Here&rsquo;s an example</p>
 
 <pre><code class="language-json">    {
         &quot;title&quot;: &quot;Analysis of literary dog commentary of Summer '17&quot;,
@@ -714,8 +781,9 @@ unique identifiers for authors as well as variation of their names. Here&rsquo;s
     }
 </code></pre>
 
-<p>I this data example we have three authors along two fields about an article written by two canines and a human.
-In our simple approach we could describe the title and authors like this.</p>
+<p>I this data example we have three authors along two fields about an
+article written by two canines and a human.  In our simple approach we
+could describe the title and authors like this.</p>
 
 <pre><code class="language-json">   {
        &quot;types&quot;: {
@@ -737,9 +805,11 @@ In our simple approach we could describe the title and authors like this.</p>
    }
 </code></pre>
 
-<p>The trouble is what if we want to index behavior display name and sort name to be independant (e.g. treat sort_name more like a keyword)?
-We can do that by choosing an different analyzer from the standard one for sort_name. Bleve supports several types of anlayzers
-(e.g. simple, standard, keyword, web and custom).</p>
+<p>The trouble is what if we want to index behavior display name and sort
+name to be independant (e.g. treat sort_name more like a keyword)?  We
+can do that by choosing an different analyzer from the standard one for
+sort_name. Bleve supports several types of anlayzers (e.g. simple,
+standard, keyword, web and custom).</p>
 
 <pre><code class="language-json">   {
        &quot;types&quot;: {
@@ -761,7 +831,8 @@ We can do that by choosing an different analyzer from the standard one for sort_
    }
 </code></pre>
 
-<p>What about dates? In our record we have an array of years.  We can use a different &ldquo;type&rdquo; when defining how we want to index years.</p>
+<p>What about dates? In our record we have an array of years.  We can use
+a different &ldquo;type&rdquo; when defining how we want to index years.</p>
 
 <pre><code class="language-json">   {
        &quot;types&quot;: {
@@ -777,68 +848,79 @@ We can do that by choosing an different analyzer from the standard one for sort_
    }
 </code></pre>
 
-<p>Indexes themselves can be defined fairly simple as we have so far and aggregated together after the fact. In addition to data shapping
-approaches <em>dataset indexer</em> supports the full Bleve index functionality, see <a href="https://blevesearch.com">Bleve</a>.</p>
+<p>Indexes themselves can be defined fairly simple as we have so far and
+aggregated together after the fact. In addition to data shapping
+approaches <em>dataset indexer</em> supports the full Bleve index functionality,
+see <a href="https://blevesearch.com">Bleve</a>.</p>
 
 <h2>Indexing a collection</h2>
 
-<p>In the example the index will be created for a collection called <em>characters.ds</em>.</p>
+<p>In the example the index will be created for a collection called
+<em>characters.ds</em>.</p>
 
 <pre><code class="language-shell">    dataset indexer characters.ds email-mapping.json email-index.bleve
 </code></pre>
 
-<p>This will build a Bleve index called &ldquo;email-index.bleve&rdquo; based on the index defined
-in &ldquo;email-mapping.json&rdquo;.</p>
+<p>This will build a Bleve index called &ldquo;email-index.bleve&rdquo; based on the
+index defined in &ldquo;email-mapping.json&rdquo;.</p>
 
 <h2>Searching an index</h2>
 
-<p>In this example we have already indexes a collection called &ldquo;characters.ds&rdquo;. The
-index name in <em>characters.bleve</em> which we will use for searching.</p>
+<p>In this example we have already indexes a collection called
+&ldquo;characters.ds&rdquo;. The index name in <em>characters.bleve</em> which we will
+use for searching.</p>
 
 <pre><code class="language-shell">    dataset find characters.bleve &quot;Jack Flanders&quot;
 </code></pre>
 
-<p>This would search the Bleve index named <em>characters.bleve</em> for the string &ldquo;Jack Flanders&rdquo;
-returning records that matched based on how the index was defined.</p>
+<p>This would search the Bleve index named <em>characters.bleve</em> for the
+string &ldquo;Jack Flanders&rdquo; returning records that matched based on how the
+index was defined.</p>
 
 <h1>Searchable Datasets</h1>
 
-<p>The <em>dataset</em> tool provides <em>dataset indexer</em> and <em>dataset find</em>. Together
-they implement indexing and search for a dataset collection. The index and search features
-are based built on <a href="https://www.blevesearch.com">Bleve</a> search engine. Depending on how your define your
-index(es) search can provide a effective means of exploring and aggregating your
-collection (or collections).</p>
+<p>The <em>dataset</em> tool provides <em>dataset indexer</em> and <em>dataset find</em>.
+Together they implement indexing and search for a dataset collection.
+The index and search features are based built on
+<a href="https://www.blevesearch.com">Bleve</a> search engine. Depending on how your
+define your index(es) search can provide a effective means of exploring
+and aggregating your collection (or collections).</p>
 
 <h2>How to build an index</h2>
 
-<p>In the example the index will be created for a collection called <em>characters.ds</em>.</p>
+<p>In the example the index will be created for a collection called
+<em>characters.ds</em>.</p>
 
 <pre><code class="language-shell">    dataset indexer characters.ds email-mapping.json email-index
 </code></pre>
 
-<p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index defined
-in &ldquo;email-mapping.json&rdquo; (more on mapping indexes at <a href="../docs/defining-indexes.html">defining-indexes</a>).</p>
+<p>This will build a Bleve index called &ldquo;email-index&rdquo; based on the index
+defined in &ldquo;email-mapping.json&rdquo; (more on mapping indexes at
+<a href="../docs/defining-indexes.html">defining-indexes</a>).</p>
 
-<p>You can build multiple indexes by having multiple index definitions. For large
-JSON documents with lots of text this may let you more efficiently create the indexes.
-Indexes and be aggregated together using <em>find</em>.</p>
+<p>You can build multiple indexes by having multiple index definitions. For
+large JSON documents with lots of text this may let you more efficiently
+create the indexes.  Indexes and be aggregated together using <em>find</em>.</p>
 
 <h2>Searching an index</h2>
 
-<p>In this example we have already indexes a collection called &ldquo;characters.ds&rdquo;. The
-index name in <em>characters.bleve</em> which we will use for searching.</p>
+<p>In this example we have already indexes a collection called
+&ldquo;characters.ds&rdquo;. The index name in <em>characters.bleve</em> which we will use
+for searching.</p>
 
 <pre><code class="language-shell">    dataset find characters.bleve &quot;Jack Flanders&quot;
 </code></pre>
 
-<p>This would search the Bleve index named <em>characters.bleve</em> for the string &ldquo;Jack Flanders&rdquo;
-returning records that matched based on how the index was defined.</p>
+<p>This would search the Bleve index named <em>characters.bleve</em> for the
+string &ldquo;Jack Flanders&rdquo; returning records that matched based on how the
+index was defined.</p>
 
 <h2>How to search across multiple indexes</h2>
 
-<p>Let&rsquo;s say you have created an index called <em>audiodramas.bleve</em>. That index also includes
-information about characters, scenes, etc.  If you want to search both <em>characters.bleve</em>
-and <em>audiodramas.bleve</em> separate them a colon and include both with your <em>find</em> command.</p>
+<p>Let&rsquo;s say you have created an index called <em>audiodramas.bleve</em>. That
+index also includes information about characters, scenes, etc.  If you
+want to search both <em>characters.bleve</em> and <em>audiodramas.bleve</em> separate
+them a colon and include both with your <em>find</em> command.</p>
 
 <pre><code class="language-shell">    dataset find &quot;characters.bleve:audiodramas.bleve&quot; &quot;Jack Flanders&quot;
 </code></pre>

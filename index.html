@@ -37,7 +37,7 @@ manage operations such as initialization of collections, creation,
 reading, updating and deleting JSON objects in the collection. Some of
 its enhanced features include the ability to generate data
 <a href="docs/frame.html">frames</a> as well as the ability to
-import and export JSON object to and from CSV files and Google Sheets.</p>
+import and export JSON objects to and from CSV files and Google Sheets.</p>
 
 <p><em>dataset</em> is written in the <a href="https://golang.org">Go</a> programming language.
 It can be used as a Go package by other Go based software. Go supports
@@ -55,10 +55,10 @@ C++ wrapping code).</p>
 
 <p><em>dataset</em> isn&rsquo;t a database or a replacement for repository systems.
 It is guided by the idea that you should be able to work with text
-files (e.g. JSON object documents) with standard Unix text utilities.<br />
+files, the JSON objects documents, with standard Unix text utilities.
 It is intended to be simple to use with minimal setup (e.g.
 <code>dataset init mycollection.ds</code> would create a new collection called
-&lsquo;mycollection.ds&rsquo;).  It is built around a few abstractions &ndash;
+&lsquo;mycollection.ds&rsquo;). It is built around a few abstractions &ndash;
 dataset stores JSON objects in collections, collections are a folder(s)
 containing the JSON object documents and any attachments, a
 collections.json file describes the mapping of keys to folder locations).

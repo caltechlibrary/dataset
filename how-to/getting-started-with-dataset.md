@@ -1,25 +1,25 @@
 
 # Getting started with dataset
 
-**dataset** is designed to easily manage collections of JSON objects. 
+_dataset_ is designed to easily manage collections of JSON objects. 
 Objects are associated with a unique key you provide. The objects 
 themselves are stored on disc in a folder inside the collection folder. 
 The collection folder contains a JSON object document called 
 *collection.json*. This file stores metadata about the collection 
-including the association of keys with paths to their objects.  
-**dataset** comes in several flavors — a command line program called 
-**dataset**, a Go langauge package also called dataset, a shared library 
-called libdataset and a Python 3.7 package called **dataset**. This 
+including the association of keys with paths to their objects.
+_dataset_ comes in several flavors — a command line program called
+_dataset_, a Go langauge package also called dataset, a shared library
+called libdataset and a Python 3.7 package called _dataset_. This
 tutorial talks about the command line program and the Python package.
 
 
 ## Create a collection with init
 
 To create a collection you use the init verb. In the following examples 
-you will see how to do this with both the command line tool called dataset 
-as well as the Python module of the same name.
+you will see how to do this with both the command line tool 
+_dataset_ as well as the Python module of the same name.
 
-Let's create a collection called **friends.ds**. At the command line type 
+Let's create a collection called _friends.ds_. At the command line type 
 the following.
 
 
@@ -27,12 +27,14 @@ the following.
     dataset init friends.ds
 ```
 
-Notice that when you typed this in you see an "OK" response. If there had 
-been an error then you would have seen an error message instead. 
+Notice that after you typed this and press enter you see an 
+"OK" response. If there had been an error then you would have 
+seen an error message instead. 
 
-Working in Python is similar to the command line we do need to import some 
-modules and for these exercises we'll be importing the following modules 
-**sys**, **os**, **json** and of course **dataset**.
+Working in Python is similar to the command line. We import the 
+modules needed then use them. For these exercises we'll be 
+importing the following modules _sys_, _os_, _json_ and 
+of course _dataset_.
 
 
 ```python
@@ -67,12 +69,12 @@ remove in the Unix shell.
 
 As with many systems that store information dataset provides for basic 
 operations of creating, updating and deleting. In the following section we 
-will work with the **friends.ds** collection and **favorites.ds** 
+will work with the _friends.ds_ collection and _favorites.ds_ 
 collection we created previously.
 
 I have some friends who are characters in [ZBS](https://zbs.org) radio 
 plays. I am going to create and save some of their info in our collection 
-called **friends.ds**. I am going to store their name and email address 
+called _friends.ds_. I am going to store their name and email address 
 so I can contact them. Their names are Little Frieda, Mojo Sam and Jack 
 Flanders.
 
@@ -82,7 +84,7 @@ Flanders.
       '{"name":"Little Frieda","email":"frieda@inverness.example.org"}'
 ```
 
-Notice the "OK". Just like **init** the **create** verb returns a status. 
+Notice the "OK". Just like _init_ the _create_ verb returns a status. 
 "OK" means everything is good, otherwise an error is shown. Doing the 
 same thing in Python would look like.
 
@@ -127,8 +129,8 @@ in python --
 
 ### read
 
-We have three records in our **friends.ds** collection — "frieda", 
-"mojo", and "jack".  Let's see what they look like with the **read** 
+We have three records in our _friends.ds_ collection — "frieda", 
+"mojo", and "jack".  Let's see what they look like with the _read_ 
 verb.
 
 command line -- 
@@ -174,7 +176,7 @@ In Python --
         stop(err)
 ```
 
-In Python, just like with **init** and **create** the **read** verb 
+In Python, just like with _init_ and _create_ the _read_ verb 
 returns a tuple of the value and err. Notice a pattern?
 
 
@@ -182,7 +184,7 @@ returns a tuple of the value and err. Notice a pattern?
 
 Next we can modify the profiles (the \*.json files for the command line 
 version). We're going to add a key/value pair for "catch_phrase" 
-associated with each JSON object in **friends.ds**.  For Little Frieda 
+associated with each JSON object in _friends.ds_.  For Little Frieda 
 edit freida-profile.json to look like -- 
 
 
@@ -221,8 +223,8 @@ An Jack's jack-profile.json --
 ```
 
 On the command line we can read in the updated JSON objects and save the 
-results in the collection with the **update** verb. Like with **init** 
-and **create**  the **update** verb will return an “OK” or error message. 
+results in the collection with the _update_ verb. Like with _init_ 
+and _create_  the _update_ verb will return an “OK” or error message. 
 Let's update each of our JSON objects.
 
 
@@ -238,8 +240,8 @@ a "{" and ended with a "}" it would assume you were using an explicit
 JSON expression.
 
 In Python we can work with each of the dictionaries variables we save 
-from our previous **read** example.  We add our “catch_phrase” 
-attribute then **update** each record.
+from our previous _read_ example.  We add our “catch_phrase” 
+attribute then _update_ each record.
 
 
 ```python
@@ -290,12 +292,12 @@ An perhaps as you've already guessed working in Python looks like --
 ## keys and count
 
 Eventually you have lots of objects in your collection. You are not going 
-to be able to remember all the keys. dataset provides a **keys** function 
-for getting a list of keys as well as a **count** to give you a 
+to be able to remember all the keys. dataset provides a _keys_ function 
+for getting a list of keys as well as a _count_ to give you a 
 total number of keys.
 
 Now that we've deleted a few things let's see how many keys are in 
-**friends.ds**. We can do that with the **count** verb.
+_friends.ds_. We can do that with the _count_ verb.
 
 Command line -- 
 
@@ -312,7 +314,7 @@ In Python --
     print(f"Total Records Now: {cnt}")
 ```
 
-Likewise we can get a list of the keys with the **keys** verb. 
+Likewise we can get a list of the keys with the _keys_ verb. 
 
 
 ```bash
@@ -331,18 +333,21 @@ a variable called keys.
 
 ## grids and frames
 
-One of the challenges in working on JSON objects is their tree like 
-structure. When tabulating or comparing values it is often easier to work 
-in a spreadsheet like grid.  **grid** is dataset's verb for taking a list 
-of keys, a list of dot paths into the JSON objects and returning a 2D grid 
-of the results. This is handy when generating reports. A **grid** unlike 
-**frame** which we will see shortly doesn't enforce any specifics on the 
-columns and rows. It only contains the values you specify.
+JSON objects are tree like. This structure can be inconvienent
+for some types of analysis like tabulation, comparing values or
+generating summarizing reports. A spreadsheet, table or 2D grid 
+like structure is often a more familair format for these types
+of tasks. _grid_ is dataset's verb for taking a list 
+of keys, a list of dot paths to the JSON objects attributes and 
+returning a 2D grid of the results. The 2D grid is easy to
+iterate over.  A _grid_ doesn't enforce any specifics on the 
+columns and rows. It only contains the values you specified in
+the list of keys and dot paths.
 
 
 ### grid
 
-Let's create a **grid** from our *friends.ds* collection.
+Let's create a _grid_ from our *friends.ds* collection.
 
 
 ```bash
@@ -350,7 +355,7 @@ Let's create a **grid** from our *friends.ds* collection.
     dataset grid -i=friends.keys friends.ds .name .email .catch_phrase
 ```
 
-As with **read** the **grid** verb can take the “-p” option to make the 
+As with _read_ the _grid_ verb can take the “-p” option to make the 
 JSON grid a little easier to read.
 
 
@@ -373,29 +378,28 @@ list of keys, use those keys and a list of dot paths to define the grid.
     print(json.dumps(g, indent = 4))
 ```
 
-In python **grid** like **create** and **update** returns a tuple that 
+In python _grid_ like _create_ and _update_ returns a tuple that 
 has your result and an error status. Finally we print our result using 
-the JSON module's **dumps**.
+the JSON module's _dumps_.
 
 
 ### frame
 
-dataset also comes with a **frame** verb.  A **frame** is like a grid plus 
+dataset also comes with a _frame_ verb.  A _frame_ is like a grid plus 
 additional matadata. It enforces a structure such on its grid. Column 1 
-of the **frame**'s internal grid element always has the keys associated 
-with the collection. A **frame** will also derive heading labels from the 
+of the _frame_'s internal grid element always has the keys associated 
+with the collection. A _frame_ will also derive heading labels from the 
 dot paths used to define the frame and will include metadata about the 
 collection, keys used to define the frame and default types of data in 
-the columns. The extra information in a **frame** stays with the 
+the columns. The extra information in a _frame_ stays with the 
 collection. Frames are persistent and can be easily recalculated based on 
-collection updates. Finally frames as used by more complex verbs such as 
-**export-csv**, **export-gsheet**, and **indexer** we'll be covering 
-later. 
+collection updates. Finally frames are used by more complex verbs such as 
+_export_ and _indexer_ we'll be covering later. 
 
 To define a frame we only need one additional piece of information besides 
 what we used for a grid. We need a name for the frame. 
 
-Working from our previous **grid** example, let's call this frame 
+Working from our previous _grid_ example, let's call this frame 
 "name-and-email".
 
 
@@ -415,8 +419,8 @@ In python it would look like
         stop(err)
 ```
 
-To see the contents of a frame we only need to support the collection 
-name and frame name.
+To see the contents of a frame we only need to supply the collection 
+and frame names.
 
 
 ```bash
@@ -434,12 +438,11 @@ In Python it'd look like
 ```
 
 Looking at the resulting JSON object you see many other attribute 
-beyond the grid of values. These are what simplify some of dataset 
+beyond the grid of values. These are created to simplify some of dataset 
 more complex interactions.
 
 
-
-Let's add back the Jack record we deleted a few sections again and 
+Let's add back the Jack record we deleted a few sections ago and 
 “reframe” our “name-and-email” frame.
 
 
@@ -454,7 +457,7 @@ Let's add back the Jack record we deleted a few sections again and
     dataset frame -p friends.ds "name-and-email"
 ```
 
-Like with **grid** and **read** before it the “-p” option will cause the 
+Like with _grid_ and _read_ before it the “-p” option will cause the 
 JSON representation of the frame to be pretty printed.
 
 Let's try the same thing in Python
@@ -474,7 +477,7 @@ Let's try the same thing in Python
     print(json.dumps(f, indent = 4))
 ```
 
-We can list the frames in the collection using the **frames** verb.
+We can list the frames in the collection using the _frames_ verb.
 
 
 ```bash
@@ -490,12 +493,32 @@ In Python
 ```
 
 In our frame we have previously defined three columns, looking at the 
-JSON representation of the frame we also see three "labels" and three 
-"types".  These properties are for future use. Our plan is to leverage 
-them when exporting to spreadsheets as well as when definining search 
-indexes. E.g. labels could be used as column names when synchronizing 
-a spreadsheet with collection values and the types fields would be 
-helpful when defining search indexes.
+JSON representation of the frame we also see a "labels" attribute. 
+Labels are used when exporting and synchronizing content between a 
+CSV file, Google Sheet and a collection (labels become column names).
+
+You can set the labels by providing replacement values for ALL
+the labels in the column order defined in the frame. In our previous
+example we provided the order of the columns for the frame
+"name-and-email" as .name, .email, .catch_phrase. Also recall the
+frames AWAYS has a first column named `._Key`. If we want
+to have the labels "ID", "Name", "EMail", and "Catch Phrase" instead
+we can set them with the `frame-labels` verb.
+
+```bash
+    dataset frame-labels friends.ds "name-and-email" \
+        "ID" "Name" "EMail" "Catch Phrase"
+```
+
+In Python it look like
+
+```python
+    err = dataset.frame_labels("friends.ds", "name-and-email", 
+          ["Name", "EMail", "Catch Phrase"])
+    if err != "":
+        stop(err)
+```
+
 
 Finally the last thing we need to be able to do is delete a frame. Delete 
 frames work very similar to deleting a JSON record.
@@ -517,12 +540,12 @@ Or in Python
 **TIP**: Frames like collections have a number of operations. Here's 
 the list
 
-1. **frame** will set you define a frame
-2. **frame** will also let you read back a frame
-3. **frames** will list the frames defined in the collection
-4. **frame-labels** will let you replace the labels values for all 
+1. _frame_ will set you define a frame
+2. _frame_ will also let you read back a frame
+3. _frames_ will list the frames defined in the collection
+4. _frame-labels_ will let you replace the labels values for all 
    columns in a frame
-6. **delete-frame** will remove the frame from the collection
+6. _delete-frame_ will remove the frame from the collection
 
 
 

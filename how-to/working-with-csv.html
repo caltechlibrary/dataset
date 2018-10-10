@@ -26,29 +26,30 @@
 <section>
 <h1>Working with CSV</h1>
 
-<p><a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> files are commonly
-used to share data. Most spreadsheets and many
-database systems can export and import from CSV files.  <em>datatset</em> can use
-a spreadsheet in CSV format to populate JSON objects in a collection. The
-header row of the CSV file will become the object attribute names and the rows
-will become their values. <em>dataset</em> requires a column of unique values to become
-the keys for the JSON objects stored in the collection.</p>
+<p><a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> files are
+commonly used to share data. Most spreadsheets and many database systems
+can export and import from CSV files.  <em>datatset</em> can use a spreadsheet
+in CSV format to populate JSON objects in a collection. The header row
+of the CSV file will become the object attribute names and the rows will
+become their values. <em>dataset</em> requires a column of unique values to
+become the keys for the JSON objects stored in the collection.</p>
 
-<p>You can export CSV directly from a collection too. The paths to the elements
-in the objects become the header row and the values exported from the objects
-become the subsequent rows.</p>
+<p>You can export CSV directly from a collection too. The paths to the
+elements in the objects become the header row and the values exported
+from the objects become the subsequent rows.</p>
 
-<pre><code>NOTE: In an upcoming release of data the specific command line parameters and
-Python method definitions may change.  Now that _dataset_ supports the concept
-of frames import and export to a tabular structure (or even synchronizing with
-a tabular structure) can be simplified. This document describes the current
+<pre><code>NOTE: In an upcoming release of data the specific command line 
+parameters and Python method definitions may change.  Now that 
+_dataset_ supports the concept of frames import and export to 
+a tabular structure (or even synchronizing with a tabular 
+structure) can be simplified. This document describes the current
 release method for working with CSV files.
 </code></pre>
 
 <h2>Import objects from a CSV file</h2>
 
-<p>You can import rows of a CSV document as JSON documents. This is useful when
-you have a large number of simple structures.</p>
+<p>You can import rows of a CSV document as JSON documents. This is
+useful when you have a large number of simple structures.</p>
 
 <p>In this example we have a simple CSV file containing the following</p>
 
@@ -61,21 +62,21 @@ you have a large number of simple structures.</p>
     Jack Flanders,captain.jack@zbs.example.org
 </code></pre>
 
-<p>Save this file as <em>characters.csv</em>. To import this let&rsquo;s create a collection
-named <em>characters</em>.</p>
+<p>Save this file as <em>characters.csv</em>. To import this let&rsquo;s create a
+collection named <em>characters</em>.</p>
 
 <pre><code class="language-shell">    dataset init characters-v1.ds
 </code></pre>
 
-<p>Now we can populate our characters collection by importing <em>characters.csv</em>.
-Then look at the keys.</p>
+<p>Now we can populate our characters collection by importing
+<em>characters.csv</em>.  Then look at the keys.</p>
 
-<pre><code class="language-shell">    dataset characters-v1.ds import characters.csv 2
-    dataset characeter-v1.ds keys
+<pre><code class="language-shell">    dataset import characters-v1.ds characters.csv 2
+    dataset keys characeter-v1.ds 
 </code></pre>
 
-<p>Notice the assigned ids. We used the second column, the one with th email heading
-to be our keys.</p>
+<p>Notice the assigned ids. We used the second column, the one with th
+email heading to be our keys.</p>
 
 <pre><code>    ralph.rolf@zbs.example.org
     zowie@zbs.example.org
@@ -85,16 +86,17 @@ to be our keys.</p>
     old.art@zbs.example.org
 </code></pre>
 
-<pre><code class="language-shell">    dataset characters-v1.ds keys | while read ID; do dataset characters-v1.ds read &quot;${ID}&quot;; done
+<pre><code class="language-shell">    dataset keys characters-v1.ds |\
+       while read ID; do 
+           dataset read characters-v1.ds &quot;${ID}&quot;; 
+       done
 </code></pre>
 
-<p>In out next example we will use the  environment variable DATASET to save us some typing.
-Now let&rsquo;s make a new version of our characters collection but this time we&rsquo;ll column one (the name column)
-as the key.</p>
+<p>Now let&rsquo;s make a new version of our characters collection but this time
+we&rsquo;ll column one (the name column) as the key.</p>
 
 <pre><code class="language-shell">    dataset init characters-v2.ds
-    export DATASET=&quot;characters-v2.ds&quot;
-    dataset import characters.csv 1
+    dataset import characters-v2.ds characters.csv 1
     dataset keys
 </code></pre>
 
@@ -104,7 +106,10 @@ as the key.</p>
 
 <p>Reading the records back we see we have the JSON same document structure.</p>
 
-<pre><code class="language-shell">    dataset list keys | while read ID; do dataset read &quot;${ID}&quot;; done
+<pre><code class="language-shell">    dataset keys characters-v2.ds | \
+        while read ID; do 
+            dataset read characters-v2.ds &quot;${ID}&quot;; 
+        done
 </code></pre>
 
 <p>Our records look like&hellip;</p>
@@ -116,41 +121,21 @@ as the key.</p>
     {&quot;email&quot;:&quot;little.frieda@zbs.example.org&quot;,&quot;name&quot;:&quot;Little Frieda&quot;}
 </code></pre>
 
-<p>Again the header row becomes the property names of the JSON document. But what if you don&rsquo;t
-have a unique ID and don&rsquo;t like the filename/row number in our first example?  You can generate
-a UUID for each record by using the &ldquo;-uuid&rdquo; option. Let&rsquo;s create a third version of characters
-and step through the results as before.</p>
-
-<pre><code class="language-shell">    dataset init characters-v3
-    export DATASET=characters-v3
-    dataset -uuid import characters.csv
-    dataset list keys
-    dataset list keys | while read ID; do dataset read &quot;${ID}&quot;; done
-</code></pre>
-
-<p>Notice that the UUID is inserted into the result JSON documents. This lets you easily keep
-records straight even if you rename the keys when moving between collections.</p>
-
-<pre><code>    {&quot;email&quot;:&quot;little.frieda@zbs.example.org&quot;,&quot;name&quot;:&quot;Little Frieda&quot;,&quot;uuid&quot;:&quot;27a5295f-4a80-4855-a2d1-e8a3a1a4623f&quot;}
-    {&quot;email&quot;:&quot;old.art@zbs.example.org&quot;,&quot;name&quot;:&quot;Far Seeing Art&quot;,&quot;uuid&quot;:&quot;872f68fe-f96b-4ce0-83bb-5c255d28cae7&quot;}
-    {&quot;email&quot;:&quot;captain.jack@zbs.example.org&quot;,&quot;name&quot;:&quot;Jack Flanders&quot;,&quot;uuid&quot;:&quot;fa382371-9a9e-4ade-a63c-7ebf88ef266e&quot;}
-    {&quot;email&quot;:&quot;zowie@zbs.example.org&quot;,&quot;name&quot;:&quot;Zowie&quot;,&quot;uuid&quot;:&quot;c05fceaa-b5de-460a-9497-f38fd9434cef&quot;}
-    {&quot;email&quot;:&quot;ralph.rolf@zbs.example.org&quot;,&quot;name&quot;:&quot;Ralph Rolf&quot;,&quot;uuid&quot;:&quot;fb48731d-9da7-4cc0-990d-9a5d1e0b33ac&quot;}
-    {&quot;email&quot;:&quot;mojo.sam@zbs.example.org&quot;,&quot;name&quot;:&quot;Mojo Sam&quot;,&quot;uuid&quot;:&quot;5aea6f22-390c-4727-8235-b9cab5ea1180&quot;}
-</code></pre>
-
 <h2>What if the CSV file has no header row?</h2>
 
-<p>Let&rsquo;s create a new collection and try the &ldquo;-skip-header-row=false&rdquo; option.</p>
+<p>Let&rsquo;s create a new collection and try the &ldquo;-use-header-row=false&rdquo; option.</p>
 
-<pre><code class="language-shell">    dataset init characters-v4
-    export DATASET=characters-v4
-    dataset -skip-header-row=false import characters.csv
-    dataset list keys
-    dataset list keys | while read ID; do dataset read &quot;${ID}&quot;; done
+<pre><code class="language-shell">    dataset init characters-v4.ds
+    dataset import -skip-header-row=false characters-v4.ds characters.csv
+    dataset keys characters-v4.ds
+    dataset keys characters-v4.ds | \
+        while read ID; do 
+            dataset read characters-v4.ds &quot;${ID}&quot;; 
+        done
 </code></pre>
 
-<p>Our ids are like in our first example because we chose to use the default JSON document key.</p>
+<p>Our ids are like in our first example because we chose to use the default
+JSON document key.</p>
 
 <pre><code>    characters.csv_2
     characters.csv_3
@@ -172,13 +157,16 @@ records straight even if you rename the keys when moving between collections.</p
     {&quot;col1&quot;:&quot;name&quot;,&quot;col2&quot;:&quot;email&quot;}
 </code></pre>
 
-<p>Instead of a <em>name</em> and <em>email</em> property name we have <em>col1</em> and <em>col2</em>.  Setting &ldquo;-skip-header-row&rdquo; to false
-can be used with column numbers and or &ldquo;-uuid&rdquo; option.  Give it a try with this final collection.</p>
+<p>Instead of a <em>name</em> and <em>email</em> property name we have <em>col1</em> and <em>col2</em>.<br />
+Setting &ldquo;-use-header-row&rdquo; to false can be used with column numbers and or
+&ldquo;-uuid&rdquo; option. Give it a try with this final collection.</p>
 
-<pre><code class="language-shell">    dataset -skip-header-row=false import characters.csv 2
-    dataset -skip-header-row=false -uuid import characters.csv
-    dataset list keys
-    dataset list keys | while read ID; do dataset read &quot;${ID}&quot;; done
+<pre><code class="language-shell">    dataset import -use-header-row=false characters-v5.ds characters.csv 2
+    dataset keys characters-v5.ds
+    dataset keys characters-v5.ds | \
+        while read ID; do 
+            dataset read characters-v5.ds &quot;${ID}&quot;; 
+        done
 </code></pre>
 
 <p>Explore what you see.</p>
@@ -187,12 +175,13 @@ can be used with column numbers and or &ldquo;-uuid&rdquo; option.  Give it a tr
 
 <h2>importing data into a collection</h2>
 
-<p>We can import data from a CSV file and store each row as a JSON document in dataset. You
-need to pick a column with unique values to be the key for each record in the collection.
-In this example we assume column one has the key value.</p>
+<p>We can import data from a CSV file and store each row as a JSON document
+in dataset. You need to pick a column with unique values to be the key
+for each record in the collection.  In this example we assume column one
+has the key value.</p>
 
 <pre><code class="language-shell">    dataset init mydata.ds
-    dataset mydata.ds import-csv my-data.csv 1
+    dataset import mydata.ds my-data.csv 1
 </code></pre>
 
 <p>You can create a CSV export by providing the dot paths for each column and
@@ -200,13 +189,20 @@ then givening columns a name.</p>
 
 <h2>exporting data from a collection</h2>
 
-<pre><code class="language-shell">   dataset mydata.ds export-csv titles.csv true '.id,.title,.pubDate' 'id,title,publication date'
+<pre><code class="language-shell">   dataset frame -all mydata.ds export-frame '.id' '.title' '.pubDate' 
+   dataset frame-labels mydata.ds export-frame 'id,title,publication date'
+   dataset export mydata.ds export-frame 
 </code></pre>
 
-<p>If you wanted to restrict to a subset (e.g. publication in year 2016)</p>
+<p>If you wanted to restrict to a subset (e.g. publication in year 2016)
+You just need to create a frame with that restriction.</p>
 
-<pre><code class="language-shell">   dataset mydata.ds export-csv titles2016.csv '(eq 2016 (year .pubDate))' \
-           '.id,.title,.pubDate' 'id,title,publication date'
+<pre><code class="language-shell">   dataset keys mydata.ds '(eq 2016 (year .pubDate))' | \
+      dataset frame mydata.ds published-2016 \
+           '.id' '.title' '.pubDate' 
+   dataset frame-labels mydata.ds published-2016 \
+           'id' 'title' 'publication' 'date'
+   dataset export mydata.published-2016 ds 
 </code></pre>
 
 </section>
