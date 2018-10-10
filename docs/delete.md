@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME delete KEY
+    dataset delete COLLECTION_NAME KEY
 ```
 
 ## Description
@@ -18,7 +18,7 @@ This usage example will delete the JSON document withe the key _r1_ in
 the collection named "publications.ds".
 
 ```shell
-    dataset publications.ds delete r1
+    dataset delete publications.ds r1
 ```
 
 Related topics: [create](create.html), [read](read.html), and [update](update.html)

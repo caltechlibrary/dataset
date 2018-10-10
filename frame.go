@@ -30,19 +30,34 @@ import (
 )
 
 type DataFrame struct {
-	// Explicit at creator
+	// Explicit at creation
 	Name           string   `json:"frame_name"`
 	CollectionName string   `json:"collection_name"`
 	DotPaths       []string `json:"dot_paths"`
-	// NOTE: Keys may be deprecaited as _Key as column zero of the grid is a requirement of Frames.
+	// NOTE: Keys should hold the same values as column zero of the grid.
+	// Keys controls the order of rows in a grid when reframing.
 	Keys    []string        `json:"keys"`
 	Grid    [][]interface{} `json:"grid"`
 	Created time.Time       `json:"created"`
 	Updated time.Time       `json:"updated,omitempty"`
 
+	// NOTE: these values effect how Reframe works
+	AllKeys    bool   `json:"use_all_keys"`
+	FilterExpr string `json:"filter_expr,omitempty"`
+	SortExpr   string `json:"sort_expr,omitempty"`
+	SampleSize int    `json:"sample_size"`
+
 	// Derived or explicitly set after creation
-	Labels      []string `json:"labels,omitempty"`
-	ColumnTypes []string `json:"column_types,omitempty"`
+	Labels []string `json:"labels,omitempty"`
+}
+
+// hasFrame checks if a frame is defined already
+func (c *Collection) hasFrame(key string) bool {
+	if c.FrameMap == nil {
+		return false
+	}
+	_, hasFrame := c.FrameMap[key]
+	return hasFrame
 }
 
 // getFrame retrieves a frame by frame name from a collection.
@@ -55,7 +70,7 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 		return nil, fmt.Errorf("frame %s not defined", key)
 	}
 	// read frame json from storage
-	src, err := c.Store.ReadFile(path.Join(c.Name, savedPath))
+	src, err := c.Store.ReadFile(path.Join(c.workPath, savedPath))
 	if err != nil {
 		return nil, err
 	}
@@ -69,11 +84,14 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 // setFrame writes a DataFrame struct to the collection
 func (c *Collection) setFrame(key string, f *DataFrame) error {
 	// Check to see if we have a _frames directory to store our frames in
-	if _, err := c.Store.Stat(path.Join(c.Name, "_frames")); err != nil {
-		if err := c.Store.MkdirAll(path.Join(c.Name, "_frames"), 0775); err != nil {
+	if _, err := c.Store.Stat(path.Join(c.workPath, "_frames")); err != nil {
+		if err := c.Store.MkdirAll(path.Join(c.workPath, "_frames"), 0775); err != nil {
 			return err
 		}
 	}
+	// Sanity check on frameName and collectionName
+	f.CollectionName = c.Name
+	f.Name = key
 
 	// render DataFrame to JSON for storage
 	src, err := json.Marshal(f)
@@ -92,7 +110,7 @@ func (c *Collection) setFrame(key string, f *DataFrame) error {
 	}
 	c.FrameMap[key] = savedPath
 	// save metadata and return
-	err = c.Store.WriteFile(path.Join(c.Name, savedPath), src, 0664)
+	err = c.Store.WriteFile(path.Join(c.workPath, savedPath), src, 0664)
 	if err != nil {
 		return err
 	}
@@ -107,20 +125,21 @@ func (c *Collection) rmFrame(key string) error {
 		return fmt.Errorf("Frame %s not found", key)
 	}
 	delete(c.FrameMap, key)
-	err := c.Store.Remove(path.Join(c.Name, savedPath))
+	err := c.Store.Remove(path.Join(c.workPath, savedPath))
 	err = c.saveMetadata()
 	return err
 }
 
 // Frame takes a set of collection keys and dotpaths, builds a grid and assembles
 // the grid and metadata returning a new CollectionFrame and error. Frames are
-// assoicated with the collection.
+// associated with the collection and can be re-generated.
 func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbose bool) (*DataFrame, error) {
-	// Read an existing frame or return error
-	if len(keys) == 0 || len(dotPaths) == 0 {
+	// If frame exists return the existing frame
+	if c.hasFrame(name) {
 		return c.getFrame(name)
 	}
-	// Case of new Frame Build our Grid.
+
+	// Case of new Frame and building our Grid.
 
 	// NOTE: we need to enforce that column zero is explicitly ._Key
 	hasKeyColumn := false
@@ -149,19 +168,19 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbos
 	}
 	f.Grid = g
 	labels := []string{}
-	colTypes := []string{}
 	// NOTE: derive labels from dotPaths and default column types to string
 	for _, p := range dotPaths {
 		l := dotpath.ToLabel(p)
 		labels = append(labels, l)
-		// Set a default column type of string
-		colTypes = append(colTypes, "string")
 	}
 	f.Labels = labels[:]
-	// FIXME: Derive column types from grid values
-	f.ColumnTypes = colTypes[:]
 	err = c.setFrame(name, f)
 	return f, err
+}
+
+// HasFrame checkes to see if a frame is already defined.
+func (c *Collection) HasFrame(name string) bool {
+	return c.hasFrame(name)
 }
 
 // Frames retrieves a list of available frames associated with a collection
@@ -206,7 +225,13 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 		f.Labels = labels[:]
 	}
 	if len(keys) > 0 {
-		f.Keys = keys[:]
+		if len(f.SortExpr) > 0 {
+			keys, err = c.KeySortByExpression(keys, f.SortExpr)
+			if err != nil {
+				return err
+			}
+		}
+		f.Keys = keys
 	}
 	f.Updated = time.Now()
 	g, err := c.Grid(f.Keys, f.DotPaths, verbose)
@@ -214,6 +239,11 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 		return err
 	}
 	f.Grid = g
+	return c.setFrame(name, f)
+}
+
+// SaveFrame saves a frame in a collection or returns an error
+func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 	return c.setFrame(name, f)
 }
 
@@ -227,20 +257,6 @@ func (c *Collection) FrameLabels(name string, labels []string) error {
 		return fmt.Errorf("number of columns (%d) does not match the number of labels (%d)", len(f.DotPaths), len(labels))
 	}
 	f.Labels = labels[:]
-	f.Updated = time.Now()
-	return c.setFrame(name, f)
-}
-
-// FrameTypes sets the types associated with a frame's columns, types list must match the number of dot paths (columns) in the frame.
-func (c *Collection) FrameTypes(name string, columnTypes []string) error {
-	f, err := c.getFrame(name)
-	if err != nil {
-		return err
-	}
-	if len(f.DotPaths) != len(columnTypes) {
-		return fmt.Errorf("number of columns (%d) does not match the number of column types (%d)", len(f.DotPaths), len(columnTypes))
-	}
-	f.ColumnTypes = columnTypes[:]
 	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }

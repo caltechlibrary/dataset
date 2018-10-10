@@ -10,8 +10,10 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	// Caltech Library Packages
+	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
 	"github.com/caltechlibrary/storage"
 )
@@ -26,30 +28,33 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 	if len(name) == 0 {
 		return nil, fmt.Errorf("missing a collection name")
 	}
-	collectionName := collectionNameFromPath(name)
 	store, err := storage.GetStore(name)
 	if err != nil {
 		return nil, err
 	}
+	collectionName := collectionNameAsPath(name)
 	// See if we need an open or continue with create
-	if store.Type == storage.S3 || store.Type == storage.GS {
-		if _, err := store.Stat(collectionName + "/collection.json"); err == nil {
-			return Open(name)
-		}
-	} else {
-		if _, err := store.Stat(collectionName); err == nil {
-			return Open(name)
+	_, err = store.Stat(collectionName + "/collection.json")
+	if err == nil {
+		return Open(name)
+	}
+
+	if store.Type == storage.FS {
+		err = os.MkdirAll(collectionName, 0775)
+		if err != nil {
+			return nil, err
 		}
 	}
+
 	c := new(Collection)
 	c.Version = Version
-	c.Name = collectionName
+	c.Name = path.Base(collectionName)
+	c.workPath = collectionName
 	c.Layout = PAIRTREE_LAYOUT
 	c.KeyMap = map[string]string{}
 	c.Store = store
-	// Save the metadata for collection
 	err = c.saveMetadata()
-	return c, err
+	return c, nil
 }
 
 // pairtreeCreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
@@ -78,16 +83,19 @@ func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
 		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
 	}
 
+	var err error
 	pair := pairtree.Encode(key)
 	pairPath := path.Join("pairtree", pair)
-	err := c.Store.MkdirAll(path.Join(c.Name, pairPath), 0770)
-	if err != nil {
-		return fmt.Errorf("mkdir %s %s", path.Join(c.Name, pairPath), err)
+	if c.Store.Type == storage.FS {
+		err = c.Store.MkdirAll(path.Join(c.workPath, pairPath), 0770)
+		if err != nil {
+			return fmt.Errorf("mkdir %s %s", path.Join(c.workPath, pairPath), err)
+		}
 	}
 
 	// We've almost made it, save the key's bucket name and write the blob to bucket
 	c.KeyMap[keyName] = pairPath
-	err = c.Store.WriteFile(path.Join(c.Name, pairPath, FName), src, 0664)
+	err = c.Store.WriteFile(path.Join(c.workPath, pairPath, FName), src, 0664)
 	if err != nil {
 		return err
 	}
@@ -108,7 +116,7 @@ func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.Name, pairPath, FName))
+	src, err := c.Store.ReadFile(path.Join(c.workPath, pairPath, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -138,11 +146,13 @@ func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
 	if ok != true {
 		return fmt.Errorf("%q does not exist in %q", keyName, c.Name)
 	}
-	err := c.Store.MkdirAll(path.Join(c.Name, pairPath), 0770)
-	if err != nil {
-		return fmt.Errorf("Update (mkdir) %q, %s", path.Join(c.Name, pairPath), err)
+	if c.Store.Type == storage.FS {
+		err := c.Store.MkdirAll(path.Join(c.workPath, pairPath), 0770)
+		if err != nil {
+			return fmt.Errorf("Update (mkdir) %q, %s", path.Join(c.workPath, pairPath), err)
+		}
 	}
-	return c.Store.WriteFile(path.Join(c.Name, pairPath, fName), src, 0664)
+	return c.Store.WriteFile(path.Join(c.workPath, pairPath, fName), src, 0664)
 }
 
 // pairtreeDelete removes a JSON doc from a collection
@@ -160,11 +170,11 @@ func (c *Collection) pairtreeDelete(name string) error {
 
 	//NOTE: Need to remove any stale tarball before removing our record!
 	tarball := strings.TrimSuffix(FName, ".json") + ".tar"
-	p := path.Join(c.Name, pairPath, tarball)
+	p := path.Join(c.workPath, pairPath, tarball)
 	if err := c.Store.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
 	}
-	p = path.Join(c.Name, pairPath, FName)
+	p = path.Join(c.workPath, pairPath, FName)
 	if err := c.Store.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
@@ -239,9 +249,6 @@ func pairtreeAnalyzer(collectionName string) error {
 	if err != nil {
 		return err
 	}
-	if c.Store.Type != storage.FS {
-		return fmt.Errorf("Analyzer only works on local file system")
-	}
 
 	// Set layout to PAIRTREE_LAYOUT
 	c.Layout = PAIRTREE_LAYOUT
@@ -252,7 +259,7 @@ func pairtreeAnalyzer(collectionName string) error {
 		// NOTE: k needs to be urlencoded before checking for file
 		fname := url.QueryEscape(k) + ".json"
 		docPath := path.Join(collectionName, v, fname)
-		if store.IsDir(dirPath) == false {
+		if store.Type == storage.FS && store.IsDir(dirPath) == false {
 			log.Printf("ERROR: %s is missing (%q)", k, dirPath)
 			eCnt++
 		} else if store.IsFile(docPath) == false {
@@ -269,7 +276,7 @@ func pairtreeAnalyzer(collectionName string) error {
 	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
-	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
 	if err != nil && len(c.KeyMap) > 0 {
 		log.Printf("ERROR: unable to walk pairtree, %s", err)
 		eCnt++
@@ -282,7 +289,7 @@ func pairtreeAnalyzer(collectionName string) error {
 			}
 		}
 	}
-	// FIXME: need to check for attachments and make sure they are record OK
+	// FIXME: need to check for attachments and make sure they are recorded OK
 
 	if eCnt > 0 || wCnt > 0 {
 		return fmt.Errorf("%d errors, %d warnings detected", eCnt, wCnt)
@@ -299,9 +306,6 @@ func pairtreeRepair(collectionName string) error {
 	store, err := storage.GetStore(collectionName)
 	if err != nil {
 		return fmt.Errorf("Repair only works supported storage types, %s", err)
-	}
-	if store.Type != storage.FS {
-		return fmt.Errorf("Repair only works on local file system")
 	}
 
 	// See if we can open a collection, if not then create an empty struct
@@ -326,13 +330,19 @@ func pairtreeRepair(collectionName string) error {
 		log.Printf("Migrating format from %s to %s", c.Version, Version)
 	}
 	c.Version = Version
+	if c.Layout == UNKNOWN_LAYOUT {
+		c.Layout = PAIRTREE_LAYOUT
+	}
 	log.Printf("Getting a list of pairs")
-	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
 	if err != nil {
 		log.Printf("ERROR: unable to walk pairtree, %s", err)
 		return err
 	}
 	log.Printf("Adding missing pairs")
+	if c.KeyMap == nil {
+		c.KeyMap = map[string]string{}
+	}
 	for _, pair := range pairs {
 		key := pairtree.Decode(pair)
 		if _, exists := c.KeyMap[key]; exists == false {
@@ -353,7 +363,14 @@ func pairtreeRepair(collectionName string) error {
 		}
 	}
 	log.Printf("Saving metadata for %s", collectionName)
-	return c.saveMetadata()
+	err = c.saveMetadata()
+	if err != nil {
+		return err
+	}
+	// Update Namaste entries
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
+	return nil
 }
 
 // migrateToPairtree will migrate JSON objects and attachments from
@@ -369,7 +386,7 @@ func migrateToPairtree(collectionName string) error {
 	for k, v := range c.KeyMap {
 		oldKeyMap[k] = v
 	}
-	c.Close()
+	defer c.Close()
 	store, err := storage.GetStore(collectionName)
 	if err != nil {
 		return err
@@ -378,15 +395,17 @@ func migrateToPairtree(collectionName string) error {
 	// Create a new collection struct, set to Buckets layout
 	nc := new(Collection)
 	nc.Layout = PAIRTREE_LAYOUT
-	nc.Name = collectionName
+	nc.Name = c.Name
+	nc.workPath = c.workPath
 	nc.Version = Version
 	nc.Buckets = nil
 	nc.Store, _ = storage.GetStore(collectionName)
 	nc.KeyMap = map[string]string{}
 
+	i := 0
 	for key, oldPath := range oldKeyMap {
 		_, FName := keyAndFName(key)
-		src, err := store.ReadFile(path.Join(collectionName, oldPath, FName))
+		src, err := store.ReadFile(path.Join(c.workPath, oldPath, FName))
 		if err != nil {
 			return err
 		}
@@ -398,7 +417,7 @@ func migrateToPairtree(collectionName string) error {
 
 		// Check for and handle any attachments
 		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
-		oldTarballPath := path.Join(collectionName, oldPath, tarballFName)
+		oldTarballPath := path.Join(c.workPath, oldPath, tarballFName)
 		if store.IsFile(oldTarballPath) {
 			// Move the tarball from one layout to the other
 			buf, err := store.ReadFile(oldTarballPath)
@@ -407,20 +426,30 @@ func migrateToPairtree(collectionName string) error {
 			}
 			pair := pairtree.Encode(key)
 			pairPath := path.Join("pairtree", pair)
-			newTarballPath := path.Join(collectionName, pairPath, tarballFName)
+			newTarballPath := path.Join(c.workPath, pairPath, tarballFName)
 			err = nc.Store.WriteFile(newTarballPath, buf, 0664)
 			if err != nil {
 				return err
 			}
 		}
+		if (i % 1000) == 0 {
+			log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
+		}
+		i++
+	}
+	if (i % 1000) != 0 {
+		log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
 	}
 	// OK, if all buckets processed, we can remove all the paths.
 	for _, oldPath := range oldKeyMap {
-		err = store.RemoveAll(path.Join(collectionName, oldPath))
+		err = store.RemoveAll(path.Join(c.workPath, oldPath))
 		if err != nil {
 			return fmt.Errorf("Cleaning after migration, %s", err)
 		}
 	}
+	// Update Namaste entries
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }
 
@@ -430,26 +459,37 @@ func migrateToPairtree(collectionName string) error {
 
 // walkPairtree takes a store, a start path and returns a list
 // of pairs found that also contain a pair's ${ID}.json file
-func walkPairtree(startPath string) ([]string, error) {
+func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
+	var err error
 	// pairs holds a list of discovered pairs
 	pairs := []string{}
-	err := filepath.Walk(startPath, func(p string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() == false {
-			f := path.Base(p)
-			e := path.Ext(f)
-			if e == ".json" {
-				//NOTE: should be URL encoded at this point.
-				key := strings.TrimSuffix(f, e)
-				pair := pairtree.Encode(key)
-				if strings.Contains(p, path.Join("pairtree", pair, f)) {
-					pairs = append(pairs, pair)
+	if store.Type == storage.FS {
+		err = filepath.Walk(startPath, func(p string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() == false {
+				f := path.Base(p)
+				e := path.Ext(f)
+				if e == ".json" {
+					//NOTE: should be URL encoded at this point.
+					key := strings.TrimSuffix(f, e)
+					pair := pairtree.Encode(key)
+					if strings.Contains(p, path.Join("pairtree", pair, f)) {
+						pairs = append(pairs, pair)
+					}
 				}
 			}
+			return nil
+		})
+	} else {
+		//FIXME: Need to list of the directory and aggregaite the pairs...
+		fmt.Fprintf(os.Stderr, "walkPairstree() not implemented for S3 and GS\n")
+		dListing, err := store.ReadDir(startPath)
+		if err != nil {
+			return nil, err
 		}
-		return nil
-	})
+		fmt.Printf("DEBUG ReadDir()\n%+v\n", dListing)
+	}
 	return pairs, err
 }

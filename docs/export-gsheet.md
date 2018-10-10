@@ -1,19 +1,41 @@
 
-# export-gsheet
+# export
 
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
+    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
+    dataset export COLLECTION_NAME FRAME_NAME GSHEET_ID GSHEET_NAME [CELL_RANGE]
 ```
 
 ## Description
 
-export-gsheet will write the exported records and exported fields to 
-a Google Sheets sheet in the given cell range.
+_export_ will render the contents of a collection as a CSV file
+or export to a Google Sheet based on a frame defined in the 
+collection. 
 
-SHEET_ID is the google sheet id, usually a very long alpha numeric 
-string. If your URL looks like
+## Usage
+
+In the following examples we will be using a newly defined
+"frame" named "my-report".  The frame will have the following fields are 
+being exported - ._Key,.title, and .pubDate with the following 
+labels for those fields -- id, title and publication date. 
+
+```shell
+    dataset frame publications.ds my-report "._Key" ".title" ".pubDate"
+    dataset frame-labels publications.ds my-report "id" "title" "publication date"
+```
+
+The example blow creates a CSV file named 'output.csv'. The collection 
+is "publications.ds".
+
+```shell
+	dataset export publications.ds my-report > output.csv
+```
+
+Likewise we can export to a Google Sheet.  SHEET_ID is the google 
+sheet id, usually a very long alpha numeric string. If your URL 
+looks like
 
 ```
     https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
@@ -33,23 +55,8 @@ Typically this would be something like "A1:Z" which would translate
 start in the upper right cell of the spreadsheet and replace all cells
 to column Z going down.
  
-FILTER_EXPR is an expression that evaluates to _true_ or _false_ 
-based on Golang template expressions (see `dataset -help filter` 
-for more explanation).
-
-FIELDS_TO_EXPORT is a comma separated list of dotpaths (e.g. 
-.id,.title,.pubDate) in the JSON documents in the collection 
-(see `dataset -help dotpath` for more explanation)
-
-## Usage
-
-In the following examples we will "filter" for all records in a 
-collection so we use the string "true".  The following fields are 
-being exported - .name and .contact with the following 
-headings -- Name, Contact. Collection name is "people.ds".
-
 ```shell
-	dataset people.ds export-gsheet "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" true '.name,.contact' 'Name,Contact'
+	dataset export publications.ds my-report "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" Sheet1 "A1:Z" 
 ```
 
 Related topics: [import-csv](import-csv.html), [export-csv](export-csv.html), [import-gsheet](import-gsheet.html)

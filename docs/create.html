@@ -28,10 +28,10 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    cat JSON_DOCNAME | dataset COLLECTION_NAME create KEY
-    dataset -i JSON_DOCNAME COLLECTION_NAME create KEY
-    dataset COLLECTION_NAME create KEY JSON_VALUE
-    dataset COLLECTION_NAME create KEY JSON_FILENAME
+<pre><code>    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
+    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY
+    dataset create COLLECTION_NAME KEY JSON_VALUE
+    dataset create COLLECTION_NAME KEY JSON_FILENAME
 </code></pre>
 
 <h2>Description</h2>
@@ -48,10 +48,10 @@ of <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code>.  The KEY we will create
 Collection is &ldquo;people.ds&rdquo;.  The following are equivalent in
 resulting record.</p>
 
-<pre><code class="language-shell">    cat jane-doe.json | dataset people.ds create r1
-    dataset -i blob.json people.ds create r1
-    dataset people.ds create r1 jane-doe.json
-    dataset people.ds create r1 '{&quot;name&quot;:&quot;Jane Doe&quot;}'
+<pre><code class="language-shell">    cat jane-doe.json | dataset create people.ds r1
+    dataset create -i blob.json people.ds r1
+    dataset create people.ds r1 '{&quot;name&quot;:&quot;Jane Doe&quot;}'
+    dataset create people.ds r1 jane-doe.json
 </code></pre>
 
 <p>Related topics: <a href="update.html">update</a>, <a href="read.html">read</a>, and <a href="delete.html">delete</a></p>

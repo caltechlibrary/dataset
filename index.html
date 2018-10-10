@@ -27,25 +27,24 @@
 
 <p><em>dataset</em> is a command line tool, Go package, and an experimental C shared
 library for working with <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>
-objects as collections. Collections can be stored on disc, on AWS S3 or
-Google Cloud Storage.  JSON objects are stored in collections as
+objects as collections. Collections can be stored on disc or in
+Cloud Storage.  JSON objects are stored in collections as
 plain UTF-8 text. This means the objects can be accessed with common
-Unix text processing tools as well as most programming languages with
-text processing support.</p>
+Unix text processing tools as well as most programming languages.</p>
 
 <p>The <a href="docs/dataset.html">dataset</a> command line tool supports common data
 manage operations such as initialization of collections, creation,
 reading, updating and deleting JSON objects in the collection. Some of
 its enhanced features include the ability to generate data
-<a href="docs/grid.html">grids</a> and <a href="docs/frame.html">frames</a>, the ability to
-import and export JSON object to and from CSV files and Google Sheets.</p>
+<a href="docs/frame.html">frames</a> as well as the ability to
+import and export JSON objects to and from CSV files and Google Sheets.</p>
 
 <p><em>dataset</em> is written in the <a href="https://golang.org">Go</a> programming language.
 It can be used as a Go package by other Go based software. Go supports
 generating C shared libraries. By compiling the Go source you can
 create a <em>libdataset</em> C shared library. The C shared library is currently
-being used by the DLD Group in Caltech Library expermentally from
-Python.  This approach looks promising to support other languages
+being used by the DLD Group in Caltech Library experimentally from
+Python 3.  This approach looks promising to support other languages
 (e.g. <a href="https://julialang.org/">Julia</a> can easily use dataset via its
 ccall function, while R, Octave and NodeJS would probably need some
 C++ wrapping code).</p>
@@ -54,28 +53,39 @@ C++ wrapping code).</p>
 
 <h2>Design choices</h2>
 
-<p><em>dataset</em> isn&rsquo;t a database or repository system. It is guided by
-the idea that you should be able to work with text files (e.g. the JSON
-object documents) with standard Unix text utilities.  It is intended
-to be simple to use with minimal setup (e.g.
+<p><em>dataset</em> isn&rsquo;t a database or a replacement for repository systems.
+It is guided by the idea that you should be able to work with text
+files, the JSON objects documents, with standard Unix text utilities.
+It is intended to be simple to use with minimal setup (e.g.
 <code>dataset init mycollection.ds</code> would create a new collection called
-&lsquo;mycollection.ds&rsquo;).  It is built around a few abstractions &ndash;
+&lsquo;mycollection.ds&rsquo;). It is built around a few abstractions &ndash;
 dataset stores JSON objects in collections, collections are a folder(s)
-containing a JSON object documents and any attachments, a
+containing the JSON object documents and any attachments, a
 collections.json file describes the mapping of keys to folder locations).
-It takes minimal system resources and keeps all content,
-except JSON object attachments, in plain UTF-8 text.</p>
+<em>dataset</em> takes minimal system resources and keeps all content,
+except JSON object attachments, in plain UTF-8 text. Attachments
+are stored using the venerable &ldquo;tar&rdquo; archive format.</p>
+
+<p>The choice of plain UTF-8 and tar balls is intended to help future
+proof reading dataset collections.  Care has been taken to keep
+<em>dataset</em> simple enough and light weight enough that it will run
+on a machine as small as a Raspberry Pi while being equally
+comfortable on a more resource rich server or desktop
+environment. It should be easy to do alternative implementations
+in any language that has good string, JSON support and memory
+management.</p>
+
+<h2>Workflows</h2>
 
 <p>A typical library processing pattern is to write a &ldquo;harvester&rdquo;
-which then stores it results in a <em>dataset</em> collection. The harvesters
-we use are written either as simple shell scripts, Python programs or
-Go programs. Once you have your JSON objects in a dataset collection
-it is easy to iterate over them and augment them further.</p>
-
-<p>Care has been taken to keep <em>dataset</em> simple enough and light weight
-enough that it will run on a machine as small as a Raspberry Pi while
-being equally comfortable on a more resource rich server or desktop
-environment.</p>
+which then stores it results in a <em>dataset</em> collection. Write something
+that transforms or aggregates harvested options and then write
+a final rendering program to prepare the data for the web. The
+the hearvesters are typically written in Python or as a simple Bash
+script storing the results in dataset. Depending on the performance
+needs our transform and aggregates stage are written either in Python
+or Go and our final rendering stages are typically written in Python or
+as simple Bash scripts.</p>
 
 <h2>Features</h2>
 
@@ -84,8 +94,8 @@ environment.</p>
 <ul>
 <li>Basic storage actions (<a href="docs/create.html">create</a>, <a href="docs/read.html">read</a>, <a href="docs/update.html">update</a> and <a href="docs/delete.html">delete</a>)</li>
 <li>listing of collection <a href="docs/keys.html">keys</a> (including filtering and sorting)</li>
-<li>import/export  of <a href="how-to/import-csv-rows-as-json-documents.html">CSV</a> files and <a href="how-to/gsheet-integration.html">Google Sheets</a></li>
-<li>An experimental full text <a href="how-to/searchable-datasets.html">search</a> interface based on <a href="https://blevesearch.com">Blevesearch</a></li>
+<li>import/export  of <a href="how-to/working-with-csv.html">CSV</a> files and <a href="how-to/working-with-gsheets.html">Google Sheets</a></li>
+<li>An experimental full text <a href="how-to/indexing-and-search.html">search</a> interface based on <a href="https://blevesearch.com">Blevesearch</a></li>
 <li>The ability to reshape data by performing simple object <a href="docs/join.html">joins</a></li>
 <li>The ability to create data <a href="docs/grid.html">grids</a> and <a href="docs/frame.html">frames</a> from collections based
 on keys lists and <a href="docs/dotpath.html">dot paths</a> into the JSON objects stored</li>
@@ -94,7 +104,7 @@ on keys lists and <a href="docs/dotpath.html">dot paths</a> into the JSON object
 <p>You can work with dataset collections via the
 <a href="docs/dataset.html">command line tool</a>, via Go using the
 <a href="https://godoc.org/github.com/caltechlibrary/dataset">dataset package</a>
-or in Python 3.6 using a python package.  <em>dataset</em> is useful for general
+or in Python 3.7 using a python package.  <em>dataset</em> is useful for general
 data science applications which need intermediate JSON object management
 but not a full blown database.</p>
 
@@ -103,8 +113,8 @@ but not a full blown database.</p>
 <p><em>dataset</em> has many limitations, some are listed below</p>
 
 <ul>
-<li>it is not a multi-process, multi-user data store (it&rsquo;s files on &ldquo;disc&rdquo; without any locking)</li>
-<li>it is not a repository management system</li>
+<li>it is not a multi-process, multi-user data store (it&rsquo;s files on &ldquo;disc&rdquo; without locking)</li>
+<li>it is not a replacement for a repository management system</li>
 <li>it is not a general purpose database system</li>
 <li>it does not supply version control on collections or objects</li>
 </ul>
@@ -119,37 +129,39 @@ a collection using the command line dataset tool.</p>
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    dataset friends.ds create frieda '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
+    dataset create friends.ds frieda \
+        '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    dataset friends.ds read frieda
+    dataset read friends.ds frieda
     
     # Path to JSON document
-    dataset friends.ds path frieda
+    dataset path friends.ds frieda
 
     # Update a JSON document
-    dataset friends.ds update frieda '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}'
+    dataset update friends.ds frieda \
+        '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}'
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
-    dataset friends.ds keys
+    dataset keys friends.ds
 
     # Get keys filtered for the name &quot;frieda&quot;
-    dataset friends.ds keys '(eq .name &quot;frieda&quot;)'
+    dataset keys friends.ds '(eq .name &quot;frieda&quot;)'
 
     # Join frieda-profile.json with &quot;frieda&quot; adding unique key/value pairs
-    dataset friends.ds join append frieda frieda-profile.json
+    dataset join friends.ds frieda frieda-profile.json
 
-    # Join frieda-profile.json overwriting in commont key/values adding unique key/value pairs
-    # from frieda-profile.json
-    dataset friends.ds join overwrite frieda frieda-profile.json
+    # Join frieda-profile.json overwriting in commont key/values adding
+    # unique key/value pairs from frieda-profile.json
+    dataset join -overwrite  friends.ds frieda frieda-profile.json
 
     # Delete a JSON document
-    dataset friends.ds delete frieda
+    dataset delete friends.ds frieda
 
     # Import data from a CSV file using column 1 as key
-    dataset -quiet -nl=false friends.ds import-csv my-data.csv 1
+    dataset import friends.ds my-data.csv 1
 
     # To remove the collection just use the Unix shell command
     rm -fR friends.ds

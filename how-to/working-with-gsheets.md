@@ -3,33 +3,37 @@
 
 ## A walking through the process
 
-In this walk through we will create some data in a Google Sheet, import it into a collection
-we've created. Modify it and send it back to our Google Sheet. As part of the procees we will
-need to authorize our _dataset_ tool and setup access.
+In this walk through we will create some data in a Google Sheet, import 
+it into a collection we've created. Modify it and send it back to our 
+Google Sheet. As part of the procees we will need to authorize our 
+_dataset_ tool and setup access.
 
 ### Setup a local collection
 
-Setup our local collection. Create a new dataset collection named "ZBS-Character-List.ds"
+Setup our local collection. Create a new dataset collection named 
+"ZBS-Character-List.ds"
 
 ```shell
     dataset init zbs-cast-list.ds
 ```
 
-Download [zbs-cast-list.csv](zbs-cast-list.csv).  We will use this when we create our
-Google Sheet for this walk through.
+Download [zbs-cast-list.csv](zbs-cast-list.csv).  We will use this when 
+we create our Google Sheet for this walk through.
 
 ### Setting up our Google Sheet
 
-Open your browser and create a new Google Sheet by going to https://sheets.google.com. You 
-can pick the "Blank" sheet from the template gallery under "Start a new spreadsheet". 
-This should you a new untitled spreadsheet.  Set the title to something meaninful, I'm 
+Open your browser and create a new Google Sheet by going to 
+https://sheets.google.com. You can pick the "Blank" sheet from the 
+template gallery under "Start a new spreadsheet".  This should you a 
+new untitled spreadsheet.  Set the title to something meaninful, I'm 
 going to set my title to "zbs-cast-list".
 
 ### loading some sample data
 
-In Google Sheets go to the file menu and select "import".  Select the "upload" tab, find 
-_zbs-cast-list.csv_ and "open" it. You should then see an "Import file" dialog, select 
-"Replace current sheet" then press "Import Data" button at the bottom of the box.
+In Google Sheets go to the file menu and select "import".  Select the 
+"upload" tab, find _zbs-cast-list.csv_ and "open" it. You should then see 
+an "Import file" dialog, select "Replace current sheet" then press 
+"Import Data" button at the bottom of the box.
 
 You should wind up with a spreadsheet that starts out something like this --
 
@@ -47,10 +51,10 @@ You should wind up with a spreadsheet that starts out something like this --
     ...
 ```
 
-You sheet should have four columns A to D (id, name, title, year) and 195 rows
-with id ranging from 1 to 194 in column 1. You can describe the range of your sheet as
-A1:D195 (A 1 through D 195). We're going to use this range when importing and exporting.
-
+You sheet should have four columns A to D (id, name, title, year) and 
+195 rows with id ranging from 1 to 194 in column 1. You can describe the 
+range of your sheet as A1:D195 (A 1 through D 195). We're going to use 
+this range when importing and exporting.  
 
 ### Finding your sheet's ID and sheet name
 
@@ -62,75 +66,81 @@ Look at the URL for your Google Sheet. It'll be similar to mine
 ```
 
 Notice the part of the URL between "/d/" and "/edit". For my sheet it is 
-"1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc". This is the sheet ID. It is unique to my spreadsheet
-so yours will be different. We are going to need that number later.
+"1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc". This is the sheet ID. It 
+is unique to my spreadsheet so yours will be different. We are going to 
+need that number later.
 
-Look at the bottom of the Google Sheet window. You'll see the tab for your sheet. By default this
-is named "Sheet1". You'll also need to know this name.
+Look at the bottom of the Google Sheet window. You'll see the tab for 
+your sheet. By default this is named "Sheet1", since I chose to replace my 
+current empty sheet it named my sheet "zbs-cast-list" as that was the name 
+of the file I imported.  You'll need to know the sheet name as well as 
+they sheet ID.
 
 ### Setting up authorization to access your Google Sheet
 
-This is the hardest part of the process. Google sometimes updates this procedure. These are
-the steps I took on 05/29/2018. You might have to make adjustments in the future.
+This is the hardest part of the process. Google sometimes updates this
+procedure, and this worked as of 08/08/2018. You might have to make 
+adjustments in the future.
 
-We need to get some credentials and authorization keys to access your Google Sheet
-before we can import it into our dataset collection.  If you have not done this previously go to 
-https://developers.google.com/sheets/api/quickstart/go. Our goal is to complete "Step 1". 
-As of today, 05/29/2007, the instructions are a touch confusing.
-In the letter "a" section you click "this wizard" link. 
-This should open a new window/tab in your browser. We'll be referring back to "Step 1" 
-page for letters "b" to "h".
+We need to get some credentials and authorization keys to access your 
+Google Sheet before we can import it into our dataset collection.  If 
+you have not done this previously go to 
+https://developers.google.com/sheets/api/quickstart/go. We only need to 
+complete "Step 1". 
 
-The instructions under "Step 1" letter "a" say to continue to "Go to credentials" 
-but it isn't visible on the page. You need to click on the page's pull out menu (the three horizontal 
-lines in the upper right of the page, sometimes referred to as a "hamburger" menu).
+Click the blue button labeled `Enable the Google Sheets API`
 
-![Image of hamburger menu cicle in red](./Wizard-Page-01.png "Image hamburger menu circled in red")
+Make up a project name (e.g. zbs-cast-list).
 
-Click the menu.  Then click "APIs & Services". 
+Click the blue button labeled `Download Client Configuration`
 
-![Image "API & Services" circled in red](./Wizard-Page-02.png "Image, API & Services, circled in red")
-
-Now click the key symbol 
-
-![Image key symbol circled in red](./Wizard-Page-03.png "Image key symbol circled in red")
-
-and you can follow the instructions starting at letter "c" and continuing through "h".
-
+Currently, you need to move the file from your downloads folder to your
+current working directory (e.g. on my Mac I did 
+`mv ~/Downloads/credentials.json ./`
 
 ### Authorizing dataset access
 
-Once your "client_secret.json" file is generated and downloaded to your working directory
-you need to trigger authorization for _dataset_. To do so we type in for importing our spreadsheet
-into our local collection.  The first time we do this a link (URL) will be displayed. Copy that
-link into your web browser. You will goto a page that allows you to "authorize" the application.
-Follow the instructions.
+Once your "credentials.json" file is generated and downloaded to your 
+working directory you need to trigger authorization for _dataset_. To 
+do so we type in for importing our spreadsheet into our local collection.  
+The first time we do this a link (URL) will be displayed. Copy that link 
+into your web browser. You will goto a page that allows you to "authorize" 
+the application.  Follow the instructions.
 
-    NOTE: The "client_secret.json" file and OAuth authorization is required for data to access your 
-    Google Sheet.  The OAuth authorization process uses the "client_secret.json" file to 
-    get a token to use on subsequent access by _dataset_. This OAuth token is 
-    usually stored in your `$HOME/.credentials` directory as sheets.googleapis.com-dataset.json.
-    If this file doesn't exist then the first time you run the _dataset_ command with a GSheet option 
-    it'll prompt you to use your web browser to authorize _dataset_ to access your Google spreadsheet.
+    NOTE: The "credentials.json" file and OAuth authorization is 
+    required for data to access your Google Sheet.  The OAuth 
+    authorization process uses the "credentials.json" file to get 
+    a token to use on subsequent access by _dataset_. This OAuth 
+    token is usually stored in your `$HOME/.credentials` directory as 
+    sheets.googleapis.com-dataset.json.  If this file doesn't exist 
+    then the first time you run the _dataset_ command with a GSheet 
+    option it'll prompt you to use your web browser to authorize 
+    _dataset_ to access your Google spreadsheet.
 
-The command that will trigger the authorization process the first time is also the command we will
-eventually use to import our data. Replace SHEET_ID with the number we see in the URL and SHEET_NAME
-with the name of the spreadsheet. Our CELL_RANGE will be "A1:D195" and our COL_NP_FOR_ID will be 1
+The command that will trigger the authorization process the first time is 
+also the command we will eventually use to import our data. Replace 
+SHEET_ID with the number we see in the URL and SHEET_NAME with the name 
+of the spreadsheet. Our CELL_RANGE will be "A1:D195" and our 
+COL_NP_FOR_ID will be 1
 
 ```shell
-    dataset zbs-cast-lis.ds import-gsheet SHEET_ID SHEET_NAME CELL_RANGE COL_NO_FOR_ID
+    dataset import zbs-cast-lis.ds SHEET_ID SHEET_NAME COL_NO_FOR_ID [CELL_RANGE]
 ```
 
 For my URL, SHEET_ID, SHEET_NAME, CELL_RANGE and COL_NO_FOR_ID looked like
 
 ```shell
-    dataset zbs-cast-lis.ds import-gsheet "1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc" "Sheet1" "A1:D192" 1
+    dataset import zbs-cast-lis.ds \
+       "1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc" \
+       "zbs-cast-list" \
+       1 "A1:D192"
 ```
 
-Yours will have a different SHEET_ID.
+Yours will have a different SHEET_ID and SHEET_NAME.
 
-After your authorize the sheet access via your web browser then next time you run the command you'll
-see data imported into _zbs-cast-list.ds_. You can count the keys to see what was imported.
+After your authorize the sheet access via your web browser then next 
+time you run the command you'll see data imported into _zbs-cast-list.ds_. 
+You can count the keys to see what was imported.
 
 ```shell
     dataset zbs-cast-list.ds count
@@ -138,31 +148,141 @@ see data imported into _zbs-cast-list.ds_. You can count the keys to see what wa
 
 You are now ready to modify and update your local collection.
 
+## Synchronization with a Google Sheet
+
+_dataset_ provides a mechanism to synchronize data with a table (e.g. 
+a CSV file or Google Sheet, we're interested in the later).  
+Synchronizationis accomplished by mapping the column headings to object 
+paths in our dataset collection as well as rows to objects. To define 
+this relationship so dataset knowns what to do we use a "data frame". 
+For dataset this means describing a set of keys (which will map to rows 
+in the table), a set of dotpaths (this well become columns mapped into 
+each row) and labesl (the names of the columns in the table form). Let's 
+create a "frame" for synchronizing zbs-cast-list.ds with our Google Sheet.
+
+First we need to make sure we know our fields in our JSON objects.
+We can see a random sample using the keys verb and retrieving the
+resulting key list as a list of objects and pretty printing them.
+
+```shell
+    dataset keys -sample=1 zbs-cast-list.ds | \
+        dataset read -p -i - zbs-cast-list.ds
+```
+
+Here is an example of the output
+
+```json
+    {
+        "_Key": "19",
+        "id": 19,
+        "name": "Comtese Zazeenia",
+        "title": "Moon Over Morocco",
+        "year": 1973
+    }
+```
+
+Notice that we a "_Key" field and an "id" field. We will want to
+use the "_Key" field explicitly when we defined our frame. That is
+becasue dataset maintains the relationship of "_Key" as the id for
+the object and we want this to map to the "id" labels in the 
+spreadsheet. We're going to want to include "all" keys in the
+collection so we'll be using the '-all' option (you could
+limit the frame to specific records by providing a keylist to the frame
+definition).
+
+Step 1. define our frame
+
+```shell
+    dataset frame -all zbs-cast-list.ds gsheet-sync \
+        ._Key .name .title .year
+```
+
+Step 2. review the results
+
+This returns a new frame definition. We haven't setup the labels (or
+types yet) but the basic information has been recorded. You can 
+retrieve the frame again by just providing the name.
+
+```shell
+    dataset frame -p zbs-cast-list.ds gsheet-sync | more
+```
+
+Step 3. define labels for each of our dotpaths in our frame
+
+You'll notice when you pretty printed the frame that our dotpaths
+are an array, arrays are ordered. We' going to explicitly set our
+labels to match that dotpath ordering. E.g. "._Key" should map to 
+"id", ".name" to "name", ".title" to "title" and ".year" to "year".
+
+```shell
+    dataset frame-labels zbs-cast-list.ds gsheet-sync \
+       "id" "name" "title" "year"
+```
+
+You should check your updated frame and if the labels look correct then
+we're ready to synchronize our collection with our Google Sheet.
+
+Let's change item 43 in our Google Sheet from "Jack Flanders" to
+"Molly Flanders". We want our collection to pick up this change. We need
+to "recieve" data into our collection from our Google Sheet. We need
+to do a "sync-receive".
+
+```shell
+    dataset sync-recieve zbs-cast-list.ds gsheet-sync \
+        1tXbMC1Dt5B8sFr1MvJAuwkS3TatVssu0f4YcAJoZgOE \
+        zbs-cast-list
+```
+
+We can check that we recieved our data by "reading" the record 43
+in our collection.
+
+```shell
+    dataset read -p zbs-cast-list.ds 43
+```
+
+Molly has been promoted to director and Jack is back in the cast.
+Let's update our collection then "send" our data back to the Google Sheet.
+
+```shell
+    dataset join -overwrite zbs-cast-list.ds 43 '{"name":"Jack Flanders"}'
+```
+
+Now let's update send our frame back up to our Google Sheet.
+
+```shell
+    dataset sync-send zbs-cast-list.ds gsheet-sync \
+        1tXbMC1Dt5B8sFr1MvJAuwkS3TatVssu0f4YcAJoZgOE \
+        zbs-cast-list
+```
+
+Technically all the rows/columns in our Google Sheet we updated.
+If we changed our frame to only have key 43 then it would have only updated
+the row with the matching ID of 43.
+
 ## Exporting a collection to a Google Sheet
 
-To send our collection data to a Google sheet the sheet needs to exist already. Note that writing
-to the Google Sheet our data will replace (overwrite) all the rows in the CELL_RANGE we provide.
-This means any sorting column ordering changes will be overwritten by the cells we're writing.
+We can also export our collection to Google Sheet. Exporting overwrites
+any content in the sheet with our collections' frame's column and row 
+order. "sync-send" respects the existing spreadsheet column and row
+order, export imposes a the collection frame's column and row order.
 
 This command to export our collection into Google sheets looks like
 
 ```shell
-    dataset COLLECTION_NAME export-gsheet SHEET_ID SHEET_NAME CELL_RANGE FILTER_EXPR FIELDS_TO_EXPORT [COLUMN_NAMES]
+    dataset export COLLECTION_NAME FRAME_NAME SHEET_ID SHEET_NAME 
 ```
 
-Notice FILTER_EXPR, FIELDS_TO_EXPORT and COLUMN_NAMES. A FILTER_EXPR is an expression that selects which records are uploaded
-from the collection. If you want the whole collection then include the word "true". If you wanted only rows for
-year 1982 then the expression would look like "(eq .year 1982)".  For this example just use true so we export all records
-as rows in our spreadsheet. FIELDS_TO_EXPORT are the [dotpath](../docs/dotpath.html) into our records and the COLUMN_NAMES
-are the column names that will be written in first row of our exported records.
-
-My export command looks like
+Like "sync-receive" and "sync-send" we use frame to define our export.
+In our next example we're create a new sheet called "new-cast-list" in
+our Google Sheet, then we can export our whole zbs-cast-list.ds into it.
 
 ```shell
-    dataset zbs-cast-lis.ds export-gsheet "1Rf-fbGg9OPWnDsWng9oyQmMIWzMqx717uuKeBlzDaCc" "Sheet1" "A1:D192" true ".id,.name,.title,year" "ID,Name,Title,Year"
+    dataset export zbs-cast-list.ds gsheet-sync \
+        1tXbMC1Dt5B8sFr1MvJAuwkS3TatVssu0f4YcAJoZgOE \
+        new-cast-list
 ```
 
-If you look at your spreadsheet you should see the updated spreadsheet.
+You should now see populated new-cast-list sheet.
 
 
 Related topics: [dotpath](../docs/dotpath.html), [export-csv](../docs/export-csv.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html) and [export-gsheet](../docs/export-gsheet.html)

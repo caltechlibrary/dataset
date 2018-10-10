@@ -31,7 +31,7 @@ the future.</p>
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset [OPTIONS] COLLECTION_NAME indexer INDEX_NAME INDEX_MAP_FILENAME
+<pre><code>    dataset [OPTIONS] indexer COLLECTION_NAME INDEX_MAP_FILENAME INDEX_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -52,7 +52,7 @@ document.</p>
 
 <p>Our collection name in this example is &ldquo;publications.ds&rdquo;</p>
 
-<pre><code>    dataset publications.ds indexer author-title.bleve author-title.json
+<pre><code>    dataset indexer publications.ds author-title.json author-title.bleve
 </code></pre>
 
 <p>Related topics: <a href="dotpath.html">dotpath</a>, <a href="find.html">find</a></p>

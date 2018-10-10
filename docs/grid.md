@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME grid KEY_LIST_FILENAME DOTPATH [DOTPATH ...]
+    dataset grid COLLECTION_NAME KEY_LIST_FILENAME DOTPATH [DOTPATH ...]
 ```
 
 ## Description
@@ -25,7 +25,7 @@ into a grid structure. Note that in our example below the orcid
 itself is an array.
 
 ```shell
-    dataset publications.ds grid .pub_date .title .creators[:].orcid
+    dataset grid publications.ds .pub_date .title .creators[:].orcid
 ```
 
 The result is a 2D array of rows and cells (e.g. colums)

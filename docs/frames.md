@@ -5,7 +5,7 @@ Lists the frames available in a collection. In this example our
 collection name is `pubs.ds`.
 
 ```shell
-   dataset pubs.ds frames 
+   dataset frames pubs.ds
 ```
 
 In python

@@ -4,10 +4,10 @@
 ## Syntax
 
 ```
-    cat JSON_DOCNAME | dataset COLLECTION_NAME create KEY
-    dataset -i JSON_DOCNAME COLLECTION_NAME create KEY
-    dataset COLLECTION_NAME create KEY JSON_VALUE
-    dataset COLLECTION_NAME create KEY JSON_FILENAME
+    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
+    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY
+    dataset create COLLECTION_NAME KEY JSON_VALUE
+    dataset create COLLECTION_NAME KEY JSON_FILENAME
 ```
 
 ## Description
@@ -25,10 +25,10 @@ Collection is "people.ds".  The following are equivalent in
 resulting record.
 
 ```shell
-    cat jane-doe.json | dataset people.ds create r1
-    dataset -i blob.json people.ds create r1
-    dataset people.ds create r1 jane-doe.json
-    dataset people.ds create r1 '{"name":"Jane Doe"}'
+    cat jane-doe.json | dataset create people.ds r1
+    dataset create -i blob.json people.ds r1
+    dataset create people.ds r1 '{"name":"Jane Doe"}'
+    dataset create people.ds r1 jane-doe.json
 ```
 
 Related topics: [update](update.html), [read](read.html), and [delete](delete.html)

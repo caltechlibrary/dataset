@@ -7,7 +7,7 @@ the future.
 ## Syntax
 
 ```
-    dataset [OPTIONS] COLLECTION_NAME indexer INDEX_NAME INDEX_MAP_FILENAME
+    dataset [OPTIONS] indexer COLLECTION_NAME INDEX_MAP_FILENAME INDEX_NAME
 ```
 
 ## Description
@@ -29,7 +29,7 @@ document.
 Our collection name in this example is "publications.ds"
 
 ```
-    dataset publications.ds indexer author-title.bleve author-title.json
+    dataset indexer publications.ds author-title.json author-title.bleve
 ```
 
 Related topics: [dotpath](dotpath.html), [find](find.html)

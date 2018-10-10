@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset [OPTIONS] COLLECTION_NAME haskey KEY_TO_CHECK_FOR
+<pre><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
 </code></pre>
 
 <h2>Description</h2>
@@ -38,8 +38,8 @@ found, &ldquo;false&rdquo; otherwise. The collection name is &ldquo;people.ds&rd
 
 <h2>Usage</h2>
 
-<pre><code>    dataset people.ds haskey '0000-0003-0900-6903'
-    dataset people.ds haskey r1
+<pre><code>    dataset haskey people.ds '0000-0003-0900-6903'
+    dataset haskey people.ds r1
 </code></pre>
 
 <p>Related topics: <a href="keys.html">keys</a></p>

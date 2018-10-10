@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECT_NAME init
+<pre><code>    dataset init COLLECT_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -45,16 +45,16 @@ for Google Cloud Storage the prefix is gs://.</p>
 <h2>Usage</h2>
 
 <p>The following three example commands create a dataset collection
-named &ldquo;data&rdquo;.  First one local disc in the current currectory,
+named &ldquo;data.ds&rdquo;.  First one local disc in the current currectory,
 then in S3 and again in Google Cloud Storage. In the case of S3
 and Google Cloud Storage the buckets exist and are named
 &ldquo;stuff.example.org&rdquo;. Also for both remote storage options it is
 assumed you&rsquo;ve authenticated and have your environment setup
 correctly.</p>
 
-<pre><code>    dataset data init
-    dataset s3://stuff.example.org/data init
-    dataset gs://stuff.example.org/data init
+<pre><code>    dataset init data.ds
+    dataset init s3://stuff.example.org/data.ds
+    dataset init gs://stuff.example.org/data.ds
 </code></pre>
 
 <p>NOTE: After each envocation of <code>dataset init</code> if all went well
@@ -62,20 +62,20 @@ you will be shown an <code>OK</code>. If you want to save typing you can
 set the environment variable DATASET.  For our examples above
 that would look like</p>
 
-<pre><code>    dataset data init
-    export DATASET=&quot;data&quot;
+<pre><code>    dataset init data.ds
+    export DATASET=&quot;data.ds&quot;
 </code></pre>
 
 <p>or for the Amazon S3 example</p>
 
-<pre><code>    dataset s3://stuff.example.org/data init
-    export DATASET=&quot;s3://stuff.example.org/data&quot;
+<pre><code>    dataset init s3://stuff.example.org/data.ds
+    export DATASET=&quot;s3://stuff.example.org/data.ds&quot;
 </code></pre>
 
 <p>or for the Google storage example</p>
 
-<pre><code>    dataset gs://stuff.example.org/data init
-    export DATASET=&quot;gs://stuff.example.org/data&quot;
+<pre><code>    dataset init gs://stuff.example.org/data.ds
+    export DATASET=&quot;gs://stuff.example.org/data.ds&quot;
 </code></pre>
 
 <h3>S3 environment example</h3>

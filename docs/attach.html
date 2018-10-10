@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME attach KEY FILENAME(S)
+<pre><code>    dataset attach COLLECTION_NAME KEY FILENAME(S)
 </code></pre>
 
 <h2>Description</h2>
@@ -41,7 +41,7 @@ related to the JSON record key.</p>
 <p>Attaching a file named <em>start.xlsx</em> to the JSON record with id <em>t1</em> in
 collection &ldquo;stats.ds&rdquo;</p>
 
-<pre><code class="language-shell">    dataset stats.ds attach t1 start.xlsx
+<pre><code class="language-shell">    dataset attach stats.ds t1 start.xlsx
 </code></pre>
 
 <p>Related topics: <a href="attachments.html">attachments</a>, <a href="detach.html">detach</a> and <a href="prune.html">prune</a></p>

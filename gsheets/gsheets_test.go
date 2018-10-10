@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
 	"testing"
 )
 
@@ -50,8 +51,16 @@ func TestReadSheet(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
+	appName := path.Base(os.Args[0])
 	flag.StringVar(&clientSecretFName, "client-secret", "", "Set path/filename for client_secret.json")
 	flag.StringVar(&spreadsheetID, "spreadsheet-id", "", "Set spreadsheet id to use for testing")
 	flag.Parse()
-	os.Exit(m.Run())
+
+	if _, err := os.Stat(clientSecretFName); err == nil {
+		//FIXME: Only run these tests of clientSecretFName exists!
+		os.Exit(m.Run())
+	} else {
+		fmt.Fprintf(os.Stderr, "Skipping %s, missing client secret\n", appName)
+		//os.Exit(1)
+	}
 }

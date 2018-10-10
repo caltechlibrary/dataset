@@ -12,5 +12,6 @@ line tool.
     dataset check mycollection.ds
     # you'll get a verbose report to the console
     dataset repair mycollection.ds
-    # dataset will not attempt to "repair" including upgrade, your collection
+    # dataset will not attempt to "repair" including upgrade, 
+    # your collection
 ```

@@ -1,7 +1,7 @@
 
 # USAGE
 
-	dataset [OPTIONS] COLLECTION_NAME ACTION [ACTION PARAMETERS...]
+	dataset [OPTIONS] VERB COLLECTION_NAME [ACTION PARAMETERS...]
 
 ## SYNOPSIS
 
@@ -54,7 +54,7 @@ on the command line.
 ```
 
 
-## ACTIONS
+## VERBS
 
 ```
     attach         Attach a document (file) to a JSON record in a collection

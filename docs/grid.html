@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME grid KEY_LIST_FILENAME DOTPATH [DOTPATH ...]
+<pre><code>    dataset grid COLLECTION_NAME KEY_LIST_FILENAME DOTPATH [DOTPATH ...]
 </code></pre>
 
 <h2>Description</h2>
@@ -48,7 +48,7 @@ sorting in python. We are pull the pub date, title, and orcid fields
 into a grid structure. Note that in our example below the orcid
 itself is an array.</p>
 
-<pre><code class="language-shell">    dataset publications.ds grid .pub_date .title .creators[:].orcid
+<pre><code class="language-shell">    dataset grid publications.ds .pub_date .title .creators[:].orcid
 </code></pre>
 
 <p>The result is a 2D array of rows and cells (e.g. colums)</p>

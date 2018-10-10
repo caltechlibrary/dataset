@@ -72,7 +72,7 @@ func TestBleveMapIndexingSearch(t *testing.T) {
 			t.FailNow()
 		}
 
-		lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
+		lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
 		if err != nil {
 			t.Errorf("Error import csvtable, %s", err)
 			t.FailNow()
@@ -138,7 +138,7 @@ func TestIndexingSearch(t *testing.T) {
 			t.FailNow()
 		}
 
-		lines, err := c.ImportCSV(strings.NewReader(csvtable), true, -1, true, false)
+		lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
 		if err != nil {
 			t.Errorf("Error import csvtable, %s", err)
 			t.FailNow()
@@ -431,7 +431,7 @@ func TestSearchSort(t *testing.T) {
 	}
 }
 
-func TestMain(m *testing.M) {
+func setupSearchTests(m *testing.M) {
 	var (
 		err          error
 		defn1, defn2 []byte
@@ -551,6 +551,4 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Can't write %q, %s", mName, err)
 	}
-
-	os.Exit(m.Run())
 }

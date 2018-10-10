@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME count [FILTER EXPRESSION]
+<pre><code>    dataset count COLLECTION_NAME [FILTER EXPRESSION]
 </code></pre>
 
 <h2>Description</h2>
@@ -43,12 +43,12 @@ filter expression provided.</p>
 
 <p>Count all records in collection &ldquo;publications.ds&rdquo;</p>
 
-<pre><code class="language-shell">    dataset &quot;publications.ds&quot; count
+<pre><code class="language-shell">    dataset count &quot;publications.ds&quot;
 </code></pre>
 
 <p>Count records where the <code>.published</code> field is true.</p>
 
-<pre><code class="language-shell">    dataset &quot;publications.ds&quot; count '(eq .published true)'
+<pre><code class="language-shell">    dataset count &quot;publications.ds&quot; '(eq .published true)'
 </code></pre>
 
 <p>Related topic: <a href="keys.html">keys</a></p>

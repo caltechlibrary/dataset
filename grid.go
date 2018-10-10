@@ -44,7 +44,7 @@ func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]i
 			if err == nil {
 				rows[i][j] = value
 			} else if verbose == true {
-				log.Printf("(pid: %d) WARNING: skipped %s for cell %d row %d, %s", pid, dpath, j, i, err)
+				log.Printf("(pid: %d) WARNING: skipped key %s, path %s for row %d and column %d, %s", pid, key, dpath, i, j, err)
 			}
 		}
 		if verbose && (i > 0) && ((i % 1000) == 0) {

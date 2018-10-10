@@ -31,22 +31,22 @@
 <p>Adding high-capt-jack.txt as an attachment to &ldquo;capt-jack&rdquo;</p>
 
 <pre><code class="language-shell">   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
-   dataset characters.ds attach capt-jack high-capt-jack.txt
+   dataset attach characters.ds capt-jack high-capt-jack.txt
 </code></pre>
 
 <p>List attachments for &ldquo;capt-jack&rdquo;</p>
 
-<pre><code class="language-shell">   dataset characters.ds attachments capt-jack
+<pre><code class="language-shell">   dataset attachments characters.ds capt-jack
 </code></pre>
 
 <p>Detach all attachments for &ldquo;capt-jack&rdquo; (this will untar in your current directory)</p>
 
-<pre><code class="language-shell">   dataset characters.ds detach capt-jack
+<pre><code class="language-shell">   dataset detach characters.ds capt-jack
 </code></pre>
 
 <p>Prune high-capt-jack.txt from &ldquo;capt-jack&rdquo;</p>
 
-<pre><code class="language-shell">    dataset characters.ds prune capt-jack high-capt-jack.txt
+<pre><code class="language-shell">    dataset prune characters.ds capt-jack high-capt-jack.txt
 </code></pre>
 
 <p>Prune all attachments from &ldquo;capt-jack&rdquo;</p>

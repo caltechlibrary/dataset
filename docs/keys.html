@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME keys
+<pre><code>    dataset keys COLLECTION_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -50,9 +50,9 @@ to sort the keys matching the filter expression.</p>
 return only keys where the <code>.group</code> is <code>&quot;alumni&quot;</code> sorted
 by ascending <code>.family_name</code>.</p>
 
-<pre><code class="language-shell">    dataset COLLECTION_NAME keys
-    dataset COLLECTION_NAME keys true '-.family_name'
-    dataset COLLECTION_NAME keys '(eq .group &quot;alumni&quot;)' '+.family_name'
+<pre><code class="language-shell">    dataset keys COLLECTION_NAME
+    dataset keys COLLECTION_NAME true '-.family_name'
+    dataset keys COLLECTION_NAME '(eq .group &quot;alumni&quot;)' '+.family_name'
 </code></pre>
 
 <h2>filter expressions</h2>
@@ -122,13 +122,13 @@ an ascending sort so in practice you can omit a leading &ldquo;+&rdquo;.</p>
 <p>In this example we listing last names of &ldquo;Smith&rdquo; sorting by ascending
 given name. The collection name is &ldquo;people.ds&rdquo;.</p>
 
-<pre><code>    dataset people.ds keys '(eq &quot;Smith&quot; .family_name)' '.given_name'
+<pre><code>    dataset keys people.ds '(eq &quot;Smith&quot; .family_name)' '.given_name'
 </code></pre>
 
 <p>In this example we list last anes of &ldquo;Smith&rdquo; sorted by descending
 given name.</p>
 
-<pre><code>    dataset people.ds keys '(eq &quot;Smith&quot; .family_name)' '-.given_name'
+<pre><code>    dataset keys people.ds '(eq &quot;Smith&quot; .family_name)' '-.given_name'
 </code></pre>
 
 <h2>Getting a &ldquo;sample&rdquo; of keys</h2>

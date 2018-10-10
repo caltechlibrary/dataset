@@ -34,6 +34,7 @@ import (
 	"time"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/tbl"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/shuffle"
@@ -43,7 +44,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.45`
+	Version = `v0.0.47`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -66,18 +67,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	// Sort directions
 	ASC  = iota
 	DESC = iota
-)
 
-// Supported file layout types
-const (
+	// Supported file layout types
 	// Assume an unknown layout is zero, then add consts in order of adoption
 	UNKNOWN_LAYOUT = iota
 
 	// Buckets is the first file layout implemented when dataset started
-	BUCKETS_LAYOUT = iota
+	BUCKETS_LAYOUT
 
 	// Pairtree is the perferred file layout moving forward
-	PAIRTREE_LAYOUT = iota
+	PAIRTREE_LAYOUT
+
+	// internal virtualize column name format string
+	fmtColumnName = `column_%03d`
 )
 
 // Collection is the container holding buckets which in turn hold JSON docs
@@ -87,6 +89,9 @@ type Collection struct {
 
 	// Name of collection
 	Name string `json:"name"`
+
+	// workPath holds the path (i.e. non-protocol and hostname, in URI)
+	workPath string `json:"-"`
 
 	// Type allows for transitioning from bucket layout to pairtree layout for collections.
 	Layout int `json:"layout"`
@@ -114,11 +119,12 @@ func normalizeKeyName(s string) string {
 	return strings.TrimSpace(s)
 }
 
-// collectionNameFromPath takes a path and normalized a collection name.
-func collectionNameFromPath(p string) string {
+// collectionNameAsPath takes a uri and normalizes collection name
+// to a path
+func collectionNameAsPath(p string) string {
 	if strings.Contains(p, "://") {
 		u, _ := url.Parse(p)
-		return path.Base(u.Path)
+		return u.Path
 	}
 	return strings.TrimSpace(p)
 }
@@ -132,19 +138,21 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
-// saveMetadata writes the collection's metadata to COLLECTION_NAME/collection.json
+// saveMetadata writes the collection's metadata to  c.Store and c.workPath
 func (c *Collection) saveMetadata() error {
 	// Check to see if collection exists, if not create it!
-	if _, err := c.Store.Stat(c.Name); err != nil {
-		if err := c.Store.MkdirAll(c.Name, 0775); err != nil {
-			return err
+	if c.Store.Type == storage.FS {
+		if _, err := c.Store.Stat(c.workPath); err != nil {
+			if err := c.Store.MkdirAll(c.workPath, 0775); err != nil {
+				return err
+			}
 		}
 	}
 	src, err := json.Marshal(c)
 	if err != nil {
 		return fmt.Errorf("Can't marshal metadata, %s", err)
 	}
-	if err := c.Store.WriteFile(path.Join(c.Name, "collection.json"), src, 0664); err != nil {
+	if err := c.Store.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
 	}
 	return nil
@@ -162,12 +170,12 @@ func InitCollection(name string, layoutType int) (*Collection, error) {
 		err error
 	)
 	switch layoutType {
-	case PAIRTREE_LAYOUT:
-		c, err = pairtreeCreateCollection(name)
 	case BUCKETS_LAYOUT:
 		c, err = bucketCreateCollection(name, DefaultBucketNames)
+	case PAIRTREE_LAYOUT:
+		c, err = pairtreeCreateCollection(name)
 	default:
-		c, err = bucketCreateCollection(name, DefaultBucketNames)
+		c, err = pairtreeCreateCollection(name)
 	}
 	if err != nil {
 		return nil, err
@@ -184,7 +192,7 @@ func Open(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
-	collectionName := collectionNameFromPath(name)
+	collectionName := collectionNameAsPath(name)
 	src, err := store.ReadFile(path.Join(collectionName, "collection.json"))
 	if err != nil {
 		return nil, err
@@ -194,7 +202,8 @@ func Open(name string) (*Collection, error) {
 		return nil, err
 	}
 	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
-	c.Name = collectionName
+	c.Name = path.Base(collectionName)
+	c.workPath = collectionName
 	c.Store = store
 	return c, nil
 }
@@ -205,7 +214,7 @@ func Delete(name string) error {
 	if err != nil {
 		return err
 	}
-	collectionName := collectionNameFromPath(name)
+	collectionName := collectionNameAsPath(name)
 	if err := store.RemoveAll(collectionName); err != nil {
 		return err
 	}
@@ -216,7 +225,7 @@ func Delete(name string) error {
 func (c *Collection) DocPath(name string) (string, error) {
 	keyName, name := keyAndFName(name)
 	if p, ok := c.KeyMap[keyName]; ok == true {
-		return path.Join(c.Name, p, name), nil
+		return path.Join(c.workPath, p, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
 }
@@ -226,6 +235,7 @@ func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
 	c.Buckets = []string{}
 	c.Name = ""
+	c.workPath = ""
 	c.KeyMap = map[string]string{}
 	c.Store = nil
 	return nil
@@ -245,6 +255,9 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
+	if c.HasKey(name) == false {
+		return nil, fmt.Errorf("key not found")
+	}
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeReadJSON(name)
@@ -257,6 +270,9 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) UpdateJSON(name string, src []byte) error {
+	if c.HasKey(name) == false {
+		return fmt.Errorf("key not found")
+	}
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeUpdateJSON(name, src)
@@ -325,7 +341,6 @@ func (c *Collection) Keys() []string {
 // HasKey returns true if key is in collection's KeyMap, false otherwise
 func (c *Collection) HasKey(key string) bool {
 	_, hasKey := c.KeyMap[key]
-	//FIXME: if pairtree then we can also check by calculating the path and checking the storage system.
 	return hasKey
 }
 
@@ -336,10 +351,11 @@ func (c *Collection) Length() int {
 
 // ImportCSV takes a reader and iterates over the rows and imports them as
 // a JSON records into dataset.
-func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, useUUID bool, verboseLog bool) (int, error) {
+//BUG: returns lines processed should probably return number of rows imported
+func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, overwrite bool, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
-		jsonFName  string
+		key        string
 		err        error
 	)
 	r := csv.NewReader(buf)
@@ -365,29 +381,51 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 		var fieldName string
 		record := map[string]interface{}{}
 		if idCol < 0 {
-			jsonFName = fmt.Sprintf("%d", lineNo)
+			key = fmt.Sprintf("%d", lineNo)
 		}
 		for i, val := range row {
 			if i < len(fieldNames) {
 				fieldName = fieldNames[i]
 				if idCol == i {
-					jsonFName = val
+					key = val
 				}
 			} else {
-				fieldName = fmt.Sprintf("col_%d", i+1)
+				fieldName = fmt.Sprintf(fmtColumnName, i+1)
 			}
 			//Note: We need to convert the value
 			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
 				record[fieldName] = i
 			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
 				record[fieldName] = f
+			} else if strings.ToLower(val) == "true" {
+				record[fieldName] = true
+			} else if strings.ToLower(val) == "false" {
+				record[fieldName] = false
 			} else {
-				record[fieldName] = val
+				val = strings.TrimSpace(val)
+				if len(val) > 0 {
+					record[fieldName] = val
+				}
 			}
 		}
-		err = c.Create(jsonFName, record)
-		if err != nil {
-			return lineNo, fmt.Errorf("Can't write %+v to %s, %s", record, jsonFName, err)
+		if len(key) > 0 && len(record) > 0 {
+			if c.HasKey(key) {
+				if overwrite == true {
+					err = c.Update(key, record)
+					if err != nil {
+						return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+					}
+				} else if verboseLog {
+					log.Printf("Skipping row %d, key %q, already exists", lineNo, key)
+				}
+			} else {
+				err = c.Create(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
+			}
+		} else if verboseLog {
+			log.Printf("Skipping row %d, key value missing", lineNo)
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
 			log.Printf("%d rows processed", lineNo)
@@ -396,9 +434,9 @@ func (c *Collection) ImportCSV(buf io.Reader, skipHeaderRow bool, idCol int, use
 	return lineNo, nil
 }
 
-// ImportTable takes a [][]string and iterates over the rows and imports them as
-// a JSON records into dataset.
-func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int, useUUID, overwrite, verboseLog bool) (int, error) {
+// ImportTable takes a [][]interface{} and iterates over the rows and
+// imports them as a JSON records into dataset.
+func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow bool, overwrite, verboseLog bool) (int, error) {
 	var (
 		fieldNames []string
 		key        string
@@ -409,12 +447,14 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 	}
 	lineNo := 0
 	// i.e. use the header row for field names
-	if skipHeaderRow == true {
-		for i, field := range table[lineNo] {
-			if strings.TrimSpace(field) == "" {
-				fieldNames = append(fieldNames, fmt.Sprintf("column_%03d", i))
+	if useHeaderRow == true {
+		fieldNames := []string{}
+		for i, val := range table[0] {
+			cell, err := tbl.ValueInterfaceToString(val)
+			if err == nil && strings.TrimSpace(cell) != "" {
+				fieldNames = append(fieldNames, cell)
 			} else {
-				fieldNames = append(fieldNames, strings.TrimSpace(field))
+				fieldNames = append(fieldNames, fmt.Sprintf(fmtColumnName, i))
 			}
 		}
 		lineNo++
@@ -432,37 +472,32 @@ func (c *Collection) ImportTable(table [][]string, skipHeaderRow bool, idCol int
 		if idCol < 0 {
 			key = fmt.Sprintf("%d", lineNo)
 		}
+		// Find the key and setup record to save
 		for i, val := range row {
 			if i < len(fieldNames) {
 				fieldName = fieldNames[i]
 				if idCol == i {
-					key = val
+					key, err = tbl.ValueInterfaceToString(val)
+					if err != nil {
+						key = ""
+					}
 				}
 			} else {
-				fieldName = fmt.Sprintf("column_%03d", i+1)
+				fieldName = fmt.Sprintf(fmtColumnName, i+1)
 			}
-			//Note: We need to convert the value
-			if i, err := strconv.ParseInt(val, 10, 64); err == nil {
-				record[fieldName] = i
-			} else if f, err := strconv.ParseFloat(val, 64); err == nil {
-				record[fieldName] = f
-			} else if strings.ToLower(val) == "true" {
-				record[fieldName] = true
-			} else if strings.ToLower(val) == "false" {
-				record[fieldName] = false
-			} else {
-				record[fieldName] = val
-			}
+			record[fieldName] = val
 		}
-		if overwrite == true && c.HasKey(key) == true {
-			err = c.Update(key, record)
-			if err != nil {
-				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
-			}
-		} else {
-			err = c.Create(key, record)
-			if err != nil {
-				return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+		if len(key) > 0 && len(record) > 0 {
+			if overwrite == true && c.HasKey(key) == true {
+				err = c.Update(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
+			} else {
+				err = c.Create(key, record)
+				if err != nil {
+					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+				}
 			}
 		}
 		if verboseLog == true && (lineNo%1000) == 0 {
@@ -490,12 +525,19 @@ func colToString(cell interface{}) string {
 	return s
 }
 
-// ExportCSV takes a reader and iterates over the rows and exports then as a CSV file
-func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	keys, err := c.KeyFilter(c.Keys(), filterExpr)
+// ExportCSV takes a reader and frame and iterates over the objects
+// generating rows and exports then as a CSV file
+func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verboseLog bool) (int, error) {
+	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
+	if f.AllKeys == true {
+		f.Keys = c.Keys()
+	}
+	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
 	if err != nil {
 		return 0, err
 	}
+	dotExpr := f.DotPaths
+	colNames := f.Labels
 
 	// write out colNames
 	w := csv.NewWriter(fp)
@@ -521,7 +563,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 					row = append(row, colToString(col))
 				} else {
 					if verboseLog == true {
-						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.Name, err)
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.workPath, err)
 					}
 					dotpathErrors++
 					row = append(row, "")
@@ -531,18 +573,18 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 				cnt++
 			} else {
 				if verboseLog == true {
-					log.Printf("error writing row %d from %s key %q, %s\n", i+1, c.Name, key, err)
+					log.Printf("error writing row %d from %s key %q, %s\n", i+1, c.workPath, key, err)
 				}
 				writeErrors++
 			}
 			data = nil
 		} else {
-			log.Printf("error reading %s %q, %s\n", c.Name, key, err)
+			log.Printf("error reading %s %q, %s\n", c.workPath, key, err)
 			readErrors++
 		}
 	}
 	if readErrors > 0 || writeErrors > 0 || dotpathErrors > 0 && verboseLog == true {
-		log.Printf("warning %d read error, %d write errors, %d dotpath errors in CSV export from %s", readErrors, writeErrors, dotpathErrors, c.Name)
+		log.Printf("warning %d read error, %d write errors, %d dotpath errors in CSV export from %s", readErrors, writeErrors, dotpathErrors, c.workPath)
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
@@ -551,16 +593,75 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, filterExpr string, 
 	return cnt, nil
 }
 
+// ExportTable takes a reader and frame and iterates over the objects
+// generating rows and exports then as a CSV file
+func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) (int, [][]interface{}, error) {
+	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
+	if f.AllKeys == true {
+		f.Keys = c.Keys()
+	}
+	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
+	if err != nil {
+		return 0, nil, err
+	}
+	dotExpr := f.DotPaths
+	colNames := f.Labels
+
+	var (
+		cnt           int
+		row           []interface{}
+		readErrors    int
+		dotpathErrors int
+	)
+	table := [][]interface{}{}
+	// Copy column names to table
+	for _, colName := range colNames {
+		row = append(row, colName)
+	}
+	table = append(table, row)
+
+	for _, key := range keys {
+		data := map[string]interface{}{}
+		if err := c.Read(key, data); err == nil {
+			// write row out.
+			row = []interface{}{}
+			for _, colPath := range dotExpr {
+				col, err := dotpath.Eval(colPath, data)
+				if err == nil {
+					row = append(row, col)
+				} else {
+					if verboseLog == true {
+						log.Printf("error in dotpath %q for key %q in %s, %s\n", colPath, key, c.workPath, err)
+					}
+					dotpathErrors++
+					row = append(row, nil)
+				}
+			}
+			table = append(table, row)
+			cnt++
+			data = nil
+		} else {
+			log.Printf("error reading %s %q, %s\n", c.workPath, key, err)
+			readErrors++
+		}
+	}
+	if (readErrors > 0 || dotpathErrors > 0) && verboseLog == true {
+		log.Printf("warning %d read error, %d dotpath errors in table export from %s", readErrors, dotpathErrors, c.workPath)
+	}
+	return cnt, table, nil
+}
+
 // KeyFilter takes a list of keys and  filter expression and returns the list of keys passing
 // through the filter or an error
 func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
-	// Handle the trivial case of filter == "true"
-	if filterExpr == "true" {
+	// Handle the trivial case of filter resolving to true
+	// NOTE: empty filter is treated as "true"
+	if filterExpr == "true" || filterExpr == "" {
 		return keyList, nil
 	}
 
 	// Some sort of filter is involved
-	f, err := tmplfn.ParseFilter(filterExpr)
+	filter, err := tmplfn.ParseFilter(filterExpr)
 	if err != nil {
 		return nil, err
 	}
@@ -571,7 +672,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 		if len(key) > 0 {
 			m := map[string]interface{}{}
 			if err := c.Read(key, m); err == nil {
-				if ok, err := f.Apply(m); err == nil && ok == true {
+				if ok, err := filter.Apply(m); err == nil && ok == true {
 					keys = append(keys, key)
 				}
 			}
@@ -583,7 +684,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 // Clone copies the current collection records into a newly initialized collection given a list of keys
 // and new collection name. Returns an error value if there is a problem. Clone does NOT copy
 // attachments, only the JSON records.
-func (c *Collection) Clone(keys []string, cloneName string) error {
+func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error {
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
@@ -592,6 +693,7 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 	if err != nil {
 		return err
 	}
+	i := 0
 	for _, key := range keys {
 		src, err := c.ReadJSON(key)
 		if err != nil {
@@ -601,6 +703,13 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 		if err != nil {
 			return err
 		}
+		i++
+		if verbose && (i%100) == 0 {
+			log.Printf("%d objects processed\n", i)
+		}
+	}
+	if verbose {
+		log.Printf("%d total objects processed\n", i)
 	}
 	return nil
 }
@@ -612,11 +721,13 @@ func (c *Collection) Clone(keys []string, cloneName string) error {
 //
 // If the test collection name is not an empty string it will be created and any records not in the training
 // collection will be cloned from the current collection into the test collection.
-func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, testCollectionName string) error {
+func (c *Collection) CloneSample(trainingCollectionName string, testCollectionName string, keys []string, sampleSize int, verbose bool) error {
 	if sampleSize < 1 {
 		return fmt.Errorf("sample size should be greater than zero")
 	}
-	keys := c.Keys()
+	if len(keys) == 0 {
+		keys = c.Keys()
+	}
 	if sampleSize >= len(keys) {
 		return fmt.Errorf("sample size too big, %s has %d keys", c.Name, len(keys))
 	}
@@ -627,12 +738,12 @@ func (c *Collection) CloneSample(sampleSize int, trainingCollectionName string, 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	shuffle.Strings(keys, random)
 	trainingKeys := keys[0:sampleSize]
-	if err := c.Clone(trainingKeys, trainingCollectionName); err != nil {
+	if err := c.Clone(trainingCollectionName, trainingKeys, verbose); err != nil {
 		return err
 	}
 	if len(testCollectionName) > 0 {
 		testKeys := keys[sampleSize:]
-		if err := c.Clone(testKeys, testCollectionName); err != nil {
+		if err := c.Clone(testCollectionName, testKeys, verbose); err != nil {
 			return err
 		}
 	}
@@ -656,37 +767,56 @@ func IsCollection(p string) bool {
 // association with the collection (e.g BUCKETS_LAYOUT,
 // PAIRTREE_LAYOUT).
 func CollectionLayout(p string) int {
+	workPath := collectionNameAsPath(p)
 	store, err := storage.GetStore(p)
 	if err != nil {
 		return UNKNOWN_LAYOUT
 	}
-	if store.IsDir(path.Join(p, "pairtree")) {
-		return PAIRTREE_LAYOUT
-	}
-	if store.IsDir(path.Join(p, "aa")) {
-		return BUCKETS_LAYOUT
-	}
-	if store.IsFile(path.Join(p, "collection.json")) {
-		src, err := store.ReadFile(path.Join(p, "collection.json"))
-		if err != nil {
-			return UNKNOWN_LAYOUT
-		}
+	src, err := store.ReadFile(path.Join(workPath, "collection.json"))
+	if err == nil {
 		c := new(Collection)
 		err = json.Unmarshal(src, &c)
 		if err != nil {
 			return UNKNOWN_LAYOUT
 		}
-		switch c.Layout {
-		case BUCKETS_LAYOUT:
+		if len(c.Buckets) > 0 {
 			return BUCKETS_LAYOUT
-		case PAIRTREE_LAYOUT:
-			return PAIRTREE_LAYOUT
-		default:
-			if len(c.Buckets) > 0 {
-				return BUCKETS_LAYOUT
-			}
-			return UNKNOWN_LAYOUT
 		}
+		return PAIRTREE_LAYOUT
+	}
+	l, err := store.FindByExt(path.Join(workPath, "aa"), ".json")
+	if err != nil {
+		return PAIRTREE_LAYOUT
+	}
+	if len(l) > 0 {
+		return BUCKETS_LAYOUT
 	}
 	return UNKNOWN_LAYOUT
+}
+
+// Join takes a key, a map[string]interface{}{} and overwrite bool
+// and merges the map with an existing JSON object in the collection.
+// BUG: This is a naive join, it assumes the keys in object are top
+// level properties.
+func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool) error {
+	if c.HasKey(key) == false {
+		return c.Create(key, obj)
+	}
+	record := map[string]interface{}{}
+	err := c.Read(key, record)
+	if err != nil {
+		return err
+	}
+
+	// Merge object
+	for k, v := range obj {
+		if overwrite == true {
+			record[k] = v
+		} else if _, hasProperty := record[k]; hasProperty == false {
+			record[k] = v
+		}
+	}
+
+	// Update record and return
+	return c.Update(key, record)
 }

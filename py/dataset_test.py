@@ -62,7 +62,7 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = "/".join([collection_name,"aa", (key+".json")])
+    expected_s = "/".join([collection_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
@@ -201,6 +201,9 @@ def test_issue32(t, collection_name):
 #
 def test_gsheet(t, collection_name, setup_bash):
     '''if setup_bash exists, run Google Sheets tests'''
+    if os.path.exists("../etc/client_secret.json") == False:
+        t.print("Skipping test_gsheet(), no ../etc/client_secret.json")
+        return
     if os.path.exists(setup_bash) == False:
         t.verbose_on()
         t.print("Skipping test_gsheet(", collection_name, setup_bash, ")")
@@ -233,7 +236,7 @@ def test_gsheet(t, collection_name, setup_bash):
         sheet_id = cfg.get("spreadsheet_id")
     client_secret_name = "../" + client_secret_name
 
-    err = dataset.init(collection_name)
+    err = dataset.init(collection_name, "pairtree")
     if err != '':
         t.error("Failed, could not create collection, ", err)
         return
@@ -297,7 +300,7 @@ def test_gsheet(t, collection_name, setup_bash):
 def test_setup(t, collection_name):
     if os.path.exists(collection_name):
         shutil.rmtree(collection_name)
-    err = dataset.init(collection_name)
+    err = dataset.init(collection_name, "pairtree")
     if err != '':
         t.error("Failed, could not create collection, ", err)
         return
@@ -306,8 +309,9 @@ def test_setup(t, collection_name):
 def test_check_repair(t, collection_name):
     t.print("Testing status on", collection_name)
     # Make sure we have a left over collection to check and repair
-    if os.path.exists(collection_name) == False:
-        dataset.init(collection_name)
+    if os.path.exists(collection_name) == True:
+        shutil.rmtree(collection_name)
+    dataset.init(collection_name, "pairtree")
     ok = dataset.status(collection_name)
     if ok == False:
         t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
@@ -323,18 +327,23 @@ def test_check_repair(t, collection_name):
         return
 
     # Break and recheck our collection
+    print(f"Removing {collection_name}/collection.json to cause a fail")
     if os.path.exists(collection_name + "/collection.json"):
         os.remove(collection_name + "/collection.json")
-    t.print("Testing check on (broken)", collection_name)
+    print(f"Testing check on (broken) {collection_name}")
     ok = dataset.check(collection_name)
     if ok == True:
         t.error("Failed, expected check", collection_name, "to return False, got", ok)
+    else:
+        t.print(f"Should have see error output for broken {collection_name}")
 
     # Repair our collection
     t.print("Testing repair on", collection_name)
     err = dataset.repair(collection_name)
     if err != '':
         t.error("Failed, expected repair to return True, got, ", err)
+    if os.path.exists(collection_name + "/collection.json") == False:
+        t.error(f"Failed, expected recreated {collection_name}/collection.json")
  
         
 def test_attachments(t, collection_name):
@@ -418,6 +427,9 @@ def test_attachments(t, collection_name):
 
 def test_s3(t):
     collection_name = os.getenv("DATASET", "")
+    if collection_name == "":
+        t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
+        return
     if collection_name[0:5] != "s3://":
         t.verbose_on()
         t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
@@ -426,7 +438,7 @@ def test_s3(t):
     ok = dataset.status(collection_name)
     if ok == False:
         t.print("Missing", collection_name, "attempting to initialize", collection_name)
-        err = dataset.init(collection_name)
+        err = dataset.init(collection_name, "pairtree")
         if err != '':
             t.error("Aborting, couldn't initialize", collection_name, ', ', err)
             return
@@ -478,33 +490,30 @@ def test_join(t, collection_name):
     else:
         err = dataset.create(collection_name, key, obj1)
     if err != '':
-        t.error('Failed, could not add record for test', collection, key, obj1, ', ', err)
+        t.error(f'Failed, could not add record for test ({collection_name}, {key}, {obj1}), {err}')
         return
-    err = dataset.join(collection_name, key, "append", obj2)
+    err = dataset.join(collection_name, key, obj2, overwrite = False)
     if err != '':
-        t.error('Failed, join for', collection_name, key, 'append', obj2, ', ', err)
+        t.error(f'Failed, join for {collection_name}, {key}, {obj2}, overwrite = False -> {err}')
     obj_result, err = dataset.read(collection_name, key)
     if err != '':
         t.error(f'Unexpected error for {key} in {collection_name}, {err}')
     if obj_result.get('one') != 1:
-        t.error('Failed to join append key', key, obj_result)
+        t.error(f'Failed to join append key {key}, {obj_result}')
     if obj_result.get("two") != 2:
-        t.error("Failed to join append key", key, obj_result)
+        t.error(f'Failed to join append key {key}, {obj_result}')
     obj2['one'] = 3
     obj2['two'] = 3
     obj2['three'] = 3
-    err = dataset.join(collection_name, key, 'overwrite', obj2)
+    err = dataset.join(collection_name, key, obj2, overwrite = True)
     if err != '':
-        t.error('Failed to join overwrite', collection_name, key, 'overwrite', obj2)
+        t.error(f'Failed to join overwrite {collection_name}, {key}, {obj2}, overwrite = True -> {err}')
     obj_result, err = dataset.read(collection_name, key)
     if err != '':
         t.error(f'Unexpected error for {key} in {collection_name}, {err}')
     for k in obj_result:
         if k != '_Key' and obj_result[k] != 3:
             t.error('Failed to update value in join overwrite', k, obj_result)
-    err = dataset.join(collection_name, key, 'fred and mary', obj2)
-    if err != '':
-        t.error("Failed, expected error for join type 'fred and mary'")
     
 #
 # test_issue43() When exporting records to a table using
@@ -515,7 +524,7 @@ def test_issue43(t, collection_name, csv_name):
         shutil.rmtree(collection_name)
     if os.path.exists(csv_name):
         os.remove(csv_name)
-    err = dataset.init(collection_name)
+    err = dataset.init(collection_name, "pairtree")
     if err != '':
         t.error(f'Failed, need a {collection_name} to run test')
         return
@@ -559,7 +568,7 @@ def test_issue43(t, collection_name, csv_name):
     dataset.use_strict_dotpath(False)
     err = dataset.export_csv(collection_name, csv_name, "true", ["._Key",".c1",".c2",".c3",".c4"])
     if err != '':
-       t.error(f'csv_export({collection_name}, {csv_name} should have emitted warnings, not error')
+       t.error(f'export_csv({collection_name}, {csv_name} should have emitted warnings, not error')
        return
     with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
         rows = f.read()
@@ -576,14 +585,14 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
         shutil.rmtree(training_name)
     if os.path.exists(test_name):
         shutil.rmtree(test_name)
-    err = dataset.clone_sample(c_name, sample_size, training_name, test_name)
+    err = dataset.clone_sample(c_name, training_name, test_name, sample_size)
     if err != '':
         t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
 
 def test_grid(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name)
+    err = dataset.init(c_name, "pairtree")
     if err != '':
         t.error(err)
         return
@@ -606,7 +615,7 @@ def test_grid(t, c_name):
 def test_frame(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name)
+    err = dataset.init(c_name, "pairtree")
     if err != '':
         t.error(err)
         return
@@ -636,8 +645,6 @@ def test_frame(t, c_name):
     err = dataset.frame_labels(c_name, f_name, labels)
     if err != '':
         t.error(err)
-    f_types = ['string', 'string', 'number', 'string', 'composite']
-    err = dataset.frame_types(c_name, f_name, f_types)
     if err != '':
         t.error(err)
     err = dataset.delete_frame(c_name, f_name)
@@ -697,6 +704,8 @@ class TestRunner:
             error_count = t.error_count()
             if error_count > 0:
                 print(f"\t\t{fn_name} failed, {error_count} errors found")
+            else:
+                print(f"\t\t{fn_name} OK")
             self._error_count += error_count
         error_count = self._error_count
         set_name = self._set_name

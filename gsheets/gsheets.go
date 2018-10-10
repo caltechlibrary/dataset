@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	// Google Sheets packages
 	"golang.org/x/net/context"
@@ -96,7 +97,35 @@ func saveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([][]string, error) {
+// ColNoToColLetters converts a zero based column index to a spreadsheet
+// style letter sequence (e.g. 0 -> A, 26 -> AB, 52 -> BA, ..)
+// If colNo is legative then an empty string is returned.
+func ColNoToColLetters(colNo int) string {
+	alpha := []string{
+		"A", "B", "C", "D", "E",
+		"F", "G", "H", "I", "J",
+		"K", "L", "M", "N", "O",
+		"P", "Q", "R", "S", "T",
+		"U", "V", "W", "X", "Y",
+		"Z",
+	}
+	c := len(alpha)
+	out := []string{}
+	i := colNo
+	m := 0
+	for i >= 0 {
+		if i < c {
+			out = append([]string{alpha[i]}, out...)
+			break
+		}
+		m = i % c
+		i = (i - c) / c
+		out = append([]string{alpha[m]}, out...)
+	}
+	return strings.Join(out, "")
+}
+
+func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([][]interface{}, error) {
 	ctx := context.Background()
 
 	b, err := ioutil.ReadFile(clientSecretJSON)
@@ -119,22 +148,13 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 
 	// Prints the columns from sheet described by spreadSheetId
 	readRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
-	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).Do()
+	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).ValueRenderOption("FORMULA").Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve data from sheet. %s", err)
 	}
 
 	if len(resp.Values) > 0 {
-		table := [][]string{}
-		for _, row := range resp.Values {
-			cells := []string{}
-			for _, val := range row {
-				cell := val.(string)
-				cells = append(cells, cell)
-			}
-			table = append(table, cells)
-		}
-		return table, nil
+		return resp.Values, nil
 	}
 	return nil, fmt.Errorf("No data found")
 }
@@ -168,7 +188,7 @@ func WriteSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string, ta
 		vr.Values = append(vr.Values, row)
 	}
 	writeRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
-	if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("RAW").Do(); err != nil {
+	if _, err := srv.Spreadsheets.Values.Update(spreadSheetId, writeRange, &vr).ValueInputOption("USER_ENTERED").Do(); err != nil {
 		return fmt.Errorf("Unable to write sheet %s. %s", writeRange, err)
 	}
 	return nil

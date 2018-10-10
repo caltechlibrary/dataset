@@ -28,7 +28,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset COLLECTION_NAME update KEY
+<pre><code>    dataset update COLLECTION_NAME KEY
 </code></pre>
 
 <h2>Description</h2>
@@ -49,10 +49,10 @@ data from <em>jane-doe.json</em>. Finally in the last we read the JSON
 document from standard input and save the update to &ldquo;jane.doe&rdquo;.
 The collection name is &ldquo;people.ds&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset people.ds update jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'
-    dataset people.ds update jane.doe jane-doe.json
-    dataset -i jane-doe.json people.ds update jane.doe
-    cat jane-doe.json | dataset people.ds update jane.doe
+<pre><code class="language-shell">    dataset update people.ds jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'
+    dataset update people.ds jane.doe jane-doe.json
+    dataset update -i jane-doe.json people.ds jane.doe
+    cat jane-doe.json | dataset update people.ds jane.doe
 </code></pre>
 
 <p>Related topics: <a href="keys.html">keys</a>, <a href="create.html">create</a>, <a href="read.html">read</a>, <a href="delete.html">delete</a></p>

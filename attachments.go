@@ -367,6 +367,7 @@ func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error 
 	fp := bytes.NewBuffer(buf)
 
 	tr := tar.NewReader(fp)
+	found := []string{}
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {
@@ -388,7 +389,23 @@ func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error 
 				return err
 			}
 			fp.Close()
+			if len(filterNames) > 0 {
+				found = append(found, hdr.Name)
+			}
 		}
+	}
+	if len(filterNames) > len(found) {
+		missing := []string{}
+		if len(found) > 0 {
+			for _, fname := range filterNames {
+				if filterNameFound(found, fname) == false {
+					missing = append(missing, fname)
+				}
+			}
+		} else {
+			missing = filterNames
+		}
+		return fmt.Errorf("Missing attachments %q", strings.Join(missing, `", "`))
 	}
 	return nil
 }
@@ -437,6 +454,7 @@ func (c *Collection) Prune(name string, filterNames ...string) error {
 	docList := []map[string]interface{}{}
 
 	// Read in old tarball and only write out files that match filterNames
+	found := []string{}
 	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
 		tw := tar.NewWriter(fp)
 		defer tw.Close()
@@ -462,6 +480,8 @@ func (c *Collection) Prune(name string, filterNames ...string) error {
 				docInfo["name"] = hdr.Name
 				docInfo["size"] = hdr.Size
 				docList = append(docList, docInfo)
+			} else {
+				found = append(found, hdr.Name)
 			}
 		}
 		return nil
@@ -471,5 +491,22 @@ func (c *Collection) Prune(name string, filterNames ...string) error {
 	}
 	rec["_Attachments"] = docList
 	err = c.Update(keyName, rec)
-	return err
+	if err != nil {
+		return err
+	}
+	if len(found) < len(filterNames) {
+		if len(found) == 0 {
+			return fmt.Errorf("Unable to prune %q", strings.Join(filterNames, `", "`))
+		}
+		missing := []string{}
+		for _, fName := range filterNames {
+			if filterNameFound(found, fName) == false {
+				missing = append(missing, fName)
+			}
+		}
+		if len(missing) > 0 {
+			return fmt.Errorf("Unable to prune %q", strings.Join(missing, `", "`))
+		}
+	}
+	return nil
 }

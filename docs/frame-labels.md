@@ -8,7 +8,7 @@ In this example the collection name is `example.ds`, frame name is
 coresponding to the three dotpaths defined in `examples.ds`.
 
 ```shell
-    dataset example.ds frame-labels f1 'Column A' 'Column B' 'Column C'
+    dataset frame-labels example.ds f1 'Column A' 'Column B' 'Column C'
 ```
 
 In python

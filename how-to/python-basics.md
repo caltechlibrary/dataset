@@ -31,10 +31,11 @@ a record called "littlefreda.json" and reading it back.
         print(f"Doc: {record}")
 ```
 
-Notice that the command `dataset.init(c_name)` and `dataset.create(c_name, key)`. Many of 
-the dataset command will require the collection name as the first parameter.  Likewise
-many also return a tuple where the first value is the object you are fetching and the second
-part of the tuple is any error messages. 
+Notice that the command `dataset.init(c_name)` and 
+`dataset.create(c_name, key)`. Many of the dataset command will require 
+the collection name as the first parameter.  Likewise many also return 
+a tuple where the first value is the object you are fetching and the 
+second part of the tuple is any error messages. 
 
 Now check to see if the key, littlefreda, is in the collection
 
@@ -42,9 +43,9 @@ Now check to see if the key, littlefreda, is in the collection
    dataset.haskey(c_name, 'littlefreda')
 ```
 
-You can also read your JSON formatted data from a file or standard input.
-In this example we are creating a mojosam record and reading back the contents
-of fiends.ds
+You can also read your JSON formatted data from a file or standard 
+input.  In this example we are creating a mojosam record and reading 
+back the contents of fiends.ds
 
 ```python
    dataset -i mojosam.json create mojosam

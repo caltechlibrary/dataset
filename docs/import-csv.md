@@ -1,15 +1,16 @@
 
-# import-csv
+# import
 
 ## Syntax
 
 ```
-    dataset COLLECTION_NAME import-csv CSV_FILENAME COLUMN_NO_AS_KEY
+    dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER
+    dataset import GSHEET_ID_AND_SHEET_NAME ID_COLUMN_NO [CELL_RANGE]
 ```
 
 ## Description
 
-_import-csv_ adds JSON documents to a collection from a CSV table. 
+_import_ adds JSON documents to a collection from a CSV table. 
 
 ## Usage
 
@@ -18,14 +19,14 @@ The first column (column 1) is used as the value for KEY if
 specified.  Our collection is named "data.ds".
 
 ```shell
-    dataset data.ds import-csv data.csv 1
+    dataset import data.ds data.csv 1
 ```
 
 By default the header row of the table (the first row of the table) 
 is used as the attribute names of the JSON document you create on 
 import.  If you don't want that behavior you can use 
 the "-use-header-row=false" option and the fields will be in the
-form of "column_IDNO" where IDNO is replaced with a left zero 
+form of "column_NO" where "NO" is replaced with a left zero 
 padded column number (e.g. column_001, column_002, column_003).
 
 

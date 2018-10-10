@@ -28,7 +28,7 @@ import (
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/gsheet"
+	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/tmplfn"
 )
@@ -36,8 +36,16 @@ import (
 var (
 	verbose          = false
 	useStrictDotpath = true
-	errorValue       error
+	// NOTE: error state is shared because C doesn't easily pass multiple
+	// return values without resorting to complex structures.
+	errorValue error
 )
+
+// error_clear will set the global error state to nil.
+//export error_clear
+func error_clear() {
+	errorValue = nil
+}
 
 func error_dispatch(err error, s string, values ...interface{}) {
 	errorValue = err
@@ -102,6 +110,7 @@ func init_collection(name *C.char, cLayout C.int) C.int {
 	if verbose == true {
 		messagef("creating %s type %d\n", collectionName, layout)
 	}
+	error_clear()
 	_, err := dataset.InitCollection(collectionName, layout)
 	if err != nil {
 		error_dispatch(err, "Cannot create collection %s, %s", collectionName, err)
@@ -116,6 +125,7 @@ func has_key(name, key *C.char) C.int {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -135,6 +145,7 @@ func create_record(name, key, src *C.char) C.int {
 	k := C.GoString(key)
 	v := []byte(C.GoString(src))
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -155,6 +166,7 @@ func read_record(name, key *C.char) *C.char {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -177,6 +189,7 @@ func update_record(name, key, src *C.char) C.int {
 	k := C.GoString(key)
 	v := []byte(C.GoString(src))
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -197,6 +210,7 @@ func delete_record(name, key *C.char) C.int {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -213,12 +227,13 @@ func delete_record(name, key *C.char) C.int {
 }
 
 //export join
-func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
+func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-	adverb := C.GoString(cAdverb)
+	overwrite := (cOverwrite == 1)
 	objectSrc := C.GoString(cObjSrc)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -238,20 +253,16 @@ func join(cName *C.char, cKey *C.char, cAdverb *C.char, cObjSrc *C.char) C.int {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
-	switch adverb {
-	case "append":
+	if overwrite {
+		for k, v := range newObject {
+			outObject[k] = v
+		}
+	} else {
 		for k, v := range newObject {
 			if _, ok := outObject[k]; ok != true {
 				outObject[k] = v
 			}
 		}
-	case "overwrite":
-		for k, v := range newObject {
-			outObject[k] = v
-		}
-	default:
-		error_dispatch(err, "Unknown join type %q", adverb)
-		return C.int(0)
 	}
 	if err := c.Update(key, outObject); err != nil {
 		error_dispatch(err, "%s", err)
@@ -266,6 +277,7 @@ func keys(cname, cFilterExpr, cSortExpr *C.char) *C.char {
 	filterExpr := C.GoString(cFilterExpr)
 	sortExpr := C.GoString(cSortExpr)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -303,6 +315,7 @@ func key_filter(cname, cKeyListExpr, cFilterExpr *C.char) *C.char {
 	keyListExpr := C.GoString(cKeyListExpr)
 	filterExpr := C.GoString(cFilterExpr)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -335,6 +348,7 @@ func key_sort(cname, cKeyList, cSortExpr *C.char) *C.char {
 	keyList := C.GoString(cKeyList)
 	sortExpr := C.GoString(cSortExpr)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -364,6 +378,7 @@ func key_sort(cname, cKeyList, cSortExpr *C.char) *C.char {
 //export count
 func count(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -382,6 +397,7 @@ func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.in
 	keyList := C.GoString(cKeyList)
 	batchSize := int(cBatchSize)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -417,6 +433,7 @@ func deindexer(cName, cIndexName, cKeyList *C.char, cBatchSize C.int) C.int {
 	keyList := C.GoString(cKeyList)
 	batchSize := int(cBatchSize)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
@@ -473,6 +490,7 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 		}
 	}
 
+	error_clear()
 	idxList, _, err := dataset.OpenIndexes(indexNames)
 	if err != nil {
 		error_dispatch(err, "Can't open index %s, %s", strings.Join(indexNames, ", "), err)
@@ -503,14 +521,15 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 }
 
 //export import_csv
-func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cUseUUID C.int) C.int {
+func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	// Covert options
 	collectionName := C.GoString(cName)
 	csvFName := C.GoString(cCSVFName)
 	idCol := int(cIDCol)
 	useHeaderRow := (int(cUseHeaderRow) == 1)
-	useUUID := (int(cUseUUID) == 1)
+	overwrite := (int(cOverwrite) == 1)
 
+	error_clear()
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Can't open %s, %s", collectionName, err)
@@ -532,7 +551,7 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	}
 	defer fp.Close()
 
-	if linesNo, err := collection.ImportCSV(fp, useHeaderRow, idCol, useUUID, verbose); err != nil {
+	if linesNo, err := collection.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose); err != nil {
 		error_dispatch(err, "Can't import CSV, %s", err)
 		return C.int(0)
 	} else {
@@ -566,6 +585,7 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 		colNames[i] = strings.TrimSpace(val)
 	}
 
+	error_clear()
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -580,7 +600,12 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 	}
 	defer fp.Close()
 
-	linesNo, err := collection.ExportCSV(fp, os.Stderr, filterExpr, dotExprs, colNames, verbose)
+	frame := new(dataset.DataFrame)
+	frame.FilterExpr = filterExpr
+	frame.DotPaths = dotExprs
+	frame.Labels = colNames
+
+	linesNo, err := collection.ExportCSV(fp, os.Stderr, frame, verbose)
 	if err != nil {
 		error_dispatch(err, "Can't export CSV, %s", err)
 		return C.int(0)
@@ -590,7 +615,7 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 }
 
 //export import_gsheet
-func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C.char, cIDCol C.int, cUseHeaderRow C.int, cUseUUID C.int, cOverwrite C.int) C.int {
+func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	collectionName := C.GoString(cName)
 	clientSecretJSON := C.GoString(cClientSecretJSON)
 	sheetID := C.GoString(cSheetID)
@@ -598,9 +623,9 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 	cellRange := C.GoString(cCellRange)
 	idCol := int(cIDCol)
 	useHeaderRow := (C.int(cUseHeaderRow) == 1)
-	useUUID := (C.int(cUseUUID) == 1)
 	overwrite := (C.int(cOverwrite) == 1)
 
+	error_clear()
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -617,7 +642,7 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 		return C.int(0)
 	}
 
-	linesNo, err := collection.ImportTable(table, useHeaderRow, idCol, useUUID, overwrite, verbose)
+	linesNo, err := collection.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		error_dispatch(err, "Errors importing %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
@@ -637,6 +662,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 	dotExprs := strings.Split(C.GoString(cDotExprs), ",")
 	colNames := strings.Split(C.GoString(cColNames), ",")
 
+	error_clear()
 	collection, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
@@ -730,6 +756,7 @@ func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, c
 //export status
 func status(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "failed, %s, %s", collectionName, err)
@@ -744,6 +771,7 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	sKeys := C.GoString(cKeys)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -781,6 +809,7 @@ func path(cName *C.char, cKey *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -831,6 +860,7 @@ func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 		}
 	}
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -860,6 +890,7 @@ func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 func attachments(cName *C.char, cKey *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -894,6 +925,7 @@ func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 			return C.int(0)
 		}
 	}
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -925,6 +957,7 @@ func prune(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 			return C.int(0)
 		}
 	}
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -945,6 +978,7 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	srcKeys := C.GoString(cKeys)
 	destName := C.GoString(dName)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -957,7 +991,7 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 		error_dispatch(err, "Can't unmarshal keys, %s", err)
 		return C.int(0)
 	}
-	err = c.Clone(keys, destName)
+	err = c.Clone(destName, keys, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -966,19 +1000,21 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 }
 
 //export clone_sample
-func clone_sample(cName *C.char, cSampleSize C.int, cTrainingName *C.char, cTestName *C.char) C.int {
+func clone_sample(cName *C.char, cTrainingName *C.char, cTestName *C.char, cSampleSize C.int) C.int {
 	collectionName := C.GoString(cName)
 	sampleSize := int(cSampleSize)
 	trainingName := C.GoString(cTrainingName)
 	testName := C.GoString(cTestName)
 
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
 	defer c.Close()
-	err = c.CloneSample(sampleSize, trainingName, testName)
+	keys := c.Keys()
+	err = c.CloneSample(trainingName, testName, keys, sampleSize, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -991,6 +1027,7 @@ func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	srcKeys := C.GoString(cKeys)
 	srcDotpaths := C.GoString(cDotPaths)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -1030,6 +1067,7 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char) *C.c
 	frameName := C.GoString(cFName)
 	srcKeys := C.GoString(cKeys)
 	srcDotpaths := C.GoString(cDotPaths)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -1066,6 +1104,7 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char) *C.c
 //export frames
 func frames(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -1091,6 +1130,7 @@ func reframe(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
 	srcKeys := C.GoString(cKeys)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -1117,6 +1157,7 @@ func frame_labels(cName *C.char, cFName *C.char, cLabels *C.char) C.int {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
 	srcLabels := C.GoString(cLabels)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -1138,36 +1179,11 @@ func frame_labels(cName *C.char, cFName *C.char, cLabels *C.char) C.int {
 	return C.int(0)
 }
 
-//export frame_types
-func frame_types(cName *C.char, cFName *C.char, cTypes *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	srcTypes := C.GoString(cTypes)
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.int(1)
-	}
-	defer c.Close()
-	types := []string{}
-	err = json.Unmarshal([]byte(srcTypes), &types)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal frame types, %s", err)
-		return C.int(1)
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	err = c.FrameTypes(frameName, types)
-	if err != nil {
-		error_dispatch(err, "failed set frame types, %s", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
 //export delete_frame
 func delete_frame(cName *C.char, cFName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
+	error_clear()
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)

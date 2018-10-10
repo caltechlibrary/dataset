@@ -27,17 +27,19 @@
 <h2>Filters and sorts</h2>
 
 <p><em>dataset keys</em> can be used to to filter and sort a key list.
-Here&rsquo;s is a simple case for match records in a collection named <strong>characters.ds</strong>
-where the given name is equal to &ldquo;Mojo&rdquo;. We will save the result in a file called <em>mojo.keys</em>.</p>
+Here&rsquo;s is a simple case for match records in a collection named
+<strong>characters.ds</strong> where the given name is equal to &ldquo;Mojo&rdquo;. We will
+save the result in a file called <em>mojo.keys</em>.</p>
 
-<pre><code class="language-shell">   dataset characters.ds keys '(eq .given &quot;Mojo&quot;)' &gt; mojo.keys
+<pre><code class="language-shell">   dataset keys characters.ds '(eq .given &quot;Mojo&quot;)' &gt; mojo.keys
 </code></pre>
 
 <p>You can also use an existing key list (e.g. <em>mojo.keys</em>)
 to sub select based on a new filter and/or sort expression.
 We will filter for a family name of &ldquo;Sam&rdquo; and sort by the age field.</p>
 
-<pre><code class="language-shell">   dataset -c characters.ds -key-file=mojo.keys keys '(eq .family &quot;Sam&quot;)' '+.age'
+<pre><code class="language-shell">   dataset keys -key-file=mojo.keys characters.ds \
+                '(eq .family &quot;Sam&quot;)' '+.age'
 </code></pre>
 
 </section>

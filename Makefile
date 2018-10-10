@@ -25,13 +25,15 @@ cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
 	git add cmd/dataset/assets.go
 
-bin/dataset$(EXT): dataset.go pairtree.go buckets.go attachments.go grid.go frame.go repair.go sort.go gsheet/gsheet.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go pairtree.go buckets.go attachments.go grid.go frame.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
 build: $(PROJECT_LIST) python
 
 install: 
 	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
+	if [ "$(OS)" != "Windows" ]; then mkdir -p $(GOPATH)/man/man1; fi
+	if [ "$(OS)" != "Windows" ]; then $(GOPATH)/bin/dataset -generate-manpage | nroff -Tutf8 -man > $(GOPATH)/man/man1/dataset.1; fi
 
 python:
 	cd py && $(MAKE)
@@ -41,16 +43,25 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 
 test: clean bin/dataset$(EXT)
 	go test
+	cd gsheets && go test && cd ..
 	bash test_cmd.bash
 	cd py && $(MAKE) test
+	if [ "$(s3)" != "" ]; then go test -s3 "$(s3)"; fi
+
+cleanweb:
+	if [ -f index.html ]; then rm *.html; fi
 
 clean: 
 	if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi
-	if [ -f index.html ]; then rm *.html; fi
 	if [ -d bin ]; then rm -fR bin; fi
 	if [ -d dist ]; then rm -fR dist; fi
+	if [ -d man ]; then rm -fR man; fi
 	if [ -d testdata ]; then rm -fR testdata; fi
 	cd py && $(MAKE) clean
+
+man: build
+	mkdir -p man/man1
+	bin/dataset -generate-manpage | nroff -Tutf8 -man > man/man1/dataset.1
 
 dist/linux-amd64:
 	mkdir -p dist/bin

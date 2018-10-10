@@ -9,16 +9,16 @@ Below is our current policy regarding releases.
 
 All releases to should a semantic version number (i.e. [semvar]()).
 Releases that are largely patches, bug improvements or experimental
-are tagged "pre-release" on Github.  If they are expected to be used
-outside the immediate DLD group at Caltech Library then they will
-not be tagged "pre-release" on Github.
+are tagged "pre-release" on Github. 
 
 ### Pre-releases
 
-Pre-releases may or may not have zip'ed executables ready for installion.
-Where they do we are currently targetting Linux on AMD64, Raspbian on ARM 7, Mac OS X on AMD64 and Windows 10 (for use from Window's command prompt)
-on AMD 64.  From time to time preleases may also include an experiemental
-Python module compiled for Mac OS X and Linux.
+Pre-releases may or may not have zip'ed executables ready 
+for installion.  Where they do we are currently targetting Linux on AMD64, 
+Raspbian on ARM 7, Mac OS X on AMD64 and Windows 10 (for use from 
+Window's command prompt) on AMD 64.  From time to time preleases may 
+also include an experiemental Python module compiled for Mac OS X and 
+Linux.
 
 ### Production releases
 

@@ -25,10 +25,10 @@ by collection and JSON document level.
 ### Collection Level
 
 + [init](init.html) creates a collection
-+ [import-csv](import-csv.html) JSON documents from rows of a CSV file
-+ [import-gsheet](import.html) JSON documents from rows of a Google Sheet
-+ [export-csv](export-csv.html) JSON documents from a collection into a CSV file
-+ [export-gsheet](export-gsheet.html) JSON documents from a collection into a Google Sheet
++ [import](import-csv.html) (csv) JSON documents from rows of a CSV file
++ [import](import-gsheet.html) (gsheet) JSON documents from rows of a Google Sheet
++ [export](export-csv.html) (csv) JSON documents from a collection into a CSV file
++ [export](export-gsheet.html) (gsheet) JSON documents from a collection into a Google Sheet
 + [keys](keys.html) list keys of JSON documents in a collection, supports filtering and sorting
 + [haskey](haskey.html) returns true if key is found in collection, false otherwise
 + [count](count.html) returns the number of documents in a collection, supports filtering for subsets
@@ -39,8 +39,8 @@ by collection and JSON document level.
     + [frames](frames.html)
     + [reframe](reframe.html)
     + [frame-labels](frame-labels.html)
-    + [frame-types](frame-types.html)
     + [delete-frame](delete-frame.html)
+    + [hasframe](hasframe.html)
 
 ### JSON Document level
 
