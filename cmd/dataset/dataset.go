@@ -220,6 +220,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vFrameDelete *cli.Verb // delete-frame
 	vSyncSend    *cli.Verb // sync-send
 	vSyncRecieve *cli.Verb // sync-recieve
+	vWho         *cli.Verb // who
+	vWhat        *cli.Verb // what
+	vWhen        *cli.Verb // when
+	vWhere       *cli.Verb // where
 )
 
 // keysFromSrc takes a byte splice, splits them on "\n" and converts any
