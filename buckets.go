@@ -31,7 +31,6 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/storage"
 )
 
@@ -123,7 +122,7 @@ func bucketCreateCollection(name string, bucketNames []string) (*Collection, err
 		return Open(name)
 	}
 	c := new(Collection)
-	c.Version = Version
+	c.DatasetVersion = Version
 	c.Layout = BUCKETS_LAYOUT
 	c.Name = path.Base(collectionName)
 	c.workPath = collectionName
@@ -131,7 +130,7 @@ func bucketCreateCollection(name string, bucketNames []string) (*Collection, err
 	c.KeyMap = map[string]string{}
 	c.Store = store
 	// Save the metadata for collection
-	err = c.saveMetadata()
+	err = c.SaveMetadata()
 	return c, nil
 }
 
@@ -181,7 +180,7 @@ func (c *Collection) bucketCreateJSON(key string, src []byte) error {
 	if err != nil {
 		return err
 	}
-	return c.saveMetadata()
+	return c.SaveMetadata()
 }
 
 // bucketReadJSON finds a the record in the collection and returns the JSON source
@@ -268,7 +267,7 @@ func (c *Collection) bucketDelete(name string) error {
 	}
 
 	delete(c.KeyMap, keyName)
-	return c.saveMetadata()
+	return c.SaveMetadata()
 }
 
 //
@@ -378,8 +377,8 @@ func bucketAnalyzer(collectionName string) error {
 		return fmt.Errorf("ERROR: Open %s, %s", collectionName, err)
 	}
 	defer c.Close()
-	if c.Version != Version {
-		log.Printf("WARNING: Version mismatch collection %s, dataset %s", c.Version, Version)
+	if c.DatasetVersion != Version {
+		log.Printf("WARNING: Dataset Version mismatch collection %s, dataset %s", c.Version, Version)
 		wCnt++
 	}
 
@@ -494,10 +493,10 @@ func bucketRepair(collectionName string) error {
 	}
 	defer c.Close()
 
-	if c.Version != Version {
-		log.Printf("Migrating collection.json from %s to %s", c.Version, Version)
+	if c.DatasetVersion != Version {
+		log.Printf("Migrating collection.json from %s to %s", c.DatasetVersion, Version)
 	}
-	c.Version = Version
+	c.DatasetVersion = Version
 	log.Printf("Getting a list of buckets")
 	if buckets, err := findBuckets(c.Store, c.workPath); err == nil {
 		c.Buckets = buckets
@@ -530,7 +529,7 @@ func bucketRepair(collectionName string) error {
 				}
 				if i > 0 && (i%5000) == 0 {
 					log.Printf("Saving %d items in bucket %s", i, bck)
-					if err := c.saveMetadata(); err != nil {
+					if err := c.SaveMetadata(); err != nil {
 						return err
 					}
 				}
@@ -539,7 +538,7 @@ func bucketRepair(collectionName string) error {
 			return err
 		}
 		log.Printf("Saving bucket %s (%d of %d)", bck, j, len(c.Buckets))
-		if err := c.saveMetadata(); err != nil {
+		if err := c.SaveMetadata(); err != nil {
 			return err
 		}
 	}
@@ -567,13 +566,16 @@ func bucketRepair(collectionName string) error {
 		log.Printf("Re-sorting buckets")
 		sort.Strings(c.Buckets)
 	}
-	err = c.saveMetadata()
+	if len(c.When) == 0 {
+		c.When = time.Now().Format("2006-01-02")
+	}
+	if len(c.DatasetVersion) == 0 {
+		c.DatasetVersion = Version
+	}
+	err = c.SaveMetadata()
 	if err != nil {
 		return err
 	}
-	// Update Namaste entries
-	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
-	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }
 
@@ -599,11 +601,32 @@ func migrateToBuckets(collectionName string) error {
 	nc := new(Collection)
 	nc.Name = c.Name
 	nc.workPath = c.workPath
-	nc.Version = Version
+	nc.DatasetVersion = Version
 	nc.Layout = BUCKETS_LAYOUT
 	nc.Buckets = DefaultBucketNames[:]
 	nc.KeyMap = map[string]string{}
 	nc.Store, _ = storage.GetStore(collectionName)
+	if len(c.Who) > 0 {
+		nc.Who = c.Who[:]
+	}
+	if c.What != "" {
+		nc.What = c.What
+	}
+	if c.When == "" {
+		nc.When = time.Now().Format("2006-01-02")
+	} else {
+		nc.When = c.When
+	}
+	if c.Where != "" {
+		nc.Where = c.Where
+	}
+	if c.Contact != "" {
+		nc.Contact = c.Contact
+	}
+	if c.Version != "" {
+		nc.Version = c.Version
+	}
+	nc.DatasetVersion = Version
 
 	i := 0
 	for key, oldPath := range oldKeyMap {
@@ -661,8 +684,5 @@ func migrateToBuckets(collectionName string) error {
 			}
 		}
 	}
-	// Update Namaste entries
-	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
-	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }

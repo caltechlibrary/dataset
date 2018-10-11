@@ -36,12 +36,8 @@
 
 ## Someday, Maybe
 
-+ [x] Namaste isn't being written to on repair
 + [ ] Documentation updates
     - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
-+ [ ] Evaluate adding namaste verb for collections
-    - `dataset namaste COLLECT_NAME who "Doiel, R. S."`
-    - namaste feilds should be added in collection.json too
 + [ ] Consider implementing Sword importer(s)/exporter(s) (v3? when spec is settled)
 + [ ] Consider implementing an EPrint 3.x importer/exporter
 + [ ] `dataset index-frame COLLECTION_NAME FRAME_NAME INDEX_NAME` - generate a Lunrjs or Bleve Index for search
@@ -80,6 +76,10 @@
 
 ## Completed
 
++ [x] fixed: Namaste isn't being written to on repair
++ [x] Evaluate adding namaste verb for collections
+    - `dataset who COLLECT_NAME "Doiel, R. S."`
+    - namaste feilds should be added in collection.json too
 + [x] We have a regression in support S3 buckets, the AWS Bucket name isn't being saved in the "store" object
     + [x] confirm init for s3:// collections
 + [x] Add the ability to create a grid (array or records) with selected fields (e.g. `dataset -key-list=my.keys my.ds grid '.pub_date' '.title' '.authors'`), each contains the specific dotpath listed, be helpful to be able to read in from Python and leverage its sorting abilities

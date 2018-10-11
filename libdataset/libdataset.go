@@ -103,6 +103,11 @@ func version() *C.char {
 	return C.CString(dataset.Version)
 }
 
+//export dataset_version
+func version() *C.char {
+	return C.CString(dataset.DatasetVersion)
+}
+
 //export init_collection
 func init_collection(name *C.char, cLayout C.int) C.int {
 	collectionName := C.GoString(name)

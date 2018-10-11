@@ -13,7 +13,6 @@ import (
 	"time"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
 	"github.com/caltechlibrary/storage"
 )
@@ -47,13 +46,13 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 	}
 
 	c := new(Collection)
-	c.Version = Version
+	c.DatasetVersion = Version
 	c.Name = path.Base(collectionName)
 	c.workPath = collectionName
 	c.Layout = PAIRTREE_LAYOUT
 	c.KeyMap = map[string]string{}
 	c.Store = store
-	err = c.saveMetadata()
+	err = c.SaveMetadata()
 	return c, nil
 }
 
@@ -99,7 +98,7 @@ func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
 	if err != nil {
 		return err
 	}
-	return c.saveMetadata()
+	return c.SaveMetadata()
 }
 
 // pairtreeReadJSON finds a the record in the collection and returns the JSON source
@@ -180,7 +179,7 @@ func (c *Collection) pairtreeDelete(name string) error {
 	}
 
 	delete(c.KeyMap, keyName)
-	return c.saveMetadata()
+	return c.SaveMetadata()
 }
 
 // pairtreeAnalyzer will scan a pairtree based collection for errors.
@@ -326,10 +325,10 @@ func pairtreeRepair(collectionName string) error {
 	}
 	defer c.Close()
 
-	if c.Version != Version {
-		log.Printf("Migrating format from %s to %s", c.Version, Version)
+	if c.DatasetVersion != Version {
+		log.Printf("Migrating format from %s to %s", c.DatasetVersion, Version)
 	}
-	c.Version = Version
+	c.DatasetVersion = Version
 	if c.Layout == UNKNOWN_LAYOUT {
 		c.Layout = PAIRTREE_LAYOUT
 	}
@@ -363,13 +362,13 @@ func pairtreeRepair(collectionName string) error {
 		}
 	}
 	log.Printf("Saving metadata for %s", collectionName)
-	err = c.saveMetadata()
+	if c.When == "" {
+		c.When = time.Now().Format("2006-01-02")
+	}
+	err = c.SaveMetadata()
 	if err != nil {
 		return err
 	}
-	// Update Namaste entries
-	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
-	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }
 
@@ -397,10 +396,30 @@ func migrateToPairtree(collectionName string) error {
 	nc.Layout = PAIRTREE_LAYOUT
 	nc.Name = c.Name
 	nc.workPath = c.workPath
-	nc.Version = Version
+	nc.DatasetVersion = Version
 	nc.Buckets = nil
 	nc.Store, _ = storage.GetStore(collectionName)
 	nc.KeyMap = map[string]string{}
+	if len(c.Who) > 0 {
+		nc.Who = c.Who[:]
+	}
+	if c.What != "" {
+		nc.What = c.What
+	}
+	if c.When != "" {
+		nc.When = c.When
+	} else {
+		nc.When = time.Now().Format("2006-01-02")
+	}
+	if c.Where != "" {
+		nc.Where = c.Where
+	}
+	if c.Contact != "" {
+		nc.Contact = c.Contact
+	}
+	if c.Version != "" {
+		nc.Version = c.Version
+	}
 
 	i := 0
 	for key, oldPath := range oldKeyMap {
@@ -447,9 +466,6 @@ func migrateToPairtree(collectionName string) error {
 			return fmt.Errorf("Cleaning after migration, %s", err)
 		}
 	}
-	// Update Namaste entries
-	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
-	namaste.When(c.workPath, time.Now().Format("2006-01-02"))
 	return nil
 }
 
