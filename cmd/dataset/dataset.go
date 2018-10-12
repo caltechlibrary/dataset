@@ -3035,7 +3035,7 @@ func fnMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 
 	switch {
 	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name and layout (e.g. pairtree, buckets\n")
+		fmt.Fprintf(eout, "Missing collection name and layout (e.g. pairtree, buckets)\n")
 		return 1
 	case len(args) == 1:
 		fmt.Fprintf(eout, "Missing layout (e.g. pairtree, buckets\n")
