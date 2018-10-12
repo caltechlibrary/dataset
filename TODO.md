@@ -3,6 +3,8 @@
 
 ## Bugs
 
++ [ ] grids seem to only work on buckets not pairtree, why?
+    + if pairtree grid failes with an error message about buckets or returns nothing
 + [ ] check, repair and migrate are failing for cloud storage
     + [ ] need a working file walker for S3 and GS storage ...
     + [ ] confirm check for s3:// collections

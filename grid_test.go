@@ -85,9 +85,9 @@ func TestGrid(t *testing.T) {
 			t.Error(err)
 			t.FailNow()
 		}
-		//FIXME: verify grid created was reasonable
+		//FIXME: verify grid populated reasonable
 
-		//FIXME: verify that we can convert the grid to a JSON structure
+		// verify that we can convert the grid to a JSON structure
 		src, err := json.MarshalIndent(g, "", "  ")
 		if err != nil {
 			t.Error(err)
