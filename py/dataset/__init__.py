@@ -43,7 +43,7 @@ go_use_strict_dotpath = lib.use_strict_dotpath
 go_use_strict_dotpath.argtypes = [ctypes.c_int]
 go_use_strict_dotpath.restype = ctypes.c_int
 
-go_version = lib.version
+go_version = lib.dataset_version
 go_version.restype = ctypes.c_char_p
 
 go_is_verbose = lib.is_verbose

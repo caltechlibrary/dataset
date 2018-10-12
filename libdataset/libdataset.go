@@ -98,14 +98,9 @@ func messagef(s string, values ...interface{}) {
 	}
 }
 
-//export version
-func version() *C.char {
-	return C.CString(dataset.Version)
-}
-
 //export dataset_version
-func version() *C.char {
-	return C.CString(dataset.DatasetVersion)
+func dataset_version() *C.char {
+	return C.CString(dataset.Version)
 }
 
 //export init_collection
