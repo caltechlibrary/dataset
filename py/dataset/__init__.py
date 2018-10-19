@@ -343,7 +343,7 @@ def version():
     return value.decode() 
 
 # Initializes a Dataset Collection
-def init(collection_name, layout = "buckets"):
+def init(collection_name, layout = "pairtree"):
     '''initialize a dataset collection with the given name'''
     collection_layout = 0
     if layout == "buckets":
