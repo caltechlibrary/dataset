@@ -1109,11 +1109,11 @@ func has_frame(cName *C.char, cFName *C.char) C.int {
 	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
-		return C.CString("")
+		return C.int(0)
 	}
 	defer c.Close()
 	if c.HasFrame(frameName) {
-		C.int(1)
+		return C.int(1)
 	}
 	return C.int(0)
 }
