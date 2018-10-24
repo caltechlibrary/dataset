@@ -236,6 +236,12 @@ go_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.
 # Returns: value (JSON object source)
 go_frame.restype = ctypes.c_char_p
 
+go_has_frame = lib.has_frame
+# Args: collection_name (string), fame_name (string)
+go_has_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Returns: true (1), false (0)
+go_has_frame.restype = ctypes.c_int
+
 go_frames = lib.frames
 # Args: collection_name)
 go_frames.argtypes = [ctypes.c_char_p]
@@ -629,6 +635,13 @@ def frame(collection_name, frame_name, keys = [], dot_paths = []):
     if value == None or value.strip() == '':
         return [], error_message()
     return json.loads(value), ''
+
+def has_frame(collection_name, frame_name):
+    ok = go_has_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame.encode('utf-8')))
+    if ok == 1:
+        return True
+    return False
 
 def frames(collection_name):
     value = go_frames(ctypes.c_char_p(collection_name.encode('utf-8')))

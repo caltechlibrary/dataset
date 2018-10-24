@@ -1101,6 +1101,23 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char) *C.c
 	return C.CString(txt)
 }
 
+//export has_frame
+func has_frame(cName *C.char, cFName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	error_clear()
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	defer c.Close()
+	if c.HasFrame(frameName) {
+		C.int(1)
+	}
+	return C.int(0)
+}
+
 //export frames
 func frames(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
