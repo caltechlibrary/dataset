@@ -109,7 +109,7 @@ func (c *Collection) sortBy(ids []string, dpath string, ascending bool) ([]strin
 			ids = append(ids, sv.ID)
 		}
 	} else {
-		for i := len(list) - 1; i >= 0; i++ {
+		for i := len(list) - 1; i >= 0; i-- {
 			ids = append(ids, list[i].ID)
 		}
 	}
