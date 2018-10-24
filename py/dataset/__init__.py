@@ -638,7 +638,7 @@ def frame(collection_name, frame_name, keys = [], dot_paths = []):
 
 def has_frame(collection_name, frame_name):
     ok = go_has_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
-            ctypes.c_char_p(frame.encode('utf-8')))
+            ctypes.c_char_p(frame_name.encode('utf-8')))
     if ok == 1:
         return True
     return False
