@@ -385,9 +385,11 @@ def read(collection_name, key):
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
-    if rval == "":
-        return {}, error_message()
-    return json.loads(rval), ''
+    if type(rval) is str:
+        if rval == "":
+            return {}, error_message()
+        return json.loads(rval), ''
+    return {}, f"Can't read {key} from {collection_name}, {error_message()}"
     
 
 # Update a JSON record from a Dataset collection
