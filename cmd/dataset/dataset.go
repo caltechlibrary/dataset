@@ -81,7 +81,7 @@ a collection using the command line dataset tool.
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document
-    dataset friends.ds create frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
+    dataset create friends.ds frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
