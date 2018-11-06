@@ -27,28 +27,28 @@ LOCATION_NAME="SAUGUS CALIFORNIA, CA US"
 STATION_ID="GHCND:USR0000CSAU"
 echo "Harvesting the station ($STATION_ID) for ${LOCATION_NAME}"
 ENDPOINT="stations"
-curl -s -H "token:${NOAA_ACCESS_TOKEN}" "${NOAA_API_URL}/${ENDPOINT}/${STATION_ID}" | dataset -i - create "saugus-${ENDPOINT}"
+curl -s -H "token:${NOAA_ACCESS_TOKEN}" "${NOAA_API_URL}/${ENDPOINT}/${STATION_ID}" | dataset create -i - "${DATASET}" "saugus-${ENDPOINT}"
 # Get NOAA datasets for Saugus station
 ENDPOINT="datasets"
 echo "Getting ${ENDPOINT} for ${STATION_ID}"
-curl -s -H "token:${NOAA_ACCESS_TOKEN}" "${NOAA_API_URL}/${ENDPOINT}?statusid=${STATION_ID}" | dataset -i - create "saugus-${ENDPOINT}"
+curl -s -H "token:${NOAA_ACCESS_TOKEN}" "${NOAA_API_URL}/${ENDPOINT}?statusid=${STATION_ID}" | dataset create -i - "${DATASET}" "saugus-${ENDPOINT}"
 # Get NOAA Datasets for Saugus station
 #       We will loop throught the datasets available for Saugus station
 YEAR="2001"
 ENDPOINT="data"
 echo "Getting ${ENDPOINT} ($YEAR) for ${STATION_ID}"
-dataset read saugus-datasets | jsoncols -i - '.results[:].id' | jsonrange -i - -values | sed -E 's/"//g' | while read DATASETID; do
+dataset read "${DATASET}" saugus-datasets | jsoncols -i - '.results[:].id' | jsonrange -i - -values | sed -E 's/"//g' | while read DATASETID; do
     echo "Getting ${ENDPOINT} for ${STATION_ID} dataset $DATASETID in ${YEAR}"
     PARAMS="datasetid=${DATASETID}&stationid=${STATION_ID}&startdate=${YEAR}-01-01&enddate=${YEAR}-12-31&limit=1000"
     curl -s -H "token:${NOAA_ACCESS_TOKEN}" "${NOAA_API_URL}/${ENDPOINT}/${DATACATEGORY}?${PARAMS}" | dataset -i - create "saugus-${DATASETID}-${YEAR}"
 done
 echo -n "Total records harvested"
-dataset count
+dataset count "${DATASET}"
 echo "Available records harvested:"
-dataset keys
+dataset keys "${DATASET}"
 echo "Saugus station"
 #{"elevation":442,"mindate":"1994-09-01","maxdate":"2017-12-01","latitude":34.425,"name":"SAUGUS CALIFORNIA, CA US","datacoverage":0.9962,"id":"GHCND:USR0000CSAU","elevationUnit":"METERS","longitude":-118.525}
-SRC=$(dataset read saugus-stations)
+SRC=$(dataset read "${DATASET}" saugus-stations)
 cat <<EOF
 
     Name: $(echo "${SRC}" | jsoncols -i - '.name')

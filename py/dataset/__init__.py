@@ -43,7 +43,7 @@ go_use_strict_dotpath = lib.use_strict_dotpath
 go_use_strict_dotpath.argtypes = [ctypes.c_int]
 go_use_strict_dotpath.restype = ctypes.c_int
 
-go_version = lib.version
+go_version = lib.dataset_version
 go_version.restype = ctypes.c_char_p
 
 go_is_verbose = lib.is_verbose
@@ -236,6 +236,12 @@ go_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.
 # Returns: value (JSON object source)
 go_frame.restype = ctypes.c_char_p
 
+go_has_frame = lib.has_frame
+# Args: collection_name (string), fame_name (string)
+go_has_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Returns: true (1), false (0)
+go_has_frame.restype = ctypes.c_int
+
 go_frames = lib.frames
 # Args: collection_name)
 go_frames.argtypes = [ctypes.c_char_p]
@@ -343,7 +349,7 @@ def version():
     return value.decode() 
 
 # Initializes a Dataset Collection
-def init(collection_name, layout = "buckets"):
+def init(collection_name, layout = "pairtree"):
     '''initialize a dataset collection with the given name'''
     collection_layout = 0
     if layout == "buckets":
@@ -379,9 +385,11 @@ def read(collection_name, key):
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
-    if rval == "":
-        return {}, error_message()
-    return json.loads(rval), ''
+    if type(rval) is str:
+        if rval == "":
+            return {}, error_message()
+        return json.loads(rval), ''
+    return {}, f"Can't read {key} from {collection_name}, {error_message()}"
     
 
 # Update a JSON record from a Dataset collection
@@ -629,6 +637,13 @@ def frame(collection_name, frame_name, keys = [], dot_paths = []):
     if value == None or value.strip() == '':
         return [], error_message()
     return json.loads(value), ''
+
+def has_frame(collection_name, frame_name):
+    ok = go_has_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')))
+    if ok == 1:
+        return True
+    return False
 
 def frames(collection_name):
     value = go_frames(ctypes.c_char_p(collection_name.encode('utf-8')))

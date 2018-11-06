@@ -81,7 +81,7 @@ a collection using the command line dataset tool.
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document
-    dataset friends.ds create frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
+    dataset create friends.ds frieda '{"name":"frieda","email":"frieda@inverness.example.org"}'
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
@@ -184,6 +184,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	size           int
 	from           int
 	explain        bool // Note: will be force results to be in JSON format
+	setValue       bool // Note: set a collection level metadata value
 
 	// Application Verbs
 	vInit        *cli.Verb // init
@@ -220,6 +221,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vFrameDelete *cli.Verb // delete-frame
 	vSyncSend    *cli.Verb // sync-send
 	vSyncRecieve *cli.Verb // sync-recieve
+	vWho         *cli.Verb // who
+	vWhat        *cli.Verb // what
+	vWhen        *cli.Verb // when
+	vWhere       *cli.Verb // where
+	vVersion     *cli.Verb // version of collection (semvar)
+	vContact     *cli.Verb // contact info for collection
+
 )
 
 // keysFromSrc takes a byte splice, splits them on "\n" and converts any
@@ -275,12 +283,273 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
+// fnWho - given a collection path, add names to c.Who list.
+func fnWho(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	if len(args) < 1 {
+		fmt.Fprintf(eout,
+			"expected a collection name and/or person(s) name\n")
+		return 1
+	}
+	c, err = dataset.Open(args[0])
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if setValue {
+		if len(args) > 1 {
+			c.Who = append(c.Who, args[1:]...)
+		} else {
+			src, err := ioutil.ReadAll(in)
+			if err != nil {
+				fmt.Fprintf(eout, "failed to read names, %s\n", err)
+				return 1
+			}
+			c.Who = strings.Split(fmt.Sprintf("%s", src), "\n")
+		}
+		if err := c.SaveMetadata(); err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	} else {
+		fmt.Fprintf(out, "%s", strings.Join(c.Who, "\n"))
+	}
+	return 0
+}
+
+// fnWhat - given a collection path, add description of collection
+func fnWhat(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(args) < 1 {
+		fmt.Fprintf(eout, "expected a collection name and description\n")
+		return 1
+	}
+	c, err = dataset.Open(args[0])
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if setValue {
+		if len(args) > 1 {
+			c.What = strings.Join(args[1:], "\n")
+		} else {
+			src, err := ioutil.ReadAll(in)
+			if err != nil {
+				fmt.Fprintf(eout, "failed to read description, %s\n", err)
+				return 1
+			}
+			c.What = fmt.Sprintf("%s", src)
+		}
+		if err := c.SaveMetadata(); err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	} else {
+		fmt.Fprintf(out, "%s", c.What)
+	}
+	return 0
+}
+
+// fnWhen - given a collection path, add date for collection
+func fnWhen(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(args) < 1 {
+		fmt.Fprintf(eout, "expected a collection name and date(s)\n")
+		return 1
+	}
+	c, err = dataset.Open(args[0])
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if setValue {
+		if len(args) > 1 {
+			c.When = strings.Join(args[1:], "\n")
+		} else {
+			src, err := ioutil.ReadAll(in)
+			if err != nil {
+				fmt.Fprintf(eout, "failed to read date(s), %s\n", err)
+				return 1
+			}
+			c.When = fmt.Sprintf("%s", src)
+		}
+		if err := c.SaveMetadata(); err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	} else {
+		fmt.Fprintf(out, "%s", c.When)
+	}
+	return 0
+}
+
+// fnWhere - given a collection path, add location for collection
+// (e.g. url)
+func fnWhere(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(args) < 1 {
+		fmt.Fprintf(eout, "expected a collection name and location\n")
+		return 1
+	}
+	c, err = dataset.Open(args[0])
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if setValue {
+		if len(args) > 1 {
+			c.Where = strings.Join(args[1:], "\n")
+		} else {
+			src, err := ioutil.ReadAll(in)
+			if err != nil {
+				fmt.Fprintf(eout, "failed to read location, %s\n", err)
+				return 1
+			}
+			c.Where = fmt.Sprintf("%s", src)
+		}
+		if err := c.SaveMetadata(); err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	} else {
+		fmt.Fprintf(out, "%s", c.Where)
+	}
+	return 0
+}
+
+// fnVersion - given a collection path, add date for semvar version for collection
+func fnVersion(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(args) < 1 {
+		fmt.Fprintf(eout, "expected a collection name and semvar verion string\n")
+		return 1
+	}
+	c, err = dataset.Open(args[0])
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if setValue {
+		if len(args) > 1 {
+			c.Version = strings.Join(args[1:], "\n")
+		} else {
+			src, err := ioutil.ReadAll(in)
+			if err != nil {
+				fmt.Fprintf(eout, "failed to read semvar version string, %s\n", err)
+				return 1
+			}
+			c.Version = fmt.Sprintf("%s", src)
+		}
+		if err := c.SaveMetadata(); err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	} else {
+		fmt.Fprintf(out, "%s", c.Version)
+	}
+	return 0
+}
+
+// fnContact - given a collection path, add contact info
+func fnContact(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+	if len(args) < 1 {
+		fmt.Fprintf(eout, "expected a collection name and/or contact info\n")
+		return 1
+	}
+	c, err = dataset.Open(args[0])
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if setValue {
+		if len(args) > 1 {
+			c.Contact = strings.Join(args[1:], "\n")
+		} else {
+			src, err := ioutil.ReadAll(in)
+			if err != nil {
+				fmt.Fprintf(eout, "failed to read contact info, %s\n", err)
+				return 1
+			}
+			c.Contact = fmt.Sprintf("%s", src)
+		}
+		if err := c.SaveMetadata(); err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	} else {
+		fmt.Fprintf(out, "%s", c.Contact)
+	}
+	return 0
+}
+
 // fnStatus - given a path see if it is a collection by attempting to "open" it
 func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		c   *dataset.Collection
 		err error
 	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
 
 	err = flagSet.Parse(args)
 	if err != nil {
@@ -302,11 +571,11 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		if showVerbose {
 			switch c.Layout {
 			case dataset.PAIRTREE_LAYOUT:
-				fmt.Fprintf(out, "%s, layout pairtree, version %s\n", collectionName, c.Version)
+				fmt.Fprintf(out, "%s, layout pairtree, version %s\n", collectionName, c.DatasetVersion)
 			case dataset.BUCKETS_LAYOUT:
-				fmt.Fprintf(out, "%s, layout buckets, version %s\n", collectionName, c.Version)
+				fmt.Fprintf(out, "%s, layout buckets, version %s\n", collectionName, c.DatasetVersion)
 			default:
-				fmt.Fprintf(eout, "%s, layout unknown, version %s\n", collectionName, c.Version)
+				fmt.Fprintf(eout, "%q, layout unknown, version %q\n", collectionName, c.DatasetVersion)
 				c.Close()
 				return 1
 			}
@@ -2766,7 +3035,7 @@ func fnMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 
 	switch {
 	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name and layout (e.g. pairtree, buckets\n")
+		fmt.Fprintf(eout, "Missing collection name and layout (e.g. pairtree, buckets)\n")
 		return 1
 	case len(args) == 1:
 		fmt.Fprintf(eout, "Missing layout (e.g. pairtree, buckets\n")
@@ -3003,7 +3272,6 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vClone = app.NewVerb("clone", "clone a collection", fnClone)
 	vClone.SetParams("SRC_COLLECTION", "DEST_COLLECTION")
 	vClone.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
-
 	vClone.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vCloneSample = app.NewVerb("clone-sample", "clone a sample from a collection", fnCloneSample)
 	vCloneSample.SetParams("SOURCE_COLLECTION", "SAMPLE_COLLECTION", "[TEST_COLLECTION]")
@@ -3166,6 +3434,26 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vSyncRecieve.StringVar(&inputFName, "i,input", "", "read CSV content from a file")
 	vSyncRecieve.BoolVar(&syncOverwrite, "O,overwrite", true, "overwrite existing cells in frame")
 	vSyncRecieve.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
+
+	// Namaste and collection metadata support
+	vWho = app.NewVerb("who", "authorship, owner or maintainer name(s)", fnWho)
+	vWho.SetParams("COLLECTION", "[WHO]")
+	vWho.BoolVar(&setValue, "set", false, "set the value(s)")
+	vWhat = app.NewVerb("what", "description of collection", fnWhat)
+	vWhat.SetParams("COLLECTION", "[WHAT]")
+	vWhat.BoolVar(&setValue, "set", false, "set the value(s)")
+	vWhen = app.NewVerb("when", "created or publication data", fnWhen)
+	vWhen.SetParams("COLLECTION", "[WHEN]")
+	vWhen.BoolVar(&setValue, "set", false, "set the value(s)")
+	vWhere = app.NewVerb("where", "url or description of where to find collection", fnWhere)
+	vWhere.SetParams("COLLECTION", "[WHERE]")
+	vWhere.BoolVar(&setValue, "set", false, "set the value(s)")
+	vVersion = app.NewVerb("version", "version of collection in semvar format", fnVersion)
+	vVersion.SetParams("COLLECTION", "[SEMVAR]")
+	vVersion.BoolVar(&setValue, "set", false, "set the value(s)")
+	vContact = app.NewVerb("contact", "contact info for questions and support", fnContact)
+	vContact.SetParams("COLLECTION", "[CONTACT_INFO]")
+	vContact.BoolVar(&setValue, "set", false, "set the value(s)")
 
 	// We're ready to process args
 	app.Parse()

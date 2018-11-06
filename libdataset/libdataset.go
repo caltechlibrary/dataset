@@ -98,8 +98,8 @@ func messagef(s string, values ...interface{}) {
 	}
 }
 
-//export version
-func version() *C.char {
+//export dataset_version
+func dataset_version() *C.char {
 	return C.CString(dataset.Version)
 }
 
@@ -1099,6 +1099,23 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char) *C.c
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
+}
+
+//export has_frame
+func has_frame(cName *C.char, cFName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	error_clear()
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+	if c.HasFrame(frameName) {
+		return C.int(1)
+	}
+	return C.int(0)
 }
 
 //export frames

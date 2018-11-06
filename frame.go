@@ -114,7 +114,7 @@ func (c *Collection) setFrame(key string, f *DataFrame) error {
 	if err != nil {
 		return err
 	}
-	err = c.saveMetadata()
+	err = c.SaveMetadata()
 	return err
 }
 
@@ -126,7 +126,7 @@ func (c *Collection) rmFrame(key string) error {
 	}
 	delete(c.FrameMap, key)
 	err := c.Store.Remove(path.Join(c.workPath, savedPath))
-	err = c.saveMetadata()
+	err = c.SaveMetadata()
 	return err
 }
 

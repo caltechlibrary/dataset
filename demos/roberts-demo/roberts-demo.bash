@@ -40,25 +40,25 @@ if [ ! -f pasadena-ca-forecast.json ]; then
 fi
 
 echo "Saving pasadena-ca-forecast.json as pasadena-ca to ${S3}"
-dataset -i pasadena-ca-forecast.json create pasadena-ca
+dataset create "${DATASET}" pasadena-ca pasadena-ca-forecast.json 
 echo "Attaching other data files: pasadena-ca-weather-codes.html pasadena-ca-forecast.xml"
-dataset attach pasadena-ca pasadena-ca-weather-codes.html pasadena-ca-forecast.xml
+dataset attach "${DATASET}" pasadena-ca pasadena-ca-weather-codes.html pasadena-ca-forecast.xml
 
 echo "Removing downloaded files"
 /bin/rm pasadena-ca-weather-codes.html pasadena-ca-forecast.json pasadena-ca-forecast.xml
 
 echo "Reading back new record"
-dataset read pasadena-ca
+dataset read "${DATASET}" pasadena-ca
 
 echo "Listing attachments for pasadena-ca"
-dataset  attachments pasadena-ca
+dataset attachments "${DATASET}" pasadena-ca
 
 cat<<EOF
 
 Try the following commands and see what happens in your shell
 
     aws s3 ls --recursive ${S3}
-    dataset -c ${S3} attachments pasadena-ca
-    dataset -c ${S3} attached pasadena-ca pasadena-ca-forecast.xml
+    dataset attachments ${S3} pasadena-ca
+    dataset attached ${S3} pasadena-ca pasadena-ca-forecast.xml
 
 EOF

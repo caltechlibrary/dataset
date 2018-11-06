@@ -44,7 +44,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.47`
+	Version = `v0.0.50`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -84,8 +84,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 // Collection is the container holding buckets which in turn hold JSON docs
 type Collection struct {
-	// Version of collection being stored
-	Version string `json:"version"`
+	// DatasetVersion of the collection
+	DatasetVersion string `json:"dataset_version"`
 
 	// Name of collection
 	Name string `json:"name"`
@@ -108,6 +108,23 @@ type Collection struct {
 
 	// FrameMap is a list of frame names and with rel path to the frame defined in the collection
 	FrameMap map[string]string `json:"frames"`
+
+	//
+	// Metadata for collection
+	//
+
+	// Who - creator, owner, maintainer name(s)
+	Who []string `json:"who,omitempty"`
+	// What - description of collection
+	What string `json:"what,omitempty"`
+	// When - date associated with collection (e.g. 2018, 2018-10, 2018-10-02)
+	When string `json:"when,omitempty"`
+	// Where - location (e.g. URL, address) of collection
+	Where string `json:"where,omitempty"`
+	// Version of collection being stored in semvar notation
+	Version string `json:"version,omitempty"`
+	// Contact info
+	Contact string `json:"contact,omitempty"`
 }
 
 //
@@ -138,8 +155,8 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
-// saveMetadata writes the collection's metadata to  c.Store and c.workPath
-func (c *Collection) saveMetadata() error {
+// SaveMetadata writes the collection's metadata to  c.Store and c.workPath
+func (c *Collection) SaveMetadata() error {
 	// Check to see if collection exists, if not create it!
 	if c.Store.Type == storage.FS {
 		if _, err := c.Store.Stat(c.workPath); err != nil {
@@ -154,6 +171,40 @@ func (c *Collection) saveMetadata() error {
 	}
 	if err := c.Store.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
+	}
+	// Add/Update Namaste
+	loc, err := c.Store.Location(c.workPath)
+	if err == nil {
+		namaste.DirType(loc, fmt.Sprintf("dataset_%s", Version[1:]))
+		if len(c.Who) > 0 {
+			for _, who := range c.Who {
+				namaste.Who(loc, who)
+			}
+		}
+		if c.What != "" {
+			if strings.Contains(c.What, "\n") {
+				s := strings.Split(c.What, "\n")
+				namaste.What(loc, s[0]+"...")
+			} else {
+				namaste.What(loc, c.What)
+			}
+		}
+		if c.When != "" {
+			if strings.Contains(c.When, "\n") {
+				s := strings.Split(c.When, "\n")
+				namaste.When(loc, s[0]+"...")
+			} else {
+				namaste.When(loc, c.When)
+			}
+		}
+		if c.Where != "" {
+			if strings.Contains(c.Where, "\n") {
+				s := strings.Split(c.Where, "\n")
+				namaste.Where(loc, s[0]+"...")
+			} else {
+				namaste.Where(loc, c.Where)
+			}
+		}
 	}
 	return nil
 }
@@ -180,9 +231,6 @@ func InitCollection(name string, layoutType int) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Add Namaste type record
-	namaste.DirType(name, fmt.Sprintf("dataset_%s", Version[1:]))
-	namaste.When(name, time.Now().Format("2006-01-02"))
 	return c, nil
 }
 

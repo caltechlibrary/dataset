@@ -11,9 +11,9 @@ if [ -f "index.bleve" ]; then
 fi
 
 echo "Indexing creating family_name, given_name, display_name fields via templates"
-dsindexer -c "data.ds" idxdefn.json index.bleve
+dataset indexer data.ds idxdefn.json index.bleve
 
 # Show CSV output for indexes records
-dsfind -csv -size 100 -sort "orcid" -fields "orcid,family_name,given_name,display_name" "index.bleve" "*"
+dataset find -csv -size 100 -sort "orcid" -fields "orcid,family_name,given_name,display_name" "index.bleve" "*"
 
 
