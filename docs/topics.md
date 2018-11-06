@@ -76,5 +76,7 @@
 - [repair](repair.html)
 - [samples](../how-to/samples.html)
 - [status](status.html)
+- [sync-receive](sync-receive.html)
+- [sync-send](sync-send.html)
 - [update](update.html)
 

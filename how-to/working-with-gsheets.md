@@ -285,5 +285,5 @@ our Google Sheet, then we can export our whole zbs-cast-list.ds into it.
 You should now see populated new-cast-list sheet.
 
 
-Related topics: [dotpath](../docs/dotpath.html), [export-csv](../docs/export-csv.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html) and [export-gsheet](../docs/export-gsheet.html)
+Related topics: [dotpath](../docs/dotpath.html), [export-csv](../docs/export-csv.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html), [export-gsheet](../docs/export-gsheet.html), [sync-receive](../docs/sync-receive.html) and [sync-send](../docs/sync-send.html) 
 
