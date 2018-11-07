@@ -7,4 +7,5 @@
 + [Tutorials](how-to/)
 + [Topics](docs/topics.html)
 + [Github](https://github.com/caltechlibrary/dataset)
++ [Releases](https://github.com/caltechlibrary/dataset/releases/)
 
