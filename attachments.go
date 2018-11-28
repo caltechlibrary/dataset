@@ -142,13 +142,13 @@ func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
 
 		// Save our doc info for our metadata
 		docInfo := map[string]interface{}{}
-		docInfo["name"] = fName
+		docInfo["name"] = path.Base(fName)
 		docInfo["size"] = fSize
 		docListing = append(docListing, docInfo)
 
 		// Add our data to the tar ball
 		hdr := &tar.Header{
-			Name: fName,
+			Name: path.Base(fName),
 			Mode: 0664,
 			Size: fSize,
 		}
@@ -208,12 +208,12 @@ func (c *Collection) AttachFiles(name string, fileNames ...string) error {
 
 			// Save Our Doc info for our metadata
 			docInfo := map[string]interface{}{}
-			docInfo["name"] = fName
+			docInfo["name"] = path.Base(fName)
 			docInfo["size"] = fSize
 			docListing = append(docListing, docInfo)
 
 			hdr := &tar.Header{
-				Name: fName,
+				Name: path.Base(fName),
 				Mode: 0664,
 				Size: fSize,
 			}
