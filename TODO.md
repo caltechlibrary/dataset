@@ -3,21 +3,8 @@
 
 ## Bugs
 
-+ [ ] grids seem to only work on buckets not pairtree, why?
-    + if pairtree grid failes with an error message about buckets or returns nothing
-+ [ ] check, repair and migrate are failing for cloud storage
-    + [ ] need a working file walker for S3 and GS storage ...
-    + [ ] confirm check for s3:// collections
-    + [ ] confirm repair for s3:// collections
-    + [ ] confirm migrate for s3:// collections
-
 ## Next (prep for v1.0.0)
 
-+ [x] sync command needs to be implemented for csv based tables
-+ [x] sync command needs to be implemented for GSheet based tables
-+ [ ] Import/Generate a codemeta.json in collection folder
-    + https://codemeta.github.io/terms 
-+ [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
 
@@ -25,6 +12,14 @@
 
 ## Roadmap (v2.0.0)
 
++ [ ] Make check and repair work in cloud storage
+    + [ ] need a working file walker for S3 and GS storage ...
+    + [ ] confirm check for s3:// collections
+    + [ ] confirm repair for s3:// collections
+    + [ ] confirm migrate for s3:// collections
++ [ ] Import/Generate a codemeta.json in collection folder
+    + https://codemeta.github.io/terms 
++ [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
 + [ ] Add an option for Oxford Common File Layout in addition to buckets and pairtree
 + [ ] Sort out cross compiling libdataset shared library for Python module
@@ -78,6 +73,10 @@
 
 ## Completed
 
++ [x] sync command needs to be implemented for csv based tables
++ [x] sync command needs to be implemented for GSheet based tables
++ [x] grids seem to only work on buckets not pairtree, why?
+    + if pairtree grid failes with an error message about buckets or returns nothing
 + [x] fixed: Namaste isn't being written to on repair
 + [x] Evaluate adding namaste verb for collections
     - `dataset who COLLECT_NAME "Doiel, R. S."`

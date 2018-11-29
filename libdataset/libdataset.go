@@ -29,8 +29,6 @@ import (
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/gsheets"
-	"github.com/caltechlibrary/dotpath"
-	"github.com/caltechlibrary/tmplfn"
 )
 
 var (
@@ -520,6 +518,14 @@ func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
 	return C.CString(txt)
 }
 
+// import_csv - import a CSV file into a collection
+// syntax: COLLECTION CSV_FILENAME ID_COL
+//
+// options that should support sensible defaults:
+//
+//     cUseHeaderRow
+//     cOverwrite
+//
 //export import_csv
 func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	// Covert options
@@ -530,12 +536,13 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	overwrite := (int(cOverwrite) == 1)
 
 	error_clear()
-	collection, err := dataset.Open(collectionName)
+
+	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "Can't open %s, %s", collectionName, err)
 		return C.int(0)
 	}
-	defer collection.Close()
+	defer c.Close()
 
 	if idCol < 1 {
 		error_dispatch(fmt.Errorf("invalid column number"), "Column number must be greater than zero, got %s", idCol)
@@ -544,54 +551,40 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 
 	// NOTE: we need to adjust to zero based index
 	idCol--
+
+	// Now import our CSV file
 	fp, err := os.Open(csvFName)
 	if err != nil {
 		error_dispatch(err, "Can't open %s, %s", csvFName, err)
 		return C.int(0)
 	}
-	defer fp.Close()
-
-	if linesNo, err := collection.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose); err != nil {
-		error_dispatch(err, "Can't import CSV, %s", err)
+	cnt, err := c.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose)
+	if err != nil {
+		error_dispatch(err, "%s\n", err)
 		return C.int(0)
-	} else {
-		messagef("%d total rows processed", linesNo)
 	}
+	messagef("%d total rows processed", cnt)
+
 	return C.int(1)
 }
 
+// export_csv - export collection objects to a CSV file
+// syntax: COLLECTION FRAME CSV_FILENAME
+//
 //export export_csv
-func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.int {
+func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 	// Convert out parameters
 	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFrameName)
 	csvFName := C.GoString(cCSVFName)
-	filterExpr := C.GoString(cFilterExpr)
-	dotExprs := strings.Split(C.GoString(cDotExprs), ",")
-	sColNames := strings.TrimSpace(C.GoString(cColNames))
-	colNames := []string{}
-	if sColNames == "" {
-		for _, val := range dotExprs {
-			colNames = append(colNames, strings.TrimPrefix(val, "."))
-		}
-	} else {
-		colNames = strings.Split(sColNames, ",")
-	}
-
-	// Trim the any spaces for paths and column names
-	for i, val := range dotExprs {
-		dotExprs[i] = strings.TrimSpace(val)
-	}
-	for i, val := range colNames {
-		colNames[i] = strings.TrimSpace(val)
-	}
 
 	error_clear()
-	collection, err := dataset.Open(collectionName)
+	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
-	defer collection.Close()
+	defer c.Close()
 
 	fp, err := os.Create(csvFName)
 	if err != nil {
@@ -600,24 +593,44 @@ func export_csv(cName, cCSVFName, cFilterExpr, cDotExprs, cColNames *C.char) C.i
 	}
 	defer fp.Close()
 
-	frame := new(dataset.DataFrame)
-	frame.FilterExpr = filterExpr
-	frame.DotPaths = dotExprs
-	frame.Labels = colNames
-
-	linesNo, err := collection.ExportCSV(fp, os.Stderr, frame, verbose)
-	if err != nil {
-		error_dispatch(err, "Can't export CSV, %s", err)
+	// Get Frame
+	if c.HasFrame(frameName) == false {
+		error_dispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
 		return C.int(0)
 	}
-	messagef("%d total rows processed", linesNo)
+
+	// Get dotpaths and column labels from frame
+	f, err := c.Frame(frameName, nil, nil, verbose)
+	if err != nil {
+		error_dispatch(err, "%s\n", err)
+		return C.int(0)
+	}
+
+	if f.FilterExpr == "" {
+		f.FilterExpr = "true"
+	}
+
+	// Now export to CSV
+	cnt, err := c.ExportCSV(fp, os.Stderr, f, verbose)
+	if err != nil {
+		error_dispatch(err, "Can't export CSV %s, %s", csvFName, err)
+		return C.int(0)
+	}
+	messagef("%d total rows processed", cnt)
 	return C.int(1)
 }
 
+// import_gsheet - import a GSheet into a collection
+// syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
+//
+// options that should support sensible defaults:
+//
+//    cUseHeaderRow
+//    cOverwrite
+//
 //export import_gsheet
-func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
+func import_gsheet(cName *C.char, cSheetID *C.char, cSheetName *C.char, cIDCol C.int, cCellRange *C.char, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	collectionName := C.GoString(cName)
-	clientSecretJSON := C.GoString(cClientSecretJSON)
 	sheetID := C.GoString(cSheetID)
 	sheetName := C.GoString(cSheetName)
 	cellRange := C.GoString(cCellRange)
@@ -626,15 +639,22 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 	overwrite := (C.int(cOverwrite) == 1)
 
 	error_clear()
-	collection, err := dataset.Open(collectionName)
+	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
-	defer collection.Close()
+	defer c.Close()
 
 	// NOTE: we need to adjust to zero based index
 	idCol--
+
+	//FIXME: Need better search process for finding the google access key
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretJSON == "" {
+		//clientSecretJSON = "client_secret.json"
+		clientSecretJSON = "credentials.json"
+	}
 
 	table, err := gsheets.ReadSheet(clientSecretJSON, sheetID, sheetName, cellRange)
 	if err != nil {
@@ -642,114 +662,77 @@ func import_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange *C
 		return C.int(0)
 	}
 
-	linesNo, err := collection.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
+	cnt, err := c.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		error_dispatch(err, "Errors importing %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
-	messagef("%d total rows processed", linesNo)
+	messagef("%d total rows processed", cnt)
 	return C.int(1)
 }
 
+// export_gsheet - export collection objects to a GSheet
+// syntax: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
+//
 //export export_gsheet
-func export_gsheet(cName, cClientSecretJSON, cSheetID, cSheetName, cCellRange, cFilterExpr, cDotExprs, cColNames *C.char) C.int {
+func export_gsheet(cName *C.char, cFrameName *C.char, cSheetID *C.char, cSheetName *C.char, cCellRange *C.char) C.int {
 	collectionName := C.GoString(cName)
-	clientSecretJSON := C.GoString(cClientSecretJSON)
+	frameName := C.GoString(cFrameName)
 	sheetID := C.GoString(cSheetID)
 	sheetName := C.GoString(cSheetName)
 	cellRange := C.GoString(cCellRange)
-	filterExpr := C.GoString(cFilterExpr)
-	dotExprs := strings.Split(C.GoString(cDotExprs), ",")
-	colNames := strings.Split(C.GoString(cColNames), ",")
 
 	error_clear()
-	collection, err := dataset.Open(collectionName)
+	c, err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
-	defer collection.Close()
+	defer c.Close()
 
-	if len(colNames) == 0 {
-		for _, val := range dotExprs {
-			colNames = append(colNames, strings.TrimPrefix(val, "."))
-		}
-	}
-	// Trim the any spaces for paths and column names
-	for i, val := range dotExprs {
-		dotExprs[i] = strings.TrimSpace(val)
-	}
-	for i, val := range colNames {
-		colNames[i] = strings.TrimSpace(val)
+	// Get Frame
+	if c.HasFrame(frameName) == false {
+		error_dispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
+		return C.int(0)
 	}
 
-	table := [][]interface{}{}
-	if len(colNames) > 0 {
-		row := []interface{}{}
-		for _, name := range colNames {
-			row = append(row, name)
-		}
-		table = append(table, row)
+	// Get dotpaths and column labels from frame
+	f, err := c.Frame(frameName, nil, nil, verbose)
+	if err != nil {
+		error_dispatch(err, "%s\n", err)
+		return C.int(0)
 	}
-	keys := collection.Keys()
 
-	if strings.ToLower(filterExpr) == "true" {
-		for i, key := range keys {
-			m := map[string]interface{}{}
-			if err := collection.Read(key, m); err == nil {
-				row := []interface{}{}
-				for j, colExpr := range dotExprs {
-					col, err := dotpath.Eval(colExpr, m)
-					if err != nil {
-						if useStrictDotpath == true {
-							error_dispatch(err, "failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
-							return C.int(0)
-						}
-						messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
-						row = append(row, "")
-					} else {
-						row = append(row, col)
-					}
-				}
-				table = append(table, row)
-			}
-		}
-	} else {
-		f, err := tmplfn.ParseFilter(filterExpr)
-		if err != nil {
-			error_dispatch(err, "failed, %s %s filter expression %q, %s", sheetID, sheetName, filterExpr, err)
-			return C.int(0)
-		}
+	if f.FilterExpr == "" {
+		f.FilterExpr = "true"
+	}
 
-		for i, key := range keys {
-			m := map[string]interface{}{}
-			if err := collection.Read(key, m); err == nil {
-				if ok, err := f.Apply(m); err == nil && ok == true {
-					// save row out.
-					row := []interface{}{}
-					for j, colExpr := range dotExprs {
-						col, err := dotpath.Eval(colExpr, m)
-						if err != nil {
-							if useStrictDotpath == true {
-								error_dispatch(err, "failed, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
-								return C.int(0)
-							}
-							messagef("warning, cell (%s: %d, %d), %s %s to evaluate %q, %s", key, i, j, sheetID, sheetName, colExpr, err)
-							row = append(row, "")
-						} else {
-							row = append(row, col)
-						}
-					}
-					table = append(table, row)
-				}
-			}
-		}
+	//FIXME: Need a better way to indentify the clientSecretName...
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretJSON == "" {
+		//clientSecretJSON = "client_secret.json"
+		clientSecretJSON = "credentials.json"
+	}
+	// gSheet expects a cell range, so we will generate one if needed.
+	if cellRange == "" {
+		lastCol := gsheets.ColNoToColLetters(len(f.Labels))
+		lastRow := len(f.Keys) + 2
+		cellRange = fmt.Sprintf("A1:%s%d", lastCol, lastRow)
+	}
+
+	//NOTE: we export to GSheet via creating a table [][]interface{}{}
+	cnt, table, err := c.ExportTable(os.Stderr, f, verbose)
+	if err != nil {
+		error_dispatch(err, "%s\n", err)
+		return C.int(0)
 	}
 	err = gsheets.WriteSheet(clientSecretJSON, sheetID, sheetName, cellRange, table)
+
 	if err != nil {
 		error_dispatch(err, "Failed to write %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
+	messagef("%d total rows processed", cnt)
 	return C.int(1)
 }
 

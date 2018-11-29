@@ -32,7 +32,6 @@ by collection and JSON document level.
 + [keys](keys.html) list keys of JSON documents in a collection, supports filtering and sorting
 + [haskey](haskey.html) returns true if key is found in collection, false otherwise
 + [count](count.html) returns the number of documents in a collection, supports filtering for subsets
-+ [extract](extract.html) unique JSON attribute values from a collection
 + [grid](grid.html) create a 2D grid of data from keys and dot paths in a collection
 + [data frame support](../how-to/collections-grids-and-frames.html) provides a persistant grid plus metadata associated with the collection
     + [frame](frame.html)

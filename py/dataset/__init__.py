@@ -134,23 +134,51 @@ go_find.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_find.restype = ctypes.c_char_p
 
 # NOTE: this diverges from cli and reflects low level dataset organization
-go_import_csv = lib.import_csv
-# Args: collection_name (string), csv_name (string), column no (int), use_header_row (bool, 1 true, 0 false), overwrite (bool, 1 true, 0 false)
-go_import_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+#
+# import_csv - import a CSV file into a collection
+# syntax: COLLECTION CSV_FILENAME ID_COL
+# 
+# options that should support sensible defaults:
+#
+#      UseHeaderRow (bool, 1 true, 0 false)
+#      Overwrite (bool, 1 true, 0 false)
+# 
 # Returns: true (1), false (0)
+go_import_csv = lib.import_csv
+go_import_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 go_import_csv.restype = ctypes.c_int
 
-# NOTE: this diverges from cli and reflects low level dataset organization
+# NOTE: this diverges from cli and uses libdataset.go bindings
+#
+# export_csv - export collection objects to a CSV file
+# syntax examples: COLLECTION FRAME CSV_FILENAME
+# 
+# Returns: true (1), false (0)
 go_export_csv = lib.export_csv
-go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_csv.restype = ctypes.c_int
 
+# NOTE: this diverges from the cli and uses libdataset.go bindings
+# import_gsheet - import a GSheet into a collection
+# syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
+# 
+# options that should support sensible defaults:
+#
+#      UseHeaderRow
+#      Overwrite
+#
+# Returns: true (1), false (0)
 go_import_gsheet = lib.import_gsheet
-go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
 go_import_gsheet.restype = ctypes.c_int
 
+# NOTE: this diverges from the cli and uses the libdataset.go bindings
+# export_gsheet - export collection objects to a GSheet
+# syntax examples: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
+#
+# Returns: true (1), false (0)
 go_export_gsheet = lib.export_gsheet
-go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_gsheet.restype = ctypes.c_int
 
 go_status = lib.status
@@ -356,14 +384,16 @@ def init(collection_name, layout = "pairtree"):
         collection_layout = 1
     elif layout == "pairtree":
         collection_layout = 2
-    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_int(collection_layout))
+    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_int(collection_layout))
     if ok == 1:
         return ''
     return error_message()
 
 # Has key, checks if a key is in the dataset collection
 def has_key(collection_name, key):
-    ok = go_has_key(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    ok = go_has_key(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(key.encode('utf8')))
     return (ok == 1)
 
 # Create a JSON record in a Dataset Collectin
@@ -371,7 +401,9 @@ def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
     if isinstance(key, str) == False:
         key = f"{key}"
-    ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
+    ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(key.encode('utf8')), 
+            ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
         return ''
     return error_message()
@@ -381,7 +413,8 @@ def read(collection_name, key):
     '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
     if not isinstance(key, str) == True:
         key = f"{key}"
-    value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
@@ -488,6 +521,16 @@ def find(index_names, query_string, options = {}):
     return json.loads(rval), err
 
 
+#
+# import_csv - import a CSV file into a collection
+# syntax: COLLECTION CSV_FILENAME ID_COL
+# 
+# options:
+#
+#      use_header_row (bool)
+#      overwrite (bool)
+# 
+# Returns: error string
 def import_csv(collection_name, csv_name, id_col, use_header_row = True, overwrite = False):
     if use_header_row == True:
         i_use_header_row = 1
@@ -497,20 +540,37 @@ def import_csv(collection_name, csv_name, id_col, use_header_row = True, overwri
         i_overwrite = 1
     else:
         i_overwrite = 0
-    ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctyles.c_int(i_overwrite))
+    ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(csv_name.encode('utf8')), 
+            ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), 
+            ctyles.c_int(i_overwrite))
     if ok == 1:
         return ''
     return error_message()
 
-def export_csv(collection_name, csv_name, filter_expr = 'true', dot_exprs = [], col_names = []):
-    s_dot_exprs = ','.join(dot_exprs).encode('utf8')
-    s_col_names = ','.join(col_names).encode('utf8')
-    ok = go_export_csv(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(csv_name.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
+#
+# export_csv - export collection objects to a CSV file
+# syntax: COLLECTION FRAME CSV_FILENAME
+# 
+# Returns: error string
+def export_csv(collection_name, frame_name, csv_name):
+    ok = go_export_csv(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(frame_name.encode('utf8')), 
+            ctypes.c_char_p(csv_name.encode('utf8')))
     if ok == 1:
         return ''
     return error_message()
 
-def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col, use_header_row = True, overwrite = True):
+# import_gsheet - import a GSheet into a collection
+# syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
+# 
+# options:
+#
+#      UseHeaderRow (bool)
+#      Overwrite (bool)
+#
+# Returns: error string
+def import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, use_header_row = True, overwrite = True):
     if use_header_row == True:
         i_use_header_row = 1
     else:
@@ -520,15 +580,26 @@ def import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cel
     else:
         i_overwrite = 0
 
-    ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), ctypes.c_int(i_overwrite))
+    ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(sheet_id.encode('utf8')), 
+            ctypes.c_char_p(sheet_name.encode('utf8')), 
+            ctypes.c_int(id_col), 
+            ctypes.c_char_p(cell_range.encode('utf8')), 
+            ctypes.c_int(i_use_header_row), ctypes.c_int(i_overwrite))
     if ok == 1:
         return ''
     return error_message()
 
-def export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr = 'true', dot_exprs = [], col_names = []):
-    s_dot_exprs = ','.join(dot_exprs).encode('utf8')
-    s_col_names = ','.join(col_names).encode('utf8')
-    ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(client_secret_name.encode('utf8')), ctypes.c_char_p(sheet_id.encode('utf8')), ctypes.c_char_p(sheet_name.encode('utf8')), ctypes.c_char_p(cell_range.encode('utf8')), ctypes.c_char_p(filter_expr.encode('utf8')), ctypes.c_char_p(s_dot_exprs), ctypes.c_char_p(s_col_names))
+# export_gsheet - export collection objects to a GSheet
+# syntax: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
+# 
+# Returns: error string
+def export_gsheet(collection_name, frame_name, sheet_id, sheet_name, cell_range):
+    ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), 
+            ctypes.c_char_p(frame_name.encode('utf8')), 
+            ctypes.c_char_p(sheet_id.encode('utf8')), 
+            ctypes.c_char_p(sheet_name.encode('utf8')), 
+            ctypes.c_char_p(cell_range.encode('utf8')))
     if ok == 1:
         return ''
     return error_message()

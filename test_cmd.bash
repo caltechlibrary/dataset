@@ -99,20 +99,17 @@ function test_gsheet() {
     echo "test_gsheet"
 	if [[ -f "etc/test_gsheet.bash" ]]; then
 		. "etc/test_gsheet.bash"
-	else
-		echo "Skipping Google Sheets test, no /etc/test_gsheet.bash found"
-		exit 1
 	fi
-	if [[ ! -s "${CLIENT_SECRET_JSON}" ]]; then
-		echo "Skipping test_gsheet(), missing environment varaiable for CLIENT_SECRET_JSON"
+	if [[ ! -f "${CLIENT_SECRET}" ]]; then
+		echo "Skipping test_gsheet(), could not find ${CLIENT_SECRET}"
 		exit 1
 	fi
 	if [[ "${SPREADSHEET_ID}" == "" ]]; then
 		echo "Skipping test_gsheet(), missing environment variable for SPREADSHEET_ID"
 		exit 1
 	fi
-    cd gsheet || exit 1
-    go test -client-secret "../${CLIENT_SECRET_JSON}" -spreadsheet-id "${SPREADSHEET_ID}"
+    cd gsheets || exit 1
+    go test -client-secret "../${CLIENT_SECRET}" -spreadsheet-id "${SPREADSHEET_ID}"
     cd ..
 	if [[ -d "testdata/test_gsheet.ds" ]]; then
 		rm -fR testdata/test_gsheet.ds
@@ -135,36 +132,44 @@ function test_gsheet() {
 		exit 1
 	fi
 
-	echo "test_gsheet: export support "
+	echo -n "test_gsheet: frame setup, "
 	SHEET_NAME="Sheet1"
-	bin/dataset -nl=false -quiet export -client-secret "${CLIENT_SECRET_JSON}" "${DATASET}" "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' \
-		'.done,.key,.resolver,.subjects,.additional,.identifier_1,.description_1' \
-		'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
+    if [[ "$(bin/dataset hasframe "${DATASET}" f1)" = "true" ]]; then
+        bin/dataset delete-frame "${DATASET}" f1
+    fi
+    if [[ "$(bin/dataset hasframe "${DATASET}" f2)" = "true" ]]; then
+        bin/dataset delete-frame "${DATASET}" f2
+    fi
+
+
+    # Setup Frame
+    bin/dataset frame -p -all "${DATASET}" f1 \
+		._Key .done .key .resolver .subjects .additional \
+        .identifier_1 .description_1 > /dev/null
 	if [[ "$?" != "0" ]]; then
-		echo "Count not export-gsheet"
+		echo "Could not frame ${DATASET} f1 ..."
 		exit 1
 	fi
 
-	echo "test_gsheet: import support "
-	bin/dataset -nl=false -quiet import -client-secret "${CLIENT_SECRET_JSON}" "${DATASET}" "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' 2
-	if [[ "$?" == "0" ]]; then
-		echo "Should NOT be able to import-gsheet over our existing collection without -overwrite"
-		exit 1
-	fi
+    # Setup Frame Labels
+    bin/dataset frame-labels "${DATASET}" f1 \
+        Key Done 'Key As ID' Resolver Subjects Additional \
+        'Identifier 1' 'Description 1'
 
-	bin/dataset -nl=false -quiet import -overwrite -client-secret "${CLIENT_SECRET_JSON}" "${DATASET}" "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' 2
+	echo -n "test_gsheet: test export of frame f1 to gsheet ${SHEET_NAME}, "
+	bin/dataset -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
 	if [[ "$?" != "0" ]]; then
-		echo "Should be able to import-gsheet over our existing collection with -overwrite"
+		echo "Could not export-gsheet"
 		exit 1
+    else
+        echo "OK"
 	fi
 
-    # Check to see if this throws error correctly, i.e. should have exit code 1
-	SHEET_NAME="Sheet2"
-	bin/dataset -nl=false -quiet export -client-secret "${CLIENT_SECRET_JSON}" "${DATASET}" "${SPREADSHEET_ID}" "${SHEET_NAME}" 'A1:CZ' true \
-		'true,.done,.key,.QT_resolver,.subjects,.additional[],.identifier_1,.description_1' \
-		'Done,Key,Resolver,Subjects,Additional,Identifier 1,Description 1'
-	if [[ "$?" != "1" ]]; then
-		echo "Count should throw error for bad dotpath in export-gsheet"
+	echo -n "test_gsheet: test import from gsheet ${SHEET_NAME}, "
+
+	bin/dataset import -overwrite -client-secret "${CLIENT_SECRET}" "${DATASET}" "${SPREADSHEET_ID}" "${SHEET_NAME}" 3 'A1:CZ'
+	if [[ "$?" != "0" ]]; then
+		echo "Should be able to import gsheet over existing collection"
 		exit 1
 	fi
 
@@ -425,29 +430,34 @@ EOT
     fi
     bin/dataset -quiet -nl=false attachments testdata/mydata.ds mojo > /dev/null
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (410): (failed) testdata/mydata.ds attachments mojo'
+        echo 'test_attachments (410): (failed) attachments testdata/mydata.ds mojo'
         exit 1
     fi
-    if [[ -f "testdata/mojo.csv" ]]; then
-        rm testdata/mojo.csv
+    if [[ -f "mojo.csv" ]]; then
+        rm mojo.csv
     fi
-    bin/dataset -quiet -nl=false detach testdata/mydata.ds mojo testdata/mojo.csv > /dev/null
+    bin/dataset -quiet -nl=false detach testdata/mydata.ds mojo mojo.csv > /dev/null
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (417): (failed) testdata/mydata.ds attachments mojo testdata/mojo.csv'
+        echo 'test_attachments (417): (failed) detach testdata/mydata.ds mojo mojo.csv'
         exit 1
     fi
-    if [[ ! -f "testdata/mojo.csv" ]]; then
-        echo 'test_attachments (417): (failed) testdata/mydata.ds detach mojo testdata/mojo.csv'
+    if [[ ! -f "mojo.csv" ]]; then
+        echo 'test_attachments (417): (failed) detatch testdata/mydata.ds mojo mojo.csv'
         exit 1
     fi
-    bin/dataset -quiet -nl=false prune testdata/mydata.ds freda testdata/freda.csv
+    bin/dataset -quiet -nl=false prune testdata/mydata.ds freda freda.csv
     if [[ "$?" != "0" ]]; then
-        echo 'test_attachments (426): (failed) testdata/mydata.ds prune freda testdata/freda.csv'
+        echo 'test_attachments (426): (failed) prune testdata/mydata.ds freda freda.csv'
         exit 1
     fi
 
     # Success, cleanup our test data
-    rm testdata/freda.csv testdata/mojo.csv
+    if [[ -f fred.csv ]]; then
+        rm freda.csv 
+    fi
+    if [[ -f mojo.csv ]]; then
+        rm mojo.csv 
+    fi
     rm -fR testdata/mydata.ds
 	echo "test_attachments, OK"
 }
@@ -754,7 +764,7 @@ test_attachments
 test_count
 test_import_export
 #NOTE: test will be skip if there is no etc/client_secret.json found
-test_gsheet etc/client_secret.json
+test_gsheet credentials.json # etc/client_secret.json
 test_search
 test_check_and_repair
 test_sync
