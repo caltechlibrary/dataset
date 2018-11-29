@@ -555,7 +555,7 @@ def import_csv(collection_name, csv_name, id_col, use_header_row = True, overwri
 # Returns: error string
 def export_csv(collection_name, frame_name, csv_name):
     ok = go_export_csv(ctypes.c_char_p(collection_name.encode('utf8')), 
-            ctypes.c_char(frame_name.encode('utf8')), 
+            ctypes.c_char_p(frame_name.encode('utf8')), 
             ctypes.c_char_p(csv_name.encode('utf8')))
     if ok == 1:
         return ''

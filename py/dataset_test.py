@@ -257,13 +257,20 @@ def test_gsheet(t, collection_name, setup_bash):
         t.error("Failed, should have one test record in", collection_name)
         return
 
+    frame_name = 'f1'
     sheet_name = "Sheet1"
     cell_range = 'A1:Z'
     filter_expr = 'true'
     dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
-    column_names = ['Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
+    column_names = ['_Key', 'Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
+
+    if dataset.has_frame(collection_name, frame_name):
+        dataset.delete_frame(collection_name, frame_name)
+    f1 = dataset.frame(collection_name, frame_name, dot_exprs)
+    dataset.frame_labels(collection_name, frame_name, column_names)
+
     t.print("Testing gsheet export support", sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
-    err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
+    err = dataset.export_gsheet(collection_name, frame_name, sheet_id, sheet_name, cell_range)
     if err != '':
         t.error("Failed, count not export-gsheet in", collection_name, ', ', err)
         return
@@ -566,9 +573,14 @@ def test_issue43(t, collection_name, csv_name):
             return
 
     dataset.use_strict_dotpath(False)
-    err = dataset.export_csv(collection_name, csv_name, "true", ["._Key",".c1",".c2",".c3",".c4"])
+    # Setup frame
+    frame_name = 'f1'
+    keys = dataset.keys(collection_name)
+    f1 = dataset.frame(collection_name, frame_name, keys, 
+        ["._Key",".c1",".c2",".c3",".c4"])
+    err = dataset.export_csv(collection_name, frame_name, csv_name)
     if err != '':
-       t.error(f'export_csv({collection_name}, {csv_name} should have emitted warnings, not error')
+       t.error(f'export_csv({collection_name}, {frame_name}, {csv_name} should have emitted warnings, not error')
        return
     with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
         rows = f.read()

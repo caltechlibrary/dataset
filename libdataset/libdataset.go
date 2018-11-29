@@ -629,7 +629,7 @@ func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 //    cOverwrite
 //
 //export import_gsheet
-func import_gsheet(cName, cSheetID, cSheetName, cIDCol C.int, cCellRange *C.char, cUseHeaderRow C.int, cOverwrite C.int) C.int {
+func import_gsheet(cName *C.char, cSheetID *C.char, cSheetName *C.char, cIDCol C.int, cCellRange *C.char, cUseHeaderRow C.int, cOverwrite C.int) C.int {
 	collectionName := C.GoString(cName)
 	sheetID := C.GoString(cSheetID)
 	sheetName := C.GoString(cSheetName)
