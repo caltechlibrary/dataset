@@ -2196,7 +2196,7 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 // -overwrite
 // -use-header-row
 // -verbose
-// -client-secret
+//
 func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -2305,8 +2305,6 @@ func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 //                  COLLECTION FRAME CSV_FILENAME
 //                  COLLECTION FRAME GSHEET_ID GSHEET_NAME [CELL_RANGE]
 // options:
-// -overwrite
-// -use-header-row
 // -verbose
 // -client-secret
 func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
@@ -3407,13 +3405,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// Import/export collections from/into tables
 	vImport = app.NewVerb("import", "import from a table (CSV, GSheet) into a collection of JSON objects", fnImport)
-	vImport.SetParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "ID_COL_NO", "[CELL_RANGE]")
+	vImport.SetParams("COLLECTION", "(CSV_FILENAME|GSHEET_ID SHEET_NAME)", "ID_COL_NO", "[CELL_RANGE]")
 	vImport.StringVar(&clientSecretFName, "client-secret", "", "(import from GSheet) set the client secret path and filename for GSheet access")
 	vImport.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON object")
 	vImport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing JSON objects")
 	vImport.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vExport = app.NewVerb("export", "export a collection's frame of JSON objects into a table (CSV, GSheet)", fnExport)
-	vExport.SetParams("COLLECTION", "CSV_FILENAME|GSHEET_ID SHEET_NAME", "FRAME_NAME")
+	vExport.SetParams("COLLECTION", "FRAME_NAME", "(CSV_FILENAME|GSHEET_ID SHEET_NAME)")
 	vExport.StringVar(&clientSecretFName, "client-secret", "", "(export into a GSheet) set the client secret path and filename for GSheet access")
 	vExport.BoolVar(&useHeaderRow, "use-header-row", true, "insert a header row in sheet")
 	vExport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing cells")

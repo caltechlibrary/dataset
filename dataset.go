@@ -496,7 +496,6 @@ func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow 
 	lineNo := 0
 	// i.e. use the header row for field names
 	if useHeaderRow == true {
-		fieldNames := []string{}
 		for i, val := range table[0] {
 			cell, err := tbl.ValueInterfaceToString(val)
 			if err == nil && strings.TrimSpace(cell) != "" {
@@ -536,10 +535,14 @@ func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow 
 			record[fieldName] = val
 		}
 		if len(key) > 0 && len(record) > 0 {
-			if overwrite == true && c.HasKey(key) == true {
-				err = c.Update(key, record)
-				if err != nil {
-					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+			if c.HasKey(key) == true {
+				if overwrite == true {
+					err = c.Update(key, record)
+					if err != nil {
+						return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+					}
+				} else if verboseLog == true {
+					log.Printf("Skipped row %d, key %s exists in %s", lineNo, key, c.Name)
 				}
 			} else {
 				err = c.Create(key, record)
