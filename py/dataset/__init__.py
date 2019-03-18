@@ -158,6 +158,8 @@ go_export_csv = lib.export_csv
 go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_csv.restype = ctypes.c_int
 
+
+
 # NOTE: this diverges from the cli and uses libdataset.go bindings
 # import_gsheet - import a GSheet into a collection
 # syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
@@ -172,6 +174,7 @@ go_import_gsheet = lib.import_gsheet
 go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
 go_import_gsheet.restype = ctypes.c_int
 
+
 # NOTE: this diverges from the cli and uses the libdataset.go bindings
 # export_gsheet - export collection objects to a GSheet
 # syntax examples: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
@@ -180,6 +183,26 @@ go_import_gsheet.restype = ctypes.c_int
 go_export_gsheet = lib.export_gsheet
 go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_gsheet.restype = ctypes.c_int
+
+# NOTE: go_sync_* diverges from cli in that it separates the functions
+# specifically for CSV files and GSheets.
+#
+# Returns: true (1), false (0)
+go_sync_recieve_csv = lib.send_receive_csv
+go_sync_recieve_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_recieve_csv.restype = ctypes.c_int
+
+go_sync_send_csv = lib.send_receive_csv
+go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_send_csv.restype = ctypes.c_int
+
+go_sync_recieve_gsheet_csv = lib.send_receive_csv
+go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_recieve_gsheet.restype = ctypes.c_int
+
+go_sync_send_gsheet = lib.send_receive_csv
+go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_send_gsheet.restype = ctypes.c_int
 
 go_status = lib.status
 # Returns: true (1), false (0)
@@ -745,6 +768,58 @@ def frame_labels(collection_name, frame_name, labels):
 def delete_frame(collection_name, frame_name):
     ok = go_delete_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+def sync_recieve_csv(collection_name, frame_name, csv_filename, overwrite = False):
+    overwrite_i  = 0
+    if overwrite:
+        overwrite_i = 1
+    ok = go_sync_recieve_csv(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(frame_name.encode('utf-8')), ctypes.c_char_p(csv_filename.encode('utf-8')), ctypes.c_int(overwrite_i))
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
+    overwrite_i = 0
+    if overwrite:
+        overwrite_i = 1
+    ok = go_sync_send_csv(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(frame_name.encode('utf-8')), ctypes.c_char_p(csv_filename.encode('utf-8')), ctypes.c_int(overwrite_i))
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+def sync_recieve_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_range = "A1:ZZ", overwrite = False):
+    overwrite_i  = 0
+    if overwrite:
+        overwrite_i = 1
+    ok = go_sync_recieve_gsheet(
+            ctypes.c_char_p(collection_name.encode('utf-8')), 
+            ctypes.c_char_p(frame_name.encode('utf-8')), 
+            ctypes.c_char_p(gsheet_id.encode('utf-8')), 
+            ctypes.c_char_p(gsheet_name.encode('utf-8')), 
+            ctypes.c_char_p(cell_range.encode('utf-8')), 
+            ctypes.c_int(overwrite_i))
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+def sync_send_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_range = "A1:ZZ", overwrite = False):
+    overwrite_i = 0
+    if overwrite:
+        overwrite_i = 1
+    ok = go_sync_send_gsheet(
+            ctypes.c_char_p(collection_name.encode('utf-8')), 
+            ctypes.c_char_p(frame_name.encode('utf-8')), 
+            ctypes.c_char_p(gsheet_id.encode('utf-8')), 
+            ctypes.c_char_p(gsheet_name.encode('utf-8')), 
+            ctypes.c_char_p(cell_range.encode('utf-8')), 
+            ctypes.c_int(overwrite_i))
     if ok == 1:
         return ''
     return error_message()
