@@ -54,3 +54,4 @@ idxdefs/*
 *.bak
 *.pdf
 man
+credentials.json

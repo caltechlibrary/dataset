@@ -20,8 +20,11 @@ package main
 
 import (
 	"C"
+	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -29,6 +32,7 @@ import (
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/gsheets"
+	"github.com/caltechlibrary/dataset/tbl"
 )
 
 var (
@@ -1194,6 +1198,227 @@ func delete_frame(cName *C.char, cFName *C.char) C.int {
 	err = c.DeleteFrame(frameName)
 	if err != nil {
 		error_dispatch(err, "failed to delete frame %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+// sync_send_csv - synchronize a frame sending data to a CSV file
+//
+//export sync_send_csv
+func sync_send_csv(collectionName, frameName, csvFilename string, syncOverwrite bool) C.int {
+	var (
+		c   *dataset.Collection
+		src []byte
+		err error
+	)
+
+	src, err = ioutil.ReadFile(csvFilename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	if len(src) == 0 {
+		fmt.Fprintf(os.Stderr, "No data in csv file %s\n", csvFilename)
+		return 1
+	}
+
+	table := [][]interface{}{}
+	// Populate table to sync
+	if len(src) > 0 {
+		// for CSV
+		r := csv.NewReader(bytes.NewReader(src))
+		csvTable, err := r.ReadAll()
+		if err == nil {
+			table = tbl.TableStringToInterface(csvTable)
+		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			return C.int(1)
+		}
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	defer c.Close()
+
+	// Merge collection content into table
+	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+
+	// Save the resulting table
+	if len(src) > 0 {
+		if err = os.Rename(csvFilename, csvFilename+".bak"); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			return C.int(1)
+		}
+		if out, err := os.Create(csvFilename); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			return C.int(1)
+		} else {
+			w := csv.NewWriter(out)
+			w.WriteAll(tbl.TableInterfaceToString(table))
+			err = w.Error()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				return C.int(1)
+			}
+		}
+	}
+	return C.int(0)
+}
+
+// sync_recieve_csv - synchronize a frame receiving data from a CSV file
+//
+//export sync_recieve_csv
+func sync_recieve_csv(collectionName, frameName, csvFilename string, syncOverwrite bool) C.int {
+	var (
+		c   *dataset.Collection
+		src []byte
+		err error
+	)
+
+	src, err = ioutil.ReadFile(csvFilename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+
+	table := [][]interface{}{}
+	// Populate table to sync
+	if len(src) > 0 {
+		// for CSV
+		r := csv.NewReader(bytes.NewReader(src))
+		csvTable, err := r.ReadAll()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			return C.int(1)
+		}
+		table = tbl.TableStringToInterface(csvTable)
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	defer c.Close()
+
+	// Merge table contents into Collection and Frame
+	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+// sync_send - synchronize a frame sending data to a GSheet
+//
+//export sync_send_gsheet
+func sync_send_gsheet(collectionName, frameName, gSheetID, gSheetName, cellRange string, syncOverwrite bool) C.int {
+
+	var (
+		c   *dataset.Collection
+		err error
+	)
+
+	table := [][]interface{}{}
+	// Populate table to sync
+	// for GSheet
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretJSON == "" {
+		//clientSecretJSON = "client_secret.json"
+		clientSecretJSON = "credentials.json"
+	}
+	table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	defer c.Close()
+
+	// Merge collection content into table
+	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+
+	// Save the resulting table
+	clientSecretJSON = os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretJSON == "" {
+		//clientSecretJSON = "client_secret.json"
+		clientSecretJSON = "credentials.json"
+	}
+	// NOTE: WriteSheet expects a [][]interface{} not [][]string,
+	// need to convert. This is a hack...
+	t := [][]interface{}{}
+	for _, row := range table {
+		cells := []interface{}{}
+		for _, cell := range row {
+			cells = append(cells, cell)
+		}
+		t = append(t, cells)
+	}
+	err = gsheets.WriteSheet(clientSecretJSON, gSheetID, gSheetName, cellRange, t)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+// sync_recieve_gsheet - synchronize a frame receiving data from a GSheet
+//
+//export sync_receive_gsheet
+func sync_receive_gsheet(collectionName, frameName, gSheetID, gSheetName, cellRange string, syncOverwrite bool) C.int {
+	var (
+		c   *dataset.Collection
+		err error
+	)
+
+	if cellRange == "" {
+		cellRange = "A1:Z"
+	}
+
+	table := [][]interface{}{}
+	// Populate table to sync
+	// for GSheet
+	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
+	if clientSecretJSON == "" {
+		//clientSecretJSON = "client_secret.json"
+		clientSecretJSON = "credentials.json"
+	}
+	table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return C.int(1)
+	}
+	defer c.Close()
+
+	// Merge table contents into Collection and Frame
+	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return C.int(1)
 	}
 	return C.int(0)
