@@ -197,113 +197,6 @@ def test_issue32(t, collection_name):
     if ok == True:
         t.error("Failed, has_key k2 should return", False)
 
-#
-# test_gsheet(t, collection_name, setup_bash), if setup_bash exists run Google Sheets tests.
-#
-def test_gsheet(t, collection_name, setup_bash):
-    '''if setup_bash exists, run Google Sheets tests'''
-    if os.path.exists("../etc/client_secret.json") == False:
-        t.print("Skipping test_gsheet(), no ../etc/client_secret.json")
-        return
-    if os.path.exists(setup_bash) == False:
-        t.verbose_on()
-        t.print("Skipping test_gsheet(", collection_name, setup_bash, ")")
-        return
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
-    cfg = {}
-    # read the environment settings from fname, turn into object.
-    with open(setup_bash) as f:
-        lines = f.readlines()
-        for line in lines:
-            if "export " in line:
-                k,v = line.strip("export ").split("=", 2)
-                k = k.strip("'\"\n ").lower()
-                v = v.strip("'\"\n ")
-                cfg[k] = v
-    
-    client_secret_name = ""
-    sheet_id = ""
-    if cfg.get("client_secret_json") == None:
-        t.error("Failed, could not parse CLIENT_SECRET_JSON in", setup_bash, cfg)
-        return
-    else:
-        client_secret_name = cfg.get("client_secret_json")
-
-    if cfg.get("spreadsheet_id") == None:
-        t.error("Failed, could not parse SPREADSHEET_ID in", setup_bash)
-        return
-    else:
-        sheet_id = cfg.get("spreadsheet_id")
-    client_secret_name = "../" + client_secret_name
-
-    err = dataset.init(collection_name, "pairtree")
-    if err != '':
-        t.error("Failed, could not create collection, ", err)
-        return
-
-    cnt = dataset.count(collection_name)
-    if cnt != 0:
-        t.error("Failed to initialize a fresh collection", collection_name)
-        return
-
-    # Setup some test data to work with.
-    err = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
-    if err != '':
-        t.error("Failed, could not create test record in", collection_name, ', ', err)
-        return
-    
-    cnt = dataset.count(collection_name)
-    if cnt != 1:
-        t.error("Failed, should have one test record in", collection_name)
-        return
-
-    frame_name = 'f1'
-    sheet_name = "Sheet1"
-    cell_range = 'A1:Z'
-    filter_expr = 'true'
-    dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
-    column_names = ['_Key', 'Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
-
-    if dataset.has_frame(collection_name, frame_name):
-        dataset.delete_frame(collection_name, frame_name)
-    f1 = dataset.frame(collection_name, frame_name, dot_exprs)
-    dataset.frame_labels(collection_name, frame_name, column_names)
-
-    t.print("Testing gsheet export support", sheet_id, sheet_name, cell_range, filter_expr, dot_exprs, column_names)
-    err = dataset.export_gsheet(collection_name, frame_name, sheet_id, sheet_name, cell_range)
-    if err != '':
-        t.error("Failed, count not export-gsheet in", collection_name, ', ', err)
-        return
-
-    t.print("Testing gsheet import support (should fail)", sheet_id, sheet_name, cell_range, 2, False)
-    dataset.verbose_off()
-    err = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = False)
-    if err == '':
-        t.error("Failed, should NOT be able to import-gsheet over our existing collection without overwrite = True, ", err)
-        return
-
-    t.print("Testing gsheet import support (should succeeed)", sheet_id, sheet_name, cell_range, 2, True)
-    err = dataset.import_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, id_col = 2, overwrite = True) 
-    if err != '':
-        t.error("Failed, should be able to import-gsheet over our existing collection with overwrite=True, ", err)
-        return
-
-    # Check to see if this throws error correctly, i.e. should have exit code 1
-    dataset.use_strict_dotpath(True)
-    sheet_name="Sheet1"
-    dot_exprs = ['true','.done','.key','.QT_resolver','.subjects','.additional[]','.identifier_1','.description_1']
-    err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
-    if err == '':
-        t.error("Failed, export_gsheet should throw error for bad dotpath in export_gsheet, ", err)
-    #dataset.verbose_on()
-    dataset.use_strict_dotpath(False)
-    sheet_name = "Sheet1"
-    err = dataset.export_gsheet(collection_name, client_secret_name, sheet_id, sheet_name, cell_range, filter_expr, dot_exprs = dot_exprs)
-    if err != '':
-        t.error("Failed, export_gsheet should only warn of error for bad dotpath in export_gsheet, ", err)
-    #dataset.verbose_off()
-
 # Setup our test collection, recreate it if necessary
 def test_setup(t, collection_name):
     if os.path.exists(collection_name):
@@ -577,8 +470,11 @@ def test_issue43(t, collection_name, csv_name):
     # Setup frame
     frame_name = 'f1'
     keys = dataset.keys(collection_name)
-    f1 = dataset.frame(collection_name, frame_name, keys, 
+    (f1, err) = dataset.frame(collection_name, frame_name, keys, 
         ["._Key",".c1",".c2",".c3",".c4"])
+    if err != '':
+        t.error(err)
+        return
     err = dataset.export_csv(collection_name, frame_name, csv_name)
     if err != '':
        t.error(f'export_csv({collection_name}, {frame_name}, {csv_name} should have emitted warnings, not error')
@@ -665,10 +561,9 @@ def test_frame(t, c_name):
         t.error(err)
 
 #
-# issue 80 - add tests for sync_send_csv, sync_recieve_csv, 
-# sync_send_gsheet and sync_recieve_gsheet tests
+# test_sync_csv (issue 80) - add tests for sync_send_csv, sync_recieve_csv
 #
-def test_issue80(t, c_name):
+def test_sync_csv(t, c_name):
     # Setup test collection
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
@@ -707,7 +602,7 @@ def test_issue80(t, c_name):
     # Setup frame
     frame_name = 'test_sync'
     keys = dataset.keys(c_name)
-    frame, err = dataset.frame(c_name, frame_name, keys, ["._Key", ".value"] )
+    (frame, err) = dataset.frame(c_name, frame_name, keys, ["._Key", ".value"] )
     if err != '':
         t.error(err)
         return
@@ -739,6 +634,155 @@ def test_issue80(t, c_name):
         return
 
 
+#
+# test_basic_gsheet(t, collection_name) - test if basic GSheet
+# import and export work.
+#
+def test_basic_gsheet(t, collection_name):
+    '''if credentials.json and gsheet_test.json exist, run gsheet tests'''
+    client_secret_name = "credentials.json"
+    gsheet_test = "gsheet_test.json"
+    for filename in [ client_secret_name, gsheet_test ]:
+        if os.path.exists(filename) == False:
+            t.print(f"Skipping test_gsheet({collection_name}), no {filename} found")
+            return
+    
+    sheet_id = ""
+    sheet_name = 'Sheet1'
+    cell_range = 'A1:Z100'
+    id_col = 1
+    if os.path.exists('gsheet_test.json') == False:
+        t.error("Can't find gsheet_test.json, skipping")
+        return
+    with open('gsheet_test.json') as f:
+        src = f.read()
+        obj = json.loads(src)
+        if 'gsheet_id' in obj:
+            sheet_id = obj['gsheet_id']
+
+    if os.path.exists(collection_name):
+        shutil.rmtree(collection_name)
+    err = dataset.init(collection_name, "pairtree")
+    if err != '':
+        t.error("Failed, could not create collection, ", err)
+        return
+
+    cnt = dataset.count(collection_name)
+    if cnt != 0:
+        t.error("Failed to initialize a fresh collection", collection_name)
+        return
+
+    # Setup some test data to work with.
+    err = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
+    if err != '':
+        t.error("Failed, could not create test record in", collection_name, ', ', err)
+        return
+    
+    cnt = dataset.count(collection_name)
+    if cnt != 1:
+        t.error("Failed, should have one test record in", collection_name)
+        return
+
+    frame_name = 'f1'
+    filter_expr = 'true'
+    dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
+    column_names = ['_Key', 'Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
+    keys = dataset.keys(collection_name)
+
+    if dataset.has_frame(collection_name, frame_name):
+        dataset.delete_frame(collection_name, frame_name)
+    (f1, err) = dataset.frame(collection_name, frame_name, keys, dot_exprs)
+    if err != '':
+        t.error(err)
+        return
+    dataset.frame_labels(collection_name, frame_name, column_names)
+
+    t.print("Testing gsheet export support", collection_name, frame_name, sheet_id, sheet_name, cell_range)
+    err = dataset.export_gsheet(collection_name, frame_name, sheet_id, sheet_name, cell_range)
+    if err != '':
+        t.error("Failed, count not export-gsheet in", collection_name, ', ', err)
+        return
+
+    # Let's change our collection and see if overwrite works
+    err = dataset.update(collection_name, "Wilson1930", {"Done": "No"})
+    if err != '':
+        t.error(f"Updated obj before import est {err}")
+        return
+
+    t.print("Testing gsheet import support (should fail)", sheet_id, sheet_name, id_col, cell_range, False)
+    err = dataset.import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, overwrite = False)
+    if err != '':
+        t.error(err)
+        return
+   
+    (obj, err) = dataset.read(collection_name, "Wilson1930")
+    if err != "":
+        t.error(err)
+        return
+
+    if "Done" in obj and obj['Done'] == "Yes":
+        t.error(f"should NOT import-gsheet over record with overwrite = False")
+        return
+
+    t.print("Testing gsheet import support (should succeeed)", sheet_id, sheet_name, id_col, cell_range, True)
+    err = dataset.import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, overwrite = True) 
+    if err != '':
+        t.error(err)
+    (obj, err) = dataset.read(collection_name, "Wilson1930")
+    if "Done" in obj and obj['Done'] == "No":
+        t.error(f"should be able to {obj} import with overwrite = True")
+        return
+    
+
+#
+# test_sync_gsheet (issue 80) - add tests for 
+# sync_send_gsheet and sync_recieve_gsheet 
+#
+def test_sync_gsheet(t, c_name):
+    # Setup test collection
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    err = dataset.init(c_name, "pairtree")
+    if err != '':
+        t.error(err)
+        return
+
+    # Setup test CSV instance
+    t_data = [
+            { "_Key": "one", "value": 1 },
+            { "_Key": "two", "value": 2 },
+            { "_Key": "three", "value": 3  }
+    ]
+
+    gsheet_id = ""
+    if os.path.exists('gsheet_test.json') == False:
+        t.error("Can't find gsheet_test.json, skipping")
+        return
+    with open('gsheet_test.json') as f:
+        src = f.read()
+        obj = json.loads(src)
+        if 'gsheet_id' in obj:
+            gsheet_id = obj['gsheet_id']
+    gsheet_name = 'test_sheet'
+    cell_range = 'A1:Z100'
+
+    for obj in t_data:
+        err = dataset.create(c_name, obj['_Key'], {"value": obj['value']})
+        if err != '':
+            t.error(f"expected create to succeed, got {err}")
+            return
+
+    f_name = 'test_sync'
+    frame, err = dataset.frame(c_name, f_name, ['one', 'two', 'three'], ['_Key', 'value'])
+    if err != '':
+        t.error(err)
+        return
+
+    err = dataset.export_gsheet(c_name, f_name, gsheet_id, gsheet_name, cell_range)
+    #err = dataset.export_gsheet(c_name, f_name, gsheet_id, gsheet_name)
+    if err != '':
+        t.error(err)
+        return
 
 #
 # Test harness
@@ -810,6 +854,24 @@ class TestRunner:
 if __name__ == "__main__":
     print("Starting dataset_test.py")
     print("Testing dataset version", dataset.version())
+    run_gsheet_tests = False
+    if "gsheet" in sys.argv or "gsheets" in sys.argv:
+        if os.path.exists("gsheet_test.json") == True:
+            run_gsheet_tests = True
+        else:
+            print("""
+ERROR: Can't find gsheet_test.json and credentials.json 
+needed run the 'gsheet' tests.
+
+The gsheet testing needs to be setup manually with
+the dataset command line tool before running the
+Python 'gsheet' test sequence.
+
+""")
+            sys.exit(1)
+
+    else:
+        print("NOTICE: Skipped 'gsheet' tests")
 
     # Pre-test check
     error_count = 0
@@ -826,14 +888,16 @@ if __name__ == "__main__":
     test_runner.add(test_attachments, [collection_name])
     test_runner.add(test_join, [collection_name])
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
-    test_runner.add(test_gsheet, ["test_gsheet.ds", "../etc/test_gsheet.bash"])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     test_runner.add(test_s3)
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
     test_runner.add(test_grid, ["test_grid.ds"])
     test_runner.add(test_frame, ["test_frame.ds"])
 
-    test_runner.add(test_issue80, ["test_sync.ds"])
-    
+    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+    if run_gsheet_tests == True:
+        test_runner.add(test_basic_gsheet, ["test_gsheet.ds"])
+        test_runner.add(test_sync_gsheet, ["test_sync_gsheet.ds"])
+
     test_runner.run()
 

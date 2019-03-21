@@ -197,11 +197,11 @@ go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, 
 go_sync_send_csv.restype = ctypes.c_int
 
 go_sync_recieve_gsheet = lib.sync_recieve_gsheet
-go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_recieve_gsheet.restype = ctypes.c_int
 
 go_sync_send_gsheet = lib.sync_send_gsheet
-go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_send_gsheet.restype = ctypes.c_int
 
 go_status = lib.status
@@ -603,6 +603,8 @@ def import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, use
     else:
         i_overwrite = 0
 
+    if isinstance(id_col, str):
+        id_col = int(id_col)
     ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), 
             ctypes.c_char_p(sheet_id.encode('utf8')), 
             ctypes.c_char_p(sheet_name.encode('utf8')), 
@@ -803,7 +805,7 @@ def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
 
 def sync_recieve_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_range = "A1:ZZ", overwrite = False):
     overwrite_i  = 0
-    if overwrite:
+    if overwrite == True:
         overwrite_i = 1
     ok = go_sync_recieve_gsheet(
             ctypes.c_char_p(collection_name.encode('utf-8')), 
@@ -819,7 +821,7 @@ def sync_recieve_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cel
 
 def sync_send_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_range = "A1:ZZ", overwrite = False):
     overwrite_i = 0
-    if overwrite:
+    if overwrite == True:
         overwrite_i = 1
     ok = go_sync_send_gsheet(
             ctypes.c_char_p(collection_name.encode('utf-8')), 
