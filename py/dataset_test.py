@@ -4,6 +4,7 @@ import os
 import shutil
 import json
 import dataset
+import csv
 
 #
 # test_basic(collection_name) runs tests on basic CRUD ops
@@ -663,6 +664,81 @@ def test_frame(t, c_name):
     if err != '':
         t.error(err)
 
+#
+# issue 80 - add tests for sync_send_csv, sync_recieve_csv, 
+# sync_send_gsheet and sync_recieve_gsheet tests
+#
+def test_issue80(t, c_name):
+    # Setup test collection
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    err = dataset.init(c_name, "pairtree")
+    if err != '':
+        t.error(err)
+        return
+
+    # Setup test CSV instance
+    t_data = [
+            { "_Key": "one", "value": 1 },
+            { "_Key": "two", "value": 2 },
+            { "_Key": "three", "value": 3  }
+    ]
+    csv_name = c_name.strip(".ds") + ".csv"
+    if os.path.exists(csv_name):
+        os.remove(csv_name)
+    with open(csv_name, 'w') as csvfile:
+        csv_writer = csv.DictWriter(csvfile, fieldnames = ["_Key", "value" ])
+        csv_writer.writeheader()
+        for obj in t_data:
+            csv_writer.writerow(obj)
+        
+    # Import CSV into collection
+    dataset.import_csv(c_name, csv_name, 1)
+    for key in [ "one", "two", "three" ]:
+        if dataset.has_key(c_name, key) == False:
+            t.error(f"expected has_key({key}) == True, got False")
+    if dataset.has_key(c_name, "five") == True:
+        t.error(f"expected has_key('five') == False, got True")
+    err = dataset.create(c_name, "five", {"value": 5})
+    if err != "":
+        t.error(err)
+        return
+
+    # Setup frame
+    frame_name = 'test_sync'
+    keys = dataset.keys(c_name)
+    frame, err = dataset.frame(c_name, frame_name, keys, ["._Key", ".value"] )
+    if err != '':
+        t.error(err)
+        return
+
+    #NOTE: Tests for sync_send_csv and sync_receive_csv
+    err = dataset.sync_send_csv(c_name, frame_name, csv_name)
+    if err != '':
+        t.error(err)
+        return
+    with open(csv_name) as fp:
+        src = fp.read()
+        if 'five' not in src:
+            t.error(f"expected 'five' in src, got {src}")
+
+    # Now remove "five" from collection
+    err = dataset.delete(c_name, "five")
+    if err != '':
+        t.error(err)
+        return
+    if dataset.has_key(c_name, "five") == True:
+        t.error(f"expected has_key(five) == False, got True")
+        return
+    err = dataset.sync_recieve_csv(c_name, frame_name, csv_name)
+    if err != '':
+        t.error(err)
+        return
+    if dataset.has_key(c_name, "five") == False:
+        t.error(f"expected has_key(five) == True, got False")
+        return
+
+
 
 #
 # Test harness
@@ -756,6 +832,8 @@ if __name__ == "__main__":
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
     test_runner.add(test_grid, ["test_grid.ds"])
     test_runner.add(test_frame, ["test_frame.ds"])
+
+    test_runner.add(test_issue80, ["test_sync.ds"])
     
     test_runner.run()
 

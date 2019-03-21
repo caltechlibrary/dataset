@@ -1206,12 +1206,16 @@ func delete_frame(cName *C.char, cFName *C.char) C.int {
 // sync_send_csv - synchronize a frame sending data to a CSV file
 //
 //export sync_send_csv
-func sync_send_csv(collectionName, frameName, csvFilename string, syncOverwrite bool) C.int {
+func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOverwrite C.int) C.int {
 	var (
 		c   *dataset.Collection
 		src []byte
 		err error
 	)
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	csvFilename := C.GoString(cCSVFilename)
+	syncOverwrite := (cSyncOverwrite == 1)
 
 	src, err = ioutil.ReadFile(csvFilename)
 	if err != nil {
@@ -1220,7 +1224,7 @@ func sync_send_csv(collectionName, frameName, csvFilename string, syncOverwrite 
 	}
 	if len(src) == 0 {
 		fmt.Fprintf(os.Stderr, "No data in csv file %s\n", csvFilename)
-		return 1
+		return C.int(1)
 	}
 
 	table := [][]interface{}{}
@@ -1274,15 +1278,19 @@ func sync_send_csv(collectionName, frameName, csvFilename string, syncOverwrite 
 	return C.int(0)
 }
 
-// sync_recieve_csv - synchronize a frame receiving data from a CSV file
+// sync_recieve_csv - synchronize a frame recieving data from a CSV file
 //
 //export sync_recieve_csv
-func sync_recieve_csv(collectionName, frameName, csvFilename string, syncOverwrite bool) C.int {
+func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOverwrite C.int) C.int {
 	var (
 		c   *dataset.Collection
 		src []byte
 		err error
 	)
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	csvFilename := C.GoString(cCSVFilename)
+	syncOverwrite := (cSyncOverwrite == 1)
 
 	src, err = ioutil.ReadFile(csvFilename)
 	if err != nil {
@@ -1322,12 +1330,18 @@ func sync_recieve_csv(collectionName, frameName, csvFilename string, syncOverwri
 // sync_send - synchronize a frame sending data to a GSheet
 //
 //export sync_send_gsheet
-func sync_send_gsheet(collectionName, frameName, gSheetID, gSheetName, cellRange string, syncOverwrite bool) C.int {
+func sync_send_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.char, cSyncOverwrite C.int) C.int {
 
 	var (
 		c   *dataset.Collection
 		err error
 	)
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	gSheetID := C.GoString(cGSheetID)
+	gSheetName := C.GoString(cGSheetName)
+	cellRange := C.GoString(cCellRange)
+	syncOverwrite := (cSyncOverwrite == 1)
 
 	table := [][]interface{}{}
 	// Populate table to sync
@@ -1381,14 +1395,20 @@ func sync_send_gsheet(collectionName, frameName, gSheetID, gSheetName, cellRange
 	return C.int(0)
 }
 
-// sync_recieve_gsheet - synchronize a frame receiving data from a GSheet
+// sync_recieve_gsheet - synchronize a frame recieving data from a GSheet
 //
-//export sync_receive_gsheet
-func sync_receive_gsheet(collectionName, frameName, gSheetID, gSheetName, cellRange string, syncOverwrite bool) C.int {
+//export sync_recieve_gsheet
+func sync_recieve_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.char, cSyncOverwrite C.int) C.int {
 	var (
 		c   *dataset.Collection
 		err error
 	)
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	gSheetID := C.GoString(cGSheetID)
+	gSheetName := C.GoString(cGSheetName)
+	cellRange := C.GoString(cCellRange)
+	syncOverwrite := (cSyncOverwrite == 1)
 
 	if cellRange == "" {
 		cellRange = "A1:Z"

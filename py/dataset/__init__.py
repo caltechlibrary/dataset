@@ -188,20 +188,20 @@ go_export_gsheet.restype = ctypes.c_int
 # specifically for CSV files and GSheets.
 #
 # Returns: true (1), false (0)
-go_sync_recieve_csv = lib.send_receive_csv
+go_sync_recieve_csv = lib.sync_recieve_csv
 go_sync_recieve_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_recieve_csv.restype = ctypes.c_int
 
-go_sync_send_csv = lib.send_receive_csv
+go_sync_send_csv = lib.sync_send_csv
 go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_send_csv.restype = ctypes.c_int
 
-go_sync_recieve_gsheet_csv = lib.send_receive_csv
-go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_recieve_gsheet = lib.sync_recieve_gsheet
+go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_recieve_gsheet.restype = ctypes.c_int
 
-go_sync_send_gsheet = lib.send_receive_csv
-go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_send_gsheet = lib.sync_send_gsheet
+go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_send_gsheet.restype = ctypes.c_int
 
 go_status = lib.status
@@ -566,7 +566,7 @@ def import_csv(collection_name, csv_name, id_col, use_header_row = True, overwri
     ok = go_import_csv(ctypes.c_char_p(collection_name.encode('utf8')), 
             ctypes.c_char_p(csv_name.encode('utf8')), 
             ctypes.c_int(id_col), ctypes.c_int(i_use_header_row), 
-            ctyles.c_int(i_overwrite))
+            ctypes.c_int(i_overwrite))
     if ok == 1:
         return ''
     return error_message()
@@ -777,7 +777,11 @@ def sync_recieve_csv(collection_name, frame_name, csv_filename, overwrite = Fals
     overwrite_i  = 0
     if overwrite:
         overwrite_i = 1
-    ok = go_sync_recieve_csv(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(frame_name.encode('utf-8')), ctypes.c_char_p(csv_filename.encode('utf-8')), ctypes.c_int(overwrite_i))
+    ok = go_sync_recieve_csv(
+            ctypes.c_char_p(collection_name.encode('utf-8')), 
+            ctypes.c_char_p(frame_name.encode('utf-8')), 
+            ctypes.c_char_p(csv_filename.encode('utf-8')), 
+            ctypes.c_int(overwrite_i))
     if ok == 1:
         return ''
     return error_message()
@@ -787,7 +791,11 @@ def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
     overwrite_i = 0
     if overwrite:
         overwrite_i = 1
-    ok = go_sync_send_csv(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(frame_name.encode('utf-8')), ctypes.c_char_p(csv_filename.encode('utf-8')), ctypes.c_int(overwrite_i))
+    ok = go_sync_send_csv(
+            ctypes.c_char_p(collection_name.encode('utf-8')), 
+            ctypes.c_char_p(frame_name.encode('utf-8')), 
+            ctypes.c_char_p(csv_filename.encode('utf-8')), 
+            ctypes.c_int(overwrite_i))
     if ok == 1:
         return ''
     return error_message()

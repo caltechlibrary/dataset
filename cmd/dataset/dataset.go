@@ -2431,7 +2431,7 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 }
 
 // fnSyncSend - synchronize a frame sending data to a CSV file or GSheet
-// syntax: COLLECTION FRAME [CSV_FILENAME|GSHEET SHEET ID]
+// syntax: COLLECTION FRAME [CSV_FILENAME|GSHEET_ID SHEET_NAME]
 //
 func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
@@ -2538,9 +2538,21 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 
 	// Save the resulting table
 	if len(src) > 0 {
-		w := csv.NewWriter(out)
-		w.WriteAll(tbl.TableInterfaceToString(table))
-		err = w.Error()
+		if csvFilename != "" {
+			fp, err := os.Create(csvFilename)
+			if err != nil {
+				fmt.Fprintf(eout, "%s\n", err)
+				return 1
+			}
+			defer fp.Close()
+			w := csv.NewWriter(fp)
+			w.WriteAll(tbl.TableInterfaceToString(table))
+			err = w.Error()
+		} else {
+			w := csv.NewWriter(out)
+			w.WriteAll(tbl.TableInterfaceToString(table))
+			err = w.Error()
+		}
 	} else {
 		clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
 		if clientSecretFName != "" {
