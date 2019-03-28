@@ -95,7 +95,8 @@ distribute_docs:
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
-	bash package-versions.bash > dist/package-versions.txt
+	#FIXME: use go.mod instead
+	#bash package-versions.bash > dist/package-versions.txt
 
 update_version:
 	./update_version.py --yes

@@ -614,11 +614,7 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	case 2:
 		collectionName, key = args[0], args[1]
-		if inputFName == "" {
-			fmt.Fprintf(eout, "Missing JSON source\n")
-			return 1
-		}
-		if inputFName == "-" {
+		if inputFName == "-" || inputFName == "" {
 			src, err = ioutil.ReadAll(in)
 		} else {
 			src, err = ioutil.ReadFile(inputFName)
@@ -635,11 +631,10 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		} else {
 			src, err = ioutil.ReadFile(args[2])
 			if err != nil {
-				fmt.Fprintf(eout, "%s\n", err)
+				fmt.Fprintf(eout, "Can't read %s, %s\n", args[2], err)
 				return 1
 			}
 		}
-
 	default:
 		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -655,7 +650,7 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	defer c.Close()
 	m := map[string]interface{}{}
 	if err := json.Unmarshal(src, &m); err != nil {
-		fmt.Fprintf(eout, "%s must be a valid JSON Object", key)
+		fmt.Fprintf(eout, "%s must be a valid JSON Object, %s", key, err)
 		return 1
 	}
 	if c.HasKey(key) == true && overwrite == true {
@@ -801,11 +796,7 @@ func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	case 2:
 		collectionName, key = args[0], args[1]
-		if inputFName == "" {
-			fmt.Fprintf(eout, "Missing JSON source\n")
-			return 1
-		}
-		if inputFName == "-" {
+		if inputFName == "-" || inputFName == "" {
 			src, err = ioutil.ReadAll(in)
 		} else {
 			src, err = ioutil.ReadFile(inputFName)
@@ -815,7 +806,16 @@ func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			return 1
 		}
 	case 3:
-		collectionName, key, src = args[0], args[1], []byte(args[2])
+		collectionName, key = args[0], args[1]
+		//NOTE: Check if src is file or a object literal string
+		if strings.HasPrefix(args[2], "{") && strings.HasSuffix(args[2], "}") {
+			src = []byte(args[2])
+		} else {
+			src, err = ioutil.ReadFile(args[2])
+			if err != nil {
+				fmt.Fprintf(eout, "Can't read %s, %s\n", args[2], err)
+			}
+		}
 	default:
 		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -831,7 +831,7 @@ func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	defer c.Close()
 	m := map[string]interface{}{}
 	if err := json.Unmarshal(src, &m); err != nil {
-		fmt.Fprintf(eout, "%s must be a valid JSON Object", key)
+		fmt.Fprintf(eout, "%s must be a valid JSON Object, %s", key, err)
 		return 1
 	}
 	if err := c.Update(key, m); err != nil {
@@ -976,7 +976,7 @@ func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	// unmarshal new object
 	newObj := map[string]interface{}{}
 	if err := json.Unmarshal(src, &newObj); err != nil {
-		fmt.Fprintf(eout, "%s must be a valid JSON Object", key)
+		fmt.Fprintf(eout, "%s must be a valid JSON Object, %s", key, err)
 		return 1
 	}
 	// Join the object

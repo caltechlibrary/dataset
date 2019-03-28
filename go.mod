@@ -20,4 +20,7 @@ require (
 	github.com/couchbase/vellum v0.0.0-20190111184608-e91b68ff3efe // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2 // indirect
+	golang.org/x/net v0.0.0-20190322120337-addf6b3196f6
+	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+	google.golang.org/api v0.2.0
 )

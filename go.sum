@@ -27,6 +27,7 @@ github.com/blevesearch/snowballstem v0.0.0-20180110192139-26b06a2c243d/go.mod h1
 github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
+github.com/caltechlibrary/cli v0.0.16 h1:jgw6dZb3VDy9L5LrWWm1ieqHYAMKgcv+NF6osSj3YRM=
 github.com/caltechlibrary/cli v0.0.16/go.mod h1:BVT+6d/QqcN4UApWR3ufjkkKj2O6+48B4G6iUpP8m38=
 github.com/caltechlibrary/dotpath v0.0.2 h1:E3KHd5gNDSaHsbw2jG3XeEZvE2oZ6kRNIe5/+RGnwE8=
 github.com/caltechlibrary/dotpath v0.0.2/go.mod h1:PjkHwEouoEUa4FrmG0I50k8fs8wXmrLvazHYBIoW4eQ=
