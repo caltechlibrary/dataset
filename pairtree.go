@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -351,14 +352,51 @@ func pairtreeRepair(collectionName string) error {
 	log.Printf("%d keys in pairtree", len(c.KeyMap))
 	keyList := c.Keys()
 	log.Printf("checking that each key resolves to a value on disc")
+	missingList := []string{}
 	for _, key := range keyList {
 		p, err := c.DocPath(key)
 		if err != nil {
 			break
 		}
 		if _, err := store.Stat(p); os.IsNotExist(err) == true {
-			log.Printf("Removing %s from %s, %s does not exist", key, collectionName, p)
+			//NOTE: Mac OS X file system sensitivety handling can
+			// mess this assumption up, need to see if we can find
+			// the keys we remove and reattach walking the file system.
+			log.Printf("Missing %s from %s, %s does not exist", key, collectionName, p)
+			// We save the key to re-attach later...
+			missingList = append(missingList, key)
 			delete(c.KeyMap, key)
+		}
+	}
+	if len(missingList) > 0 {
+		sort.Strings(missingList)
+		log.Printf("Trying to locate %d un-associated keys", len(missingList))
+		err = filepath.Walk(path.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
+			if info.IsDir() == false {
+				if key, err := url.QueryUnescape(strings.TrimSuffix(info.Name(), ".json")); err == nil {
+					// Search our list of keys to see if we can fix path issue...
+					for i, missingKey := range missingList {
+						r := strings.Compare(key, missingKey)
+						if r == 0 {
+							kPath := strings.TrimPrefix(strings.TrimSuffix(fPath, info.Name()), collectionName)
+							// trim leading separator ...
+							kPath = kPath[1:]
+							log.Printf("Fixing path for key %q", key)
+							c.KeyMap[key] = kPath
+							// Now remove key from missingList
+							missingList = append(missingList[:i], missingList[i+1:]...)
+							continue
+						}
+					}
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			log.Printf("Walking file path error, %s", err)
+		}
+		if len(missingList) > 0 {
+			log.Printf("Unable to find the following keys - %s", strings.Join(missingList, ", "))
 		}
 	}
 	log.Printf("Saving metadata for %s", collectionName)
@@ -499,7 +537,7 @@ func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
 			return nil
 		})
 	} else {
-		//FIXME: Need to list of the directory and aggregaite the pairs...
+		//FIXME: Need to list the directory and aggregaite the pairs...
 		fmt.Fprintf(os.Stderr, "walkPairstree() not implemented for S3 and GS\n")
 		dListing, err := store.ReadDir(startPath)
 		if err != nil {
