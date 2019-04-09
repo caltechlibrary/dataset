@@ -3,6 +3,8 @@
 
 ## Bugs
 
++ [ ] ValueRenderOption("FORMULA") is wrong given the newer option of `UNFORMATED_VALUE`
+
 ## Next (prep for v1.0.0)
 
 + [ ] Confirm all documentation is current before v1.0.0 release
