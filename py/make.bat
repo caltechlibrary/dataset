@@ -12,6 +12,6 @@ REM
 REM python3 setup.py install --user --record files.txt
 
 go build -buildmode=c-shared -o "libdataset/libdataset.dll" "../libdataset/libdataset.go
-python3 setup.py sdist
+python setup.py sdist
 echo "Check .\dist to see if this worked!"
 dir dist\
