@@ -10,7 +10,7 @@ echo "Getting ready to build the dataset.exe"
 go build -o dataset.exe "cmd\dataset\dataset.go" "cmd\dataset\assets.go"
 
 echo "Checking compile should see version number of dataset"
-.\dataset.exe
+.\dataset.exe -version
 
 echo "If OK, you can now copy the dataset.exe to %USERPROFILE%\go\bin"
 echo ""
