@@ -14,3 +14,5 @@ go build -buildmode=c-shared -o "dataset\libdataset.dll" "..\libdataset\libdatas
 python setup.py sdist
 echo "Check .\dist to see if this worked!"
 dir dist\
+echo "Ready to copy dist\dataset-v0.0.X.tar.gz to ..\dist\py3-dataset-v0.0.X-windows-amd64.tar.gz"
+
