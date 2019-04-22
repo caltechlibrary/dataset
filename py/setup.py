@@ -55,17 +55,17 @@ for obj in meta["author"]:
         author_email = author_email + ", " + email
 
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
-platform = os.uname().sysname
-shared_library_name = "libdataset.so"
-OS_Classifier = "Operating System :: POSIX :: Linux"
-if platform.startswith("Darwin"):
-    shared_library_name = "libdataset.dylib"
-    platform = "Mac OS X"
-    OS_Classifier = "Operating System :: MacOS :: MacOS X"
-elif platform.startswith("Win"):
+if sys.platform.startswith('win'):
     shared_library_name = "libdataset.dll"
     platform = "Windows"
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
+if sys.platform.startswith('linux')::
+    shared_library_name = "libdataset.so"
+    OS_Classifier = "Operating System :: POSIX :: Linux"
+if sys.platform.startswith("darwin"):
+    shared_library_name = "libdataset.dylib"
+    platform = "Mac OS X"
+    OS_Classifier = "Operating System :: MacOS :: MacOS X"
         
 if os.path.exists(os.path.join("dataset", shared_library_name)) == False:
     print("Missing compiled shared library " + shared_library_name + " in dataset module")
