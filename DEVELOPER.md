@@ -20,6 +20,7 @@ Here's an example of what I've done after openning the "Anaconda Prompt"
 ```
     cd %USERPROFILE%
     mkdir go
+    mkdir go\bin
     mkdir go\src
     conda install git
     conda install m2w64-gcc
