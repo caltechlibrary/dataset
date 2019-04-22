@@ -12,6 +12,7 @@ Now we ready to finish our setup via the "Anaconda Prompt".
 
 + install git and gcc
 + run `go get -u github.com\caltechlibrary\dataset`
++ run `go get -u github.com\caltechlibrary\cli`
 + run the make.bat and python setup.py install
 
 Here's an example of what I've done after openning the "Anaconda Prompt"
@@ -23,6 +24,7 @@ Here's an example of what I've done after openning the "Anaconda Prompt"
     conda install git
     conda install m2w64-gcc
     go get -u github.com\caltechlibrary\dataset
+    go get -u github.com\caltechlibrary\cli
     cd go\src\caltechlibrary\dataset
     .\make.bat
     move dataset.exe "%USERPROFILE\go\bin\dataset.exe"

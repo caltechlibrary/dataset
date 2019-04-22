@@ -7,6 +7,6 @@ REM
 go version
 echo "Getting ready to build the dataset.exe and write to .\bin"
 
-go build -o bin\dataset.exe cmd\dataset\dataset.go
+go build -o dataset.exe cmd\dataset\dataset.go
 
-echo "You can now copy the contents of .\bin to your program directory"
+echo "You can now copy the dataset.exe to someplace in %PATH%"
