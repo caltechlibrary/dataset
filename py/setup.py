@@ -55,6 +55,7 @@ for obj in meta["author"]:
         author_email = author_email + ", " + email
 
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
+platform = ""
 if sys.platform.startswith('win'):
     shared_library_name = "libdataset.dll"
     platform = "Windows"
