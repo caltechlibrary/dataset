@@ -59,7 +59,7 @@ if sys.platform.startswith('win'):
     shared_library_name = "libdataset.dll"
     platform = "Windows"
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
-if sys.platform.startswith('linux')::
+if sys.platform.startswith('linux'):
     shared_library_name = "libdataset.so"
     OS_Classifier = "Operating System :: POSIX :: Linux"
 if sys.platform.startswith("darwin"):
