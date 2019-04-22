@@ -26,7 +26,7 @@ import json
 go_basename = 'libdataset'
 ext = '.so'
 if sys.platform.startswith('win'):
-    ext = 'dll'
+    ext = '.dll'
 if sys.platform.startswith('darwin'):
     ext = '.dylib'
 if sys.platform.startswith('linux'):
