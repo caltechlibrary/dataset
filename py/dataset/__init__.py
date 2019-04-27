@@ -75,6 +75,15 @@ go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 # Returns: value (JSON source)
 go_read_record.restype = ctypes.c_char_p
 
+# THIS IS A HACK, ctypes doesn't **easily** support undemensioned arrays
+# of strings. So we will assume the array of keys has already been
+# transformed into JSON before calling go_read_list.
+go_read_record_list = lib.read_record_list
+# Args: collection_name (string), keys (list of strings AS JSON!!!)
+go_read_record_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p]
+# Returns: value (JSON source)
+go_read_record_list.restype = ctypes.c_char_p
+
 go_update_record = lib.update_record
 # Args: collection_name (string), key (string), value (JSON sourc)
 go_update_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
@@ -443,12 +452,33 @@ def read(collection_name, key):
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
-    if type(rval) is str:
+    if isinstance(rval, str):
         if rval == "":
             return {}, error_message()
         return json.loads(rval), ''
     return {}, f"Can't read {key} from {collection_name}, {error_message()}"
     
+# Read a list of JSON records from a Dataset collection
+# NOTE: this provides dataset cli behavior for reading back a list
+# of records effeciently ...
+def read_list(collection_name, keys):
+    # Pack our keys as an array of string
+    l = []
+    for key in keys:
+        if not isinstance(key, str):
+            key = f"{key}"
+        l.append(key)
+    # Generate our JSON version of they key list
+    keys_as_json = json.dumps(l)
+    value = go_read_record_list(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(keys_as_json.encode('utf-8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    rval = value.decode()
+    if isinstance(rval, str):
+        if rval == "":
+            return [], error_message()
+        return json.loads(rval), ''
+    return [], f"Can't read {keys} from {collection_name}, {error_message()}"
 
 # Update a JSON record from a Dataset collection
 def update(collection_name, key, value):

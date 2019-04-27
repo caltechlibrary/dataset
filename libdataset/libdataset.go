@@ -185,6 +185,46 @@ func read_record(name, key *C.char) *C.char {
 	return C.CString(txt)
 }
 
+// THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
+// undemensioned arrays of strings. So we will assume the array of
+// keys has already been transformed into JSON before calling
+// read_list.
+//
+//export read_record_list
+func read_record_list(name *C.char, keys_as_json *C.char) *C.char {
+	collectionName := C.GoString(name)
+	l := []string{}
+
+	error_clear()
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
+		return C.CString("")
+	}
+	defer c.Close()
+
+	// Now unpack our keys into an array of strings.
+	src := []byte(C.GoString(keys_as_json))
+	key_list := []string{}
+	err = json.Unmarshal(src, &key_list)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		return C.CString("")
+	}
+
+	for _, key := range key_list {
+		src, err := c.ReadJSON(key)
+		if err != nil {
+			error_dispatch(err, "Can't read %s, %s", key, err)
+			return C.CString("")
+		}
+		l = append(l, fmt.Sprintf("%s", src))
+	}
+
+	txt := fmt.Sprintf("[%s]", strings.Join(l, ","))
+	return C.CString(txt)
+}
+
 //export update_record
 func update_record(name, key, src *C.char) C.int {
 	collectionName := C.GoString(name)
