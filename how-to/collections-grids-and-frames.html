@@ -105,7 +105,7 @@ Below is an example of using a <em>grid</em> for sorting across an entire
 collection leveraging Python&rsquo;s standard sort method for lists.</p>
 
 <pre><code class="language-python">    import sys
-    import dataset
+    from py_dataset import dataset
     from operator import itemgetter
     keys = dataset.keys(&quot;Pubs.ds&quot;)
     (g, err) = dataset.grid(&quot;Pubs.ds&quot;, [&quot;.doi&quot;, &quot;.title&quot;])
@@ -316,7 +316,7 @@ a python list of lists.</p>
 
 <pre><code class="language-python3">    import sys
     import json
-    import dataset
+    from py_dataset import dataset
 
     # Read in our test data and convert from JSON into an array of dicts
     f_name = 'data-grids.json'

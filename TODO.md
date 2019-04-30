@@ -3,7 +3,6 @@
 
 ## Bugs
 
-+ [ ] ValueRenderOption("FORMULA") is wrong given the newer option of `UNFORMATED_VALUE`
 
 ## Next (prep for v1.0.0)
 
@@ -24,7 +23,6 @@
 + [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
 + [ ] Add an option for Oxford Common File Layout in addition to buckets and pairtree
-+ [ ] Sort out cross compiling libdataset shared library for Python module
 + [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
 + [ ] Add Experimental R _dataset_ module for scripting collection management in R
 + [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
@@ -75,6 +73,8 @@
 
 ## Completed
 
++ [x] ValueRenderOption("FORMULA") is wrong given the newer option of `UNFORMATED_VALUE`
++ [x] Sort out cross compiling libdataset shared library for Python module
 + [x] sync command needs to be implemented for csv based tables
 + [x] sync command needs to be implemented for GSheet based tables
 + [x] grids seem to only work on buckets not pairtree, why?

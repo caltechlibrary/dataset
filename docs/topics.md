@@ -30,7 +30,7 @@
 - [Working with CSV](../how-to/working-with-csv.html)
 - [Working with Google Sheets](../how-to/working-with-gsheets.html)
 
-## Search
+## Experimental
 
 - [Indexing and Search](../how-to/indexing-and-search.html)
 
@@ -44,7 +44,6 @@
 - [create](create.html)
 - [cloud-storage](../how-to/cloud-storage.html)
 - [data grid](grid.html)
-- [deindexer](deindexer.html)
 - [delete](delete.html)
 - [delete-frame](delete-frame.html)
 - [detach](detach.html)
@@ -52,7 +51,6 @@
 - [export](export-csv.html) (csv)
 - [export](export-gsheet.html) (gsheet)
 - [file-system-layout](../how-to/file-system-layout.html)
-- [find](find.html)
 - [frame](frame.html)
 - [frames](frames.html)
 - [frame-labels](frame-labels.html)
@@ -63,7 +61,6 @@
 - [haskey](haskey.html)
 - [import](import-csv.html) (csv)
 - [import](import-gsheet.html) (gsheet)
-- [indexer](indexer.html)
 - [init](init.html)
 - [join](join.html)
 - [keys](keys.html)

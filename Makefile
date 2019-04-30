@@ -28,7 +28,7 @@ cmd/dataset/assets.go:
 bin/dataset$(EXT): dataset.go pairtree.go buckets.go attachments.go grid.go frame.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
-build: $(PROJECT_LIST) python
+build: $(PROJECT_LIST) libdataset
 
 install: 
 	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
@@ -37,8 +37,8 @@ install-man:
 	mkdir -p $(GOPATH)/man/man1
 	$(GOPATH)/bin/dataset -generate-manpage | nroff -Tutf8 -man > $(GOPATH)/man/man1/dataset.1
 
-python:
-	cd py && $(MAKE)
+libdataset:
+	cd libdataset && $(MAKE)
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
@@ -47,7 +47,6 @@ test: clean bin/dataset$(EXT)
 	go test
 	cd gsheets && go test && cd ..
 	bash test_cmd.bash
-	cd py && $(MAKE) test
 	if [ "$(s3)" != "" ]; then go test -s3 "$(s3)"; fi
 
 cleanweb:
@@ -59,7 +58,7 @@ clean:
 	if [ -d dist ]; then rm -fR dist; fi
 	if [ -d man ]; then rm -fR man; fi
 	if [ -d testdata ]; then rm -fR testdata; fi
-	cd py && $(MAKE) clean
+	cd libdataset && $(MAKE) clean
 
 man: build
 	mkdir -p man/man1
@@ -101,8 +100,8 @@ distribute_docs:
 update_version:
 	./update_version.py --yes
 
-release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7 python
-	cd py && $(MAKE) release
+release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
+	cd libdataset && $(MAKE) release
 
 status:
 	git status

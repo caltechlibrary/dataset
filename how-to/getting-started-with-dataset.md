@@ -9,8 +9,11 @@ The collection folder contains a JSON object document called
 including the association of keys with paths to their objects.
 _dataset_ comes in several flavors — a command line program called
 _dataset_, a Go langauge package also called dataset, a shared library
-called libdataset and a Python 3.7 package called _dataset_. This
-tutorial talks about the command line program and the Python package.
+called libdataset and a Python 3.7 package called 
+[py_dataset](https://github.com/caltechlibrary/py_dataset). This
+tutorial talks both the command line program and the Python package.
+The command line is great for simple setup but Python is often more
+convienent for more complex operations.
 
 
 ## Create a collection with init
@@ -34,14 +37,14 @@ seen an error message instead.
 Working in Python is similar to the command line. We import the 
 modules needed then use them. For these exercises we'll be 
 importing the following modules _sys_, _os_, _json_ and 
-of course _dataset_.
+of course _dataset_ via `from py_dataset import dataset`.
 
 
 ```python
     import sys
     import os
     import json
-    import dataset
+    from py_dataset import dataset
     
     # stop is a convenience function
     def stop(msg):
@@ -551,9 +554,9 @@ the list
 
 Continue exploring dataset with
 
-- [Indexing and Search](indexing-and-search.html)
 - [Working with CSV](working-with-csv.html)
 - [Working with GSheets](working-with-gsheets.html)
 - [Working with Cloud Storage](working-with-cloud-storage.html)
+- (__experimental__) [Indexing and Search](indexing-and-search.html "experimental Bleve search support") 
 
 
