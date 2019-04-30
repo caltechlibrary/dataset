@@ -148,7 +148,8 @@ func ReadSheet(clientSecretJSON, spreadSheetId, sheetName, cellRange string) ([]
 
 	// Prints the columns from sheet described by spreadSheetId
 	readRange := fmt.Sprintf("%s!%s", sheetName, cellRange)
-	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).ValueRenderOption("FORMULA").Do()
+	//resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).ValueRenderOption("FORMULA").Do()
+	resp, err := srv.Spreadsheets.Values.Get(spreadSheetId, readRange).ValueRenderOption("UNFORMATTED_VALUE").Do()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve data from sheet. %s", err)
 	}

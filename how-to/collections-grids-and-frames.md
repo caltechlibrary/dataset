@@ -86,7 +86,7 @@ collection leveraging Python's standard sort method for lists.
 
 ```python
     import sys
-    import dataset
+    from py_dataset import dataset
     from operator import itemgetter
     keys = dataset.keys("Pubs.ds")
     (g, err) = dataset.grid("Pubs.ds", [".doi", ".title"])
@@ -323,7 +323,7 @@ a python list of lists.
 ```python3
     import sys
     import json
-    import dataset
+    from py_dataset import dataset
 
     # Read in our test data and convert from JSON into an array of dicts
     f_name = 'data-grids.json'

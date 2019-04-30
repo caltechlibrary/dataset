@@ -58,12 +58,6 @@ by collection and JSON document level.
 + [detach](detach.html) retrieve an attached file associated with a JSON document in a collection
 + [prune](prune.html) delete one or more attached files of a JSON document in a collection
 
-### Search
-
-+ [indexer](indexer.html) indexes JSON documents in a collection for searching with _find_
-+ [deindexer](deindexer.html) de-indexes (removes) JSON documents from an index
-+ [find](find.html) provides a search indexed full text interface into a collection
-
 ### Samples and cloning
 
 + [sample](sample.html) - getting a random sample of keys

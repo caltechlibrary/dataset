@@ -7,7 +7,7 @@ a record called "littlefreda.json" and reading it back.
 ```python
     import sys
     import json
-    import dataset
+    from py_dataset import dataset
 
     c_name = 'friends.ds'
     err = dataset.init(c_name)

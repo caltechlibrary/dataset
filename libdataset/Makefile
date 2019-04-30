@@ -43,7 +43,7 @@ endif
 
 build: $(LIB_NAME)$(EXT)
 
-$(LIB_NAME)$(EXT): $(LIB_NAME).go
+$(LIB_NAME)$(EXT): 
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 clean:
@@ -56,4 +56,17 @@ status:
 save:
 	if [ "$(msg)" != "" ]; then git commit -am "$(msg)"; else git commit -am "Quick Save"; fi
 	git push origin $(BRANCH)
+
+release: $(LIB_NAME)$(EXT)
+	mkdir -p ../dist/
+	cp ../LICENSE ../dist/
+	cp ../README.md ../dist/
+	cp ../INSTALL.md ../dist/
+	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+	cp -v $(LIB_NAME)$(EXT) ../dist/
+	cp -v $(LIB_NAME).h ../dist/
+	cd ../dist && tar zcvf $(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).tar.gz $(LIB_NAME)$(EXT) $(LIB_NAME).h  README.md LICENSE INSTALL.md
+
+
+
 

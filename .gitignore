@@ -54,3 +54,8 @@ idxdefs/*
 *.bak
 *.pdf
 man
+credentials.json
+client_id.json
+client_secret.json
+gsheet_test.json
+

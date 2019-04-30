@@ -35,8 +35,11 @@ The collection folder contains a JSON object document called
 including the association of keys with paths to their objects.
 <em>dataset</em> comes in several flavors — a command line program called
 <em>dataset</em>, a Go langauge package also called dataset, a shared library
-called libdataset and a Python 3.7 package called <em>dataset</em>. This
-tutorial talks about the command line program and the Python package.</p>
+called libdataset and a Python 3.7 package called
+<a href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>. This
+tutorial talks both the command line program and the Python package.
+The command line is great for simple setup but Python is often more
+convienent for more complex operations.</p>
 
 <h2>Create a collection with init</h2>
 
@@ -57,12 +60,12 @@ seen an error message instead.</p>
 <p>Working in Python is similar to the command line. We import the
 modules needed then use them. For these exercises we&rsquo;ll be
 importing the following modules <em>sys</em>, <em>os</em>, <em>json</em> and
-of course <em>dataset</em>.</p>
+of course <em>dataset</em> via <code>from py_dataset import dataset</code>.</p>
 
 <pre><code class="language-python">    import sys
     import os
     import json
-    import dataset
+    from py_dataset import dataset
     
     # stop is a convenience function
     def stop(msg):
@@ -497,10 +500,10 @@ columns in a frame</li>
 <p>Continue exploring dataset with</p>
 
 <ul>
-<li><a href="indexing-and-search.html">Indexing and Search</a></li>
 <li><a href="working-with-csv.html">Working with CSV</a></li>
 <li><a href="working-with-gsheets.html">Working with GSheets</a></li>
 <li><a href="working-with-cloud-storage.html">Working with Cloud Storage</a></li>
+<li>(<strong>experimental</strong>) <a href="indexing-and-search.html" title="experimental Bleve search support">Indexing and Search</a></li>
 </ul>
 
 </section>

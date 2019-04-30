@@ -1,5 +1,11 @@
 
-# Defining Indexes
+# Indexing and Search
+
+_dataset_ includes an __experimental__ [Bleve Search](https://blevesearch.com)
+integration.
+
+## Defining Indexes
+
 
 _dataset indexer ..._ builds an index from an index map file.  A map 
 defines the structure of the index. The definition file is a JSON 
