@@ -194,6 +194,7 @@ func read_record(name, key *C.char) *C.char {
 func read_record_list(name *C.char, keys_as_json *C.char) *C.char {
 	collectionName := C.GoString(name)
 	l := []string{}
+	errList := []string{}
 
 	error_clear()
 	c, err := dataset.Open(collectionName)
@@ -215,10 +216,14 @@ func read_record_list(name *C.char, keys_as_json *C.char) *C.char {
 	for _, key := range key_list {
 		src, err := c.ReadJSON(key)
 		if err != nil {
-			error_dispatch(err, "Can't read %s, %s", key, err)
-			return C.CString("")
+			errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
+		} else {
+			l = append(l, fmt.Sprintf("%s", src))
 		}
-		l = append(l, fmt.Sprintf("%s", src))
+	}
+	if len(errList) > 0 {
+		err = fmt.Errorf("%s", strings.Join(errList, "; "))
+		error_dispatch(err, "Key read errors %s", err)
 	}
 
 	txt := fmt.Sprintf("[%s]", strings.Join(l, ","))
