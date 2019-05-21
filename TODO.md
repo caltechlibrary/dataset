@@ -13,16 +13,20 @@
 
 ## Roadmap (v2.0.0)
 
++ [ ] Add a publish verb that does the following
+    + [ ] a codameta.json file would be generated in root of collection
+        + https://codemeta.github.io/terms 
+    + [ ] a markdown index.md file would be generated in the root of the collection
+    + [ ] any frames would get rendered as Lunrjs indexes
+    + [ ] render an index.html with embedded Lunrjs for exploring collection
+    + [ ] the publish verb would update the lunrjs indexes, markdown, codemeta file and index.html in the root of the collection
 + [ ] Make check and repair work in cloud storage
+    + [ ] storage package should use go-cloud instead of individual SDKs
     + [ ] need a working file walker for S3 and GS storage ...
     + [ ] confirm check for s3:// collections
     + [ ] confirm repair for s3:// collections
     + [ ] confirm migrate for s3:// collections
-+ [ ] Import/Generate a codemeta.json in collection folder
-    + https://codemeta.github.io/terms 
-+ [ ] Generate CATALOG.json and index.html in collection for Data Create support
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
-+ [ ] Add an option for Oxford Common File Layout in addition to buckets and pairtree
 + [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
 + [ ] Add Experimental R _dataset_ module for scripting collection management in R
 + [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
