@@ -23,7 +23,6 @@
 - [Managing attachments](../how-to/managing-attachments.html)
 - [Upgrading a collection](../how-to/upgrading-a-collection.html)
 - [Working with Cloud Storage](../how-to/working-with-cloud-storage.html)
-- [Migrating file layout](../how-to/migrate-layout.html)
 
 ## Import/Export
 
@@ -65,7 +64,6 @@
 - [join](join.html)
 - [keys](keys.html)
 - [list](list.html)
-- [migrate](migrate.html)
 - [path](path.html)
 - [prune](prune.html)
 - [read](read.html)

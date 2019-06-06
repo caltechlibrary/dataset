@@ -17,5 +17,8 @@ In python
     err = dataset.frame_labels('example.ds', 'f1', ["Column A", "Column B", "Column C"])
 ```
 
+Note that setting the labels will cause the object list in the frame to be regenerated from the current state of the collection. This is because the
+labels are used as the attribute names for the objects in a frame.
+
 Related topics: [frame](frame.html), [frames](frames.html), [frame-types](frame-types.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
 

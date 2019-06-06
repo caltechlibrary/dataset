@@ -59,9 +59,6 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 
 // pairtreeCreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	key = strings.TrimSpace(key)
 	if key == "" || key == ".json" {
 		return fmt.Errorf("must not be empty")
@@ -104,9 +101,6 @@ func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
 
 // pairtreeReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return nil, fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
@@ -125,9 +119,6 @@ func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
 
 // pairtreeUpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	// Make sure Key exists before proceeding with update
 	name = normalizeKeyName(name)
 	keyName, fName := keyAndFName(name)
@@ -157,9 +148,6 @@ func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
 
 // pairtreeDelete removes a JSON doc from a collection
 func (c *Collection) pairtreeDelete(name string) error {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
 

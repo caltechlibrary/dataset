@@ -1220,7 +1220,7 @@ func frame_labels(cName *C.char, cFName *C.char, cLabels *C.char) C.int {
 		return C.int(1)
 	}
 	//NOTE: We're picking up the verbose flag from the modules global state
-	err = c.FrameLabels(frameName, labels)
+	err = c.FrameLabels(frameName, labels, verbose)
 	if err != nil {
 		error_dispatch(err, "failed set frame labels, %s", err)
 		return C.int(1)

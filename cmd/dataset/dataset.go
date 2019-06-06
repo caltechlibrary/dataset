@@ -1919,7 +1919,7 @@ func fnFrameLabels(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 	}
 	defer c.Close()
 
-	err = c.FrameLabels(frameName, labels)
+	err = c.FrameLabels(frameName, labels, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -3310,6 +3310,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// NOTE: Labels are used with sync-send/sync-receive to map dotpaths to column names
 	vFrameLabels = app.NewVerb("frame-labels", "set labels for all columns in a frame", fnFrameLabels)
 	vFrameLabels.SetParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
+	vFrameLabels.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for frame labeling")
 
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
 	vReframe.SetParams("COLLECTION", "FRAME_NAME")

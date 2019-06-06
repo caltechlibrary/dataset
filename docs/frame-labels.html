@@ -41,6 +41,9 @@ coresponding to the three dotpaths defined in <code>examples.ds</code>.</p>
 <pre><code class="language-python">    err = dataset.frame_labels('example.ds', 'f1', [&quot;Column A&quot;, &quot;Column B&quot;, &quot;Column C&quot;])
 </code></pre>
 
+<p>Note that setting the labels will cause the object list in the frame to be regenerated from the current state of the collection. This is because the
+labels are used as the attribute names for the objects in a frame.</p>
+
 <p>Related topics: <a href="frame.html">frame</a>, <a href="frames.html">frames</a>, <a href="frame-types.html">frame-types</a>, <a href="reframe.html">reframe</a>, <a href="delete-frame.html">delete-frame</a></p>
 
 </section>
