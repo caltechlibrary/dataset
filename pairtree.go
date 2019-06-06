@@ -59,9 +59,6 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 
 // pairtreeCreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	key = strings.TrimSpace(key)
 	if key == "" || key == ".json" {
 		return fmt.Errorf("must not be empty")
@@ -104,9 +101,6 @@ func (c *Collection) pairtreeCreateJSON(key string, src []byte) error {
 
 // pairtreeReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return nil, fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
@@ -125,9 +119,6 @@ func (c *Collection) pairtreeReadJSON(name string) ([]byte, error) {
 
 // pairtreeUpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	// Make sure Key exists before proceeding with update
 	name = normalizeKeyName(name)
 	keyName, fName := keyAndFName(name)
@@ -157,9 +148,6 @@ func (c *Collection) pairtreeUpdateJSON(name string, src []byte) error {
 
 // pairtreeDelete removes a JSON doc from a collection
 func (c *Collection) pairtreeDelete(name string) error {
-	if c.Layout != PAIRTREE_LAYOUT {
-		return fmt.Errorf("Collection does not use a pairtree layout")
-	}
 	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
 
@@ -406,103 +394,6 @@ func pairtreeRepair(collectionName string) error {
 	err = c.SaveMetadata()
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-// migrateToPairtree will migrate JSON objects and attachments from
-// a bucket oriented collection to a pairtree.
-func migrateToPairtree(collectionName string) error {
-	// Open existing collection, get objects and attachments
-	// and manually place in new layout updating nc.
-	c, err := Open(collectionName)
-	if err != nil {
-		return err
-	}
-	oldKeyMap := map[string]string{}
-	for k, v := range c.KeyMap {
-		oldKeyMap[k] = v
-	}
-	defer c.Close()
-	store, err := storage.GetStore(collectionName)
-	if err != nil {
-		return err
-	}
-
-	// Create a new collection struct, set to Buckets layout
-	nc := new(Collection)
-	nc.Layout = PAIRTREE_LAYOUT
-	nc.Name = c.Name
-	nc.workPath = c.workPath
-	nc.DatasetVersion = Version
-	nc.Buckets = nil
-	nc.Store, _ = storage.GetStore(collectionName)
-	nc.KeyMap = map[string]string{}
-	if len(c.Who) > 0 {
-		nc.Who = c.Who[:]
-	}
-	if c.What != "" {
-		nc.What = c.What
-	}
-	if c.When != "" {
-		nc.When = c.When
-	} else {
-		nc.When = time.Now().Format("2006-01-02")
-	}
-	if c.Where != "" {
-		nc.Where = c.Where
-	}
-	if c.Contact != "" {
-		nc.Contact = c.Contact
-	}
-	if c.Version != "" {
-		nc.Version = c.Version
-	}
-
-	i := 0
-	for key, oldPath := range oldKeyMap {
-		_, FName := keyAndFName(key)
-		src, err := store.ReadFile(path.Join(c.workPath, oldPath, FName))
-		if err != nil {
-			return err
-		}
-		// Write object to the new location
-		err = nc.CreateJSON(key, src)
-		if err != nil {
-			return err
-		}
-
-		// Check for and handle any attachments
-		tarballFName := strings.TrimSuffix(FName, ".json") + ".tar"
-		oldTarballPath := path.Join(c.workPath, oldPath, tarballFName)
-		if store.IsFile(oldTarballPath) {
-			// Move the tarball from one layout to the other
-			buf, err := store.ReadFile(oldTarballPath)
-			if err != nil {
-				return err
-			}
-			pair := pairtree.Encode(key)
-			pairPath := path.Join("pairtree", pair)
-			newTarballPath := path.Join(c.workPath, pairPath, tarballFName)
-			err = nc.Store.WriteFile(newTarballPath, buf, 0664)
-			if err != nil {
-				return err
-			}
-		}
-		if (i % 1000) == 0 {
-			log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
-		}
-		i++
-	}
-	if (i % 1000) != 0 {
-		log.Printf("migrated %d of %d\n", i, len(oldKeyMap))
-	}
-	// OK, if all buckets processed, we can remove all the paths.
-	for _, oldPath := range oldKeyMap {
-		err = store.RemoveAll(path.Join(c.workPath, oldPath))
-		if err != nil {
-			return fmt.Errorf("Cleaning after migration, %s", err)
-		}
 	}
 	return nil
 }

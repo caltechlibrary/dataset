@@ -358,9 +358,11 @@ the JSON module&rsquo;s <em>dumps</em>.</p>
 <h3>frame</h3>
 
 <p>dataset also comes with a <em>frame</em> verb.  A <em>frame</em> is like a grid plus
-additional matadata. It enforces a structure such on its grid. Column 1
-of the <em>frame</em>&rsquo;s internal grid element always has the keys associated
-with the collection. A <em>frame</em> will also derive heading labels from the
+additional matadata. It is similar to the &ldquo;data frames&rdquo; concepts in
+languages like Julia, Matlab, Octave, Python and R. It is a data structure that can behave both like a grid (2D array or rows and columns). It is typically represented as an array of objects there the column names correspond
+to a attribute name in an object.  It enforces a
+structure that behaves like a grid but is also easy to iterate over for other types of processing.  Like our &ldquo;grid&rdquo; command a a <em>frame</em> will also
+derive heading labels (object attribute names) from the
 dot paths used to define the frame and will include metadata about the
 collection, keys used to define the frame and default types of data in
 the columns. The extra information in a <em>frame</em> stays with the
@@ -387,6 +389,17 @@ what we used for a grid. We need a name for the frame.</p>
         stop(err)
 </code></pre>
 
+<p>In Python we can also explicitly supply labels at the same time
+as defining the frame.</p>
+
+<pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
+    err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
+          keys, [ &quot;.name&quot;, &quot;.email&quot;, &quot;.catch_phrase&quot;], 
+                [ &quot;Name&quot;, &quot;E-Mail&quot;, &quot;Catch Phrase&quot; ])
+    if err != &quot;&quot;:
+        stop(err)
+</code></pre>
+
 <p>To see the contents of a frame we only need to supply the collection
 and frame names.</p>
 
@@ -402,8 +415,8 @@ and frame names.</p>
 </code></pre>
 
 <p>Looking at the resulting JSON object you see many other attribute
-beyond the grid of values. These are created to simplify some of dataset
-more complex interactions.</p>
+beyond the object list of the frame. These are created to simplify
+some of dataset more complex interactions.</p>
 
 <p>Let&rsquo;s add back the Jack record we deleted a few sections ago and
 “reframe” our “name-and-email” frame.</p>
@@ -457,17 +470,20 @@ the labels in the column order defined in the frame. In our previous
 example we provided the order of the columns for the frame
 &ldquo;name-and-email&rdquo; as .name, .email, .catch_phrase. Also recall the
 frames AWAYS has a first column named <code>._Key</code>. If we want
-to have the labels &ldquo;ID&rdquo;, &ldquo;Name&rdquo;, &ldquo;EMail&rdquo;, and &ldquo;Catch Phrase&rdquo; instead
-we can set them with the <code>frame-labels</code> verb.</p>
+to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldquo;EMail&rdquo;, and &ldquo;Catch Phrase&rdquo;
+instead we can set them with the <code>frame-labels</code> verb.</p>
 
 <pre><code class="language-bash">    dataset frame-labels friends.ds &quot;name-and-email&quot; \
-        &quot;ID&quot; &quot;Name&quot; &quot;EMail&quot; &quot;Catch Phrase&quot;
+        &quot;ID&quot; &quot;Display Name&quot; &quot;EMail&quot; &quot;Catch Phrase&quot;
 </code></pre>
+
+<p>NOTE: re-labeling a frame will cause the frame to generate its
+object list.</p>
 
 <p>In Python it look like</p>
 
 <pre><code class="language-python">    err = dataset.frame_labels(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
-          [&quot;Name&quot;, &quot;EMail&quot;, &quot;Catch Phrase&quot;])
+          [&quot;ID&quot;, &quot;Display Name&quot;, &quot;EMail&quot;, &quot;Catch Phrase&quot;])
     if err != &quot;&quot;:
         stop(err)
 </code></pre>
@@ -493,7 +509,8 @@ the list</p>
 <li><em>frame</em> will also let you read back a frame</li>
 <li><em>frames</em> will list the frames defined in the collection</li>
 <li><em>frame-labels</em> will let you replace the labels values for all
-columns in a frame</li>
+columns in a frame, it will cause the frame to regenerate
+its object list</li>
 <li><em>delete-frame</em> will remove the frame from the collection</li>
 </ol>
 

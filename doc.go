@@ -6,15 +6,15 @@ or batch processing.  It is not a database management system (if you need
 a JSON database system I would suggest looking at Couchdb, Mongo and Redis
 as a starting point).
 
-The approach dataset takes to storing buckets is to maintain a JSON document
-with keys (document names) and bucket assignments. JSON documents (and
-possibly their attachments) are then stored based on that assignment.
-Conversely the collection.json document is used to find and retrieve
-documents from the collection. The layout of the metadata is as follows
+The approach dataset takes is to store JSON documents in a pairtree structure under the collection folder. The keys are the JSON document names.
+JSON documents (and possibly their attachments) are then stored based on
+that assignment in the pairtree.  Conversely the collection.json document
+is used to find and retrieve documents from the collection. The layout of
+the metadata is as follows
 
-+ Collection
++ Collection - a directory
 	+ Collection/collection.json - metadata for retrieval
-	+ Collection/[Buckets|Pairtree]
+	+ Collection/[Pairtree] - holds individual JSON docs and attachments
 
 A key feature of dataset is to be Posix shell friendly. This has
 lead to storing the JSON documents in a directory structure that
@@ -24,8 +24,10 @@ integration with many other applications, programming langauages and
 systems.
 
 Attachments are non-JSON documents explicitly "attached" that share the
-same basename but are placed in a tar ball (e.g. document Jane.Doe.json
-attachements would be stored in Jane.Doe.tar).
+same pairtree path but are placed in a sub directory called "_". If the
+document name is "Jane.Doe.json" and the attachment is photo.jpg
+the JSON document is "pairtree/Ja/ne/.D/e./Jane.Doe.json" and the photo
+is in "pairtree/Ja/ne/.D/e./_/photo.jpg".
 
 Additional operations beside storing and reading JSON documents are also
 supported. These include creating lists (arrays) of JSON documents from

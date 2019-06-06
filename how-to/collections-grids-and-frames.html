@@ -34,13 +34,14 @@ on grids of data. This document outlines the ideas behings <em>grid</em> and
 <h2>COLLECTIONS</h2>
 
 <p>Collections are at the core of the <em>dataset</em> tool. A collection is a
-bucketed directory structure storing a JSON objects in plaintext with
+pairtree directory structure storing a JSON objects in plaintext with
 optional attachments. The root folder for the collection contains a
-<em>collection.json</em> file with the metadata associating a name to a bucket
-for the store json object. One of the guiding ideas behind dataset was to
-keep everything as plain text whenever reasonable.  The dataset project
-provides Go package for working with dataset collections, a python package
-(based on a shared library with the Go package) and command line tool.</p>
+<em>collection.json</em> file with the metadata associating a name to the
+pairtree path where the json object is stored. One of the guiding
+ideas behind dataset was to keep everything as plain text whenever
+reasonable.  The dataset project provides Go package for working with
+dataset collections, a python package (based on a shared library with
+the Go package) and command line tool.</p>
 
 <p>Dataset collections are typically stored on your local disc but may be
 stored easily in Amazon&rsquo;s S3 (or compatible platform) or Google&rsquo;s cloud
@@ -48,8 +49,9 @@ storage. Dataset and also import and export to/from a Google sheet or CSV
 file.</p>
 
 <p>Dataset isn&rsquo;t a database (there are plenty of JSON oriented databases out
-there, e.g. CouchDB, MongoDB). Rather the focus is on providing a
-mechanism to manage JSON objects, group them and to provide alternative
+there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL and
+Postgresql). Rather the focus is on providing a mechanism to manage
+JSON objects, group them and to provide alternative
 data shapes for the viewing the collection (e.g. frames, grids).</p>
 
 <h2>GRIDS</h2>
@@ -124,9 +126,10 @@ collection leveraging Python&rsquo;s standard sort method for lists.</p>
 
 <p>Implementing the grid verb started me thinking about the similarity to
 data frames in Python, Julia and Octave. A <em>frame</em> is defined as a <em>grid</em>
-plus <em>metadata</em> about how the <em>grid</em> was created. In this context
-<em>dataset</em>  stores the *grid*s in the collection so it will persist for
-later processing.</p>
+plus <em>metadata</em> about how the <em>grid</em> was created. The <em>grid</em> is a little
+different than our 2D array, it is an array of objects where the attribute
+names are the column headings. In this context <em>dataset</em> stores the
+*grid*s in the collection so it will persist for later processing.</p>
 
 <p>To make a <em>frame</em> from a <em>grid</em> we add the missing bits of useful metadata.
 At a glance the dot paths that define the columns of the grid, likewise

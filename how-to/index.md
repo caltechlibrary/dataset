@@ -24,4 +24,3 @@ with _dataset_ or explore a specific topic.
 - [Reshape JSON collections](reshape-json-collections.html)
 - [Taking Samples](taking-samples.html)
 - [Upgrading a collection](upgrading-a-collection.html)
-- [Migrating file layout](migrate-layout.html)

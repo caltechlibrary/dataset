@@ -44,7 +44,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.60`
+	Version = `v0.0.61`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -72,9 +72,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	// Assume an unknown layout is zero, then add consts in order of adoption
 	UNKNOWN_LAYOUT = iota
 
-	// Buckets is the first file layout implemented when dataset started
-	BUCKETS_LAYOUT
-
 	// Pairtree is the perferred file layout moving forward
 	PAIRTREE_LAYOUT
 
@@ -82,7 +79,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	fmtColumnName = `column_%03d`
 )
 
-// Collection is the container holding buckets which in turn hold JSON docs
+// Collection is the container holding a pairtree containing JSON docs
 type Collection struct {
 	// DatasetVersion of the collection
 	DatasetVersion string `json:"dataset_version"`
@@ -93,11 +90,10 @@ type Collection struct {
 	// workPath holds the path (i.e. non-protocol and hostname, in URI)
 	workPath string `json:"-"`
 
-	// Type allows for transitioning from bucket layout to pairtree layout for collections.
+	// Type allows for transitioning from pairtree layout to a future
+	// type of structure in collections. It was previously used to
+	// migrate bucketed dataset collections to pairtrees..
 	Layout int `json:"layout"`
-
-	// Buckets is a list of bucket names used by collection (depreciated, will be removed after migration to pairtree)
-	Buckets []string `json:"buckets,omitempty"`
 
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
@@ -110,8 +106,14 @@ type Collection struct {
 	FrameMap map[string]string `json:"frames"`
 
 	//
-	// Metadata for collection
+	// Metadata for collection - maintained via namaste tool
 	//
+
+	// Description (usually picked up via namaste command on folder)
+	Description string `json:decription,omitempty"`
+
+	// Initialzed date/time string init command was run
+	Initialized string `json:initialized,omitempty"`
 
 	// Who - creator, owner, maintainer name(s)
 	Who []string `json:"who,omitempty"`
@@ -221,8 +223,6 @@ func InitCollection(name string, layoutType int) (*Collection, error) {
 		err error
 	)
 	switch layoutType {
-	case BUCKETS_LAYOUT:
-		c, err = bucketCreateCollection(name, DefaultBucketNames)
 	case PAIRTREE_LAYOUT:
 		c, err = pairtreeCreateCollection(name)
 	default:
@@ -281,7 +281,6 @@ func (c *Collection) DocPath(name string) (string, error) {
 // Close closes a collection, writing the updated keys to disc
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
-	c.Buckets = []string{}
 	c.Name = ""
 	c.workPath = ""
 	c.KeyMap = map[string]string{}
@@ -294,10 +293,8 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeCreateJSON(key, src)
-	case BUCKETS_LAYOUT:
-		return c.bucketCreateJSON(key, src)
 	default:
-		return c.bucketCreateJSON(key, src)
+		return c.pairtreeCreateJSON(key, src)
 	}
 }
 
@@ -309,10 +306,8 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeReadJSON(name)
-	case BUCKETS_LAYOUT:
-		return c.bucketReadJSON(name)
 	default:
-		return c.bucketReadJSON(name)
+		return c.pairtreeReadJSON(name)
 	}
 }
 
@@ -324,10 +319,8 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeUpdateJSON(name, src)
-	case BUCKETS_LAYOUT:
-		return c.bucketUpdateJSON(name, src)
 	default:
-		return c.bucketUpdateJSON(name, src)
+		return c.pairtreeUpdateJSON(name, src)
 	}
 }
 
@@ -370,10 +363,8 @@ func (c *Collection) Delete(name string) error {
 	switch c.Layout {
 	case PAIRTREE_LAYOUT:
 		return c.pairtreeDelete(name)
-	case BUCKETS_LAYOUT:
-		return c.bucketDelete(name)
 	default:
-		return c.bucketDelete(name)
+		return c.pairtreeDelete(name)
 	}
 }
 
@@ -815,8 +806,7 @@ func IsCollection(p string) bool {
 }
 
 // CollectionLayout returns the numeric type
-// association with the collection (e.g BUCKETS_LAYOUT,
-// PAIRTREE_LAYOUT).
+// association with the collection (i.e PAIRTREE_LAYOUT).
 func CollectionLayout(p string) int {
 	workPath := collectionNameAsPath(p)
 	store, err := storage.GetStore(p)
@@ -830,17 +820,7 @@ func CollectionLayout(p string) int {
 		if err != nil {
 			return UNKNOWN_LAYOUT
 		}
-		if len(c.Buckets) > 0 {
-			return BUCKETS_LAYOUT
-		}
 		return PAIRTREE_LAYOUT
-	}
-	l, err := store.FindByExt(path.Join(workPath, "aa"), ".json")
-	if err != nil {
-		return PAIRTREE_LAYOUT
-	}
-	if len(l) > 0 {
-		return BUCKETS_LAYOUT
 	}
 	return UNKNOWN_LAYOUT
 }

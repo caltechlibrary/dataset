@@ -19,12 +19,44 @@
 package dataset
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dotpath"
 )
+
+// ObjectList takes a set of collection keys and builds an array
+// of objects from the array of keys, dot paths and labels provided.
+func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []string, verbose bool) ([]map[string]interface{}, error) {
+	if len(dotPaths) != len(labels) {
+		return nil, fmt.Errorf("dot paths and labels do not match")
+	}
+	pid := os.Getpid()
+	objectList := make([]map[string]interface{}, len(keys))
+	for i, key := range keys {
+		rec := map[string]interface{}{}
+		err := c.Read(key, rec)
+		if err != nil {
+			return nil, err
+		}
+		objectList[i] = make(map[string]interface{})
+		for j, dpath := range dotPaths {
+			value, err := dotpath.Eval(dpath, rec)
+			if err == nil {
+				key := labels[j]
+				objectList[i][key] = value
+			} else if verbose == true {
+				log.Printf("(pid: %d) WARNING: skipped key %s, path %s for row %d and column %d, %s", pid, key, dpath, i, j, err)
+			}
+		}
+		if verbose && (i > 0) && ((i % 1000) == 0) {
+			log.Printf("(pid: %d) %d keys processed", pid, i)
+		}
+	}
+	return objectList, nil
+}
 
 // Grid takes a set of collection keys and builds a grid (a 2D array cells)
 // from the array of keys and dot paths provided

@@ -8,7 +8,7 @@
 
 dataset is a command line tool demonstrating dataset package for 
 managing JSON documents stored on disc. A dataset is organized 
-around collections, collections contain buckets holding specific 
+around collections, collections contain a pairtree holding specific 
 JSON documents and related content.  In addition to the JSON 
 documents dataset maintains metadata for management of the 
 documents, their attachments as well as a ability to generate 
@@ -84,7 +84,6 @@ on the command line.
     join           Join a JSON record with a new JSON object in a collection
     keys           List the keys in a collection, support filtering and sorting
     list           List the JSON records as an array for provided record ids
-    migrate        Migrate file layout, e.g. "buckets", "pairtree"
     path           Show the file system path to a JSON record in a collection
     prune          Remove attachments from a JSON record in a collection
     read           Read back a JSON record from a collection
@@ -95,6 +94,6 @@ on the command line.
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [migrate](migrate.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 
 dataset v0.0.45

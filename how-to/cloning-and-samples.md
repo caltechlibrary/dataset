@@ -8,7 +8,7 @@ for these types of operations.
 
 ## Cloning an entire collection
 
-First since dataet is a folder with collections.json, buckets and frames 
+First since dataset is a folder with collections.json, pairtree and frames 
 we can "clone" an the complete collection by simply copying the folder 
 and its contents.  This can be done with standard operating system
 tools (e.g. File managers, command line) or in the case of cloud storage 

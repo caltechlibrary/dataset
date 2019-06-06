@@ -55,7 +55,6 @@ var (
 
 	layouts = []int{
 		PAIRTREE_LAYOUT,
-		BUCKETS_LAYOUT,
 	}
 )
 

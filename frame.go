@@ -36,10 +36,17 @@ type DataFrame struct {
 	DotPaths       []string `json:"dot_paths"`
 	// NOTE: Keys should hold the same values as column zero of the grid.
 	// Keys controls the order of rows in a grid when reframing.
-	Keys    []string        `json:"keys"`
-	Grid    [][]interface{} `json:"grid"`
-	Created time.Time       `json:"created"`
-	Updated time.Time       `json:"updated,omitempty"`
+	Keys []string        `json:"keys"`
+	Grid [][]interface{} `json:"grid"`
+
+	// NOTE: Objects is a replacement for Grid, it is an objects
+	// which base on use from Python and shell is easier to work with
+	// accurately then a 2D array which usually leads to at leats two
+	// or more inner loops in scripts.
+	ObjectList []map[string]interface{} `json:"object_list"`
+
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated,omitempty"`
 
 	// NOTE: these values effect how Reframe works
 	AllKeys    bool   `json:"use_all_keys"`
@@ -162,18 +169,29 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbos
 	f.Keys = keys[:]
 	f.Created = time.Now()
 	f.Updated = time.Now()
-	g, err := c.Grid(keys, dotPaths, verbose)
-	if err != nil {
-		return nil, err
-	}
-	f.Grid = g
+
+	// NOTE: derive labels from dotPaths and
+	// default column types to string
 	labels := []string{}
-	// NOTE: derive labels from dotPaths and default column types to string
 	for _, p := range dotPaths {
 		l := dotpath.ToLabel(p)
 		labels = append(labels, l)
 	}
 	f.Labels = labels[:]
+
+	// Populate our ObjectList
+	ol, err := c.ObjectList(keys, dotPaths, labels, verbose)
+	if err != nil {
+		return nil, err
+	}
+	f.ObjectList = ol
+
+	// Populate our Grid (Grid is depreciated, RSD 2019-06-06)
+	g, err := c.Grid(keys, dotPaths, verbose)
+	if err != nil {
+		return nil, err
+	}
+	f.Grid = g
 	err = c.setFrame(name, f)
 	return f, err
 }
@@ -234,6 +252,13 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 		f.Keys = keys
 	}
 	f.Updated = time.Now()
+	// NOTE: ObjectList is replacing Grid, RSD 2019-06-06
+	ol, err := c.ObjectList(f.Keys, f.DotPaths, f.Labels, verbose)
+	if err != nil {
+		return err
+	}
+	f.ObjectList = ol
+	// NOTE: Grid is depreciated, RSD 2019-06-06
 	g, err := c.Grid(f.Keys, f.DotPaths, verbose)
 	if err != nil {
 		return err
@@ -247,8 +272,11 @@ func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 	return c.setFrame(name, f)
 }
 
-// FrameLabels sets the labels for a frame, the number of labels must match the number of dot paths (columns) in the frame.
-func (c *Collection) FrameLabels(name string, labels []string) error {
+// FrameLabels sets the labels for a frame, the number of labels
+// must match the number of dot paths (columns) in the frame.
+// NOTE: FrameLabels will cause the ObjectList to be regenerated from
+// the current state of the collection.
+func (c *Collection) FrameLabels(name string, labels []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
@@ -257,6 +285,20 @@ func (c *Collection) FrameLabels(name string, labels []string) error {
 		return fmt.Errorf("number of columns (%d) does not match the number of labels (%d)", len(f.DotPaths), len(labels))
 	}
 	f.Labels = labels[:]
+	// NOW we need to regenerate our ObjectList
+	ol, err := c.ObjectList(f.Keys, f.DotPaths, f.Labels, verbose)
+	if err != nil {
+		return err
+	}
+	f.ObjectList = ol
+	// NOTE: we need to refenerate our Grid to match (this is depreciated, RSD 2019-06-06)
+	// NOTE: Grid is depreciated, RSD 2019-06-06
+	g, err := c.Grid(f.Keys, f.DotPaths, verbose)
+	if err != nil {
+		return err
+	}
+	f.Grid = g
+
 	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }

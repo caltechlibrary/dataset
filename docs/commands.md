@@ -37,7 +37,6 @@ replaced with one of the commands below --
     + [dotpath](dotpath.html) - reach into an object to return a value(s)
 + [check](check.html) - will check a collection against current version
 + [repair](repair.html) - will attempt to repair/upgrade a collection
-+ [migrate](migrate.md) - will migrate the file layout (e.g. buckets, pairtree)
 
 NOTE: The options create, update can read JSON documents piped 
 from standard in if you use the '-i -' or '-include -' option. 

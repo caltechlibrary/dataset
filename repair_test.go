@@ -23,14 +23,10 @@ import (
 	"os"
 	"path"
 	"testing"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/storage"
 )
 
 func TestRepair(t *testing.T) {
 	layouts := []int{
-		BUCKETS_LAYOUT,
 		PAIRTREE_LAYOUT,
 	}
 
@@ -93,44 +89,4 @@ func TestRepair(t *testing.T) {
 			t.FailNow()
 		}
 	}
-}
-
-func TestMigration(t *testing.T) {
-	obj := map[string]interface{}{
-		"one": 1,
-	}
-
-	options := map[string]int{
-		"testdata/test1b.ds": BUCKETS_LAYOUT,
-		"testdata/test1p.ds": PAIRTREE_LAYOUT,
-	}
-
-	store, err := storage.GetStore(cName)
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	// Setup test repositories and test conversion
-	for cName, cLayout := range options {
-		// Clean up stale data
-		store.RemoveAll(cName)
-		c, err := InitCollection(cName, cLayout)
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-		c.Create("one", obj)
-		c.Close()
-		if cLayout == BUCKETS_LAYOUT {
-			cLayout = PAIRTREE_LAYOUT
-		} else {
-			cLayout = BUCKETS_LAYOUT
-		}
-		err = Migrate(cName, cLayout)
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-	}
-
 }

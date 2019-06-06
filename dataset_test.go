@@ -28,7 +28,6 @@ import (
 func TestCollection(t *testing.T) {
 	layouts := map[string]int{
 		"testdata/pairtree_layout/col1.ds": PAIRTREE_LAYOUT,
-		"testdata/buckets_layout/col1.ds":  BUCKETS_LAYOUT,
 	}
 	for colName, colLayout := range layouts {
 		// Remove any pre-existing test data
@@ -204,7 +203,6 @@ func TestCollection(t *testing.T) {
 func TestComplexKeys(t *testing.T) {
 	layouts := map[string]int{
 		"testdata/pairtree_layout/col2.ds": PAIRTREE_LAYOUT,
-		"testdata/buckets_layout/col2.ds":  BUCKETS_LAYOUT,
 	}
 	for colName, colLayout := range layouts {
 
@@ -292,7 +290,6 @@ func TestCloneSample(t *testing.T) {
 	}
 	layouts := map[string]int{
 		"testdata/pairtree_layout": PAIRTREE_LAYOUT,
-		"testdata/buckets_layout":  BUCKETS_LAYOUT,
 	}
 	for p, cLayout := range layouts {
 		cName := path.Join(p, "test_zbs_characters.ds")
