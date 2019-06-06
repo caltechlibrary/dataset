@@ -9,11 +9,11 @@
 + [ ] Switch from Bleve to Lunr indexes and search
 + [ ] Use JMESPath as replacement for our simple dot path implementation
 + [ ] Switch go go-cloud over our storage.go module
-+ [ ] Refactor grids to be an array of objects in frames
++ [x] Refactor grids to be an array of objects in frames
 + [ ] Refactor attachments from tar ball to `_` directory
     + [ ] migration would be a shell script to move tar ball to `_`
     + [ ] migration would then update the metadata in the JSON document to point to `_` and the tarball name
-+ [ ] Remove bucket layout code
++ [x] Remove bucket layout code
 + [ ] Document GSheet cell length limitations and how that impact sync-send
 + [ ] Missing documentation for filtering/sorting keys
 + [ ] Improve collection.json with the following additional fields
