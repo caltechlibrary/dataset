@@ -291,6 +291,14 @@ func (c *Collection) FrameLabels(name string, labels []string, verbose bool) err
 		return err
 	}
 	f.ObjectList = ol
+	// NOTE: we need to refenerate our Grid to match (this is depreciated, RSD 2019-06-06)
+	// NOTE: Grid is depreciated, RSD 2019-06-06
+	g, err := c.Grid(f.Keys, f.DotPaths, verbose)
+	if err != nil {
+		return err
+	}
+	f.Grid = g
+
 	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }

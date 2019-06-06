@@ -389,9 +389,11 @@ the JSON module's _dumps_.
 ### frame
 
 dataset also comes with a _frame_ verb.  A _frame_ is like a grid plus 
-additional matadata. It enforces a structure such on its grid. Column 1 
-of the _frame_'s internal grid element always has the keys associated 
-with the collection. A _frame_ will also derive heading labels from the 
+additional matadata. It is similar to the "data frames" concepts in
+languages like Julia, Matlab, Octave, Python and R. It is a data structure that can behave both like a grid (2D array or rows and columns). It is typically represented as an array of objects there the column names correspond
+to a attribute name in an object.  It enforces a 
+structure that behaves like a grid but is also easy to iterate over for other types of processing.  Like our "grid" command a a _frame_ will also 
+derive heading labels (object attribute names) from the 
 dot paths used to define the frame and will include metadata about the 
 collection, keys used to define the frame and default types of data in 
 the columns. The extra information in a _frame_ stays with the 
@@ -422,6 +424,18 @@ In python it would look like
         stop(err)
 ```
 
+In Python we can also explicitly supply labels at the same time
+as defining the frame.
+
+```python
+    keys = dataset.keys("friends.ds")
+    err = dataset.frame("friends.ds", "name-and-email", 
+          keys, [ ".name", ".email", ".catch_phrase"], 
+                [ "Name", "E-Mail", "Catch Phrase" ])
+    if err != "":
+        stop(err)
+```
+
 To see the contents of a frame we only need to supply the collection 
 and frame names.
 
@@ -441,8 +455,8 @@ In Python it'd look like
 ```
 
 Looking at the resulting JSON object you see many other attribute 
-beyond the grid of values. These are created to simplify some of dataset 
-more complex interactions.
+beyond the object list of the frame. These are created to simplify 
+some of dataset more complex interactions.
 
 
 Let's add back the Jack record we deleted a few sections ago and 
@@ -505,19 +519,22 @@ the labels in the column order defined in the frame. In our previous
 example we provided the order of the columns for the frame
 "name-and-email" as .name, .email, .catch_phrase. Also recall the
 frames AWAYS has a first column named `._Key`. If we want
-to have the labels "ID", "Name", "EMail", and "Catch Phrase" instead
-we can set them with the `frame-labels` verb.
+to have the labels "ID", "Display Name", "EMail", and "Catch Phrase" 
+instead we can set them with the `frame-labels` verb.
 
 ```bash
     dataset frame-labels friends.ds "name-and-email" \
-        "ID" "Name" "EMail" "Catch Phrase"
+        "ID" "Display Name" "EMail" "Catch Phrase"
 ```
+
+NOTE: re-labeling a frame will cause the frame to generate its 
+object list.
 
 In Python it look like
 
 ```python
     err = dataset.frame_labels("friends.ds", "name-and-email", 
-          ["Name", "EMail", "Catch Phrase"])
+          ["ID", "Display Name", "EMail", "Catch Phrase"])
     if err != "":
         stop(err)
 ```
@@ -547,7 +564,8 @@ the list
 2. _frame_ will also let you read back a frame
 3. _frames_ will list the frames defined in the collection
 4. _frame-labels_ will let you replace the labels values for all 
-   columns in a frame
+   columns in a frame, it will cause the frame to regenerate 
+   its object list
 6. _delete-frame_ will remove the frame from the collection
 
 
