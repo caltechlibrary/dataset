@@ -26,67 +26,61 @@ import (
 )
 
 func TestRepair(t *testing.T) {
-	layouts := []int{
-		PAIRTREE_LAYOUT,
+	o := map[string]interface{}{}
+	o["a"] = 1
+
+	// Setup a test collection and data
+	cName := path.Join("testdata", "test_repair.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
 	}
-
-	for _, cLayout := range layouts {
-		o := map[string]interface{}{}
-		o["a"] = 1
-
-		// Setup a test collection and data
-		cName := path.Join("testdata", "test_repair.ds")
-		os.RemoveAll(cName)
-		c, err := InitCollection(cName, cLayout)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		err = c.Create("a", o)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		o["b"] = 2
-		err = c.Create("b", o)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		o["c"] = 3
-		err = c.Create("c", o)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		// Break the collection by removing a file from disc.
-		p, err := c.DocPath("b")
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		os.Remove(p)
-		cnt := c.Length()
-		if cnt != 3 {
-			t.Errorf("Expected 3, got %d", cnt)
-			t.FailNow()
-		}
-		c.Close()
-		err = Repair(cName)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		c, err = Open(cName)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		defer c.Close()
-		cnt = c.Length()
-		if cnt != 2 {
-			t.Errorf("Expected 2, got %d", cnt)
-			t.FailNow()
-		}
+	err = c.Create("a", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o["b"] = 2
+	err = c.Create("b", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o["c"] = 3
+	err = c.Create("c", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Break the collection by removing a file from disc.
+	p, err := c.DocPath("b")
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	os.Remove(p)
+	cnt := c.Length()
+	if cnt != 3 {
+		t.Errorf("Expected 3, got %d", cnt)
+		t.FailNow()
+	}
+	c.Close()
+	err = Repair(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+	cnt = c.Length()
+	if cnt != 2 {
+		t.Errorf("Expected 2, got %d", cnt)
+		t.FailNow()
 	}
 }

@@ -103,7 +103,7 @@ func TestMerge(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	c, err := InitCollection(collectionName, PAIRTREE_LAYOUT)
+	c, err := InitCollection(collectionName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -410,7 +410,7 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	c, err := InitCollection(collectionName, PAIRTREE_LAYOUT)
+	c, err := InitCollection(collectionName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

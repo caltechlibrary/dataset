@@ -27,73 +27,68 @@ import (
 )
 
 func TestGrid(t *testing.T) {
-	layouts := []int{
-		PAIRTREE_LAYOUT,
+	os.RemoveAll(path.Join("testdata", "grid_test.ds"))
+	cName := path.Join("testdata", "grid_test.ds")
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
 	}
-	for _, cLayout := range layouts {
-		os.RemoveAll(path.Join("testdata", "grid_test.ds"))
-		cName := path.Join("testdata", "grid_test.ds")
-		c, err := InitCollection(cName, cLayout)
+	defer c.Close()
+
+	//NOTE: test data and to load into collection and generate grid
+	keys := []string{
+		"A",
+		"B",
+		"C",
+		"D",
+	}
+	tData := []map[string]interface{}{
+		map[string]interface{}{
+			"id":    "A",
+			"one":   "one",
+			"two":   22,
+			"three": 3.0,
+			"four":  []string{"one", "two", "three"},
+		},
+		map[string]interface{}{
+			"id":    "B",
+			"two":   2000,
+			"three": 3000.1,
+		},
+		map[string]interface{}{
+			"id": "C",
+		},
+		map[string]interface{}{
+			"id":    "D",
+			"one":   "ONE",
+			"two":   20,
+			"three": 334.1,
+			"four":  []string{},
+		},
+	}
+	for i, rec := range tData {
+		err := c.Create(keys[i], rec)
 		if err != nil {
 			t.Error(err)
 			t.FailNow()
 		}
-		defer c.Close()
+	}
 
-		//NOTE: test data and to load into collection and generate grid
-		keys := []string{
-			"A",
-			"B",
-			"C",
-			"D",
-		}
-		tData := []map[string]interface{}{
-			map[string]interface{}{
-				"id":    "A",
-				"one":   "one",
-				"two":   22,
-				"three": 3.0,
-				"four":  []string{"one", "two", "three"},
-			},
-			map[string]interface{}{
-				"id":    "B",
-				"two":   2000,
-				"three": 3000.1,
-			},
-			map[string]interface{}{
-				"id": "C",
-			},
-			map[string]interface{}{
-				"id":    "D",
-				"one":   "ONE",
-				"two":   20,
-				"three": 334.1,
-				"four":  []string{},
-			},
-		}
-		for i, rec := range tData {
-			err := c.Create(keys[i], rec)
-			if err != nil {
-				t.Error(err)
-				t.FailNow()
-			}
-		}
+	g, err := c.Grid(keys, []string{"._Key", ".one", ".two", ".three", ".four"}, false)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	//FIXME: verify grid populated reasonable
 
-		g, err := c.Grid(keys, []string{"._Key", ".one", ".two", ".three", ".four"}, false)
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-		//FIXME: verify grid populated reasonable
-
-		// verify that we can convert the grid to a JSON structure
-		src, err := json.MarshalIndent(g, "", "  ")
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-		if len(src) == 0 {
-			t.Errorf("expected content marshaled for grid, got none")
-		}
+	// verify that we can convert the grid to a JSON structure
+	src, err := json.MarshalIndent(g, "", "  ")
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	if len(src) == 0 {
+		t.Errorf("expected content marshaled for grid, got none")
 	}
 }

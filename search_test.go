@@ -52,173 +52,164 @@ var (
 	mbName = path.Join("testdata", "search-test.bmap")
 	mName  = path.Join("testdata", "search-test.json")
 	iName  = path.Join("testdata", "search-test.bleve")
-
-	layouts = []int{
-		PAIRTREE_LAYOUT,
-	}
 )
 
 func TestBleveMapIndexingSearch(t *testing.T) {
-	for _, cLayout := range layouts {
-		// Remove stale collection and index
-		os.RemoveAll(cName)
-		os.RemoveAll(iName)
+	// Remove stale collection and index
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
 
-		// create the collection
-		c, err := InitCollection(cName, cLayout)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
+	// create the collection
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
 
-		lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
-		if err != nil {
-			t.Errorf("Error import csvtable, %s", err)
-			t.FailNow()
-		}
-		if lines != 16 {
-			t.Errorf("Expected to import 16 rows, got %d", lines)
-			t.FailNow()
-		}
-		if err := c.Indexer(iName, mbName, []string{}, 100); err != nil {
-			t.Errorf("Can't create index %q, %s", iName, err)
-			t.FailNow()
-		}
-		if err := c.Close(); err != nil {
-			t.Errorf("Can't close index, %s", err)
-			t.FailNow()
-		}
+	lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
+	if err != nil {
+		t.Errorf("Error import csvtable, %s", err)
+		t.FailNow()
+	}
+	if lines != 16 {
+		t.Errorf("Expected to import 16 rows, got %d", lines)
+		t.FailNow()
+	}
+	if err := c.Indexer(iName, mbName, []string{}, 100); err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
+	if err := c.Close(); err != nil {
+		t.Errorf("Can't close index, %s", err)
+		t.FailNow()
+	}
 
-		c, err = Open(cName)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		defer c.Close()
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
 
-		// Run queries and test results
-		opts := map[string]string{
-			"result_fields": "*",
-		}
+	// Run queries and test results
+	opts := map[string]string{
+		"result_fields": "*",
+	}
 
-		idxList, _, err := OpenIndexes([]string{iName})
-		if err != nil {
-			t.Errorf("Can't open index %s, %s", iName, err)
-			t.FailNow()
-		}
+	idxList, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", iName, err)
+		t.FailNow()
+	}
 
-		results, err := Find(idxList.Alias, "600622", opts)
-		if err != nil {
-			t.Errorf("Find returned an error, %s", err)
-			t.FailNow()
-		}
-		err = idxList.Close()
-		if err != nil {
-			t.Errorf("Failed to close index %s, %s", iName, err)
-		}
-		src, _ := json.Marshal(results)
-		if len(results.Hits) != 1 {
-			t.Errorf("unexpected results -> %s", src)
-			t.FailNow()
-		}
+	results, err := Find(idxList.Alias, "600622", opts)
+	if err != nil {
+		t.Errorf("Find returned an error, %s", err)
+		t.FailNow()
+	}
+	err = idxList.Close()
+	if err != nil {
+		t.Errorf("Failed to close index %s, %s", iName, err)
+	}
+	src, _ := json.Marshal(results)
+	if len(results.Hits) != 1 {
+		t.Errorf("unexpected results -> %s", src)
+		t.FailNow()
 	}
 }
 
 func TestIndexingSearch(t *testing.T) {
-	for _, cLayout := range layouts {
-		// Remove stale collection and index
-		os.RemoveAll(cName)
-		os.RemoveAll(iName)
+	// Remove stale collection and index
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
 
-		// create the collection
-		c, err := InitCollection(cName, cLayout)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
+	// create the collection
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
 
-		lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
-		if err != nil {
-			t.Errorf("Error import csvtable, %s", err)
-			t.FailNow()
-		}
-		if lines != 16 {
-			t.Errorf("Expected to import 16 rows, got %d", lines)
-			t.FailNow()
-		}
-		if err = c.Indexer(iName, mName, []string{}, 100); err != nil {
-			t.Errorf("Can't create index %q, %s", iName, err)
-			t.FailNow()
-		}
-		if err = c.Close(); err != nil {
-			t.Errorf("Can't close index, %s", err)
-			t.FailNow()
-		}
+	lines, err := c.ImportCSV(strings.NewReader(csvtable), -1, true, true, false)
+	if err != nil {
+		t.Errorf("Error import csvtable, %s", err)
+		t.FailNow()
+	}
+	if lines != 16 {
+		t.Errorf("Expected to import 16 rows, got %d", lines)
+		t.FailNow()
+	}
+	if err = c.Indexer(iName, mName, []string{}, 100); err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
+	if err = c.Close(); err != nil {
+		t.Errorf("Can't close index, %s", err)
+		t.FailNow()
+	}
 
-		c, err = Open(cName)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		defer c.Close()
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
 
-		// Run queries and test results
-		opts := map[string]string{
-			"result_fields": "*",
-		}
+	// Run queries and test results
+	opts := map[string]string{
+		"result_fields": "*",
+	}
 
-		idxList, _, err := OpenIndexes([]string{iName})
-		if err != nil {
-			t.Errorf("Can't open index %s, %s", iName, err)
-			t.FailNow()
-		}
+	idxList, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", iName, err)
+		t.FailNow()
+	}
 
-		results, err := Find(idxList.Alias, "600622", opts)
-		if err != nil {
-			t.Errorf("Find returned an error, %s", err)
-			t.FailNow()
-		}
-		err = idxList.Close()
-		if err != nil {
-			t.Errorf("failed to close index %s, %s", iName, err)
-		}
-		src, _ := json.Marshal(results)
-		if len(results.Hits) != 1 {
-			t.Errorf("unexpected results -> %s", src)
-			t.FailNow()
-		}
+	results, err := Find(idxList.Alias, "600622", opts)
+	if err != nil {
+		t.Errorf("Find returned an error, %s", err)
+		t.FailNow()
+	}
+	err = idxList.Close()
+	if err != nil {
+		t.Errorf("failed to close index %s, %s", iName, err)
+	}
+	src, _ := json.Marshal(results)
+	if len(results.Hits) != 1 {
+		t.Errorf("unexpected results -> %s", src)
+		t.FailNow()
 	}
 }
 
 func TestIndexerDeindexer(t *testing.T) {
-	for _, cLayout := range layouts {
-		cName := path.Join("testdata", "test_index.ds")
-		indexName := path.Join("testdata", "test_index.bleve")
-		indexMapName := path.Join("testdata", "test_index_map.json")
-		os.RemoveAll(cName)
-		os.RemoveAll(indexName)
-		os.RemoveAll(indexMapName)
+	cName := path.Join("testdata", "test_index.ds")
+	indexName := path.Join("testdata", "test_index.bleve")
+	indexMapName := path.Join("testdata", "test_index_map.json")
+	os.RemoveAll(cName)
+	os.RemoveAll(indexName)
+	os.RemoveAll(indexMapName)
 
-		testRecords := map[string]map[string]interface{}{}
-		src := []byte(`{
+	testRecords := map[string]map[string]interface{}{}
+	src := []byte(`{
     "gutenberg:21489": {"title": "The Secret of the Island", "formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": "Jules", "family": "Verne"}], "url": "http://www.gutenberg.org/ebooks/21489", "categories": "fiction, novel"},
     "gutenberg:2488": { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488", "categories": "fiction, novel"},
     "gutenberg:21839": { "title": "Sense and Sensibility", "formats": ["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": "Austin"}], "url": "http://www.gutenberg.org/ebooks/21839", "categories": "fiction, novel" },
     "gutenberg:3186": {"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186", "categories": "fiction, short story"},
     "hathi:uc1321060001561131": { "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9", "categories": "non-fiction, memoir" }
 }`)
-		err := json.Unmarshal(src, &testRecords)
-		if err != nil {
-			t.Errorf("Can't unmarshal test records, %s", err)
-			t.FailNow()
-		}
-		testRecordCount := len(testRecords)
-		if testRecordCount != 5 {
-			t.Errorf("Something went wrong with unmarshalling test records, expected 5 got %d", testRecordCount)
-			t.FailNow()
-		}
+	err := json.Unmarshal(src, &testRecords)
+	if err != nil {
+		t.Errorf("Can't unmarshal test records, %s", err)
+		t.FailNow()
+	}
+	testRecordCount := len(testRecords)
+	if testRecordCount != 5 {
+		t.Errorf("Something went wrong with unmarshalling test records, expected 5 got %d", testRecordCount)
+		t.FailNow()
+	}
 
-		src = []byte(`{
+	src = []byte(`{
 	"title": {
 		"object_path": ".title"
 	},
@@ -230,88 +221,86 @@ func TestIndexerDeindexer(t *testing.T) {
 	}
 }`)
 
-		// Make sure our test definition is valid JSON!
-		indexMap := map[string]interface{}{}
-		err = json.Unmarshal(src, &indexMap)
-		if err != nil {
-			t.Errorf("Can't unmarshal test map, %s", err)
-			t.FailNow()
-		}
+	// Make sure our test definition is valid JSON!
+	indexMap := map[string]interface{}{}
+	err = json.Unmarshal(src, &indexMap)
+	if err != nil {
+		t.Errorf("Can't unmarshal test map, %s", err)
+		t.FailNow()
+	}
 
-		err = ioutil.WriteFile(indexMapName, src, 0664)
-		if err != nil {
-			t.Errorf("Can't write test index map file, %s", err)
-			t.FailNow()
-		}
-		// create the collection
-		c, err := InitCollection(cName, cLayout)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		defer c.Close()
+	err = ioutil.WriteFile(indexMapName, src, 0664)
+	if err != nil {
+		t.Errorf("Can't write test index map file, %s", err)
+		t.FailNow()
+	}
+	// create the collection
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
 
-		// Populate our test collection
-		for k, v := range testRecords {
-			err = c.Create(k, v)
-			if err != nil {
-				t.Errorf("Can't create %s in %s, %s", k, cName, err)
-				t.FailNow()
-			}
+	// Populate our test collection
+	for k, v := range testRecords {
+		err = c.Create(k, v)
+		if err != nil {
+			t.Errorf("Can't create %s in %s, %s", k, cName, err)
+			t.FailNow()
 		}
+	}
 
-		err = c.Indexer(indexName, indexMapName, []string{}, 2)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
+	err = c.Indexer(indexName, indexMapName, []string{}, 2)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
 
-		idxList, _, err := OpenIndexes([]string{indexName})
-		if err != nil {
-			t.Errorf("Can't open index %s, %s", indexName, err)
-			t.FailNow()
-		}
+	idxList, _, err := OpenIndexes([]string{indexName})
+	if err != nil {
+		t.Errorf("Can't open index %s, %s", indexName, err)
+		t.FailNow()
+	}
 
-		queryString := `+family:"Verne"`
-		results, err := Find(idxList.Alias, queryString, map[string]string{})
-		if err != nil {
-			t.Errorf("Can't find %q in index %s, %s", queryString, indexName, err)
-			t.FailNow()
-		}
-		err = idxList.Close()
-		if err != nil {
-			t.Errorf("Failed to close index %s, %s", indexName, err)
-		}
-		src, err = json.Marshal(results.Hits)
-		if err != nil {
-			t.Errorf("Can't marshal results")
-		}
-		if results.Total != 2 {
-			t.Errorf("Expected two results got %s", src)
-			t.FailNow()
-		}
-		delKeys := []string{}
-		for _, hit := range results.Hits {
-			delKeys = append(delKeys, hit.ID)
-		}
-		err = c.Deindexer(indexName, delKeys, 0)
-		if err != nil {
-			t.Errorf("deindexer failed for %s, %s", indexName, err)
-			t.FailNow()
-		}
+	queryString := `+family:"Verne"`
+	results, err := Find(idxList.Alias, queryString, map[string]string{})
+	if err != nil {
+		t.Errorf("Can't find %q in index %s, %s", queryString, indexName, err)
+		t.FailNow()
+	}
+	err = idxList.Close()
+	if err != nil {
+		t.Errorf("Failed to close index %s, %s", indexName, err)
+	}
+	src, err = json.Marshal(results.Hits)
+	if err != nil {
+		t.Errorf("Can't marshal results")
+	}
+	if results.Total != 2 {
+		t.Errorf("Expected two results got %s", src)
+		t.FailNow()
+	}
+	delKeys := []string{}
+	for _, hit := range results.Hits {
+		delKeys = append(delKeys, hit.ID)
+	}
+	err = c.Deindexer(indexName, delKeys, 0)
+	if err != nil {
+		t.Errorf("deindexer failed for %s, %s", indexName, err)
+		t.FailNow()
 	}
 }
 
 func TestSearchSort(t *testing.T) {
-	for _, cLayout := range layouts {
-		cName := path.Join("testdata", "test_search_sort.ds")
-		iName := path.Join("testdata", "test_search_sort.bleve")
-		iMapName := path.Join("testdata", "test_search_sort_map.json")
-		os.RemoveAll(cName)
-		os.RemoveAll(iName)
-		os.RemoveAll(iMapName)
+	cName := path.Join("testdata", "test_search_sort.ds")
+	iName := path.Join("testdata", "test_search_sort.bleve")
+	iMapName := path.Join("testdata", "test_search_sort_map.json")
+	os.RemoveAll(cName)
+	os.RemoveAll(iName)
+	os.RemoveAll(iMapName)
 
-		src := []byte(`{
+	src := []byte(`{
 	"title": {
 		"object_path": ".title",
 		"field_mapping": "text"
@@ -321,21 +310,21 @@ func TestSearchSort(t *testing.T) {
 		"field_mapping": "datetime"
 	}
 }`)
-		err := ioutil.WriteFile(iMapName, src, 0775)
-		if err != nil {
-			t.Errorf("Can't write %s, %s", iMapName, err)
-			t.FailNow()
-		}
+	err := ioutil.WriteFile(iMapName, src, 0775)
+	if err != nil {
+		t.Errorf("Can't write %s, %s", iMapName, err)
+		t.FailNow()
+	}
 
-		// create the collection
-		c, err := InitCollection(cName, cLayout)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		defer c.Close()
+	// create the collection
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
 
-		src = []byte(`{
+	src = []byte(`{
 		"one": {
 			"title":"G one",
 			"created": "2018-03-04"
@@ -366,66 +355,65 @@ func TestSearchSort(t *testing.T) {
 		}
 	}`)
 
-		records := map[string]map[string]interface{}{}
-		err = json.Unmarshal(src, &records)
-		if err != nil {
-			t.Errorf("Can't unmarshal src, %s", err)
-		}
+	records := map[string]map[string]interface{}{}
+	err = json.Unmarshal(src, &records)
+	if err != nil {
+		t.Errorf("Can't unmarshal src, %s", err)
+	}
 
-		for key, record := range records {
-			err := c.Create(key, record)
-			if err != nil {
-				t.Errorf("Can't add %s to %s, %s", key, cName, err)
-			}
-		}
-		keys := c.Keys()
-
-		// Now we are ready to index our collection
-		err = c.Indexer(iName, iMapName, keys, 100)
+	for key, record := range records {
+		err := c.Create(key, record)
 		if err != nil {
-			t.Errorf("Can't create index %q, %s", iName, err)
+			t.Errorf("Can't add %s to %s, %s", key, cName, err)
+		}
+	}
+	keys := c.Keys()
+
+	// Now we are ready to index our collection
+	err = c.Indexer(iName, iMapName, keys, 100)
+	if err != nil {
+		t.Errorf("Can't create index %q, %s", iName, err)
+		t.FailNow()
+	}
+	//c.CloseIndexes(iName)
+	idxLists, _, err := OpenIndexes([]string{iName})
+	if err != nil {
+		t.Errorf("Can't open index %q, %s", iName, err)
+		t.FailNow()
+	}
+	defer idxLists.Close()
+
+	// Now we can test our sorting with a query of '*'
+	options := map[string]string{
+		"fields": ".created,.title",
+		"sort":   "-.created,+.title",
+	}
+	results, err := Find(idxLists.Alias, "*", options)
+	if err != nil {
+		t.Errorf("Can't find '*' with sort option, %s", err)
+		t.FailNow()
+	}
+	if results.Hits == nil || len(results.Hits) == 0 {
+		src, _ := json.MarshalIndent(results, "", "    ")
+		t.Errorf("Expected hits in result, %s", src)
+	}
+	expected := []string{
+		"seven",
+		"six",
+		"five",
+		"four",
+		"three",
+		"two",
+		"one",
+	}
+	for i, hit := range results.Hits {
+		src, err = json.MarshalIndent(hit, "", "    ")
+		if err != nil {
+			t.Errorf("Can't marshal search results (%d), %s", i, err)
 			t.FailNow()
 		}
-		//c.CloseIndexes(iName)
-		idxLists, _, err := OpenIndexes([]string{iName})
-		if err != nil {
-			t.Errorf("Can't open index %q, %s", iName, err)
-			t.FailNow()
-		}
-		defer idxLists.Close()
-
-		// Now we can test our sorting with a query of '*'
-		options := map[string]string{
-			"fields": ".created,.title",
-			"sort":   "-.created,+.title",
-		}
-		results, err := Find(idxLists.Alias, "*", options)
-		if err != nil {
-			t.Errorf("Can't find '*' with sort option, %s", err)
-			t.FailNow()
-		}
-		if results.Hits == nil || len(results.Hits) == 0 {
-			src, _ := json.MarshalIndent(results, "", "    ")
-			t.Errorf("Expected hits in result, %s", src)
-		}
-		expected := []string{
-			"seven",
-			"six",
-			"five",
-			"four",
-			"three",
-			"two",
-			"one",
-		}
-		for i, hit := range results.Hits {
-			src, err = json.MarshalIndent(hit, "", "    ")
-			if err != nil {
-				t.Errorf("Can't marshal search results (%d), %s", i, err)
-				t.FailNow()
-			}
-			if expected[i] != hit.ID {
-				t.Errorf("expected (%d) %q, got %q", i, expected[i], hit.ID)
-			}
+		if expected[i] != hit.ID {
+			t.Errorf("expected (%d) %q, got %q", i, expected[i], hit.ID)
 		}
 	}
 }

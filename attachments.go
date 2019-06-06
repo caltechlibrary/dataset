@@ -28,8 +28,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	// Caltech Library packages
-	//"github.com/caltechlibrary/storage"
 )
 
 // Attachment is a structure for holding non-JSON content you wish to store alongside a JSON document in a collection
