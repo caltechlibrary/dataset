@@ -37,7 +37,7 @@ install-man:
 	mkdir -p $(GOPATH)/man/man1
 	$(GOPATH)/bin/dataset -generate-manpage | nroff -Tutf8 -man > $(GOPATH)/man/man1/dataset.1
 
-libdataset:
+libdataset: FORCE
 	cd libdataset && $(MAKE)
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
@@ -114,3 +114,4 @@ publish:
 	bash mk-website.bash
 	bash publish.bash
 
+FORCE:

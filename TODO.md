@@ -7,7 +7,6 @@
 ## Next (prep for v1.0.0)
 
 + [ ] Switch from Bleve to Lunr indexes and search
-+ [ ] Use JMESPath as replacement for our simple dot path implementation
 + [ ] Switch go go-cloud over our storage.go module
 + [x] Refactor grids to be an array of objects in frames
 + [ ] Refactor attachments from tar ball to `_` directory
@@ -57,6 +56,7 @@
 
 ## Someday, Maybe
 
++ [ ] Evaludate JMESPath as replacement/augmentation to dot path 
 + [ ] Add some additional metadata fields
     + [ ] version control on/off for attachments (we could verison via Subversion or git depending...)
     + [ ] Date/time repair was done
