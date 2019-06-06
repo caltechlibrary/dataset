@@ -6,20 +6,38 @@
 
 ## Next (prep for v1.0.0)
 
++ [ ] Switch from Bleve to Lunr indexes and search
++ [ ] Use JMESPath as replacement for our simple dot path implementation
++ [ ] Switch go go-cloud over our storage.go module
++ [ ] Refactor grids to be an array of objects in frames
++ [ ] Refactor attachments from tar ball to `_` directory
+    + [ ] migration would be a shell script to move tar ball to `_`
+    + [ ] migration would then update the metadata in the JSON document to point to `_` and the tarball name
++ [ ] Remove bucket layout code
++ [ ] Document GSheet cell length limitations and how that impact sync-send
++ [ ] Missing documentation for filtering/sorting keys
++ [ ] Improve collection.json with the following additional fields
+    + [ ] Collection name
+    + [ ] Collection description set via Namaste
+    + [ ] Collection currator/creator (could pickup from env $USER) or set via Namaste
+    + [ ] Date/time init was run creating collection
++ [ ] add *publish* command to index.md, index.html
+    + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
+        + https://codemeta.github.io/terms 
+    + [ ] Generate Lunr indexes for each frame
+    + [ ] Generate a index.md based on codemata.json, namaste, and collection.json
+    + [ ] Generate a index.html based on index.md plus a Lunrjs search
+        + needs to support aggregate as well as selectable indexes
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
 
 
-
 ## Roadmap (v2.0.0)
 
-+ [ ] Add a publish verb that does the following
-    + [ ] a codameta.json file would be generated in root of collection
-        + https://codemeta.github.io/terms 
-    + [ ] a markdown index.md file would be generated in the root of the collection
-    + [ ] any frames would get rendered as Lunrjs indexes
-    + [ ] render an index.html with embedded Lunrjs for exploring collection
-    + [ ] the publish verb would update the lunrjs indexes, markdown, codemeta file and index.html in the root of the collection
++ [ ] add *archive* command would do a *publish* then archive the collection
+    + support adding relevant Namaste for preservation
+    + archive should be suitable for ingesting in preservation systems
+        + e.g. create tar, bag or web archive formatted instance
 + [ ] Make check and repair work in cloud storage
     + [ ] storage package should use go-cloud instead of individual SDKs
     + [ ] need a working file walker for S3 and GS storage ...
@@ -37,6 +55,11 @@
 
 ## Someday, Maybe
 
++ [ ] Add some additional metadata fields
+    + [ ] version control on/off for attachments (we could verison via Subversion or git depending...)
+    + [ ] Date/time repair was done
+    + [ ] Date/time clone was executed as well as basename name of cloned
+        + [ ] clone should include info about where it was cloned from
 + [ ] Documentation updates
     - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
 + [ ] Consider implementing Sword importer(s)/exporter(s) (v3? when spec is settled)

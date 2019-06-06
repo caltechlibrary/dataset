@@ -28,7 +28,6 @@ import (
 
 func TestGrid(t *testing.T) {
 	layouts := []int{
-		BUCKETS_LAYOUT,
 		PAIRTREE_LAYOUT,
 	}
 	for _, cLayout := range layouts {

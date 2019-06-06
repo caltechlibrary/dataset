@@ -28,7 +28,6 @@ import (
 func TestAttachments(t *testing.T) {
 	layouts := map[string]int{
 		"testdata/pairtree_layout/col3.ds": PAIRTREE_LAYOUT,
-		"testdata/buckets_layout/col3.ds":  BUCKETS_LAYOUT,
 	}
 	for cName, cLayout := range layouts {
 

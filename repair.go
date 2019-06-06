@@ -33,8 +33,6 @@ import (
 func Analyzer(collectionName string) error {
 	var err error
 	switch CollectionLayout(collectionName) {
-	case BUCKETS_LAYOUT:
-		err = bucketAnalyzer(collectionName)
 	case PAIRTREE_LAYOUT:
 		err = pairtreeAnalyzer(collectionName)
 	default:
@@ -50,34 +48,10 @@ func Analyzer(collectionName string) error {
 func Repair(collectionName string) error {
 	var err error
 	switch CollectionLayout(collectionName) {
-	case BUCKETS_LAYOUT:
-		err = bucketRepair(collectionName)
 	case PAIRTREE_LAYOUT:
 		err = pairtreeRepair(collectionName)
 	default:
 		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
-	}
-	return err
-}
-
-//
-//
-func Migrate(collectionName string, newLayout int) error {
-	var err error
-	currentLayout := CollectionLayout(collectionName)
-	if currentLayout == UNKNOWN_LAYOUT {
-		return fmt.Errorf("Can't migrated from an unknown file layout")
-	}
-	if currentLayout == newLayout {
-		return nil
-	}
-	switch newLayout {
-	case PAIRTREE_LAYOUT:
-		err = migrateToPairtree(collectionName)
-	case BUCKETS_LAYOUT:
-		err = migrateToBuckets(collectionName)
-	default:
-		err = fmt.Errorf("Can't migrate to an unknown file layout")
 	}
 	return err
 }

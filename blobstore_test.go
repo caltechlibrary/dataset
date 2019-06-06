@@ -34,7 +34,7 @@ func TestS3(t *testing.T) {
 
 	collectionURI1 := fmt.Sprintf("%s/testdata/blob_b.ds", S3Bucket)
 
-	c1, err := InitCollection(collectionURI1, BUCKETS_LAYOUT)
+	c1, err := InitCollection(collectionURI1, PAIRTREE_LAYOUT)
 	if err != nil {
 		t.Errorf("expected to create %q, got %s", collectionURI1, err)
 		t.FailNow()
@@ -46,8 +46,8 @@ func TestS3(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	if c1.Layout != BUCKETS_LAYOUT {
-		t.Errorf("expected buckets layout %d (buckets), got %d", BUCKETS_LAYOUT, c1.Layout)
+	if c1.Layout != PAIRTREE_LAYOUT {
+		t.Errorf("expected pairtree layout %d (buckets), got %d", PAIRTREE_LAYOUT, c1.Layout)
 		t.FailNow()
 	}
 	if c1.Store.Type != storage.S3 {
@@ -70,8 +70,8 @@ func TestS3(t *testing.T) {
 
 	// Verify we can detect layout
 	layout := CollectionLayout(collectionURI1)
-	if layout != BUCKETS_LAYOUT {
-		t.Errorf("expected buckets (%d) layout, got %d", BUCKETS_LAYOUT, layout)
+	if layout != PAIRTREE_LAYOUT {
+		t.Errorf("expected buckets (%d) layout, got %d", PAIRTREE_LAYOUT, layout)
 		t.FailNow()
 	}
 
@@ -125,7 +125,7 @@ func TestGS(t *testing.T) {
 
 	collectionURI1 := fmt.Sprintf("%s/testdata/blob_b.ds", GSBucket)
 
-	c1, err := InitCollection(collectionURI1, BUCKETS_LAYOUT)
+	c1, err := InitCollection(collectionURI1, PAIRTREE_LAYOUT)
 	if err != nil {
 		t.Errorf("expected to create %q, got %s", collectionURI1, err)
 		t.FailNow()
@@ -137,8 +137,8 @@ func TestGS(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	if c1.Layout != BUCKETS_LAYOUT {
-		t.Errorf("expected buckets layout %d (buckets), got %d", BUCKETS_LAYOUT, c1.Layout)
+	if c1.Layout != PAIRTREE_LAYOUT {
+		t.Errorf("expected buckets layout %d (buckets), got %d", PAIRTREE_LAYOUT, c1.Layout)
 		t.FailNow()
 	}
 	if c1.Store.Type != storage.GS {
@@ -161,8 +161,8 @@ func TestGS(t *testing.T) {
 
 	// Verify we can detect layout
 	layout := CollectionLayout(collectionURI1)
-	if layout != BUCKETS_LAYOUT {
-		t.Errorf("expected buckets (%d) layout, got %d", BUCKETS_LAYOUT, layout)
+	if layout != PAIRTREE_LAYOUT {
+		t.Errorf("expected buckets (%d) layout, got %d", PAIRTREE_LAYOUT, layout)
 		t.FailNow()
 	}
 

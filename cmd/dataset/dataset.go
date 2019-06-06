@@ -207,7 +207,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vExport      *cli.Verb // export
 	vCheck       *cli.Verb // check
 	vRepair      *cli.Verb // repair
-	vMigrate     *cli.Verb // migrate
 	vIndexer     *cli.Verb // indexer
 	vDeindexer   *cli.Verb // deindexer
 	vFind        *cli.Verb // find
@@ -265,8 +264,6 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		switch strings.ToLower(collectionLayout) {
 		case "pairtree":
 			c, err = dataset.InitCollection(collectionName, dataset.PAIRTREE_LAYOUT)
-		case "buckets":
-			c, err = dataset.InitCollection(collectionName, dataset.BUCKETS_LAYOUT)
 		default:
 			fmt.Fprintf(eout, "%s is an unknown layout\n", collectionLayout)
 			return 1
@@ -572,8 +569,6 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			switch c.Layout {
 			case dataset.PAIRTREE_LAYOUT:
 				fmt.Fprintf(out, "%s, layout pairtree, version %s\n", collectionName, c.DatasetVersion)
-			case dataset.BUCKETS_LAYOUT:
-				fmt.Fprintf(out, "%s, layout buckets, version %s\n", collectionName, c.DatasetVersion)
 			default:
 				fmt.Fprintf(eout, "%q, layout unknown, version %q\n", collectionName, c.DatasetVersion)
 				c.Close()
@@ -3028,59 +3023,6 @@ func fnRepair(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
-func fnMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	var (
-		collectionName string
-		layoutName     string
-		layout         int
-		err            error
-	)
-
-	err = flagSet.Parse(args)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	args = flagSet.Args()
-
-	switch {
-	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name and layout (e.g. pairtree, buckets)\n")
-		return 1
-	case len(args) == 1:
-		fmt.Fprintf(eout, "Missing layout (e.g. pairtree, buckets\n")
-		return 1
-	case len(args) == 2:
-		collectionName, layoutName = args[0], args[1]
-	default:
-		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
-		return 1
-	}
-
-	switch strings.ToLower(layoutName) {
-	case "buckets":
-		layout = dataset.BUCKETS_LAYOUT
-	case "pairtree":
-		layout = dataset.PAIRTREE_LAYOUT
-	default:
-		fmt.Fprintf(eout, "Unsported layout %q", layoutName)
-		return 1
-	}
-	// Repair collection as prep for migration
-	if err = dataset.Repair(collectionName); err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	if err = dataset.Migrate(collectionName, layout); err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	if quiet == false {
-		fmt.Fprintf(out, "OK")
-	}
-	return 0
-}
-
 func fnClone(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		srcCollectionName  string
@@ -3270,15 +3212,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// Collection oriented functions
 	vInit = app.NewVerb("init", "initialize a collection", fnInit)
 	vInit.SetParams("COLLECTION")
-	vInit.StringVar(&collectionLayout, "layout", "pairtree", "set file layout for a new collection (i.e. \"buckets\" or \"pairtree\")")
+	vInit.StringVar(&collectionLayout, "layout", "pairtree", "set file layout for a new collection (i.e. \"pairtree\")")
 	vStatus = app.NewVerb("status", "collection status", fnStatus)
 	vStatus.SetParams("COLLECTION")
 	vCheck = app.NewVerb("check", "check a collection for errors", fnCheck)
 	vCheck.SetParams("COLLECTION", "[COLLECTION ...]")
 	vRepair = app.NewVerb("repair", "repair a collection", fnRepair)
 	vRepair.SetParams("COLLECTION")
-	vMigrate = app.NewVerb("migrate", "migrate a collection's layout", fnMigrate)
-	vMigrate.SetParams("COLLECTION", "LAYOUT")
 	vClone = app.NewVerb("clone", "clone a collection", fnClone)
 	vClone.SetParams("SRC_COLLECTION", "DEST_COLLECTION")
 	vClone.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
