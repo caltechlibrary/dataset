@@ -15,6 +15,10 @@ managing digital collections an preservation. It can easily be
 in directories occur. This allows for enhancing legacy systems as 
 well as better for future needs.
 
+Namaste is used to decorate the dataset collection with metadata
+that can be used along with collection.json to describe a collection
+in codemeta.json as well as a root index.html file.
+
 ## References
 
 + [Namaste Spec.](https://confluence.ucop.edu/display/Curation/Namaste)

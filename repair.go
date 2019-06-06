@@ -18,10 +18,6 @@
 //
 package dataset
 
-import (
-	"fmt"
-)
-
 //
 // Exported functions for dataset cli usage
 //
@@ -31,14 +27,7 @@ import (
 // bucketAnalyzer or pairtreeAnalyzer as appropriate.
 //
 func Analyzer(collectionName string) error {
-	var err error
-	switch CollectionLayout(collectionName) {
-	case PAIRTREE_LAYOUT:
-		err = pairtreeAnalyzer(collectionName)
-	default:
-		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
-	}
-	return err
+	return pairtreeAnalyzer(collectionName)
 }
 
 //
@@ -46,12 +35,5 @@ func Analyzer(collectionName string) error {
 // wither bucketRepair or pairtreeRepair as appropriate.
 //
 func Repair(collectionName string) error {
-	var err error
-	switch CollectionLayout(collectionName) {
-	case PAIRTREE_LAYOUT:
-		err = pairtreeRepair(collectionName)
-	default:
-		err = fmt.Errorf("Unknown layout for %s\n", collectionName)
-	}
-	return err
+	return pairtreeRepair(collectionName)
 }

@@ -218,6 +218,7 @@ to vendor any packages assuming you're building from the master branch.
 ## Caltech Library packages
 
 + [github.com/caltechlibrary/dotpath](https://github.com/caltechlibrary/dotpath)
+    + uses [JMESPath](https://jmsepath.org) 
     + provides dot path style notation to reach into JSON objects
 + [github.com/caltechlibrary/storage](github.com/caltechlibrary/storage)
     + provides a unified storage interaction supporting local disc and AWS S3 storage
@@ -228,15 +229,9 @@ to vendor any packages assuming you're building from the master branch.
 
 ## 3rd party packages
 
-+ [aws sdk go](https://github.com/aws/aws-sdk-go) - supporting AWS S3 storage (used by all the cli)
-    + github.com/aws/aws-sdk-go/aws
-    + github.com/aws/aws-sdk-go/aws/session
-    + github.com/aws/aws-sdk-go/service/s3
-    + github.com/aws/aws-sdk-go/service/s3/s3iface
-    + github.com/aws/aws-sdk-go/service/s3/s3manager
 + [Markdown packages] - used to support rendering Markdown embedded in JSON objects
     + [github.com/microcosm-cc/bluemonday](https://github.com/microcosm-cc/bluemonday)
     + [github.com/russross/blackfriday](https://github.com/russross/blackfriday)
-+ [Blevesearch](https://github.com/blevesearch/bleve) 
-
++ [go-cloud](https://github.com/google/go-cloud)
++ [go-JMESPath](https://github.com/jmespath/go-jmespath)
 

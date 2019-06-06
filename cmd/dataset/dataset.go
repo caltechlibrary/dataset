@@ -168,7 +168,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	batchSize         int
 	sampleSize        int
 	keyFName          string
-	collectionLayout  = "pairtree" // Default collection file layout
 	filterExpr        string
 	sortExpr          string
 
@@ -261,13 +260,7 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	for _, collectionName := range args {
-		switch strings.ToLower(collectionLayout) {
-		case "pairtree":
-			c, err = dataset.InitCollection(collectionName, dataset.PAIRTREE_LAYOUT)
-		default:
-			fmt.Fprintf(eout, "%s is an unknown layout\n", collectionLayout)
-			return 1
-		}
+		c, err = dataset.InitCollection(collectionName)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -566,14 +559,7 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			return 1
 		}
 		if showVerbose {
-			switch c.Layout {
-			case dataset.PAIRTREE_LAYOUT:
-				fmt.Fprintf(out, "%s, layout pairtree, version %s\n", collectionName, c.DatasetVersion)
-			default:
-				fmt.Fprintf(eout, "%q, layout unknown, version %q\n", collectionName, c.DatasetVersion)
-				c.Close()
-				return 1
-			}
+			fmt.Fprintf(out, "%s, layout pairtree, version %s\n", collectionName, c.DatasetVersion)
 		}
 		c.Close()
 	}
@@ -3212,7 +3198,6 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// Collection oriented functions
 	vInit = app.NewVerb("init", "initialize a collection", fnInit)
 	vInit.SetParams("COLLECTION")
-	vInit.StringVar(&collectionLayout, "layout", "pairtree", "set file layout for a new collection (i.e. \"pairtree\")")
 	vStatus = app.NewVerb("status", "collection status", fnStatus)
 	vStatus.SetParams("COLLECTION")
 	vCheck = app.NewVerb("check", "check a collection for errors", fnCheck)

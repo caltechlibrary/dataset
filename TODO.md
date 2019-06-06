@@ -11,16 +11,18 @@
 + [ ] Switch go go-cloud over our storage.go module
 + [x] Refactor grids to be an array of objects in frames
 + [ ] Refactor attachments from tar ball to `_` directory
-    + [ ] migration would be a shell script to move tar ball to `_`
-    + [ ] migration would then update the metadata in the JSON document to point to `_` and the tarball name
+    + [ ] migration should be done via script
+        + get the path of the tarball
+        + copy tarball out of pairtree
+        + "delete" all attachments
+        + "attach" the tarball to the object to the object.
 + [x] Remove bucket layout code
 + [ ] Document GSheet cell length limitations and how that impact sync-send
 + [ ] Missing documentation for filtering/sorting keys
-+ [ ] Improve collection.json with the following additional fields
-    + [ ] Collection name
-    + [ ] Collection description set via Namaste
-    + [ ] Collection currator/creator (could pickup from env $USER) or set via Namaste
-    + [ ] Date/time init was run creating collection
++ [x] Improve collection.json with the following additional fields
+    + [x] Collection name
+    + [x] Collection description set via Namaste
+    + [x] Date/time init was run creating collection
 + [ ] add *publish* command to index.md, index.html
     + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
         + https://codemeta.github.io/terms 

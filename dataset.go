@@ -68,12 +68,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	ASC  = iota
 	DESC = iota
 
-	// Supported file layout types
-	// Assume an unknown layout is zero, then add consts in order of adoption
-	UNKNOWN_LAYOUT = iota
-
-	// Pairtree is the perferred file layout moving forward
-	PAIRTREE_LAYOUT
+	// Pairtree is the only supported file layout
+	PAIRTREE_LAYOUT = iota
 
 	// internal virtualize column name format string
 	fmtColumnName = `column_%03d`
@@ -84,7 +80,7 @@ type Collection struct {
 	// DatasetVersion of the collection
 	DatasetVersion string `json:"dataset_version"`
 
-	// Name of collection
+	// Name (filename) of collection
 	Name string `json:"name"`
 
 	// workPath holds the path (i.e. non-protocol and hostname, in URI)
@@ -106,27 +102,41 @@ type Collection struct {
 	FrameMap map[string]string `json:"frames"`
 
 	//
-	// Metadata for collection - maintained via namaste tool
+	// Metadata for collection.
 	//
 
-	// Description (usually picked up via namaste command on folder)
-	Description string `json:decription,omitempty"`
+	// Created is the date/time the init command was run in
+	// RFC1123 format.
+	Created string `json:"created,omitempty"`
 
-	// Initialzed date/time string init command was run
-	Initialized string `json:initialized,omitempty"`
+	// Version of collection being stored in semvar notation
+	Version string `json:"version,omitempty"`
 
-	// Who - creator, owner, maintainer name(s)
+	// Contact info
+	Contact string `json:"contact,omitempty"`
+
+	// CodeMeta is a relative path or URL to a Code Meta
+	// JSON document for the collection.  Often it'll be
+	// in the collection's root and have the value "codemeta.json"
+	// but also may be stored someplace else. It should be
+	// an empty string if the codemeta.json file has not been
+	// created.
+	CodeMeta string `json:"codemeta,omitempty"`
+
+	//
+	// The following are the Namaste fields
+	//
+
+	// Who is the person(s)/organization(s) that created the collection
 	Who []string `json:"who,omitempty"`
 	// What - description of collection
 	What string `json:"what,omitempty"`
-	// When - date associated with collection (e.g. 2018, 2018-10, 2018-10-02)
+	// When - date associated with collection (e.g. 2018,
+	// 2018-10, 2018-10-02), should map to an approx date like in
+	// archival work.
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection
 	Where string `json:"where,omitempty"`
-	// Version of collection being stored in semvar notation
-	Version string `json:"version,omitempty"`
-	// Contact info
-	Contact string `json:"contact,omitempty"`
 }
 
 //
@@ -216,18 +226,12 @@ func (c *Collection) SaveMetadata() error {
 //
 
 // InitCollection - creates a new collection with default alphabet and names of length 2.
-// NOTE: layoutType is provided to allow for future changes in the file layout of a collection.
-func InitCollection(name string, layoutType int) (*Collection, error) {
+func InitCollection(name string) (*Collection, error) {
 	var (
 		c   *Collection
 		err error
 	)
-	switch layoutType {
-	case PAIRTREE_LAYOUT:
-		c, err = pairtreeCreateCollection(name)
-	default:
-		c, err = pairtreeCreateCollection(name)
-	}
+	c, err = pairtreeCreateCollection(name)
 	if err != nil {
 		return nil, err
 	}
@@ -730,8 +734,7 @@ func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error 
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
-	//NOTE: this should create a collection using the same layout we cloning from
-	clone, err := InitCollection(cloneName, c.Layout)
+	clone, err := InitCollection(cloneName)
 	if err != nil {
 		return err
 	}
@@ -803,26 +806,6 @@ func IsCollection(p string) bool {
 		return true
 	}
 	return false
-}
-
-// CollectionLayout returns the numeric type
-// association with the collection (i.e PAIRTREE_LAYOUT).
-func CollectionLayout(p string) int {
-	workPath := collectionNameAsPath(p)
-	store, err := storage.GetStore(p)
-	if err != nil {
-		return UNKNOWN_LAYOUT
-	}
-	src, err := store.ReadFile(path.Join(workPath, "collection.json"))
-	if err == nil {
-		c := new(Collection)
-		err = json.Unmarshal(src, &c)
-		if err != nil {
-			return UNKNOWN_LAYOUT
-		}
-		return PAIRTREE_LAYOUT
-	}
-	return UNKNOWN_LAYOUT
 }
 
 // Join takes a key, a map[string]interface{}{} and overwrite bool
