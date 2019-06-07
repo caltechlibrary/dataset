@@ -38,6 +38,7 @@ drive under "/Users/fred/Documents/notes-on-walrus.docx".
 Using the **dataset** cli you issue the follow command --
 
 ```shell
+    dataset create Sea-Mamals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
     dataset attach Sea-Mamals.ds walrus \
        /Users/fred/Documents/notes-on-walrus.docx
 ```
@@ -108,3 +109,88 @@ command execution.
 
 NOTE: The href in the attachments metadata always points at the last attached 
 version.
+
+## How Attachments look in the JSON Object
+
+When you retrieve a JSON object **dataset** will add some internal fields.
+The first is a `_Key` and if you have any attachments a `_Attachments` array
+will be added. The later holds the metadata we create during the attachment process.
+
+Let's look at our first example again in detail.
+
+```shell
+    dataset create Sea-Mamals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
+    dataset attach Sea-Mamals.ds walrus \
+       /Users/fred/Documents/notes-on-walrus.docx
+```
+
+The JSON object created by the two command looks like
+
+```json
+    {
+        "_Key": "walrus",
+        "description": "may have tusks",
+        "size": "impressive",
+        "_Attachments": [
+            {
+                "name": "notes-on-walrus.docx",
+                "href": "v0.0.0/notes-on-walrus.docx",
+                "version_hrefs": {
+                    "v0.0.0": "v0.0.0/notes-on-walrus.docx"
+                },
+                ...
+            }
+        ]
+    }
+```
+
+When we added v0.0.1 the object would change shape and be something like
+
+```json
+    {
+        "_Key": "walrus",
+        "description": "may have tusks",
+        "size": "impressive",
+        "_Attachments": [
+            {
+                "name": "notes-on-walrus.docx",
+                "href": "v0.0.1/notes-on-walrus.docx",
+                "version_hrefs": {
+                    "v0.0.0": "v0.0.0/notes-on-walrus.docx"
+                    "v0.0.1": "v0.0.1/notes-on-walrus.docx"
+                },
+                ...
+            }
+        ]
+    }
+```
+
+If you have a program that moves old versions off to Glacier you'll
+want to update the value in the version_hrefs effected. In this example
+we've moved v0.0.0 off to 
+
+    "s3://sea-mamals/walrus/v0.0.0/notes-on-walrus.docx"
+
+The JSON should look something like--
+
+```json
+    {
+        "_Key": "walrus",
+        "description": "may have tusks",
+        "size": "impressive",
+        "_Attachments": [
+            {
+                "name": "notes-on-walrus.docx",
+                "size": "1041",
+                "href": "v0.0.1/notes-on-walrus.docx",
+                "version_hrefs": {
+                    "v0.0.0": "s3://sea-mamals/v0.0.0/notes-on-walrus.docx"
+                    "v0.0.1": "v0.0.1/notes-on-walrus.docx"
+                },
+                ...
+            }
+        ]
+    }
+```
+
+
