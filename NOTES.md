@@ -8,12 +8,13 @@ like a k/v store where the operations are on files not within them.
 
 ### Attach (no other attachments)
 
-1. calc basename of file to be attached as well as the pairtree path including a `_` element before the basename
+1. calc basename of file to be attached as well as the 
+   pairtree path including a `_docs` element before the basename
 2. copy the file into place on attachment directory using the basename
 
 ### List attachments
 
-1. scan for filenames using pairtree path plus `_` suffix 
+1. scan for filenames using pairtree path plus `_docs` suffix 
 
 ### Delete specific attached file
 
@@ -22,7 +23,7 @@ like a k/v store where the operations are on files not within them.
 
 ### Delete all attachments
 
-1. remove the pairtree path for objects containing "_" 
+1. remove objects attachments from the pairtree path for containing `_docs` 
 
 ## Reference Google API integration
 

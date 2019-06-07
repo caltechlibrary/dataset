@@ -9,12 +9,14 @@
 + [ ] Switch from Bleve to Lunr indexes and search
 + [ ] Switch go go-cloud over our storage.go module
 + [x] Refactor grids to be an array of objects in frames
-+ [ ] Refactor attachments from tar ball to `_` directory
++ [ ] Refactor attachments from tarball to `_docs` and semver sub 
+      directory scheme
     + [ ] migration should be done via script
         + get the path of the tarball
         + copy tarball out of pairtree
         + "delete" all attachments
-        + "attach" the tarball to the object to the object.
+        + "untar" the files
+        + "attach" the untared files
 + [x] Remove bucket layout code
 + [ ] Document GSheet cell length limitations and how that impact sync-send
 + [ ] Missing documentation for filtering/sorting keys
@@ -22,7 +24,7 @@
     + [x] Collection name
     + [x] Collection description set via Namaste
     + [x] Date/time init was run creating collection
-+ [ ] add *publish* command to index.md, index.html
++ [ ] add *web* command to generate index.md, index.html
     + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
         + https://codemeta.github.io/terms 
     + [ ] Generate Lunr indexes for each frame
