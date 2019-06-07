@@ -1,5 +1,5 @@
 
-# Attachments and how they work
+# How Attachments Work
 
 The primary use case of the **dataset** tool is managing JSON documents.
 There exist a common secondary use case of including support for "attached"
@@ -11,7 +11,7 @@ the developer an ability to verify  that their JSON rendering matches
 the EPrint XML should their JSON needs change in the future. 
 
 This raises questions of how to keep things simple while supporting
-an arbitrary number of attatchments for JSON object document? How do
+an arbitrary number of attachments for JSON object document? How do
 you handle versioning when some types of collections need it for attachments
 and others don't? 
 
@@ -35,23 +35,23 @@ called "Sea-Mamals.ds". We have a JSON object stored called "walrus".
 We want to attach "notes-on-walrus.docx" which is on our local
 drive under "/Users/fred/Documents/notes-on-walrus.docx".
 
-Using the **dataset** cli you issue the follow commond (in this
-example without a provided semver--
+Using the **dataset** cli you issue the follow command --
 
 ```shell
-    dataset attach Sea-Mamals.ds walrus /Users/fred/Documents/notes-on-walrus.docx
+    dataset attach Sea-Mamals.ds walrus \
+       /Users/fred/Documents/notes-on-walrus.docx
 ```
 
 The results in a simple directory stricture for the JSON object and attachment.
 
 ```
     Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/_docs/notes-on-walrus.json
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
 ```
 
-In this example "notes-on-walrus-json" is the metadata for attachment
-"notes-on-walrus.docx". No versioning happening.
+In this example the metadata for the attachment is updated in the walrus.json file.
+Since no versioning was specified for "notes-on-walrus.docx" it is stored as version
+v0.0.0.
 
 If we had added our attachment including a semver the directory structure
 will be slightly more complex.
@@ -60,35 +60,34 @@ will be slightly more complex.
     dataset attach Sea-Mamals.ds walrus v0.0.1 /Users/fred/Documents/notes-on-walrus.docx
 ```
 
-This will cause an additional sub directories to exist (if they haven't be created
+This will cause additional sub directories to exist (if they haven't be created
 before). Our "unversioned" version still exists as v0.0.0 but now we have v0.0.1.
-Our metadata file will include an href pointing to v0.0.1 and a map to all versions
-including v0.0.0.
+Our attachment metadata file in our JSON object file will now include an href 
+pointing to v0.0.1 and a map to all versions including v0.0.0.
 
 ```
     Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/_docs/notes-on-walrus.json
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
 ```
 
-If we later add a v0.0.2 of "notes-on-walrus.docx" it'd looke like
+If we later add a v0.0.2 of "notes-on-walrus.docx" it'd looks like
 
 ```
     Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/_docs/notes-on-walrus.json
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.2/notes-on-walrus.docx
 ```
 
-The single metadata file in the `_docs` subdirectory holds the metadata.
-In the metadata we include an "href" string and "version_href" map. The
+All the metadata about the files attached are stored in 
+the primary JSON document under the attribute `_Attachments`.
+In the metadata we include an "href" string and "version_hrefs" map. The
 version_href will point to all known versions keyed by the semver. The
-href string will point at the last version added, in this case v0.0.2.
+href string will point to the last version added, in this case v0.0.2.
 
 IMPORTANT: If you provide the same semver and attach a file with the same
-basename that previously stored version will be overwritten. Example if we
+basename the previously stored version will be overwritten. Example if we
 issue our original unversioned command the v0.0.0 copy of "notes-on-walrus.docx"
 will be overwritten!
 
@@ -103,8 +102,9 @@ new version will be before attaching the new version of the document.
 The semver versioned dircetories may contain more than one attached document.
 The documents attached can be of various versions though if you attach 
 more than one document at a time they will carry the same semver. This is because
-the a implied semver is v0.0.0 when using the command line **dataset** otherwise
-the first valid semver is used for all files being attached.
+their is an implied semver is v0.0.0 when using the command line without semver 
+**dataset** otherwise the first valid semver is used for all files being attached in that
+command execution.
 
 NOTE: The href in the attachments metadata always points at the last attached 
 version.
