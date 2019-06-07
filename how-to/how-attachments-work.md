@@ -156,7 +156,7 @@ When we added v0.0.1 the object would change shape and be something like
                 "name": "notes-on-walrus.docx",
                 "href": "v0.0.1/notes-on-walrus.docx",
                 "version_hrefs": {
-                    "v0.0.0": "v0.0.0/notes-on-walrus.docx"
+                    "v0.0.0": "v0.0.0/notes-on-walrus.docx",
                     "v0.0.1": "v0.0.1/notes-on-walrus.docx"
                 },
                 ...
@@ -184,7 +184,7 @@ The JSON should look something like--
                 "size": "1041",
                 "href": "v0.0.1/notes-on-walrus.docx",
                 "version_hrefs": {
-                    "v0.0.0": "s3://sea-mamals/v0.0.0/notes-on-walrus.docx"
+                    "v0.0.0": "s3://sea-mamals/v0.0.0/notes-on-walrus.docx",
                     "v0.0.1": "v0.0.1/notes-on-walrus.docx"
                 },
                 ...
@@ -192,5 +192,4 @@ The JSON should look something like--
         ]
     }
 ```
-
 
