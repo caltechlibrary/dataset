@@ -22,6 +22,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"time"
 )
@@ -169,7 +170,7 @@ func updateAttachmentList(attachmentList []*Attachment, newObj *Attachment) []*A
 }
 
 // AttachStream is for attaching open a non-JSON file buffer (via an io.Reader).
-func (c *Collection) AttachStream(keyName, semver, fName string, buf io.Reader) error {
+func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reader) error {
 	if c.HasKey(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
@@ -177,7 +178,7 @@ func (c *Collection) AttachStream(keyName, semver, fName string, buf io.Reader) 
 		// We use version v0.0.0 for "unversioned" attachments.
 		semver = "v0.0.0"
 	}
-	// Normalize fName to basename of fullName
+	// Normalize fName to basename from fullName to be safe.
 	fName := c.Store.Base(fullName)
 
 	// Read in JSON object and metadata objects.
