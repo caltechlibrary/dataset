@@ -4,7 +4,8 @@
 ## Bugs
 
 + [x] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
-+ [ ] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
++ [x] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
++ [ ] Need an AttachFile that will support reading a buffer for eprinttools support
 
 
 ## Next (prep for v1.0.0)
