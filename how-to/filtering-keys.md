@@ -19,3 +19,7 @@ We will filter for a family name of "Sam" and sort by the age field.
                 '(eq .family "Sam")' '+.age'
 ```
 
+You can improve the performance of filtering/sorting by
+breaking it down to steps for large collections. First filter
+the keys you want. Then sort the filtered list.
+

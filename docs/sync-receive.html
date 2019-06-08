@@ -25,22 +25,26 @@
 </nav>
 
 <section>
-<p>VERB</p>
+<h1>sync-recieve</h1>
 
-<p>sync-recieve</p>
+<h2>Syntax</h2>
 
-<pre><code>sync-recieve COLLECTION FRAME_NAME CSV_FILENAME|GSHEET_ID SHEET_NAME
+<pre><code>    sync-recieve COLLECTION FRAME_NAME CSV_FILENAME|GSHEET_ID SHEET_NAME
 </code></pre>
+
+<h2>Usage</h2>
 
 <p>sync a frame of objects recieving data from a table (e.g. CSV, GSheet)</p>
 
-<p>OPTIONS</p>
+<h2>OPTIONS</h2>
 
 <pre><code>-O, -overwrite  overwrite existing cells in frame
 -client-secret  (sync-receive from a GSheet) set the client secret path and filename for GSheet access
 -i, -input  read CSV content from a file
 -v, -verbose  verbose output
 </code></pre>
+
+<p>Related topics: <a href="sync-send.html">sync-send</a> <a href="frame.html">frame</a></p>
 
 </section>
 
