@@ -435,137 +435,6 @@ func count(cName *C.char) C.int {
 	return C.int(i)
 }
 
-//export indexer
-func indexer(cName, cIndexName, cIndexMapName, cKeyList *C.char, cBatchSize C.int) C.int {
-	collectionName := C.GoString(cName)
-	indexName := C.GoString(cIndexName)
-	indexMapName := C.GoString(cIndexMapName)
-	keyList := C.GoString(cKeyList)
-	batchSize := int(cBatchSize)
-
-	error_clear()
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		// return 0 (false)
-		return C.int(0)
-	}
-	defer c.Close()
-
-	keys := []string{}
-	if keyList != "" {
-		err = json.Unmarshal([]byte(keyList), &keys)
-		if err != nil {
-			error_dispatch(err, "Can't unmarshal key list, %s", err)
-			// return 0 (false)
-			return C.int(0)
-		}
-	}
-
-	err = c.Indexer(indexName, indexMapName, keys, batchSize)
-	if err != nil {
-		error_dispatch(err, "Indexing error %s %s, %s", collectionName, indexName, err)
-		// return 0 (false)
-		return C.int(0)
-	}
-	// return 1 (true) for success
-	return C.int(1)
-}
-
-//export deindexer
-func deindexer(cName, cIndexName, cKeyList *C.char, cBatchSize C.int) C.int {
-	collectionName := C.GoString(cName)
-	indexName := C.GoString(cIndexName)
-	keyList := C.GoString(cKeyList)
-	batchSize := int(cBatchSize)
-
-	error_clear()
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		// return 0 (false), failed
-		return C.int(0)
-	}
-	defer c.Close()
-
-	keys := []string{}
-	if keyList != "" {
-		err = json.Unmarshal([]byte(keyList), &keys)
-		if err != nil {
-			error_dispatch(err, "Can't unmarshal key list, %s", err)
-			// return 0 (false), failed
-			return C.int(0)
-		}
-	}
-
-	err = c.Deindexer(indexName, keys, batchSize)
-	if err != nil {
-		error_dispatch(err, "Deindexing error %s %s, %s", collectionName, indexName, err)
-		// return 0 (false), failed
-		return C.int(0)
-	}
-	// return 1 (true) for success
-	return C.int(1)
-}
-
-//export find
-func find(cIndexNames, cQueryString, cOptionsMap *C.char) *C.char {
-	indexNamesSrc := C.GoString(cIndexNames)
-	queryString := C.GoString(cQueryString)
-	optionsSrc := C.GoString(cOptionsMap)
-
-	indexNames := []string{}
-	if strings.HasPrefix(indexNamesSrc, "[") {
-		err := json.Unmarshal([]byte(indexNamesSrc), &indexNames)
-		if err != nil {
-			error_dispatch(err, "Can't unmarshal index names, %s", err)
-			return C.CString("")
-		}
-	} else if strings.Contains(indexNamesSrc, ":") {
-		indexNames = strings.Split(indexNamesSrc, ":")
-	} else {
-		indexNames = []string{indexNamesSrc}
-	}
-	options := map[string]string{}
-	if optionsSrc != "" {
-		err := json.Unmarshal([]byte(optionsSrc), &options)
-		if err != nil {
-			error_dispatch(err, "Options error, %s", err)
-			// return "", failed
-			return C.CString("")
-		}
-	}
-
-	error_clear()
-	idxList, _, err := dataset.OpenIndexes(indexNames)
-	if err != nil {
-		error_dispatch(err, "Can't open index %s, %s", strings.Join(indexNames, ", "), err)
-		return C.CString("")
-	}
-
-	result, err := dataset.Find(idxList.Alias, queryString, options)
-	if err != nil {
-		error_dispatch(err, "Find error %s, %s", strings.Join(indexNames, ", "), err)
-		// return "", failed
-		return C.CString("")
-	}
-	err = idxList.Close()
-	if err != nil {
-		error_dispatch(err, "Can't close indexes %s, %s", strings.Join(indexNames, ", "), err)
-	}
-
-	src, err := json.Marshal(result)
-	if err != nil {
-		error_dispatch(err, "Can't marshal results, %s", err)
-		// return "", failed
-		return C.CString("")
-	}
-
-	txt := fmt.Sprintf("%s", src)
-	// return our encoded results, success
-	return C.CString(txt)
-}
-
 // import_csv - import a CSV file into a collection
 // syntax: COLLECTION CSV_FILENAME ID_COL
 //
@@ -878,9 +747,10 @@ func repair(cName *C.char) C.int {
 }
 
 //export attach
-func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
+	semver := C.GoString(cSemver)
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -909,7 +779,7 @@ func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 			return C.int(0)
 		}
 	}
-	err = c.AttachFiles(key, fNames...)
+	err = c.AttachFiles(key, semver, fNames...)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -944,9 +814,10 @@ func attachments(cName *C.char, cKey *C.char) *C.char {
 }
 
 //export detach
-func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
+	semver := C.GoString(cSemver)
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -967,7 +838,7 @@ func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 		error_dispatch(err, "%q is not in collection", key)
 		return C.int(0)
 	}
-	err = c.GetAttachedFiles(key, fNames...)
+	err = c.GetAttachedFiles(key, semver, fNames...)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -976,9 +847,10 @@ func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 }
 
 //export prune
-func prune(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
+	semver := C.GoString(cSemver)
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -996,7 +868,7 @@ func prune(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	}
 	defer c.Close()
 
-	err = c.Prune(key, fNames...)
+	err = c.Prune(key, semver, fNames...)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
