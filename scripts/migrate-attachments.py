@@ -57,6 +57,10 @@ os.chdir("tmp-attachment-migration")
 print(f"Working directory for migration is {os.getcwd()}")
 for c_name in sys.argv:
     keys = dataset.keys(os.path.join("..", c_name))
+    if isinstance(keys[0], int):
+        keys.sort(key=int)
+    else:
+        keys.sort()
     tot = len(keys)
     print(f"Ready to process {tot} objects")
     for i, key in enumerate(keys):
