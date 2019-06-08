@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ const (
 	License = `
 %s %s
 
-Copyright (c) 2018, Caltech
+Copyright (c) 2019, Caltech
 All rights not granted herein are expressly reserved by Caltech.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -126,8 +126,8 @@ type Collection struct {
 	Who []string `json:"who,omitempty"`
 	// What - description of collection
 	What string `json:"what,omitempty"`
-	// When - date associated with collection (e.g. 2018,
-	// 2018-10, 2018-10-02), should map to an approx date like in
+	// When - date associated with collection (e.g. 2019,
+	// 2019-10, 2019-10-02), should map to an approx date like in
 	// archival work.
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection

@@ -4,8 +4,8 @@
 ## Syntax
 
 ```
-    dataset prune COLLECTION_NAME KEY
-    dataset prune COLLECTION_NAME KEY ATTACHMENT_NAME
+    dataset prune COLLECTION_NAME KEY [SEMVER]
+    dataset prune COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
 ```
 
 ## Description
@@ -22,6 +22,7 @@ the second all attachments are removed. Our collection name is "data.ds"
 
 
 ```shell
+    dataset prune data.ds k1 v0.0.1 stats.xlsx
     dataset prune data.ds k1 stats.xlsx
     dataset prune data.ds k1
 ```

@@ -127,7 +127,7 @@ before too long.
 `
 
 	license = `
-Copyright (c) 2018, Caltech
+Copyright (c) 2019, Caltech
 All rights not granted herein are expressly reserved by Caltech.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -1300,12 +1300,13 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	}
 	args = flagSet.Args()
 
+	semver := "v0.0.0"
 	switch {
 	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name, key and attachment name(s)\n")
+		fmt.Fprintf(eout, "Missing collection name, key, semver and attachment name(s)\n")
 		return 1
 	case len(args) == 1:
-		fmt.Fprintf(eout, "Missing key and attachment name(s)\n")
+		fmt.Fprintf(eout, "Missing key, semver and attachment name(s)\n")
 		return 1
 	case len(args) == 2:
 		if len(fNames) == 0 {
@@ -1313,8 +1314,16 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			return 1
 		}
 		collectionName, key = args[0], args[1]
-	case len(args) >= 3:
+	case len(args) == 3:
 		collectionName, key, fNames = args[0], args[1], args[2:]
+	case len(args) > 3:
+		//Is args[2] a semver or a filename?
+		if val, err := dataset.ParseSemver([]byte(args[2])); err == nil {
+			semver = val.String()
+			collectionName, key, fNames = args[0], args[1], args[3:]
+		} else {
+			collectionName, key, fNames = args[0], args[1], args[2:]
+		}
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -1351,7 +1360,7 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 			return 1
 		}
 	}
-	err = c.AttachFiles(key, fNames...)
+	err = c.AttachFiles(key, semver, fNames...)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1449,6 +1458,7 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	}
 	args = flagSet.Args()
 
+	semver := ""
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name and key\n")
@@ -1458,8 +1468,16 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	case len(args) == 2:
 		collectionName, key = args[0], args[1]
-	case len(args) >= 3:
+	case len(args) == 3:
 		collectionName, key, fNames = args[0], args[1], args[2:]
+	case len(args) > 3:
+		//Is args[2] a semver or a filename?
+		if val, err := dataset.ParseSemver([]byte(args[2])); err == nil {
+			semver = val.String()
+			collectionName, key, fNames = args[0], args[1], args[3:]
+		} else {
+			collectionName, key, fNames = args[0], args[1], args[2:]
+		}
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -1490,7 +1508,7 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		fmt.Fprintf(eout, "%q is not in %s", key, collectionName)
 		return 1
 	}
-	err = c.GetAttachedFiles(key, fNames...)
+	err = c.GetAttachedFiles(key, semver, fNames...)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1519,6 +1537,7 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 	args = flagSet.Args()
 
+	semver := "v0.0.0"
 	switch {
 	case len(args) == 0:
 		fmt.Fprintf(eout, "Missing collection name and key\n")
@@ -1528,8 +1547,16 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	case len(args) == 2:
 		collectionName, key = args[0], args[1]
-	case len(args) >= 3:
+	case len(args) == 3:
 		collectionName, key, fNames = args[0], args[1], args[2:]
+	case len(args) >= 3:
+		//Is args[2] a semver or a filename?
+		if val, err := dataset.ParseSemver([]byte(args[2])); err == nil {
+			semver = val.String()
+			collectionName, key, fNames = args[0], args[1], args[3:]
+		} else {
+			collectionName, key, fNames = args[0], args[1], args[2:]
+		}
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -1560,7 +1587,7 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		fmt.Fprintf(eout, "%q is not in %s", key, collectionName)
 		return 1
 	}
-	err = c.Prune(key, fNames...)
+	err = c.Prune(key, semver, fNames...)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -3257,7 +3284,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	// Attachment handling
 	vAttach = app.NewVerb("attach", "attach a file to JSON object", fnAttach)
-	vAttach.SetParams("COLLECTION", "KEY", "[FILENAMES]")
+	vAttach.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
 	vAttach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	vAttachments = app.NewVerb("attachments", "list attachments for a JSON object", fnAttachments)
@@ -3265,11 +3292,11 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vAttachments.StringVar(&inputFName, "i,input", "", "read keys(s), one per line, from a file")
 
 	vDetach = app.NewVerb("detach", "detach a copy of the attachment from a JSON object", fnDetach)
-	vDetach.SetParams("COLLECTION", "KEY", "[FILENAMES]")
+	vDetach.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
 	vDetach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	vPrune = app.NewVerb("prune", "prune an the attachment to a JSON object", fnPrune)
-	vPrune.SetParams("COLLECTION", "KEY", "[FILENAMES]")
+	vPrune.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
 	vPrune.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	// Frames and Grid

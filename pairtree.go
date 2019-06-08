@@ -447,11 +447,10 @@ func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
 	} else {
 		//FIXME: Need to list the directory and aggregaite the pairs...
 		fmt.Fprintf(os.Stderr, "walkPairstree() not implemented for S3 and GS\n")
-		dListing, err := store.ReadDir(startPath)
+		_, err := store.ReadDir(startPath)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("DEBUG ReadDir()\n%+v\n", dListing)
 	}
 	return pairs, err
 }

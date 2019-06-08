@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -104,6 +104,15 @@ func getAttachmentList(jsonObject map[string]interface{}) ([]*Attachment, bool) 
 				attachment.Size = size
 			}
 		}
+		if sizes, ok := m["sizes"]; ok == true {
+			m1 := sizes.(map[string]interface{})
+			attachment.Sizes = make(map[string]int64)
+			for k, v := range m1 {
+				if size, err := v.(json.Number).Int64(); err == nil {
+					attachment.Sizes[k] = size
+				}
+			}
+		}
 		// popagate our optional metadata
 		if metadata, ok := m["metadata"]; ok == true {
 			m2 := metadata.(map[string]interface{})
@@ -127,6 +136,9 @@ func getAttachmentList(jsonObject map[string]interface{}) ([]*Attachment, bool) 
 		}
 		if href, ok := m["href"]; ok == true {
 			attachment.HRef = href.(string)
+		}
+		if version, ok := m["version"]; ok == true {
+			attachment.Version = version.(string)
 		}
 		if versionHRefs, ok := m["version_hrefs"]; ok == true {
 			m4 := versionHRefs.(map[string]interface{})
@@ -190,9 +202,6 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 		for _, obj := range attachmentList {
 			if obj.Name == fName {
 				attachmentObject = obj
-				if src, err := json.MarshalIndent(obj, "", "    "); err == nil {
-					fmt.Printf("DEBUG we have an existing attachment -> %s", src)
-				}
 				break
 			}
 		}
@@ -240,12 +249,6 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 		return err
 	}
 	jsonObject["_Attachments"] = updateAttachmentList(attachmentList, attachmentObject)
-	//FIXME : while this is legal I don't know that the attachment list will rendered proper JSON
-	if src, err := json.MarshalIndent(jsonObject, "", "    "); err != nil {
-		fmt.Printf("DEBUG failed to marshal %s\n", err)
-	} else {
-		fmt.Printf("DEBUG marshaled as %s\n", src)
-	}
 
 	// Write out updated JSON Object and return any error
 	err = c.Update(keyName, jsonObject)
@@ -311,16 +314,16 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 	if ok == false {
 		return fmt.Errorf("No attachments")
 	}
-	for i, obj := range attachmentList {
-		fmt.Printf("DEBUG attachment metadata %d -> %+v\n", i, obj)
+	version := semver
+	for _, obj := range attachmentList {
 		if filterNameFound(filterNames, obj.Name) {
 			// Are we getting the current version?
-			// Check for a prior version
-			if href, ok := obj.VersionHRefs[semver]; ok == true {
-				fmt.Printf("DEBUG read in %s %s from %s\n", obj.Version, obj.Name, href)
-				fmt.Printf("DEBUG write out to %s\n", obj.Name)
-				//FIXME: Can we just use a c.Store.CopyFile()???
-				if src, err := c.Store.ReadFile(obj.HRef); err != nil {
+			if semver == "" {
+				version = obj.Version
+			}
+			// Retrieve the file by version
+			if href, ok := obj.VersionHRefs[version]; ok == true {
+				if src, err := c.Store.ReadFile(href); err != nil {
 					return err
 				} else if err := c.Store.WriteFile(obj.Name, src, 0777); err != nil {
 					return err
@@ -328,7 +331,6 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 			} else {
 				return fmt.Errorf("Can't find %s %q for key %q", semver, obj.Name, keyName)
 			}
-
 		}
 	}
 	return nil
@@ -348,17 +350,14 @@ func (c *Collection) Prune(keyName string, semver string, filterNames ...string)
 	if ok == false {
 		return fmt.Errorf("No attachments found")
 	}
-	for i, obj := range attachmentList {
-		fmt.Printf("DEBUG attachment metadata %d -> %+v\n", i, obj)
+	for _, obj := range attachmentList {
 		if filterNameFound(filterNames, obj.Name) {
 			// Are we getting the current version?
 			// Check for a prior version
 			if href, ok := obj.VersionHRefs[semver]; ok == true {
-				fmt.Printf("DEBUG prune, %s %s from %s in collection\n", obj.Version, obj.Name, href)
 				if err := c.Store.Delete(href); err != nil {
 					return err
 				}
-				fmt.Printf("DEBUG removed file from %s\n", href)
 			} else {
 				return fmt.Errorf("Can't find %s %q for key %q", semver, obj.Name, keyName)
 			}
@@ -369,13 +368,6 @@ func (c *Collection) Prune(keyName string, semver string, filterNames ...string)
 	}
 	// Now we need to update our attachments list and update the JSON document
 	jsonObject["_Attachments"] = newAttachmentList
-	//FIXME: make sure this results in valid JSON ...
-	if src, err := json.MarshalIndent(jsonObject, "", "    "); err != nil {
-		fmt.Printf("DEBUG failed to marshal, %s\n", err)
-	} else {
-		fmt.Printf("DEBUG marshaled as %s\n", src)
-	}
-
 	if err := c.Update(keyName, jsonObject); err != nil {
 		return err
 	}

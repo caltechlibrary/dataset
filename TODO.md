@@ -3,42 +3,41 @@
 
 ## Bugs
 
-+ [ ] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
++ [x] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
++ [ ] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
 
 
 ## Next (prep for v1.0.0)
 
-+ [ ] Switch from Bleve to Lunr indexes and search
-+ [ ] Switch go go-cloud over our storage.go module
 + [x] Refactor grids to be an array of objects in frames
-+ [ ] Refactor attachments from tarball to `_docs` and semver sub 
++ [x] Refactor attachments from tarball use`a semver sub
       directory scheme
-    + [ ] migration should be done via script
-        + get the path of the tarball
-        + copy tarball out of pairtree
-        + "delete" all attachments
-        + "untar" the files
-        + "attach" the untared files
++ [ ] Create a attachment migration Python script example
+    + Read out the jsonObject
+    + Find the tarball and untar the listed files into a temp directory
+    + For each untared file use dataset attach to attach it back onto object.
 + [x] Remove bucket layout code
-+ [ ] Document GSheet cell length limitations and how that impact sync-send
-+ [ ] Missing documentation for filtering/sorting keys
 + [x] Improve collection.json with the following additional fields
     + [x] Collection name
     + [x] Collection description set via Namaste
     + [x] Date/time init was run creating collection
-+ [ ] add *web* command to generate index.md, index.html
-    + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
-        + https://codemeta.github.io/terms 
-    + [ ] Generate Lunr indexes for each frame
-    + [ ] Generate a index.md based on codemata.json, namaste, and collection.json
-    + [ ] Generate a index.html based on index.md plus a Lunrjs search
-        + needs to support aggregate as well as selectable indexes
++ [ ] Document GSheet cell length limitations and how that impact sync-send
++ [ ] Missing documentation for filtering/sorting keys
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
 
 
 ## Roadmap (v2.0.0)
 
++ [ ] Switch from Bleve to Lunr indexes and search
++ [ ] Switch go go-cloud over our storage.go module
++ [ ] add *publish* command to generate index.md, index.html
+    + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
+        + https://codemeta.github.io/terms 
+    + [ ] Generate Lunr indexes for each frame
+    + [ ] Generate a index.md based on codemata.json, namaste, and collection.json
+    + [ ] Generate a index.html based on index.md plus a Lunrjs search
+        + needs to support aggregate as well as selectable indexes
 + [ ] add *archive* command would do a *publish* then archive the collection
     + support adding relevant Namaste for preservation
     + archive should be suitable for ingesting in preservation systems

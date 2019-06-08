@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -40,6 +40,7 @@ func TestAttachments(t *testing.T) {
 	}
 
 	// Create some temp text files to attach.
+	keyName := "freda"
 	buf := []byte("Hello World")
 	size := int64(len(buf))
 	if size != int64(11) {
@@ -78,20 +79,20 @@ func TestAttachments(t *testing.T) {
 		"name":  "freda",
 		"motto": "it's all about what you sense when you've have sense to sense it",
 	}
-	if err := c.Create("freda", record); err != nil {
-		t.Errorf("failed to create freda in %s, %s", c.Name, err)
+	if err := c.Create(keyName, record); err != nil {
+		t.Errorf("failed to create %s in %s, %s", keyName, c.Name, err)
 		t.FailNow()
 	}
-	if err := c.AttachFile("freda", semver, path.Join("testdata", "helloworld.txt")); err != nil {
+	if err := c.AttachFile(keyName, semver, path.Join("testdata", "helloworld.txt")); err != nil {
 		t.Errorf("failed to add attachments to %s, %s", path.Join("testdata", "helloworld.txt"), err)
 		t.FailNow()
 	}
-	if err := c.AttachFile("freda", semver, path.Join("testdata", data.Name)); err != nil {
+	if err := c.AttachFile(keyName, semver, path.Join("testdata", data.Name)); err != nil {
 		t.Errorf("failed to add attachments to %s, %s", c.Name, err)
 		t.FailNow()
 	}
-	if files, err := c.Attachments("freda"); err != nil {
-		t.Errorf("can't list attachments for freda in %s, %s", c.Name, err)
+	if files, err := c.Attachments(keyName); err != nil {
+		t.Errorf("can't list attachments for %s in %s, %s", keyName, c.Name, err)
 		t.FailNow()
 	} else {
 		if len(files) != 2 {
@@ -108,7 +109,7 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if files, err := c.Attachments("freda"); err != nil {
+	if files, err := c.Attachments(keyName); err != nil {
 		t.Errorf("Attachments (2) expected, %+v %s", files, err)
 		t.FailNow()
 	} else {
@@ -150,7 +151,7 @@ func TestAttachments(t *testing.T) {
 	//
 	// Now lets tests multiple versions of an attachment
 	//
-	keyName := "freda"
+	keyName = "freda"
 	semver = "v0.0.1"
 	motto = []byte("Wowie Zowie")
 	fName := path.Join("testdata", "motto.txt")
@@ -198,12 +199,33 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("Should be able to read %s, %s", keyName, err)
 		t.FailNow()
 	}
-	// make sure we can marshal still
-	if src, err := json.MarshalIndent(jsonObject, "", "    "); err != nil {
-		t.Errorf("Could not marshal %s, %s", keyName, err)
+	// Make sure we have two semver items in Sizes, Checksums and
+	// VersionHRefs
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == false {
+		t.Errorf("Should be able to get attachment list %s", keyName)
 		t.FailNow()
-	} else {
-		fmt.Printf("DEBUG %s now -> %s\n", keyName, src)
+	}
+	if len(attachmentList) != 1 {
+		t.Errorf("Should have `1 attachments, got %d", len(attachmentList))
+		t.FailNow()
+	}
+	if len(attachmentList[0].Checksums) != 2 {
+		t.Errorf("Expected 2 checksums, got %d", len(attachmentList[0].Checksums))
+		t.FailNow()
+	}
+	if len(attachmentList[0].Sizes) != 2 {
+		t.Errorf("Expected 2 Sizes, got %d", len(attachmentList[0].Sizes))
+		t.FailNow()
+	}
+	if len(attachmentList[0].VersionHRefs) != 2 {
+		t.Errorf("Expected 2 VersionHRefs, got %d", len(attachmentList[0].VersionHRefs))
+		t.FailNow()
 	}
 
+	// make sure we can marshal still
+	if _, err := json.MarshalIndent(jsonObject, "", "    "); err != nil {
+		t.Errorf("Could not marshal %s, %s", keyName, err)
+		t.FailNow()
+	}
 }

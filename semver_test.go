@@ -19,74 +19,35 @@
 package dataset
 
 import (
-	"os"
-	"path"
 	"testing"
 )
 
-func TestFrame(t *testing.T) {
-	os.RemoveAll(path.Join("testdata", "frame_test.ds"))
-	cName := path.Join("testdata", "frame_test.ds")
-	c, err := InitCollection(cName)
+func TestSemver(t *testing.T) {
+	expected := "v1.1.1"
+	v, err := ParseSemver([]byte(expected))
 	if err != nil {
-		t.Error(err)
+		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	defer c.Close()
-
-	//NOTE: test data and to load into collection and generate grid
-	tRecords := []map[string]interface{}{
-		map[string]interface{}{
-			"_Key":  "A",
-			"id":    "A",
-			"one":   "one",
-			"two":   22,
-			"three": 3.0,
-			"four":  []string{"one", "two", "three"},
-		},
-		map[string]interface{}{
-			"_Key":  "B",
-			"id":    "B",
-			"two":   2000,
-			"three": 3000.1,
-		},
-		map[string]interface{}{
-			"_Key": "C",
-			"id":   "C",
-		},
-		map[string]interface{}{
-			"_Key":  "D",
-			"id":    "D",
-			"one":   "ONE",
-			"two":   20,
-			"three": 334.1,
-			"four":  []string{},
-		},
-	}
-	keys := []string{}
-	for _, rec := range tRecords {
-		key := rec["_Key"].(string)
-		keys = append(keys, key)
-		err := c.Create(key, rec)
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
+	result := v.String()
+	if expected != result {
+		t.Errorf("expected %q, got %q", expected, result)
 	}
 
-	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, false)
+	expected = "v1.1"
+	v, err = ParseSemver([]byte(expected))
 	if err != nil {
-		t.Error(err)
+		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	expected := "frame-1"
-	result := f.Name
+	result = v.String()
 	if expected != result {
-		t.Errorf("expected %q, got %q, for %s", expected, result, f)
+		t.Errorf("expected %q, got %q", expected, result)
 	}
-	expected = c.Name // e.g. "frame_test.ds from  "testdata/frame_test.ds"
-	result = f.CollectionName
-	if expected != result {
-		t.Errorf("expected %q, got %q, for %s", expected, result, f)
+
+	expected = "vA1.2.3"
+	v, err = ParseSemver([]byte(expected))
+	if err == nil {
+		t.Errorf("expected an error, returns %s", v.ToJSON())
 	}
 }
