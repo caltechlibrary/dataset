@@ -580,82 +580,6 @@ EOT
     echo 'test_count, OK'
 }
 
-function test_search() {
-    echo 'test_search'
-    if [[ -d "testdata/search.ds" ]]; then
-        rm -fR testdata/search.ds
-    fi
-    cat << EOT > testdata/search.csv
-id,title,type,published,author
-a1,4th Tower of Inverness,audio play,true,Tom Lopez
-n1,"20,000 leagues under the Sea",novel,true,Jules Verne
-s1,Our Person in Avalon,screenplay,false,R. S. Doiel
-EOT
-    
-    cat << EOT > testdata/search.json
-{
-    "title": {
-        "object_path": ".title"
-    },
-    "type": {
-        "object_path": ".type"
-    },
-    "published": {
-        "object_path": ".published"
-    },
-    "author": {
-        "object_path": ".author"
-    }
-
-}
-EOT
-
-    bin/dataset -quiet -nl=false init testdata/search.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) init testdata/search.ds'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false import testdata/search.ds testdata/search.csv 1
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds import-csv testdata/search.csv 1'
-        exit 1
-    fi
-    # FIXME: this needs to use a frame to define search
-    bin/dataset -quiet -nl=false indexer testdata/search.ds testdata/search.json testdata/search.bleve
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds indexer testdata/search.json testdata/search.bleve'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false find testdata/search.bleve 'screenplay' 
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds find "screenplay"'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false find testdata/search.bleve '+published:true' 
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds find "+published:true"'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false find testdata/search.bleve 'Tower'
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds find "Tower"'
-        exit 1
-    fi
-    echo 'a1' > testdata/list.keys
-    bin/dataset -quiet -nl=false deindexer testdata/search.bleve testdata/list.keys
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) deindexer testdata/search.bleve testdata/list.keys' 
-        exit 1
-    fi
-
-    # Success, cleanup
-    rm -fR testdata/search.ds
-    rm -fR testdata/search.bleve
-    rm testdata/search.json
-    rm testdata/search.csv
-    rm testdata/list.keys
-    echo 'test_search, OK'
-}
 
 function test_import_export() {
     echo 'test_import_export'
@@ -765,7 +689,6 @@ test_count
 test_import_export
 #NOTE: test will be skip if there is no etc/client_secret.json found
 test_gsheet credentials.json # etc/client_secret.json
-test_search
 test_check_and_repair
 test_sync
 echo 'PASS'

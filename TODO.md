@@ -9,6 +9,8 @@
 
 ## Next (prep for v1.0.0)
 
++ [ ] Remove dependency on Blevesearch
+    + we will be moving forward with Lunr
 + [x] Refactor grids to be an array of objects in frames
 + [x] Refactor attachments from tarball use`a semver sub
       directory scheme
@@ -54,11 +56,10 @@
 + [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
 + [ ] sparql cli interface for searching collection
     - support JSON-LD for cross collection integration
-+ [ ] Remove dependency on github.com/caltechlibrary/tmplfn
-+ [ ] Remove dependency on Blevesearch
 
 ## Someday, Maybe
 
++ [ ] Remove dependency on github.com/caltechlibrary/tmplfn
 + [ ] Evaludate JMESPath as replacement/augmentation to dot path 
 + [ ] Add some additional metadata fields
     + [ ] version control on/off for attachments (we could verison via Subversion or git depending...)

@@ -25,34 +25,40 @@
 </nav>
 
 <section>
-<h1>Toturials and How To&hellip;</h1>
+<h1>Samples</h1>
 
-<p>Here is a small collection of pages to help you get started
-with <em>dataset</em> or explore a specific topic.</p>
+<p>Getting a sample of a collection and be done by generating
+a random sample of keys or by cloning a collection based on
+a random sample of objects.</p>
 
-<h2>A short reading list</h2>
+<h2>Getting a random sample of keys</h2>
 
-<ul>
-<li><a href="getting-started-with-dataset.html">Getting started with dataset</a></li>
-<li><a href="working-with-csv.html">Working with CSV</a></li>
-<li><a href="working-with-gsheets.html">Working with GSheets</a></li>
-<li><a href="working-with-cloud-storage.html">Working with Cloud Storage</a></li>
-</ul>
+<p>Create a random sample of keys. This uses the keys verb.</p>
 
-<h2>Additional topics</h2>
+<p>In this example 3 randomly selected keys would be returned
+from the collection named &ldquo;mycollection.ds&rdquo;.</p>
 
-<ul>
-<li><a href="cloning-and-samples.html">Cloning and samples</a></li>
-<li><a href="collections-grids-and-frames.html">Collections grids and frames</a></li>
-<li><a href="file-system-layout.html">File system layout</a></li>
-<li><a href="how-attachments-work.html">How attachments work</a></li>
-<li><a href="filtering-keys.html">Filtering keys</a></li>
-<li><a href="joining-objects.html">Joining objects</a></li>
-<li><a href="managing-attachments.html">Managing attachments</a></li>
-<li><a href="reshape-json-collections.html">Reshape JSON collections</a></li>
-<li><a href="taking-samples.html">Taking Samples</a></li>
-<li><a href="upgrading-a-collection.html">Upgrading a collection</a></li>
-</ul>
+<pre><code class="language-shell">    dataset keys -sample 3 mycollection.ds
+</code></pre>
+
+<h2>Cloning a random sample of objects from a collection</h2>
+
+<p>When cloning a randomize sample of objects from a collection
+you often want two collections. Typically this is a training
+collection and a test collection. The &ldquo;clone-sample&rdquo; verb
+supports this when you provide two collection destinations.</p>
+
+<p>In this example we create a training and testing collections
+based on a training sample size of 1000.</p>
+
+<pre><code class="language-shell">    dataset clone-sample -size=1000 mycollection.ds training.ds test.ds
+</code></pre>
+
+<p>If you only want a single sample collection skip the second collection
+name.</p>
+
+<pre><code class="language-shell">    dataset clone-sample -size=1000 mycollection.ds small-sample.ds
+</code></pre>
 
 </section>
 

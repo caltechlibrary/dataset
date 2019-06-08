@@ -142,5 +142,5 @@ Or clone the repstory and then compile
     make install
 ```
 
-Compilation assumes [go](https://github.com/golang/go) v1.10 and [bleve](https://blevesearh.com) v0.6.0.
+Compilation assumes [go](https://github.com/golang/go) v1.12
 

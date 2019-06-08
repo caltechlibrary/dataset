@@ -246,25 +246,6 @@ Or in python
 ```
 
 
-## A future possibility
-
-One possible use of frames would be in rendering search indexes like 
-those used by [Bleve](https://blevesearch.com) or 
-[Lunrjs](https://lunrjs.com). A frame proves most of the information 
-needed for transforming the frame's. value (i.e. grid) into minimalist 
-documents for indexing.  One workflow for creating a searchable collection 
-might be
-
-
-1. Harvest your JSON records into a dataset collection
-2. Generate a list of keys for the JSON documents you want to search
-3. Generate a frame for the columns that you want to index
-4. Update labels as necessary
-5. Run a conversion script to convert the frame into the index definition 
-   used by our search platform (e.g. pre-calucate Lunrjs indexes or write 
-   a Bleve index)
-
-
 # Data Grids
 
 Often when processing data it is useful to pull date into a grid format.

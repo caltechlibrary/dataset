@@ -7,10 +7,6 @@ Compiler requirements
 
 + go1.12 or better
 
-Package assumptions
-
-+ blevesearch v0.7.0 or better
-
 ## Recommend
 
 + Google Sheets support docs see https://developers.google.com/sheets/api/quickstart/go

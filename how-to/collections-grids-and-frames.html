@@ -243,25 +243,6 @@ the keys associated in the frame)</li>
 <pre><code class="language-python">    frame_names = dataset.frames('Pubs.ds')
 </code></pre>
 
-<h2>A future possibility</h2>
-
-<p>One possible use of frames would be in rendering search indexes like
-those used by <a href="https://blevesearch.com">Bleve</a> or
-<a href="https://lunrjs.com">Lunrjs</a>. A frame proves most of the information
-needed for transforming the frame&rsquo;s. value (i.e. grid) into minimalist
-documents for indexing.  One workflow for creating a searchable collection
-might be</p>
-
-<ol>
-<li>Harvest your JSON records into a dataset collection</li>
-<li>Generate a list of keys for the JSON documents you want to search</li>
-<li>Generate a frame for the columns that you want to index</li>
-<li>Update labels as necessary</li>
-<li>Run a conversion script to convert the frame into the index definition
-used by our search platform (e.g. pre-calucate Lunrjs indexes or write
-a Bleve index)</li>
-</ol>
-
 <h1>Data Grids</h1>
 
 <p>Often when processing data it is useful to pull date into a grid format.

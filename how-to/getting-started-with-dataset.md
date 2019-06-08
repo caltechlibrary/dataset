@@ -575,6 +575,5 @@ Continue exploring dataset with
 - [Working with CSV](working-with-csv.html)
 - [Working with GSheets](working-with-gsheets.html)
 - [Working with Cloud Storage](working-with-cloud-storage.html)
-- (__experimental__) [Indexing and Search](indexing-and-search.html "experimental Bleve search support") 
 
 

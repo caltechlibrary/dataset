@@ -79,7 +79,6 @@ written in Python or as simple Bash scripts.
 - Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
 - import/export  of [CSV](how-to/working-with-csv.html) files and [Google Sheets](how-to/working-with-gsheets.html)
-- An experimental full text [search](how-to/indexing-and-search.html) interface based on [Blevesearch](https://blevesearch.com)
 - The ability to reshape data by performing simple object [joins](docs/join.html)
 - The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based 
   on keys lists and [dot paths](docs/dotpath.html) into the JSON objects stored
