@@ -9,7 +9,7 @@
 
 ## Next (prep for v1.0.0)
 
-+ [ ] Remove dependency on Blevesearch
++ [x] Remove dependency on Blevesearch
     + we will be moving forward with Lunr
 + [x] Refactor grids to be an array of objects in frames
 + [x] Refactor attachments from tarball use`a semver sub
@@ -24,7 +24,8 @@
     + [x] Collection description set via Namaste
     + [x] Date/time init was run creating collection
 + [ ] Document GSheet cell length limitations and how that impact sync-send
-+ [ ] Missing documentation for filtering/sorting keys
++ [ ] Need How-to covering key sort/filter and frame sort/filter plus limitations
+    + [ ] Missing documentation for filtering/sorting keys for Python package
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
 
