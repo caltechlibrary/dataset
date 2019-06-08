@@ -60,8 +60,8 @@ for c_name in sys.argv:
     tot = len(keys)
     print(f"Ready to process {tot} objects")
     for i, key in enumerate(keys):
+        if (i > 0 ) and (i % 500) == 0:
+            print(f"\n{i} of {tot} processed")
         migrate_attachment(os.path.join("..", c_name), key)
-        if (i % 500) == 0:
-            print(f"\n{i+1} of {tot} processed")
     print()
     print(f"Procssing {c_name} complete")
