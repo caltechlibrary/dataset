@@ -168,6 +168,92 @@ func updateAttachmentList(attachmentList []*Attachment, newObj *Attachment) []*A
 	return attachmentList
 }
 
+// AttachStream is for attaching open a non-JSON file buffer (via an io.Reader).
+func (c *Collection) AttachStream(keyName, semver, fName string, buf io.Reader) error {
+	if c.HasKey(keyName) == false {
+		return fmt.Errorf("No key found for %q", keyName)
+	}
+	if semver == "" {
+		// We use version v0.0.0 for "unversioned" attachments.
+		semver = "v0.0.0"
+	}
+	// Normalize fName to basename of fullName
+	fName := c.Store.Base(fullName)
+
+	// Read in JSON object and metadata objects.
+	jsonObject := map[string]interface{}{}
+	attachmentObject := &Attachment{}
+
+	if err := c.Read(keyName, jsonObject); err != nil {
+		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
+	}
+	// This is the full path to the JSON Object document
+	docPath, err := c.DocPath(keyName)
+	if err != nil {
+		return fmt.Errorf("Can't find document path %q, aborting, %s", keyName, err)
+	}
+	// This is JSON object's directory.
+	docDir := c.Store.Dir(docPath)
+
+	// Now we're ready to get our attachment list.
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == true {
+		for _, obj := range attachmentList {
+			if obj.Name == fName {
+				attachmentObject = obj
+				break
+			}
+		}
+	}
+
+	// Update the metadata
+	// Read in the attachment so I can compute the checksum as well as size.
+	content, err := ioutil.ReadAll(buf)
+	if err != nil {
+		return err
+	}
+	attachmentObject.Name = fName
+	attachmentObject.Version = semver
+	l := int64(len(content))
+	attachmentObject.Size = l
+	if attachmentObject.Sizes == nil {
+		attachmentObject.Sizes = make(map[string]int64)
+	}
+	attachmentObject.Sizes[semver] = l
+	// Compute Checksum with md5 and store as a string
+	if attachmentObject.Checksums == nil {
+		attachmentObject.Checksums = make(map[string]string)
+	}
+	attachmentObject.Checksums[semver] = fmt.Sprintf("%x", md5.Sum(content))
+	// Add/update our version href
+	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	// We need to make the semver directory if necessary
+	if attachmentObject.VersionHRefs == nil {
+		attachmentObject.VersionHRefs = make(map[string]string)
+	}
+	attachmentObject.VersionHRefs[semver] = attachmentObject.HRef
+	now := time.Now()
+	if attachmentObject.Created == "" {
+		attachmentObject.Created = now.Format(time.RFC3339)
+	}
+	attachmentObject.Modified = now.Format(time.RFC3339)
+
+	// Write out attached filename
+	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
+	if err != nil {
+		return err
+	}
+	err = c.Store.WriteFile(attachmentObject.HRef, attachmentObject.Content, 0777)
+	if err != nil {
+		return err
+	}
+	jsonObject["_Attachments"] = updateAttachmentList(attachmentList, attachmentObject)
+
+	// Write out updated JSON Object and return any error
+	err = c.Update(keyName, jsonObject)
+	return err
+}
+
 // AttachFile is for attaching a single non-JSON document to a dataset record. It will replace
 // ANY existing attached content with the same semver and basename.
 func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
