@@ -86,11 +86,6 @@ type Collection struct {
 	// workPath holds the path (i.e. non-protocol and hostname, in URI)
 	workPath string `json:"-"`
 
-	// Type allows for transitioning from pairtree layout to a future
-	// type of structure in collections. It was previously used to
-	// migrate bucketed dataset collections to pairtrees..
-	Layout int `json:"layout"`
-
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
 
@@ -294,12 +289,7 @@ func (c *Collection) Close() error {
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeCreateJSON(key, src)
-	default:
-		return c.pairtreeCreateJSON(key, src)
-	}
+	return c.pairtreeCreateJSON(key, src)
 }
 
 // ReadJSON finds a the record in the collection and returns the JSON source
@@ -307,12 +297,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	if c.HasKey(name) == false {
 		return nil, fmt.Errorf("key not found")
 	}
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeReadJSON(name)
-	default:
-		return c.pairtreeReadJSON(name)
-	}
+	return c.pairtreeReadJSON(name)
 }
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
@@ -320,12 +305,7 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	if c.HasKey(name) == false {
 		return fmt.Errorf("key not found")
 	}
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeUpdateJSON(name, src)
-	default:
-		return c.pairtreeUpdateJSON(name, src)
-	}
+	return c.pairtreeUpdateJSON(name, src)
 }
 
 // Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
@@ -364,12 +344,7 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeDelete(name)
-	default:
-		return c.pairtreeDelete(name)
-	}
+	return c.pairtreeDelete(name)
 }
 
 // Keys returns a list of keys in a collection

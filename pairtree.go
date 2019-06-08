@@ -72,7 +72,6 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 		c.What = fmt.Sprintf("A dataset %s collection initilized on %s", Version, dt.Format("Monday, January 2, 2006 at 3:04pm MST.."))
 	}
 	c.workPath = collectionName
-	c.Layout = PAIRTREE_LAYOUT
 	c.KeyMap = map[string]string{}
 	c.Store = store
 	err = c.SaveMetadata()
@@ -261,7 +260,6 @@ func pairtreeAnalyzer(collectionName string) error {
 	}
 
 	// Set layout to PAIRTREE_LAYOUT
-	c.Layout = PAIRTREE_LAYOUT
 	// Make sure we have all the known pairs in the pairtree
 	// Check to see if records can be found in their buckets
 	for k, v := range c.KeyMap {
@@ -340,7 +338,6 @@ func pairtreeRepair(collectionName string) error {
 		log.Printf("Migrating format from %s to %s", c.DatasetVersion, Version)
 	}
 	c.DatasetVersion = Version
-	c.Layout = PAIRTREE_LAYOUT
 	log.Printf("Getting a list of pairs")
 	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
 	if err != nil {

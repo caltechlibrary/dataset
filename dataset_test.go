@@ -161,7 +161,7 @@ func TestCollection(t *testing.T) {
 	rec2["email"] = "freda@collectivo.example.org"
 	err = collection.Update(keyName, rec2)
 	if err != nil {
-		t.Errorf("%s (%d): Could not update %s, %s", collection.Name, collection.Layout, "freda", err)
+		t.Errorf("%s: Could not update %s, %s", collection.Name, "freda", err)
 		t.FailNow()
 	}
 

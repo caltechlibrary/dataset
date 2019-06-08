@@ -46,10 +46,6 @@ func TestS3(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	if c1.Layout != PAIRTREE_LAYOUT {
-		t.Errorf("expected pairtree layout %d (buckets), got %d", PAIRTREE_LAYOUT, c1.Layout)
-		t.FailNow()
-	}
 	if c1.Store.Type != storage.S3 {
 		t.Errorf("expected storaged type S3 (%d), got %d", storage.S3, c1.Store.Type)
 		t.FailNow()
@@ -130,10 +126,6 @@ func TestGS(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	if c1.Layout != PAIRTREE_LAYOUT {
-		t.Errorf("expected buckets layout %d (buckets), got %d", PAIRTREE_LAYOUT, c1.Layout)
-		t.FailNow()
-	}
 	if c1.Store.Type != storage.GS {
 		t.Errorf("expected storaged type GS (%d), got %d", storage.GS, c1.Store.Type)
 		t.FailNow()

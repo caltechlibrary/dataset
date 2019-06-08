@@ -3,6 +3,8 @@
 
 ## Bugs
 
++ [ ] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
+
 
 ## Next (prep for v1.0.0)
 
