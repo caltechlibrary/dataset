@@ -40,8 +40,9 @@ def migrate_attachment(c_name, key):
             print(".", end = "")
             reattach(c_name, key, "v0.0.0", fname)
             os.remove(fname)
-        #FIXME: if all re-attached then remove tarball too
-        #os.remove(tarball)
+        # NOTE: if all re-attached then we need to remove tarball too
+        os.remove(tarball)
+        sys.stdout.flush()
 
 
 if len(sys.argv) == 1:
@@ -61,6 +62,6 @@ for c_name in sys.argv:
     for i, key in enumerate(keys):
         migrate_attachment(os.path.join("..", c_name), key)
         if (i % 500) == 0:
-            print(f"\n{i} of {tot} processed")
+            print(f"\n{i+1} of {tot} processed")
     print()
     print(f"Procssing {c_name} complete")
