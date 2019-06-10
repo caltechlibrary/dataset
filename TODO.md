@@ -10,7 +10,8 @@
 
 ## Next (prep for v1.0.0)
 
-+ [ ] Need cli option to filter out `_Key` and `_Attachments` of read result
++ [ ] Need cli option/wrapping func to filter out `_Key` and `_Attachments` of read result
++ [ ] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
 + [x] Remove dependency on Blevesearch
     + we will be moving forward with Lunr
 + [x] Refactor grids to be an array of objects in frames
