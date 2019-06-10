@@ -199,8 +199,9 @@ func read_record(name, key *C.char, clean_object C.int) *C.char {
 // read_list.
 //
 //export read_record_list
-func read_record_list(name *C.char, keys_as_json *C.char) *C.char {
+func read_record_list(name *C.char, keys_as_json *C.char, clean_object C.int) *C.char {
 	collectionName := C.GoString(name)
+	cleanObject := C.int(1) == clean_object
 	l := []string{}
 	errList := []string{}
 
@@ -222,11 +223,25 @@ func read_record_list(name *C.char, keys_as_json *C.char) *C.char {
 	}
 
 	for _, key := range key_list {
-		src, err := c.ReadJSON(key)
-		if err != nil {
-			errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
+		//NOTE: we want to use c.Read() if cleanObject is true
+		if cleanObject == true {
+			m := map[string]interface{}{}
+			if err = c.Read(key, m, cleanObject); err == nil {
+				errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
+			} else {
+				if src, err := json.Marshal(m); err == nil {
+					l = append(l, fmt.Sprintf("%s", src))
+				} else {
+					errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
+				}
+			}
 		} else {
-			l = append(l, fmt.Sprintf("%s", src))
+			src, err := c.ReadJSON(key)
+			if err != nil {
+				errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
+			} else {
+				l = append(l, fmt.Sprintf("%s", src))
+			}
 		}
 	}
 	if len(errList) > 0 {
