@@ -5,11 +5,12 @@
 
 + [x] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
 + [x] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
-+ [ ] Need an AttachFile that will support reading a buffer for eprinttools support
++ [x] Need an AttachFile that will support reading a buffer for eprinttools support
 
 
 ## Next (prep for v1.0.0)
 
++ [ ] Need cli option to filter out `_Key` and `_Attachments` of read result
 + [x] Remove dependency on Blevesearch
     + we will be moving forward with Lunr
 + [x] Refactor grids to be an array of objects in frames
