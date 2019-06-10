@@ -163,9 +163,10 @@ func create_record(name, key, src *C.char) C.int {
 }
 
 //export read_record
-func read_record(name, key *C.char) *C.char {
+func read_record(name, key *C.char, clean_object *C.int) *C.char {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
+	cleanObject := (C.int(1) == clean_object)
 
 	error_clear()
 	c, err := dataset.Open(collectionName)
@@ -175,9 +176,18 @@ func read_record(name, key *C.char) *C.char {
 	}
 	defer c.Close()
 
-	src, err := c.ReadJSON(k)
-	if err != nil {
+	var (
+		src []byte
+		err error
+	)
+
+	m := map[string]interface{}{}
+	if err = c.Read(k, &m, cleanObject); err != nil {
 		error_dispatch(err, "Can't read %s, %s", k, err)
+		return C.CString("")
+	}
+	if src, err = json.Marshal(m); err != nil {
+		error_dispatch(err, "Can't read (marshal) %s, %s", k, err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)

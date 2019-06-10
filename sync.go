@@ -185,7 +185,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 				row = append(row, "")
 			}
 			obj := map[string]interface{}{}
-			err := c.Read(key, obj)
+			err := c.Read(key, obj, false)
 			if err != nil {
 				return table, fmt.Errorf("Can't read %s from row %d in collection", key, i)
 			}
@@ -215,7 +215,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 			row := make([]interface{}, len(headerRow)-1)
 			// Get the data for the row
 			obj := map[string]interface{}{}
-			err = c.Read(key, obj)
+			err = c.Read(key, obj, false)
 			if err != nil {
 				return table, fmt.Errorf("failed to read %q in %s, %s\n", key, c.Name, err)
 			}

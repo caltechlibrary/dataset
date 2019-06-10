@@ -149,7 +149,7 @@ func TestMerge(t *testing.T) {
 			t.Errorf("Expected row %d, key (%T) %+v to be string, %s", i, key, key, err)
 		}
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
@@ -209,7 +209,7 @@ func TestMerge(t *testing.T) {
 			t.Errorf("Expected row %d, key (%T) %+v, of type string,%s", i, key, key, err)
 		}
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
@@ -268,7 +268,7 @@ func TestMerge(t *testing.T) {
 	sVal = time.Now().String()
 	for _, key := range c.Keys() {
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("Can't read %s from %s, %s", key, collectionName, err)
 			t.FailNow()
@@ -447,7 +447,7 @@ id,one,two
 	fieldVals := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"}
 	for i, key := range []string{"0", "1", "2", "3", "4"} {
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("%s", err)
 			t.FailNow()

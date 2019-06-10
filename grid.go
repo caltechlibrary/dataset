@@ -37,7 +37,7 @@ func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []strin
 	objectList := make([]map[string]interface{}, len(keys))
 	for i, key := range keys {
 		rec := map[string]interface{}{}
-		err := c.Read(key, rec)
+		err := c.Read(key, rec, false)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]i
 	col_cnt := len(dotPaths)
 	for i, key := range keys {
 		rec := map[string]interface{}{}
-		err := c.Read(key, rec)
+		err := c.Read(key, rec, false)
 		if err != nil {
 			return nil, err
 		}

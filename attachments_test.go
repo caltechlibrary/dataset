@@ -194,7 +194,7 @@ func TestAttachments(t *testing.T) {
 	}
 	// Check JSON object
 	jsonObject := map[string]interface{}{}
-	err = c.Read(keyName, jsonObject)
+	err = c.Read(keyName, jsonObject, false)
 	if err != nil {
 		t.Errorf("Should be able to read %s, %s", keyName, err)
 		t.FailNow()

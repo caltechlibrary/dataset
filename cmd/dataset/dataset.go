@@ -150,6 +150,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	newLine          bool
 	quiet            bool
 	prettyPrint      bool
+	cleanObject      bool
 	generateMarkdown bool
 	generateManPage  bool
 	showVerbose      bool
@@ -702,7 +703,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	defer c.Close()
 	if len(keys) == 1 {
 		m := map[string]interface{}{}
-		if err := c.Read(keys[0], m); err != nil {
+		if err := c.Read(keys[0], m, cleanObject); err != nil {
 			fmt.Fprintf(eout, "%s, %s\n", keys[0], err)
 			return 1
 		}
@@ -722,7 +723,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	recs := []map[string]interface{}{}
 	for _, key := range keys {
 		m := map[string]interface{}{}
-		err := c.Read(key, m)
+		err := c.Read(key, m, cleanObject)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -2969,6 +2970,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vRead = app.NewVerb("read", "read a JSON object from key(s)", fnRead)
 	vRead.SetParams("COLLECTION", "[KEY]", "[KEY ...]")
 	vRead.StringVar(&inputFName, "i,input", "", "read key(s), one per line, from a file")
+	vRead.BoolVar(&cleanObject, "c,clean", false, "Remove dataset underscore variables before returning object")
 	vRead.BoolVar(&prettyPrint, "p,pretty", false, "pretty print JSON output")
 
 	vUpdate = app.NewVerb("update", "update a JSON object", fnUpdate)

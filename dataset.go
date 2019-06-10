@@ -44,7 +44,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.62`
+	Version = `v0.0.63`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -320,7 +320,7 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 
 // Read finds the record in a collection, updates the data interface provide and if problem returns an error
 // name must exist or an error is returned
-func (c *Collection) Read(name string, data map[string]interface{}) error {
+func (c *Collection) Read(name string, data map[string]interface{}, cleanObject bool) error {
 	src, err := c.ReadJSON(name)
 	if err != nil {
 		return err
@@ -329,6 +329,10 @@ func (c *Collection) Read(name string, data map[string]interface{}) error {
 	decoder.UseNumber()
 	if err := decoder.Decode(&data); err != nil {
 		return err
+	}
+	if cleanObject == true {
+		delete(data, "_Key")
+		delete(data, "_Attachments")
 	}
 	return nil
 }
@@ -575,7 +579,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verbo
 	)
 	for i, key := range keys {
 		data := map[string]interface{}{}
-		if err := c.Read(key, data); err == nil {
+		if err := c.Read(key, data, false); err == nil {
 			// write row out.
 			row = []string{}
 			for _, colPath := range dotExpr {
@@ -643,7 +647,7 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 
 	for _, key := range keys {
 		data := map[string]interface{}{}
-		if err := c.Read(key, data); err == nil {
+		if err := c.Read(key, data, false); err == nil {
 			// write row out.
 			row = []interface{}{}
 			for _, colPath := range dotExpr {
@@ -692,7 +696,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 		key = strings.TrimSpace(key)
 		if len(key) > 0 {
 			m := map[string]interface{}{}
-			if err := c.Read(key, m); err == nil {
+			if err := c.Read(key, m, false); err == nil {
 				if ok, err := filter.Apply(m); err == nil && ok == true {
 					keys = append(keys, key)
 				}
@@ -792,7 +796,7 @@ func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool
 		return c.Create(key, obj)
 	}
 	record := map[string]interface{}{}
-	err := c.Read(key, record)
+	err := c.Read(key, record, false)
 	if err != nil {
 		return err
 	}

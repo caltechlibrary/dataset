@@ -185,7 +185,7 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	jsonObject := map[string]interface{}{}
 	attachmentObject := &Attachment{}
 
-	if err := c.Read(keyName, jsonObject); err != nil {
+	if err := c.Read(keyName, jsonObject, false); err != nil {
 		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
 	}
 	// This is the full path to the JSON Object document
@@ -272,7 +272,7 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	jsonObject := map[string]interface{}{}
 	attachmentObject := &Attachment{}
 
-	if err := c.Read(keyName, jsonObject); err != nil {
+	if err := c.Read(keyName, jsonObject, false); err != nil {
 		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
 	}
 	// This is the full path to the JSON Object document
@@ -357,7 +357,7 @@ func (c *Collection) AttachFiles(keyName string, semver string, fileNames ...str
 // Attachments returns a list of files and size attached for a key name in the collection
 func (c *Collection) Attachments(keyName string) ([]string, error) {
 	jsonObject := map[string]interface{}{}
-	err := c.Read(keyName, jsonObject)
+	err := c.Read(keyName, jsonObject, false)
 	if err != nil {
 		return nil, fmt.Errorf("Can't find %s", keyName)
 	}
@@ -394,7 +394,7 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	jsonObject := map[string]interface{}{}
-	if err := c.Read(keyName, jsonObject); err != nil {
+	if err := c.Read(keyName, jsonObject, false); err != nil {
 		return fmt.Errorf("Can't read %q, %s", keyName, err)
 	}
 	attachmentList, ok := getAttachmentList(jsonObject)
@@ -429,7 +429,7 @@ func (c *Collection) Prune(keyName string, semver string, filterNames ...string)
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	jsonObject := map[string]interface{}{}
-	if err := c.Read(keyName, jsonObject); err != nil {
+	if err := c.Read(keyName, jsonObject, false); err != nil {
 		return fmt.Errorf("Can't read %q, %s", keyName, err)
 	}
 	newAttachmentList := []*Attachment{}

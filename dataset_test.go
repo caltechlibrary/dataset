@@ -119,7 +119,7 @@ func TestCollection(t *testing.T) {
 	// Create an empty record, then read it again to compare
 	keyName := "Kahlo-F"
 	rec2 := map[string]interface{}{}
-	err = collection.Read(keyName, rec2)
+	err = collection.Read(keyName, rec2, false)
 	if err != nil {
 		t.Errorf("%q: Read(), %s", collection.Name, err)
 		t.FailNow()
@@ -144,7 +144,7 @@ func TestCollection(t *testing.T) {
 	}
 
 	rec3 := map[string]interface{}{}
-	if err := collection.Read(keyName, rec3); err != nil {
+	if err := collection.Read(keyName, rec3, false); err != nil {
 		t.Errorf("%q: Should have found freda in collection, %s", collection.Name, err)
 		t.FailNow()
 	}
@@ -166,7 +166,7 @@ func TestCollection(t *testing.T) {
 	}
 
 	rec4 := map[string]interface{}{}
-	if err := collection.Read(keyName, rec4); err != nil {
+	if err := collection.Read(keyName, rec4, false); err != nil {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
@@ -185,7 +185,7 @@ func TestCollection(t *testing.T) {
 		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
 		t.FailNow()
 	}
-	err = collection.Read(keyName, rec2)
+	err = collection.Read(keyName, rec2, false)
 	if err == nil {
 		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
 	}
