@@ -10,6 +10,8 @@
 
 ## Next (prep for v1.0.0)
 
++ [ ] Need optional wrapping filter function to return object without `_Keys` and `_Attachments` attributes
++ [ ] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
 + [x] Remove dependency on Blevesearch
     + we will be moving forward with Lunr
 + [x] Refactor grids to be an array of objects in frames
