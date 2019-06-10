@@ -163,7 +163,7 @@ func create_record(name, key, src *C.char) C.int {
 }
 
 //export read_record
-func read_record(name, key *C.char, clean_object *C.int) *C.char {
+func read_record(name, key *C.char, clean_object C.int) *C.char {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 	cleanObject := (C.int(1) == clean_object)
@@ -178,11 +178,10 @@ func read_record(name, key *C.char, clean_object *C.int) *C.char {
 
 	var (
 		src []byte
-		err error
 	)
 
 	m := map[string]interface{}{}
-	if err = c.Read(k, &m, cleanObject); err != nil {
+	if err = c.Read(k, m, cleanObject); err != nil {
 		error_dispatch(err, "Can't read %s, %s", k, err)
 		return C.CString("")
 	}
@@ -300,7 +299,7 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 	outObject := map[string]interface{}{}
 	newObject := map[string]interface{}{}
 
-	if err := c.Read(key, outObject); err != nil {
+	if err := c.Read(key, outObject, false); err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
@@ -699,7 +698,7 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 	recs := []map[string]interface{}{}
 	for _, name := range keys {
 		m := map[string]interface{}{}
-		err = c.Read(name, m)
+		err = c.Read(name, m, false)
 		if err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
