@@ -3,38 +3,34 @@
 
 ## Bugs
 
-+ [x] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
-+ [x] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
-+ [x] Need an AttachFile that will support reading a buffer for eprinttools support
-
 
 ## Next (prep for v1.0.0)
 
-+ [ ] Need cli option/wrapping func to filter out `_Key` and `_Attachments` of read result
-+ [ ] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
++ [ ] Confirm all documentation is current before v1.0.0 release
++ [ ] Confirm consensus on the release version v1.0.0 
++ [x] Create a attachment migration Python script example
+    + Read out the jsonObject
+    + Find the tarball and untar the listed files into a temp directory
+    + For each untared file use dataset attach to attach it back onto object.
++ [x] Document GSheet cell length limitations and how that impact sync-send
++ [x] Need How-to covering key sort/filter and frame sort/filter plus limitations
+    + [x] Missing documentation for filtering/sorting keys for Python package
++ [x] Need cli option/wrapping func to filter out `_Key` and `_Attachments` of read result
 + [x] Remove dependency on Blevesearch
     + we will be moving forward with Lunr
 + [x] Refactor grids to be an array of objects in frames
 + [x] Refactor attachments from tarball use`a semver sub
       directory scheme
-+ [ ] Create a attachment migration Python script example
-    + Read out the jsonObject
-    + Find the tarball and untar the listed files into a temp directory
-    + For each untared file use dataset attach to attach it back onto object.
 + [x] Remove bucket layout code
 + [x] Improve collection.json with the following additional fields
     + [x] Collection name
     + [x] Collection description set via Namaste
     + [x] Date/time init was run creating collection
-+ [ ] Document GSheet cell length limitations and how that impact sync-send
-+ [ ] Need How-to covering key sort/filter and frame sort/filter plus limitations
-    + [ ] Missing documentation for filtering/sorting keys for Python package
-+ [ ] Confirm all documentation is current before v1.0.0 release
-+ [ ] Confirm consensus on the release version v1.0.0 
 
 
 ## Roadmap (v2.0.0)
 
++ [ ] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
 + [ ] Switch from Bleve to Lunr indexes and search
 + [ ] Switch go go-cloud over our storage.go module
 + [ ] add *publish* command to generate index.md, index.html
@@ -292,3 +288,7 @@
     + collection detection should check for the collection.json document
     + namaste type
     + Use storage.StoreType() to determine type info from path
++ [x] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
++ [x] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
++ [x] Need an AttachFile that will support reading a buffer for eprinttools support
+
