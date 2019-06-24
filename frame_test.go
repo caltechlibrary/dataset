@@ -19,8 +19,11 @@
 package dataset
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 )
 
@@ -89,4 +92,66 @@ func TestFrame(t *testing.T) {
 	if expected != result {
 		t.Errorf("expected %q, got %q, for %s", expected, result, f)
 	}
+	//FIXME: need some tests on frame structure.
+	objectList := f.Objects()
+	for i, obj := range objectList {
+		rec := tRecords[i]
+		for j, key := range f.Labels {
+			if val, ok := obj[key]; ok != true {
+				if _, ok := rec[key]; ok == true {
+					t.Errorf("(%d, %d) missing key %q in obj, %+v\n", i, j, key, obj)
+				}
+			} else if expected, ok := rec[key]; ok != true {
+				t.Errorf("(%d, %d) missing key %q in record, %+v\n", i, j, key, expected)
+			} else {
+				switch val.(type) {
+				case string:
+					if strings.Compare(val.(string), expected.(string)) != 0 {
+						t.Errorf("(%d, %d, %s) expected %q, got %q", i, j, key, expected, val)
+					}
+				case int:
+					if val.(int) != expected.(int) {
+						t.Errorf("(%d, %d, %s) expected int %d, got %d", i, j, key, expected, val)
+					}
+				case int64:
+					if val.(int64) != expected.(int64) {
+						t.Errorf("(%d, %d, %s) expected int %d, got %d", i, j, key, expected, val)
+					}
+				case float64:
+					if val.(float64) != expected.(float64) {
+						t.Errorf("(%d, %d, %s) expected int %f, got %f", i, j, key, expected, val)
+					}
+				case json.Number:
+					n1 := val.(json.Number).String()
+					n2 := ""
+					switch expected.(type) {
+					case int:
+						n2 = fmt.Sprintf("%d", expected)
+					case int64:
+						n2 = fmt.Sprintf("%d", expected)
+					case float64:
+						n2 = fmt.Sprintf("%1.1f", expected)
+						// Handle the case that json.Number returns float
+						// as int for valued stored, e.g. 3.0 returned as 3
+						if len(n1) < len(n2) {
+							n2 = n2[0:len(n1)]
+						}
+					}
+					if strings.Compare(n1, n2) != 0 {
+						t.Errorf("(%d, %d, %s) expected %s, got %s", i, j, key, n2, n1)
+					}
+				case []interface{}:
+					e := len(expected.([]string))
+					v := len(val.([]interface{}))
+					if e != v {
+						t.Errorf("(%d, %d, %s) expected length %d, got %d", i, j, key, e, v)
+					}
+				default:
+					t.Errorf("(%d, %d, %s) something didn't match, expected (%T) %+v, got (%T) %+v", i, j, key, expected, expected, val, val)
+					t.FailNow()
+				}
+			}
+		}
+	}
+
 }

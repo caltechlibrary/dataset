@@ -30,6 +30,7 @@
 
 ## Roadmap (v2.0.0)
 
+
 + [ ] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
 + [ ] Switch from Bleve to Lunr indexes and search
 + [ ] Switch go go-cloud over our storage.go module

@@ -19,6 +19,7 @@
 package dataset
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -49,5 +50,44 @@ func TestSemver(t *testing.T) {
 	v, err = ParseSemver([]byte(expected))
 	if err == nil {
 		t.Errorf("expected an error, returns %s", v.ToJSON())
+	}
+}
+
+func TestIncrement(t *testing.T) {
+	b := []byte("v0.0.0")
+	version, err := ParseSemver(b)
+	if err != nil {
+		t.Errorf("Failed to parse %q, got %s", b, err)
+		t.FailNow()
+	}
+	expected := "v0.0.1"
+	if err = version.IncPatch(); err != nil {
+		t.Errorf("Error, increment patch version, %q, %s", version.String(), err)
+		t.FailNow()
+	}
+
+	s := version.String()
+	if strings.Compare(s, expected) != 0 {
+		t.Errorf("Expected %q, got %q", expected, s)
+	}
+
+	if err = version.IncMinor(); err != nil {
+		t.Errorf("Error, increment minor version, %q, %s", version.String(), err)
+		t.FailNow()
+	}
+	expected = "v0.1.0"
+	s = version.String()
+	if strings.Compare(s, expected) != 0 {
+		t.Errorf("Expected %q, got %q", expected, s)
+	}
+
+	if err = version.IncMajor(); err != nil {
+		t.Errorf("Error, increment major version, %q, %s", version.String(), err)
+		t.FailNow()
+	}
+	expected = "v1.0.0"
+	s = version.String()
+	if strings.Compare(s, expected) != 0 {
+		t.Errorf("Expected %q, got %q", expected, s)
 	}
 }

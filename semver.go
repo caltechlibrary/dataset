@@ -21,6 +21,7 @@ package dataset
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -104,4 +105,43 @@ func ParseSemver(src []byte) (*Semver, error) {
 		v.Suffix = parts[3]
 	}
 	return v, nil
+}
+
+// IncPatch increments the patch level if it is numeric
+// or returns an error.
+func (sv *Semver) IncPatch() error {
+	i, err := strconv.Atoi(sv.Patch)
+	if err != nil {
+		return err
+	}
+	i++
+	sv.Patch = fmt.Sprintf("%d", i)
+	return nil
+}
+
+// IncMinor increments a minor version number and zeros the
+// patch level or returns an error. Returns an error if increment fails.
+func (sv *Semver) IncMinor() error {
+	i, err := strconv.Atoi(sv.Minor)
+	if err != nil {
+		return err
+	}
+	i++
+	sv.Patch = "0"
+	sv.Minor = fmt.Sprintf("%d", i)
+	return nil
+}
+
+// IncMajor increments a major version number, zeros minor
+// and patch values. Returns an error if increment fails.
+func (sv *Semver) IncMajor() error {
+	i, err := strconv.Atoi(sv.Major)
+	if err != nil {
+		return err
+	}
+	i++
+	sv.Patch = "0"
+	sv.Minor = "0"
+	sv.Major = fmt.Sprintf("%d", i)
+	return nil
 }

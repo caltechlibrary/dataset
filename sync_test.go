@@ -135,9 +135,15 @@ func TestMerge(t *testing.T) {
 	}
 
 	// NOTE: Make sure grid dimensions match table minus header row
+	c.Reframe(frameName, keys, false)
 	f, err = c.getFrame(frameName)
-	if len(f.Grid) != (len(table) - 1) {
-		t.Errorf("expected %d rows, got %d rows", len(table), len(f.Grid))
+	if err != nil {
+		t.Errorf("failed to get frame %s, %s", frameName, err)
+		t.FailNow()
+	}
+	grid := f.Grid(false)
+	if len(grid) != (len(table) - 1) {
+		t.Errorf("expected %d rows, got %d rows", len(table), len(grid))
 		t.FailNow()
 	}
 
