@@ -8,32 +8,29 @@
 
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
-+ [x] Create a attachment migration Python script example
-    + Read out the jsonObject
-    + Find the tarball and untar the listed files into a temp directory
-    + For each untared file use dataset attach to attach it back onto object.
-+ [x] Document GSheet cell length limitations and how that impact sync-send
-+ [x] Need How-to covering key sort/filter and frame sort/filter plus limitations
-    + [x] Missing documentation for filtering/sorting keys for Python package
-+ [x] Need cli option/wrapping func to filter out `_Key` and `_Attachments` of read result
-+ [x] Remove dependency on Blevesearch
-    + we will be moving forward with Lunr
-+ [x] Refactor grids to be an array of objects in frames
-+ [x] Refactor attachments from tarball use`a semver sub
-      directory scheme
-+ [x] Remove bucket layout code
-+ [x] Improve collection.json with the following additional fields
-    + [x] Collection name
-    + [x] Collection description set via Namaste
-    + [x] Date/time init was run creating collection
 
 
 ## Roadmap (v2.0.0)
 
-
-+ [ ] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
++ [x] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
++ [ ] Auto-version attachments by patch, minor or major release per settings in collection.json
 + [ ] Switch from Bleve to Lunr indexes and search
 + [ ] Switch go go-cloud over our storage.go module
+    + [ ] Make check and repair work in cloud storage
+        + [ ] storage package should use go-cloud instead of individual SDKs
+        + [ ] need a working file walker for S3 and GS storage ...
+        + [ ] confirm check for s3:// collections
+        + [ ] confirm repair for s3:// collections
+        + [ ] confirm migrate for s3:// collections
++ [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
+
+## Someday, Maybe
+
++ [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
++ [ ] Add Experimental R _dataset_ module for scripting collection management in R
++ [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
+    - support JSON-LD for cross collection integration
++ [ ] sparql cli interface for searching collection
 + [ ] add *publish* command to generate index.md, index.html
     + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
         + https://codemeta.github.io/terms 
@@ -45,21 +42,6 @@
     + support adding relevant Namaste for preservation
     + archive should be suitable for ingesting in preservation systems
         + e.g. create tar, bag or web archive formatted instance
-+ [ ] Make check and repair work in cloud storage
-    + [ ] storage package should use go-cloud instead of individual SDKs
-    + [ ] need a working file walker for S3 and GS storage ...
-    + [ ] confirm check for s3:// collections
-    + [ ] confirm repair for s3:// collections
-    + [ ] confirm migrate for s3:// collections
-+ [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
-+ [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
-+ [ ] Add Experimental R _dataset_ module for scripting collection management in R
-+ [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
-+ [ ] sparql cli interface for searching collection
-    - support JSON-LD for cross collection integration
-
-## Someday, Maybe
-
 + [ ] Remove dependency on github.com/caltechlibrary/tmplfn
 + [ ] Evaludate JMESPath as replacement/augmentation to dot path 
 + [ ] Add some additional metadata fields
@@ -107,6 +89,24 @@
 
 ## Completed
 
++ [x] Create a attachment migration Python script example
+    + Read out the jsonObject
+    + Find the tarball and untar the listed files into a temp directory
+    + For each untared file use dataset attach to attach it back onto object.
++ [x] Document GSheet cell length limitations and how that impact sync-send
++ [x] Need How-to covering key sort/filter and frame sort/filter plus limitations
+    + [x] Missing documentation for filtering/sorting keys for Python package
++ [x] Need cli option/wrapping func to filter out `_Key` and `_Attachments` of read result
++ [x] Remove dependency on Blevesearch
+    + we will be moving forward with Lunr
++ [x] Refactor grids to be an array of objects in frames
++ [x] Refactor attachments from tarball use`a semver sub
+      directory scheme
++ [x] Remove bucket layout code
++ [x] Improve collection.json with the following additional fields
+    + [x] Collection name
+    + [x] Collection description set via Namaste
+    + [x] Date/time init was run creating collection
 + [x] ValueRenderOption("FORMULA") is wrong given the newer option of `UNFORMATED_VALUE`
 + [x] Sort out cross compiling libdataset shared library for Python module
 + [x] sync command needs to be implemented for csv based tables

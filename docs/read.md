@@ -22,5 +22,17 @@ of "r1". Our collection name is "data.ds"
     dataset read data.ds r1
 ```
 
+### Options
+
+Normally dataset adds two values when it stores an object, `._Key`
+and possibly `._Attachments`. You can get the object without these
+added attributes by using the `-c` or `-clean` option.
+
+
+```shell
+    dataset read -clean data.ds r1
+```
+
+
 Related topics: [keys](keys.html), [create](create.html), [update](update.html), [delete](delete.html)
 

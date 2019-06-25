@@ -17,14 +17,18 @@ replaced with one of the commands below --
 + [filter](filter.html) - takes a filter and returns an unordered list of keys
   that match filter expression
     + [dotpath](dotpath.html) - reach into an object to return a value(s)
++ [frames](frames.html) - list the data frames defined for a collection
+    + [frame](frame.html) - defines or returns a data frame 
+    + [reframe](reframe.html) - redefines a data frame (updates the objects in the data frame)
+    + [delete-frame](delete-frame.html) - remove a frame from a collection
 + [keys](keys.html) - returns the keys to stdout, one key per line
 + [haskey](haskey.html) - returns true is key is in collection, false otherwise
 + [count](count.html) - returns a count of keys in a collection
 + [path](path.html) - given a document name return the full path to document
-+ [attach](attach.html) - attaches a non-JSON content to a JSON record
 + [attachments](attachments.html) - lists any attached content for JSON document
-+ [detach](detach.html) - returns attachments for a JSON document
-+ [prune](prune.html) - remove attachments to a JSON document
+    + [attach](attach.html) - attaches a non-JSON content to a JSON record
+    + [detach](detach.html) - returns attachments for a JSON document
+    + [prune](prune.html) - remove attachments to a JSON document
 + [import-csv](import-csv.html) - import a CSV file's rows as JSON documents
     + [import-gsheet](import-gsheet.html) - import a Google Sheets sheet rows
       as JSON documents
