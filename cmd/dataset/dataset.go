@@ -1691,9 +1691,17 @@ func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	return 0
 }
 
-// fnFrame - define a data frame and populate it with a list of keys and doptpaths
-// syntax: [VERB_OPTIONS] COLLECTION_NAME FRAME_NAME DOTPATH [DOTPATH ...]
-// Verb Options: filter-expression (e.g. -filter) , key list filename (e.g. -i), sample size (e.g. -sample)
+// fnFrame - define a data frame and populate it with a list of keys,
+// label and doptpaths pairs
+//
+//     dataset keys collection.ds |\
+//        dataset frame collection.ds my-frame \
+//             "given_name=.creator.given" \
+// 			   "family_name=.creator.family" \
+//             "favorite_color=.popular_color[0]"
+//
+// Verb Options: filter-expression (e.g. -filter),
+// key list filename (e.g. -i), sample size (e.g. -sample)
 // labels (e.g. -labels)
 func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
@@ -1702,10 +1710,11 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		f              *dataset.DataFrame
 		c              *dataset.Collection
 		keys           []string
+		keyPathPairs   []string
 		dotPaths       []string
-		//labels         []string
-		src []byte
-		err error
+		labels         []string
+		src            []byte
+		err            error
 	)
 
 	err = flagSet.Parse(args)
@@ -1725,10 +1734,24 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	case len(args) == 2:
 		collectionName, frameName = args[0], args[1]
 	case len(args) >= 3:
-		collectionName, frameName, dotPaths = args[0], args[1], args[2:]
+		collectionName, frameName, keyPathPairs = args[0], args[1], args[2:]
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	if len(keyPathPairs) > 0 {
+		for _, item := range keyPathPairs {
+			if strings.Contains(item, "=") == true {
+				kp := strings.SplitN(item, "=", 2)
+				labels = append(labels, strings.TrimSpace(kp[0]))
+				dotPaths = append(dotPaths, strings.TrimSpace(kp[1]))
+			} else {
+				item = strings.TrimSpace(item)
+				labels = append(labels, strings.TrimPrefix(item, "."))
+				dotPaths = append(dotPaths, item)
+			}
+		}
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -1740,11 +1763,11 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 
 	// Check to see if frame exists...
 	if c.HasFrame(frameName) {
-		if len(dotPaths) > 0 || len(filterExpr) > 0 {
+		if len(labels) > 0 || len(dotPaths) > 0 || len(filterExpr) > 0 {
 			fmt.Fprintf(eout, "frame %q already exists\n", frameName)
 			return 1
 		}
-		f, err = c.Frame(frameName, nil, nil, showVerbose)
+		f, err = c.Frame(frameName, nil, nil, nil, showVerbose)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -1818,7 +1841,7 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 
 	// NOTE: See if we are reading a frame back or define one.
-	f, err = c.Frame(frameName, keys, dotPaths, showVerbose)
+	f, err = c.Frame(frameName, keys, dotPaths, labels, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2033,6 +2056,11 @@ func fnFrameDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 	return 0
 }
 
+// fnReframe updates a Frame's object list from the current state
+// of collection using the existing keys or the keys supplied.
+//
+//    dataset reframe -i keys.txt collections.ds my-frame
+//
 func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
@@ -2040,6 +2068,8 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		f              *dataset.DataFrame
 		c              *dataset.Collection
 		keys           []string
+		keyPathPairs   []string
+		labels         []string
 		dotPaths       []string
 		frameUpdated   bool
 		src            []byte
@@ -2063,10 +2093,24 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	case len(args) == 2:
 		collectionName, frameName = args[0], args[1]
 	case len(args) >= 3:
-		collectionName, frameName, dotPaths = args[0], args[1], args[2:]
+		collectionName, frameName, keyPathPairs = args[0], args[1], args[2:]
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
+	}
+
+	if len(keyPathPairs) > 0 {
+		for _, item := range keyPathPairs {
+			if strings.Contains(item, "=") {
+				kp := strings.SplitN(item, "=", 2)
+				labels = append(labels, strings.TrimSpace(kp[0]))
+				dotPaths = append(dotPaths, strings.TrimSpace(kp[1]))
+			} else {
+				item = strings.TrimSpace(item)
+				labels = append(labels, strings.TrimPrefix(item, "."))
+				dotPaths = append(dotPaths, item)
+			}
+		}
 	}
 
 	c, err = dataset.Open(collectionName)
@@ -2082,10 +2126,28 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		return 1
 	}
 
-	f, err = c.Frame(frameName, nil, nil, false)
+	// Get the existing frame to update labels and dot paths
+	f, err = c.Frame(frameName, nil, nil, nil, false)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
+	}
+	// Handle dotPaths/labels updates
+	if len(dotPaths) > 0 && len(labels) == len(dotPaths) {
+		// Make sure ._Key is first dotPaths and _Key is first label
+		if dotPaths[0] != "._Key" {
+			dotPaths = append([]string{"._Key"}, dotPaths...)
+			labels = append([]string{"_Key"}, labels...)
+		}
+		f.DotPaths = dotPaths[:]
+		f.Labels = labels[:]
+		//NOTE: We want to save the new labels/dotpaths before
+		// regenerating the Object List
+		err = c.SaveFrame(frameName, f)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
 	}
 
 	// Update frame settings
@@ -2381,7 +2443,7 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	// Get dotpaths and column labels from frame
-	f, err = c.Frame(frameName, nil, nil, showVerbose)
+	f, err = c.Frame(frameName, nil, nil, nil, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1

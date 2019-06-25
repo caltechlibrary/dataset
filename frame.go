@@ -202,47 +202,51 @@ func (c *Collection) rmFrame(key string) error {
 	return err
 }
 
-// Frame takes a set of collection keys and dotpaths, builds a grid and assembles
-// the grid and metadata returning a new CollectionFrame and error. Frames are
+// Frame takes a set of collection keys, dotpaths and labels
+// builds an ObjectList and assembles metadata returning
+// a new CollectionFrame and error. Frames are
 // associated with the collection and can be re-generated.
-func (c *Collection) Frame(name string, keys []string, dotPaths []string, verbose bool) (*DataFrame, error) {
+// The first label is always "Key" and the first dotpath is always
+// "._Key". If they are not provided they will be inserted.
+// If the length of labels and dotpaths mis-match an error will be
+// returned. If the frame already exists the definition is NOT
+// updated and the existing frame is returned.
+func (c *Collection) Frame(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	// If frame exists return the existing frame
 	if c.hasFrame(name) {
 		return c.getFrame(name)
 	}
 
-	// Case of new Frame and building our Grid.
+	// Case of new Frame and with ObjectList
+	if labels != nil && dotPaths != nil &&
+		len(labels) != len(dotPaths) {
+		return nil, fmt.Errorf("Mismatched dot paths and labels")
+	}
 
 	// NOTE: we need to enforce that column zero is explicitly ._Key
 	hasKeyColumn := false
-	for _, key := range dotPaths {
-		if key == "._Key" {
-			hasKeyColumn = true
-			break
-		}
+	if len(dotPaths) > 0 && dotPaths[0] == "._Key" {
+		hasKeyColumn = true
 	}
+
+	// If hasKeyColumn false insert ._Key dotpath and label.
 	if hasKeyColumn == false {
 		dotPaths = append(dotPaths, "")
 		copy(dotPaths[1:], dotPaths)
 		dotPaths[0] = "._Key"
+		labels = append(labels, "")
+		copy(labels[1:], labels)
+		labels[0] = "_Key"
 	}
 
 	f := new(DataFrame)
 	f.Name = name
 	f.CollectionName = c.Name
 	f.DotPaths = dotPaths[:]
+	f.Labels = labels[:]
 	f.Keys = keys[:]
 	f.Created = time.Now()
 	f.Updated = time.Now()
-
-	// NOTE: derive labels from dotPaths and
-	// default column types to string
-	labels := []string{}
-	for _, p := range dotPaths {
-		l := dotpath.ToLabel(p)
-		labels = append(labels, l)
-	}
-	f.Labels = labels[:]
 
 	// Populate our ObjectList
 	ol, err := c.ObjectList(keys, dotPaths, labels, verbose)
@@ -279,28 +283,30 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 	if err != nil {
 		return err
 	}
-	// NOTE: we need to enforce that column zero is explicitly ._Key
-	hasKeyColumn := false
-	for _, key := range f.DotPaths {
-		if key == "._Key" {
-			hasKeyColumn = true
-			break
+	/*
+		// NOTE: we need to enforce that column zero is explicitly ._Key
+		hasKeyColumn := false
+		for _, key := range f.DotPaths {
+			if key == "._Key" {
+				hasKeyColumn = true
+				break
+			}
 		}
-	}
-	if hasKeyColumn == false {
-		dotPaths := f.DotPaths
-		// Update DotPaths
-		dotPaths = append(dotPaths, "")
-		copy(dotPaths[1:], dotPaths)
-		dotPaths[0] = "._Key"
-		f.DotPaths = dotPaths[:]
-		// Update Labels
-		labels := f.Labels
-		labels = append(labels, "")
-		copy(labels[1:], labels)
-		labels[0] = "_Key"
-		f.Labels = labels[:]
-	}
+		if hasKeyColumn == false {
+			dotPaths := f.DotPaths
+			// Update DotPaths
+			dotPaths = append(dotPaths, "")
+			copy(dotPaths[1:], dotPaths)
+			dotPaths[0] = "._Key"
+			f.DotPaths = dotPaths[:]
+			// Update Labels
+			labels := f.Labels
+			labels = append(labels, "")
+			copy(labels[1:], labels)
+			labels[0] = "_Key"
+			f.Labels = labels[:]
+		}
+	*/
 	if len(keys) > 0 {
 		if len(f.SortExpr) > 0 {
 			keys, err = c.KeySortByExpression(keys, f.SortExpr)
@@ -326,7 +332,8 @@ func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 }
 
 // FrameLabels sets the labels for a frame, the number of labels
-// must match the number of dot paths (columns) in the frame.
+// must match the number of dot paths (columns) in the frame. The
+// zero column will always be _Key.
 // NOTE: FrameLabels will cause the ObjectList to be regenerated from
 // the current state of the collection.
 func (c *Collection) FrameLabels(name string, labels []string, verbose bool) error {
@@ -334,9 +341,14 @@ func (c *Collection) FrameLabels(name string, labels []string, verbose bool) err
 	if err != nil {
 		return err
 	}
+	// Enforce first label of _Key.
+	if len(f.DotPaths) == len(labels)+1 && labels[0] != "_Key" {
+		labels = append([]string{"_Key"}, labels...)
+	}
 	if len(f.DotPaths) != len(labels) {
 		return fmt.Errorf("number of columns (%d) does not match the number of labels (%d)", len(f.DotPaths), len(labels))
 	}
+	// Update our labels
 	f.Labels = labels[:]
 	// NOW we need to regenerate our ObjectList
 	ol, err := c.ObjectList(f.Keys, f.DotPaths, f.Labels, verbose)
