@@ -102,7 +102,7 @@ update_version:
 
 release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 	cd libdataset && $(MAKE) release
-	if [ "$(OS)" = "Linux" ]; then cd libdataset && $(MAKE) -f CrossCompile.mak release; fi
+	#if [ "$(OS)" = "Linux" ]; then cd libdataset && $(MAKE) -f CrossCompile.mak release; fi
 
 status:
 	git status
