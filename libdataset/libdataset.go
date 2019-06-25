@@ -1505,7 +1505,7 @@ func sync_recieve_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.ch
 // If the "header row" value is 1 a header row of labels is
 // included, otherwise it is only the values of returned in the grid.
 //
-// export frame_grid
+//export frame_grid
 func frame_grid(cName *C.char, cFName *C.char, cIncludeHeaderRow C.int) *C.char {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
