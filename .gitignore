@@ -47,6 +47,7 @@ idxdefs/*
 *.pdf
 man
 credentials.json
+token.json
 client_id.json
 client_secret.json
 gsheet_test.json

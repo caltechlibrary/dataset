@@ -100,10 +100,6 @@ function test_gsheet() {
 	if [[ -f "etc/test_gsheet.bash" ]]; then
 		. "etc/test_gsheet.bash"
 	fi
-	if [[ ! -f "${CLIENT_SECRET}" ]]; then
-		echo "Skipping test_gsheet(), could not find ${CLIENT_SECRET}"
-		exit 1
-	fi
 	if [[ "${SPREADSHEET_ID}" == "" ]]; then
 		echo "Skipping test_gsheet(), missing environment variable for SPREADSHEET_ID"
 		exit 1
