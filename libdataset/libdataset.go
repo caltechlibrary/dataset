@@ -846,6 +846,9 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
 	semver := C.GoString(cSemver)
+	if semver == "" {
+		semver = "v0.0.0"
+	}
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -919,6 +922,9 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
 	semver := C.GoString(cSemver)
+	if semver == "" {
+		semver = "v0.0.0"
+	}
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
