@@ -19,7 +19,7 @@ ifeq ($(OS), Windows)
 endif
 
 
-dataset$(EXT): bin/dataset$(EXT)
+dataset$(EXT): bin/dataset$(EXT) bin/gsheetaccess$(EXT)
 
 cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
@@ -28,10 +28,15 @@ cmd/dataset/assets.go:
 bin/dataset$(EXT): dataset.go pairtree.go attachments.go semver.go grid.go frame.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
+bin/gsheetaccess$(EXT): cmd/gsheetaccess/gsheetaccess.go
+	go build -o bin/gsheetaccess$(EXT) cmd/gsheetaccess/gsheetaccess.go 
+
+
 build: $(PROJECT_LIST) libdataset
 
 install: 
 	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
+	env GOBIN=$(GOPATH)/bin go install cmd/gsheetaccess/gsheetaccess.go
 
 install-man:
 	mkdir -p $(GOPATH)/man/man1
