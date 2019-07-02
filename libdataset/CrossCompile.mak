@@ -57,7 +57,7 @@ endif
 build: darwin-amd64 windows-amd64
 
 darwin-amd64: 
-	env PATH="$(DARWIN_TOOLS):$(PATH)" CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 CC=o64-clang go build -buildmode=c-shared -o "$(LIB_NAME).dynlib" "$(LIB_NAME).go"
+	env PATH="$(DARWIN_TOOLS):$(PATH)" CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 CC=o64-clang go build -buildmode=c-shared -o "$(LIB_NAME).dylib" "$(LIB_NAME).go"
 
 windows-amd64: 
 	env PATH="$(WINDOWS_TOOLS):$(PATH)" CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=w64-clang go build -buildmode=c-shared -o "$(LIB_NAME).dll" "$(LIB_NAME).go"
@@ -65,7 +65,7 @@ windows-amd64:
 clean:
 	if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
 	if [ -f "$(LIB_NAME).dll" ]; then rm "$(LIB_NAME).dll"; fi
-	if [ -f "$(LIB_NAME).dynlib" ]; then rm "$(LIB_NAME).dynlib"; fi
+	if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
 	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
 
 status:
@@ -82,7 +82,7 @@ release-darwin-amd64: darwin-amd64 FORCE
 	cp ../LICENSE ../dist/
 	cp ../README.md ../dist/
 	cp ../INSTALL.md ../dist/
-	cp -v $(LIB_NAME).dynlib ../dist/
+	cp -v $(LIB_NAME).dylib ../dist/
 	cp -v $(LIB_NAME).h ../dist/
 	cd ../dist && tar zcvf $(LIB_NAME)-$(VERSION)-darwin-amd64.tar.gz $(LIB_NAME).dynlib $(LIB_NAME).h  README.md LICENSE INSTALL.md
 
