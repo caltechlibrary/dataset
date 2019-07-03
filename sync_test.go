@@ -103,7 +103,7 @@ func TestMerge(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	c, err := InitCollection(collectionName, PAIRTREE_LAYOUT)
+	c, err := InitCollection(collectionName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -135,9 +135,15 @@ func TestMerge(t *testing.T) {
 	}
 
 	// NOTE: Make sure grid dimensions match table minus header row
+	c.Reframe(frameName, keys, false)
 	f, err = c.getFrame(frameName)
-	if len(f.Grid) != (len(table) - 1) {
-		t.Errorf("expected %d rows, got %d rows", len(table), len(f.Grid))
+	if err != nil {
+		t.Errorf("failed to get frame %s, %s", frameName, err)
+		t.FailNow()
+	}
+	grid := f.Grid(false)
+	if len(grid) != (len(table) - 1) {
+		t.Errorf("expected %d rows, got %d rows", len(table), len(grid))
 		t.FailNow()
 	}
 
@@ -149,7 +155,7 @@ func TestMerge(t *testing.T) {
 			t.Errorf("Expected row %d, key (%T) %+v to be string, %s", i, key, key, err)
 		}
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
@@ -209,7 +215,7 @@ func TestMerge(t *testing.T) {
 			t.Errorf("Expected row %d, key (%T) %+v, of type string,%s", i, key, key, err)
 		}
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
@@ -268,7 +274,7 @@ func TestMerge(t *testing.T) {
 	sVal = time.Now().String()
 	for _, key := range c.Keys() {
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("Can't read %s from %s, %s", key, collectionName, err)
 			t.FailNow()
@@ -410,7 +416,7 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	c, err := InitCollection(collectionName, PAIRTREE_LAYOUT)
+	c, err := InitCollection(collectionName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -429,13 +435,12 @@ id,one,two
 		t.FailNow()
 	}
 
-	f, err := c.Frame(frameName, keys, []string{"._Key", ".one", ".two"}, verbose)
+	f, err := c.Frame(frameName, keys, []string{"._Key", ".one", ".two"}, []string{"id", "one", "two"}, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
 	f.AllKeys = true
-	f.Labels = []string{"id", "one", "two"}
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -447,7 +452,7 @@ id,one,two
 	fieldVals := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"}
 	for i, key := range []string{"0", "1", "2", "3", "4"} {
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj)
+		err = c.Read(key, obj, false)
 		if err != nil {
 			t.Errorf("%s", err)
 			t.FailNow()

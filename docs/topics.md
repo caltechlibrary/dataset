@@ -20,6 +20,7 @@
 ## Attachments and storage
 
 - [File system layout](../how-to/file-system-layout.html)
+- [How attachments work](../how-to/how-attachments-work.html)
 - [Managing attachments](../how-to/managing-attachments.html)
 - [Upgrading a collection](../how-to/upgrading-a-collection.html)
 - [Working with Cloud Storage](../how-to/working-with-cloud-storage.html)
@@ -29,9 +30,6 @@
 - [Working with CSV](../how-to/working-with-csv.html)
 - [Working with Google Sheets](../how-to/working-with-gsheets.html)
 
-## Experimental
-
-- [Indexing and Search](../how-to/indexing-and-search.html)
 
 
 # Topics A-Z
@@ -41,7 +39,6 @@
 - [check](check.html)
 - [count](count.html)
 - [create](create.html)
-- [cloud-storage](../how-to/cloud-storage.html)
 - [data grid](grid.html)
 - [delete](delete.html)
 - [delete-frame](delete-frame.html)
@@ -49,12 +46,10 @@
 - [dotpath](dotpath.html)
 - [export](export-csv.html) (csv)
 - [export](export-gsheet.html) (gsheet)
-- [file-system-layout](../how-to/file-system-layout.html)
 - [frame](frame.html)
+- [frame-grid](frame-grid.html)
+- [frame-objects](frame-objects.html)
 - [frames](frames.html)
-- [frame-labels](frame-labels.html)
-- [gsheet integration](../how-to/gsheet-integration.html)
-- [getting-started-with-dataset](../how-to/getting-started-with-dataset.html)
 - [grid](grid.html)
 - [hasframe](hasframe.html)
 - [haskey](haskey.html)

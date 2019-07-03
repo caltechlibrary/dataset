@@ -22,8 +22,9 @@ being exported - ._Key,.title, and .pubDate with the following
 labels for those fields -- id, title and publication date. 
 
 ```shell
-    dataset frame publications.ds my-report "._Key" ".title" ".pubDate"
-    dataset frame-labels publications.ds my-report "id" "title" "publication date"
+    dataset frame publications.ds my-report \
+        "._Key=id" ".title=title" \
+        ".pubDate=publication date"
 ```
 
 The example blow creates a CSV file named 'output.csv'. The collection 
@@ -33,5 +34,5 @@ is "publications.ds".
 	dataset export publications.ds my-report > output.csv
 ```
 
-Related topics: [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [export-gsheet](export-gsheet.html)
+Related topics: [frame](frame.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [export-gsheet](export-gsheet.html)
 

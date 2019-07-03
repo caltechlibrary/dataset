@@ -45,8 +45,7 @@ select lists based JSON document keys (aka JSON document names).</p>
 <p>Options are shared between all actions and must precede the action
 on the command line.</p>
 
-<pre><code>    -batch, -size             (indexer, deindexer, find) set the number of records per response
-    -c, -collection           sets the collection to be used
+<pre><code>    -c, -collection           sets the collection to be used
     -client-secret            (import-gsheet, export-gsheet) set the client secret path and filename for GSheet access
     -csv                      (find) format results as a CSV document, used with fields option
     -csv-skip-header          (find) don't output a header row, only values for csv output
@@ -85,22 +84,20 @@ on the command line.</p>
     clone-sample   Clone a collection into a sample size based training collection and test collection
     count          Counts the number of records in a collection, accepts a filter for sub-counts
     create         Create a JSON record in a collection
-    deindexer      (experimental) Remove record(s) from an index for a collection
     delete         Delete a JSON record (and attachments) from a collection
     delete-frame   remove a frame from a collection
     detach         Copy an attach out of an associated JSON record in a collection
     export-csv     Export a JSON records from a collection to a CSV file
     export-gsheet  Export a collection's JSON records to a GSheet
-    find           (experimental) Query an index(es) associated with a collection
     frame          define or retrieve a frame from a collection
-    frame-labels   define explicitly the labels associated with a frame
+    frame-objects  retrieve a frame's object list
+    frame-grid     retrieve a frame's object list as a 2D JSON array
     frame-types    define explicitly the column type names associated with a frame
     frames         list the available frames in a collection
     grid           Creates a data grid from a list keys of dot paths
     haskey         Returns true if key is in collection, false otherwise
     import-csv     Import a CSV file's rows as JSON records into a collection
     import-gsheet  Import a GSheet rows as JSON records into a collection
-    indexer        (experimental) Create/Update an index of a collection
     init           Initialize a dataset collection
     join           Join a JSON record with a new JSON object in a collection
     keys           List the keys in a collection, support filtering and sorting
@@ -114,7 +111,7 @@ on the command line.</p>
     update         Update a JSON record in a collection
 </code></pre>
 
-<p>Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="clone.html">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="deindexer.html">deindexer</a>, <a href="delete.html">delete</a>, <a href="delete-frame.html">delete-frame</a>, <a href="detach.html">detach</a>, <a href="export-csv.html">export-csv</a>, <a href="export-gsheet.html">export-gsheet</a>, <a href="find.html">find</a>, <a href="frame.html">frame</a>, <a href="frame-labels.html">frame-labels</a>, <a href="frame-types.html">frame-types</a>, <a href="frames.html">frames</a>, <a href="grid.html">grid</a>, <a href="haskey.html">haskey</a>, <a href="import-csv.html">import-csv</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="indexer.html">indexer</a>, <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="reframe.html">reframe</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a></p>
+<p>Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="clone.html">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="delete.html">delete</a>, <a href="delete-frame.html">delete-frame</a>, <a href="detach.html">detach</a>, <a href="export-csv.html">export-csv</a>, <a href="export-gsheet.html">export-gsheet</a>, <a href="frame.html">frame</a>, <a href="frame-objects.html">frame-objects</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-types.html">frame-types</a>, <a href="frames.html">frames</a>, <a href="grid.html">grid</a>, <a href="haskey.html">haskey</a>, <a href="import-csv.html">import-csv</a>, <a href="import-gsheet.html">import-gsheet</a>,  <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="reframe.html">reframe</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a></p>
 
 <p>dataset v0.0.45</p>
 

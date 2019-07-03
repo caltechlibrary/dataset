@@ -7,10 +7,6 @@ Compiler requirements
 
 + go1.12 or better
 
-Package assumptions
-
-+ blevesearch v0.7.0 or better
-
 ## Recommend
 
 + Google Sheets support docs see https://developers.google.com/sheets/api/quickstart/go
@@ -228,15 +224,8 @@ to vendor any packages assuming you're building from the master branch.
 
 ## 3rd party packages
 
-+ [aws sdk go](https://github.com/aws/aws-sdk-go) - supporting AWS S3 storage (used by all the cli)
-    + github.com/aws/aws-sdk-go/aws
-    + github.com/aws/aws-sdk-go/aws/session
-    + github.com/aws/aws-sdk-go/service/s3
-    + github.com/aws/aws-sdk-go/service/s3/s3iface
-    + github.com/aws/aws-sdk-go/service/s3/s3manager
 + [Markdown packages] - used to support rendering Markdown embedded in JSON objects
     + [github.com/microcosm-cc/bluemonday](https://github.com/microcosm-cc/bluemonday)
     + [github.com/russross/blackfriday](https://github.com/russross/blackfriday)
-+ [Blevesearch](https://github.com/blevesearch/bleve) 
-
++ Migrating to [go-cloud](https://github.com/google/go-cloud) from aws-sdk and Google's Go SDK
 

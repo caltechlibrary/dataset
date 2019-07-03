@@ -43,25 +43,59 @@ Now check to see if the key, littlefreda, is in the collection
    dataset.haskey(c_name, 'littlefreda')
 ```
 
-You can also read your JSON formatted data from a file or standard 
-input.  In this example we are creating a mojosam record and reading 
-back the contents of fiends.ds
+You can also read your JSON formatted data from a file 
+but you need to convert it first to a Python dict.
+In theses examples we are creating for Mojo Sam
+and Capt. Jack then reading back all the keys
+and displaying their paths and the JSON document
+created.
 
 ```python
-   dataset -i mojosam.json create mojosam
-   for KY in $(dataset keys); do
-      echo "Path: $(dataset path $KY) 
-      echo "Doc: $(dataset read $KY)
-   done
+    with open("mojosam.json") as f:
+        src = f.read().encoding('utf-8')
+        dataset.create(c_name, "mojosam", json.loads(src))
+
+   with open("capt-jack.json") as f:
+      src = f.read()
+      dataset.create("capt-jack", json.loads(src))
+
+   for key in dataset.keys(c_name):
+        print(f"Path: {dataset.path(c_name, key)}")
+        print(f"Doc: {dataset.read(c_name, key)}")
+        print("")
 ```
 
-Or similarly using a Unix pipe to create a "capt-jack" JSON record.
+It is also possible to filter and sort keys from python by
+providing extra parameters to the keys method. First
+we'll display a list of keys filtered by email ending
+in "example.org" then sorted by email.
 
 ```python
-   cat capt-jack.json | dataset create capt-jack
-   for KY in $(dataset keys); do
-      echo "Path: $(dataset path $KY) 
-      echo "Doc: $(dataset read $KY)
-   done
+    print(f"Filtered only")
+    keys = dataset.keys(c_name, '(has_suffix .email "example.org")')
+    for key in keys:
+        print(f"Path: {dataset.path(c_name, key)}")
+        print(f"Doc: {dataset.read(c_name, key)}")
+        print("")
+    print(f"Filtered and sorted") 
+    keys = dataset.keys(c_nane, '(has_suffix .email "example.org")', '.email')
+    for key in keys:
+        print(f"Path: {dataset.path(c_name, key)}")
+        print(f"Doc: {dataset.read(c_name, key)}")
+        print("")
 ```
 
+Filter and sorting a large collection can take time due to the
+number of disc reads. It can also use allot of memory. It is more
+effecient to first filter your keys then sort the filtered keys.
+
+```python
+    print(f"Filtered, sort by stages")
+    all_keys = dataset.keys(c_name)
+    keys = dataset.key_filter(c_name, keys, '(has_suffix .email "example.org")')
+    keys = dataset.key_sort(c_name, keys, ".email")
+    for key in keys:
+        print(f"Path: {dataset.path(c_name, key)}")
+        print(f"Doc: {dataset.read(c_name, key)}")
+        print("")
+```

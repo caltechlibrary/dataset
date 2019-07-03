@@ -11,7 +11,7 @@ import (
 
 func TestPairtree(t *testing.T) {
 	cName := "testdata/pairtree_test.ds"
-	c, err := InitCollection(cName, PAIRTREE_LAYOUT)
+	c, err := InitCollection(cName)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

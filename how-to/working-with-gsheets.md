@@ -38,7 +38,7 @@ an "Import file" dialog, select "Replace current sheet" then press
 You should wind up with a spreadsheet that starts out something like this --
 
 ```csv
-    id,name,title,year
+    ID,Name,Title,Year
     1,Jack Flanders,The Fourth Tower of Inverness,1972
     2,Little Freida,The Fourth Tower of Inverness,1972
     3,Dr. Mazoola,The Fourth Tower of Inverness,1972
@@ -51,7 +51,7 @@ You should wind up with a spreadsheet that starts out something like this --
     ...
 ```
 
-You sheet should have four columns A to D (id, name, title, year) and 
+You sheet should have four columns A to D (ID, Name, Title, Year) and 
 195 rows with id ranging from 1 to 194 in column 1. You can describe the 
 range of your sheet as A1:D195 (A 1 through D 195). We're going to use 
 this range when importing and exporting.  
@@ -174,53 +174,41 @@ Here is an example of the output
 ```json
     {
         "_Key": "19",
-        "id": 19,
-        "name": "Comtese Zazeenia",
-        "title": "Moon Over Morocco",
-        "year": 1973
+        "ID": 19,
+        "Name": "Comtese Zazeenia",
+        "Title": "Moon Over Morocco",
+        "Year": 1973
     }
 ```
 
-Notice that we a "_Key" field and an "id" field. We will want to
-use the "_Key" field explicitly when we defined our frame. That is
-becasue dataset maintains the relationship of "_Key" as the id for
-the object and we want this to map to the "id" labels in the 
-spreadsheet. We're going to want to include "all" keys in the
+Notice that we a `_Key` field and an "ID" field. `_Key` is the internal
+id for the JSON object used by dataset. We will want to
+use the `_Key` field explicitly when we defined our frame. This
+will establish the relationship between dataset's objects and
+the spreadsheet.  We're going to want to include "all" keys in the
 collection so we'll be using the '-all' option (you could
-limit the frame to specific records by providing a keylist to the frame
-definition).
+limit the frame to specific records by providing a keylist 
+to the frame definition).
 
 Step 1. define our frame
 
 ```shell
     dataset frame -all zbs-cast-list.ds gsheet-sync \
-        ._Key .name .title .year
+        ._Key=ID .Name=Name .Title=Title .Year=Year
 ```
 
-Step 2. review the results
+This returns a new frame definition. This includes the relationship
+between our object attributes (dot paths) and the column label.
 
-This returns a new frame definition. We haven't setup the labels (or
-types yet) but the basic information has been recorded. You can 
-retrieve the frame again by just providing the name.
+Step 2. Review the frame you defined.
 
 ```shell
     dataset frame -p zbs-cast-list.ds gsheet-sync | more
 ```
 
-Step 3. define labels for each of our dotpaths in our frame
-
-You'll notice when you pretty printed the frame that our dotpaths
-are an array, arrays are ordered. We' going to explicitly set our
-labels to match that dotpath ordering. E.g. "._Key" should map to 
-"id", ".name" to "name", ".title" to "title" and ".year" to "year".
-
-```shell
-    dataset frame-labels zbs-cast-list.ds gsheet-sync \
-       "id" "name" "title" "year"
-```
-
-You should check your updated frame and if the labels look correct then
-we're ready to synchronize our collection with our Google Sheet.
+You should check your recreate the frame and if the dot paths or 
+labels look incorrect. Otherwise we're ready to synchronize our 
+collection with our Google Sheet.
 
 Let's change item 43 in our Google Sheet from "Jack Flanders" to
 "Molly Flanders". We want our collection to pick up this change. We need
@@ -285,5 +273,5 @@ our Google Sheet, then we can export our whole zbs-cast-list.ds into it.
 You should now see populated new-cast-list sheet.
 
 
-Related topics: [dotpath](../docs/dotpath.html), [export-csv](../docs/export-csv.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html), [export-gsheet](../docs/export-gsheet.html), [sync-receive](../docs/sync-receive.html) and [sync-send](../docs/sync-send.html) 
+Related topics: [dotpath](../docs/dotpath.html), [export-csv](../docs/export-csv.html), [frame](../docs/frame.html), [import-csv](../docs/import-csv.html), [import-gsheet](../docs/import-gsheet.html), [export-gsheet](../docs/export-gsheet.html), [sync-receive](../docs/sync-receive.html) and [sync-send](../docs/sync-send.html) 
 

@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -44,13 +44,13 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.61`
+	Version = `v0.0.66`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
 %s %s
 
-Copyright (c) 2018, Caltech
+Copyright (c) 2019, Caltech
 All rights not granted herein are expressly reserved by Caltech.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -68,12 +68,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	ASC  = iota
 	DESC = iota
 
-	// Supported file layout types
-	// Assume an unknown layout is zero, then add consts in order of adoption
-	UNKNOWN_LAYOUT = iota
-
-	// Pairtree is the perferred file layout moving forward
-	PAIRTREE_LAYOUT
+	// Pairtree is the only supported file layout
+	PAIRTREE_LAYOUT = iota
 
 	// internal virtualize column name format string
 	fmtColumnName = `column_%03d`
@@ -84,16 +80,11 @@ type Collection struct {
 	// DatasetVersion of the collection
 	DatasetVersion string `json:"dataset_version"`
 
-	// Name of collection
+	// Name (filename) of collection
 	Name string `json:"name"`
 
 	// workPath holds the path (i.e. non-protocol and hostname, in URI)
 	workPath string `json:"-"`
-
-	// Type allows for transitioning from pairtree layout to a future
-	// type of structure in collections. It was previously used to
-	// migrate bucketed dataset collections to pairtrees..
-	Layout int `json:"layout"`
 
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
@@ -106,27 +97,41 @@ type Collection struct {
 	FrameMap map[string]string `json:"frames"`
 
 	//
-	// Metadata for collection - maintained via namaste tool
+	// Metadata for collection.
 	//
 
-	// Description (usually picked up via namaste command on folder)
-	Description string `json:decription,omitempty"`
+	// Created is the date/time the init command was run in
+	// RFC1123 format.
+	Created string `json:"created,omitempty"`
 
-	// Initialzed date/time string init command was run
-	Initialized string `json:initialized,omitempty"`
+	// Version of collection being stored in semvar notation
+	Version string `json:"version,omitempty"`
 
-	// Who - creator, owner, maintainer name(s)
+	// Contact info
+	Contact string `json:"contact,omitempty"`
+
+	// CodeMeta is a relative path or URL to a Code Meta
+	// JSON document for the collection.  Often it'll be
+	// in the collection's root and have the value "codemeta.json"
+	// but also may be stored someplace else. It should be
+	// an empty string if the codemeta.json file has not been
+	// created.
+	CodeMeta string `json:"codemeta,omitempty"`
+
+	//
+	// The following are the Namaste fields
+	//
+
+	// Who is the person(s)/organization(s) that created the collection
 	Who []string `json:"who,omitempty"`
 	// What - description of collection
 	What string `json:"what,omitempty"`
-	// When - date associated with collection (e.g. 2018, 2018-10, 2018-10-02)
+	// When - date associated with collection (e.g. 2019,
+	// 2019-10, 2019-10-02), should map to an approx date like in
+	// archival work.
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection
 	Where string `json:"where,omitempty"`
-	// Version of collection being stored in semvar notation
-	Version string `json:"version,omitempty"`
-	// Contact info
-	Contact string `json:"contact,omitempty"`
 }
 
 //
@@ -216,18 +221,12 @@ func (c *Collection) SaveMetadata() error {
 //
 
 // InitCollection - creates a new collection with default alphabet and names of length 2.
-// NOTE: layoutType is provided to allow for future changes in the file layout of a collection.
-func InitCollection(name string, layoutType int) (*Collection, error) {
+func InitCollection(name string) (*Collection, error) {
 	var (
 		c   *Collection
 		err error
 	)
-	switch layoutType {
-	case PAIRTREE_LAYOUT:
-		c, err = pairtreeCreateCollection(name)
-	default:
-		c, err = pairtreeCreateCollection(name)
-	}
+	c, err = pairtreeCreateCollection(name)
 	if err != nil {
 		return nil, err
 	}
@@ -290,12 +289,7 @@ func (c *Collection) Close() error {
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeCreateJSON(key, src)
-	default:
-		return c.pairtreeCreateJSON(key, src)
-	}
+	return c.pairtreeCreateJSON(key, src)
 }
 
 // ReadJSON finds a the record in the collection and returns the JSON source
@@ -303,12 +297,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	if c.HasKey(name) == false {
 		return nil, fmt.Errorf("key not found")
 	}
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeReadJSON(name)
-	default:
-		return c.pairtreeReadJSON(name)
-	}
+	return c.pairtreeReadJSON(name)
 }
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
@@ -316,12 +305,7 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	if c.HasKey(name) == false {
 		return fmt.Errorf("key not found")
 	}
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeUpdateJSON(name, src)
-	default:
-		return c.pairtreeUpdateJSON(name, src)
-	}
+	return c.pairtreeUpdateJSON(name, src)
 }
 
 // Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
@@ -336,7 +320,7 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 
 // Read finds the record in a collection, updates the data interface provide and if problem returns an error
 // name must exist or an error is returned
-func (c *Collection) Read(name string, data map[string]interface{}) error {
+func (c *Collection) Read(name string, data map[string]interface{}, cleanObject bool) error {
 	src, err := c.ReadJSON(name)
 	if err != nil {
 		return err
@@ -345,6 +329,10 @@ func (c *Collection) Read(name string, data map[string]interface{}) error {
 	decoder.UseNumber()
 	if err := decoder.Decode(&data); err != nil {
 		return err
+	}
+	if cleanObject == true {
+		delete(data, "_Key")
+		delete(data, "_Attachments")
 	}
 	return nil
 }
@@ -360,12 +348,7 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	switch c.Layout {
-	case PAIRTREE_LAYOUT:
-		return c.pairtreeDelete(name)
-	default:
-		return c.pairtreeDelete(name)
-	}
+	return c.pairtreeDelete(name)
 }
 
 // Keys returns a list of keys in a collection
@@ -596,7 +579,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verbo
 	)
 	for i, key := range keys {
 		data := map[string]interface{}{}
-		if err := c.Read(key, data); err == nil {
+		if err := c.Read(key, data, false); err == nil {
 			// write row out.
 			row = []string{}
 			for _, colPath := range dotExpr {
@@ -664,7 +647,7 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 
 	for _, key := range keys {
 		data := map[string]interface{}{}
-		if err := c.Read(key, data); err == nil {
+		if err := c.Read(key, data, false); err == nil {
 			// write row out.
 			row = []interface{}{}
 			for _, colPath := range dotExpr {
@@ -713,7 +696,7 @@ func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, e
 		key = strings.TrimSpace(key)
 		if len(key) > 0 {
 			m := map[string]interface{}{}
-			if err := c.Read(key, m); err == nil {
+			if err := c.Read(key, m, false); err == nil {
 				if ok, err := filter.Apply(m); err == nil && ok == true {
 					keys = append(keys, key)
 				}
@@ -730,8 +713,7 @@ func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error 
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
-	//NOTE: this should create a collection using the same layout we cloning from
-	clone, err := InitCollection(cloneName, c.Layout)
+	clone, err := InitCollection(cloneName)
 	if err != nil {
 		return err
 	}
@@ -805,26 +787,6 @@ func IsCollection(p string) bool {
 	return false
 }
 
-// CollectionLayout returns the numeric type
-// association with the collection (i.e PAIRTREE_LAYOUT).
-func CollectionLayout(p string) int {
-	workPath := collectionNameAsPath(p)
-	store, err := storage.GetStore(p)
-	if err != nil {
-		return UNKNOWN_LAYOUT
-	}
-	src, err := store.ReadFile(path.Join(workPath, "collection.json"))
-	if err == nil {
-		c := new(Collection)
-		err = json.Unmarshal(src, &c)
-		if err != nil {
-			return UNKNOWN_LAYOUT
-		}
-		return PAIRTREE_LAYOUT
-	}
-	return UNKNOWN_LAYOUT
-}
-
 // Join takes a key, a map[string]interface{}{} and overwrite bool
 // and merges the map with an existing JSON object in the collection.
 // BUG: This is a naive join, it assumes the keys in object are top
@@ -834,7 +796,7 @@ func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool
 		return c.Create(key, obj)
 	}
 	record := map[string]interface{}{}
-	err := c.Read(key, record)
+	err := c.Read(key, record, false)
 	if err != nil {
 		return err
 	}

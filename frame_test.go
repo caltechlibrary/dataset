@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,79 +19,139 @@
 package dataset
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 )
 
 func TestFrame(t *testing.T) {
-	layouts := []int{
-		PAIRTREE_LAYOUT,
+	os.RemoveAll(path.Join("testdata", "frame_test.ds"))
+	cName := path.Join("testdata", "frame_test.ds")
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
 	}
-	for _, cLayout := range layouts {
-		os.RemoveAll(path.Join("testdata", "frame_test.ds"))
-		cName := path.Join("testdata", "frame_test.ds")
-		c, err := InitCollection(cName, cLayout)
+	defer c.Close()
+
+	//NOTE: test data and to load into collection and generate grid
+	tRecords := []map[string]interface{}{
+		map[string]interface{}{
+			"_Key":  "A",
+			"id":    "A",
+			"one":   "one",
+			"two":   22,
+			"three": 3.0,
+			"four":  []string{"one", "two", "three"},
+		},
+		map[string]interface{}{
+			"_Key":  "B",
+			"id":    "B",
+			"two":   2000,
+			"three": 3000.1,
+		},
+		map[string]interface{}{
+			"_Key": "C",
+			"id":   "C",
+		},
+		map[string]interface{}{
+			"_Key":  "D",
+			"id":    "D",
+			"one":   "ONE",
+			"two":   20,
+			"three": 334.1,
+			"four":  []string{},
+		},
+	}
+	keys := []string{}
+	for _, rec := range tRecords {
+		key := rec["_Key"].(string)
+		keys = append(keys, key)
+		err := c.Create(key, rec)
 		if err != nil {
 			t.Error(err)
 			t.FailNow()
 		}
-		defer c.Close()
+	}
 
-		//NOTE: test data and to load into collection and generate grid
-		tRecords := []map[string]interface{}{
-			map[string]interface{}{
-				"_Key":  "A",
-				"id":    "A",
-				"one":   "one",
-				"two":   22,
-				"three": 3.0,
-				"four":  []string{"one", "two", "three"},
-			},
-			map[string]interface{}{
-				"_Key":  "B",
-				"id":    "B",
-				"two":   2000,
-				"three": 3000.1,
-			},
-			map[string]interface{}{
-				"_Key": "C",
-				"id":   "C",
-			},
-			map[string]interface{}{
-				"_Key":  "D",
-				"id":    "D",
-				"one":   "ONE",
-				"two":   20,
-				"three": 334.1,
-				"four":  []string{},
-			},
-		}
-		keys := []string{}
-		for _, rec := range tRecords {
-			key := rec["_Key"].(string)
-			keys = append(keys, key)
-			err := c.Create(key, rec)
-			if err != nil {
-				t.Error(err)
-				t.FailNow()
+	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, false)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	expected := "frame-1"
+	result := f.Name
+	if expected != result {
+		t.Errorf("expected %q, got %q, for %s", expected, result, f)
+	}
+	expected = c.Name // e.g. "frame_test.ds from  "testdata/frame_test.ds"
+	result = f.CollectionName
+	if expected != result {
+		t.Errorf("expected %q, got %q, for %s", expected, result, f)
+	}
+	//FIXME: need some tests on frame structure.
+	objectList := f.Objects()
+	for i, obj := range objectList {
+		rec := tRecords[i]
+		for j, key := range f.Labels {
+			if val, ok := obj[key]; ok != true {
+				if _, ok := rec[key]; ok == true {
+					t.Errorf("(%d, %d) missing key %q in obj, %+v\n", i, j, key, obj)
+				}
+			} else if expected, ok := rec[key]; ok != true {
+				t.Errorf("(%d, %d) missing key %q in record, %+v\n", i, j, key, expected)
+			} else {
+				switch val.(type) {
+				case string:
+					if strings.Compare(val.(string), expected.(string)) != 0 {
+						t.Errorf("(%d, %d, %s) expected %q, got %q", i, j, key, expected, val)
+					}
+				case int:
+					if val.(int) != expected.(int) {
+						t.Errorf("(%d, %d, %s) expected int %d, got %d", i, j, key, expected, val)
+					}
+				case int64:
+					if val.(int64) != expected.(int64) {
+						t.Errorf("(%d, %d, %s) expected int %d, got %d", i, j, key, expected, val)
+					}
+				case float64:
+					if val.(float64) != expected.(float64) {
+						t.Errorf("(%d, %d, %s) expected int %f, got %f", i, j, key, expected, val)
+					}
+				case json.Number:
+					n1 := val.(json.Number).String()
+					n2 := ""
+					switch expected.(type) {
+					case int:
+						n2 = fmt.Sprintf("%d", expected)
+					case int64:
+						n2 = fmt.Sprintf("%d", expected)
+					case float64:
+						n2 = fmt.Sprintf("%1.1f", expected)
+						// Handle the case that json.Number returns float
+						// as int for valued stored, e.g. 3.0 returned as 3
+						if len(n1) < len(n2) {
+							n2 = n2[0:len(n1)]
+						}
+					}
+					if strings.Compare(n1, n2) != 0 {
+						t.Errorf("(%d, %d, %s) expected %s, got %s", i, j, key, n2, n1)
+					}
+				case []interface{}:
+					e := len(expected.([]string))
+					v := len(val.([]interface{}))
+					if e != v {
+						t.Errorf("(%d, %d, %s) expected length %d, got %d", i, j, key, e, v)
+					}
+				default:
+					t.Errorf("(%d, %d, %s) something didn't match, expected (%T) %+v, got (%T) %+v", i, j, key, expected, expected, val, val)
+					t.FailNow()
+				}
 			}
 		}
-
-		f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, false)
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-		expected := "frame-1"
-		result := f.Name
-		if expected != result {
-			t.Errorf("expected %q, got %q, for %s", expected, result, f)
-		}
-		expected = c.Name // e.g. "frame_test.ds from  "testdata/frame_test.ds"
-		result = f.CollectionName
-		if expected != result {
-			t.Errorf("expected %q, got %q, for %s", expected, result, f)
-		}
 	}
+
 }

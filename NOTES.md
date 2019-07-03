@@ -8,39 +8,22 @@ like a k/v store where the operations are on files not within them.
 
 ### Attach (no other attachments)
 
-1. calc tarball name
-2. create a temp file for tarball
-3. build tarball 
-4. copy tarball into place for local FS, upload to target name for S3
-5. remove temp file
-
-### Attach (append to existing attachments)
-
-1. calc tarball name
-2. on S3 download tarball to local temp file, copy tarball to temp file
-3. append new file to tarball
-4. copy tarball into place for local FS, upload to target name for S3
-5. remove temp file
+1. calc basename of file to be attached as well as the 
+   pairtree path including a `_docs` element before the basename
+2. copy the file into place on attachment directory using the basename
 
 ### List attachments
 
-1. calc tarball name
-2. on S3 copy tarball to local temp file
-3. scan tarball for filenames
-4. remove temp file
+1. scan for filenames using pairtree path plus `_docs` suffix 
 
 ### Delete specific attached file
 
-1. calc tarball name
-2. copy tarball (from S3 or local FS) to local temp file
-3. rebuild tarball without deleted file
-4. copy tarball into place for local FS, upload to target name for S3
-5. remove temp file
+1. calc pairtree path
+2. delete item with path
 
 ### Delete all attachments
 
-1. calc tarball name
-2. Remove() on tarball in either location
+1. remove objects attachments from the pairtree path for containing `_docs` 
 
 ## Reference Google API integration
 

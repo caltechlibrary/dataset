@@ -27,28 +27,51 @@
 <section>
 <h1>frame</h1>
 
-<p>This command will define a frame or return the contents of a frame.
-To define a new frame you need to provide a frame name
-followed by a list of dotpaths. You also need a list of keys. By default
-the keys are read from standard input. With options you can include
-a specific file or even indicate to use all the keys in a collection.
-In this example we are creating a frame called &ldquo;title-authors-year&rdquo; based
-on the titles, authors and publication year from a dataset
-collection called <code>pubs.ds</code>.</p>
+<p>This command will define a data frame or return the contents and
+metadata of a defined frame.  To define a new frame you need to
+provide a collection name, a frame name followed by a list of
+dotpath/label pairs. The labels are used as object attribute names
+and the dot paths as the source of data. You also need a list of keys.<br>
+By default the keys are read from standard input. With options you
+can include a specific file or even indicate to use all the keys
+in a collection.  In this example we are creating a frame
+called &ldquo;title-authors-year&rdquo; based on the titles, authors and
+publication year from a dataset collection called <code>pubs.ds</code>.
+Note the labels of &ldquo;Title&rdquo;, &ldquo;Authors&rdquo;, &ldquo;PubYear&rdquo; are on the right
+side the an equal sign and the dot paths to the left.</p>
 
 <pre><code class="language-shell">    dataset keys pubs.ds |\
         dataset frame pubs.ds &quot;title-authors-year&quot; \
-                .title .authors .publication_year
+                &quot;.title=Title&quot; \
+                &quot;.authors=Authors&quot; \
+                &quot;.publication_year=PubYear&quot;
 </code></pre>
 
-<p>In python</p>
+<p>The objects in the frame&rsquo;s object list will look like</p>
 
-<pre><code class="language-python">    keys = dataset.keys('pubs.ds')
-    (frame, err) = dataset.frame('pubs.ds', 'title-authors-year', 
-         keys, ['.title', '.authors', '.publication_year'])
+<pre><code class="language-json">    {
+        &quot;Title&quot;: ...,
+        &quot;Authors&quot;: ...,
+        &quot;PubYear&quot;: ...,
+    }
 </code></pre>
 
-<p>Related topics: <a href="frames.html">frames</a>, <a href="frame-labels.html">frame-labels</a>, <a href="frame-types.html">frame-types</a>, <a href="reframe.html">reframe</a>, <a href="delete-frame.html">delete-frame</a></p>
+<p>This allows you to create convient names for otherwise deep dot paths.</p>
+
+<p>In python we use a Dict to map the dotpaths to labels rather than
+an embedded equal sign. Doing the same task as before would look
+like this in Python.</p>
+
+<pre><code class="language-python">    keys = dataset.keys(&quot;pubs.ds&quot;)
+    (frame, err) = dataset.frame(&quot;pubs.ds&quot;, &quot;title-authors-year&quot;, 
+         keys, { 
+             &quot;.title&quot;: &quot;Title&quot;, 
+             &quot;.authors&quot;: &quot;Authors&quot;,
+              &quot;.publication_year&quot;: &quot;PubYear&quot;
+         })
+</code></pre>
+
+<p>Related topics: <a href="frames.html">frames</a>, <a href="frame-objects.html">frame-objects</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-types.html">frame-types</a>, <a href="reframe.html">reframe</a>, <a href="delete-frame.html">delete-frame</a></p>
 
 </section>
 

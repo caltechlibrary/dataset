@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,7 +19,6 @@
 package dataset
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -27,50 +26,19 @@ import (
 	"github.com/caltechlibrary/dotpath"
 )
 
-// ObjectList takes a set of collection keys and builds an array
-// of objects from the array of keys, dot paths and labels provided.
-func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []string, verbose bool) ([]map[string]interface{}, error) {
-	if len(dotPaths) != len(labels) {
-		return nil, fmt.Errorf("dot paths and labels do not match")
-	}
-	pid := os.Getpid()
-	objectList := make([]map[string]interface{}, len(keys))
-	for i, key := range keys {
-		rec := map[string]interface{}{}
-		err := c.Read(key, rec)
-		if err != nil {
-			return nil, err
-		}
-		objectList[i] = make(map[string]interface{})
-		for j, dpath := range dotPaths {
-			value, err := dotpath.Eval(dpath, rec)
-			if err == nil {
-				key := labels[j]
-				objectList[i][key] = value
-			} else if verbose == true {
-				log.Printf("(pid: %d) WARNING: skipped key %s, path %s for row %d and column %d, %s", pid, key, dpath, i, j, err)
-			}
-		}
-		if verbose && (i > 0) && ((i % 1000) == 0) {
-			log.Printf("(pid: %d) %d keys processed", pid, i)
-		}
-	}
-	return objectList, nil
-}
-
-// Grid takes a set of collection keys and builds a grid (a 2D array cells)
+// Grid takes a set of collection keys and builds a grid (a 2D array of cells)
 // from the array of keys and dot paths provided
 func (c *Collection) Grid(keys []string, dotPaths []string, verbose bool) ([][]interface{}, error) {
 	pid := os.Getpid()
 	rows := make([][]interface{}, len(keys))
-	col_cnt := len(dotPaths)
+	colCnt := len(dotPaths)
 	for i, key := range keys {
 		rec := map[string]interface{}{}
-		err := c.Read(key, rec)
+		err := c.Read(key, rec, false)
 		if err != nil {
 			return nil, err
 		}
-		rows[i] = make([]interface{}, col_cnt)
+		rows[i] = make([]interface{}, colCnt)
 		for j, dpath := range dotPaths {
 			value, err := dotpath.Eval(dpath, rec)
 			if err == nil {

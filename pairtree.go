@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 	"sort"
@@ -47,10 +48,30 @@ func pairtreeCreateCollection(name string) (*Collection, error) {
 	}
 
 	c := new(Collection)
+	// Save the date and time
+	dt := time.Now()
+	// date and time is in RFC3339 format
+	c.Created = dt.Format(time.RFC3339)
+	// When is a date in YYYY-MM-DD format (can be approximate)
+	// e.g. 2019, 2019-01, 2019-01-02
+	c.When = dt.Format("2006-01-02")
 	c.DatasetVersion = Version
 	c.Name = path.Base(collectionName)
+	c.Version = "v0.0.0"
+	userinfo, err := user.Current()
+	if err == nil {
+		if userinfo.Name != "" {
+			c.Who = []string{userinfo.Name}
+		} else {
+			c.Who = []string{userinfo.Username}
+		}
+	}
+	if len(c.Who) > 0 {
+		c.What = fmt.Sprintf("A dataset (%s) collection initilized on %s by %s.", Version, dt.Format("Monday, January 2, 2006 at 3:04pm MST."), strings.Join(c.Who, ", "))
+	} else {
+		c.What = fmt.Sprintf("A dataset %s collection initilized on %s", Version, dt.Format("Monday, January 2, 2006 at 3:04pm MST.."))
+	}
 	c.workPath = collectionName
-	c.Layout = PAIRTREE_LAYOUT
 	c.KeyMap = map[string]string{}
 	c.Store = store
 	err = c.SaveMetadata()
@@ -239,7 +260,6 @@ func pairtreeAnalyzer(collectionName string) error {
 	}
 
 	// Set layout to PAIRTREE_LAYOUT
-	c.Layout = PAIRTREE_LAYOUT
 	// Make sure we have all the known pairs in the pairtree
 	// Check to see if records can be found in their buckets
 	for k, v := range c.KeyMap {
@@ -318,9 +338,6 @@ func pairtreeRepair(collectionName string) error {
 		log.Printf("Migrating format from %s to %s", c.DatasetVersion, Version)
 	}
 	c.DatasetVersion = Version
-	if c.Layout == UNKNOWN_LAYOUT {
-		c.Layout = PAIRTREE_LAYOUT
-	}
 	log.Printf("Getting a list of pairs")
 	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
 	if err != nil {
@@ -430,11 +447,10 @@ func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
 	} else {
 		//FIXME: Need to list the directory and aggregaite the pairs...
 		fmt.Fprintf(os.Stderr, "walkPairstree() not implemented for S3 and GS\n")
-		dListing, err := store.ReadDir(startPath)
+		_, err := store.ReadDir(startPath)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("DEBUG ReadDir()\n%+v\n", dListing)
 	}
 	return pairs, err
 }

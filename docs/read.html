@@ -46,6 +46,15 @@ of &ldquo;r1&rdquo;. Our collection name is &ldquo;data.ds&rdquo;</p>
 <pre><code class="language-shell">    dataset read data.ds r1
 </code></pre>
 
+<h3>Options</h3>
+
+<p>Normally dataset adds two values when it stores an object, <code>._Key</code>
+and possibly <code>._Attachments</code>. You can get the object without these
+added attributes by using the <code>-c</code> or <code>-clean</code> option.</p>
+
+<pre><code class="language-shell">    dataset read -clean data.ds r1
+</code></pre>
+
 <p>Related topics: <a href="keys.html">keys</a>, <a href="create.html">create</a>, <a href="update.html">update</a>, <a href="delete.html">delete</a></p>
 
 </section>

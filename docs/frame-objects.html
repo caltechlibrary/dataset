@@ -25,26 +25,31 @@
 </nav>
 
 <section>
-<h1>frame-labels</h1>
+<h1>frame-objects</h1>
 
-<p>Set the labels associated with the frame. The number of labels
-provide must match the number of <em>dot paths</em> defined in the frame.
-In this example the collection name is <code>example.ds</code>, frame name is
-&ldquo;f1&rdquo;, the labels are &lsquo;Column A&rsquo;, &lsquo;Column B&rsquo;, and &lsquo;Column C&rsquo;
-coresponding to the three dotpaths defined in <code>examples.ds</code>.</p>
+<h2>Usage</h2>
 
-<pre><code class="language-shell">    dataset frame-labels example.ds f1 'Column A' 'Column B' 'Column C'
+<pre><code>    frame-objects COLLECTION FRAME_NAME
 </code></pre>
 
-<p>In python</p>
+<p>Returns the object list of a frame.</p>
 
-<pre><code class="language-python">    err = dataset.frame_labels('example.ds', 'f1', [&quot;Column A&quot;, &quot;Column B&quot;, &quot;Column C&quot;])
+<h2>OPTIONS</h2>
+
+<dl>
+<dt>-p, -pretty</dt>
+<dd>pretty print JSON output</dd>
+</dl>
+
+<h2>Example</h2>
+
+<p>If I want to get a list of objects (JSON array of objects)
+for a frame named &ldquo;captions-dates-locations&rdquo; from my collection
+called &ldquo;photos.ds&rdquo; I would do the following (will be using the
+<code>-p</code> option to pretty print the results)</p>
+
+<pre><code>    dataset frame-objects -p photos.ds captions-dates-locations
 </code></pre>
-
-<p>Note that setting the labels will cause the object list in the frame to be regenerated from the current state of the collection. This is because the
-labels are used as the attribute names for the objects in a frame.</p>
-
-<p>Related topics: <a href="frame.html">frame</a>, <a href="frames.html">frames</a>, <a href="frame-types.html">frame-types</a>, <a href="reframe.html">reframe</a>, <a href="delete-frame.html">delete-frame</a></p>
 
 </section>
 

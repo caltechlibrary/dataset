@@ -34,7 +34,7 @@ func TestS3(t *testing.T) {
 
 	collectionURI1 := fmt.Sprintf("%s/testdata/blob_b.ds", S3Bucket)
 
-	c1, err := InitCollection(collectionURI1, PAIRTREE_LAYOUT)
+	c1, err := InitCollection(collectionURI1)
 	if err != nil {
 		t.Errorf("expected to create %q, got %s", collectionURI1, err)
 		t.FailNow()
@@ -46,10 +46,6 @@ func TestS3(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	if c1.Layout != PAIRTREE_LAYOUT {
-		t.Errorf("expected pairtree layout %d (buckets), got %d", PAIRTREE_LAYOUT, c1.Layout)
-		t.FailNow()
-	}
 	if c1.Store.Type != storage.S3 {
 		t.Errorf("expected storaged type S3 (%d), got %d", storage.S3, c1.Store.Type)
 		t.FailNow()
@@ -65,13 +61,6 @@ func TestS3(t *testing.T) {
 	}
 	if err != nil {
 		t.Errorf("expect err == nil for create/update (%q, %q), %s", key, objSrc, err)
-		t.FailNow()
-	}
-
-	// Verify we can detect layout
-	layout := CollectionLayout(collectionURI1)
-	if layout != PAIRTREE_LAYOUT {
-		t.Errorf("expected buckets (%d) layout, got %d", PAIRTREE_LAYOUT, layout)
 		t.FailNow()
 	}
 
@@ -125,7 +114,7 @@ func TestGS(t *testing.T) {
 
 	collectionURI1 := fmt.Sprintf("%s/testdata/blob_b.ds", GSBucket)
 
-	c1, err := InitCollection(collectionURI1, PAIRTREE_LAYOUT)
+	c1, err := InitCollection(collectionURI1)
 	if err != nil {
 		t.Errorf("expected to create %q, got %s", collectionURI1, err)
 		t.FailNow()
@@ -137,10 +126,6 @@ func TestGS(t *testing.T) {
 			t.FailNow()
 		}
 	}()
-	if c1.Layout != PAIRTREE_LAYOUT {
-		t.Errorf("expected buckets layout %d (buckets), got %d", PAIRTREE_LAYOUT, c1.Layout)
-		t.FailNow()
-	}
 	if c1.Store.Type != storage.GS {
 		t.Errorf("expected storaged type GS (%d), got %d", storage.GS, c1.Store.Type)
 		t.FailNow()
@@ -156,13 +141,6 @@ func TestGS(t *testing.T) {
 	}
 	if err != nil {
 		t.Errorf("expect err == nil for create/update (%q, %q), %s", key, objSrc, err)
-		t.FailNow()
-	}
-
-	// Verify we can detect layout
-	layout := CollectionLayout(collectionURI1)
-	if layout != PAIRTREE_LAYOUT {
-		t.Errorf("expected buckets (%d) layout, got %d", PAIRTREE_LAYOUT, layout)
 		t.FailNow()
 	}
 

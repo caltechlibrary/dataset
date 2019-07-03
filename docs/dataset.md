@@ -22,7 +22,6 @@ Options are shared between all actions and must precede the action
 on the command line.
 
 ```
-    -batch, -size             (indexer, deindexer, find) set the number of records per response
     -c, -collection           sets the collection to be used
     -client-secret            (import-gsheet, export-gsheet) set the client secret path and filename for GSheet access
     -csv                      (find) format results as a CSV document, used with fields option
@@ -64,22 +63,20 @@ on the command line.
     clone-sample   Clone a collection into a sample size based training collection and test collection
     count          Counts the number of records in a collection, accepts a filter for sub-counts
     create         Create a JSON record in a collection
-    deindexer      (experimental) Remove record(s) from an index for a collection
     delete         Delete a JSON record (and attachments) from a collection
     delete-frame   remove a frame from a collection
     detach         Copy an attach out of an associated JSON record in a collection
     export-csv     Export a JSON records from a collection to a CSV file
     export-gsheet  Export a collection's JSON records to a GSheet
-    find           (experimental) Query an index(es) associated with a collection
     frame          define or retrieve a frame from a collection
-    frame-labels   define explicitly the labels associated with a frame
+    frame-objects  retrieve a frame's object list
+    frame-grid     retrieve a frame's object list as a 2D JSON array
     frame-types    define explicitly the column type names associated with a frame
     frames         list the available frames in a collection
     grid           Creates a data grid from a list keys of dot paths
     haskey         Returns true if key is in collection, false otherwise
     import-csv     Import a CSV file's rows as JSON records into a collection
     import-gsheet  Import a GSheet rows as JSON records into a collection
-    indexer        (experimental) Create/Update an index of a collection
     init           Initialize a dataset collection
     join           Join a JSON record with a new JSON object in a collection
     keys           List the keys in a collection, support filtering and sorting
@@ -94,6 +91,6 @@ on the command line.
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [deindexer](deindexer.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [find](find.html), [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [indexer](indexer.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html),  [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 
 dataset v0.0.45

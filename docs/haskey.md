@@ -19,5 +19,12 @@ found, "false" otherwise. The collection name is "people.ds"
     dataset haskey people.ds r1
 ```
 
+In python
+
+```
+    dataset.has_key('people.ds', '0000-0003-0900-6903')
+    dataset.has_key('people.ds', 'r1')
+```
+
 Related topics: [keys](keys.html)
 

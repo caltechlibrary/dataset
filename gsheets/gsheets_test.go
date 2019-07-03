@@ -18,15 +18,10 @@ import (
 var (
 	clientSecretFName string
 	spreadsheetID     string
+	sheetName         string
 )
 
 func TestReadSheet(t *testing.T) {
-	// The following sheet id is taken from https://developers.google.com/sheets/api/quickstart/go
-	if len(clientSecretFName) == 0 {
-		fmt.Fprintf(os.Stderr, "Skipping TestReadSheet, CLENT_SECRET_JSON filename or SPREADSHEET_ID not provided\n")
-		fmt.Fprintln(os.Stderr, "USAGE: go test -client-secret CLIENT_SECRET_JSON -spreadsheet-id SPREADSHEET_ID")
-		return
-	}
 	sheetName := "Staff Data"
 	cellRange := "A2:B"
 	table, err := ReadSheet(clientSecretFName, spreadsheetID, sheetName, cellRange)
@@ -52,15 +47,40 @@ func TestReadSheet(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	appName := path.Base(os.Args[0])
-	flag.StringVar(&clientSecretFName, "client-secret", "", "Set path/filename for client_secret.json")
+	flag.StringVar(&clientSecretFName, "client-secret", "", "Set path/filename for credentials.json")
 	flag.StringVar(&spreadsheetID, "spreadsheet-id", "", "Set spreadsheet id to use for testing")
+	flag.StringVar(&sheetName, "sheet-name", "", "Sheet name, e.g. \"Sheet1\"")
 	flag.Parse()
 
-	if _, err := os.Stat(clientSecretFName); err == nil {
-		//FIXME: Only run these tests of clientSecretFName exists!
+	if clientSecretFName == "" {
+		// This relates to ~/.credentials/sheets.googleapis.com-dataset.json
+		// They need to be in sync.
+		credentialsJSON := path.Join("..", "credentials.json")
+		if _, err := os.Stat(credentialsJSON); os.IsNotExist(err) {
+			clientSecretFName = ""
+		} else {
+			clientSecretFName = credentialsJSON
+		}
+	}
+	if spreadsheetID == "" {
+		spreadsheetID = os.Getenv("SPREADSHEET_ID")
+	}
+	if len(spreadsheetID) == 0 {
+		fmt.Fprintf(os.Stderr, "Skipping TestReadSheet, missing SPREADSHEET_ID")
+		fmt.Fprintln(os.Stderr, "USAGE: go test -spreadsheet-id SPREADSHEET_ID")
+		return
+	}
+
+	// The following sheet id is taken from https://developers.google.com/sheets/api/quickstart/go
+	if len(clientSecretFName) == 0 {
+		fmt.Fprintf(os.Stderr, "Skipping TestReadSheet, CLENT_SECRET_JSON filename or SPREADSHEET_ID not provided\n")
+		fmt.Fprintln(os.Stderr, "USAGE: go test -client-secret CLIENT_SECRET_JSON -spreadsheet-id SPREADSHEET_ID")
+		return
+	}
+
+	if _, err := os.Stat(clientSecretFName); os.IsNotExist(err) == false {
 		os.Exit(m.Run())
 	} else {
 		fmt.Fprintf(os.Stderr, "Skipping %s, missing client secret\n", appName)
-		//os.Exit(1)
 	}
 }

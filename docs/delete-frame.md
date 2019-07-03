@@ -15,5 +15,5 @@ In python
     err = dataset.delete_frame('example.ds', 'f1')
 ```
 
-Related topics: [frame](frame.html), [frames](frames.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html)
+Related topics: [frame](frame.html), [frames](frames.html), [frame-types](frame-types.html)
 

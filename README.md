@@ -1,3 +1,5 @@
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
 
 # dataset   [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
@@ -15,7 +17,8 @@ manage operations such as initialization of collections, creation,
 reading, updating and deleting JSON objects in the collection. Some of 
 its enhanced features include the ability to generate data 
 [frames](docs/frame.html) as well as the ability to 
-import and export JSON objects to and from CSV files and Google Sheets.
+import, export and synchronize JSON objects to and from CSV files 
+and Google Sheets (experimental).
 
 _dataset_ is written in the [Go](https://golang.org) programming language.
 It can be used as a Go package by other Go based software. Go supports
@@ -77,10 +80,8 @@ written in Python or as simple Bash scripts.
 - Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
 - import/export  of [CSV](how-to/working-with-csv.html) files and [Google Sheets](how-to/working-with-gsheets.html)
-- An experimental full text [search](how-to/indexing-and-search.html) interface based on [Blevesearch](https://blevesearch.com)
 - The ability to reshape data by performing simple object [joins](docs/join.html)
-- The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based 
-  on keys lists and [dot paths](docs/dotpath.html) into the JSON objects stored
+- The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based on keys lists and [dot paths](docs/dotpath.html) into stored JSON objects
 
 You can work with dataset collections via the 
 [command line tool](docs/dataset.html), via Go using the 

@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,278 +19,358 @@
 package dataset
 
 import (
-	"archive/tar"
-	"bytes"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
-	"path"
-	"strings"
-	// Caltech Library packages
-	//"github.com/caltechlibrary/storage"
+	"time"
 )
 
 // Attachment is a structure for holding non-JSON content you wish to store alongside a JSON document in a collection
 type Attachment struct {
 	// Name is the filename and path to be used inside the generated tar file
 	Name string `json:"name"`
-	// Body is a byte array for storing the content associated with Name
-	Body []byte `json:"-"`
-	// Size
+
+	// Content is a byte array for storing the content associated with Name
+	// NOTE: It is NOT written out in the Attachment metadata, hence json:"-".
+	Content []byte `json:"-"`
+
+	// Size remains to to help us migrate pre v0.0.61 collections.
+	// It should reflect the last size added.
 	Size int64 `json:"size"`
+
+	// Sizes is the sizes associated with the version being attached
+	Sizes map[string]int64 `json:"sizes"`
+
+	// Current holds the semver to the last added version
+	Version string `json:"version"`
+
+	// Checksum, current implemented as a MD5 checksum for now
+	// You should have one checksum per attached version.
+	Checksums map[string]string `json:"checksums"`
+
+	// HRef points at last attached version of the attached document, e.g. v0.0.0/photo.png
+	// If you moved an object out of the pairtree it should be a URL.
+	HRef string `json:"href"`
+
+	// VersionHRefs is a map to all versions of the attached document
+	// {
+	//    "v0.0.0": "... /photo.png",
+	//    "v0.0.1": "... /photo.png",
+	//    "v0.0.2": "... /photo.png"
+	// }
+	VersionHRefs map[string]string `json:"version_hrefs"`
+
+	// Created a date string in RTC3339 format
+	Created string `json:"created"`
+
+	// Modified a date string in RFC3339 format
+	Modified string `json:"modified"`
+
+	// Metadata is a map for application specific metadata about attachments.
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// tarballName trims any .json from the record name.
-func tarballName(docPath string) string {
-	if path.Ext(docPath) == ".json" {
-		return strings.TrimSuffix(docPath, ".json") + ".tar"
+// attachmentNames takes a key, semver and filename and returns a path to the
+// metadata and a path to where the file should be stored. Returns an error
+// if the key is not found in collection.
+func (c *Collection) attachmentNames(keyName, semver, fName string) (string, string, error) {
+	var (
+		attachmentFile     string
+		attachmentMetadata string
+	)
+	if c.HasKey(keyName) == false {
+		return "", "", fmt.Errorf("No key found for %q", keyName)
 	}
-	return docPath + ".tar"
+	return attachmentFile, attachmentMetadata, nil
 }
 
-// (DEPRECIATE) attach non-JSON documents to a JSON document in the collection.
-// Attachments are stored in a tar file, if tar file exits then attachment(s)
-// are appended to tar file.
-func (c *Collection) attach(name string, attachments ...*Attachment) error {
-	// NOTE: we normalize the name to omit a .json file extension,
-	// make sure we have an associated JSON record, then generate a new tarball
-	// from attachments.
-	docPath, err := c.DocPath(name)
-	if err != nil {
-		return err
+// getAttachmentList takes a JSON objects, pulls our "_Attachments" and reads them into
+// and array of Attachment. Returns true if we have a list, false otherwise
+func getAttachmentList(jsonObject map[string]interface{}) ([]*Attachment, bool) {
+	attachmentList := []*Attachment{}
+	attachments, ok := jsonObject["_Attachments"]
+	if ok == false {
+		return attachmentList, false
 	}
-
-	// this is the name we will move two, we build the tarball as a tmp file.
-	info := []map[string]interface{}{}
-	docPath = tarballName(docPath)
-	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
-		tw := tar.NewWriter(fp)
-		// For each attachtment add to the tar ball
-		for _, attachment := range attachments {
-			hdr := &tar.Header{
-				Name: attachment.Name,
-				Mode: 0664,
-				Size: int64(len(attachment.Body)),
-			}
-			if err := tw.WriteHeader(hdr); err != nil {
-				return err
-			}
-			if _, err := tw.Write(attachment.Body); err != nil {
-				return err
-			}
-			m := map[string]interface{}{
-				"name": attachment.Name,
-				"size": int64(len(attachment.Body)),
-			}
-			info = append(info, m)
+	for _, obj := range attachments.([]interface{}) {
+		attachment := new(Attachment)
+		m := obj.(map[string]interface{})
+		if name, ok := m["name"]; ok == true {
+			attachment.Name = name.(string)
 		}
-		return tw.Close()
-	})
-	// Now update the _Attachment attribute in the JSON document.
-	keyName, _ := keyAndFName(name)
-	rec := make(map[string]interface{})
-	err = c.Read(keyName, rec)
+		if val, ok := m["size"]; ok == true {
+			if size, err := val.(json.Number).Int64(); err == nil {
+				attachment.Size = size
+			}
+		}
+		if sizes, ok := m["sizes"]; ok == true {
+			m1 := sizes.(map[string]interface{})
+			attachment.Sizes = make(map[string]int64)
+			for k, v := range m1 {
+				if size, err := v.(json.Number).Int64(); err == nil {
+					attachment.Sizes[k] = size
+				}
+			}
+		}
+		// popagate our optional metadata
+		if metadata, ok := m["metadata"]; ok == true {
+			m2 := metadata.(map[string]interface{})
+			attachment.Metadata = make(map[string]interface{})
+			for k, v := range m2 {
+				attachment.Metadata[k] = v
+			}
+		}
+		if checksums, ok := m["checksums"]; ok == true {
+			m3 := checksums.(map[string]interface{})
+			attachment.Checksums = make(map[string]string)
+			for k, v := range m3 {
+				attachment.Checksums[k] = v.(string)
+			}
+		}
+		if created, ok := m["created"]; ok == true {
+			attachment.Created = created.(string)
+		}
+		if modified, ok := m["modified"]; ok == true {
+			attachment.Modified = modified.(string)
+		}
+		if href, ok := m["href"]; ok == true {
+			attachment.HRef = href.(string)
+		}
+		if version, ok := m["version"]; ok == true {
+			attachment.Version = version.(string)
+		}
+		if versionHRefs, ok := m["version_hrefs"]; ok == true {
+			m4 := versionHRefs.(map[string]interface{})
+			attachment.VersionHRefs = make(map[string]string)
+			for k, v := range m4 {
+				attachment.VersionHRefs[k] = v.(string)
+			}
+		}
+		attachmentList = append(attachmentList, attachment)
+	}
+	return attachmentList, true
+}
+
+func updateAttachmentList(attachmentList []*Attachment, newObj *Attachment) []*Attachment {
+	isReplacement := false
+	for i, oldObj := range attachmentList {
+		if oldObj.Name == newObj.Name {
+			isReplacement = true
+			attachmentList[i] = newObj
+			break
+		}
+	}
+	// We append to the end of the list if we aren't replacinga object
+	if !isReplacement {
+		attachmentList = append(attachmentList, newObj)
+	}
+	return attachmentList
+}
+
+// AttachStream is for attaching open a non-JSON file buffer (via an io.Reader).
+func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reader) error {
+	if c.HasKey(keyName) == false {
+		return fmt.Errorf("No key found for %q", keyName)
+	}
+	if semver == "" {
+		// We use version v0.0.0 for "unversioned" attachments.
+		semver = "v0.0.0"
+	}
+	// Normalize fName to basename from fullName to be safe.
+	fName := c.Store.Base(fullName)
+
+	// Read in JSON object and metadata objects.
+	jsonObject := map[string]interface{}{}
+	attachmentObject := &Attachment{}
+
+	if err := c.Read(keyName, jsonObject, false); err != nil {
+		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
+	}
+	// This is the full path to the JSON Object document
+	docPath, err := c.DocPath(keyName)
+	if err != nil {
+		return fmt.Errorf("Can't find document path %q, aborting, %s", keyName, err)
+	}
+	// This is JSON object's directory.
+	docDir := c.Store.Dir(docPath)
+
+	// Now we're ready to get our attachment list.
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == true {
+		for _, obj := range attachmentList {
+			if obj.Name == fName {
+				attachmentObject = obj
+				break
+			}
+		}
+	}
+
+	// Update the metadata
+	// Read in the attachment so I can compute the checksum as well as size.
+	content, err := ioutil.ReadAll(buf)
 	if err != nil {
 		return err
 	}
-	rec["_Attachments"] = info
-	err = c.Update(name, rec)
+	attachmentObject.Name = fName
+	attachmentObject.Version = semver
+	l := int64(len(content))
+	attachmentObject.Size = l
+	if attachmentObject.Sizes == nil {
+		attachmentObject.Sizes = make(map[string]int64)
+	}
+	attachmentObject.Sizes[semver] = l
+	// Compute Checksum with md5 and store as a string
+	if attachmentObject.Checksums == nil {
+		attachmentObject.Checksums = make(map[string]string)
+	}
+	attachmentObject.Checksums[semver] = fmt.Sprintf("%x", md5.Sum(content))
+	// Add/update our version href
+	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	// We need to make the semver directory if necessary
+	if attachmentObject.VersionHRefs == nil {
+		attachmentObject.VersionHRefs = make(map[string]string)
+	}
+	attachmentObject.VersionHRefs[semver] = attachmentObject.HRef
+	now := time.Now()
+	if attachmentObject.Created == "" {
+		attachmentObject.Created = now.Format(time.RFC3339)
+	}
+	attachmentObject.Modified = now.Format(time.RFC3339)
+
+	// Write out attached filename
+	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
+	if err != nil {
+		return err
+	}
+	err = c.Store.WriteFile(attachmentObject.HRef, attachmentObject.Content, 0777)
+	if err != nil {
+		return err
+	}
+	jsonObject["_Attachments"] = updateAttachmentList(attachmentList, attachmentObject)
+
+	// Write out updated JSON Object and return any error
+	err = c.Update(keyName, jsonObject)
 	return err
 }
 
 // AttachFile is for attaching a single non-JSON document to a dataset record. It will replace
-// ANY existing attached content (i.e. it creates an new tarball holding on this single document)
-// This is a limitation of our storage package supporting a minimal set of operation across all
-// storage environments (e.g. S3/Google Cloud Storage do not support append to file, only replacement).
-// It takes the document key, name and an io.Reader reading content in and appending the results to
-// the tar file updating the internal _Attributes metadata as needed.
-func (c *Collection) AttachFile(keyName, fName string, buf io.Reader) error {
+// ANY existing attached content with the same semver and basename.
+func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	if c.HasKey(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
-	rec := map[string]interface{}{}
-	err := c.Read(keyName, rec)
-	if err != nil {
+	if semver == "" {
+		// We use version v0.0.0 for "unversioned" attachments.
+		semver = "v0.0.0"
+	}
+	// Normalize fName to basename of fullName
+	fName := c.Store.Base(fullName)
+
+	// Read in JSON object and metadata objects.
+	jsonObject := map[string]interface{}{}
+	attachmentObject := &Attachment{}
+
+	if err := c.Read(keyName, jsonObject, false); err != nil {
 		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
 	}
-
-	// NOTE: we normalize the name to omit a .json file extension,
-	// make sure we have an associated JSON record, then generate a new tarball
-	// from attachments.
+	// This is the full path to the JSON Object document
 	docPath, err := c.DocPath(keyName)
+	if err != nil {
+		return fmt.Errorf("Can't find document path %q, aborting, %s", keyName, err)
+	}
+	// This is JSON object's directory.
+	docDir := c.Store.Dir(docPath)
+
+	// Now we're ready to get our attachment list.
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == true {
+		for _, obj := range attachmentList {
+			if obj.Name == fName {
+				attachmentObject = obj
+				break
+			}
+		}
+	}
+
+	// Update the metadata
+	// Read in the attachment so I can compute the checksum as well as size.
+	content, err := ioutil.ReadFile(fullName)
 	if err != nil {
 		return err
 	}
+	attachmentObject.Name = fName
+	attachmentObject.Version = semver
+	l := int64(len(content))
+	attachmentObject.Size = l
+	if attachmentObject.Sizes == nil {
+		attachmentObject.Sizes = make(map[string]int64)
+	}
+	attachmentObject.Sizes[semver] = l
+	// Compute Checksum with md5 and store as a string
+	if attachmentObject.Checksums == nil {
+		attachmentObject.Checksums = make(map[string]string)
+	}
+	attachmentObject.Checksums[semver] = fmt.Sprintf("%x", md5.Sum(content))
+	// Add/update our version href
+	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	// We need to make the semver directory if necessary
+	if attachmentObject.VersionHRefs == nil {
+		attachmentObject.VersionHRefs = make(map[string]string)
+	}
+	attachmentObject.VersionHRefs[semver] = attachmentObject.HRef
+	now := time.Now()
+	if attachmentObject.Created == "" {
+		attachmentObject.Created = now.Format(time.RFC3339)
+	}
+	attachmentObject.Modified = now.Format(time.RFC3339)
 
-	// FIXME: might make smore sense to just be a single map[string]interface{} rather than an array of maps unless we're
-	// journalling the history of attachments.
-	docListing := []map[string]interface{}{}
-	docPath = tarballName(docPath)
-	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
-		// NOTE: we always overwrite an existing tarball before our storage module
-		// does can't assume an append operation is available for cloud storage.
-		tw := tar.NewWriter(fp)
+	// Write out attached filename
+	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
+	if err != nil {
+		return err
+	}
+	err = c.Store.WriteFile(attachmentObject.HRef, attachmentObject.Content, 0777)
+	if err != nil {
+		return err
+	}
+	jsonObject["_Attachments"] = updateAttachmentList(attachmentList, attachmentObject)
 
-		// Read in our data
-		data, err := ioutil.ReadAll(buf)
-		if err != nil {
-			return err
-		}
-		fSize := int64(len(data))
-
-		// Save our doc info for our metadata
-		docInfo := map[string]interface{}{}
-		docInfo["name"] = path.Base(fName)
-		docInfo["size"] = fSize
-		docListing = append(docListing, docInfo)
-
-		// Add our data to the tar ball
-		hdr := &tar.Header{
-			Name: path.Base(fName),
-			Mode: 0664,
-			Size: fSize,
-		}
-		if err := tw.WriteHeader(hdr); err != nil {
-			return err
-		}
-		if _, err := tw.Write(data); err != nil {
-			return err
-		}
-		return tw.Close()
-	})
-
-	// Now update the _Attachment attribute in the JSON document.
-
-	//NOTE: Because we're always replacing the tarball (can't append in a cloud environment)
-	// we must also always replace the attachments metadata.
-	rec["_Attachments"] = docListing
-	err = c.Update(keyName, rec)
+	// Write out updated JSON Object and return any error
+	err = c.Update(keyName, jsonObject)
 	return err
 }
 
 // AttachFiles attaches non-JSON documents to a JSON document in the collection.
 // Attachments are stored in a tar file, if tar file exits then attachment(s)
 // are appended to tar file.
-func (c *Collection) AttachFiles(name string, fileNames ...string) error {
-	keyName, _ := keyAndFName(name)
-	if c.HasKey(keyName) == false {
-		return fmt.Errorf("No key found for %q", keyName)
-	}
-	rec := map[string]interface{}{}
-	err := c.Read(keyName, rec)
-	if err != nil {
-		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
-	}
-
-	// NOTE: we normalize the keyName to omit a .json file extension,
-	// make sure we have an associated JSON record, then generate a new tarball
-	// from attachments.
-	docPath, err := c.DocPath(keyName)
-	if err != nil {
-		return err
-	}
-
-	docListing := []map[string]interface{}{}
-	docPath = tarballName(docPath)
-	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
-		tw := tar.NewWriter(fp)
-
-		// For each filename add the file to the tar ball
-		for _, fName := range fileNames {
-			// Read in our data
-			data, err := ioutil.ReadFile(fName)
-			if err != nil {
-				return err
-			}
-			fSize := int64(len(data))
-
-			// Save Our Doc info for our metadata
-			docInfo := map[string]interface{}{}
-			docInfo["name"] = path.Base(fName)
-			docInfo["size"] = fSize
-			docListing = append(docListing, docInfo)
-
-			hdr := &tar.Header{
-				Name: path.Base(fName),
-				Mode: 0664,
-				Size: fSize,
-			}
-			if err := tw.WriteHeader(hdr); err != nil {
-				return err
-			}
-			if _, err := tw.Write(data); err != nil {
-				return err
-			}
+func (c *Collection) AttachFiles(keyName string, semver string, fileNames ...string) error {
+	for _, fName := range fileNames {
+		if err := c.AttachFile(keyName, semver, fName); err != nil {
+			return err
 		}
-		return tw.Close()
-	})
-	// Now update the _Attachment attribute in the JSON document.
-
-	// Finally update our attachments metadata based on the new document(s) info
-	rec["_Attachments"] = docListing
-	err = c.Update(keyName, rec)
-	return err
+	}
+	return nil
 }
 
-// Attachments returns a list of files in the attached tarball for a given name in the collection
-func (c *Collection) Attachments(name string) ([]string, error) {
-	keyName, _ := keyAndFName(name)
-	rec := map[string]interface{}{}
-	err := c.Read(keyName, rec)
+// Attachments returns a list of files and size attached for a key name in the collection
+func (c *Collection) Attachments(keyName string) ([]string, error) {
+	jsonObject := map[string]interface{}{}
+	err := c.Read(keyName, jsonObject, false)
 	if err != nil {
-		return nil, fmt.Errorf("Can't find %s", name)
+		return nil, fmt.Errorf("Can't find %s", keyName)
 	}
-	fileNames := []string{}
-	if l, ok := rec["_Attachments"]; ok == true {
-		var (
-			size  json.Number
-			fname string
-		)
-		for _, valL := range l.([]interface{}) {
-			m := valL.(map[string]interface{})
-			fname = ""
-			if s, ok := m["name"]; ok == true {
-				fname = s.(string)
-			}
-			if i, ok := m["size"]; ok == true && fname != "" {
-				size = i.(json.Number)
-			}
-			fileNames = append(fileNames, fmt.Sprintf("%s %s", fname, size))
-		}
-		return fileNames, nil
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == false {
+		return []string{}, nil
 	}
-
-	docPath, err := c.DocPath(name)
-	if err != nil {
-		return nil, err
+	s := []string{}
+	for _, attachment := range attachmentList {
+		size := attachment.Size
+		s = append(s, fmt.Sprintf("%s %d", attachment.Name, size))
 	}
-	docPath = tarballName(docPath)
-
-	// Get the file and read into memory
-	buf, err := c.Store.ReadFile(docPath)
-	if err != nil {
-		// FIXME: If no tarball, then return error "no attachments found"
-		return nil, fmt.Errorf("no attachments found")
-	}
-	fp := bytes.NewBuffer(buf)
-
-	tr := tar.NewReader(fp)
-	for {
-		hdr, err := tr.Next()
-		if err == io.EOF {
-			// end of tarball
-			break
-		}
-		if err != nil {
-			// error reading tarball
-			return fileNames, err
-		}
-		s := fmt.Sprintf("%s %d", hdr.Name, hdr.Size)
-		fileNames = append(fileNames, s)
-	}
-	return fileNames, nil
+	return s, nil
 }
 
 func filterNameFound(a []string, target string) bool {
@@ -305,208 +385,78 @@ func filterNameFound(a []string, target string) bool {
 	return false
 }
 
-// (DEPRECIATE) getAttached returns an Attachment array or error
-// If no filterNames provided then return all attachments or error
-func (c *Collection) getAttached(name string, filterNames ...string) ([]Attachment, error) {
-	// NOTE: we normalize the name to omit a .json file extension,
-	// make sure we have an associated JSON record, then remove any tarball
-	docPath, err := c.DocPath(name)
-	if err != nil {
-		return nil, err
+// GetAttachedFiles returns an error if encountered, a side effect
+// is the file(s) are written to the current work directory
+// If no filterNames provided then return all attachments are written out
+// An error value is always returned.
+func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames ...string) error {
+	if c.HasKey(keyName) == false {
+		return fmt.Errorf("No key found for %q", keyName)
 	}
-	docPath = tarballName(docPath)
-
-	attachments := []Attachment{}
-
-	buf, err := c.Store.ReadFile(docPath)
-	if err != nil {
-		return nil, err
+	jsonObject := map[string]interface{}{}
+	if err := c.Read(keyName, jsonObject, false); err != nil {
+		return fmt.Errorf("Can't read %q, %s", keyName, err)
 	}
-	fp := bytes.NewBuffer(buf)
-
-	tr := tar.NewReader(fp)
-	for {
-		hdr, err := tr.Next()
-		if err == io.EOF {
-			// end of tarball
-			break
-		}
-		if err != nil {
-			// error reading tarball
-			return attachments, err
-		}
-		if filterNameFound(filterNames, hdr.Name) == true {
-			buf := bytes.NewBuffer([]byte{})
-			if _, err := io.Copy(buf, tr); err != nil {
-				return attachments, err
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == false {
+		return fmt.Errorf("No attachments")
+	}
+	version := semver
+	for _, obj := range attachmentList {
+		if filterNameFound(filterNames, obj.Name) {
+			// Are we getting the current version?
+			if semver == "" {
+				version = obj.Version
 			}
-			attachments = append(attachments, Attachment{
-				Name: hdr.Name,
-				Body: buf.Bytes(),
-			})
-		}
-	}
-	return attachments, nil
-}
-
-// GetAttachedFiles returns an error if encountered, side effect is to write file to destination directory
-// If no filterNames provided then return all attachments or error
-func (c *Collection) GetAttachedFiles(name string, filterNames ...string) error {
-	// NOTE: we normalize the name to omit a .json file extension,
-	// make sure we have an associated JSON record, then remove any tarball
-	docPath, err := c.DocPath(name)
-	if err != nil {
-		return err
-	}
-	docPath = tarballName(docPath)
-
-	buf, err := c.Store.ReadFile(docPath)
-	if err != nil {
-		return err
-	}
-	fp := bytes.NewBuffer(buf)
-
-	tr := tar.NewReader(fp)
-	found := []string{}
-	for {
-		hdr, err := tr.Next()
-		if err == io.EOF {
-			// end of tarball
-			break
-		}
-		if err != nil {
-			// error reading tarball
-			return err
-		}
-		if filterNameFound(filterNames, hdr.Name) == true {
-			// NOTE: write file to disc, not using defer because we want fp to close after each loop
-			fp, err := os.Create(hdr.Name)
-			if err != nil {
-				return err
-			}
-			if _, err := io.Copy(fp, tr); err != nil {
-				fp.Close()
-				return err
-			}
-			fp.Close()
-			if len(filterNames) > 0 {
-				found = append(found, hdr.Name)
-			}
-		}
-	}
-	if len(filterNames) > len(found) {
-		missing := []string{}
-		if len(found) > 0 {
-			for _, fname := range filterNames {
-				if filterNameFound(found, fname) == false {
-					missing = append(missing, fname)
+			// Retrieve the file by version
+			if href, ok := obj.VersionHRefs[version]; ok == true {
+				if src, err := c.Store.ReadFile(href); err != nil {
+					return err
+				} else if err := c.Store.WriteFile(obj.Name, src, 0777); err != nil {
+					return err
 				}
+			} else {
+				return fmt.Errorf("Can't find %s %q for key %q", semver, obj.Name, keyName)
 			}
-		} else {
-			missing = filterNames
 		}
-		return fmt.Errorf("Missing attachments %q", strings.Join(missing, `", "`))
 	}
 	return nil
 }
 
 // Prune a non-JSON document from a JSON document in the collection.
-func (c *Collection) Prune(name string, filterNames ...string) error {
-	keyName, _ := keyAndFName(name)
+func (c *Collection) Prune(keyName string, semver string, filterNames ...string) error {
 	if c.HasKey(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
-	rec := map[string]interface{}{}
-	err := c.Read(keyName, rec)
-	if err != nil {
-		return fmt.Errorf("Can't read %q, aborting, %s", keyName, err)
+	jsonObject := map[string]interface{}{}
+	if err := c.Read(keyName, jsonObject, false); err != nil {
+		return fmt.Errorf("Can't read %q, %s", keyName, err)
 	}
-	// NOTE: we normalize the name to omit a .json file extension,
-	// make sure we have an associated JSON record, then remove any tarball
-	docPath, err := c.DocPath(name)
-	if err != nil {
-		return err
+	newAttachmentList := []*Attachment{}
+	attachmentList, ok := getAttachmentList(jsonObject)
+	if ok == false {
+		return fmt.Errorf("No attachments found")
 	}
-	docPath = tarballName(docPath)
-	if path.Ext(docPath) != ".tar" {
-		return fmt.Errorf("Can't remove %q attachments", docPath)
-	}
-
-	// NOTE: If we're removing everything then just call Removeall on store for that tarball name
-	if len(filterNames) == 0 {
-		err := c.Store.RemoveAll(docPath)
-		if err != nil {
-			return err
-		}
-		delete(rec, "_Attachments")
-		err = c.Update(keyName, rec)
-		return err
-	}
-
-	// NOTE: If we're only removing some of the attached files then we need to re-write the tarball after reading it into memory
-	buf, err := c.Store.ReadFile(docPath)
-	if err != nil {
-		return err
-	}
-	rd := bytes.NewBuffer(buf)
-	tr := tar.NewReader(rd)
-
-	docList := []map[string]interface{}{}
-
-	// Read in old tarball and only write out files that match filterNames
-	found := []string{}
-	err = c.Store.WriteFilter(docPath, func(fp *os.File) error {
-		tw := tar.NewWriter(fp)
-		defer tw.Close()
-
-		for {
-			hdr, err := tr.Next()
-			if err == io.EOF {
-				// end of tar archive
-				break
-			}
-			if err != nil {
-				return err
-			}
-			if filterNameFound(filterNames, hdr.Name) == false {
-				if err := tw.WriteHeader(hdr); err != nil {
+	for _, obj := range attachmentList {
+		if filterNameFound(filterNames, obj.Name) {
+			// Are we getting the current version?
+			// Check for a prior version
+			if href, ok := obj.VersionHRefs[semver]; ok == true {
+				if err := c.Store.Delete(href); err != nil {
 					return err
 				}
-				if _, err := io.Copy(tw, tr); err != nil {
-					return err
-				}
-				//NOTE: Update the attachment list with remaining docs
-				docInfo := map[string]interface{}{}
-				docInfo["name"] = hdr.Name
-				docInfo["size"] = hdr.Size
-				docList = append(docList, docInfo)
 			} else {
-				found = append(found, hdr.Name)
+				return fmt.Errorf("Can't find %s %q for key %q", semver, obj.Name, keyName)
 			}
+
+		} else {
+			newAttachmentList = append(newAttachmentList, obj)
 		}
-		return nil
-	})
-	if err != nil {
-		return err
 	}
-	rec["_Attachments"] = docList
-	err = c.Update(keyName, rec)
-	if err != nil {
+	// Now we need to update our attachments list and update the JSON document
+	jsonObject["_Attachments"] = newAttachmentList
+	if err := c.Update(keyName, jsonObject); err != nil {
 		return err
-	}
-	if len(found) < len(filterNames) {
-		if len(found) == 0 {
-			return fmt.Errorf("Unable to prune %q", strings.Join(filterNames, `", "`))
-		}
-		missing := []string{}
-		for _, fName := range filterNames {
-			if filterNameFound(found, fName) == false {
-				missing = append(missing, fName)
-			}
-		}
-		if len(missing) > 0 {
-			return fmt.Errorf("Unable to prune %q", strings.Join(missing, `", "`))
-		}
 	}
 	return nil
 }

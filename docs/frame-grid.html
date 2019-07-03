@@ -25,38 +25,34 @@
 </nav>
 
 <section>
-<h1>indexer</h1>
+<h1>frame-grid</h1>
 
-<p>This is an experimental feature of dataset and maybe removed in
-the future.</p>
+<h2>USAGE</h2>
 
-<h2>Syntax</h2>
-
-<pre><code>    dataset [OPTIONS] indexer COLLECTION_NAME INDEX_MAP_FILENAME INDEX_NAME
+<pre><code>    frame-grid COLLECTION FRAME_NAME
 </code></pre>
 
-<h2>Description</h2>
+<p>Returns the object list as a 2D array.</p>
 
-<p>Indexer creates a <a href="https://blevesearch.com">Blevesearch</a> index with
-used used by the <a href="find.html">find</a> command for searching a collection.
-The indexes support an elastic search like query language so in
-additional to general full text support it also includes the ability
-to scope results by fields defined in the index. The Bleve search
-packages supports full text search across many languages, time ranges
-and geo points.</p>
+<h2>OPTIONS</h2>
 
-<p>Index names should end in <code>.bleve</code> and the INDEX_MAP_FILE is a JSON file
-organized as described in <a href="../defining-indexes.html">defining-indexes</a>
-document.</p>
+<dl>
+<dt>-p, -pretty</dt>
+<dd>pretty print JSON output</dd>
+<dt>-use-header-row</dt>
+<dd>Include labels as a header row</dd>
+</dl>
 
-<h2>Usage</h2>
+<h2>Example</h2>
 
-<p>Our collection name in this example is &ldquo;publications.ds&rdquo;</p>
+<p>If I have a collection named &ldquo;photos.ds&rdquo; and a previously
+defined frame name &ldquo;captions-dates-locations&rdquo; I can get that
+as a 2D JSON array with the folllowing&mdash;</p>
 
-<pre><code>    dataset indexer publications.ds author-title.json author-title.bleve
+<pre><code>    dataset frame-grid -p photos.ds captions-dates-locations
 </code></pre>
 
-<p>Related topics: <a href="dotpath.html">dotpath</a>, <a href="find.html">find</a></p>
+<p>The <code>-p</code> is the pretty print option for JSON output.</p>
 
 </section>
 

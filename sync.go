@@ -92,10 +92,6 @@ func dotPathToColumnMap(f *DataFrame, table [][]interface{}) (map[string]int, er
 			}
 		}
 	}
-	// Sanity check the mapping for ._Key
-	if _, hasID := m["._Key"]; hasID == false {
-		return m, fmt.Errorf("table header row is missing %q column", f.Labels[0])
-	}
 	return m, nil
 }
 
@@ -185,7 +181,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 				row = append(row, "")
 			}
 			obj := map[string]interface{}{}
-			err := c.Read(key, obj)
+			err := c.Read(key, obj, false)
 			if err != nil {
 				return table, fmt.Errorf("Can't read %s from row %d in collection", key, i)
 			}
@@ -215,7 +211,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 			row := make([]interface{}, len(headerRow)-1)
 			// Get the data for the row
 			obj := map[string]interface{}{}
-			err = c.Read(key, obj)
+			err = c.Read(key, obj, false)
 			if err != nil {
 				return table, fmt.Errorf("failed to read %q in %s, %s\n", key, c.Name, err)
 			}

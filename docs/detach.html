@@ -29,8 +29,8 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset detach COLLECTION_NAME KEY
-    dataset detach COLLECTION_NAME KEY ATTACHMENT_NAME
+<pre><code>    dataset detach COLLECTION_NAME KEY [SEMVER]
+    dataset detach COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -49,6 +49,11 @@ attached to a JSON record in the collection with the matching KEY</p>
 <p>Write out only the <em>stats.xlsx</em> file attached to k1</p>
 
 <pre><code class="language-shell">    dataset detach publications.ds k1 stats.xlsx
+</code></pre>
+
+<p>Write out only the v0.0.1 <em>stats.xlsx</em> file attached to k1</p>
+
+<pre><code class="language-shell">    dataset detach publications.ds k1 v0.0.1 stats.xlsx
 </code></pre>
 
 <p>Related topics: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, and <a href="prune.html">prune</a></p>

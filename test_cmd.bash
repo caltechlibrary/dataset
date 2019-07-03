@@ -100,10 +100,6 @@ function test_gsheet() {
 	if [[ -f "etc/test_gsheet.bash" ]]; then
 		. "etc/test_gsheet.bash"
 	fi
-	if [[ ! -f "${CLIENT_SECRET}" ]]; then
-		echo "Skipping test_gsheet(), could not find ${CLIENT_SECRET}"
-		exit 1
-	fi
 	if [[ "${SPREADSHEET_ID}" == "" ]]; then
 		echo "Skipping test_gsheet(), missing environment variable for SPREADSHEET_ID"
 		exit 1
@@ -126,7 +122,7 @@ function test_gsheet() {
 		echo "Could not create test record in testdata/test_gsheet.ds"
 		exit 1
 	fi
-	CNT=$(bin/dataset -nl=false count "${DATASET}")
+	CNT=$(bin/dataset -quiet -nl=false count "${DATASET}")
 	if [[ "${CNT}" != "1" ]]; then
 		echo "Should have one record to export"
 		exit 1
@@ -144,20 +140,18 @@ function test_gsheet() {
 
     # Setup Frame
     bin/dataset frame -p -all "${DATASET}" f1 \
-		._Key .done .key .resolver .subjects .additional \
-        .identifier_1 .description_1 > /dev/null
+		'._Key=Key' '.done=Done' '.key=Key As ID' \
+        '.resolver=Resolver' '.subjects=Subjects' \
+        '.additional=Additional' \
+        '.identifier_1=Identifier 1' \
+        '.description_1=Description 1' > /dev/null
 	if [[ "$?" != "0" ]]; then
 		echo "Could not frame ${DATASET} f1 ..."
 		exit 1
 	fi
 
-    # Setup Frame Labels
-    bin/dataset frame-labels "${DATASET}" f1 \
-        Key Done 'Key As ID' Resolver Subjects Additional \
-        'Identifier 1' 'Description 1'
-
 	echo -n "test_gsheet: test export of frame f1 to gsheet ${SHEET_NAME}, "
-	bin/dataset -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
+	bin/dataset -quiet -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
 	if [[ "$?" != "0" ]]; then
 		echo "Could not export-gsheet"
 		exit 1
@@ -509,20 +503,6 @@ EOT
         exit 1
     fi
 
-    echo "NOTE: Testing migration from pairtree to buckets, expect OK"
-    bin/dataset migrate testdata/myfix.ds buckets
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) migrate testdata/myfix.ds buckets'
-        exit 1
-    fi
-
-    echo "NOTE: Testing migration from buckets to pairtree, expect OK"
-    bin/dataset migrate testdata/myfix.ds pairtree
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) migrate testdata/myfix.ds pairtree'
-        exit 1
-    fi
-
     echo "NOTE: Final Check, expecting OK"
     bin/dataset check testdata/myfix.ds 
     if [[ "$?" != "0" ]]; then
@@ -580,82 +560,6 @@ EOT
     echo 'test_count, OK'
 }
 
-function test_search() {
-    echo 'test_search'
-    if [[ -d "testdata/search.ds" ]]; then
-        rm -fR testdata/search.ds
-    fi
-    cat << EOT > testdata/search.csv
-id,title,type,published,author
-a1,4th Tower of Inverness,audio play,true,Tom Lopez
-n1,"20,000 leagues under the Sea",novel,true,Jules Verne
-s1,Our Person in Avalon,screenplay,false,R. S. Doiel
-EOT
-    
-    cat << EOT > testdata/search.json
-{
-    "title": {
-        "object_path": ".title"
-    },
-    "type": {
-        "object_path": ".type"
-    },
-    "published": {
-        "object_path": ".published"
-    },
-    "author": {
-        "object_path": ".author"
-    }
-
-}
-EOT
-
-    bin/dataset -quiet -nl=false init testdata/search.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) init testdata/search.ds'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false import testdata/search.ds testdata/search.csv 1
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds import-csv testdata/search.csv 1'
-        exit 1
-    fi
-    # FIXME: this needs to use a frame to define search
-    bin/dataset -quiet -nl=false indexer testdata/search.ds testdata/search.json testdata/search.bleve
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds indexer testdata/search.json testdata/search.bleve'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false find testdata/search.bleve 'screenplay' 
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds find "screenplay"'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false find testdata/search.bleve '+published:true' 
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds find "+published:true"'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false find testdata/search.bleve 'Tower'
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) testdata/search.ds find "Tower"'
-        exit 1
-    fi
-    echo 'a1' > testdata/list.keys
-    bin/dataset -quiet -nl=false deindexer testdata/search.bleve testdata/list.keys
-    if [[ "$?" != "0" ]]; then
-        echo 'test_search: (failed) deindexer testdata/search.bleve testdata/list.keys' 
-        exit 1
-    fi
-
-    # Success, cleanup
-    rm -fR testdata/search.ds
-    rm -fR testdata/search.bleve
-    rm testdata/search.json
-    rm testdata/search.csv
-    rm testdata/list.keys
-    echo 'test_search, OK'
-}
 
 function test_import_export() {
     echo 'test_import_export'
@@ -692,10 +596,9 @@ EOT
         exit 1
     fi
     #FIXME: export uses a frame to define exported content
-    bin/dataset -quiet -nl=false frame -a testdata/pubs.ds outframe \
-         "._Key" ".title" ".type" ".date_type" ".date" > /dev/null
-    bin/dataset -quiet -nl=false frame-labels  testdata/pubs.ds outframe \
-        'EPrint ID' 'Title' 'Type' 'Date Type' 'Date'
+    bin/dataset -quiet -nl=false frame -all testdata/pubs.ds outframe \
+         "._Key=EPrint ID" ".title=Title" ".type=Type" \
+         ".date_type=Date Type" ".date=Date" > /dev/null
     bin/dataset -quiet -nl=false export testdata/pubs.ds outframe "testdata/out.csv"
     if [[ "$?" != "0" ]]; then
         echo 'test_import_export: (failed) export testdata/pubs.ds outframe testdata/out.csv'
@@ -735,17 +638,21 @@ EOF
 	fi
 	bin/dataset -quiet -nl=false init testdata/merge4.ds
 	bin/dataset -quiet -nl=false import testdata/merge4.ds testdata/initial.csv 1
-	bin/dataset -quiet -nl=false frame -a testdata/merge4.ds f4 "._Key" ".one" ".two" ".three" ".four" ".five" >/dev/null
-        bin/dataset -quiet -nl=false frame-labels testdata/merge4.ds f4 "id" "one" "two" "three" "four" "five"
+	bin/dataset -quiet -nl=false frame -a testdata/merge4.ds f4 "._Key=id" ".one=one" ".two=two" ".three=three" ".four=four" ".five=five" >/dev/null
 
 	# Now generate an updated result CSV
 	cp testdata/initial.csv testdata/result.csv
-	cat testdata/expected.csv | bin/dataset -quiet -nl=false sync-send -i - testdata/merge4.ds f4 \
+	cat testdata/expected.csv |\
+        bin/dataset -quiet -nl=false sync-send \
+            -i - testdata/merge4.ds f4 \
             >testdata/result.csv
 
     #FIXME: need to check to see if our tables make sense
     T=$(diff testdata/expected.csv testdata/result.csv)
     if [[ "$?" != "0" ]]; then
+        echo "Diff returned: $?"
+        echo "Diff found: $T"
+        #diff testdata/expected.csv testdata/result.csv
 		exit 1
     fi
     if [[ "$T" != "" ]]; then
@@ -765,7 +672,6 @@ test_count
 test_import_export
 #NOTE: test will be skip if there is no etc/client_secret.json found
 test_gsheet credentials.json # etc/client_secret.json
-test_search
 test_check_and_repair
 test_sync
 echo 'PASS'

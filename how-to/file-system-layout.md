@@ -7,12 +7,21 @@ was a "buckets" oriented layout. The newer and current layout is a
 The layout managed/described by the collection.json document
 located in the root folder of the collection. The file pairtree 
 supports "attachments" by creating a sub directory next the the JSON
-document. The sub directory name is `_` (because it lacks specific meaning,
-should be visible on most file systems and is short). E.g. storing
-the document "hello-world.json" with the attachment "smiles.png" in a 
-collection named "C" would result in paths like `C/pairtree/he/ll/o-/wo/rl/d/hello-world.json` and `C/pairtree/he/ll/o-/wo/rl/d/_/smiles.png".
+document. The sub directory uses a [semver](https://semver.org)
+as its name, e.g. `v0.0.0`. The sequence of characters
+will not collide with pairtree semantics and is legal on common
+file systems.  E.g. storing the document "hello-world.json" with 
+the attachment "smiles.png" in a collection named "C" would result 
+in paths like 
+
+    `C/pairtree/he/ll/o-/wo/rl/d/hello-world.json` 
+
+and 
+
+    `C/pairtree/he/ll/o-/wo/rl/d/v0.0.0/smiles.png".
+
 Attachments are experimental and how they are handled
-will likely change in the future. 
+will may change in the future. 
 
 
 ## Pairtree

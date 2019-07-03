@@ -14,7 +14,8 @@ and as a series of "how to" style examples.
 ## Internal project concepts
 
 + [upgrading a collection](../how-to/upgrading-a-collection.html) - Describes how to upgrade a collection from a previous version of dataset to a new one
-+ [file system layout](../how-to/file-system-layout.html) - Describes how collections are organized
++ [file system layout](../how-to/file-system-layout.html) - Short describes how collections are organized
++ [how attachments work](../how-to/how-attachments-work.html) - Detailed descriptiojn of attachments and their metadata
 
 ## _dataset_ Operations
 
@@ -34,9 +35,10 @@ by collection and JSON document level.
 + [grid](grid.html) create a 2D grid of data from keys and dot paths in a collection
 + [data frame support](../how-to/collections-grids-and-frames.html) provides a persistant grid plus metadata associated with the collection
     + [frame](frame.html)
+    + [frame-objects](frame-objects.html)
+    + [frame-grid](frame-grid.html)
     + [frames](frames.html)
     + [reframe](reframe.html)
-    + [frame-labels](frame-labels.html)
     + [delete-frame](delete-frame.html)
     + [hasframe](hasframe.html)
 
@@ -67,5 +69,4 @@ by collection and JSON document level.
 
 + [check](check.html) - checks a collection against the current version of tools
 + [repair](repair.html) - repairs/upgrades a collection based on the current verison of the tool
-+ [migrate](migrate.html) - migrates from one file layout to another (e.g. bucekts and pairtree)
 

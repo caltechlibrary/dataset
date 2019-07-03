@@ -10,7 +10,6 @@ with _dataset_ or explore a specific topic.
 - [Working with CSV](working-with-csv.html)
 - [Working with GSheets](working-with-gsheets.html)
 - [Working with Cloud Storage](working-with-cloud-storage.html)
-- (__experimental__) [Indexing and Search](indexing-and-search.html "Experimental support for Bleve Search")
 
 
 ## Additional topics
@@ -18,6 +17,7 @@ with _dataset_ or explore a specific topic.
 - [Cloning and samples](cloning-and-samples.html)
 - [Collections grids and frames](collections-grids-and-frames.html)
 - [File system layout](file-system-layout.html)
+- [How attachments work](how-attachments-work.html)
 - [Filtering keys](filtering-keys.html)
 - [Joining objects](joining-objects.html)
 - [Managing attachments](managing-attachments.html)

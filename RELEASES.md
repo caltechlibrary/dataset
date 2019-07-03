@@ -2,14 +2,14 @@
 # Release Process and tags
 
 dataset is going through rapid development and changes as we 
-evolve the software to meet the needs of the DLD group in Caltech Library.
-Below is our current policy regarding releases.
+evolve the software to meet the needs of the DLD group in 
+Caltech Library.  Below is our current policy regarding releases.
 
 ## Preleases and production releases
 
 All releases to should a semantic version number (i.e. [semvar]()).
-Releases that are largely patches, bug improvements or experimental
-are tagged "pre-release" on Github. 
+Releases that are experimental
+are tagged "pre-release" on Github. Releases intended to be used in our production systems or used by other library staff should not have the "pre-release" option checked on GitHub.
 
 ### Pre-releases
 

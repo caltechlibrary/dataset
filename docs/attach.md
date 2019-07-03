@@ -4,7 +4,7 @@
 ## Syntax 
 
 ```
-    dataset attach COLLECTION_NAME KEY FILENAME(S)
+    dataset attach COLLECTION_NAME KEY [SEMVER] FILENAME(S)
 ```
 
 ## Description
@@ -19,6 +19,12 @@ collection "stats.ds"
 
 ```shell
     dataset attach stats.ds t1 start.xlsx
+```
+
+Attaching the file as version v0.0.1
+
+```shell
+    dataset attach stats.ds t1 v0.0.1 start.xlsx
 ```
 
 Related topics: [attachments](attachments.html), [detach](detach.html) and [prune](prune.html)

@@ -410,7 +410,9 @@ Working from our previous _grid_ example, let's call this frame
 
 ```bash
     dataset frame -i=friends.keys friends.ds \
-        "name-and-email" .name .email .catch_phrase
+        "name-and-email" \
+        .name=name .email=email \
+        .catch_phrase=catch_phrase
 ```
 
 In python it would look like
@@ -419,24 +421,16 @@ In python it would look like
 ```python
     keys = dataset.keys("friends.ds")
     err = dataset.frame("friends.ds", "name-and-email", 
-          keys, [ ".name", ".email", ".catch_phrase"])
+          keys, { 
+              ".name": "name", 
+              ".email": "email", 
+              ".catch_phrase": "catch_phrase"
+              })
     if err != "":
         stop(err)
 ```
 
-In Python we can also explicitly supply labels at the same time
-as defining the frame.
-
-```python
-    keys = dataset.keys("friends.ds")
-    err = dataset.frame("friends.ds", "name-and-email", 
-          keys, [ ".name", ".email", ".catch_phrase"], 
-                [ "Name", "E-Mail", "Catch Phrase" ])
-    if err != "":
-        stop(err)
-```
-
-To see the contents of a frame we only need to supply the collection 
+To see the full contents of a frame we only need to supply the collection 
 and frame names.
 
 
@@ -445,7 +439,6 @@ and frame names.
 ```
 
 In Python it'd look like
-
 
 ```python
     (f, err) = dataset.frame("friends.ds", "name-and-email")
@@ -458,6 +451,18 @@ Looking at the resulting JSON object you see many other attribute
 beyond the object list of the frame. These are created to simplify 
 some of dataset more complex interactions.
 
+Most of the time you don't want the metadata, so you we have a 
+way of just retrieving the object list.
+
+```bash
+    dataset frame-objects friends.ds "name-and-email"
+```
+
+Or in Python
+
+```python
+    object_list = dataset.frame_objects("friends.ds", "name-and-email")
+```
 
 Let's add back the Jack record we deleted a few sections ago and 
 “reframe” our “name-and-email” frame.
@@ -514,31 +519,37 @@ JSON representation of the frame we also see a "labels" attribute.
 Labels are used when exporting and synchronizing content between a 
 CSV file, Google Sheet and a collection (labels become column names).
 
-You can set the labels by providing replacement values for ALL
-the labels in the column order defined in the frame. In our previous
-example we provided the order of the columns for the frame
-"name-and-email" as .name, .email, .catch_phrase. Also recall the
-frames AWAYS has a first column named `._Key`. If we want
-to have the labels "ID", "Display Name", "EMail", and "Catch Phrase" 
-instead we can set them with the `frame-labels` verb.
+Labels are set at the time of frame definition and persist as long
+as the frame exists.  The order of the columns reflects the order
+of the pairs defining the dot paths and labels.  In our previous 
+examples we provided the order of the columns for the frame
+"name-and-email" as .name, .email, .catch_phrase dot paths. 
+If we want to have the labels "ID", "Display Name", "EMail", and 
+"Catch Phrase" we need to define our frame that way.
 
 ```bash
-    dataset frame-labels friends.ds "name-and-email" \
-        "ID" "Display Name" "EMail" "Catch Phrase"
+    dataset delete-frame friends.ds "name-and-email"
+    dataset frame friends.ds "name-and-email" \
+        "._Key=ID" ".name=Display Name" \
+        ".email=EMail" ".catch_phrase=Catch Phrase"
 ```
-
-NOTE: re-labeling a frame will cause the frame to generate its 
-object list.
 
 In Python it look like
 
 ```python
-    err = dataset.frame_labels("friends.ds", "name-and-email", 
-          ["ID", "Display Name", "EMail", "Catch Phrase"])
+    err = dataset.delete_frame("friends.ds", "name-and-email")
+    if err != "":
+        stop(err)
+    
+    err = dataset.frame("friends.ds", "name-and-email", 
+          "._Key": "ID", 
+          ".name": "Display Name", 
+          ".email": "EMail", 
+          ".catch_pharse": "Catch Phrase"
+          })
     if err != "":
         stop(err)
 ```
-
 
 Finally the last thing we need to be able to do is delete a frame. Delete 
 frames work very similar to deleting a JSON record.
@@ -561,9 +572,10 @@ Or in Python
 the list
 
 1. _frame_ will set you define a frame
-2. _frame_ will also let you read back a frame
-3. _frames_ will list the frames defined in the collection
-4. _frame-labels_ will let you replace the labels values for all 
+2. _frame_ will also let you read back a frame with full metadata
+3. _frame-grid_ return the frame's object list as a 2D array
+4. _frame-objects_ return the frame's object list
+5. _frames_ will list the frames defined in the collection
    columns in a frame, it will cause the frame to regenerate 
    its object list
 6. _delete-frame_ will remove the frame from the collection
@@ -575,6 +587,5 @@ Continue exploring dataset with
 - [Working with CSV](working-with-csv.html)
 - [Working with GSheets](working-with-gsheets.html)
 - [Working with Cloud Storage](working-with-cloud-storage.html)
-- (__experimental__) [Indexing and Search](indexing-and-search.html "experimental Bleve search support") 
 
 

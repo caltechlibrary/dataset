@@ -6,55 +6,47 @@
 
 ## Next (prep for v1.0.0)
 
-+ [ ] Switch from Bleve to Lunr indexes and search
-+ [ ] Use JMESPath as replacement for our simple dot path implementation
-+ [ ] Switch go go-cloud over our storage.go module
-+ [ ] Refactor grids to be an array of objects in frames
-+ [ ] Refactor attachments from tar ball to `_` directory
-    + [ ] migration would be a shell script to move tar ball to `_`
-    + [ ] migration would then update the metadata in the JSON document to point to `_` and the tarball name
-+ [ ] Remove bucket layout code
-+ [ ] Document GSheet cell length limitations and how that impact sync-send
-+ [ ] Missing documentation for filtering/sorting keys
-+ [ ] Improve collection.json with the following additional fields
-    + [ ] Collection name
-    + [ ] Collection description set via Namaste
-    + [ ] Collection currator/creator (could pickup from env $USER) or set via Namaste
-    + [ ] Date/time init was run creating collection
-+ [ ] add *publish* command to index.md, index.html
-    + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
-        + https://codemeta.github.io/terms 
-    + [ ] Generate Lunr indexes for each frame
-    + [ ] Generate a index.md based on codemata.json, namaste, and collection.json
-    + [ ] Generate a index.html based on index.md plus a Lunrjs search
-        + needs to support aggregate as well as selectable indexes
++ [x ] Remove labels funcs
++ [x] Drop ._Key -> _Key requirement in frames
++ [x] Add frame-objects and frame-grid verbs to dataset cli
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
 
 
 ## Roadmap (v2.0.0)
 
++ [x] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
++ [ ] Auto-version attachments by patch, minor or major release per settings in collection.json
++ [ ] Switch from Bleve to Lunr indexes and search
++ [ ] Switch go go-cloud over our storage.go module
+    + [ ] Make check and repair work in cloud storage
+        + [ ] storage package should use go-cloud instead of individual SDKs
+        + [ ] need a working file walker for S3 and GS storage ...
+        + [ ] confirm check for s3:// collections
+        + [ ] confirm repair for s3:// collections
+        + [ ] confirm migrate for s3:// collections
++ [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
+
+## Someday, Maybe
+
++ [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
++ [ ] Add Experimental R _dataset_ module for scripting collection management in R
++ [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
+    - support JSON-LD for cross collection integration
++ [ ] sparql cli interface for searching collection
++ [ ] add *publish* command to generate index.md, index.html
+    + [ ] Generate codemeta.json based on collection and any Namaste in collection folder
+        + https://codemeta.github.io/terms 
+    + [ ] Generate Lunr indexes for each frame
+    + [ ] Generate a index.md based on codemata.json, namaste, and collection.json
+    + [ ] Generate a index.html based on index.md plus a Lunrjs search
+        + needs to support aggregate as well as selectable indexes
 + [ ] add *archive* command would do a *publish* then archive the collection
     + support adding relevant Namaste for preservation
     + archive should be suitable for ingesting in preservation systems
         + e.g. create tar, bag or web archive formatted instance
-+ [ ] Make check and repair work in cloud storage
-    + [ ] storage package should use go-cloud instead of individual SDKs
-    + [ ] need a working file walker for S3 and GS storage ...
-    + [ ] confirm check for s3:// collections
-    + [ ] confirm repair for s3:// collections
-    + [ ] confirm migrate for s3:// collections
-+ [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
-+ [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
-+ [ ] Add Experimental R _dataset_ module for scripting collection management in R
-+ [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 
-+ [ ] sparql cli interface for searching collection
-    - support JSON-LD for cross collection integration
 + [ ] Remove dependency on github.com/caltechlibrary/tmplfn
-+ [ ] Remove dependency on Blevesearch
-
-## Someday, Maybe
-
++ [ ] Evaludate JMESPath as replacement/augmentation to dot path 
 + [ ] Add some additional metadata fields
     + [ ] version control on/off for attachments (we could verison via Subversion or git depending...)
     + [ ] Date/time repair was done
@@ -100,6 +92,24 @@
 
 ## Completed
 
++ [x] Create a attachment migration Python script example
+    + Read out the jsonObject
+    + Find the tarball and untar the listed files into a temp directory
+    + For each untared file use dataset attach to attach it back onto object.
++ [x] Document GSheet cell length limitations and how that impact sync-send
++ [x] Need How-to covering key sort/filter and frame sort/filter plus limitations
+    + [x] Missing documentation for filtering/sorting keys for Python package
++ [x] Need cli option/wrapping func to filter out `_Key` and `_Attachments` of read result
++ [x] Remove dependency on Blevesearch
+    + we will be moving forward with Lunr
++ [x] Refactor grids to be an array of objects in frames
++ [x] Refactor attachments from tarball use`a semver sub
+      directory scheme
++ [x] Remove bucket layout code
++ [x] Improve collection.json with the following additional fields
+    + [x] Collection name
+    + [x] Collection description set via Namaste
+    + [x] Date/time init was run creating collection
 + [x] ValueRenderOption("FORMULA") is wrong given the newer option of `UNFORMATED_VALUE`
 + [x] Sort out cross compiling libdataset shared library for Python module
 + [x] sync command needs to be implemented for csv based tables
@@ -282,3 +292,7 @@
     + collection detection should check for the collection.json document
     + namaste type
     + Use storage.StoreType() to determine type info from path
++ [x] Sizes map is not bring respected when add/prune records, need to add test in TestAttatchments() then fix
++ [x] Missing test for getAttachmentList() which translates the map[string]interface{} to an array of Attachment
++ [x] Need an AttachFile that will support reading a buffer for eprinttools support
+
