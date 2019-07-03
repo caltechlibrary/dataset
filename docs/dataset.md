@@ -69,6 +69,8 @@ on the command line.
     export-csv     Export a JSON records from a collection to a CSV file
     export-gsheet  Export a collection's JSON records to a GSheet
     frame          define or retrieve a frame from a collection
+    frame-objects  retrieve a frame's object list
+    frame-grid     retrieve a frame's object list as a 2D JSON array
     frame-types    define explicitly the column type names associated with a frame
     frames         list the available frames in a collection
     grid           Creates a data grid from a list keys of dot paths
@@ -89,6 +91,6 @@ on the command line.
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [frame](frame.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html),  [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html),  [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 
 dataset v0.0.45

@@ -43,7 +43,7 @@ expressions.
     {
         "title": "Introducing dataset",
         "authors":[
-            {"given_name":"Tom", "family_name":"Morrel"},
+            {"given_name":"Tom", "family_name":"Morrell"},
             {"given_name":"Robert","family_name": "Doiel"}
         ]
     }

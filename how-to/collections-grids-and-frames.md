@@ -141,12 +141,14 @@ copy/clone a collection the frames can travel with it.
 
 ### Create a frame
 
-Example creating a frame named "titles-and-dois"
+Example creating a frame named "dois-and-titles"
 
 
 ```shell
     dataset keys Pubs.ds >pubs.keys
-    dataset frame -i pubs.keys Pubs.ds titles-and-dois DOI=.doi Title=.title
+    dataset frame -i pubs.keys Pubs.ds dois-and-titles \
+        ".doi=DOI" \
+        ".title=Title"
 ```
 
 Or in python
@@ -154,37 +156,56 @@ Or in python
 
 ```python
     keys = dataset.keys('Pubs.ds')
-    frame = dataset.frame('Pubs.ds', 'titles-and-dois', keys, ['.doi', '.title'], ["DOI", "Title"])
+    frame = dataset.frame('Pubs.ds', 'dois-and-titles', keys, {
+        '.doi': 'DOI', 
+        '.title': 'Title'
+        })
 ```
 
 
 ### Retrieve an existing frame
 
-Example of getting the contents of an existing frame.
+Example of getting the contents of an existing frame with
+all the metadata.
 
 ```shell
-    dataset frame Pubs.ds titles-and-dois
+    dataset frame Pubs.ds dois-and-titles
 ```
 
-Or in python
+An example of getting the frame's object list only.
+
+```shell
+    dataset frame-objects Pubs.ds dois-and-titles
+```
+
+Or in python getting the full frame with metadata
 
 ```python
-    frame = dataset.frame('Pubs.ds', 'titles-and-dois')
+    (frame, err) = dataset.frame('Pubs.ds', 'dois-and-titles')
+    if err != '':
+        print(f'Something went wront {err}')
 ```
 
+Or only the object list (note: we're going to check for the frame's
+existance first).
+
+```python
+    if dataset.has_frame('Pub.ds', 'dois-and-titles'):
+        object_list = dataset.frame_objects('Pubs.ds', 'dois-and-titles')
+```
 
 ### Regenerating a frame
 
-Regenerating "titles-and-dois".
+Regenerating "dois-and-titles".
 
 ```shell
-    dataset reframe Pubs.ds titles-and-dois
+    dataset reframe Pubs.ds dois-and-titles
 ```
 
 Or in python
 
 ```python
-    frame = dataset.reframe('Pubs.ds', 'titles-and-dois')
+    frame = dataset.reframe('Pubs.ds', 'dois-and-titles')
 ```
 
 
@@ -198,7 +219,7 @@ Or in python
 In python
 
 ```python
-    frame = dataset.reframe('Pubs.ds', 'titles-and-dois', updated_keys)
+    frame = dataset.reframe('Pubs.ds', 'dois-and-titles', updated_keys)
 ```
 
 
@@ -207,13 +228,13 @@ In python
 Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns in addition the required `_Key` label. The `_Key` column is implied and with be automatically inserted into the label list. Additionally using `frame-labels` will cause the object list stored in the frame to be updated.
 
 ```shell
-    dataset frame-labels Pubs.ds titles-and-dois '["Column 1", "Column 2"]'
+    dataset frame-labels Pubs.ds dois-and-titles '["Column 1", "Column 2"]'
 ```
 
 In python
 
 ```python
-    err = dataset.frame_labels('Pubs.ds', 'titles-and-dois', ["Column 1", "Column 2"])
+    err = dataset.frame_labels('Pubs.ds', 'dois-and-titles', ["Column 1", "Column 2"])
 ```
 
 
@@ -226,7 +247,7 @@ In python
 Or in python
 
 ```python
-    err = dataset.delete_frame('Pubs.ds', 'titles-and-dois')
+    err = dataset.delete_frame('Pubs.ds', 'dois-and-titles')
 ```
 
 ## Listing available frames

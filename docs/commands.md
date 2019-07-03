@@ -19,6 +19,8 @@ replaced with one of the commands below --
     + [dotpath](dotpath.html) - reach into an object to return a value(s)
 + [frames](frames.html) - list the data frames defined for a collection
     + [frame](frame.html) - defines or returns a data frame 
+    + [frame-objects](frame-objects.html) - returns a frame's object list
+    + [frame-grid](frame-grid.html) - returns a frame's object list as a 2D JSON array
     + [reframe](reframe.html) - redefines a data frame (updates the objects in the data frame)
     + [delete-frame](delete-frame.html) - remove a frame from a collection
 + [keys](keys.html) - returns the keys to stdout, one key per line

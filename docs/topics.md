@@ -47,6 +47,8 @@
 - [export](export-csv.html) (csv)
 - [export](export-gsheet.html) (gsheet)
 - [frame](frame.html)
+- [frame-grid](frame-grid.html)
+- [frame-objects](frame-objects.html)
 - [frames](frames.html)
 - [grid](grid.html)
 - [hasframe](hasframe.html)
