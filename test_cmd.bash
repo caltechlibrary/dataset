@@ -122,7 +122,7 @@ function test_gsheet() {
 		echo "Could not create test record in testdata/test_gsheet.ds"
 		exit 1
 	fi
-	CNT=$(bin/dataset -nl=false count "${DATASET}")
+	CNT=$(bin/dataset -quiet -nl=false count "${DATASET}")
 	if [[ "${CNT}" != "1" ]]; then
 		echo "Should have one record to export"
 		exit 1
@@ -151,7 +151,7 @@ function test_gsheet() {
 	fi
 
 	echo -n "test_gsheet: test export of frame f1 to gsheet ${SHEET_NAME}, "
-	bin/dataset -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
+	bin/dataset -quiet -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
 	if [[ "$?" != "0" ]]; then
 		echo "Could not export-gsheet"
 		exit 1
@@ -598,7 +598,7 @@ EOT
     #FIXME: export uses a frame to define exported content
     bin/dataset -quiet -nl=false frame -all testdata/pubs.ds outframe \
          "._Key=EPrint ID" ".title=Title" ".type=Type" \
-         ".date_type=Date Type" ".date=Date" # > /dev/null
+         ".date_type=Date Type" ".date=Date" > /dev/null
     bin/dataset -quiet -nl=false export testdata/pubs.ds outframe "testdata/out.csv"
     if [[ "$?" != "0" ]]; then
         echo 'test_import_export: (failed) export testdata/pubs.ds outframe testdata/out.csv'

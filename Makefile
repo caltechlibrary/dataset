@@ -52,7 +52,6 @@ test: clean bin/dataset$(EXT)
 	go test
 	cd gsheets && go test && cd ..
 	bash test_cmd.bash
-	if [ "$(s3)" != "" ]; then go test -s3 "$(s3)"; fi
 
 cleanweb:
 	if [ -f index.html ]; then rm *.html; fi
