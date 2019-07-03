@@ -36,9 +36,23 @@
 
 <h2>OPTIONS</h2>
 
-<pre><code>    -p, -pretty  pretty print JSON output
-    -use-header-row  Include labels as a header row
+<dl>
+<dt>-p, -pretty</dt>
+<dd>pretty print JSON output</dd>
+<dt>-use-header-row</dt>
+<dd>Include labels as a header row</dd>
+</dl>
+
+<h2>Example</h2>
+
+<p>If I have a collection named &ldquo;photos.ds&rdquo; and a previously
+defined frame name &ldquo;captions-dates-locations&rdquo; I can get that
+as a 2D JSON array with the folllowing&mdash;</p>
+
+<pre><code>    dataset frame-grid -p photos.ds captions-dates-locations
 </code></pre>
+
+<p>The <code>-p</code> is the pretty print option for JSON output.</p>
 
 </section>
 

@@ -160,40 +160,60 @@ the keys associated in the frame)</li>
 
 <h3>Create a frame</h3>
 
-<p>Example creating a frame named &ldquo;titles-and-dois&rdquo;</p>
+<p>Example creating a frame named &ldquo;dois-and-titles&rdquo;</p>
 
 <pre><code class="language-shell">    dataset keys Pubs.ds &gt;pubs.keys
-    dataset frame -i pubs.keys Pubs.ds titles-and-dois DOI=.doi Title=.title
+    dataset frame -i pubs.keys Pubs.ds dois-and-titles \
+        &quot;.doi=DOI&quot; \
+        &quot;.title=Title&quot;
 </code></pre>
 
 <p>Or in python</p>
 
 <pre><code class="language-python">    keys = dataset.keys('Pubs.ds')
-    frame = dataset.frame('Pubs.ds', 'titles-and-dois', keys, ['.doi', '.title'], [&quot;DOI&quot;, &quot;Title&quot;])
+    frame = dataset.frame('Pubs.ds', 'dois-and-titles', keys, {
+        '.doi': 'DOI', 
+        '.title': 'Title'
+        })
 </code></pre>
 
 <h3>Retrieve an existing frame</h3>
 
-<p>Example of getting the contents of an existing frame.</p>
+<p>Example of getting the contents of an existing frame with
+all the metadata.</p>
 
-<pre><code class="language-shell">    dataset frame Pubs.ds titles-and-dois
+<pre><code class="language-shell">    dataset frame Pubs.ds dois-and-titles
 </code></pre>
 
-<p>Or in python</p>
+<p>An example of getting the frame&rsquo;s object list only.</p>
 
-<pre><code class="language-python">    frame = dataset.frame('Pubs.ds', 'titles-and-dois')
+<pre><code class="language-shell">    dataset frame-objects Pubs.ds dois-and-titles
+</code></pre>
+
+<p>Or in python getting the full frame with metadata</p>
+
+<pre><code class="language-python">    (frame, err) = dataset.frame('Pubs.ds', 'dois-and-titles')
+    if err != '':
+        print(f'Something went wront {err}')
+</code></pre>
+
+<p>Or only the object list (note: we&rsquo;re going to check for the frame&rsquo;s
+existance first).</p>
+
+<pre><code class="language-python">    if dataset.has_frame('Pub.ds', 'dois-and-titles'):
+        object_list = dataset.frame_objects('Pubs.ds', 'dois-and-titles')
 </code></pre>
 
 <h3>Regenerating a frame</h3>
 
-<p>Regenerating &ldquo;titles-and-dois&rdquo;.</p>
+<p>Regenerating &ldquo;dois-and-titles&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset reframe Pubs.ds titles-and-dois
+<pre><code class="language-shell">    dataset reframe Pubs.ds dois-and-titles
 </code></pre>
 
 <p>Or in python</p>
 
-<pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'titles-and-dois')
+<pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'dois-and-titles')
 </code></pre>
 
 <h3>Updating keys associated with the frame</h3>
@@ -204,19 +224,19 @@ the keys associated in the frame)</li>
 
 <p>In python</p>
 
-<pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'titles-and-dois', updated_keys)
+<pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'dois-and-titles', updated_keys)
 </code></pre>
 
 <h3>Updating labels in a frame</h3>
 
 <p>Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns in addition the required <code>_Key</code> label. The <code>_Key</code> column is implied and with be automatically inserted into the label list. Additionally using <code>frame-labels</code> will cause the object list stored in the frame to be updated.</p>
 
-<pre><code class="language-shell">    dataset frame-labels Pubs.ds titles-and-dois '[&quot;Column 1&quot;, &quot;Column 2&quot;]'
+<pre><code class="language-shell">    dataset frame-labels Pubs.ds dois-and-titles '[&quot;Column 1&quot;, &quot;Column 2&quot;]'
 </code></pre>
 
 <p>In python</p>
 
-<pre><code class="language-python">    err = dataset.frame_labels('Pubs.ds', 'titles-and-dois', [&quot;Column 1&quot;, &quot;Column 2&quot;])
+<pre><code class="language-python">    err = dataset.frame_labels('Pubs.ds', 'dois-and-titles', [&quot;Column 1&quot;, &quot;Column 2&quot;])
 </code></pre>
 
 <h3>Removing a frame</h3>
@@ -226,7 +246,7 @@ the keys associated in the frame)</li>
 
 <p>Or in python</p>
 
-<pre><code class="language-python">    err = dataset.delete_frame('Pubs.ds', 'titles-and-dois')
+<pre><code class="language-python">    err = dataset.delete_frame('Pubs.ds', 'dois-and-titles')
 </code></pre>
 
 <h2>Listing available frames</h2>

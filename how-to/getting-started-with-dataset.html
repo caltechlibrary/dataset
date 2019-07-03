@@ -377,30 +377,25 @@ what we used for a grid. We need a name for the frame.</p>
 &ldquo;name-and-email&rdquo;.</p>
 
 <pre><code class="language-bash">    dataset frame -i=friends.keys friends.ds \
-        &quot;name-and-email&quot; .name .email .catch_phrase
+        &quot;name-and-email&quot; \
+        .name=name .email=email \
+        .catch_phrase=catch_phrase
 </code></pre>
 
 <p>In python it would look like</p>
 
 <pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
     err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
-          keys, [ &quot;.name&quot;, &quot;.email&quot;, &quot;.catch_phrase&quot;])
+          keys, { 
+              &quot;.name&quot;: &quot;name&quot;, 
+              &quot;.email&quot;: &quot;email&quot;, 
+              &quot;.catch_phrase&quot;: &quot;catch_phrase&quot;
+              })
     if err != &quot;&quot;:
         stop(err)
 </code></pre>
 
-<p>In Python we can also explicitly supply labels at the same time
-as defining the frame.</p>
-
-<pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
-    err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
-          keys, [ &quot;.name&quot;, &quot;.email&quot;, &quot;.catch_phrase&quot;], 
-                [ &quot;Name&quot;, &quot;E-Mail&quot;, &quot;Catch Phrase&quot; ])
-    if err != &quot;&quot;:
-        stop(err)
-</code></pre>
-
-<p>To see the contents of a frame we only need to supply the collection
+<p>To see the full contents of a frame we only need to supply the collection
 and frame names.</p>
 
 <pre><code class="language-bash">    dataset frame friends.ds &quot;name-and-email&quot;
@@ -417,6 +412,17 @@ and frame names.</p>
 <p>Looking at the resulting JSON object you see many other attribute
 beyond the object list of the frame. These are created to simplify
 some of dataset more complex interactions.</p>
+
+<p>Most of the time you don&rsquo;t want the metadata, so you we have a
+way of just retrieving the object list.</p>
+
+<pre><code class="language-bash">    dataset frame-objects friends.ds &quot;name-and-email&quot;
+</code></pre>
+
+<p>Or in Python</p>
+
+<pre><code class="language-python">    object_list = dataset.frame_objects(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
+</code></pre>
 
 <p>Let&rsquo;s add back the Jack record we deleted a few sections ago and
 “reframe” our “name-and-email” frame.</p>
@@ -465,15 +471,13 @@ JSON representation of the frame we also see a &ldquo;labels&rdquo; attribute.
 Labels are used when exporting and synchronizing content between a
 CSV file, Google Sheet and a collection (labels become column names).</p>
 
-<p>FIXME: This need to be re-written&ndash;</p>
-
-<p>You can set the labels by providing replacement values for ALL
-the labels in the column order defined in the frame. In our previous
-example we provided the order of the columns for the frame
-&ldquo;name-and-email&rdquo; as .name, .email, .catch_phrase. Also recall the
-frames AWAYS has a first column named <code>._Key</code>. If we want
-to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldquo;EMail&rdquo;, and &ldquo;Catch Phrase&rdquo;
-instead we can set them with the <code>frame-labels</code> verb.</p>
+<p>Labels are set at the time of frame definition and persist as long
+as the frame exists.  The order of the columns reflects the order
+of the pairs defining the dot paths and labels.  In our previous
+examples we provided the order of the columns for the frame
+&ldquo;name-and-email&rdquo; as .name, .email, .catch_phrase dot paths.
+If we want to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldquo;EMail&rdquo;, and
+&ldquo;Catch Phrase&rdquo; we need to define our frame that way.</p>
 
 <pre><code class="language-bash">    dataset delete-frame friends.ds &quot;name-and-email&quot;
     dataset frame friends.ds &quot;name-and-email&quot; \
@@ -481,13 +485,18 @@ instead we can set them with the <code>frame-labels</code> verb.</p>
         &quot;.email=EMail&quot; &quot;.catch_phrase=Catch Phrase&quot;
 </code></pre>
 
-<p>NOTE: re-labeling a frame will cause the frame to generate its
-object list.</p>
-
 <p>In Python it look like</p>
 
-<pre><code class="language-python">    err = dataset.frame_labels(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
-          [&quot;ID&quot;, &quot;Display Name&quot;, &quot;EMail&quot;, &quot;Catch Phrase&quot;])
+<pre><code class="language-python">    err = dataset.delete_frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
+    if err != &quot;&quot;:
+        stop(err)
+    
+    err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
+          &quot;._Key&quot;: &quot;ID&quot;, 
+          &quot;.name&quot;: &quot;Display Name&quot;, 
+          &quot;.email&quot;: &quot;EMail&quot;, 
+          &quot;.catch_pharse&quot;: &quot;Catch Phrase&quot;
+          })
     if err != &quot;&quot;:
         stop(err)
 </code></pre>
@@ -510,9 +519,10 @@ the list</p>
 
 <ol>
 <li><em>frame</em> will set you define a frame</li>
-<li><em>frame</em> will also let you read back a frame</li>
-<li><em>frames</em> will list the frames defined in the collection</li>
-<li><em>frame-labels</em> will let you replace the labels values for all
+<li><em>frame</em> will also let you read back a frame with full metadata</li>
+<li><em>frame-grid</em> return the frame&rsquo;s object list as a 2D array</li>
+<li><em>frame-objects</em> return the frame&rsquo;s object list</li>
+<li><em>frames</em> will list the frames defined in the collection
 columns in a frame, it will cause the frame to regenerate
 its object list</li>
 <li><em>delete-frame</em> will remove the frame from the collection</li>

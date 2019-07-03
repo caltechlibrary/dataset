@@ -46,7 +46,9 @@ collection.</p>
 being exported - ._Key,.title, and .pubDate with the following
 labels for those fields &ndash; id, title and publication date.</p>
 
-<pre><code class="language-shell">    dataset frame publications.ds my-report &quot;._Key&quot; &quot;.title&quot; &quot;.pubDate&quot;
+<pre><code class="language-shell">    dataset frame publications.ds my-report \
+        &quot;._Key=id&quot; &quot;.title=title&quot; \
+        &quot;.pubDate=publication date&quot;
 </code></pre>
 
 <p>The example blow creates a CSV file named &lsquo;output.csv&rsquo;. The collection
@@ -55,7 +57,7 @@ is &ldquo;publications.ds&rdquo;.</p>
 <pre><code class="language-shell">	dataset export publications.ds my-report &gt; output.csv
 </code></pre>
 
-<p>Related topics: <a href="import-csv.html">import-csv</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="export-gsheet.html">export-gsheet</a></p>
+<p>Related topics: <a href="frame.html">frame</a>, <a href="import-csv.html">import-csv</a>, <a href="import-gsheet.html">import-gsheet</a>, <a href="export-gsheet.html">export-gsheet</a></p>
 
 </section>
 

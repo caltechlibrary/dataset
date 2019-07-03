@@ -62,7 +62,7 @@ an &ldquo;Import file&rdquo; dialog, select &ldquo;Replace current sheet&rdquo; 
 
 <p>You should wind up with a spreadsheet that starts out something like this &ndash;</p>
 
-<pre><code class="language-csv">    id,name,title,year
+<pre><code class="language-csv">    ID,Name,Title,Year
     1,Jack Flanders,The Fourth Tower of Inverness,1972
     2,Little Freida,The Fourth Tower of Inverness,1972
     3,Dr. Mazoola,The Fourth Tower of Inverness,1972
@@ -75,7 +75,7 @@ an &ldquo;Import file&rdquo; dialog, select &ldquo;Replace current sheet&rdquo; 
     ...
 </code></pre>
 
-<p>You sheet should have four columns A to D (id, name, title, year) and
+<p>You sheet should have four columns A to D (ID, Name, Title, Year) and
 195 rows with id ranging from 1 to 194 in column 1. You can describe the
 range of your sheet as A1:D195 (A 1 through D 195). We&rsquo;re going to use
 this range when importing and exporting.</p>
@@ -193,53 +193,39 @@ resulting key list as a list of objects and pretty printing them.</p>
 
 <pre><code class="language-json">    {
         &quot;_Key&quot;: &quot;19&quot;,
-        &quot;id&quot;: 19,
-        &quot;name&quot;: &quot;Comtese Zazeenia&quot;,
-        &quot;title&quot;: &quot;Moon Over Morocco&quot;,
-        &quot;year&quot;: 1973
+        &quot;ID&quot;: 19,
+        &quot;Name&quot;: &quot;Comtese Zazeenia&quot;,
+        &quot;Title&quot;: &quot;Moon Over Morocco&quot;,
+        &quot;Year&quot;: 1973
     }
 </code></pre>
 
-<p>Notice that we a &ldquo;_Key&rdquo; field and an &ldquo;id&rdquo; field. We will want to
-use the &ldquo;_Key&rdquo; field explicitly when we defined our frame. That is
-becasue dataset maintains the relationship of &ldquo;_Key&rdquo; as the id for
-the object and we want this to map to the &ldquo;id&rdquo; labels in the
-spreadsheet. We&rsquo;re going to want to include &ldquo;all&rdquo; keys in the
+<p>Notice that we a <code>_Key</code> field and an &ldquo;ID&rdquo; field. <code>_Key</code> is the internal
+id for the JSON object used by dataset. We will want to
+use the <code>_Key</code> field explicitly when we defined our frame. This
+will establish the relationship between dataset&rsquo;s objects and
+the spreadsheet.  We&rsquo;re going to want to include &ldquo;all&rdquo; keys in the
 collection so we&rsquo;ll be using the &lsquo;-all&rsquo; option (you could
-limit the frame to specific records by providing a keylist to the frame
-definition).</p>
+limit the frame to specific records by providing a keylist
+to the frame definition).</p>
 
 <p>Step 1. define our frame</p>
 
 <pre><code class="language-shell">    dataset frame -all zbs-cast-list.ds gsheet-sync \
-        ._Key .name .title .year
+        ._Key=ID .Name=Name .Title=Title .Year=Year
 </code></pre>
 
-<p>Step 2. review the results</p>
+<p>This returns a new frame definition. This includes the relationship
+between our object attributes (dot paths) and the column label.</p>
 
-<p>This returns a new frame definition. We haven&rsquo;t setup the labels (or
-types yet) but the basic information has been recorded. You can
-retrieve the frame again by just providing the name.</p>
+<p>Step 2. Review the frame you defined.</p>
 
 <pre><code class="language-shell">    dataset frame -p zbs-cast-list.ds gsheet-sync | more
 </code></pre>
 
-<p>FIXME: This needs a rewrite, frame-labels has be deprecaited &hellip;</p>
-
-<p>Step 3. define labels for each of our dotpaths in our frame</p>
-
-<p>You&rsquo;ll notice when you pretty printed the frame that our dotpaths
-are an array, arrays are ordered. We&rsquo; going to explicitly set our
-labels to match that dotpath ordering. E.g. &ldquo;._Key&rdquo; should map to
-&ldquo;id&rdquo;, &ldquo;.name&rdquo; to &ldquo;name&rdquo;, &ldquo;.title&rdquo; to &ldquo;title&rdquo; and &ldquo;.year&rdquo; to &ldquo;year&rdquo;.</p>
-
-<pre><code class="language-shell">    dataset frame zbs-cast-list.ds gsheet-sync \
-       &quot;._Key=id&quot; &quot;.name=name&quot; \
-       &quot;.title=title&quot; &quot;.year=year&quot;
-</code></pre>
-
-<p>You should check your updated frame and if the labels look correct then
-we&rsquo;re ready to synchronize our collection with our Google Sheet.</p>
+<p>You should check your recreate the frame and if the dot paths or
+labels look incorrect. Otherwise we&rsquo;re ready to synchronize our
+collection with our Google Sheet.</p>
 
 <p>Let&rsquo;s change item 43 in our Google Sheet from &ldquo;Jack Flanders&rdquo; to
 &ldquo;Molly Flanders&rdquo;. We want our collection to pick up this change. We need
@@ -297,7 +283,7 @@ our Google Sheet, then we can export our whole zbs-cast-list.ds into it.</p>
 
 <p>You should now see populated new-cast-list sheet.</p>
 
-<p>Related topics: <a href="../docs/dotpath.html">dotpath</a>, <a href="../docs/export-csv.html">export-csv</a>, <a href="../docs/import-csv.html">import-csv</a>, <a href="../docs/import-gsheet.html">import-gsheet</a>, <a href="../docs/export-gsheet.html">export-gsheet</a>, <a href="../docs/sync-receive.html">sync-receive</a> and <a href="../docs/sync-send.html">sync-send</a></p>
+<p>Related topics: <a href="../docs/dotpath.html">dotpath</a>, <a href="../docs/export-csv.html">export-csv</a>, <a href="../docs/frame.html">frame</a>, <a href="../docs/import-csv.html">import-csv</a>, <a href="../docs/import-gsheet.html">import-gsheet</a>, <a href="../docs/export-gsheet.html">export-gsheet</a>, <a href="../docs/sync-receive.html">sync-receive</a> and <a href="../docs/sync-send.html">sync-send</a></p>
 
 </section>
 
