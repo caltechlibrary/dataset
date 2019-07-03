@@ -48,7 +48,6 @@
 - [export](export-gsheet.html) (gsheet)
 - [frame](frame.html)
 - [frames](frames.html)
-- [frame-labels](frame-labels.html)
 - [grid](grid.html)
 - [hasframe](hasframe.html)
 - [haskey](haskey.html)

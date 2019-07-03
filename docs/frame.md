@@ -44,5 +44,5 @@ In python
          ['Title', 'Authors', 'PubYear'])
 ```
 
-Related topics: [frames](frames.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
+Related topics: [frames](frames.html), [frame-types](frame-types.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
 

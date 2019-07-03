@@ -92,10 +92,6 @@ func dotPathToColumnMap(f *DataFrame, table [][]interface{}) (map[string]int, er
 			}
 		}
 	}
-	// Sanity check the mapping for ._Key
-	if _, hasID := m["._Key"]; hasID == false {
-		return m, fmt.Errorf("table header row is missing %q column", f.Labels[0])
-	}
 	return m, nil
 }
 

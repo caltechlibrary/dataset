@@ -23,7 +23,6 @@ labels for those fields -- id, title and publication date.
 
 ```shell
     dataset frame publications.ds my-report "._Key" ".title" ".pubDate"
-    dataset frame-labels publications.ds my-report "id" "title" "publication date"
 ```
 
 The example blow creates a CSV file named 'output.csv'. The collection 

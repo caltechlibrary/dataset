@@ -435,13 +435,12 @@ id,one,two
 		t.FailNow()
 	}
 
-	f, err := c.Frame(frameName, keys, []string{"._Key", ".one", ".two"}, verbose)
+	f, err := c.Frame(frameName, keys, []string{"._Key", ".one", ".two"}, []string{"id", "one", "two"}, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
 	f.AllKeys = true
-	f.Labels = []string{"id", "one", "two"}
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
 		t.Errorf("%s", err)

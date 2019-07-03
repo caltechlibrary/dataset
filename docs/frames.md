@@ -15,5 +15,5 @@ In python
 ```
 
 
-Related topics: [frame](frame.html), [frame-labels](frame-labels.html), [frame-types](frame-types.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
+Related topics: [frame](frame.html), [frame-types](frame-types.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
 

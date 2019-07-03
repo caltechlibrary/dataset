@@ -35,9 +35,10 @@ by collection and JSON document level.
 + [grid](grid.html) create a 2D grid of data from keys and dot paths in a collection
 + [data frame support](../how-to/collections-grids-and-frames.html) provides a persistant grid plus metadata associated with the collection
     + [frame](frame.html)
+    + [frame-objects](frame-objects.html)
+    + [frame-grid](frame-grid.html)
     + [frames](frames.html)
     + [reframe](reframe.html)
-    + [frame-labels](frame-labels.html)
     + [delete-frame](delete-frame.html)
     + [hasframe](hasframe.html)
 

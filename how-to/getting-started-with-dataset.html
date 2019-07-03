@@ -465,6 +465,8 @@ JSON representation of the frame we also see a &ldquo;labels&rdquo; attribute.
 Labels are used when exporting and synchronizing content between a
 CSV file, Google Sheet and a collection (labels become column names).</p>
 
+<p>FIXME: This need to be re-written&ndash;</p>
+
 <p>You can set the labels by providing replacement values for ALL
 the labels in the column order defined in the frame. In our previous
 example we provided the order of the columns for the frame
@@ -473,8 +475,10 @@ frames AWAYS has a first column named <code>._Key</code>. If we want
 to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldquo;EMail&rdquo;, and &ldquo;Catch Phrase&rdquo;
 instead we can set them with the <code>frame-labels</code> verb.</p>
 
-<pre><code class="language-bash">    dataset frame-labels friends.ds &quot;name-and-email&quot; \
-        &quot;ID&quot; &quot;Display Name&quot; &quot;EMail&quot; &quot;Catch Phrase&quot;
+<pre><code class="language-bash">    dataset delete-frame friends.ds &quot;name-and-email&quot;
+    dataset frame friends.ds &quot;name-and-email&quot; \
+        &quot;._Key=ID&quot; &quot;.name=Display Name&quot; \
+        &quot;.email=EMail&quot; &quot;.catch_phrase=Catch Phrase&quot;
 </code></pre>
 
 <p>NOTE: re-labeling a frame will cause the frame to generate its

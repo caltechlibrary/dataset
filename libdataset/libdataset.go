@@ -1209,40 +1209,6 @@ func reframe(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
 	return C.int(0)
 }
 
-// frame_labels takes a JSON array of labels and re-labels the frame
-// and renames the object list's attribute names. NOTE: this means the
-// object list is regenerated with freash values copied from the
-// from the collection base on the dot paths defined in the frame.
-// The first label will always be _Key and if not provided it will
-// be inserted. The total number of labels and object paths must match.
-//
-//export frame_labels
-func frame_labels(cName *C.char, cFName *C.char, cLabels *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	srcLabels := C.GoString(cLabels)
-	error_clear()
-	c, err := dataset.Open(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.int(1)
-	}
-	defer c.Close()
-	labels := []string{}
-	err = json.Unmarshal([]byte(srcLabels), &labels)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal frame labels, %s", err)
-		return C.int(1)
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	err = c.FrameLabels(frameName, labels, verbose)
-	if err != nil {
-		error_dispatch(err, "failed set frame labels, %s", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
 // delete_frame removes a frame from a collection.
 //
 //export delete_frame

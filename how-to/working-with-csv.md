@@ -185,8 +185,11 @@ then givening columns a name.
 ## exporting data from a collection
 
 ```shell
-   dataset frame -all mydata.ds export-frame '.id' '.title' '.pubDate' 
-   dataset frame-labels mydata.ds export-frame 'id,title,publication date'
+   dataset frame -all mydata.ds export-frame \
+       '.id=id' \
+       '.title=title' 
+       '.publication=publication' 
+       '.pubDate=date'
    dataset export mydata.ds export-frame 
 ```
 
@@ -196,9 +199,7 @@ You just need to create a frame with that restriction.
 ```shell
    dataset keys mydata.ds '(eq 2016 (year .pubDate))' | \
       dataset frame mydata.ds published-2016 \
-           '.id' '.title' '.pubDate' 
-   dataset frame-labels mydata.ds published-2016 \
-           'id' 'title' 'publication' 'date'
+           '.id=id' '.title=title' '.pubDate=date' 
    dataset export mydata.published-2016 ds 
 ```
 

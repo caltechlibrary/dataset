@@ -135,7 +135,6 @@ copy/clone a collection the frames can travel with it.
 + frames (return a list of frame names)
 + reframe (refresh the content of a frame’s grid optionally replacing 
   the keys associated in the frame)
-+ frame-labels (explicitly set the labels for a frame)
 + hasframe (check to see if a frame exists in the collection)
 + delete-frame
 

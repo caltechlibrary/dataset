@@ -207,6 +207,8 @@ retrieve the frame again by just providing the name.
     dataset frame -p zbs-cast-list.ds gsheet-sync | more
 ```
 
+FIXME: This needs a rewrite, frame-labels has be deprecaited ...
+
 Step 3. define labels for each of our dotpaths in our frame
 
 You'll notice when you pretty printed the frame that our dotpaths
@@ -215,8 +217,9 @@ labels to match that dotpath ordering. E.g. "._Key" should map to
 "id", ".name" to "name", ".title" to "title" and ".year" to "year".
 
 ```shell
-    dataset frame-labels zbs-cast-list.ds gsheet-sync \
-       "id" "name" "title" "year"
+    dataset frame zbs-cast-list.ds gsheet-sync \
+       "._Key=id" ".name=name" \
+       ".title=title" ".year=year"
 ```
 
 You should check your updated frame and if the labels look correct then

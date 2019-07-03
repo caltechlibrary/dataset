@@ -13,5 +13,5 @@ In python
     err = dataset.has_frame('pubs.ds', 'f1')
 ```
 
-Related topics: [frame](frame.html), [frames](frames.html), [frame-labels](frame-labels.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
+Related topics: [frame](frame.html), [frames](frames.html), [reframe](reframe.html), [delete-frame](delete-frame.html)
 

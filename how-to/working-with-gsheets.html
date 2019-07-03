@@ -125,7 +125,7 @@ current working directory (e.g. on my Mac I did
 
 <p>Once your &ldquo;credentials.json&rdquo; file is generated and downloaded to your
 working directory you need to trigger authorization for <em>dataset</em>. To
-do so we type in for importing our spreadsheet into our local collection.<br />
+do so we type in for importing our spreadsheet into our local collection.<br>
 The first time we do this a link (URL) will be displayed. Copy that link
 into your web browser. You will goto a page that allows you to &ldquo;authorize&rdquo;
 the application.  Follow the instructions.</p>
@@ -172,7 +172,7 @@ You can count the keys to see what was imported.</p>
 <h2>Synchronization with a Google Sheet</h2>
 
 <p><em>dataset</em> provides a mechanism to synchronize data with a table (e.g.
-a CSV file or Google Sheet, we&rsquo;re interested in the later).<br />
+a CSV file or Google Sheet, we&rsquo;re interested in the later).<br>
 Synchronizationis accomplished by mapping the column headings to object
 paths in our dataset collection as well as rows to objects. To define
 this relationship so dataset knowns what to do we use a &ldquo;data frame&rdquo;.
@@ -224,6 +224,8 @@ retrieve the frame again by just providing the name.</p>
 <pre><code class="language-shell">    dataset frame -p zbs-cast-list.ds gsheet-sync | more
 </code></pre>
 
+<p>FIXME: This needs a rewrite, frame-labels has be deprecaited &hellip;</p>
+
 <p>Step 3. define labels for each of our dotpaths in our frame</p>
 
 <p>You&rsquo;ll notice when you pretty printed the frame that our dotpaths
@@ -231,8 +233,9 @@ are an array, arrays are ordered. We&rsquo; going to explicitly set our
 labels to match that dotpath ordering. E.g. &ldquo;._Key&rdquo; should map to
 &ldquo;id&rdquo;, &ldquo;.name&rdquo; to &ldquo;name&rdquo;, &ldquo;.title&rdquo; to &ldquo;title&rdquo; and &ldquo;.year&rdquo; to &ldquo;year&rdquo;.</p>
 
-<pre><code class="language-shell">    dataset frame-labels zbs-cast-list.ds gsheet-sync \
-       &quot;id&quot; &quot;name&quot; &quot;title&quot; &quot;year&quot;
+<pre><code class="language-shell">    dataset frame zbs-cast-list.ds gsheet-sync \
+       &quot;._Key=id&quot; &quot;.name=name&quot; \
+       &quot;.title=title&quot; &quot;.year=year&quot;
 </code></pre>
 
 <p>You should check your updated frame and if the labels look correct then

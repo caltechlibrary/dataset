@@ -160,8 +160,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	// NOTE: setAllKeys is used by Reframe to persist an useAllKeys value
 	setAllKeys bool
 	// One time use of all keys in grid, a newly created Frame or Reframe
-	useAllKeys        bool
-	useHeaderRow      bool
+	useAllKeys bool
+	// header row defaults to true.
+	useHeaderRow      = true
 	clientSecretFName string
 	overwrite         bool
 	syncOverwrite     bool
@@ -186,42 +187,43 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	setValue       bool // Note: set a collection level metadata value
 
 	// Application Verbs
-	vInit        *cli.Verb // init
-	vStatus      *cli.Verb // status
-	vCreate      *cli.Verb // create
-	vRead        *cli.Verb // read
-	vUpdate      *cli.Verb // update
-	vDelete      *cli.Verb // delete
-	vJoin        *cli.Verb // join
-	vKeys        *cli.Verb // keys
-	vHasKey      *cli.Verb // haskey
-	vCount       *cli.Verb // count
-	vPath        *cli.Verb // path
-	vAttach      *cli.Verb // attach
-	vAttachments *cli.Verb // attachments
-	vDetach      *cli.Verb // detach
-	vPrune       *cli.Verb // prune
-	vGrid        *cli.Verb // grid
-	vImport      *cli.Verb // import
-	vExport      *cli.Verb // export
-	vCheck       *cli.Verb // check
-	vRepair      *cli.Verb // repair
-	vCloneSample *cli.Verb // clone-sample
-	vClone       *cli.Verb // clone
-	vFrame       *cli.Verb // frame
-	vHasFrame    *cli.Verb // has-frame
-	vFrames      *cli.Verb // frames
-	vReframe     *cli.Verb // reframe
-	vFrameLabels *cli.Verb // frame-labels
-	vFrameDelete *cli.Verb // delete-frame
-	vSyncSend    *cli.Verb // sync-send
-	vSyncRecieve *cli.Verb // sync-recieve
-	vWho         *cli.Verb // who
-	vWhat        *cli.Verb // what
-	vWhen        *cli.Verb // when
-	vWhere       *cli.Verb // where
-	vVersion     *cli.Verb // version of collection (semvar)
-	vContact     *cli.Verb // contact info for collection
+	vInit         *cli.Verb // init
+	vStatus       *cli.Verb // status
+	vCreate       *cli.Verb // create
+	vRead         *cli.Verb // read
+	vUpdate       *cli.Verb // update
+	vDelete       *cli.Verb // delete
+	vJoin         *cli.Verb // join
+	vKeys         *cli.Verb // keys
+	vHasKey       *cli.Verb // haskey
+	vCount        *cli.Verb // count
+	vPath         *cli.Verb // path
+	vAttach       *cli.Verb // attach
+	vAttachments  *cli.Verb // attachments
+	vDetach       *cli.Verb // detach
+	vPrune        *cli.Verb // prune
+	vGrid         *cli.Verb // grid
+	vImport       *cli.Verb // import
+	vExport       *cli.Verb // export
+	vCheck        *cli.Verb // check
+	vRepair       *cli.Verb // repair
+	vCloneSample  *cli.Verb // clone-sample
+	vClone        *cli.Verb // clone
+	vFrame        *cli.Verb // frame
+	vFrameObjects *cli.Verb // frame-objects
+	vFrameGrid    *cli.Verb // frame-grid
+	vHasFrame     *cli.Verb // has-frame
+	vFrames       *cli.Verb // frames
+	vReframe      *cli.Verb // reframe
+	vFrameDelete  *cli.Verb // delete-frame
+	vSyncSend     *cli.Verb // sync-send
+	vSyncRecieve  *cli.Verb // sync-recieve
+	vWho          *cli.Verb // who
+	vWhat         *cli.Verb // what
+	vWhen         *cli.Verb // when
+	vWhere        *cli.Verb // where
+	vVersion      *cli.Verb // version of collection (semvar)
+	vContact      *cli.Verb // contact info for collection
 
 )
 
@@ -1692,13 +1694,13 @@ func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 }
 
 // fnFrame - define a data frame and populate it with a list of keys,
-// label and doptpaths pairs
+// dotpaths and label pairs
 //
 //     dataset keys collection.ds |\
 //        dataset frame collection.ds my-frame \
-//             "given_name=.creator.given" \
-// 			   "family_name=.creator.family" \
-//             "favorite_color=.popular_color[0]"
+//             ".creator.given=given_name" \
+// 			   ".creator.family=family_name" \
+//             ".popular_color[0]=favorite_color"
 //
 // Verb Options: filter-expression (e.g. -filter),
 // key list filename (e.g. -i), sample size (e.g. -sample)
@@ -1744,12 +1746,12 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		for _, item := range keyPathPairs {
 			if strings.Contains(item, "=") == true {
 				kp := strings.SplitN(item, "=", 2)
-				labels = append(labels, strings.TrimSpace(kp[0]))
-				dotPaths = append(dotPaths, strings.TrimSpace(kp[1]))
+				dotPaths = append(dotPaths, strings.TrimSpace(kp[0]))
+				labels = append(labels, strings.TrimSpace(kp[1]))
 			} else {
 				item = strings.TrimSpace(item)
-				labels = append(labels, strings.TrimPrefix(item, "."))
 				dotPaths = append(dotPaths, item)
+				labels = append(labels, strings.TrimPrefix(item, "."))
 			}
 		}
 	}
@@ -1835,12 +1837,18 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		fmt.Fprintf(eout, "No dotpaths, frame creation aborted\n")
 		return 1
 	}
-	if len(keys) == 0 {
+	if len(labels) == 0 {
+		fmt.Fprintf(eout, "No labels, frame creation aborted\n")
+		return 1
+	}
+	//NOTE: We need to be able to frame an empty collection so we
+	// can bring mapped content in from a spreadsheet or CSV file easily.
+	if len(keys) == 0 && len(c.KeyMap) > 0 {
 		fmt.Fprintf(eout, "No keys, frame creation aborted\n")
 		return 1
 	}
 
-	// NOTE: See if we are reading a frame back or define one.
+	// NOTE: We defining a new frame now.
 	f, err = c.Frame(frameName, keys, dotPaths, labels, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
@@ -1861,6 +1869,122 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		src, err = json.MarshalIndent(f, "", "    ")
 	} else {
 		src, err = json.Marshal(f)
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "%s", src)
+	return 0
+}
+
+// fnFrameObjects - list the frames object list .
+func fnFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		c              *dataset.Collection
+		frameName      string
+		err            error
+		src            []byte
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name for %s\n", args[0])
+		return 1
+	case len(args) == 2:
+		collectionName = args[0]
+		frameName = args[1]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	f, err := c.Frame(frameName, nil, nil, nil, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	// Handle pretty printing
+	if prettyPrint {
+		src, err = json.MarshalIndent(f.Objects(), "", "    ")
+	} else {
+		src, err = json.Marshal(f.Objects())
+	}
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	fmt.Fprintf(out, "%s", src)
+	return 0
+}
+
+// fnFrameGrid - get a 2D JSON array of a frame's object list.
+func fnFrameGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		c              *dataset.Collection
+		frameName      string
+		err            error
+		src            []byte
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name for %s\n", args[0])
+		return 1
+	case len(args) == 2:
+		collectionName = args[0]
+		frameName = args[1]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	f, err := c.Frame(frameName, nil, nil, nil, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	// Handle pretty printing
+	if prettyPrint {
+		src, err = json.MarshalIndent(f.Grid(useHeaderRow), "", "    ")
+	} else {
+		src, err = json.Marshal(f.Grid(useHeaderRow))
 	}
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
@@ -1907,58 +2031,6 @@ func fnFrames(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	frameNames = c.Frames()
 	if len(frameNames) > 0 {
 		fmt.Fprintf(out, "%s", strings.Join(frameNames, "\n"))
-	}
-	return 0
-}
-
-// fnFrameLabels - set the labels (column headings) associated with a frame's grid.
-func fnFrameLabels(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	var (
-		collectionName string
-		c              *dataset.Collection
-		frameName      string
-		labels         []string
-		err            error
-	)
-
-	err = flagSet.Parse(args)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	args = flagSet.Args()
-
-	switch {
-	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name, frame name and labels\n")
-		return 1
-	case len(args) == 1:
-		fmt.Fprintf(eout, "Missing frame name and labels\n")
-		return 1
-	case len(args) == 2:
-		fmt.Fprintf(eout, "labels\n")
-		return 1
-	case len(args) >= 3:
-		collectionName, frameName, labels = args[0], args[1], args[2:]
-	default:
-		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
-		return 1
-	}
-
-	c, err = dataset.Open(collectionName)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	defer c.Close()
-
-	err = c.FrameLabels(frameName, labels, showVerbose)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	if quiet == false {
-		fmt.Fprintf(out, "OK")
 	}
 	return 0
 }
@@ -3102,10 +3174,14 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vFrame.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for frame generation")
 	vFrame.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
-	// NOTE: Labels are used with sync-send/sync-receive to map dotpaths to column names
-	vFrameLabels = app.NewVerb("frame-labels", "set labels for all columns in a frame", fnFrameLabels)
-	vFrameLabels.SetParams("COLLECTION", "FRAME_NAME", "LABEL", "[LABEL ...]")
-	vFrameLabels.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for frame labeling")
+	vFrameObjects = app.NewVerb("frame-objects", "return the object list of a frame", fnFrameObjects)
+	vFrameObjects.SetParams("COLLECTION", "FRAME_NAME")
+	vFrameObjects.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
+
+	vFrameGrid = app.NewVerb("frame-grid", "return the object list as a 2D array", fnFrameGrid)
+	vFrameGrid.SetParams("COLLECTION", "FRAME_NAME")
+	vFrameGrid.BoolVar(&useHeaderRow, "use-header-row", useHeaderRow, "Include labels as a header row")
+	vFrameGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
 	vReframe.SetParams("COLLECTION", "FRAME_NAME")
@@ -3131,13 +3207,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vImport = app.NewVerb("import", "import from a table (CSV, GSheet) into a collection of JSON objects", fnImport)
 	vImport.SetParams("COLLECTION", "(CSV_FILENAME|GSHEET_ID SHEET_NAME)", "ID_COL_NO", "[CELL_RANGE]")
 	vImport.StringVar(&clientSecretFName, "client-secret", "", "(import from GSheet) set the client secret path and filename for GSheet access")
-	vImport.BoolVar(&useHeaderRow, "use-header-row", true, "use the header row as attribute names in the JSON object")
+	vImport.BoolVar(&useHeaderRow, "use-header-row", useHeaderRow, "use the header row as attribute names in the JSON object")
 	vImport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing JSON objects")
 	vImport.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 	vExport = app.NewVerb("export", "export a collection's frame of JSON objects into a table (CSV, GSheet)", fnExport)
 	vExport.SetParams("COLLECTION", "FRAME_NAME", "(CSV_FILENAME|GSHEET_ID SHEET_NAME)")
 	vExport.StringVar(&clientSecretFName, "client-secret", "", "(export into a GSheet) set the client secret path and filename for GSheet access")
-	vExport.BoolVar(&useHeaderRow, "use-header-row", true, "insert a header row in sheet")
+	vExport.BoolVar(&useHeaderRow, "use-header-row", useHeaderRow, "insert a header row in sheet")
 	vExport.BoolVar(&overwrite, "O,overwrite", false, "overwrite existing cells")
 	vExport.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 

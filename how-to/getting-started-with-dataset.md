@@ -514,6 +514,8 @@ JSON representation of the frame we also see a "labels" attribute.
 Labels are used when exporting and synchronizing content between a 
 CSV file, Google Sheet and a collection (labels become column names).
 
+FIXME: This need to be re-written--
+
 You can set the labels by providing replacement values for ALL
 the labels in the column order defined in the frame. In our previous
 example we provided the order of the columns for the frame
@@ -523,8 +525,10 @@ to have the labels "ID", "Display Name", "EMail", and "Catch Phrase"
 instead we can set them with the `frame-labels` verb.
 
 ```bash
-    dataset frame-labels friends.ds "name-and-email" \
-        "ID" "Display Name" "EMail" "Catch Phrase"
+    dataset delete-frame friends.ds "name-and-email"
+    dataset frame friends.ds "name-and-email" \
+        "._Key=ID" ".name=Display Name" \
+        ".email=EMail" ".catch_phrase=Catch Phrase"
 ```
 
 NOTE: re-labeling a frame will cause the frame to generate its 

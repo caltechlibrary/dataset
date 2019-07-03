@@ -140,17 +140,15 @@ function test_gsheet() {
 
     # Setup Frame
     bin/dataset frame -p -all "${DATASET}" f1 \
-		._Key .done .key .resolver .subjects .additional \
-        .identifier_1 .description_1 > /dev/null
+		'._Key=Key' '.done=Done' '.key=Key As ID' \
+        '.resolver=Resolver' '.subjects=Subjects' \
+        '.additional=Additional' \
+        '.identifier_1=Identifier 1' \
+        '.description_1=Description 1' > /dev/null
 	if [[ "$?" != "0" ]]; then
 		echo "Could not frame ${DATASET} f1 ..."
 		exit 1
 	fi
-
-    # Setup Frame Labels
-    bin/dataset frame-labels "${DATASET}" f1 \
-        Key Done 'Key As ID' Resolver Subjects Additional \
-        'Identifier 1' 'Description 1'
 
 	echo -n "test_gsheet: test export of frame f1 to gsheet ${SHEET_NAME}, "
 	bin/dataset -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
@@ -505,20 +503,6 @@ EOT
         exit 1
     fi
 
-    echo "NOTE: Testing migration from pairtree to buckets, expect OK"
-    bin/dataset migrate testdata/myfix.ds buckets
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) migrate testdata/myfix.ds buckets'
-        exit 1
-    fi
-
-    echo "NOTE: Testing migration from buckets to pairtree, expect OK"
-    bin/dataset migrate testdata/myfix.ds pairtree
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) migrate testdata/myfix.ds pairtree'
-        exit 1
-    fi
-
     echo "NOTE: Final Check, expecting OK"
     bin/dataset check testdata/myfix.ds 
     if [[ "$?" != "0" ]]; then
@@ -612,10 +596,9 @@ EOT
         exit 1
     fi
     #FIXME: export uses a frame to define exported content
-    bin/dataset -quiet -nl=false frame -a testdata/pubs.ds outframe \
-         "._Key" ".title" ".type" ".date_type" ".date" > /dev/null
-    bin/dataset -quiet -nl=false frame-labels  testdata/pubs.ds outframe \
-        'EPrint ID' 'Title' 'Type' 'Date Type' 'Date'
+    bin/dataset -quiet -nl=false frame -all testdata/pubs.ds outframe \
+         "._Key=EPrint ID" ".title=Title" ".type=Type" \
+         ".date_type=Date Type" ".date=Date" # > /dev/null
     bin/dataset -quiet -nl=false export testdata/pubs.ds outframe "testdata/out.csv"
     if [[ "$?" != "0" ]]; then
         echo 'test_import_export: (failed) export testdata/pubs.ds outframe testdata/out.csv'
@@ -655,17 +638,21 @@ EOF
 	fi
 	bin/dataset -quiet -nl=false init testdata/merge4.ds
 	bin/dataset -quiet -nl=false import testdata/merge4.ds testdata/initial.csv 1
-	bin/dataset -quiet -nl=false frame -a testdata/merge4.ds f4 "._Key" ".one" ".two" ".three" ".four" ".five" >/dev/null
-        bin/dataset -quiet -nl=false frame-labels testdata/merge4.ds f4 "id" "one" "two" "three" "four" "five"
+	bin/dataset -quiet -nl=false frame -a testdata/merge4.ds f4 "._Key=id" ".one=one" ".two=two" ".three=three" ".four=four" ".five=five" >/dev/null
 
 	# Now generate an updated result CSV
 	cp testdata/initial.csv testdata/result.csv
-	cat testdata/expected.csv | bin/dataset -quiet -nl=false sync-send -i - testdata/merge4.ds f4 \
+	cat testdata/expected.csv |\
+        bin/dataset -quiet -nl=false sync-send \
+            -i - testdata/merge4.ds f4 \
             >testdata/result.csv
 
     #FIXME: need to check to see if our tables make sense
     T=$(diff testdata/expected.csv testdata/result.csv)
     if [[ "$?" != "0" ]]; then
+        echo "Diff returned: $?"
+        echo "Diff found: $T"
+        #diff testdata/expected.csv testdata/result.csv
 		exit 1
     fi
     if [[ "$T" != "" ]]; then
