@@ -153,5 +153,80 @@ func TestFrame(t *testing.T) {
 			}
 		}
 	}
+}
 
+func TestIssue9PyDataset(t *testing.T) {
+	os.RemoveAll(path.Join("testdata", "frame_test2.ds"))
+	cName := path.Join("testdata", "frame_test2.ds")
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	jsonSrc := []byte(`[
+        { "id":    "A", "nameIdentifiers": [
+                {
+                    "nameIdentifier": "0000-000X-XXXX-XXXX",
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "http://orcid.org/"
+                },
+                {
+                    "nameIdentifier": "H-XXXX-XXXX",
+                    "nameIdentifierScheme": "ResearcherID",
+                    "schemeURI": "http://www.researcherid.com/rid/"
+                }], "two":   22, "three": 3.0, "four":  ["one", "two", "three"] 
+},
+        { "id":    "B", "two":   2000, "three": 3000.1 },
+        { "id": "C" },
+        { "id":    "D", "nameIdentifiers": [
+                {
+                    "nameIdentifier": "0000-000X-XXXX-XXXX",
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "http://orcid.org/"
+                }], "two":   20, "three": 334.1, "four":  [] }
+    ]`)
+	listObjects := []map[string]interface{}{}
+	// FIXME: setup a custom marshaller so numbers are json.Number()
+	err = json.Unmarshal(jsonSrc, &listObjects)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	for i, obj := range listObjects {
+		if id, ok := obj["id"]; ok == true {
+			key := id.(string)
+			if err := c.Create(key, obj); err != nil {
+				t.Errorf("(%d) key %s, error: %s", i, key, err)
+				t.FailNow()
+			}
+		}
+	}
+	// Now let's see if our frame works ...
+	keys := c.Keys()
+	f, err := c.Frame("f1", keys,
+		[]string{
+			"._Key",
+			".nameIdentifiers",
+			".nameIdentifiers[:].nameIdentifier",
+			".two",
+			".three",
+			".four",
+		}, []string{
+			"id",
+			"nameIdentifiers",
+			"nameIdentifier",
+			"two",
+			"three",
+			"four",
+		}, true)
+	if err != nil {
+		t.Errorf("Can't make frame f1, %s", err)
+		t.FailNow()
+	}
+	if f == nil {
+		t.Errorf("Expected a frame named f1, got nil")
+	}
 }
