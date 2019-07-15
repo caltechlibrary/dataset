@@ -213,6 +213,7 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	if err != nil {
 		return err
 	}
+	attachmentObject.Content = content
 	attachmentObject.Name = fName
 	attachmentObject.Version = semver
 	l := int64(len(content))
