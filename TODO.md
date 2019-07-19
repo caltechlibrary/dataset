@@ -6,11 +6,12 @@
 
 ## Next (prep for v1.0.0)
 
-+ [x ] Remove labels funcs
++ [x] Remove labels funcs
 + [x] Drop ._Key -> _Key requirement in frames
 + [x] Add frame-objects and frame-grid verbs to dataset cli
 + [ ] Confirm all documentation is current before v1.0.0 release
 + [ ] Confirm consensus on the release version v1.0.0 
++ [ ] Missing tests for AttachStream()
 
 
 ## Roadmap (v2.0.0)

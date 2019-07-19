@@ -87,6 +87,18 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("failed to add attachments to %s, %s", path.Join("testdata", "helloworld.txt"), err)
 		t.FailNow()
 	}
+	fPath, _ := c.DocPath(keyName)
+	dir := path.Dir(fPath)
+	if fInfo, err := os.Stat(path.Join(dir, semver, "helloworld.txt")); os.IsNotExist(err) {
+		t.Errorf("Attachment not created %q", path.Join("testdata", "helloworld.txt"))
+		t.FailNow()
+	} else if err != nil {
+		t.Errorf("Stat error for %q, %s", path.Join(dir, semver, "helloworld.txt"), err)
+		t.FailNow()
+	} else if fInfo.Size() == 0 {
+		t.Errorf("Empty attachment, %q --> %q", path.Join("testdata", "helloworld.txt"), path.Join(dir, semver, "helloworld.txt"))
+		t.FailNow()
+	}
 	if err := c.AttachFile(keyName, semver, path.Join("testdata", data.Name)); err != nil {
 		t.Errorf("failed to add attachments to %s, %s", c.Name, err)
 		t.FailNow()

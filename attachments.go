@@ -213,6 +213,9 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	if err != nil {
 		return err
 	}
+	if len(content) == 0 {
+		return fmt.Errorf("Zero bytes read from file stream")
+	}
 	attachmentObject.Content = content
 	attachmentObject.Name = fName
 	attachmentObject.Version = semver
@@ -301,6 +304,10 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	if err != nil {
 		return err
 	}
+	if len(content) == 0 {
+		return fmt.Errorf("Zero bytes read from %s", fullName)
+	}
+	attachmentObject.Content = content
 	attachmentObject.Name = fName
 	attachmentObject.Version = semver
 	l := int64(len(content))
