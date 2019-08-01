@@ -292,6 +292,15 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 	return c.pairtreeCreateJSON(key, src)
 }
 
+// IsKeyNotFound checks an error message and returns true if
+// it is a key not found error.
+func (c *Collection) IsKeyNotFound(e error) bool {
+	if strings.Compare(e.Error(), "key not found") == 0 {
+		return true
+	}
+	return false
+}
+
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	if c.HasKey(name) == false {
@@ -318,7 +327,8 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 	return c.CreateJSON(name, src)
 }
 
-// Read finds the record in a collection, updates the data interface provide and if problem returns an error
+// Read finds the record in a collection, updates the data
+// interface provide and if problem returns an error
 // name must exist or an error is returned
 func (c *Collection) Read(name string, data map[string]interface{}, cleanObject bool) error {
 	src, err := c.ReadJSON(name)
