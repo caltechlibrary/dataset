@@ -289,10 +289,7 @@ func (c *Collection) Close() error {
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
-	if c.HasKey(key) == false {
-		return c.pairtreeCreateJSON(key, src)
-	}
-	return fmt.Errorf("%q already exists", key)
+	return c.pairtreeCreateJSON(key, src)
 }
 
 // IsKeyNotFound checks an error message and returns true if
