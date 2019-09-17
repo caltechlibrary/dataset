@@ -286,7 +286,7 @@ func read_record_list(name *C.char, keys_as_json *C.char, clean_object C.int) *C
 }
 
 // update_record takes a key and JSON source and replaces the record
-// in the collection.
+// in the collection. FIXME: update_record should be named update_object
 //
 //export update_record
 func update_record(name, key, src *C.char) C.int {
@@ -1534,6 +1534,101 @@ func frame_objects(cName *C.char, cFName *C.char) *C.char {
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
+}
+
+//
+// make_objects - is a function to creates empty a objects in batch.
+// It requires a JSON list of keys to create. For each key present
+// an attempt is made to create a new empty object based on the JSON
+// provided (e.g. `{}`, `{"is_empty": true}`). The reason to do this
+// is that it means the collection.json file is updated once for the
+// whole call and that the keys are now reserved to be updated separately.
+// Returns 1 on success, 0 if errors encountered.
+//
+//export make_objects
+func make_objects(cName *C.char, keysAsJson *C.char, objectAsJson *C.char) C.int {
+	collectionName := C.GoString(cName)
+	error_clear()
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+
+	// Now unpack our keys into an array of strings.
+	src := []byte(C.GoString(keysAsJson))
+	keyList := []string{}
+	err = json.Unmarshal(src, &keyList)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		return C.int(0)
+	}
+	objectSrc := []byte(C.GoString(objectAsJson))
+
+	errorNo := 1
+	for _, key := range keyList {
+		if c.HasKey(key) == false {
+			err = c.CreateJSON(key, objectSrc)
+			if err != nil {
+				error_dispatch(err, "Can't create key %q, %s", key, err)
+				errorNo = 0
+			}
+		}
+	}
+	return C.int(errorNo)
+}
+
+//
+// update_objects - is a function to update objects in batch.
+// It requires a JSON array of keys and a JSON array of
+// matching objects. The list of keys and objects are processed
+// together with calls to update individual records. Returns 1 on
+// success, 0 on error.
+//
+//export update_objects
+func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.int {
+	collectionName := C.GoString(cName)
+	error_clear()
+	c, err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	defer c.Close()
+
+	// Now unpack our keys into an array of strings.
+	src := []byte(C.GoString(keysAsJson))
+	keyList := []string{}
+	err = json.Unmarshal(src, &keyList)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		return C.int(0)
+	}
+	src = []byte(C.GoString(objectsAsJson))
+	objectList := []map[string]interface{}{}
+	err = json.Unmarshal(src, &objectList)
+	if err != nil {
+		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		return C.int(0)
+	}
+
+	if len(keyList) != len(objectList) {
+		error_dispatch(err, "expected %d keys for %d objects", len(keyList), len(objectList))
+		return C.int(0)
+	}
+
+	errorNo := 1
+	for i, key := range keyList {
+		if c.HasKey(key) {
+			err = c.Update(key, objectList[i])
+			if err != nil {
+				error_dispatch(err, "Can't update key %q, %s", key, err)
+				errorNo = 0
+			}
+		}
+	}
+	return C.int(errorNo)
 }
 
 func main() {}
