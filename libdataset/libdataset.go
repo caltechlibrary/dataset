@@ -1566,17 +1566,12 @@ func make_objects(cName *C.char, keysAsJson *C.char, objectAsJson *C.char) C.int
 	}
 	objectSrc := []byte(C.GoString(objectAsJson))
 
-	errorNo := 1
-	for _, key := range keyList {
-		if c.HasKey(key) == false {
-			err = c.CreateJSON(key, objectSrc)
-			if err != nil {
-				error_dispatch(err, "Can't create key %q, %s", key, err)
-				errorNo = 0
-			}
-		}
+	err = c.CreateObjectsJSON(keyList, objectSrc)
+	if err != nil {
+		error_dispatch(err, "Create objects failed, %s", err)
+		return C.int(0)
 	}
-	return C.int(errorNo)
+	return C.int(1)
 }
 
 //

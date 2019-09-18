@@ -44,7 +44,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.69`
+	Version = `v0.0.70`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -132,6 +132,11 @@ type Collection struct {
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection
 	Where string `json:"where,omitempty"`
+
+	//
+	// private attributes, experiments in performance tuning
+	//
+	unsafeSaveMetadata bool
 }
 
 //
@@ -164,6 +169,10 @@ func keyAndFName(name string) (string, string) {
 
 // SaveMetadata writes the collection's metadata to  c.Store and c.workPath
 func (c *Collection) SaveMetadata() error {
+	if c.unsafeSaveMetadata == true {
+		// NOTE: We're playing fast and loose with the collection metadata, skip SaveMetadata().
+		return nil
+	}
 	// Check to see if collection exists, if not create it!
 	if c.Store.Type == storage.FS {
 		if _, err := c.Store.Stat(c.workPath); err != nil {
@@ -179,6 +188,11 @@ func (c *Collection) SaveMetadata() error {
 	if err := c.Store.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
 	}
+	return nil
+}
+
+// AddNamaste writes name as text files for collection in the collection's directory.
+func (c *Collection) AddNamaste() error {
 	// Add/Update Namaste
 	loc, err := c.Store.Location(c.workPath)
 	if err == nil {
@@ -230,7 +244,8 @@ func InitCollection(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c, nil
+	err = c.AddNamaste()
+	return c, err
 }
 
 // Open reads in a collection's metadata and returns and new collection structure and err
@@ -290,6 +305,25 @@ func (c *Collection) Close() error {
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
 	return c.pairtreeCreateJSON(key, src)
+}
+
+// CreateObjectsJSON takes a list of keys and creates a default object for each key
+// as quickly as possible. NOTE: if object already exist creation is skipped without
+// reporting an error.
+func (c *Collection) CreateObjectsJSON(keyList []string, src []byte) error {
+	c.unsafeSaveMetadata = true
+	defer func() {
+		c.unsafeSaveMetadata = false
+		c.SaveMetadata()
+	}()
+	for _, key := range keyList {
+		if c.HasKey(key) == false {
+			if err := c.CreateJSON(key, src); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // IsKeyNotFound checks an error message and returns true if
