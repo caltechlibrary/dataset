@@ -167,11 +167,11 @@ func has_key(name, key *C.char) C.int {
 	return C.int(0)
 }
 
-// create_record takes JSON source and adds it to the collection with
+// create_object takes JSON source and adds it to the collection with
 // the provided key.
 //
-//export create_record
-func create_record(name, key, src *C.char) C.int {
+//export create_object
+func create_object(name, key, src *C.char) C.int {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 	v := []byte(C.GoString(src))
@@ -192,10 +192,10 @@ func create_record(name, key, src *C.char) C.int {
 	return C.int(1)
 }
 
-// read_record takes a key and returns JSON source of the record
+// read_object takes a key and returns JSON source of the record
 //
-//export read_record
-func read_record(name, key *C.char, clean_object C.int) *C.char {
+//export read_object
+func read_object(name, key *C.char, clean_object C.int) *C.char {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 	cleanObject := (C.int(1) == clean_object)
@@ -230,8 +230,8 @@ func read_record(name, key *C.char, clean_object C.int) *C.char {
 // keys has already been transformed into JSON before calling
 // read_list.
 //
-//export read_record_list
-func read_record_list(name *C.char, keys_as_json *C.char, clean_object C.int) *C.char {
+//export read_object_list
+func read_object_list(name *C.char, keys_as_json *C.char, clean_object C.int) *C.char {
 	collectionName := C.GoString(name)
 	cleanObject := C.int(1) == clean_object
 	l := []string{}
@@ -285,11 +285,11 @@ func read_record_list(name *C.char, keys_as_json *C.char, clean_object C.int) *C
 	return C.CString(txt)
 }
 
-// update_record takes a key and JSON source and replaces the record
-// in the collection. FIXME: update_record should be named update_object
+// update_object takes a key and JSON source and replaces the record
+// in the collection.
 //
-//export update_record
-func update_record(name, key, src *C.char) C.int {
+//export update_object
+func update_object(name, key, src *C.char) C.int {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 	v := []byte(C.GoString(src))
@@ -310,10 +310,10 @@ func update_record(name, key, src *C.char) C.int {
 	return C.int(1)
 }
 
-// delete_record takes a key and removes a record from the collection
+// delete_object takes a key and removes a record from the collection
 //
-//export delete_record
-func delete_record(name, key *C.char) C.int {
+//export delete_object
+func delete_object(name, key *C.char) C.int {
 	collectionName := C.GoString(name)
 	k := C.GoString(key)
 

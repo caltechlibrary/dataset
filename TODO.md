@@ -6,6 +6,8 @@
 
 ## Next (prep for v1.0.0)
 
++ [ ] Add a service object to support building services with libdataset
++ [ ] Simplify cli methods and libdataset based on artemis experiment
 + [x] Remove labels funcs
 + [x] Drop ._Key -> _Key requirement in frames
 + [x] Add frame-objects and frame-grid verbs to dataset cli

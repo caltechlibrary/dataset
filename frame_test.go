@@ -77,7 +77,7 @@ func TestFrame(t *testing.T) {
 		}
 	}
 
-	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, false)
+	f, err := c.FrameCreate("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, false)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -206,7 +206,7 @@ func TestIssue9PyDataset(t *testing.T) {
 	}
 	// Now let's see if our frame works ...
 	keys := c.Keys()
-	f, err := c.Frame("f1", keys,
+	f, err := c.FrameCreate("f1", keys,
 		[]string{
 			"._Key",
 			".nameIdentifiers",

@@ -202,18 +202,20 @@ func (c *Collection) rmFrame(key string) error {
 	return err
 }
 
-// Frame takes a set of collection keys, dotpaths and labels
+// FrameCreate takes a set of collection keys, dotpaths and labels
 // builds an ObjectList and assembles metadata returning
 // a new CollectionFrame and error. Frames are
-// associated with the collection and can be re-generated.
-// If the length of labels and dotpaths mis-match an error will be
-// returned. If the frame already exists the definition is NOT
-// UPDATED and the existing frame is returned. If you need to
-// update a frame use ReFrame().
-func (c *Collection) Frame(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
+// associated with the collection and can be re-generated and
+// updated with the Reframe command and list of keys that need
+// updating in the Frame's object list.  If the length of labels and
+// dotpaths mis-match an error will be returned. If the frame
+// already exists the definition is NOT UPDATED and the existing frame
+// is returned. If you need to update a frame objects use ReFrame().
+// If you need to change the definition of a create a new frame.
+func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	// If frame exists return the existing frame
 	if c.hasFrame(name) {
-		return c.getFrame(name)
+		return nil, fmt.Errorf("frame %q exists in %q", name, c.Name)
 	}
 
 	// Case of new Frame and with ObjectList
@@ -242,8 +244,9 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, labels
 	return f, err
 }
 
-// HasFrame checkes to see if a frame is already defined.
-func (c *Collection) HasFrame(name string) bool {
+// FrameExists checkes to see if a frame is already defined.
+// Returns true if it exists otherwise false
+func (c *Collection) FrameExists(name string) bool {
 	return c.hasFrame(name)
 }
 
@@ -259,14 +262,18 @@ func (c *Collection) Frames() []string {
 	return keys
 }
 
-// Reframe will re-generate contents of a frame based on the current records in a collection.
-// If a list of keys is supplied then the regenerated frame will be based on the new set of keys provided
+// Reframe will re-generate contents of a frame based on the list of keys
+// provided.  If no keys are in the list then the frame is regenerated from
+// the current object state based on the existing keys associated with
+// the frame.  If a list of keys is supplied then the regenerated frame
+// will be based on the new set of keys in the order provided.
 func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
 	}
 	if len(keys) > 0 {
+		//FIXME: SortExpr probably should go away
 		if len(f.SortExpr) > 0 {
 			keys, err = c.KeySortByExpression(keys, f.SortExpr)
 			if err != nil {
@@ -275,13 +282,13 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 		}
 		f.Keys = keys
 	}
-	f.Updated = time.Now()
 	// NOTE: ObjectList is replaced Grid, RSD 2019-06-24, v0.0.64
 	ol, err := c.ObjectList(f.Keys, f.DotPaths, f.Labels, verbose)
 	if err != nil {
 		return err
 	}
 	f.ObjectList = ol
+	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }
 
@@ -290,8 +297,22 @@ func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 	return c.setFrame(name, f)
 }
 
-// DeleteFrame removes a frame from a collection, returns an error if frame can't be deleted.
-func (c *Collection) DeleteFrame(name string) error {
+// FrameClear empties the frame's object and key lists but
+// leaves in place the Frame definition. Use Reframe()
+// to re-populate a frame based on a new key list.
+func (c *Collection) FrameClear(name string) error {
+	f, err := c.getFrame(name)
+	if err != nil {
+		return err
+	}
+	// Emtpy the key and Object list.
+	f.Keys = []string{}
+	f.ObjectList = []map[string]interface{}{}
+	return c.setFrame(name, f)
+}
+
+// FrameDelete removes a frame from a collection, returns an error if frame can't be deleted.
+func (c *Collection) FrameDelete(name string) error {
 	return c.rmFrame(name)
 }
 
