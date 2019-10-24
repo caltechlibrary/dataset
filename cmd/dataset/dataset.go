@@ -157,10 +157,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	// Application Options
 	collectionName string
-	// NOTE: setAllKeys is used by Reframe to persist an useAllKeys value
-	setAllKeys bool
-	// One time use of all keys in grid, a newly created Frame or Reframe
-	useAllKeys bool
 	// header row defaults to true.
 	useHeaderRow      = true
 	clientSecretFName string
@@ -212,7 +208,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vFrame        *cli.Verb // frame
 	vFrameObjects *cli.Verb // frame-objects
 	vFrameGrid    *cli.Verb // frame-grid
-	vHasFrame     *cli.Verb // has-frame
+	vFrameExists  *cli.Verb // has-frame
 	vFrames       *cli.Verb // frames
 	vReframe      *cli.Verb // reframe
 	vFrameDelete  *cli.Verb // delete-frame
@@ -1641,9 +1637,7 @@ func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	defer c.Close()
 
 	// Get all keys or read from inputFName
-	if useAllKeys && len(inputFName) == 0 {
-		keys = c.Keys()
-	}
+	keys = c.Keys()
 	if len(inputFName) > 0 {
 		if inputFName == "-" {
 			src, err = ioutil.ReadAll(in)
@@ -1764,12 +1758,12 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	defer c.Close()
 
 	// Check to see if frame exists...
-	if c.HasFrame(frameName) {
+	if c.FrameExists(frameName) {
 		if len(labels) > 0 || len(dotPaths) > 0 || len(filterExpr) > 0 {
 			fmt.Fprintf(eout, "frame %q already exists\n", frameName)
 			return 1
 		}
-		f, err = c.Frame(frameName, nil, nil, nil, showVerbose)
+		f, err = c.GetFrame(frameName)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -1789,9 +1783,7 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 
 	// Get all keys or read from inputFName
-	if useAllKeys {
-		keys = c.Keys()
-	}
+	keys = c.Keys()
 	if len(inputFName) > 0 {
 		if inputFName == "-" {
 			src, err = ioutil.ReadAll(in)
@@ -1823,15 +1815,6 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		}
 	}
 
-	// Apply SortExpr to key order
-	if sortExpr != "" {
-		keys, err = c.KeySortByExpression(keys, sortExpr)
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-	}
-
 	// Run a sanity check before we create a new frame...
 	if len(dotPaths) == 0 {
 		fmt.Fprintf(eout, "No dotpaths, frame creation aborted\n")
@@ -1849,20 +1832,14 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	}
 
 	// NOTE: We defining a new frame now.
-	f, err = c.Frame(frameName, keys, dotPaths, labels, showVerbose)
+	f, err = c.FrameCreate(frameName, keys, dotPaths, labels, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
 	}
 
 	// NOTE: Make need to make sure we save our additional
-	// settings - useAllKeys, sampleSize, sortExpr and filterExpr
-	f.AllKeys = useAllKeys
-	f.FilterExpr = filterExpr
-	f.SortExpr = sortExpr
-	if sampleSize >= 0 {
-		f.SampleSize = sampleSize
-	}
+	// settings - sampleSize
 
 	// Handle pretty printing
 	if prettyPrint {
@@ -1916,7 +1893,7 @@ func fnFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string, 
 	}
 	defer c.Close()
 
-	f, err := c.Frame(frameName, nil, nil, nil, showVerbose)
+	f, err := c.GetFrame(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1974,7 +1951,7 @@ func fnFrameGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, fla
 	}
 	defer c.Close()
 
-	f, err := c.Frame(frameName, nil, nil, nil, showVerbose)
+	f, err := c.GetFrame(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2035,8 +2012,8 @@ func fnFrames(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	return 0
 }
 
-// fnHasFrame - check if a frame has been defined in collection
-func fnHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+// fnFrameExists - check if a frame has been defined in collection
+func fnFrameExists(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
 		collectionName string
 		frameName      string
@@ -2072,7 +2049,7 @@ func fnHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 	}
 	defer c.Close()
 
-	if c.HasFrame(frameName) {
+	if c.FrameExists(frameName) {
 		fmt.Fprintf(out, "true")
 	} else {
 		fmt.Fprintf(out, "false")
@@ -2117,7 +2094,7 @@ func fnFrameDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 	}
 	defer c.Close()
 
-	err = c.DeleteFrame(frameName)
+	err = c.FrameDelete(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2143,7 +2120,6 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		keyPathPairs   []string
 		labels         []string
 		dotPaths       []string
-		frameUpdated   bool
 		src            []byte
 		err            error
 	)
@@ -2193,13 +2169,13 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	defer c.Close()
 
 	// Check to see if frame exists...
-	if c.HasFrame(frameName) == false {
+	if c.FrameExists(frameName) == false {
 		fmt.Fprintf(eout, "Frame %q not defined in %s\n", frameName, collectionName)
 		return 1
 	}
 
 	// Get the existing frame to update labels and dot paths
-	f, err = c.Frame(frameName, nil, nil, nil, false)
+	f, err = c.GetFrame(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2222,26 +2198,10 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		}
 	}
 
-	// Update frame settings
-	frameUpdated = false
-
-	if setAllKeys == true {
-		f.AllKeys = useAllKeys
-		frameUpdated = true
-	}
-
-	// Now we can rebuild frame...
-	if f.AllKeys || useAllKeys {
-		keys = c.Keys()
-		frameUpdated = true
-	} else {
-		keys = f.Keys[:]
-	}
+	keys = f.Keys[:]
 
 	// Read from inputFName, update frame's keys
 	if len(inputFName) > 0 {
-		f.AllKeys = false
-		frameUpdated = true
 		if inputFName == "-" {
 			src, err = ioutil.ReadAll(in)
 		} else {
@@ -2254,47 +2214,16 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		keys = keysFromSrc(src)
 	}
 
-	// Apply Filter Expression
-	if len(filterExpr) > 0 {
-		keys, err = c.KeyFilter(keys[:], filterExpr)
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		f.FilterExpr = filterExpr
-		frameUpdated = true
-	}
-
 	// Apply Sample Size
-	if sampleSize > -1 {
-		f.SampleSize = sampleSize
-	}
-	if f.SampleSize > 0 {
-		frameUpdated = true
-		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		shuffle.Strings(keys, random)
-		if sampleSize <= len(keys) {
-			keys = keys[0:sampleSize]
-		}
-		f.SampleSize = sampleSize
-		frameUpdated = true
-	}
-
-	// Apply SortExpr
-	if sortExpr != "" {
-		f.SortExpr = sortExpr
-		keys, err = c.KeySortByExpression(keys, sortExpr)
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		frameUpdated = true
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	shuffle.Strings(keys, random)
+	if sampleSize <= len(keys) {
+		keys = keys[0:sampleSize]
 	}
 
 	// NOTE: See if we are reading a frame back or define one.
 	if len(dotPaths) > 0 {
 		f.DotPaths = dotPaths
-		frameUpdated = true
 	}
 
 	// Finally run some sanity checks before updating frame...
@@ -2308,12 +2237,10 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	}
 
 	// Save the updated frame definition
-	if frameUpdated {
-		err = c.SaveFrame(frameName, f)
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
+	err = c.SaveFrame(frameName, f)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
 	}
 
 	// Now regenerate grid content with Reframe
@@ -2510,19 +2437,15 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	// for CSV: COLLECTION FRAME_NAME FILENAME
 
 	// Get Frame
-	if c.HasFrame(frameName) == false {
+	if c.FrameExists(frameName) == false {
 		fmt.Fprintf(eout, "Missing frame %q in %s\n", frameName, collectionName)
 		return 1
 	}
 	// Get dotpaths and column labels from frame
-	f, err = c.Frame(frameName, nil, nil, nil, showVerbose)
+	f, err = c.GetFrame(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
-	}
-
-	if f.FilterExpr == "" {
-		f.FilterExpr = "true"
 	}
 
 	cnt := 0
@@ -3157,16 +3080,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// Frames and Grid
 	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
 	vGrid.SetParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
-	vGrid.BoolVar(&useAllKeys, "a,all", false, "use all keys in a collection")
 	vGrid.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
-	vGrid.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in grid")
 	vGrid.IntVar(&sampleSize, "s,sample", -1, "make grid based on a key sample of a given size")
 	vGrid.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for grid generation")
 	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vFrame = app.NewVerb("frame", "create or retrieve a data frame", fnFrame)
 	vFrame.SetParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
-	vFrame.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
 	vFrame.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
 	vFrame.StringVar(&filterExpr, "filter", "", "apply filter for inclusion in frame")
 	vFrame.StringVar(&sortExpr, "sort", "", "apply sort expression for keys/grid in frame")
@@ -3185,11 +3105,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 
 	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
 	vReframe.SetParams("COLLECTION", "FRAME_NAME")
-	vReframe.BoolVar(&useAllKeys, "a,all", false, "use all keys for frame (one time)")
-	vReframe.BoolVar(&setAllKeys, "set-all-keys", false, "persist all keys setting")
 	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
-	vReframe.StringVar(&filterExpr, "filter", "", "apply and replace filter expression")
-	vReframe.StringVar(&sortExpr, "sort", "", "apply sort expression for keys/grid in frame")
 	vReframe.IntVar(&sampleSize, "s,sample", -1, "reframe based on a key sample of a given size")
 	vReframe.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
 	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
@@ -3197,8 +3113,8 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vFrames = app.NewVerb("frames", "list frames in a collection", fnFrames)
 	vFrames.SetParams("COLLECTION")
 
-	vHasFrame = app.NewVerb("hasframe", "see if a frame has been defined", fnHasFrame)
-	vHasFrame.SetParams("COLLECTION", "FRAME_NAME")
+	vFrameExists = app.NewVerb("hasframe", "see if a frame has been defined", fnFrameExists)
+	vFrameExists.SetParams("COLLECTION", "FRAME_NAME")
 
 	vFrameDelete = app.NewVerb("delete-frame", "delete a frame from a collection", fnFrameDelete)
 	vFrameDelete.SetParams("COLLECTION", "FRAME_NAME")

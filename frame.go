@@ -295,6 +295,11 @@ func (c *Collection) Frames() []string {
 	return keys
 }
 
+// GetFrame retrieves a frame from a collection.
+func (c *Collection) GetFrame(name string) (*DataFrame, error) {
+	return c.getFrame(name)
+}
+
 // Refresh updates the objects in the frame list
 // from the related objects in the current collection
 // without reordering the list of objects in the frame. If
