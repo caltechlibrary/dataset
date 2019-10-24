@@ -598,13 +598,7 @@ func colToString(cell interface{}) string {
 // generating rows and exports then as a CSV file
 func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verboseLog bool) (int, error) {
 	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	if f.AllKeys == true {
-		f.Keys = c.Keys()
-	}
-	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
-	if err != nil {
-		return 0, err
-	}
+	keys := f.Keys[:]
 	dotExpr := f.DotPaths
 	colNames := f.Labels
 
@@ -665,14 +659,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verbo
 // ExportTable takes a reader and frame and iterates over the objects
 // generating rows and exports then as a CSV file
 func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) (int, [][]interface{}, error) {
-	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	if f.AllKeys == true {
-		f.Keys = c.Keys()
-	}
-	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
-	if err != nil {
-		return 0, nil, err
-	}
+	keys := f.Keys[:]
 	dotExpr := f.DotPaths
 	colNames := f.Labels
 
@@ -720,8 +707,8 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 	return cnt, table, nil
 }
 
-// KeyFilter takes a list of keys and  filter expression and returns the list of keys passing
-// through the filter or an error
+// KeyFilter takes a list of keys and  filter expression and returns
+// the list of keys passing through the filter or an error
 func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
 	// Handle the trivial case of filter resolving to true
 	// NOTE: empty filter is treated as "true"

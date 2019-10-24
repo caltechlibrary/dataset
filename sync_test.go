@@ -110,7 +110,6 @@ func TestMerge(t *testing.T) {
 	}
 	defer c.Close()
 	f := new(DataFrame)
-	f.AllKeys = true
 	f.DotPaths = []string{"._Key", ".h1", ".h3"}
 	f.Labels = []string{"id", "h1", "h3"}
 	c.setFrame(frameName, f)
@@ -440,7 +439,6 @@ id,one,two
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	f.AllKeys = true
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -469,7 +467,6 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	f.AllKeys = true
 	f.DotPaths = []string{"._Key", ".one", ".two", ".three", ".four", ".five"}
 	f.Labels = []string{"id", "one", "two", "three", "four", "five"}
 	err = c.SaveFrame(frameName, f)
