@@ -446,6 +446,7 @@ func (f *DataFrame) Grid(includeHeaderRow bool) [][]interface{} {
 		}
 		rows[rowNo] = make([]interface{}, colCnt)
 		if obj, ok := f.objectMap[key]; ok == true {
+			fmt.Printf("DEBUG %q -> (%T) -> %+v\n", key, obj, obj)
 			rec := obj.(map[string]interface{})
 			for j, label := range f.Labels {
 				if val, OK := rec[label]; OK == true {

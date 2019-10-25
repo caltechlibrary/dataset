@@ -82,6 +82,14 @@ func TestFrame(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
+	if len(f.objectMap) != len(tRecords) {
+		t.Errorf("Expected tRecords (%d) to be same length as objectList (%d) -> %s", len(tRecords), len(f.objectMap), f.String())
+		t.FailNow()
+	}
+	if len(f.Keys) != len(tRecords) {
+		t.Errorf("Expected tRecords (%d) to be same length as keys (%d) -> %s", len(tRecords), len(f.Keys), f.String())
+		t.FailNow()
+	}
 	expected := "frame-1"
 	result := f.Name
 	if expected != result {
@@ -95,6 +103,9 @@ func TestFrame(t *testing.T) {
 	//FIXME: need some tests on frame structure.
 	objectList := f.Objects()
 	for i, obj := range objectList {
+		if i >= len(tRecords) {
+			break
+		}
 		rec := tRecords[i]
 		for j, key := range f.Labels {
 			if val, ok := obj[key]; ok != true {
