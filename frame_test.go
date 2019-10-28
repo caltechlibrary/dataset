@@ -28,6 +28,7 @@ import (
 )
 
 func TestFrame(t *testing.T) {
+	verbose := false
 	os.RemoveAll(path.Join("testdata", "frame_test.ds"))
 	cName := path.Join("testdata", "frame_test.ds")
 	c, err := InitCollection(cName)
@@ -78,7 +79,7 @@ func TestFrame(t *testing.T) {
 		}
 	}
 
-	f, err := c.FrameCreate("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, false)
+	f, err := c.FrameCreate("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, verbose)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -161,6 +162,7 @@ func TestFrame(t *testing.T) {
 }
 
 func TestIssue9PyDataset(t *testing.T) {
+	verbose := false
 	os.RemoveAll(path.Join("testdata", "frame_test2.ds"))
 	cName := path.Join("testdata", "frame_test2.ds")
 	c, err := InitCollection(cName)
@@ -227,7 +229,7 @@ func TestIssue9PyDataset(t *testing.T) {
 			"two",
 			"three",
 			"four",
-		}, true)
+		}, verbose)
 	if err != nil {
 		t.Errorf("Can't make frame f1, %s", err)
 		t.FailNow()

@@ -16,6 +16,7 @@ var (
 )
 
 func TestS3(t *testing.T) {
+	verbose := false
 	if S3Bucket == "" {
 		fmt.Fprintf(os.Stderr, "Skipping S3 tests, no bucket\n")
 		return
@@ -64,14 +65,13 @@ func TestS3(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = Analyzer(collectionURI1)
+	err = Analyzer(collectionURI1, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI1, err)
 		t.FailNow()
 	}
 
 	collectionURI2 := fmt.Sprintf("%s/testdata/blob_p.ds", S3Bucket)
-	verbose := false
 	keys1 := c1.Keys()
 	err = c1.Clone(collectionURI2, keys1, verbose)
 	if err != nil {
@@ -88,7 +88,7 @@ func TestS3(t *testing.T) {
 		t.Errorf("expected %d keys1, got %d keys2", len(keys1), len(keys2))
 	}
 
-	err = Analyzer(collectionURI2)
+	err = Analyzer(collectionURI2, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI2, err)
 		t.FailNow()
@@ -96,6 +96,7 @@ func TestS3(t *testing.T) {
 }
 
 func TestGS(t *testing.T) {
+	verbose := false
 	if GSBucket == "" {
 		fmt.Fprintf(os.Stderr, "Skipping GS tests, no bucket\n")
 		return
@@ -144,14 +145,13 @@ func TestGS(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = Analyzer(collectionURI1)
+	err = Analyzer(collectionURI1, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI1, err)
 		t.FailNow()
 	}
 
 	collectionURI2 := fmt.Sprintf("%s/testdata/blob_p.ds", GSBucket)
-	verbose := true
 	keys1 := c1.Keys()
 	err = c1.Clone(collectionURI2, keys1, verbose)
 	if err != nil {
@@ -168,7 +168,7 @@ func TestGS(t *testing.T) {
 		t.Errorf("expected %d keys1, got %d keys2", len(keys1), len(keys2))
 	}
 
-	err = Analyzer(collectionURI2)
+	err = Analyzer(collectionURI2, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI2, err)
 		t.FailNow()

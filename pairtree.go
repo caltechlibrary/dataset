@@ -22,6 +22,12 @@ import (
 //
 // Pairtree file layout implementation for dataset collections.
 //
+func repairLog(verbose bool, rest ...interface{}) {
+	if verbose == true {
+		s := rest[0].(string)
+		log.Printf(s, rest[1:]...)
+	}
+}
 
 // pairtreeCreateCollection - create a new collection structure on disc
 // name should be filesystem friendly
@@ -193,7 +199,7 @@ func (c *Collection) pairtreeDelete(name string) error {
 }
 
 // pairtreeAnalyzer will scan a pairtree based collection for errors.
-func pairtreeAnalyzer(collectionName string) error {
+func pairtreeAnalyzer(collectionName string, verbose bool) error {
 	var (
 		eCnt int
 		wCnt int
@@ -228,13 +234,13 @@ func pairtreeAnalyzer(collectionName string) error {
 
 	// NOTE: Check for Namaste 0=, warn if missing
 	if hasNamaste == false {
-		log.Printf("WARNING: Missing Namaste 0=dataset_%s\n", Version[1:])
+		repairLog(verbose, "WARNING: Missing Namaste 0=dataset_%s\n", Version[1:])
 		wCnt++
 	}
 
 	// NOTE: Check to see if we have a collections.json
 	if hasCollectionJSON == false {
-		log.Printf("WARNING: Missing collection.json\n")
+		repairLog(verbose, "WARNING: Missing collection.json\n")
 		wCnt++
 	} else {
 		// Make sure we can JSON parse the file
@@ -244,11 +250,11 @@ func pairtreeAnalyzer(collectionName string) error {
 				// release the memory
 				data = nil
 			} else {
-				log.Printf("ERROR: parsing %s, %s", docPath, err)
+				repairLog(verbose, "ERROR: parsing %s, %s", docPath, err)
 				eCnt++
 			}
 		} else {
-			log.Printf("ERROR: opening %s, %s", docPath, err)
+			repairLog(verbose, "ERROR: opening %s, %s", docPath, err)
 			eCnt++
 		}
 	}
@@ -268,31 +274,31 @@ func pairtreeAnalyzer(collectionName string) error {
 		fname := url.QueryEscape(k) + ".json"
 		docPath := path.Join(collectionName, v, fname)
 		if store.Type == storage.FS && store.IsDir(dirPath) == false {
-			log.Printf("ERROR: %s is missing (%q)", k, dirPath)
+			repairLog(verbose, "ERROR: %s is missing (%q)", k, dirPath)
 			eCnt++
 		} else if store.IsFile(docPath) == false {
-			log.Printf("ERROR: %s is missing (%q)", k, docPath)
+			repairLog(verbose, "ERROR: %s is missing (%q)", k, docPath)
 			eCnt++
 		}
 		kCnt++
 		if (kCnt % 5000) == 0 {
-			log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+			repairLog(verbose, "%d of %d keys checked", kCnt, len(c.KeyMap))
 		}
 	}
 	if len(c.KeyMap) > 0 {
-		log.Printf("%d of %d keys checked", kCnt, len(c.KeyMap))
+		repairLog(verbose, "%d of %d keys checked", kCnt, len(c.KeyMap))
 	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
 	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
 	if err != nil && len(c.KeyMap) > 0 {
-		log.Printf("ERROR: unable to walk pairtree, %s", err)
+		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		eCnt++
 	} else {
 		for _, pair := range pairs {
 			key := pairtree.Decode(pair)
 			if _, exists := c.KeyMap[key]; exists == false {
-				log.Printf("WARNING: %s found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
+				repairLog(verbose, "WARNING: %s found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
 				wCnt++
 			}
 		}
@@ -305,7 +311,7 @@ func pairtreeAnalyzer(collectionName string) error {
 	return nil
 }
 
-func pairtreeRepair(collectionName string) error {
+func pairtreeRepair(collectionName string, verbose bool) error {
 	var (
 		c   *Collection
 		err error
@@ -319,32 +325,32 @@ func pairtreeRepair(collectionName string) error {
 	// See if we can open a collection, if not then create an empty struct
 	c, err = Open(collectionName)
 	if err != nil {
-		log.Printf("Open %s error, %s, attempting to re-create collection.json", collectionName, err)
+		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
 		err = store.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
-			log.Printf("Can't re-initilize %s, %s", collectionName, err)
+			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
 		}
-		log.Printf("Attempting to re-open %s", collectionName)
+		repairLog(verbose, "Attempting to re-open %s", collectionName)
 		c, err = Open(collectionName)
 		if err != nil {
-			log.Printf("Failed to re-open %s, %s", collectionName, err)
+			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)
 			return err
 		}
 	}
 	defer c.Close()
 
 	if c.DatasetVersion != Version {
-		log.Printf("Migrating format from %s to %s", c.DatasetVersion, Version)
+		repairLog(verbose, "Migrating format from %s to %s", c.DatasetVersion, Version)
 	}
 	c.DatasetVersion = Version
-	log.Printf("Getting a list of pairs")
+	repairLog(verbose, "Getting a list of pairs")
 	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
 	if err != nil {
-		log.Printf("ERROR: unable to walk pairtree, %s", err)
+		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		return err
 	}
-	log.Printf("Adding missing pairs")
+	repairLog(verbose, "Adding missing pairs")
 	if c.KeyMap == nil {
 		c.KeyMap = map[string]string{}
 	}
@@ -354,9 +360,9 @@ func pairtreeRepair(collectionName string) error {
 			c.KeyMap[key] = path.Join("pairtree", pair)
 		}
 	}
-	log.Printf("%d keys in pairtree", len(c.KeyMap))
+	repairLog(verbose, "%d keys in pairtree", len(c.KeyMap))
 	keyList := c.Keys()
-	log.Printf("checking that each key resolves to a value on disc")
+	repairLog(verbose, "checking that each key resolves to a value on disc")
 	missingList := []string{}
 	for _, key := range keyList {
 		p, err := c.DocPath(key)
@@ -367,7 +373,7 @@ func pairtreeRepair(collectionName string) error {
 			//NOTE: Mac OS X file system sensitivety handling can
 			// mess this assumption up, need to see if we can find
 			// the keys we remove and reattach walking the file system.
-			log.Printf("Missing %s from %s, %s does not exist", key, collectionName, p)
+			repairLog(verbose, "Missing %s from %s, %s does not exist", key, collectionName, p)
 			// We save the key to re-attach later...
 			missingList = append(missingList, key)
 			delete(c.KeyMap, key)
@@ -375,7 +381,7 @@ func pairtreeRepair(collectionName string) error {
 	}
 	if len(missingList) > 0 {
 		sort.Strings(missingList)
-		log.Printf("Trying to locate %d un-associated keys", len(missingList))
+		repairLog(verbose, "Trying to locate %d un-associated keys", len(missingList))
 		err = filepath.Walk(path.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
 			if info.IsDir() == false {
 				if key, err := url.QueryUnescape(strings.TrimSuffix(info.Name(), ".json")); err == nil {
@@ -386,7 +392,7 @@ func pairtreeRepair(collectionName string) error {
 							kPath := strings.TrimPrefix(strings.TrimSuffix(fPath, info.Name()), collectionName)
 							// trim leading separator ...
 							kPath = kPath[1:]
-							log.Printf("Fixing path for key %q", key)
+							repairLog(verbose, "Fixing path for key %q", key)
 							c.KeyMap[key] = kPath
 							// Now remove key from missingList
 							missingList = append(missingList[:i], missingList[i+1:]...)
@@ -398,13 +404,13 @@ func pairtreeRepair(collectionName string) error {
 			return nil
 		})
 		if err != nil {
-			log.Printf("Walking file path error, %s", err)
+			repairLog(verbose, "Walking file path error, %s", err)
 		}
 		if len(missingList) > 0 {
-			log.Printf("Unable to find the following keys - %s", strings.Join(missingList, ", "))
+			repairLog(verbose, "Unable to find the following keys - %s", strings.Join(missingList, ", "))
 		}
 	}
-	log.Printf("Saving metadata for %s", collectionName)
+	repairLog(verbose, "Saving metadata for %s", collectionName)
 	if c.When == "" {
 		c.When = time.Now().Format("2006-01-02")
 	}

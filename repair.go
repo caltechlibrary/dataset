@@ -26,14 +26,14 @@ package dataset
 // Analyzer checks the collection version and either calls
 // bucketAnalyzer or pairtreeAnalyzer as appropriate.
 //
-func Analyzer(collectionName string) error {
-	return pairtreeAnalyzer(collectionName)
+func Analyzer(collectionName string, verbose bool) error {
+	return pairtreeAnalyzer(collectionName, verbose)
 }
 
 //
 // Repair takes a collection name and calls
 // wither bucketRepair or pairtreeRepair as appropriate.
 //
-func Repair(collectionName string) error {
-	return pairtreeRepair(collectionName)
+func Repair(collectionName string, verbose bool) error {
+	return pairtreeRepair(collectionName, verbose)
 }

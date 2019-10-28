@@ -26,6 +26,7 @@ import (
 )
 
 func TestRepair(t *testing.T) {
+	verbose := false
 	o := map[string]interface{}{}
 	o["a"] = 1
 
@@ -67,7 +68,7 @@ func TestRepair(t *testing.T) {
 		t.FailNow()
 	}
 	c.Close()
-	err = Repair(cName)
+	err = Repair(cName, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

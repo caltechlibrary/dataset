@@ -77,8 +77,8 @@ func TestMerge(t *testing.T) {
 		iVal int
 		sVal string
 	)
+	verbose := false
 	overwrite := true
-	verbose := true
 
 	src := []byte(`
 "id","h1","h2","h3"
@@ -370,6 +370,7 @@ func TestMerge(t *testing.T) {
 }
 
 func TestAddedColumns(t *testing.T) {
+	verbose := false
 	expectedCSV := []byte(`
 id,one,two,three,four,five
 0,A,B,C,D,E
@@ -408,7 +409,6 @@ id,one,two
 	frameName := "f1"
 	useHeaderRow := true
 	overwrite := true
-	verbose := true
 
 	if _, err := os.Stat(collectionName); err == nil {
 		err = os.RemoveAll(collectionName)
