@@ -74,25 +74,40 @@ func labelsToHeaderRow(f *DataFrame, table [][]interface{}) ([]string, bool) {
 // to column number in table by matching header row values with
 // a frame's labels. Returns an error if ._Key is not identified.
 func dotPathToColumnMap(f *DataFrame, table [][]interface{}) (map[string]int, error) {
-	m := make(map[string]int)
+	colMap := make(map[string]int)
 	if len(f.Labels) != len(f.DotPaths) {
-		return m, fmt.Errorf("corrupted frame, labels don't map to dot paths")
+		return colMap, fmt.Errorf("corrupted frame, labels don't map to dot paths")
 	}
 	if len(table) < 2 {
-		return m, fmt.Errorf("table is empty")
+		return colMap, fmt.Errorf("table is empty")
 	}
-	for i, val := range table[0] {
-		label, err := tbl.ValueInterfaceToString(val)
+	// Find key column
+	keyCol := -1
+	for i, col := range f.DotPaths {
+		if col == "._Key" {
+			keyCol = i
+			break
+		}
+	}
+	if keyCol < 0 {
+		return nil, fmt.Errorf("Can't indentify key column")
+	}
+	// Work from the header row of table.
+	for i, col := range table[0] {
+		// Get each column's label
+		label, err := tbl.ValueInterfaceToString(col)
 		if err == nil && strings.TrimSpace(label) != "" {
+			// Find label then DotPaths index pos.
+			// Write an index of Dotpath to column no.
 			if pos, hasLabel := findLabel(f.Labels, label); hasLabel == true {
 				// Find the dotpath matching the label
 				dotPath := f.DotPaths[pos]
 				// Map the dotpath to a column number
-				m[dotPath] = i
+				colMap[dotPath] = i
 			}
 		}
 	}
-	return m, nil
+	return colMap, nil
 }
 
 // rowToObj assembles a new JSON object from map into row and row values
@@ -144,12 +159,12 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 
 	// Based on table's new header, calc the map of dotpath to
 	// column no.
-	m, err := dotPathToColumnMap(f, table)
+	colMap, err := dotPathToColumnMap(f, table)
 	if err != nil {
 		return table, err
 	}
 	dotPaths := f.DotPaths
-	keyCol, _ := m["._Key"]
+	keyCol, _ := colMap["._Key"]
 	key := ""
 	tableKeys := []string{}
 	for i, row := range table {
@@ -158,7 +173,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 			continue
 		}
 		// Get ID from row
-		if keyCol < len(row) {
+		if keyCol >= 0 && keyCol < len(row) {
 			key, err = tbl.ValueInterfaceToString(row[keyCol])
 			if err == nil && key != "" {
 				// collect the tables' row keys
@@ -189,7 +204,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 			for _, p := range dotPaths {
 				//NOTE: need to do this in order, so iterate over
 				// f.DotPaths then get j from map m.
-				j, ok := m[p]
+				j, ok := colMap[p]
 				if ok == false {
 					continue
 				}
@@ -216,7 +231,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 				return table, fmt.Errorf("failed to read %q in %s, %s\n", key, c.Name, err)
 			}
 			// For each row replace cells in dotPath map to column number
-			for p, j := range m {
+			for p, j := range colMap {
 				val, err := dotpath.Eval(p, obj)
 				if err == nil {
 					// Pad cells in row if necessary
@@ -250,51 +265,47 @@ func (c *Collection) MergeFromTable(frameName string, table [][]interface{}, ove
 	if err != nil {
 		return err
 	}
-	m, err := dotPathToColumnMap(f, table)
+	colMap, err := dotPathToColumnMap(f, table)
 	if err != nil {
 		return err
 	}
-	keyCol, _ := m["._Key"]
+	keyCol, ok := colMap["._Key"]
+	if ok == false || keyCol < 0 {
+		return fmt.Errorf("Missing key column in table")
+	}
 	key := ""
 	keys := []string{}
 	for i, row := range table[1:] {
 		// get Key
 		if keyCol < len(row) {
 			key, err = tbl.ValueInterfaceToString(row[keyCol])
-			if err != nil {
+			if err != nil || key == "" {
 				if verbose {
 					log.Printf("skipping row %d, invalid key found in column %d, %+v, %T, %s", i+2, keyCol, row[keyCol], row[keyCol], err)
 				}
-			} else if key == "" {
-				if verbose {
-					log.Printf("skipping row %d, missing key found in column %d", i+2, keyCol)
-				}
-			} else {
-				obj := rowToObj(key, m, row)
-				if c.HasKey(key) {
-					err = c.Join(key, obj, overwrite)
-				} else {
-					err = c.Create(key, obj)
-				}
-				if err != nil {
+				continue
+			}
+			obj := rowToObj(key, colMap, row)
+			if c.HasKey(key) {
+				// Update collection, and get merged object.
+				if err := c.Join(key, obj, overwrite); err != nil {
 					return err
 				}
-				keys = append(keys, key)
+				err = c.Read(key, obj, false)
+			} else {
+				err = c.Create(key, obj)
 			}
-		} else {
-			if verbose {
-				log.Printf("skipping row %d, unknown key column", i)
+			if err != nil {
+				return err
 			}
+			// Update f.ObjectMap
+			f.ObjectMap[key] = obj
+			keys = append(keys, key)
 		}
 	}
-
 	// Update the frame's keys
 	f.Keys = mergeKeys(f.Keys, keys)
 	// Save Frame so it can be regenerated later
 	err = c.setFrame(frameName, f)
-	if err != nil {
-		return err
-	}
-	// Finally update the frame
-	return c.Reframe(frameName, keys, verbose)
+	return err
 }

@@ -77,6 +77,9 @@ func TestMerge(t *testing.T) {
 		iVal int
 		sVal string
 	)
+	overwrite := true
+	verbose := true
+
 	src := []byte(`
 "id","h1","h2","h3"
 0,1,0,10
@@ -93,8 +96,6 @@ func TestMerge(t *testing.T) {
 	table := tbl.TableStringToInterface(csvTable)
 	collectionName := "testdata/merge1.ds"
 	frameName := "f1"
-	overwrite := true
-	verbose := true
 
 	if _, err := os.Stat(collectionName); err == nil {
 		err = os.RemoveAll(collectionName)
@@ -109,10 +110,8 @@ func TestMerge(t *testing.T) {
 		t.FailNow()
 	}
 	defer c.Close()
-	f := new(DataFrame)
-	f.DotPaths = []string{"._Key", ".h1", ".h3"}
-	f.Labels = []string{"id", "h1", "h3"}
-	c.setFrame(frameName, f)
+	// Manually create a frame to merge with.
+	f, err := c.FrameCreate(frameName, []string{}, []string{"._Key", ".h1", ".h3"}, []string{"id", "h1", "h3"}, verbose)
 
 	err = c.MergeFromTable(frameName, table, overwrite, verbose)
 	if err != nil {
@@ -138,6 +137,10 @@ func TestMerge(t *testing.T) {
 	f, err = c.getFrame(frameName)
 	if err != nil {
 		t.Errorf("failed to get frame %s, %s", frameName, err)
+		t.FailNow()
+	}
+	if len(f.ObjectMap) != len(f.Keys) {
+		t.Errorf("Expected %d objects for %d keys, got %+v\n", len(f.ObjectMap), len(f.Keys), f)
 		t.FailNow()
 	}
 	grid := f.Grid(false)
@@ -263,7 +266,6 @@ func TestMerge(t *testing.T) {
 		if cell, ok := obj["h5"]; ok == true {
 			t.Errorf("(h5) row %d, key %s, Unexpected value, got %s", i, key, cell)
 		}
-
 	}
 	if len(c.Keys()) != 3 {
 		t.Errorf("Expected three keys in %s, got %d", collectionName, len(c.Keys()))

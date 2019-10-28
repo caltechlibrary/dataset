@@ -1763,7 +1763,7 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 			fmt.Fprintf(eout, "frame %q already exists\n", frameName)
 			return 1
 		}
-		f, err = c.GetFrame(frameName)
+		f, err = c.FrameRead(frameName)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -1893,7 +1893,7 @@ func fnFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string, 
 	}
 	defer c.Close()
 
-	f, err := c.GetFrame(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1951,7 +1951,7 @@ func fnFrameGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, fla
 	}
 	defer c.Close()
 
-	f, err := c.GetFrame(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2175,7 +2175,7 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	}
 
 	// Get the existing frame to update labels and dot paths
-	f, err = c.GetFrame(frameName)
+	f, err = c.FrameRead(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2442,7 +2442,7 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	// Get dotpaths and column labels from frame
-	f, err = c.GetFrame(frameName)
+	f, err = c.FrameRead(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1

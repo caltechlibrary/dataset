@@ -54,41 +54,35 @@ type DataFrame struct {
 	// DotPaths.  Typically this is used to surface a deeper dotpath's
 	// value as something more useful in the frame's context (e.g.
 	// first_title from an array of titles might be labeled "title")
-	Labels []string
+	Labels []string `json:"labels"`
 
 	// NOTE: Keys is an orded list of object keys in the frame.
-	Keys []string
+	Keys []string `json:"keys"`
 
 	// NOTE: Object map privides a quick index by key to object index.
-	objectMap map[string]interface{}
+	ObjectMap map[string]interface{} `json:"object_map"`
 
 	// Created is the date the frame is originally generated and defined
-	Created time.Time
+	Created time.Time `json:"created"`
 
 	// Updated is the date the frame is updated (e.g. reframed)
-	Updated time.Time
-}
-
-func (f *DataFrame) MarshalJSON() ([]byte, error) {
-	m := make(map[string]interface{})
-	m["dot_paths"] = f.DotPaths
-	m["labels"] = f.Labels
-	m["keys"] = f.Keys
-	m["object_list"] = f.Objects()
-	m["created"] = f.Created
-	m["updated"] = f.Updated
-	return json.Marshal(m)
+	Updated time.Time `json:"updated"`
 }
 
 // frameObject takes a list of dot paths, labels and object key
 // then generates a new object based on that.
 func (c *Collection) frameObject(key string, dotPaths []string, labels []string) (map[string]interface{}, error) {
 	errors := []string{}
-	obj := map[string]interface{}{}
-	err := c.Read(key, obj, false)
+	src, err := c.ReadJSON(key)
 	if err != nil {
 		return nil, err
 	}
+	obj := map[string]interface{}{}
+	err = DecodeJSON(src, &obj)
+	if err != nil {
+		return nil, err
+	}
+
 	o := map[string]interface{}{}
 	for j, dpath := range dotPaths {
 		value, err := dotpath.Eval(dpath, obj)
@@ -160,11 +154,6 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 	// convert into DataFrame struct
 	f := new(DataFrame)
 	err = json.Unmarshal(src, &f)
-	f.objectMap = make(map[string]interface{})
-	// Update the internal objectMap attribute
-	for i, key := range f.Keys {
-		f.objectMap[key] = i
-	}
 	// return frame and error
 	return f, err
 }
@@ -252,7 +241,7 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 	f.DotPaths = dotPaths[:]
 	f.Labels = labels[:]
 	f.Keys = []string{}
-	f.objectMap = make(map[string]interface{})
+	f.ObjectMap = make(map[string]interface{})
 	f.Created = time.Now()
 	f.Updated = time.Now()
 
@@ -269,7 +258,7 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 			}
 		}
 		if obj != nil {
-			f.objectMap[key] = obj
+			f.ObjectMap[key] = obj
 			f.Keys = append(f.Keys, key)
 		}
 	}
@@ -295,8 +284,9 @@ func (c *Collection) Frames() []string {
 	return keys
 }
 
-// GetFrame retrieves a frame from a collection.
-func (c *Collection) GetFrame(name string) (*DataFrame, error) {
+// FrameRead retrieves a frame from a collection.
+// Returns the DataFrame and an error value
+func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 	return c.getFrame(name)
 }
 
@@ -323,14 +313,14 @@ func (c *Collection) Refresh(name string, keys []string, verbose bool) error {
 
 		}
 		if obj != nil {
-			if _, ok := f.objectMap[key]; ok == true {
-				f.objectMap[key] = obj
+			if _, ok := f.ObjectMap[key]; ok == true {
+				f.ObjectMap[key] = obj
 			} else {
 				f.Keys = append(f.Keys, key)
-				f.objectMap[key] = obj
+				f.ObjectMap[key] = obj
 			}
 		} else {
-			delete(f.objectMap, key)
+			delete(f.ObjectMap, key)
 			for i, fkey := range f.Keys {
 				if fkey == key {
 					f.Keys = append(f.Keys[:i], f.Keys[i+1:]...)
@@ -364,11 +354,11 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 			}
 		}
 		if obj != nil {
-			f.objectMap[key] = obj
+			f.ObjectMap[key] = obj
 			nKeys = append(nKeys, key)
-		} else if _, ok := f.objectMap[key]; ok == true {
+		} else if _, ok := f.ObjectMap[key]; ok == true {
 			// remove our stale object
-			delete(f.objectMap, key)
+			delete(f.ObjectMap, key)
 		}
 		// Figure out which objects to garbage collect
 		for i, staleKey := range f.Keys {
@@ -379,8 +369,8 @@ func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
 	}
 	// Now GC the objects in the stale key list
 	for _, key := range f.Keys {
-		if _, ok := f.objectMap[key]; ok == true {
-			delete(f.objectMap, key)
+		if _, ok := f.ObjectMap[key]; ok == true {
+			delete(f.ObjectMap, key)
 		}
 	}
 	// Now update the Keys list with the new keys
@@ -404,7 +394,7 @@ func (c *Collection) FrameClear(name string) error {
 	}
 	// Emtpy the key and Object list.
 	f.Keys = []string{}
-	f.objectMap = make(map[string]interface{})
+	f.ObjectMap = make(map[string]interface{})
 	return c.setFrame(name, f)
 }
 
@@ -430,28 +420,31 @@ func (f *DataFrame) Grid(includeHeaderRow bool) [][]interface{} {
 	if includeHeaderRow == true {
 		rowCnt++
 	}
-	rows := make([][]interface{}, rowCnt)
+	rows := [][]interface{}{}
 	if includeHeaderRow {
 		header := make([]interface{}, colCnt)
 		for i, val := range f.Labels {
 			header[i] = val
 		}
-		rows[0] = header
+		rows = append(rows, header)
 	}
 	// Now make reset of grid
-	for i, key := range f.Keys {
+	objectList := f.Objects()
+	for i, obj := range objectList {
 		rowNo := i
 		if includeHeaderRow == true {
 			rowNo++
 		}
-		rows[rowNo] = make([]interface{}, colCnt)
-		if obj, ok := f.objectMap[key]; ok == true {
-			rec := obj.(map[string]interface{})
-			for j, label := range f.Labels {
-				if val, OK := rec[label]; OK == true {
-					rows[rowNo][j] = val
-				}
+		row := make([]interface{}, colCnt)
+		for colNo, label := range f.Labels {
+			if val, OK := obj[label]; OK == true {
+				row[colNo] = val
+			} else {
+				row[colNo] = ""
 			}
+		}
+		if len(row) > 0 {
+			rows = append(rows, row)
 		}
 	}
 	return rows
@@ -459,9 +452,9 @@ func (f *DataFrame) Grid(includeHeaderRow bool) [][]interface{} {
 
 // Objects returns a copy of DataFrame's object list (an array of map[string]interface{})
 func (f *DataFrame) Objects() []map[string]interface{} {
-	ol := make([]map[string]interface{}, len(f.Keys))
+	ol := []map[string]interface{}{}
 	for _, key := range f.Keys {
-		if obj, found := f.objectMap[key]; found == true && obj != nil {
+		if obj, found := f.ObjectMap[key]; found == true && obj != nil {
 			rec := obj.(map[string]interface{})
 			ol = append(ol, rec)
 		}

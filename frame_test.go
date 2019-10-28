@@ -70,7 +70,8 @@ func TestFrame(t *testing.T) {
 	for _, rec := range tRecords {
 		key := rec["_Key"].(string)
 		keys = append(keys, key)
-		err := c.Create(key, rec)
+		src, _ := EncodeJSON(rec)
+		err := c.CreateJSON(key, src)
 		if err != nil {
 			t.Error(err)
 			t.FailNow()
@@ -95,6 +96,10 @@ func TestFrame(t *testing.T) {
 	//FIXME: need some tests on frame structure.
 	objectList := f.Objects()
 	for i, obj := range objectList {
+		if len(obj) == 0 {
+			t.Errorf("object in object list (%d) should have content, %+v\n", i, objectList)
+			t.FailNow()
+		}
 		rec := tRecords[i]
 		for j, key := range f.Labels {
 			if val, ok := obj[key]; ok != true {
@@ -198,7 +203,8 @@ func TestIssue9PyDataset(t *testing.T) {
 	for i, obj := range listObjects {
 		if id, ok := obj["id"]; ok == true {
 			key := id.(string)
-			if err := c.Create(key, obj); err != nil {
+			src, _ := EncodeJSON(obj)
+			if err := c.CreateJSON(key, src); err != nil {
 				t.Errorf("(%d) key %s, error: %s", i, key, err)
 				t.FailNow()
 			}
