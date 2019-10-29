@@ -246,3 +246,117 @@ func TestIssue9PyDataset(t *testing.T) {
 		t.Errorf("Expected a frame named f1, got nil")
 	}
 }
+
+func TestFrameRefresh(t *testing.T) {
+	cName := path.Join("testdata", "frame10.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("expected to create %q, got %s", cName, err)
+		t.FailNow()
+	}
+	key := "k1"
+	src := []byte(`{
+		"title": "Orchids & Moonbeams",
+		"cast": [
+			{ 
+				"last_name": "Lorick",
+				"first_name": "Robert",
+				"character": "Jack Flanders"
+			},
+			{
+				"last_name": "Adams",
+				"first_name": "Dave",
+				"character": "Mojo Sam"
+			},
+			{
+				"last_name": "Poirier",
+				"first_name": "Pascale",
+				"character": "Claudine"
+			},
+			{
+				"last_name": "Donovan",
+				"first_name": "Patrick",
+				"character": "Pat Patternson"
+			},
+			{
+				"last_name": "Goodhart Hebert",
+				"first_name": "Camille",
+				"character": "Bunny"
+			},
+			{
+				"last_name": "Roth",
+				"first_name": "Laura",
+				"character": "Amber"
+			}
+		]
+		}`)
+	if err := c.CreateJSON(key, src); err != nil {
+		t.Errorf("expected to create %q, got %s", key, err)
+		t.FailNow()
+	}
+	src = []byte(`{
+		"title": "The incredible Adventures of Jack Flanders",
+		"cast": [
+			{ 
+				"last_name": "Lorick",
+				"first_name": "Robert",	
+				"character": "Jack Flan"
+			},
+			{
+				"last_name": "Adams",
+				"first_name": "Dave",
+				"character": "Mojo Sam"
+			},
+			{
+				"last_name": "Orte",
+				"first_name": "P. J.",
+				"character": "Little Freda"
+			}
+		]
+	}`)
+	key = "k0"
+	if err := c.CreateJSON(key, src); err != nil {
+		t.Errorf("expected to create %q, got %s", key, err)
+		t.FailNow()
+	}
+	for _, key := range []string{"k0", "k1"} {
+		if _, err := c.ReadJSON(key); err != nil {
+			t.Errorf("expected %q, got error %s", key, err)
+			t.FailNow()
+		}
+	}
+
+	fName := "f1"
+	verbose := false
+	dotPaths := []string{".title", ".cast"}
+	labels := []string{"title", "cast"}
+	keys := []string{"k1"}
+	f, err := c.FrameCreate(fName, keys, dotPaths, labels, verbose)
+	if err != nil {
+		t.Errorf("expected to create frame %q, got %s", key, err)
+		t.FailNow()
+	}
+	ol := f.Objects()
+	if len(ol) != 1 {
+		t.Errorf("expected one object, got %d", len(ol))
+		t.FailNow()
+	}
+	if c.FrameExists(fName) == false {
+		t.Errorf("expected %q, none was found", fName)
+		t.FailNow()
+	}
+	if err := c.FrameRefresh(fName, []string{"k0", "k1"}, verbose); err != nil {
+		t.Errorf("expected successful refresh %q, got %s", fName, err)
+		t.FailNow()
+	}
+	ol2, err := c.FrameObjects(fName)
+	if err != nil {
+		t.Errorf("expected object list, got error %s", err)
+		t.FailNow()
+	}
+	if len(ol2) != 2 {
+		t.Errorf("expected 2 objects, got %d -> %+v", len(ol2), ol2)
+		t.FailNow()
+	}
+}

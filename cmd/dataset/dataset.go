@@ -210,6 +210,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vFrameGrid    *cli.Verb // frame-grid
 	vFrameExists  *cli.Verb // has-frame
 	vFrames       *cli.Verb // frames
+	vRefresh      *cli.Verb // refresh
 	vReframe      *cli.Verb // reframe
 	vFrameDelete  *cli.Verb // delete-frame
 	vSyncSend     *cli.Verb // sync-send
@@ -2244,7 +2245,157 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	}
 
 	// Now regenerate grid content with Reframe
-	err = c.Reframe(frameName, keys, showVerbose)
+	err = c.FrameReframe(frameName, keys, showVerbose)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	if quiet == false {
+		fmt.Fprintf(out, "OK")
+	}
+	return 0
+}
+
+// fnRefresh updates a Frame's object list from the current state
+// of collection using the existing keys or the keys supplied.
+//
+//    dataset refresh -i keys.txt collections.ds my-frame
+//
+func fnRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		collectionName string
+		frameName      string
+		f              *dataset.DataFrame
+		c              *dataset.Collection
+		keys           []string
+		keyPathPairs   []string
+		labels         []string
+		dotPaths       []string
+		src            []byte
+		err            error
+	)
+
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	switch {
+	case len(args) == 0:
+		fmt.Fprintf(eout, "Missing collection name and frame name\n")
+		return 1
+	case len(args) == 1:
+		fmt.Fprintf(eout, "Missing frame name\n")
+		return 1
+	case len(args) == 2:
+		collectionName, frameName = args[0], args[1]
+	case len(args) >= 3:
+		collectionName, frameName, keyPathPairs = args[0], args[1], args[2:]
+	default:
+		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
+		return 1
+	}
+
+	if len(keyPathPairs) > 0 {
+		for _, item := range keyPathPairs {
+			if strings.Contains(item, "=") {
+				kp := strings.SplitN(item, "=", 2)
+				labels = append(labels, strings.TrimSpace(kp[0]))
+				dotPaths = append(dotPaths, strings.TrimSpace(kp[1]))
+			} else {
+				item = strings.TrimSpace(item)
+				labels = append(labels, strings.TrimPrefix(item, "."))
+				dotPaths = append(dotPaths, item)
+			}
+		}
+	}
+
+	c, err = dataset.Open(collectionName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	defer c.Close()
+
+	// Check to see if frame exists...
+	if c.FrameExists(frameName) == false {
+		fmt.Fprintf(eout, "Frame %q not defined in %s\n", frameName, collectionName)
+		return 1
+	}
+
+	// Get the existing frame to update labels and dot paths
+	f, err = c.FrameRead(frameName)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	// Handle dotPaths/labels updates
+	if len(dotPaths) > 0 && len(labels) == len(dotPaths) {
+		// Make sure ._Key is first dotPaths and _Key is first label
+		if dotPaths[0] != "._Key" {
+			dotPaths = append([]string{"._Key"}, dotPaths...)
+			labels = append([]string{"_Key"}, labels...)
+		}
+		f.DotPaths = dotPaths[:]
+		f.Labels = labels[:]
+		//NOTE: We want to save the new labels/dotpaths before
+		// regenerating the Object List
+		err = c.SaveFrame(frameName, f)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+	}
+
+	keys = f.Keys[:]
+
+	// Read from inputFName, update frame's keys
+	if len(inputFName) > 0 {
+		if inputFName == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(inputFName)
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			return 1
+		}
+		keys = keysFromSrc(src)
+	}
+
+	// Apply Sample Size
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	shuffle.Strings(keys, random)
+	if sampleSize <= len(keys) {
+		keys = keys[0:sampleSize]
+	}
+
+	// NOTE: See if we are reading a frame back or define one.
+	if len(dotPaths) > 0 {
+		f.DotPaths = dotPaths
+	}
+
+	// Finally run some sanity checks before updating frame...
+	if len(f.DotPaths) == 0 {
+		fmt.Fprintf(eout, "Missing dotpaths in frame definition\n")
+		return 1
+	}
+	if len(keys) == 0 {
+		fmt.Fprintf(eout, "No keys available to update frame\n")
+		return 1
+	}
+
+	// Save the updated frame definition
+	err = c.SaveFrame(frameName, f)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+
+	// Now regenerate grid content with Reframe
+	err = c.FrameRefresh(frameName, keys, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -3108,6 +3259,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vReframe.IntVar(&sampleSize, "s,sample", -1, "reframe based on a key sample of a given size")
 	vReframe.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
 	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
+
+	vRefresh = app.NewVerb("refresh", "update an existing frame from a list of keys", fnReframe)
+	vRefresh.SetParams("COLLECTION", "FRAME_NAME")
+	vRefresh.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
+	vRefresh.IntVar(&sampleSize, "s,sample", -1, "reframe based on a key sample of a given size")
+	vRefresh.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
+	vRefresh.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
 	vFrames = app.NewVerb("frames", "list frames in a collection", fnFrames)
 	vFrames.SetParams("COLLECTION")

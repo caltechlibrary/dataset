@@ -75,17 +75,17 @@ func ServiceOpen(cName string) error {
 
 // ServiceCollections returns a list of collections previously
 // opened with ServiceOpen()
-func ServiceCollections() ([]string, error) {
-	if service == nil {
-		return nil, fmt.Errorf("Services not configured")
-	}
+func ServiceCollections() []string {
 	cNames := []string{}
+	if service == nil {
+		return cNames
+	}
 	for cName, c := range service.collections {
 		if c != nil && c.Collection != nil && path.Base(cName) == c.Collection.Name {
 			cNames = append(cNames, cName)
 		}
 	}
-	return cNames, nil
+	return cNames
 }
 
 // ServiceClose closes a dataset collections previously
@@ -196,7 +196,8 @@ func ServiceDeleteJSON(cName string, key string) error {
 	return fmt.Errorf("%q not available from service", cName)
 }
 
-// ServiceFrameExists returns true if frame found in service collection, otherwise false
+// ServiceFrameExists returns true if frame found in service collection,
+// otherwise false
 func ServiceFrameExists(cName string, fName string) bool {
 	if service == nil {
 		return false
@@ -221,7 +222,9 @@ func ServiceFrameCreate(cName string, fName string, keys []string, dotPaths []st
 	return nil, fmt.Errorf("%q not available from service", cName)
 }
 
-// ServiceFrameObjects returns a JSON document of a copy of the objects in a frame for the service collection. It is analogous to a dataset.ReadJSON but for a frame's object list
+// ServiceFrameObjects returns a JSON document of a copy of the objects in a frame for
+// the service collection. It is analogous to a dataset.ReadJSON but for a frame's
+// object list
 func ServiceFrameObjects(cName string, fName string) ([]map[string]interface{}, error) {
 	if service == nil {
 		return nil, fmt.Errorf("Service not running, %q not available", cName)
@@ -232,7 +235,59 @@ func ServiceFrameObjects(cName string, fName string) ([]map[string]interface{}, 
 	return nil, fmt.Errorf("%q not available from service", cName)
 }
 
-// ServiceReframe updates the frame object list. If a list of keys is provided then the object will be replaced with updated objects based on the keys provided.
+// ServiceFrameRefresh updates the frame object list's for the keys provided. Any new keys
+//  cause a new object to be appended to the end of the list.
+func ServiceFrameRefresh(cName string, fName string, keys []string, verbose bool) error {
+	if service == nil {
+		return fmt.Errorf("Service not running, %q not available", cName)
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.FrameRefresh(fName, keys, verbose)
+	}
+	return fmt.Errorf("%q not available from service", cName)
+}
+
+// ServiceFrameReframe updates the frame object list. If a list of keys is provided then
+// the object will be replaced with updated objects based on the keys provided.
+func ServiceFrameReframe(cName string, fName string, keys []string, verbose bool) error {
+	if service == nil {
+		return fmt.Errorf("Service not running, %q not available", cName)
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.FrameReframe(fName, keys, verbose)
+	}
+	return fmt.Errorf("%q not available from service", cName)
+}
+
 // ServiceFrameClear clears the object and key list from a frame
+func ServiceFrameClear(cName string, fName string) error {
+	if service == nil {
+		return fmt.Errorf("Service not running, %q not available", cName)
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.FrameClear(fName)
+	}
+	return fmt.Errorf("%q not available from service", cName)
+}
+
 // ServiceFrameDelete deletes a frame from a service collection
+func ServiceFrameDelete(cName string, fName string) error {
+	if service == nil {
+		return fmt.Errorf("Service not running, %q not available", cName)
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.FrameDelete(fName)
+	}
+	return fmt.Errorf("%q not available from service", cName)
+}
+
 // ServiceFrames returns a list of frame names in a service collection
+func ServiceFrames(cName string) []string {
+	if service == nil {
+		return nil
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.Frames()
+	}
+	return nil
+}

@@ -220,8 +220,8 @@ func (c *Collection) rmFrame(key string) error {
 // as a list of "dot paths"), labels (aka attribute names),
 // and type information needed for indexing and search.
 //
-// If you need to update a frame's objects use Refresh(). If
-// you need to change a frames object ordering use Reframe().
+// If you need to update a frame's objects use FrameRefresh(). If
+// you need to change a frames object ordering use FrameReframe().
 //
 func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	// If frame exists return the existing frame
@@ -290,13 +290,10 @@ func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 	return c.getFrame(name)
 }
 
-// Refresh updates the objects in the frame list
-// from the related objects in the current collection
-// without reordering the list of objects in the frame. If
-// A new key is encountered the object is appended to the
-// the frame's object list. No objects are removed from the
-// frame. (non-destructive, only additive)
-func (c *Collection) Refresh(name string, keys []string, verbose bool) error {
+// FrameRefresh updates of a DataFrames object list based on the keys provided. If a new key is
+// encountered the object is added to the end of the list. Other objects are not touched and
+// the order of the object list is not changed.
+func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
@@ -310,15 +307,18 @@ func (c *Collection) Refresh(name string, keys []string, verbose bool) error {
 			if obj == nil {
 				log.Printf("key %q (%d) frame object is nil", key, i)
 			}
-
+		}
+		if err != nil {
+			if verbose {
+				log.Printf("WARNING could not read %q from %q", key, c.Name)
+			}
+			continue
 		}
 		if obj != nil {
-			if _, ok := f.ObjectMap[key]; ok == true {
-				f.ObjectMap[key] = obj
-			} else {
+			if _, ok := f.ObjectMap[key]; ok == false {
 				f.Keys = append(f.Keys, key)
-				f.ObjectMap[key] = obj
 			}
+			f.ObjectMap[key] = obj
 		} else {
 			delete(f.ObjectMap, key)
 			for i, fkey := range f.Keys {
@@ -332,11 +332,9 @@ func (c *Collection) Refresh(name string, keys []string, verbose bool) error {
 	return c.setFrame(name, f)
 }
 
-// Reframe changes the order of a frame's objects and
-// adds, updates or removes objects as needed from the frame
-// based on the list of keys provided.
-// (destructive update, will add or remove objects as needed)
-func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
+// FrameReframe updates a DataFrames object list. The order is replaced by the keys provided.
+// Objects not in the key list are pruned and new objects are added.
+func (c *Collection) FrameReframe(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
@@ -403,6 +401,16 @@ func (c *Collection) FrameDelete(name string) error {
 	return c.rmFrame(name)
 }
 
+// FrameObjects returns a copy of a DataFrame's object list given a collection's frame name.
+func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error) {
+	f, err := c.FrameRead(fName)
+	if err != nil {
+		return nil, err
+	}
+	ol := f.Objects()
+	return ol, nil
+}
+
 //
 // The follow funcs define operations on the Frame struct.
 //
@@ -460,14 +468,4 @@ func (f *DataFrame) Objects() []map[string]interface{} {
 		}
 	}
 	return ol
-}
-
-// FrameObjects returns a copy of a DataFrame's object list given a collection's frame name.
-func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error) {
-	f, err := c.FrameRead(fName)
-	if err != nil {
-		return nil, err
-	}
-	ol := f.Objects()
-	return ol, nil
 }

@@ -133,7 +133,7 @@ func TestMerge(t *testing.T) {
 	}
 
 	// NOTE: Make sure grid dimensions match table minus header row
-	c.Reframe(frameName, keys, false)
+	c.FrameReframe(frameName, keys, false)
 	f, err = c.getFrame(frameName)
 	if err != nil {
 		t.Errorf("failed to get frame %s, %s", frameName, err)
@@ -191,7 +191,7 @@ func TestMerge(t *testing.T) {
 	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h4"}
 	f.Labels = []string{"id", "h1", "h2", "h4"}
 	c.setFrame(frameName, f)
-	c.Reframe(frameName, f.Keys, false)
+	c.FrameReframe(frameName, f.Keys, false)
 
 	// Update table values for next merge test
 	for i, row := range table {
@@ -330,7 +330,7 @@ func TestMerge(t *testing.T) {
 	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h3", ".h4", ".h5", ".h6"}
 	f.Labels = []string{"id", "h1", "h2", "h3", "h4", "h5", "h6"}
 	c.setFrame(frameName, f)
-	c.Reframe(frameName, c.Keys(), false)
+	c.FrameReframe(frameName, c.Keys(), false)
 	if err != nil {
 		t.Errorf("%s\n", err)
 		t.FailNow()
