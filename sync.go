@@ -228,7 +228,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 			obj := map[string]interface{}{}
 			err = c.Read(key, obj, false)
 			if err != nil {
-				return table, fmt.Errorf("failed to read %q in %s, %s\n", key, c.Name, err)
+				return table, fmt.Errorf("failed to read %q in %s, %s", key, c.Name, err)
 			}
 			// For each row replace cells in dotPath map to column number
 			for p, j := range colMap {

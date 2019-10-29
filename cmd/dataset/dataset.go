@@ -3,7 +3,7 @@
 //
 // @Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
-// Copyright (c) 2018, Caltech
+// Copyright (c) 2019, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -2552,7 +2552,7 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 		collectionName, frameName, gSheetID, gSheetName = args[0], args[1], args[2], args[3]
 		cellRange = "A1:Z"
 	case 5:
-		collectionName, frameName, gSheetID, gSheetName, cellRange = args[0], args[1], args[2], args[3], cellRange
+		collectionName, frameName, gSheetID, gSheetName = args[0], args[1], args[2], args[3]
 	default:
 		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -2574,7 +2574,6 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 			clientSecretJSON = clientSecretFName
 		}
 		if clientSecretJSON == "" {
-			//clientSecretJSON = "client_secret.json"
 			clientSecretJSON = "credentials.json"
 		}
 		table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
@@ -2701,7 +2700,7 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		collectionName, frameName, gSheetID, gSheetName = args[0], args[1], args[2], args[3]
 		cellRange = "A1:Z"
 	case 5:
-		collectionName, frameName, gSheetID, gSheetName, cellRange = args[0], args[1], args[2], args[3], cellRange
+		collectionName, frameName, gSheetID, gSheetName = args[0], args[1], args[2], args[3]
 	default:
 		fmt.Fprintf(eout, "Too many parameters, %s\n", strings.Join(args, " "))
 		return 1
@@ -2772,7 +2771,7 @@ func fnCheck(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	}
 	for _, collectionName := range args {
-		err = dataset.Analyzer(collectionName)
+		err = dataset.Analyzer(collectionName, showVerbose)
 		if err != nil {
 			fmt.Fprintf(eout, "error in %q, %s\n", collectionName, err)
 			return 1
@@ -2801,7 +2800,7 @@ func fnRepair(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	for _, collectionName := range args {
-		err = dataset.Repair(collectionName)
+		err = dataset.Repair(collectionName, showVerbose)
 		if err != nil {
 			fmt.Fprintf(eout, "error in %q, %s\n", collectionName, err)
 			return 1

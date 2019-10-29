@@ -31,11 +31,14 @@ import (
  * asynchronous web service written in Python via py_dataset.
  */
 
+// ServiceCollection holds a mutex and collection pointer so we can provide service like
+// functionality for via libdataset.
 type ServiceCollection struct {
 	Mutex      *sync.Mutex
 	Collection *Collection
 }
 
+// Service holds a map of collection names to service collections
 type Service struct {
 	collections map[string]*ServiceCollection
 }
@@ -96,10 +99,8 @@ func ServiceClose(cName string) error {
 		defer sc.Collection.Close()
 		sc.Mutex = nil
 		return nil
-	} else {
-		return fmt.Errorf("%q not found in service", cName)
 	}
-	return nil
+	return fmt.Errorf("%q not found in service", cName)
 }
 
 // ServiceCloseAll goes through the service collection list
@@ -138,15 +139,12 @@ func ServiceKeys(cName string) []string {
 // document and creates a new JSON object in the collection using
 // the key.
 func ServiceCreateJSON(cName string, key string, src []byte) error {
-	var (
-		err error
-	)
 	if service == nil {
 		return fmt.Errorf("Service not running")
 	}
 	if sc, found := service.collections[cName]; found {
 		sc.Mutex.Lock()
-		err = sc.Collection.CreateJSON(key, src)
+		err := sc.Collection.CreateJSON(key, src)
 		sc.Mutex.Unlock()
 		return err
 	}
@@ -168,15 +166,12 @@ func ServiceReadJSON(cName string, key string) ([]byte, error) {
 // ServiceUpdateJSON takes a collection name, key and JSON object
 // document and updates the collection.
 func ServiceUpdateJSON(cName string, key string, src []byte) error {
-	var (
-		err error
-	)
 	if service == nil {
 		return fmt.Errorf("Service not running")
 	}
 	if sc, found := service.collections[cName]; found {
 		sc.Mutex.Lock()
-		err = sc.Collection.UpdateJSON(key, src)
+		err := sc.Collection.UpdateJSON(key, src)
 		sc.Mutex.Unlock()
 		return err
 	}
@@ -202,8 +197,41 @@ func ServiceDeleteJSON(cName string, key string) error {
 }
 
 // ServiceFrameExists returns true if frame found in service collection, otherwise false
+func ServiceFrameExists(cName string, fName string) bool {
+	if service == nil {
+		return false
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.FrameExists(fName)
+	}
+	return false
+}
+
 // ServiceFrameCreate creates a frame in a service collection
+func ServiceFrameCreate(cName string, fName string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
+	if service == nil {
+		return nil, fmt.Errorf("Service not running, %q not available", cName)
+	}
+	if sc, found := service.collections[cName]; found {
+		sc.Mutex.Lock()
+		f, err := sc.Collection.FrameCreate(fName, keys, dotPaths, labels, verbose)
+		sc.Mutex.Unlock()
+		return f, err
+	}
+	return nil, fmt.Errorf("%q not available from service", cName)
+}
+
 // ServiceFrameObjects returns a JSON document of a copy of the objects in a frame for the service collection. It is analogous to a dataset.ReadJSON but for a frame's object list
+func ServiceFrameObjects(cName string, fName string) ([]map[string]interface{}, error) {
+	if service == nil {
+		return nil, fmt.Errorf("Service not running, %q not available", cName)
+	}
+	if sc, found := service.collections[cName]; found {
+		return sc.Collection.FrameObjects(fName)
+	}
+	return nil, fmt.Errorf("%q not available from service", cName)
+}
+
 // ServiceReframe updates the frame object list. If a list of keys is provided then the object will be replaced with updated objects based on the keys provided.
 // ServiceFrameClear clears the object and key list from a frame
 // ServiceFrameDelete deletes a frame from a service collection

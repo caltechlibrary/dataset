@@ -48,19 +48,19 @@ type Semver struct {
 	// Timestamp (optional, a timestamp in form of YYYY-MM-DD HH:MM:SS)
 }
 
-func (v *Semver) String() string {
-	if v.Patch == "" {
-		return "v" + v.Major + "." + v.Minor
+func (sv *Semver) String() string {
+	if sv.Patch == "" {
+		return "v" + sv.Major + "." + sv.Minor
 	}
-	if v.Suffix == "" {
-		return "v" + v.Major + "." + v.Minor + "." + v.Patch
+	if sv.Suffix == "" {
+		return "v" + sv.Major + "." + sv.Minor + "." + sv.Patch
 	}
-	return "v" + v.Major + "." + v.Minor + "." + v.Patch + v.Suffix
+	return "v" + sv.Major + "." + sv.Minor + "." + sv.Patch + sv.Suffix
 }
 
 // ToJSON takes a version struct and returns JSON as byte slice
-func (v *Semver) ToJSON() []byte {
-	src, _ := json.Marshal(v)
+func (sv *Semver) ToJSON() []byte {
+	src, _ := json.Marshal(sv)
 	return src
 }
 
@@ -71,7 +71,7 @@ func ParseSemver(src []byte) (*Semver, error) {
 		i   int
 		err error
 	)
-	v := new(Semver)
+	sv := new(Semver)
 	if bytes.HasPrefix(src, []byte("v")) {
 		src = bytes.TrimPrefix(src, []byte("v"))
 	}
@@ -81,7 +81,7 @@ func ParseSemver(src []byte) (*Semver, error) {
 		if err != nil {
 			return nil, &Err{Msg: "Major value must be an integer"}
 		}
-		v.Major = strconv.Itoa(i)
+		sv.Major = strconv.Itoa(i)
 	} else {
 		return nil, &Err{Msg: "Invalid version, expecting semver string"}
 	}
@@ -90,7 +90,7 @@ func ParseSemver(src []byte) (*Semver, error) {
 		if err != nil {
 			return nil, &Err{Msg: "Minor value must be an integer"}
 		}
-		v.Minor = strconv.Itoa(i)
+		sv.Minor = strconv.Itoa(i)
 	} else {
 		return nil, &Err{Msg: "Invalid version, expecting semver string"}
 	}
@@ -99,12 +99,12 @@ func ParseSemver(src []byte) (*Semver, error) {
 		if err != nil {
 			return nil, &Err{Msg: "Patch value must be an integer"}
 		}
-		v.Patch = strconv.Itoa(i)
+		sv.Patch = strconv.Itoa(i)
 	}
 	if len(parts) > 3 {
-		v.Suffix = parts[3]
+		sv.Suffix = parts[3]
 	}
-	return v, nil
+	return sv, nil
 }
 
 // IncPatch increments the patch level if it is numeric

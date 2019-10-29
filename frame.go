@@ -461,3 +461,13 @@ func (f *DataFrame) Objects() []map[string]interface{} {
 	}
 	return ol
 }
+
+// FrameObjects returns a copy of a DataFrame's object list given a collection's frame name.
+func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error) {
+	f, err := c.FrameRead(fName)
+	if err != nil {
+		return nil, err
+	}
+	ol := f.Objects()
+	return ol, nil
+}

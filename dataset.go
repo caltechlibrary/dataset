@@ -44,7 +44,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.70`
+	Version = `v0.0.71`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -64,12 +64,13 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `
 
-	// Sort directions
-	ASC  = iota
-	DESC = iota
+	// Asc is used to identify ascending sorts
+	Asc = iota
+	// Desc is used to identify descending sorts
+	Desc = iota
 
-	// Pairtree is the only supported file layout
-	PAIRTREE_LAYOUT = iota
+	// PairTreeLayout is the only supported file layout
+	PairTreeLayout = iota
 
 	// internal virtualize column name format string
 	fmtColumnName = `column_%03d`
@@ -84,7 +85,7 @@ type Collection struct {
 	Name string `json:"name"`
 
 	// workPath holds the path (i.e. non-protocol and hostname, in URI)
-	workPath string `json:"-"`
+	workPath string // `json:"-"`
 
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
