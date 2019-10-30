@@ -244,5 +244,13 @@ func TestService(t *testing.T) {
 			t.Errorf("expected zero objects, got %+v", ol3)
 			t.FailNow()
 		}
+		err = ServiceFrameDelete(cName, fName)
+		if err != nil {
+			t.Errorf("expected a no error from ServiceFrameDelete(%q, %q), got %s", cName, fName, err)
+			t.FailNow()
+		}
+		if fNames := ServiceFrames(cName); len(fNames) > 0 {
+			t.Errorf("expected zsero frame names, got %s", strings.Join(fNames, ", "))
+		}
 	}
 }
