@@ -318,7 +318,7 @@ func (c *Collection) CreateObjectsJSON(keyList []string, src []byte) error {
 		c.SaveMetadata()
 	}()
 	for _, key := range keyList {
-		if c.HasKey(key) == false {
+		if c.KeyExists(key) == false {
 			if err := c.CreateJSON(key, src); err != nil {
 				return err
 			}
@@ -338,7 +338,7 @@ func (c *Collection) IsKeyNotFound(e error) bool {
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
-	if c.HasKey(name) == false {
+	if c.KeyExists(name) == false {
 		return nil, fmt.Errorf("key not found")
 	}
 	return c.pairtreeReadJSON(name)
@@ -346,7 +346,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) UpdateJSON(name string, src []byte) error {
-	if c.HasKey(name) == false {
+	if c.KeyExists(name) == false {
 		return fmt.Errorf("key not found")
 	}
 	return c.pairtreeUpdateJSON(name, src)
@@ -405,8 +405,8 @@ func (c *Collection) Keys() []string {
 	return keys
 }
 
-// HasKey returns true if key is in collection's KeyMap, false otherwise
-func (c *Collection) HasKey(key string) bool {
+// KeyExists returns true if key is in collection's KeyMap, false otherwise
+func (c *Collection) KeyExists(key string) bool {
 	_, hasKey := c.KeyMap[key]
 	return hasKey
 }
@@ -476,7 +476,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 			}
 		}
 		if len(key) > 0 && len(record) > 0 {
-			if c.HasKey(key) {
+			if c.KeyExists(key) {
 				if overwrite == true {
 					err = c.Update(key, record)
 					if err != nil {
@@ -554,7 +554,7 @@ func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow 
 			record[fieldName] = val
 		}
 		if len(key) > 0 && len(record) > 0 {
-			if c.HasKey(key) == true {
+			if c.KeyExists(key) == true {
 				if overwrite == true {
 					err = c.Update(key, record)
 					if err != nil {
@@ -824,7 +824,7 @@ func IsCollection(p string) bool {
 // BUG: This is a naive join, it assumes the keys in object are top
 // level properties.
 func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool) error {
-	if c.HasKey(key) == false {
+	if c.KeyExists(key) == false {
 		return c.Create(key, obj)
 	}
 	record := map[string]interface{}{}

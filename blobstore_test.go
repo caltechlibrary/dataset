@@ -55,7 +55,7 @@ func TestS3(t *testing.T) {
 	key := "one"
 	objSrc := []byte(`{"one": 1}`)
 
-	if c1.HasKey(key) {
+	if c1.KeyExists(key) {
 		err = c1.UpdateJSON(key, objSrc)
 	} else {
 		err = c1.CreateJSON(key, objSrc)
@@ -135,7 +135,7 @@ func TestGS(t *testing.T) {
 	key := "one"
 	objSrc := []byte(`{"one": 1}`)
 
-	if c1.HasKey(key) {
+	if c1.KeyExists(key) {
 		err = c1.UpdateJSON(key, objSrc)
 	} else {
 		err = c1.CreateJSON(key, objSrc)

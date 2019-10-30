@@ -329,12 +329,12 @@ func TestCloneSample(t *testing.T) {
 	keys = c.Keys()
 	for _, key := range keys {
 		switch {
-		case training.HasKey(key) == true:
-			if test.HasKey(key) == true {
+		case training.KeyExists(key) == true:
+			if test.KeyExists(key) == true {
 				t.Errorf("%s and %s has key %s", trainingName, testName, key)
 			}
-		case test.HasKey(key) == true:
-			if training.HasKey(key) == true {
+		case test.KeyExists(key) == true:
+			if training.KeyExists(key) == true {
 				t.Errorf("%s and %s has key %s", trainingName, testName, key)
 			}
 		default:

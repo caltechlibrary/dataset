@@ -190,7 +190,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 			}
 			continue
 		}
-		if c.HasKey(key) {
+		if c.KeyExists(key) {
 			// Pad cells in row if necessary
 			for i := len(row); i < len(headerRow); i++ {
 				row = append(row, "")
@@ -286,7 +286,7 @@ func (c *Collection) MergeFromTable(frameName string, table [][]interface{}, ove
 				continue
 			}
 			obj := rowToObj(key, colMap, row)
-			if c.HasKey(key) {
+			if c.KeyExists(key) {
 				// Update collection, and get merged object.
 				if err := c.Join(key, obj, overwrite); err != nil {
 					return err

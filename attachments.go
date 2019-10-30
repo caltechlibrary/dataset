@@ -80,7 +80,7 @@ func (c *Collection) attachmentNames(keyName, semver, fName string) (string, str
 		attachmentFile     string
 		attachmentMetadata string
 	)
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return "", "", fmt.Errorf("No key found for %q", keyName)
 	}
 	return attachmentFile, attachmentMetadata, nil
@@ -171,7 +171,7 @@ func updateAttachmentList(attachmentList []*Attachment, newObj *Attachment) []*A
 
 // AttachStream is for attaching open a non-JSON file buffer (via an io.Reader).
 func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reader) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	if semver == "" {
@@ -262,7 +262,7 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 // AttachFile is for attaching a single non-JSON document to a dataset record. It will replace
 // ANY existing attached content with the same semver and basename.
 func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	if semver == "" {
@@ -398,7 +398,7 @@ func filterNameFound(a []string, target string) bool {
 // If no filterNames provided then return all attachments are written out
 // An error value is always returned.
 func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames ...string) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	jsonObject := map[string]interface{}{}
@@ -433,7 +433,7 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 
 // Prune a non-JSON document from a JSON document in the collection.
 func (c *Collection) Prune(keyName string, semver string, filterNames ...string) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	jsonObject := map[string]interface{}{}
