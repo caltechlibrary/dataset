@@ -252,5 +252,10 @@ func TestService(t *testing.T) {
 		if fNames := ServiceFrames(cName); len(fNames) > 0 {
 			t.Errorf("expected zsero frame names, got %s", strings.Join(fNames, ", "))
 		}
+		err = ServiceCloseAll()
+		if err != nil {
+			t.Errorf("expected a no error from ServiceCloseAll(), got %s", err)
+			t.FailNow()
+		}
 	}
 }
