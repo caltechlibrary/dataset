@@ -153,8 +153,8 @@ func has_key(cName, cKey *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
 
-	if dataset.LibIsOpen(collectionName) {
-		if dataset.LibKeyExists(collectionName, key) {
+	if dataset.IsOpen(collectionName) {
+		if dataset.KeyExists(collectionName, key) {
 			return C.int(1)
 		}
 	}
@@ -171,7 +171,7 @@ func create_object(cName, cKey, cSrc *C.char) C.int {
 	src := []byte(C.GoString(cSrc))
 
 	error_clear()
-	err := dataset.LibCreateJSON(collectionName, key, src)
+	err := dataset.CreateJSON(collectionName, key, src)
 	if err != nil {
 		error_dispatch(err, "Create %s failed, %s", key, err)
 		return C.int(0)
@@ -192,9 +192,24 @@ func read_object(cName, cKey *C.char, cCleanObject C.int) *C.char {
 		src []byte
 		err error
 	)
-	if src, err = dataset.LibReadJSON(collectionName, key); err != nil {
-		error_dispatch(err, "Can't read %s, %s", k, err)
+	if src, err = dataset.ReadJSON(collectionName, key); err != nil {
+		error_dispatch(err, "Can't read %s, %s", key, err)
 		return C.CString("")
+	}
+	if cleanObject {
+		object := map[string]interface{}{}
+		if err := dataset.DecodeJSON(src, &object); err != nil {
+			error_dispatch(err, "Can't decode %s, %s", key, err)
+			return C.CString("")
+		}
+		if _, found := object["_Key"]; found {
+			delete(object, "_Key")
+			src, err = dataset.EncodeJSON(object)
+			if err != nil {
+				error_dispatch(err, "Can't encode %s, %s", key, err)
+				return C.CString("")
+			}
+		}
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
@@ -221,15 +236,15 @@ func read_object_list(cName *C.char, cKeysAsJSON *C.char, cCleanObject C.int) *C
 		error_dispatch(err, "Can't unmarshal key list, %s", err)
 		return C.CString("")
 	}
-	if dataset.LibIsOpen(collectionName) == false {
-		if err = dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err = dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 			return C.CString("")
 		}
 	}
 
 	for _, key := range keyList {
-		src, err := dataset.LibReadJSON(collectionName, key)
+		src, err := dataset.ReadJSON(collectionName, key)
 		if err != nil {
 			errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
 			continue
@@ -269,7 +284,7 @@ func update_object(cName, cKey, cSrc *C.char) C.int {
 	src := []byte(C.GoString(cSrc))
 
 	error_clear()
-	err := dataset.LibUpdateJSON(collectionName, key, src)
+	err := dataset.UpdateJSON(collectionName, key, src)
 	if err != nil {
 		error_dispatch(err, "Update %s failed, %s", key, err)
 		return C.int(0)
@@ -285,7 +300,7 @@ func delete_object(cName, cKey *C.char) C.int {
 	key := C.GoString(cKey)
 
 	error_clear()
-	err := dataset.LibDeleteJSON(collectionName, key)
+	err := dataset.DeleteJSON(collectionName, key)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
@@ -305,12 +320,11 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 	objectSrc := C.GoString(cObjSrc)
 
 	error_clear()
-	c, err := dataset.Open(collectionName)
+	err := dataset.Open(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
-	defer c.Close()
 
 	newObject := map[string]interface{}{}
 	if err := dataset.DecodeJSON([]byte(objectSrc), &newObject); err != nil {
@@ -318,7 +332,7 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 		return C.int(0)
 	}
 
-	src, err := dataset.LibReadJSON(collectionName, key)
+	src, err := dataset.ReadJSON(collectionName, key)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -346,7 +360,7 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 		return C.int(0)
 	}
 
-	if err := dataset.LibUpdateJSON(collectionName, key, src); err != nil {
+	if err := dataset.UpdateJSON(collectionName, key, src); err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
@@ -360,7 +374,7 @@ func keys(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
 
 	error_clear()
-	keyList := dataset.LibKeys(collectionName)
+	keyList := dataset.Keys(collectionName)
 	src, err := json.Marshal(keyList)
 	if err != nil {
 		error_dispatch(err, "Can't marshal key list, %s", err)
@@ -385,7 +399,7 @@ func key_filter(cName, cKeyListExpr, cFilterExpr *C.char) *C.char {
 		error_dispatch(err, "Unable to unmarshal keys", err)
 		return C.CString("")
 	}
-	keys, err := dataset.LibKeyFilter(collectionName, keyList, filterExpr)
+	keys, err := dataset.KeyFilter(collectionName, keyList, filterExpr)
 	if err != nil {
 		error_dispatch(err, "filter error, %s", err)
 		return C.CString("")
@@ -415,7 +429,7 @@ func key_sort(cName, cKeyListExpr, cSortExpr *C.char) *C.char {
 		return C.CString("")
 	}
 
-	keys, err := dataset.LibKeySortByExpression(collectionName, keyList, sortExpr)
+	keys, err := dataset.KeySortByExpression(collectionName, keyList, sortExpr)
 	if err != nil {
 		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
@@ -435,11 +449,11 @@ func key_sort(cName, cKeyListExpr, cSortExpr *C.char) *C.char {
 func count(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
-	if dataset.LibIsOpen(cName) {
-		if lc, found := dataset.LibGetCollection(collectionName); found {
-			i := lc.Collection.Length()
+	if dataset.IsOpen(collectionName) {
+		if c, err := dataset.GetCollection(collectionName); err == nil {
+			i := c.Length()
 			return C.int(i)
-		}		
+		}
 	}
 	return C.int(-1)
 }
@@ -462,15 +476,15 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	overwrite := (int(cOverwrite) == 1)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "Can't open %s, %s", collectionName, err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
-		error_dispatch(err, "Can't open %s, %s", collectionName, err)
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
+		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
@@ -488,7 +502,7 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 		error_dispatch(err, "Can't open %s, %s", csvFName, err)
 		return C.int(0)
 	}
-	cnt, err := lc.Collection.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose)
+	cnt, err := c.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		error_dispatch(err, "%s\n", err)
 		return C.int(0)
@@ -509,14 +523,14 @@ func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 	csvFName := C.GoString(cCSVFName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "Can't open %s, %s", collectionName, err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "Can't open %s, %s", collectionName, err)
 		return C.int(0)
 	}
@@ -529,20 +543,20 @@ func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 	defer fp.Close()
 
 	// Get Frame
-	if lc.Collection.FrameExists(frameName) == false {
+	if c.FrameExists(frameName) == false {
 		error_dispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
 		return C.int(0)
 	}
 
 	// Get dotpaths and column labels from frame
-	f, err := lc.Collection.FrameRead(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		error_dispatch(err, "%s\n", err)
 		return C.int(0)
 	}
 
 	// Now export to CSV
-	cnt, err := lc.Collection.ExportCSV(fp, os.Stderr, f, verbose)
+	cnt, err := c.ExportCSV(fp, os.Stderr, f, verbose)
 	if err != nil {
 		error_dispatch(err, "Can't export CSV %s, %s", csvFName, err)
 		return C.int(0)
@@ -570,18 +584,17 @@ func import_gsheet(cName *C.char, cSheetID *C.char, cSheetName *C.char, cIDCol C
 	overwrite := (C.int(cOverwrite) == 1)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
-			return C.int(0)	
+			return C.int(0)
 		}
 	}
-	lc, err := dataset.LibGetCollection(collectionName)
+	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
-
 
 	// NOTE: we need to adjust to zero based index
 	idCol--
@@ -599,9 +612,7 @@ func import_gsheet(cName *C.char, cSheetID *C.char, cSheetName *C.char, cIDCol C
 		return C.int(0)
 	}
 
-	lc.Mutex.Lock()
-	cnt, err := lc.Collection.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
-	lc.Mutex.Unlock()
+	cnt, err := c.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		error_dispatch(err, "Errors importing %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
@@ -622,26 +633,26 @@ func export_gsheet(cName *C.char, cFrameName *C.char, cSheetID *C.char, cSheetNa
 	cellRange := C.GoString(cCellRange)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
 			return C.int(0)
 		}
 	}
-	lc, err := dataset.LibGetCollection(collectionName)
+	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
 		error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
 		return C.int(0)
 	}
 
 	// Get Frame
-	if lc.Collection.FrameExists(frameName) == false {
+	if c.FrameExists(frameName) == false {
 		error_dispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
 		return C.int(0)
 	}
 
 	// Get dotpaths and column labels from frame
-	f, err := lc.Collection.FrameRead(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		error_dispatch(err, "%s\n", err)
 		return C.int(0)
@@ -661,7 +672,7 @@ func export_gsheet(cName *C.char, cFrameName *C.char, cSheetID *C.char, cSheetNa
 	}
 
 	//NOTE: we export to GSheet via creating a table [][]interface{}{}
-	cnt, table, err := lc.Collection.ExportTable(os.Stderr, f, verbose)
+	cnt, table, err := c.ExportTable(os.Stderr, f, verbose)
 	if err != nil {
 		error_dispatch(err, "%s\n", err)
 		return C.int(0)
@@ -682,7 +693,7 @@ func export_gsheet(cName *C.char, cFrameName *C.char, cSheetID *C.char, cSheetNa
 func status(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
-	if _, err := dataset.LibGetCollection(collectionName) err != nil {
+	if _, err := dataset.GetCollection(collectionName); err != nil {
 		error_dispatch(err, "failed, %s, %s", collectionName, err)
 		return C.int(0)
 	}
@@ -699,21 +710,21 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 
 	error_clear()
 	keys := []string{}
-	err = json.Unmarshal([]byte(sKeys), &keys)
+	err := json.Unmarshal([]byte(sKeys), &keys)
 	if err != nil {
 		error_dispatch(err, "Failed to unmarshal key list, %s", err)
 		return C.CString("")
 	}
 
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "Can't find %q", collectionName)
 		return C.CString("")
 	}
@@ -721,7 +732,7 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 	recs := []map[string]interface{}{}
 	for _, name := range keys {
 		m := map[string]interface{}{}
-		err = lc.Collection.Read(name, m, false)
+		err = c.Read(name, m, false)
 		if err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
@@ -745,20 +756,20 @@ func path(cName *C.char, cKey *C.char) *C.char {
 	key := C.GoString(cKey)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "Can't find %q", collectionName)
 		return C.CString("")
 	}
 
-	s, err := lc.Collection.DocPath(key)
+	s, err := c.DocPath(key)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.CString("")
@@ -772,7 +783,7 @@ func path(cName *C.char, cKey *C.char) *C.char {
 //export check
 func check(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
-	err := dataset.LibAnalyzer(collectionName, verbose)
+	err := dataset.Check(collectionName, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -787,7 +798,7 @@ func check(cName *C.char) C.int {
 //export repair
 func repair(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
-	err := dataset.LibRepair(collectionName, verbose)
+	err := dataset.Repair(collectionName, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -819,20 +830,19 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
-	
-	if lc.Collection.KeyExists(key) == false {
+	if c.KeyExists(key) == false {
 		error_dispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
 		return C.int(0)
 	}
@@ -843,7 +853,7 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 			return C.int(0)
 		}
 	}
-	err = lc.Collection.AttachFiles(key, semver, fNames...)
+	err = c.AttachFiles(key, semver, fNames...)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -860,23 +870,23 @@ func attachments(cName *C.char, cKey *C.char) *C.char {
 	key := C.GoString(cKey)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
 
-	if lc.Collection.KeyExists(key) == false {
+	if c.KeyExists(key) == false {
 		error_dispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
 		return C.CString("")
 	}
-	results, err := lc.Collection.Attachments(key)
+	results, err := c.Attachments(key)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.CString("")
@@ -908,23 +918,23 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 		}
 	}
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
-	if lc.Collection.KeyExists(key) == false {
+	if c.KeyExists(key) == false {
 		error_dispatch(err, "%q is not in collection", key)
 		return C.int(0)
 	}
-	err = lc.Collection.GetAttachedFiles(key, semver, fNames...)
+	err = c.GetAttachedFiles(key, semver, fNames...)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -951,21 +961,19 @@ func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int 
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
-	lc.Mutex.Lock()
-	err = lc.Collection.Prune(key, semver, fNames...)
-	lc.Mutex.Unlock()
+	err = c.Prune(key, semver, fNames...)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -984,14 +992,14 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 	destName := C.GoString(dName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
@@ -1002,9 +1010,7 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 		error_dispatch(err, "Can't unmarshal keys, %s", err)
 		return C.int(0)
 	}
-	lc.Mutex.Lock()
-	err = lc.Collection.Clone(destName, keys, verbose)
-	lc.Mutex.Unlock()
+	err = c.Clone(destName, keys, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -1023,22 +1029,20 @@ func clone_sample(cName *C.char, cTrainingName *C.char, cTestName *C.char, cSamp
 	testName := C.GoString(cTestName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	keys := c.Keys()
-	lc.Mutex.Lock()
-	err = lc.Collection.CloneSample(trainingName, testName, keys, sampleSize, verbose)
-	lc.Mutex.Unlock()
+	err = c.CloneSample(trainingName, testName, keys, sampleSize, verbose)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
@@ -1055,14 +1059,14 @@ func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
 	srcDotpaths := C.GoString(cDotPaths)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
@@ -1080,7 +1084,7 @@ func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
 		return C.CString("")
 	}
 	//NOTE: We're picking up the verbose flag from the modules global state
-	g, err := lc.Collection.Grid(keys, dotPaths, verbose)
+	g, err := c.Grid(keys, dotPaths, verbose)
 	if err != nil {
 		error_dispatch(err, "failed to create grid, %s", err)
 		return C.CString("")
@@ -1106,14 +1110,14 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char, cLab
 	srcLabels := C.GoString(cLabels)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
@@ -1137,7 +1141,7 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char, cLab
 		return C.CString("")
 	}
 	//NOTE: We're picking up the verbose flag from the modules global state
-	f, err := lc.Collection.FrameRead(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		error_dispatch(err, "failed to create frame, %s", err)
 		return C.CString("")
@@ -1158,8 +1162,8 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char, cLab
 func has_frame(cName *C.char, cFName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
-	if dataset.LibIsOpen(collectionName) {
-		if dataset.LibFrameExists(collectionName, frameName) {
+	if dataset.IsOpen(collectionName) {
+		if dataset.FrameExists(collectionName, frameName) {
 			return C.int(1)
 		}
 	}
@@ -1173,14 +1177,14 @@ func frames(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 
-	frameNames := dataset.LibFrames(collectionName)
+	frameNames := dataset.Frames(collectionName)
 	if len(frameNames) == 0 {
 		return C.CString("[]")
 	}
@@ -1203,21 +1207,21 @@ func refresh(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
 	srcKeys := C.GoString(cKeys)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
 
 	keys := []string{}
-	err = json.Unmarshal([]byte(srcKeys), &keys)
+	err := json.Unmarshal([]byte(srcKeys), &keys)
 	if err != nil {
 		error_dispatch(err, "Can't unmarshal keys, %s", err)
 		return C.int(1)
 	}
 	//NOTE: We're picking up the verbose flag from the modules global state
-	err = dataset.FrameRefresh(frameName, keys, verbose)
+	err = dataset.FrameRefresh(collectionName, frameName, keys, verbose)
 	if err != nil {
 		error_dispatch(err, "failed to reframe, %s", err)
 		return C.int(1)
@@ -1235,21 +1239,21 @@ func reframe(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
 	srcKeys := C.GoString(cKeys)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
 
 	keys := []string{}
-	err = json.Unmarshal([]byte(srcKeys), &keys)
+	err := json.Unmarshal([]byte(srcKeys), &keys)
 	if err != nil {
 		error_dispatch(err, "Can't unmarshal keys, %s", err)
 		return C.int(1)
 	}
 	//NOTE: We're picking up the verbose flag from the modules global state
-	err = dataset.FrameReframe(frameName, keys, verbose)
+	err = dataset.FrameReframe(collectionName, frameName, keys, verbose)
 	if err != nil {
 		error_dispatch(err, "failed to reframe, %s", err)
 		return C.int(1)
@@ -1265,14 +1269,14 @@ func delete_frame(cName *C.char, cFName *C.char) C.int {
 	frameName := C.GoString(cFName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
 
-	err = dataset.FrameDelete(collectionName, frameName)
+	err := dataset.FrameDelete(collectionName, frameName)
 	if err != nil {
 		error_dispatch(err, "failed to delete frame %s", err)
 		return C.int(1)
@@ -1320,22 +1324,21 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err = dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(1)
 
 	}
 
-
 	// Merge collection content into table
-	table, err = lc.Collection.MergeIntoTable(frameName, table, syncOverwrite, verbose)
+	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return C.int(1)
@@ -1396,23 +1399,21 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(1)
 
 	}
 
 	// Merge table contents into Collection and Frame
-	lc.Mutex.Lock()
-	err = lc.Collection.MergeFromTable(frameName, table, syncOverwrite, verbose)
-	lc.Mutex.Unlock()
+	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return C.int(1)
@@ -1450,23 +1451,21 @@ func sync_send_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.char,
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(1)
 
 	}
 
 	// Merge collection content into table
-	lc.Mutex.Lock()
-	table, err = lc.Collection.MergeIntoTable(frameName, table, syncOverwrite, verbose)
-	lc.Mutex.Unlock()
+	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return C.int(1)
@@ -1529,23 +1528,21 @@ func sync_recieve_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.ch
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(1)
 
 	}
 
 	// Merge table contents into Collection and Frame
-	lc.Mutex.Lock()
-	err = lc.Collection.MergeFromTable(frameName, table, syncOverwrite, verbose)
-	lc.Mutex.Unlock()
+	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return C.int(1)
@@ -1568,19 +1565,19 @@ func frame_grid(cName *C.char, cFName *C.char, cIncludeHeaderRow C.int) *C.char 
 	}
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
 
-	f, err := lc.FrameRead(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.CString("")
@@ -1605,19 +1602,19 @@ func frame_objects(cName *C.char, cFName *C.char) *C.char {
 	frameName := C.GoString(cFName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
 
-	f, err := lc.Collection.FrameRead(frameName)
+	f, err := c.FrameRead(frameName)
 	if err != nil {
 		error_dispatch(err, "%s", err)
 		return C.CString("")
@@ -1645,18 +1642,17 @@ func make_objects(cName *C.char, keysAsJson *C.char, objectAsJson *C.char) C.int
 	collectionName := C.GoString(cName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
-
 
 	// Now unpack our keys into an array of strings.
 	src := []byte(C.GoString(keysAsJson))
@@ -1668,7 +1664,7 @@ func make_objects(cName *C.char, keysAsJson *C.char, objectAsJson *C.char) C.int
 	}
 	objectSrc := []byte(C.GoString(objectAsJson))
 
-	err = lc.Collection.CreateObjectsJSON(keyList, objectSrc)
+	err = c.CreateObjectsJSON(keyList, objectSrc)
 	if err != nil {
 		error_dispatch(err, "Create objects failed, %s", err)
 		return C.int(0)
@@ -1688,14 +1684,14 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 	collectionName := C.GoString(cName)
 
 	error_clear()
-	if dataset.LibIsOpen(collectionName) == false {
-		if err := dataset.LibOpen(collectionName); err != nil {
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
 			error_dispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
-	lc, found := dataset.LibGetCollection(collectionName)
-	if found == false {
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
 		error_dispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
@@ -1723,8 +1719,8 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 
 	errorNo := 1
 	for i, key := range keyList {
-		if lc.Collection.KeyExists(key) {
-			err = lc.Collection.Update(key, objectList[i])
+		if c.KeyExists(key) {
+			err = c.Update(key, objectList[i])
 			if err != nil {
 				error_dispatch(err, "Can't update key %q, %s", key, err)
 				errorNo = 0
