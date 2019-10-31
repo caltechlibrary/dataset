@@ -424,15 +424,17 @@ id,one,two
 	}
 
 	buf := bytes.NewBuffer(initialCSV)
+	oldV, verbose := verbose, true
 	_, err = c.ImportCSV(buf, 0, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	verbose = oldV
 
 	keys := c.Keys()
 	if len(keys) == 0 {
-		t.Errorf("Import failed")
+		t.Errorf("Import failed, missing keys from %s", initialCSV)
 		t.FailNow()
 	}
 

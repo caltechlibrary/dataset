@@ -65,7 +65,7 @@ func TestS3(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = Analyzer(collectionURI1, verbose)
+	err = analyzer(collectionURI1, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI1, err)
 		t.FailNow()
@@ -79,7 +79,7 @@ func TestS3(t *testing.T) {
 		t.FailNow()
 	}
 
-	c2, err := Open(collectionURI2)
+	c2, err := openCollection(collectionURI2)
 	if err != nil {
 		t.Errorf("expected err == nil, got %s for %s", err, collectionURI2)
 	}
@@ -88,7 +88,7 @@ func TestS3(t *testing.T) {
 		t.Errorf("expected %d keys1, got %d keys2", len(keys1), len(keys2))
 	}
 
-	err = Analyzer(collectionURI2, verbose)
+	err = analyzer(collectionURI2, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI2, err)
 		t.FailNow()
@@ -145,7 +145,7 @@ func TestGS(t *testing.T) {
 		t.FailNow()
 	}
 
-	err = Analyzer(collectionURI1, verbose)
+	err = analyzer(collectionURI1, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI1, err)
 		t.FailNow()
@@ -159,7 +159,7 @@ func TestGS(t *testing.T) {
 		t.FailNow()
 	}
 
-	c2, err := Open(collectionURI2)
+	c2, err := openCollection(collectionURI2)
 	if err != nil {
 		t.Errorf("expected err == nil, got %s for %s", err, collectionURI2)
 	}
@@ -168,7 +168,7 @@ func TestGS(t *testing.T) {
 		t.Errorf("expected %d keys1, got %d keys2", len(keys1), len(keys2))
 	}
 
-	err = Analyzer(collectionURI2, verbose)
+	err = analyzer(collectionURI2, verbose)
 	if err != nil {
 		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI2, err)
 		t.FailNow()

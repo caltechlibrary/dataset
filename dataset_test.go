@@ -26,12 +26,12 @@ import (
 )
 
 func TestCollection(t *testing.T) {
-	colName := "testdata/pairtree_layout/col1.ds"
+	colName := "testdata/test_collection.ds"
 	// Remove any pre-existing test data
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	collection, err := InitCollection(colName)
+	c, err := InitCollection(colName)
 	if err != nil {
 		t.Errorf("error create() a collection %q", err)
 		t.FailNow()
@@ -44,21 +44,21 @@ func TestCollection(t *testing.T) {
 		t.Errorf("%s is supposed to be a directory!", colName)
 		t.FailNow()
 	}
-	err = collection.Close()
+	err = c.Close()
 	if err != nil {
 		t.Errorf("error Close() a collection %q", err)
 		t.FailNow()
 	}
 
 	// Now open the existing collection of colName
-	collection, err = Open(colName)
+	c, err = openCollection(colName)
 	if err != nil {
 		t.Errorf("error Open() a collection %q", err)
 		t.FailNow()
 	}
 
-	if len(collection.KeyMap) > 0 {
-		t.Errorf("expected 0 keys, got %d", len(collection.KeyMap))
+	if len(c.KeyMap) > 0 {
+		t.Errorf("expected 0 keys, got %d", len(c.KeyMap))
 	}
 	testData := []map[string]interface{}{}
 	src := `[
@@ -89,28 +89,32 @@ func TestCollection(t *testing.T) {
 	for _, rec := range testData {
 		if k, ok := rec["id"]; ok == true {
 			id := k.(string)
-			err = collection.Create(id, rec)
+			err = c.Create(id, rec)
 			if err != nil {
-				t.Errorf("%q: collection.Create(), %s", collection.Name, err)
+				t.Errorf("%q: collection.Create(), %s", c.Name, err)
 				t.FailNow()
 			}
-			p, err := collection.DocPath(id)
+			if c.KeyExists(id) == false {
+				t.Errorf("%q was not created in %q, no error valuye returned", id, c.Name)
+				t.FailNow()
+			}
+			p, err := c.DocPath(id)
 			if err != nil {
-				t.Errorf("%q: Should have docpath for %s, %s", collection.Name, id, err)
+				t.Errorf("%q: Should have docpath for %s, %s", c.Name, id, err)
 				t.FailNow()
 			}
 			if _, err := os.Stat(p); os.IsNotExist(err) == true {
-				t.Errorf("%q: Should have saved %s to disc at %s", collection.Name, id, p)
+				t.Errorf("%q: Should have saved %s to disc at %s", c.Name, id, p)
 				t.FailNow()
 			}
 		}
 	}
 
-	if len(collection.KeyMap) != 3 {
-		t.Errorf("%q: expected 1 key, got %+v", collection.Name, collection)
+	if len(c.KeyMap) != 3 {
+		t.Errorf("%q: expected 1 key, got %+v", c.Name, c)
 		t.FailNow()
 	}
-	keys := collection.Keys()
+	keys := c.Keys()
 	if len(keys) != 3 {
 		t.Errorf("expected 3 keys, got %+v", keys)
 		t.FailNow()
@@ -119,33 +123,33 @@ func TestCollection(t *testing.T) {
 	// Create an empty record, then read it again to compare
 	keyName := "Kahlo-F"
 	rec2 := map[string]interface{}{}
-	err = collection.Read(keyName, rec2, false)
+	err = c.Read(keyName, rec2, false)
 	if err != nil {
-		t.Errorf("%q: Read(), %s", collection.Name, err)
+		t.Errorf("%q: Read(), %s", c.Name, err)
 		t.FailNow()
 	}
 	rec1 := testData[0]
 	for k, expected := range rec1 {
 		if val, ok := rec2[k]; ok == true {
 			if expected != val {
-				t.Errorf("%q: expected %s in record, got, %s", collection.Name, expected, val)
+				t.Errorf("%q: expected %s in record, got, %s", c.Name, expected, val)
 				t.FailNow()
 			}
 		} else {
-			t.Errorf("%q: Read() missing %s in %+v, %+v", collection.Name, k, rec1, rec2)
+			t.Errorf("%q: Read() missing %s in %+v, %+v", c.Name, k, rec1, rec2)
 			t.FailNow()
 		}
 	}
 	// Should trigger update if a duplicate record
-	err = collection.Create(keyName, rec2)
+	err = c.Create(keyName, rec2)
 	if err == nil {
-		t.Errorf("%q: Create not allow creationg on an existing record, %s --> %+v", collection.Name, keyName, rec2)
+		t.Errorf("%q: Create not allow creationg on an existing record, %s --> %+v", c.Name, keyName, rec2)
 		t.FailNow()
 	}
 
 	rec3 := map[string]interface{}{}
-	if err := collection.Read(keyName, rec3, false); err != nil {
-		t.Errorf("%q: Should have found freda in collection, %s", collection.Name, err)
+	if err := c.Read(keyName, rec3, false); err != nil {
+		t.Errorf("%q: Should have found freda in collection, %s", c.Name, err)
 		t.FailNow()
 	}
 	for k2, v2 := range rec2 {
@@ -159,14 +163,14 @@ func TestCollection(t *testing.T) {
 	}
 
 	rec2["email"] = "freda@collectivo.example.org"
-	err = collection.Update(keyName, rec2)
+	err = c.Update(keyName, rec2)
 	if err != nil {
-		t.Errorf("%s: Could not update %s, %s", collection.Name, "freda", err)
+		t.Errorf("%s: Could not update %s, %s", c.Name, "freda", err)
 		t.FailNow()
 	}
 
 	rec4 := map[string]interface{}{}
-	if err := collection.Read(keyName, rec4, false); err != nil {
+	if err := c.Read(keyName, rec4, false); err != nil {
 		t.Errorf("Should have found freda in collection, %s", err)
 		t.FailNow()
 	}
@@ -180,17 +184,17 @@ func TestCollection(t *testing.T) {
 		}
 	}
 
-	err = collection.Delete(keyName)
+	err = c.Delete(keyName)
 	if err != nil {
 		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
 		t.FailNow()
 	}
-	err = collection.Read(keyName, rec2, false)
+	err = c.Read(keyName, rec2, false)
 	if err == nil {
 		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
 	}
 
-	err = Delete(colName)
+	err = deleteCollection(colName)
 	if err != nil {
 		t.Errorf("Couldn't remove collection %s, %s", colName, err)
 	}
@@ -202,7 +206,7 @@ func TestComplexKeys(t *testing.T) {
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	collection, err := InitCollection(colName)
+	c, err := InitCollection(colName)
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
@@ -239,7 +243,7 @@ func TestComplexKeys(t *testing.T) {
 	}
 
 	for k, v := range testRecords {
-		err := collection.Create(k, v)
+		err := c.Create(k, v)
 		if err != nil {
 			t.Errorf("Can't create %s <-- %s : %s", k, v, err)
 		}
@@ -306,13 +310,13 @@ func TestCloneSample(t *testing.T) {
 	if err := c.CloneSample(trainingName, testName, keys, trainingSize, false); err != nil {
 		t.Errorf("Failed to create samples %s (%d) and %s, %s", trainingName, trainingSize, testName, err)
 	}
-	training, err := Open(trainingName)
+	training, err := openCollection(trainingName)
 	if err != nil {
 		t.Errorf("Could not open %s, %s", trainingName, err)
 		t.FailNow()
 	}
 	defer training.Close()
-	test, err := Open(testName)
+	test, err := openCollection(testName)
 	if err != nil {
 		t.Errorf("Could not open %s, %s", testName, err)
 		t.FailNow()

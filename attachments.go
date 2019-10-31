@@ -418,7 +418,8 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 			}
 			// Retrieve the file by version
 			if href, ok := obj.VersionHRefs[version]; ok == true {
-				if src, err := c.Store.ReadFile(href); err != nil {
+				src, err := c.Store.ReadFile(href)
+				if err != nil {
 					return err
 				} else if err := c.Store.WriteFile(obj.Name, src, 0777); err != nil {
 					return err

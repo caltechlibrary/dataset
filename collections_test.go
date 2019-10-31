@@ -25,8 +25,18 @@ import (
 	"testing"
 )
 
-func TestService(t *testing.T) {
-	cName := path.Join("testdata", "service0.ds")
+func TestCollections(t *testing.T) {
+	cName := path.Join("testdata", "collection0.ds")
+	// remove any stale test collection collection first...
+	os.RemoveAll(cName)
+
+	// Create a new collection
+	_, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("Could not create test collection %q, %s", cName, err)
+		t.FailNow()
+	}
+
 	key := "k1"
 	src := []byte(`{
 	"title": "Orchids & Moonbeams",
@@ -64,19 +74,12 @@ func TestService(t *testing.T) {
 	]
 }`)
 
-	os.RemoveAll(cName)
-	InitCollection(cName)
-	if err := ServiceOpen(cName); err != nil {
-		t.Errorf("ServiceOpen(%q) failed, %s", cName, err)
+	if err := Open(cName); err != nil {
+		t.Errorf("Open(%q) failed, %s", cName, err)
 		t.FailNow()
 	}
-	defer func() {
-		if err := ServiceClose(cName); err != nil {
-			t.Errorf("Failed CloseService(%q), %s", cName, err)
-		}
-	}()
 
-	cNames := ServiceCollections()
+	cNames := Collections()
 	if len(cNames) != 1 {
 		t.Errorf("Expected one cName %q, got (%d) %s", cName, len(cNames), strings.Join(cNames, ", "))
 		t.FailNow()
@@ -85,12 +88,12 @@ func TestService(t *testing.T) {
 		t.Errorf("Expected cName %q, got %q", cName, cNames[0])
 	}
 
-	if err := ServiceCreateJSON(cName, key, src); err != nil {
+	if err := CreateJSON(cName, key, src); err != nil {
 		t.Errorf("Expected a new record got error, %s", err)
 		t.FailNow()
 	}
 
-	if src, err := ServiceReadJSON(cName, key); err != nil {
+	if src, err := ReadJSON(cName, key); err != nil {
 		t.Errorf("expected to find %q, got error, %s", key, err)
 	} else {
 		obj := map[string]interface{}{}
@@ -98,13 +101,13 @@ func TestService(t *testing.T) {
 			t.Errorf("expected to decode json, got %s", err)
 			t.FailNow()
 		}
-		//fmt.Printf("DEBUG %T -> %+v", obj, obj)
+
 		if val, ok := obj["title"]; ok == false {
 			t.Errorf("expected a title, found none.")
 		} else {
 			s := val.(string)
 			if s != "Orchids & Moonbeams" {
-				t.Errorf("expected a title 'Orchid & Moonbeams', got %q.", s)
+				t.Errorf("expected a title 'Orchids & Moonbeams', got %q.", s)
 			}
 		}
 		if val, ok := obj["cast"]; ok == false {
@@ -122,11 +125,11 @@ func TestService(t *testing.T) {
 			t.Errorf("expected json encoded, got error %s", err)
 			t.FailNow()
 		}
-		if err := ServiceUpdateJSON(cName, key, src); err != nil {
+		if err := UpdateJSON(cName, key, src); err != nil {
 			t.Errorf("Expected an updated record got error, %s", err)
 			t.FailNow()
 		}
-		keys := ServiceKeys(cName)
+		keys := Keys(cName)
 		if len(keys) != 1 {
 			t.Errorf("Expected one key, k1 got %d", len(keys))
 			t.FailNow()
@@ -139,7 +142,7 @@ func TestService(t *testing.T) {
 		dotPaths := []string{".title", ".cast[:].character"}
 		labels := []string{"title", "characters"}
 		verbose := false
-		f, err := ServiceFrameCreate(cName, fName, keys, dotPaths, labels, verbose)
+		f, err := FrameCreate(cName, fName, keys, dotPaths, labels, verbose)
 		if err != nil {
 			t.Errorf("expected success for FrameCreate(), got %s", err)
 			t.FailNow()
@@ -149,7 +152,7 @@ func TestService(t *testing.T) {
 			t.Errorf("Expected on object in frame, got %d", len(ol))
 			t.FailNow()
 		}
-		ol2, err := ServiceFrameObjects(cName, fName)
+		ol2, err := FrameObjects(cName, fName)
 		if err != nil {
 			t.Errorf("Expected an object list for frame %q in %q", fName, cName)
 			t.FailNow()
@@ -179,11 +182,11 @@ func TestService(t *testing.T) {
 	]
 }`)
 		key2 := "k0"
-		if err := ServiceCreateJSON(cName, key2, src); err != nil {
+		if err := CreateJSON(cName, key2, src); err != nil {
 			t.Errorf("expected success for CreateJSON k0, got %s", err)
 			t.FailNow()
 		}
-		src, err := ServiceReadJSON(cName, key)
+		src, err := ReadJSON(cName, key)
 		if err != nil {
 			t.Errorf("expected ReadJSON(%q, %q)", cName, key)
 			t.FailNow()
@@ -192,11 +195,11 @@ func TestService(t *testing.T) {
 			t.Errorf("expected ReadJSON(%q, %q) -> %s", cName, key, src)
 			t.FailNow()
 		}
-		if err := ServiceFrameRefresh(cName, fName, []string{key2, key}, verbose); err != nil {
+		if err := FrameRefresh(cName, fName, []string{key2, key}, verbose); err != nil {
 			t.Errorf("expected success frame refresh, got %s", err)
 			t.FailNow()
 		}
-		ol3, err := ServiceFrameObjects(cName, fName)
+		ol3, err := FrameObjects(cName, fName)
 		if err != nil {
 			t.Errorf("expected a new copy of object list, got %s", err)
 			t.FailNow()
@@ -211,11 +214,11 @@ func TestService(t *testing.T) {
 		if ol3[1]["title"] != "The Incredible Adventures of Jack Flanders" {
 			t.Errorf("Expected first object to be The Incredible Adventures of Jack Flanders, got %+v", ol3[1])
 		}
-		if err := ServiceFrameReframe(cName, fName, []string{key2, key}, verbose); err != nil {
+		if err := FrameReframe(cName, fName, []string{key2, key}, verbose); err != nil {
 			t.Errorf("expected success frame refresh, got %s", err)
 			t.FailNow()
 		}
-		ol3, err = ServiceFrameObjects(cName, fName)
+		ol3, err = FrameObjects(cName, fName)
 		if err != nil {
 			t.Errorf("expected a new copy of object list, got %s", err)
 			t.FailNow()
@@ -230,31 +233,31 @@ func TestService(t *testing.T) {
 		if ol3[1]["title"] != "Orchids & Moonbeams" {
 			t.Errorf("Expected first object to be Orchids & Moonbeams, got %+v", ol3[1])
 		}
-		err = ServiceFrameClear(cName, fName)
+		err = FrameClear(cName, fName)
 		if err != nil {
-			t.Errorf("expected a no error from ServiceFrameClear(%q, %q), got %s", cName, fName, err)
+			t.Errorf("expected a no error from FrameClear(%q, %q), got %s", cName, fName, err)
 			t.FailNow()
 		}
-		ol3, err = ServiceFrameObjects(cName, fName)
+		ol3, err = FrameObjects(cName, fName)
 		if err != nil {
-			t.Errorf("expected a no error from ServiceFrameObjects(%q, %q), got %s", cName, fName, err)
+			t.Errorf("expected a no error from FrameObjects(%q, %q), got %s", cName, fName, err)
 			t.FailNow()
 		}
 		if len(ol3) != 0 {
 			t.Errorf("expected zero objects, got %+v", ol3)
 			t.FailNow()
 		}
-		err = ServiceFrameDelete(cName, fName)
+		err = FrameDelete(cName, fName)
 		if err != nil {
-			t.Errorf("expected a no error from ServiceFrameDelete(%q, %q), got %s", cName, fName, err)
+			t.Errorf("expected a no error from FrameDelete(%q, %q), got %s", cName, fName, err)
 			t.FailNow()
 		}
-		if fNames := ServiceFrames(cName); len(fNames) > 0 {
+		if fNames := Frames(cName); len(fNames) > 0 {
 			t.Errorf("expected zsero frame names, got %s", strings.Join(fNames, ", "))
 		}
-		err = ServiceCloseAll()
+		err = CloseAll()
 		if err != nil {
-			t.Errorf("expected a no error from ServiceCloseAll(), got %s", err)
+			t.Errorf("expected a no error from CloseAll(), got %s", err)
 			t.FailNow()
 		}
 	}
