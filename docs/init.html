@@ -29,7 +29,7 @@
 
 <h2>Syntax</h2>
 
-<pre><code>    dataset init COLLECT_NAME
+<pre><code>    dataset init COLLECTION_NAME
 </code></pre>
 
 <h2>Description</h2>
@@ -60,23 +60,12 @@ correctly.</p>
 
 <p>NOTE: After each envocation of <code>dataset init</code> if all went well
 you will be shown an <code>OK</code>. If you want to save typing you can
-set the environment variable DATASET.  For our examples above
+set the environment variable use that in your shell.  For our examples above
 that would look like</p>
-
-<pre><code>    dataset init data.ds
-    export DATASET=&quot;data.ds&quot;
-</code></pre>
-
-<p>or for the Amazon S3 example</p>
 
 <pre><code>    dataset init s3://stuff.example.org/data.ds
     export DATASET=&quot;s3://stuff.example.org/data.ds&quot;
-</code></pre>
-
-<p>or for the Google storage example</p>
-
-<pre><code>    dataset init gs://stuff.example.org/data.ds
-    export DATASET=&quot;gs://stuff.example.org/data.ds&quot;
+    dataset keys &quot;${DATASET}&quot;
 </code></pre>
 
 <h3>S3 environment example</h3>

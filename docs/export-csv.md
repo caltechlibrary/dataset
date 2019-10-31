@@ -5,14 +5,12 @@
 
 ```
     dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
-    dataset export COLLECTION_NAME FRAME_NAME GSHEET_ID GSHEET_NAME [CELL_RANGE]
 ```
 
 ## Description
 
 _export_ will render the contents of a collection as a CSV file
-or export to a Google Sheet based on a frame defined in the 
-collection. 
+based on a frame defined in the collection. 
 
 ## Usage
 

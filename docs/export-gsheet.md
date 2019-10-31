@@ -4,7 +4,6 @@
 ## Syntax
 
 ```
-    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
     dataset export COLLECTION_NAME FRAME_NAME GSHEET_ID GSHEET_NAME [CELL_RANGE]
 ```
 
