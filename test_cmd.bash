@@ -491,7 +491,7 @@ EOT
     fi
     
     CNT=$(bin/dataset count testdata/myfix.ds)
-    echo "NOTE: expecting ${CNT} error messages on following lines"
+    echo "NOTE: expecting ${CNT} warnings detected on following line"
     echo '{}' > testdata/myfix.ds/collection.json
     bin/dataset -quiet -nl=false check testdata/myfix.ds
     if [[ "$?" == "0" ]]; then
