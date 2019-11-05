@@ -146,19 +146,67 @@ func init_collection(name *C.char) C.int {
 	return C.int(1)
 }
 
-// has_key returns 1 if the key exists in a collection or 0 if not.
+// is_open returns true (i.e. one) if a collection has been opened by libdataset, false (i.e. zero) otherwise
 //
-//export has_key
-func has_key(cName, cKey *C.char) C.int {
+// export is_open
+func is_open(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
-	key := C.GoString(cKey)
 
 	if dataset.IsOpen(collectionName) {
-		if dataset.KeyExists(collectionName, key) {
-			return C.int(1)
-		}
+		return C.int(1)
 	}
 	return C.int(0)
+}
+
+// open returns 0 on successfully opening a collection 1 otherwise. Sets error messages if needed.
+//
+// export open
+func open(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	error_clear()
+	err := dataset.Open(collectionName)
+	if err != nil {
+		error_dispatch(err, "Cannot open %q, %s", collectionName, err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+// collections returns a JSON list of collection names that are open otherwise an empty list.
+//
+// export collections
+func collections() *C.char {
+	cNames := dataset.Collections()
+	src, err := json.Marshal(cNames)
+	if err != nil {
+		return C.CString("[]")
+	}
+	return C.CString(fmt.Sprintf("%s", src))
+}
+
+// close closes a collection previously opened.
+//
+// export close
+func close(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	error_clear()
+	if err := dataset.Close(collectionName); err != nil {
+		error_dispatch(err, "Cannot close collection %s, %s", collectionName, err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+// close_all closes all collections previously opened
+//
+// export close_all
+func close_all() C.int {
+	error_clear()
+	if err := dataset.CloseAll(); err != nil {
+		error_dispatch(err, "Cannot close all collections, %s", err)
+		return C.int(0)
+	}
+	return C.int(1)
 }
 
 // create_object takes JSON source and adds it to the collection with
@@ -365,6 +413,21 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 		return C.int(0)
 	}
 	return C.int(1)
+}
+
+// key_exists returns 1 if the key exists in a collection or 0 if not.
+//
+//export key_exists
+func key_exists(cName, cKey *C.char) C.int {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+
+	if dataset.IsOpen(collectionName) {
+		if dataset.KeyExists(collectionName, key) {
+			return C.int(1)
+		}
+	}
+	return C.int(0)
 }
 
 // keys returns JSON source of an array of keys from the collection
@@ -1155,19 +1218,162 @@ func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char, cLab
 	return C.CString(txt)
 }
 
-// has_frame returns 1 if the frame name exists in the collection,
-// otherwise 0.
+// frame_exists returns 1 (true) if frame name exists in collection, 0 (false) otherwise
 //
-//export has_frame
-func has_frame(cName *C.char, cFName *C.char) C.int {
+//export frame_exists
+func frame_exists(cName *C.char, cFName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
-	if dataset.IsOpen(collectionName) {
-		if dataset.FrameExists(collectionName, frameName) {
-			return C.int(1)
-		}
+	if dataset.FrameExists(collectionName, frameName) {
+		return C.int(1)
 	}
 	return C.int(0)
+}
+
+// frame_keys takes a collection name and frame name and returns a list of keys from the frame or an empty list.
+// The list is expressed as a JSON source.
+//
+//export frame_keys
+func frame_keys(cName *C.char, cFName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	keys := dataset.FrameKeys(collectionName, frameName)
+	src, err := json.Marshal(keys)
+	if err != nil {
+		return C.CString("[]")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// frame_create defines a new frame an populates it.
+//
+//export frame_create
+func frame_create(cName *C.char, cFName *C.char, cKeysSrc *C.char, cDotPathsSrc *C.char, cLabelsSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	keysSrc := C.GoString(cKeysSrc)
+	dotPathSrc := C.GoString(cDotPathSrc)
+	labelsSrc := C.GoString(cLabelsSrc)
+	keys := []string{}
+	dotPaths := []string{}
+	labels := []string{}
+
+	error_clear()
+	if err := json.Unmarshal(keysSrc, &keys); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+
+	if err := json.Unmarshal(dotPathSrc, &dotPaths); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+
+	if err := json.Unmarshal(labelsSrc, &labels); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+
+	_, err := dataset.FrameCreate(collectionName, frameName, keys, dotPaths, labels, verbose)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+// frame_objects retrieves a JSON source list of objects from a frame.
+//
+//export frame_objects
+func frame_objects(cName *C.char, cFName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	error_clear()
+	ol, err := dataset.FrameObjects(collectionName, frameName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(ol)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// frame_refresh refresh the contents of a frame given a list of keys.
+//
+//export frame_refresh
+func frame_refresh(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	keysSrc := C.GoString(cKeysSrc)
+
+	keys := []string{}
+
+	error_clear()
+	if err := json.Unmarshal([]byte(keysSrc), &keys); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	if err := dataset.FrameRefresh(collectionName, frameName, keys, verbose); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+// frame_reframe will change of object list in a frame based on the key list provided.
+//
+//export frame_reframe
+func frame_reframe(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	keysSrc := C.GoString(cKeysSrc)
+
+	keys := []string{}
+
+	error_clear()
+	if err := json.Unmarshal([]byte(keysSrc), &keys); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	if err := dataset.FrameReframe(collectionName, frameName, keys, verbose); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+// frame_clear will clear the object list and keys associated with a frame.
+//
+//export frame_clear
+func frame_clear(cName *C.char, cFName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	error_clear()
+	if err := dataset.FrameClear(collectionName, frameName); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
+// frame_delete will removes a frame from a collection
+//
+//export frame_delete
+func frame_delete(cName *C.char, cFName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	error_clear()
+	if err := dataset.FrameClear(collectionName, frameName); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	return C.int(1)
 }
 
 // frames returns a JSON array of frames names in the collection.
@@ -1592,42 +1798,6 @@ func frame_grid(cName *C.char, cFName *C.char, cIncludeHeaderRow C.int) *C.char 
 	return C.CString(txt)
 }
 
-// frame_objects returns a copy of a frame's object list as an
-// array of objects in JSON source. The array is ordered, the attributes
-// in the objects are not ordered.
-//
-//export frame_objects
-func frame_objects(cName *C.char, cFName *C.char) *C.char {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.CString("")
-		}
-	}
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
-		return C.CString("")
-	}
-
-	f, err := c.FrameRead(frameName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
-	src, err := json.Marshal(f.Objects())
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
-	return C.CString(txt)
-}
-
 //
 // make_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
@@ -1728,6 +1898,213 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 		}
 	}
 	return C.int(errorNo)
+}
+
+// set_who will set the "who" value associated with the collection's metadata
+//
+//export set_who
+func set_who(cName *C.char, cNamesSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	namesSrc := C.GoString(cNamesSrc)
+	names := []string{}
+	error_clear()
+	if err := json.Unmarshal(fmt.Sprintf("%s", namesSrc), &names); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+	}
+	if err := dataset.SetWho(collectionName, names); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+
+	}
+	return C.int(1)
+}
+
+// get_who will get the "who" value associated with the collection's metadata
+//
+//export get_who
+func get_who(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	names := []string{}
+	error_clear()
+
+	names, err := dataset.GetWho(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(names)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// set_what will set the "what" value associated with the collection's metadata
+//
+//export set_what
+func set_what(cName *C.char, cSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	src := []byte(C.GoString(cWhat))
+	error_clear()
+
+	if err := dataset.SetWho(collectionName, src); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+
+	}
+	return C.int(1)
+}
+
+// get_what will get the "what" value associated with the collection's metadata
+//
+//export get_what
+func get_what(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	names := []string{}
+	error_clear()
+
+	src, err := dataset.GetWhat(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// set_when will set the "when" value associated with the collection's metadata
+//
+//export set_when
+func set_when(cName *C.char, cSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	src := []byte(C.GoString(cSrc))
+	error_clear()
+
+	if err := dataset.SetWhen(collectionName, src); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+
+	}
+	return C.int(1)
+}
+
+// get_when will get the "what" value associated with the collection's metadata
+//
+//export get_when
+func get_when(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	names := []string{}
+	error_clear()
+
+	src, err := dataset.GetWhen(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// set_where will set the "where" value associated with the collection's metadata
+//
+//export set_where
+func set_where(cName *C.char, cSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	src := []byte(C.GoString(cSrc))
+	error_clear()
+
+	if err := dataset.SetWhere(collectionName, src); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+
+	}
+	return C.int(1)
+}
+
+// get_where will get the "where" value associated with the collection's metadata
+//
+//export get_where
+func get_where(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	names := []string{}
+	error_clear()
+
+	src, err := dataset.GetWhere(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// set_version will set the "version" value associated with the collection's metadata
+//
+//export set_version
+func set_version(cName *C.char, cSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	src := []byte(C.GoString(cSrc))
+	error_clear()
+
+	if err := dataset.SetVersion(collectionName, src); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+
+	}
+	return C.int(1)
+}
+
+// get_version will get the "version" value associated with the collection's metadata
+//
+//export get_version
+func get_version(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	names := []string{}
+	error_clear()
+
+	src, err := dataset.GetVersion(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// set_contact will set the "contact" value associated with the collection's metadata
+//
+//export set_contact
+func set_contact(cName *C.char, cSrc *C.char) C.int {
+	collectionName := C.GoString(cName)
+	src := []byte(C.GoString(cSrc))
+	error_clear()
+
+	if err := dataset.SetContact(collectionName, src); err != nil {
+		error_dispatch(err, "%s", err)
+		return C.int(0)
+
+	}
+	return C.int(1)
+}
+
+// get_contact will get the "contact" value associated with the collection's metadata
+//
+//export get_contact
+func get_contact(cName *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	names := []string{}
+	error_clear()
+
+	src, err := dataset.GetContact(collectionName)
+	if err != nil {
+		error_dispatch(err, "%s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
 }
 
 func main() {}
