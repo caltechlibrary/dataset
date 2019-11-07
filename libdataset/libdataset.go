@@ -1161,63 +1161,6 @@ func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
 	return C.CString(txt)
 }
 
-// frame creates a data frame in a collection. It needs a JSON array of
-// keys, dotpaths and labels and returns JSON source of the new frame.
-//
-//export frame
-func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char, cLabels *C.char) *C.char {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	srcKeys := C.GoString(cKeys)
-	srcDotpaths := C.GoString(cDotPaths)
-	srcLabels := C.GoString(cLabels)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.CString("")
-		}
-	}
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
-		return C.CString("")
-	}
-
-	keys := []string{}
-	err = json.Unmarshal([]byte(srcKeys), &keys)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal keys, %s", err)
-		return C.CString("")
-	}
-	dotPaths := []string{}
-	err = json.Unmarshal([]byte(srcDotpaths), &dotPaths)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal dot paths, %s", err)
-		return C.CString("")
-	}
-	labels := []string{}
-	err = json.Unmarshal([]byte(srcLabels), &labels)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal labels, %s", err)
-		return C.CString("")
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	f, err := c.FrameRead(frameName)
-	if err != nil {
-		error_dispatch(err, "failed to create frame, %s", err)
-		return C.CString("")
-	}
-	src, err := json.Marshal(f)
-	if err != nil {
-		error_dispatch(err, "failed to marshal frame, %s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
-	return C.CString(txt)
-}
-
 // frame_exists returns 1 (true) if frame name exists in collection, 0 (false) otherwise
 //
 //export frame_exists
@@ -1252,9 +1195,9 @@ func frame_keys(cName *C.char, cFName *C.char) *C.char {
 func frame_create(cName *C.char, cFName *C.char, cKeysSrc *C.char, cDotPathsSrc *C.char, cLabelsSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
-	keysSrc := C.GoString(cKeysSrc)
-	dotPathSrc := C.GoString(cDotPathSrc)
-	labelsSrc := C.GoString(cLabelsSrc)
+	keysSrc := []byte(C.GoString(cKeysSrc))
+	dotPathSrc := []byte(C.GoString(cDotPathsSrc))
+	labelsSrc := []byte(C.GoString(cLabelsSrc))
 	keys := []string{}
 	dotPaths := []string{}
 	labels := []string{}
@@ -1401,93 +1344,6 @@ func frames(cName *C.char) *C.char {
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
-}
-
-// refresh takes a JSON array of keys and updates the frame's
-// object list.
-//
-//export refresh
-func refresh(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	srcKeys := C.GoString(cKeys)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.int(1)
-		}
-	}
-
-	keys := []string{}
-	err := json.Unmarshal([]byte(srcKeys), &keys)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal keys, %s", err)
-		return C.int(1)
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	err = dataset.FrameRefresh(collectionName, frameName, keys, verbose)
-	if err != nil {
-		error_dispatch(err, "failed to reframe, %s", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
-// reframe takes a JSON array of keys and updates the frame's
-// object list.
-//
-//export reframe
-func reframe(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	srcKeys := C.GoString(cKeys)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.int(1)
-		}
-	}
-
-	keys := []string{}
-	err := json.Unmarshal([]byte(srcKeys), &keys)
-	if err != nil {
-		error_dispatch(err, "Can't unmarshal keys, %s", err)
-		return C.int(1)
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	err = dataset.FrameReframe(collectionName, frameName, keys, verbose)
-	if err != nil {
-		error_dispatch(err, "failed to reframe, %s", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
-// delete_frame removes a frame from a collection.
-//
-//export delete_frame
-func delete_frame(cName *C.char, cFName *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.int(1)
-		}
-	}
-
-	err := dataset.FrameDelete(collectionName, frameName)
-	if err != nil {
-		error_dispatch(err, "failed to delete frame %s", err)
-		return C.int(1)
-	}
-	return C.int(0)
 }
 
 // sync_send_csv - synchronize a frame sending data to a CSV file
@@ -1905,10 +1761,10 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 //export set_who
 func set_who(cName *C.char, cNamesSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	namesSrc := C.GoString(cNamesSrc)
+	namesSrc := []byte(C.GoString(cNamesSrc))
 	names := []string{}
 	error_clear()
-	if err := json.Unmarshal(fmt.Sprintf("%s", namesSrc), &names); err != nil {
+	if err := json.Unmarshal(namesSrc, &names); err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 	}
@@ -1925,14 +1781,9 @@ func set_who(cName *C.char, cNamesSrc *C.char) C.int {
 //export get_who
 func get_who(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	names := []string{}
 	error_clear()
 
-	names, err := dataset.GetWho(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
+	names := dataset.GetWho(collectionName)
 	src, err := json.Marshal(names)
 	if err != nil {
 		error_dispatch(err, "%s", err)
@@ -1947,10 +1798,10 @@ func get_who(cName *C.char) *C.char {
 //export set_what
 func set_what(cName *C.char, cSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	src := []byte(C.GoString(cWhat))
+	src := C.GoString(cSrc)
 	error_clear()
 
-	if err := dataset.SetWho(collectionName, src); err != nil {
+	if err := dataset.SetWhat(collectionName, src); err != nil {
 		error_dispatch(err, "%s", err)
 		return C.int(0)
 
@@ -1963,14 +1814,8 @@ func set_what(cName *C.char, cSrc *C.char) C.int {
 //export get_what
 func get_what(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	names := []string{}
-	error_clear()
 
-	src, err := dataset.GetWhat(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
+	src := dataset.GetWhat(collectionName)
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }
@@ -1980,7 +1825,7 @@ func get_what(cName *C.char) *C.char {
 //export set_when
 func set_when(cName *C.char, cSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	src := []byte(C.GoString(cSrc))
+	src := C.GoString(cSrc)
 	error_clear()
 
 	if err := dataset.SetWhen(collectionName, src); err != nil {
@@ -1996,14 +1841,8 @@ func set_when(cName *C.char, cSrc *C.char) C.int {
 //export get_when
 func get_when(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	names := []string{}
-	error_clear()
 
-	src, err := dataset.GetWhen(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
+	src := dataset.GetWhen(collectionName)
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }
@@ -2013,7 +1852,7 @@ func get_when(cName *C.char) *C.char {
 //export set_where
 func set_where(cName *C.char, cSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	src := []byte(C.GoString(cSrc))
+	src := C.GoString(cSrc)
 	error_clear()
 
 	if err := dataset.SetWhere(collectionName, src); err != nil {
@@ -2029,14 +1868,8 @@ func set_where(cName *C.char, cSrc *C.char) C.int {
 //export get_where
 func get_where(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	names := []string{}
-	error_clear()
 
-	src, err := dataset.GetWhere(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
+	src := dataset.GetWhere(collectionName)
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }
@@ -2046,7 +1879,7 @@ func get_where(cName *C.char) *C.char {
 //export set_version
 func set_version(cName *C.char, cSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	src := []byte(C.GoString(cSrc))
+	src := C.GoString(cSrc)
 	error_clear()
 
 	if err := dataset.SetVersion(collectionName, src); err != nil {
@@ -2062,14 +1895,8 @@ func set_version(cName *C.char, cSrc *C.char) C.int {
 //export get_version
 func get_version(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	names := []string{}
-	error_clear()
 
-	src, err := dataset.GetVersion(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
+	src := dataset.GetVersion(collectionName)
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }
@@ -2079,7 +1906,7 @@ func get_version(cName *C.char) *C.char {
 //export set_contact
 func set_contact(cName *C.char, cSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	src := []byte(C.GoString(cSrc))
+	src := C.GoString(cSrc)
 	error_clear()
 
 	if err := dataset.SetContact(collectionName, src); err != nil {
@@ -2095,14 +1922,8 @@ func set_contact(cName *C.char, cSrc *C.char) C.int {
 //export get_contact
 func get_contact(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	names := []string{}
-	error_clear()
 
-	src, err := dataset.GetContact(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
+	src := dataset.GetContact(collectionName)
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }

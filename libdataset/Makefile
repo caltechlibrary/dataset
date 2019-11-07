@@ -46,6 +46,12 @@ build: $(LIB_NAME)$(EXT)
 $(LIB_NAME)$(EXT): $(LIB_NAME).go ../dataset.go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
+py_libdataset: .FORCE
+	go build -buildmode=c-shared -o "py_libdataset/lib/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+
+test: py_libdataset
+	python3 test_libdataset.py
+
 clean:
 	if [ -f "$(LIB_NAME).dll" ]; then rm "$(LIB_NAME).dll"; fi
 	if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
@@ -71,4 +77,4 @@ release: $(LIB_NAME)$(EXT)
 
 
 
-
+.FORCE:
