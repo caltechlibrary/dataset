@@ -73,3 +73,4 @@ for i, expected in enumerate(expected_keys):
 
 
 print('Success!')
+shutil.rmtree("t1.ds")
