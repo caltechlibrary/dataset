@@ -157,15 +157,22 @@ func Keys(cName string) []string {
 
 // KeyExists returns true if the key exists in the collection or false otherwise
 func KeyExists(cName string, key string) bool {
-	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
-			return false
+	/*
+		if cMap == nil || IsOpen(cName) == false {
+			if err := Open(cName); err != nil {
+				return false
+			}
 		}
+		if c, found := cMap.collections[cName]; found == true && c != nil {
+			return c.KeyExists(key)
+		}
+		return false
+	*/
+	c, err := GetCollection(cName)
+	if err != nil {
+		return false
 	}
-	if c, found := cMap.collections[cName]; found == true && c != nil {
-		return c.KeyExists(key)
-	}
-	return false
+	return c.KeyExists(key)
 }
 
 // KeyFilter returns a list of keys given a list of keys and a filter expression.
