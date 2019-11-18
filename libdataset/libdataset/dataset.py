@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # 
-# py_libdataset is a wrapper around our C-Shared library of libdataset.go
+# libdataset is a wrapper around our C-Shared library of libdataset.go
 # used for testing the C-Shared library functions.
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
@@ -21,7 +21,7 @@
 import json
 import ctypes
 
-from py_libdataset.cwrapper import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact
+from libdataset.cwrapper import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact
 
 #
 # These are our Python idiomatic functions
