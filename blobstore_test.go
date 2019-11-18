@@ -16,7 +16,7 @@ var (
 )
 
 func TestS3(t *testing.T) {
-	verbose := false
+	verbose := true
 	if S3Bucket == "" {
 		fmt.Fprintf(os.Stderr, "Skipping S3 tests, no bucket\n")
 		return
@@ -67,7 +67,7 @@ func TestS3(t *testing.T) {
 
 	err = analyzer(collectionURI1, verbose)
 	if err != nil {
-		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI1, err)
+		t.Errorf("shouldn't have an error for analyser on %s, %s", collectionURI1, err)
 		t.FailNow()
 	}
 
@@ -90,7 +90,7 @@ func TestS3(t *testing.T) {
 
 	err = analyzer(collectionURI2, verbose)
 	if err != nil {
-		t.Errorf("shouldn't have an error for Analyser on %s, %s", collectionURI2, err)
+		t.Errorf("shouldn't have an error for analyser on %s, %s", collectionURI2, err)
 		t.FailNow()
 	}
 }

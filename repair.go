@@ -52,7 +52,18 @@ func analyzer(collectionName string, verbose bool) error {
 	if err != nil {
 		return err
 	}
-	files, err := store.ReadDir(collectionName)
+	collectionPath := collectionName
+	switch store.Type {
+	case storage.GS:
+		if bucketName, ok := store.Config["GoogleBucket"]; ok == true {
+			collectionPath = strings.TrimPrefix(collectionName, fmt.Sprintf("s3://%s/", bucketName.(string)))
+		}
+	case storage.S3:
+		if bucketName, ok := store.Config["AwsBucket"]; ok == true {
+			collectionPath = strings.TrimPrefix(collectionName, fmt.Sprintf("s3://%s/", bucketName.(string)))
+		}
+	}
+	files, err := store.ReadDir(collectionPath)
 	if err != nil {
 		return err
 	}
@@ -83,7 +94,7 @@ func analyzer(collectionName string, verbose bool) error {
 		wCnt++
 	} else {
 		// Make sure we can JSON parse the file
-		docPath := path.Join(collectionName, "collection.json")
+		docPath := path.Join(collectionPath, "collection.json")
 		if src, err := store.ReadFile(docPath); err == nil {
 			if err := json.Unmarshal(src, &data); err == nil {
 				// release the memory
@@ -108,10 +119,10 @@ func analyzer(collectionName string, verbose bool) error {
 	// Make sure we have all the known pairs in the pairtree
 	// Check to see if records can be found in their buckets
 	for k, v := range c.KeyMap {
-		dirPath := path.Join(collectionName, v)
+		dirPath := path.Join(collectionPath, v)
 		// NOTE: k needs to be urlencoded before checking for file
 		fname := url.QueryEscape(k) + ".json"
-		docPath := path.Join(collectionName, v, fname)
+		docPath := path.Join(collectionPath, v, fname)
 		if store.Type == storage.FS && store.IsDir(dirPath) == false {
 			repairLog(verbose, "ERROR: %s is missing (%q)", k, dirPath)
 			eCnt++
@@ -129,7 +140,7 @@ func analyzer(collectionName string, verbose bool) error {
 	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
-	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(c.Store, c.Store.Join(collectionName, "pairtree"))
 	if err != nil && len(c.KeyMap) > 0 {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		eCnt++
@@ -169,7 +180,7 @@ func repair(collectionName string, verbose bool) error {
 	c, err = openCollection(collectionName)
 	if err != nil {
 		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = store.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		err = store.WriteFile(c.Store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
 			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
@@ -188,7 +199,7 @@ func repair(collectionName string, verbose bool) error {
 	}
 	c.DatasetVersion = Version
 	repairLog(verbose, "Getting a list of pairs")
-	pairs, err := walkPairtree(c.Store, path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(c.Store, c.Store.Join(collectionName, "pairtree"))
 	if err != nil {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		return err
@@ -225,7 +236,7 @@ func repair(collectionName string, verbose bool) error {
 	if len(missingList) > 0 {
 		sort.Strings(missingList)
 		repairLog(verbose, "Trying to locate %d un-associated keys", len(missingList))
-		err = filepath.Walk(path.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
+		err = filepath.Walk(c.Store.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
 			if info.IsDir() == false {
 				if key, err := url.QueryUnescape(strings.TrimSuffix(info.Name(), ".json")); err == nil {
 					// Search our list of keys to see if we can fix path issue...
@@ -301,11 +312,36 @@ func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
 			return nil
 		})
 	} else {
-		//FIXME: Need to list the directory and aggregaite the pairs...
-		fmt.Fprintf(os.Stderr, "walkPairstree() not implemented for S3 and GS\n")
-		_, err := store.ReadDir(startPath)
+		// NOTE: S3/GCS don't really have a "directory" concept, as a result we just iterate
+		// over a lists of objects with the requested prefix.
+		storePath := startPath
+		switch store.Type {
+		case storage.GS:
+			if bucketName, ok := store.Config["GoogleBucket"]; ok == true {
+				storePath = strings.TrimPrefix(startPath, fmt.Sprintf("gs://%s/", bucketName.(string)))
+			}
+		case storage.S3:
+			if bucketName, ok := store.Config["AwsBucket"]; ok == true {
+				storePath = strings.TrimPrefix(startPath, fmt.Sprintf("s3://%s/", bucketName.(string)))
+			}
+		}
+		if strings.HasSuffix(storePath, "/") == false {
+			storePath += "/"
+		}
+		dirsInfo, err := store.ReadDir(storePath)
 		if err != nil {
 			return nil, err
+		}
+		for _, pInfo := range dirsInfo {
+			if pInfo.IsDir() == false {
+				f := pInfo.Name()
+				e := path.Ext(f)
+				if e == ".json" {
+					key := strings.TrimSuffix(f, e)
+					pair := pairtree.Encode(key)
+					pairs = append(pairs, pair)
+				}
+			}
 		}
 	}
 	return pairs, err
