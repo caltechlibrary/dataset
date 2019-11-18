@@ -357,18 +357,20 @@ the JSON module&rsquo;s <em>dumps</em>.</p>
 
 <h3>frame</h3>
 
-<p>dataset also comes with a <em>frame</em> verb.  A <em>frame</em> is like a grid plus
-additional matadata. It is similar to the &ldquo;data frames&rdquo; concepts in
-languages like Julia, Matlab, Octave, Python and R. It is a data structure that can behave both like a grid (2D array or rows and columns). It is typically represented as an array of objects there the column names correspond
-to a attribute name in an object.  It enforces a
-structure that behaves like a grid but is also easy to iterate over for other types of processing.  Like our &ldquo;grid&rdquo; command a a <em>frame</em> will also
+<p>dataset also comes with a <em>frame</em> verb.  A <em>frame</em> is an order list of
+objects with some additional matadata. It is similar to the &ldquo;data frames&rdquo;
+concepts in languages like Julia, Matlab, Octave, Python and R. It is a
+data structure that can be easily mapped to a grid (2D array or rows and
+columns). A frame is represented as an array of objects there the
+column names correspond to a attribute name in an object.  It enforces a
+structure that behaves like a grid but is also easy to iterate over for
+other types of processing.  Like our &ldquo;grid&rdquo; command a a <em>frame</em> will also
 derive heading labels (object attribute names) from the
 dot paths used to define the frame and will include metadata about the
 collection, keys used to define the frame and default types of data in
 the columns. The extra information in a <em>frame</em> stays with the
 collection. Frames are persistent and can be easily recalculated based on
-collection updates. Finally frames are used by more complex verbs such as
-<em>export</em> and <em>indexer</em> we&rsquo;ll be covering later.</p>
+collection updates.</p>
 
 <p>To define a frame we only need one additional piece of information besides
 what we used for a grid. We need a name for the frame.</p>
@@ -376,7 +378,7 @@ what we used for a grid. We need a name for the frame.</p>
 <p>Working from our previous <em>grid</em> example, let&rsquo;s call this frame
 &ldquo;name-and-email&rdquo;.</p>
 
-<pre><code class="language-bash">    dataset frame -i=friends.keys friends.ds \
+<pre><code class="language-bash">    dataset frame-create -i=friends.keys friends.ds \
         &quot;name-and-email&quot; \
         .name=name .email=email \
         .catch_phrase=catch_phrase
@@ -385,7 +387,7 @@ what we used for a grid. We need a name for the frame.</p>
 <p>In python it would look like</p>
 
 <pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
-    err = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
+    err = dataset.frame_create(&quot;friends.ds&quot;, &quot;name-and-email&quot;, 
           keys, { 
               &quot;.name&quot;: &quot;name&quot;, 
               &quot;.email&quot;: &quot;email&quot;, 
@@ -409,7 +411,7 @@ and frame names.</p>
     print(json.dumps(f, indent = 4))
 </code></pre>
 
-<p>Looking at the resulting JSON object you see many other attribute
+<p>Looking at the resulting JSON object you see other attributes
 beyond the object list of the frame. These are created to simplify
 some of dataset more complex interactions.</p>
 
@@ -432,7 +434,7 @@ way of just retrieving the object list.</p>
     # Save all the keys in the collection
     dataset keys friends.ds &gt;friends.keys
     # Now reframe &quot;name-and-email&quot; with the updated friends.keys
-    dataset reframe -i=friends.keys friends.ds &quot;name-and-email&quot; 
+    dataset frame-reframe -i=friends.keys friends.ds &quot;name-and-email&quot; 
     # Now let's take a look at the frame
     dataset frame -p friends.ds &quot;name-and-email&quot;
 </code></pre>
@@ -446,7 +448,7 @@ JSON representation of the frame to be pretty printed.</p>
     if err != &quot;&quot;:
         stop(err)
     keys = dataset.keys(&quot;friends.ds&quot;)
-    err = dataset.reframe(&quot;friends.ds&quot;, &quot;name-and-email&quot;, keys)
+    err = dataset.frame_reframe(&quot;friends.ds&quot;, &quot;name-and-email&quot;, keys)
     if err != &quot;&quot;:
         stop(err)
     (f, err) = dataset.frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
@@ -479,7 +481,7 @@ examples we provided the order of the columns for the frame
 If we want to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldquo;EMail&rdquo;, and
 &ldquo;Catch Phrase&rdquo; we need to define our frame that way.</p>
 
-<pre><code class="language-bash">    dataset delete-frame friends.ds &quot;name-and-email&quot;
+<pre><code class="language-bash">    dataset frame-delete friends.ds &quot;name-and-email&quot;
     dataset frame friends.ds &quot;name-and-email&quot; \
         &quot;._Key=ID&quot; &quot;.name=Display Name&quot; \
         &quot;.email=EMail&quot; &quot;.catch_phrase=Catch Phrase&quot;
@@ -487,7 +489,7 @@ If we want to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldq
 
 <p>In Python it look like</p>
 
-<pre><code class="language-python">    err = dataset.delete_frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
+<pre><code class="language-python">    err = dataset.frame_delete(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
     if err != &quot;&quot;:
         stop(err)
     
@@ -504,12 +506,12 @@ If we want to have the labels &ldquo;ID&rdquo;, &ldquo;Display Name&rdquo;, &ldq
 <p>Finally the last thing we need to be able to do is delete a frame. Delete
 frames work very similar to deleting a JSON record.</p>
 
-<pre><code class="language-bash">    dataset delete-frame friends.ds &quot;name-and-email&quot;
+<pre><code class="language-bash">    dataset frame-delete friends.ds &quot;name-and-email&quot;
 </code></pre>
 
 <p>Or in Python</p>
 
-<pre><code class="language-python">    err = dataset.delete_frame(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
+<pre><code class="language-python">    err = dataset.frame_delete(&quot;friends.ds&quot;, &quot;name-and-email&quot;)
     if err != &quot;&quot;:
           stop(err)
 </code></pre>
@@ -518,14 +520,14 @@ frames work very similar to deleting a JSON record.</p>
 the list</p>
 
 <ol>
-<li><em>frame</em> will set you define a frame</li>
-<li><em>frame</em> will also let you read back a frame with full metadata</li>
+<li><em>frame-create</em> will set you define a frame</li>
+<li><em>frame</em> will let you read back a frame with full metadata</li>
 <li><em>frame-grid</em> return the frame&rsquo;s object list as a 2D array</li>
 <li><em>frame-objects</em> return the frame&rsquo;s object list</li>
 <li><em>frames</em> will list the frames defined in the collection
 columns in a frame, it will cause the frame to regenerate
 its object list</li>
-<li><em>delete-frame</em> will remove the frame from the collection</li>
+<li><em>frame-delete</em> will remove the frame from the collection</li>
 </ol>
 
 <p>Continue exploring dataset with</p>

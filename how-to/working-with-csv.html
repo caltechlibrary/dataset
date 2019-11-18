@@ -190,7 +190,7 @@ then givening columns a name.</p>
 
 <h2>exporting data from a collection</h2>
 
-<pre><code class="language-shell">   dataset frame -all mydata.ds export-frame \
+<pre><code class="language-shell">   dataset frame-create -all mydata.ds export-frame \
        '.id=id' \
        '.title=title' 
        '.publication=publication' 
@@ -202,7 +202,7 @@ then givening columns a name.</p>
 You just need to create a frame with that restriction.</p>
 
 <pre><code class="language-shell">   dataset keys mydata.ds '(eq 2016 (year .pubDate))' | \
-      dataset frame mydata.ds published-2016 \
+      dataset frame-create mydata.ds published-2016 \
            '.id=id' '.title=title' '.pubDate=date' 
    dataset export mydata.published-2016 ds 
 </code></pre>

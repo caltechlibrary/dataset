@@ -1,9 +1,8 @@
 
 ## File system layout
 
-dataset provides a way to organize your JSON Objects on disc. The original
-was a "buckets" oriented layout. The newer and current layout is a 
-[pairtree](https://tools.ietf.org/html/draft-kunze-pairtree-01). 
+dataset provides a way to organize your JSON Objects on disc. It
+uses a technique called a [pairtree](https://tools.ietf.org/html/draft-kunze-pairtree-01). 
 The layout managed/described by the collection.json document
 located in the root folder of the collection. The file pairtree 
 supports "attachments" by creating a sub directory next the the JSON

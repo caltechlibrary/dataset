@@ -388,18 +388,20 @@ the JSON module's _dumps_.
 
 ### frame
 
-dataset also comes with a _frame_ verb.  A _frame_ is like a grid plus 
-additional matadata. It is similar to the "data frames" concepts in
-languages like Julia, Matlab, Octave, Python and R. It is a data structure that can behave both like a grid (2D array or rows and columns). It is typically represented as an array of objects there the column names correspond
-to a attribute name in an object.  It enforces a 
-structure that behaves like a grid but is also easy to iterate over for other types of processing.  Like our "grid" command a a _frame_ will also 
+dataset also comes with a _frame_ verb.  A _frame_ is an order list of
+objects with some additional matadata. It is similar to the "data frames" 
+concepts in languages like Julia, Matlab, Octave, Python and R. It is a 
+data structure that can be easily mapped to a grid (2D array or rows and 
+columns). A frame is represented as an array of objects there the 
+column names correspond to a attribute name in an object.  It enforces a 
+structure that behaves like a grid but is also easy to iterate over for 
+other types of processing.  Like our "grid" command a a _frame_ will also 
 derive heading labels (object attribute names) from the 
 dot paths used to define the frame and will include metadata about the 
 collection, keys used to define the frame and default types of data in 
 the columns. The extra information in a _frame_ stays with the 
 collection. Frames are persistent and can be easily recalculated based on 
-collection updates. Finally frames are used by more complex verbs such as 
-_export_ and _indexer_ we'll be covering later. 
+collection updates. 
 
 To define a frame we only need one additional piece of information besides 
 what we used for a grid. We need a name for the frame. 
@@ -409,7 +411,7 @@ Working from our previous _grid_ example, let's call this frame
 
 
 ```bash
-    dataset frame -i=friends.keys friends.ds \
+    dataset frame-create -i=friends.keys friends.ds \
         "name-and-email" \
         .name=name .email=email \
         .catch_phrase=catch_phrase
@@ -420,7 +422,7 @@ In python it would look like
 
 ```python
     keys = dataset.keys("friends.ds")
-    err = dataset.frame("friends.ds", "name-and-email", 
+    err = dataset.frame_create("friends.ds", "name-and-email", 
           keys, { 
               ".name": "name", 
               ".email": "email", 
@@ -447,7 +449,7 @@ In Python it'd look like
     print(json.dumps(f, indent = 4))
 ```
 
-Looking at the resulting JSON object you see many other attribute 
+Looking at the resulting JSON object you see other attributes
 beyond the object list of the frame. These are created to simplify 
 some of dataset more complex interactions.
 
@@ -474,7 +476,7 @@ Let's add back the Jack record we deleted a few sections ago and
     # Save all the keys in the collection
     dataset keys friends.ds >friends.keys
     # Now reframe "name-and-email" with the updated friends.keys
-    dataset reframe -i=friends.keys friends.ds "name-and-email" 
+    dataset frame-reframe -i=friends.keys friends.ds "name-and-email" 
     # Now let's take a look at the frame
     dataset frame -p friends.ds "name-and-email"
 ```
@@ -490,7 +492,7 @@ Let's try the same thing in Python
     if err != "":
         stop(err)
     keys = dataset.keys("friends.ds")
-    err = dataset.reframe("friends.ds", "name-and-email", keys)
+    err = dataset.frame_reframe("friends.ds", "name-and-email", keys)
     if err != "":
         stop(err)
     (f, err) = dataset.frame("friends.ds", "name-and-email")
@@ -528,7 +530,7 @@ If we want to have the labels "ID", "Display Name", "EMail", and
 "Catch Phrase" we need to define our frame that way.
 
 ```bash
-    dataset delete-frame friends.ds "name-and-email"
+    dataset frame-delete friends.ds "name-and-email"
     dataset frame friends.ds "name-and-email" \
         "._Key=ID" ".name=Display Name" \
         ".email=EMail" ".catch_phrase=Catch Phrase"
@@ -537,7 +539,7 @@ If we want to have the labels "ID", "Display Name", "EMail", and
 In Python it look like
 
 ```python
-    err = dataset.delete_frame("friends.ds", "name-and-email")
+    err = dataset.frame_delete("friends.ds", "name-and-email")
     if err != "":
         stop(err)
     
@@ -556,14 +558,14 @@ frames work very similar to deleting a JSON record.
 
 
 ```bash
-    dataset delete-frame friends.ds "name-and-email"
+    dataset frame-delete friends.ds "name-and-email"
 ```
 
 Or in Python
 
 
 ```python
-    err = dataset.delete_frame("friends.ds", "name-and-email")
+    err = dataset.frame_delete("friends.ds", "name-and-email")
     if err != "":
           stop(err)
 ```
@@ -571,14 +573,14 @@ Or in Python
 **TIP**: Frames like collections have a number of operations. Here's 
 the list
 
-1. _frame_ will set you define a frame
-2. _frame_ will also let you read back a frame with full metadata
+1. _frame-create_ will set you define a frame
+2. _frame_ will let you read back a frame with full metadata
 3. _frame-grid_ return the frame's object list as a 2D array
 4. _frame-objects_ return the frame's object list
 5. _frames_ will list the frames defined in the collection
    columns in a frame, it will cause the frame to regenerate 
    its object list
-6. _delete-frame_ will remove the frame from the collection
+6. _frame-delete_ will remove the frame from the collection
 
 
 
