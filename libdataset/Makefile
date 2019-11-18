@@ -46,10 +46,10 @@ build: $(LIB_NAME)$(EXT)
 $(LIB_NAME)$(EXT): $(LIB_NAME).go ../dataset.go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
-py_libdataset: .FORCE
-	go build -buildmode=c-shared -o "py_libdataset/lib/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+libdataset: .FORCE
+	go build -buildmode=c-shared -o "libdataset/lib/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
-test: py_libdataset
+test: libdataset
 	python3 test_libdataset.py
 
 clean:
