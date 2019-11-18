@@ -179,4 +179,10 @@ func setupBlobStoreTests(m *testing.M) {
 	flag.StringVar(&S3Bucket, "s3", "", "Run S3 tests with bucketname")
 	flag.StringVar(&GSBucket, "gs", "", "Run GS tests with bucketname")
 	flag.Parse()
+	if S3Bucket == "" {
+		S3Bucket = os.Getenv("S3_TEST_BUCKET")
+	}
+	if GSBucket == "" {
+		GSBucket = os.Getenv("GS_TEST_BUCKET")
+	}
 }

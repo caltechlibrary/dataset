@@ -32,7 +32,7 @@ easily with a ccall function).
 
 
 See [getting-started-with-datataset.md](how-to/getting-started-with-dataset.html) for a tour and tutorial. Include are both the command line as well
-as examples in Python use [py_dataset](https://github.com/caltechlibrary/py_dataset).
+as examples in Python using [py_dataset](https://github.com/caltechlibrary/py_dataset).
 
 
 ## Design choices
@@ -41,22 +41,20 @@ _dataset_ isn't a database or a replacement for repository systems.
 It is guided by the idea that you should be able to work with text 
 files, the JSON objects documents, with standard Unix text utilities.
 It is intended to be simple to use with minimal setup (e.g. 
-`dataset init mycollection.ds` would create a new collection called 
+`dataset init mycollection.ds` creates a new collection called 
 'mycollection.ds'). It is built around a few abstractions --
-dataset stores JSON objects in collections, collections are a folder(s) 
-containing the JSON object documents and any attachments, a 
-collections.json file describes the mapping of keys to folder locations).
+dataset stores JSON objects in collections, collections are folder(s) 
+containing a pairtree of JSON object documents and any attachments, a 
+collections.json file describing the mapping of keys to folder locations).
 _dataset_ takes minimal system resources and keeps all content, 
-except JSON object attachments, in plain UTF-8 text. Attachments
-are stored using the venerable "tar" archive format. 
+except JSON object attachments, in plain UTF-8 text. 
 
-The choice of plain UTF-8 and tar balls is intended to help future 
-proof reading dataset collections.  Care has been taken to keep 
-_dataset_ simple enough and light weight enough that it will run 
-on a machine as small as a Raspberry Pi while being equally 
-comfortable on a more resource rich server or desktop 
+The choice of plain UTF-8 and future proof reading dataset collections.  
+Care has been taken to keep _dataset_ simple enough and light weight 
+enough that it will run on a machine as small as a Raspberry Pi while 
+being equally comfortable on a more resource rich server or desktop 
 environment. It should be easy to do alternative implementations
-in any language that has good string, JSON support and memory
+in any language having a good string library, JSON support and memory
 management.
 
 
@@ -68,7 +66,7 @@ that transforms or aggregates harvested options and then write
 a final rendering program to prepare the data for the web. The
 the hearvesters are typically written in Python or as a simple Bash
 scripts storing the results in a dataset collection. Depending on 
-the performance needs our transform and aggregates stage are written 
+the performance needs transform and aggregates stages are written 
 either in Python or Go and our final rendering stages are typically 
 written in Python or as simple Bash scripts.
 
@@ -96,10 +94,10 @@ a full blown database.
 
 _dataset_ has many limitations, some are listed below
 
-- it is not a multi-process, multi-user data store (it's files on "disc" without locking)
+- it is a multi-process, multi-user data store (it's files on "disc" without locking)
 - it is not a replacement for a repository management system
 - it is not a general purpose database system
-- it does not supply version control on collections or objects
+- it does not supply automatic version control on collections or objects
 
 ## Read next ...
 

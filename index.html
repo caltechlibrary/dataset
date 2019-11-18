@@ -56,7 +56,7 @@ languages (e.g. <a href="https://julialang.org/">Julia</a> can call shared libra
 easily with a ccall function).</p>
 
 <p>See <a href="how-to/getting-started-with-dataset.html">getting-started-with-datataset.md</a> for a tour and tutorial. Include are both the command line as well
-as examples in Python use <a href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>.</p>
+as examples in Python using <a href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>.</p>
 
 <h2>Design choices</h2>
 
@@ -64,22 +64,20 @@ as examples in Python use <a href="https://github.com/caltechlibrary/py_dataset"
 It is guided by the idea that you should be able to work with text
 files, the JSON objects documents, with standard Unix text utilities.
 It is intended to be simple to use with minimal setup (e.g.
-<code>dataset init mycollection.ds</code> would create a new collection called
+<code>dataset init mycollection.ds</code> creates a new collection called
 &lsquo;mycollection.ds&rsquo;). It is built around a few abstractions &ndash;
-dataset stores JSON objects in collections, collections are a folder(s)
-containing the JSON object documents and any attachments, a
-collections.json file describes the mapping of keys to folder locations).
+dataset stores JSON objects in collections, collections are folder(s)
+containing a pairtree of JSON object documents and any attachments, a
+collections.json file describing the mapping of keys to folder locations).
 <em>dataset</em> takes minimal system resources and keeps all content,
-except JSON object attachments, in plain UTF-8 text. Attachments
-are stored using the venerable &ldquo;tar&rdquo; archive format.</p>
+except JSON object attachments, in plain UTF-8 text.</p>
 
-<p>The choice of plain UTF-8 and tar balls is intended to help future
-proof reading dataset collections.  Care has been taken to keep
-<em>dataset</em> simple enough and light weight enough that it will run
-on a machine as small as a Raspberry Pi while being equally
-comfortable on a more resource rich server or desktop
+<p>The choice of plain UTF-8 and future proof reading dataset collections.<br>
+Care has been taken to keep <em>dataset</em> simple enough and light weight
+enough that it will run on a machine as small as a Raspberry Pi while
+being equally comfortable on a more resource rich server or desktop
 environment. It should be easy to do alternative implementations
-in any language that has good string, JSON support and memory
+in any language having a good string library, JSON support and memory
 management.</p>
 
 <h2>Workflows</h2>
@@ -90,7 +88,7 @@ that transforms or aggregates harvested options and then write
 a final rendering program to prepare the data for the web. The
 the hearvesters are typically written in Python or as a simple Bash
 scripts storing the results in a dataset collection. Depending on
-the performance needs our transform and aggregates stage are written
+the performance needs transform and aggregates stages are written
 either in Python or Go and our final rendering stages are typically
 written in Python or as simple Bash scripts.</p>
 
@@ -119,10 +117,10 @@ a full blown database.</p>
 <p><em>dataset</em> has many limitations, some are listed below</p>
 
 <ul>
-<li>it is not a multi-process, multi-user data store (it&rsquo;s files on &ldquo;disc&rdquo; without locking)</li>
+<li>it is a multi-process, multi-user data store (it&rsquo;s files on &ldquo;disc&rdquo; without locking)</li>
 <li>it is not a replacement for a repository management system</li>
 <li>it is not a general purpose database system</li>
-<li>it does not supply version control on collections or objects</li>
+<li>it does not supply automatic version control on collections or objects</li>
 </ul>
 
 <h2>Read next &hellip;</h2>

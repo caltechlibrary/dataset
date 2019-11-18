@@ -164,7 +164,7 @@ func is_open(cName *C.char) C.int {
 func open(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
-	err := dataset.Open(collectionName)
+	_, err := dataset.GetCollection(collectionName)
 	if err != nil {
 		error_dispatch(err, "Cannot open %q, %s", collectionName, err)
 		return C.int(0)
@@ -421,11 +421,8 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 func key_exists(cName, cKey *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-
-	if dataset.IsOpen(collectionName) {
-		if dataset.KeyExists(collectionName, key) {
-			return C.int(1)
-		}
+	if dataset.KeyExists(collectionName, key) {
+		return C.int(1)
 	}
 	return C.int(0)
 }
