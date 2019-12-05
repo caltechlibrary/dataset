@@ -493,7 +493,7 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 			if val, ok := obj["_Attachments"]; ok == true {
 				vArray := val.([]interface{})
 				if vSrc, err := json.Marshal(vArray); err == nil {
-					vSrc = append(append([]byte(`{"Attachments":`), vSrc...), []byte(",")...)
+					vSrc = append(append([]byte(`{"_Attachments":`), vSrc...), []byte(",")...)
 					src = bytes.Replace(src, []byte(`{`), vSrc, 1)
 				}
 			}
