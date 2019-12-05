@@ -47,7 +47,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.1.1`
+	Version = `v0.1.2`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -472,17 +472,34 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) UpdateJSON(name string, src []byte) error {
+	var ()
+	// Normalize key and filenames
+	name = normalizeKeyName(name)
+	keyName, fName := keyAndFName(name)
+	// Make sure Key exists before proceeding with update
 	if c.KeyExists(name) == false {
 		return fmt.Errorf("key not found")
 	}
-	// Make sure Key exists before proceeding with update
-	name = normalizeKeyName(name)
-	keyName, fName := keyAndFName(name)
 
 	// Make sure we have an "object" not an array object in JSON notation
 	if bytes.HasPrefix(src, []byte(`{`)) == false {
 		return fmt.Errorf("dataset can only stores JSON objects")
 	}
+
+	// Make sure we preserve attachment metadata
+	if bytes.Contains(src, []byte(`"_Attachments"`)) == false {
+		obj := map[string]interface{}{}
+		if err := c.Read(name, obj, false); err == nil {
+			if val, ok := obj["_Attachments"]; ok == true {
+				vArray := val.([]interface{})
+				if vSrc, err := json.Marshal(vArray); err == nil {
+					vSrc = append(append([]byte(`{"Attachments":`), vSrc...), []byte(",")...)
+					src = bytes.Replace(src, []byte(`{`), vSrc, 1)
+				}
+			}
+		}
+	}
+
 	// Add a _Key value if needed in the JSON source
 	if bytes.Contains(src, []byte(`"_Key"`)) == false {
 		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
