@@ -26,9 +26,7 @@ by collection and JSON document level.
 
 + [init](init.html) creates a collection
 + [import](import-csv.html) (csv) JSON documents from rows of a CSV file
-+ [import](import-gsheet.html) (gsheet) JSON documents from rows of a Google Sheet
 + [export](export-csv.html) (csv) JSON documents from a collection into a CSV file
-+ [export](export-gsheet.html) (gsheet) JSON documents from a collection into a Google Sheet
 + [keys](keys.html) list keys of JSON documents in a collection, supports filtering and sorting
 + [haskey](haskey.html) returns true if key is found in collection, false otherwise
 + [count](count.html) returns the number of documents in a collection, supports filtering for subsets

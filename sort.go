@@ -28,6 +28,7 @@ import (
 	"github.com/caltechlibrary/dotpath"
 )
 
+//KeyValue holds an ID string and value interface, this lets us work with numeric keys and to sort them.
 type KeyValue struct {
 	// JSON Record ID in collection
 	ID string
@@ -35,6 +36,7 @@ type KeyValue struct {
 	Value interface{}
 }
 
+//KeyValues is a list of keys (strings) to records. This type exists to allow easy sorting.
 type KeyValues []KeyValue
 
 func (a KeyValues) Len() int {

@@ -80,7 +80,7 @@ func (c *Collection) attachmentNames(keyName, semver, fName string) (string, str
 		attachmentFile     string
 		attachmentMetadata string
 	)
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return "", "", fmt.Errorf("No key found for %q", keyName)
 	}
 	return attachmentFile, attachmentMetadata, nil
@@ -171,7 +171,7 @@ func updateAttachmentList(attachmentList []*Attachment, newObj *Attachment) []*A
 
 // AttachStream is for attaching open a non-JSON file buffer (via an io.Reader).
 func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reader) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	if semver == "" {
@@ -213,6 +213,10 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	if err != nil {
 		return err
 	}
+	if len(content) == 0 {
+		return fmt.Errorf("Zero bytes read from file stream")
+	}
+	attachmentObject.Content = content
 	attachmentObject.Name = fName
 	attachmentObject.Version = semver
 	l := int64(len(content))
@@ -258,7 +262,7 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 // AttachFile is for attaching a single non-JSON document to a dataset record. It will replace
 // ANY existing attached content with the same semver and basename.
 func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	if semver == "" {
@@ -300,6 +304,10 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	if err != nil {
 		return err
 	}
+	if len(content) == 0 {
+		return fmt.Errorf("Zero bytes read from %s", fullName)
+	}
+	attachmentObject.Content = content
 	attachmentObject.Name = fName
 	attachmentObject.Version = semver
 	l := int64(len(content))
@@ -390,7 +398,7 @@ func filterNameFound(a []string, target string) bool {
 // If no filterNames provided then return all attachments are written out
 // An error value is always returned.
 func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames ...string) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	jsonObject := map[string]interface{}{}
@@ -410,7 +418,8 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 			}
 			// Retrieve the file by version
 			if href, ok := obj.VersionHRefs[version]; ok == true {
-				if src, err := c.Store.ReadFile(href); err != nil {
+				src, err := c.Store.ReadFile(href)
+				if err != nil {
 					return err
 				} else if err := c.Store.WriteFile(obj.Name, src, 0777); err != nil {
 					return err
@@ -425,7 +434,7 @@ func (c *Collection) GetAttachedFiles(keyName string, semver string, filterNames
 
 // Prune a non-JSON document from a JSON document in the collection.
 func (c *Collection) Prune(keyName string, semver string, filterNames ...string) error {
-	if c.HasKey(keyName) == false {
+	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
 	jsonObject := map[string]interface{}{}

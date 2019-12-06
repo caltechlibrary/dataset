@@ -27,32 +27,32 @@
 <section>
 <h1>COLLECTIONS, GRIDS AND FRAMES</h1>
 
-<p><em>dataset</em> stores JSON objects and can store a form of data frame based
-on grids of data. This document outlines the ideas behings <em>grid</em> and
-<em>frame</em> support in <em>dataset</em>.</p>
+<p><em>dataset</em> stores JSON objects and can store also data frames similar
+to that used in Python, R and Julia.  This document outlines the ideas
+behings <em>dataset</em>&rsquo;s implementation of data frames.</p>
 
 <h2>COLLECTIONS</h2>
 
 <p>Collections are at the core of the <em>dataset</em> tool. A collection is a
-pairtree directory structure storing a JSON objects in plaintext with
+pairtree directory structure storing JSON objects in plaintext with
 optional attachments. The root folder for the collection contains a
 <em>collection.json</em> file with the metadata associating a name to the
 pairtree path where the json object is stored. One of the guiding
-ideas behind dataset was to keep everything as plain text whenever
-reasonable.  The dataset project provides Go package for working with
-dataset collections, a python package (based on a shared library with
-the Go package) and command line tool.</p>
+ideas behind dataset was to keep everything in plain text (i.e. UTF-8)
+whenever reasonable.  The dataset project provides Go package for
+working with dataset collections, a python package (based on a C-shared
+library included in the Go package) and a command line tool.</p>
 
 <p>Dataset collections are typically stored on your local disc but may be
 stored easily in Amazon&rsquo;s S3 (or compatible platform) or Google&rsquo;s cloud
-storage. Dataset and also import and export to/from a Google sheet or CSV
-file.</p>
+storage. Dataset can also import and export CSV files and with some
+extra work to/from a Google Sheets.</p>
 
 <p>Dataset isn&rsquo;t a database (there are plenty of JSON oriented databases out
 there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL and
-Postgresql). Rather the focus is on providing a mechanism to manage
+Postgresql). <em>dataset</em>&rsquo;s focus is on providing a mechanism to manage
 JSON objects, group them and to provide alternative
-data shapes for the viewing the collection (e.g. frames, grids).</p>
+data shapes for the viewing the collection (e.g. data frames and grids).</p>
 
 <h2>GRIDS</h2>
 
@@ -125,12 +125,13 @@ collection leveraging Python&rsquo;s standard sort method for lists.</p>
 <h2>THINKING ABOUT FRAMES</h2>
 
 <p>Implementing the grid verb started me thinking about the similarity to
-data frames in Python, Julia and Octave. A <em>frame</em> is defined as like
-a grid in that it is an ordered list of objects. Frames can be retrieved
-as a <em>grid</em> (2D array) or as a list of Objects. Frames also contain
-a additional metadata to help them persist. Frames include enough
-metadata (e.g. the attribute names, labels, used in the list of objects
-as well as the dot paths used to provide a value to those labels).
+data frames in Python, Julia and Octave. A <em>frame</em> is an ordered list of
+objects. It&rsquo;s like a grid except that rather than have columns and row
+you have a list of objects and attribute names mapped to values.
+Frames can be retrieved as a <em>grid</em> (2D array) or as a list of Objects.
+Frames contain a additional metadata to help them persist. Frames
+include enough metadata to effeciently refresh objects in the list or even
+replace all objects in the list.
 If you want to get back a &ldquo;Grid&rdquo; of a frame you can optionally include
 a header row as part of the 2D array returned.
 <em>dataset</em> stores frames with the collection so unlike a <em>grid</em> it
@@ -150,12 +151,13 @@ copy/clone a collection the frames can travel with it.</p>
 <h2>FRAME OPERATIONS</h2>
 
 <ul>
-<li>frame (read, define a frame)</li>
+<li>frame-create (define a frame)</li>
+<li>frame (read a frame back)</li>
 <li>frames (return a list of frame names)</li>
-<li>reframe (refresh the content of a frame’s grid optionally replacing
-the keys associated in the frame)</li>
-<li>hasframe (check to see if a frame exists in the collection)</li>
-<li>delete-frame</li>
+<li>frame-reframe (update all frame objects given a list of keys)</li>
+<li>frame-refresh (update objects in a frame, possibily appending new objects based on a list of key)</li>
+<li>frame-exists (check to see if a frame exists in the collection)</li>
+<li>frame-delete</li>
 </ul>
 
 <h3>Create a frame</h3>
@@ -163,7 +165,7 @@ the keys associated in the frame)</li>
 <p>Example creating a frame named &ldquo;dois-and-titles&rdquo;</p>
 
 <pre><code class="language-shell">    dataset keys Pubs.ds &gt;pubs.keys
-    dataset frame -i pubs.keys Pubs.ds dois-and-titles \
+    dataset frame-create -i pubs.keys Pubs.ds dois-and-titles \
         &quot;.doi=DOI&quot; \
         &quot;.title=Title&quot;
 </code></pre>
@@ -171,7 +173,7 @@ the keys associated in the frame)</li>
 <p>Or in python</p>
 
 <pre><code class="language-python">    keys = dataset.keys('Pubs.ds')
-    frame = dataset.frame('Pubs.ds', 'dois-and-titles', keys, {
+    frame = dataset.frame_crate('Pubs.ds', 'dois-and-titles', keys, {
         '.doi': 'DOI', 
         '.title': 'Title'
         })
@@ -200,7 +202,7 @@ all the metadata.</p>
 <p>Or only the object list (note: we&rsquo;re going to check for the frame&rsquo;s
 existance first).</p>
 
-<pre><code class="language-python">    if dataset.has_frame('Pub.ds', 'dois-and-titles'):
+<pre><code class="language-python">    if dataset.frame_exists('Pub.ds', 'dois-and-titles'):
         object_list = dataset.frame_objects('Pubs.ds', 'dois-and-titles')
 </code></pre>
 
@@ -213,18 +215,20 @@ existance first).</p>
 
 <p>Or in python</p>
 
-<pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'dois-and-titles')
+<pre><code class="language-python">    keys = dataset.keys('Pubs.ds')
+    keys.sort()
+    frame = dataset.frame_reframe('Pubs.ds', 'dois-and-titles', keys)
 </code></pre>
 
 <h3>Updating keys associated with the frame</h3>
 
 <pre><code class="language-shell">    dataset Pubs.ds keys &gt;updated.keys
-    dataset reframe -i updated.keys Pubs.ds reframe titles-and-dios
+    dataset frame-refresh -i updated.keys Pubs.ds reframe titles-and-dios
 </code></pre>
 
 <p>In python</p>
 
-<pre><code class="language-python">    frame = dataset.reframe('Pubs.ds', 'dois-and-titles', updated_keys)
+<pre><code class="language-python">    frame = dataset.frame-refresh('Pubs.ds', 'dois-and-titles', updated_keys)
 </code></pre>
 
 <h3>Updating labels in a frame</h3>
@@ -241,12 +245,12 @@ existance first).</p>
 
 <h3>Removing a frame</h3>
 
-<pre><code class="language-shell">    dataset delete-frame Pubs.ds titles-and-dios
+<pre><code class="language-shell">    dataset frame-delete Pubs.ds titles-and-dios
 </code></pre>
 
 <p>Or in python</p>
 
-<pre><code class="language-python">    err = dataset.delete_frame('Pubs.ds', 'dois-and-titles')
+<pre><code class="language-python">    err = dataset.frame_delete('Pubs.ds', 'dois-and-titles')
 </code></pre>
 
 <h2>Listing available frames</h2>

@@ -5,7 +5,6 @@
 
 ```
     dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER
-    dataset import GSHEET_ID_AND_SHEET_NAME ID_COLUMN_NO [CELL_RANGE]
 ```
 
 ## Description

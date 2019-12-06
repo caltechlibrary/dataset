@@ -84,7 +84,7 @@ release-darwin-amd64: darwin-amd64 FORCE
 	cp ../INSTALL.md ../dist/
 	cp -v $(LIB_NAME).dylib ../dist/
 	cp -v $(LIB_NAME).h ../dist/
-	cd ../dist && tar zcvf $(LIB_NAME)-$(VERSION)-darwin-amd64.tar.gz $(LIB_NAME).dynlib $(LIB_NAME).h  README.md LICENSE INSTALL.md
+	cd ../dist && tar zcvf $(LIB_NAME)-$(VERSION)-macosx-amd64.tar.gz $(LIB_NAME).dylib $(LIB_NAME).h  README.md LICENSE INSTALL.md
 
 release-windows-amd64: windows-amd64 FORCE
 	mkdir -p ../dist/

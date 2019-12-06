@@ -43,11 +43,19 @@ endif
 
 build: $(LIB_NAME)$(EXT)
 
-$(LIB_NAME)$(EXT): 
+$(LIB_NAME)$(EXT): $(LIB_NAME).go ../dataset.go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
+libdataset: .FORCE
+	go build -buildmode=c-shared -o "libdataset/lib/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+
+test: libdataset
+	python3 test_libdataset.py
+
 clean:
-	if [ -f "$(LIB_NAME)$(EXT)" ]; then rm "$(LIB_NAME)$(EXT)"; fi
+	if [ -f "$(LIB_NAME).dll" ]; then rm "$(LIB_NAME).dll"; fi
+	if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
+	if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
 	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
 
 status:
@@ -69,4 +77,4 @@ release: $(LIB_NAME)$(EXT)
 
 
 
-
+.FORCE:

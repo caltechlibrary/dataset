@@ -193,7 +193,7 @@ to the frame definition).
 Step 1. define our frame
 
 ```shell
-    dataset frame -all zbs-cast-list.ds gsheet-sync \
+    dataset frame-create -all zbs-cast-list.ds gsheet-sync \
         ._Key=ID .Name=Name .Title=Title .Year=Year
 ```
 

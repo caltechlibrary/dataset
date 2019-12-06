@@ -91,12 +91,14 @@ function test_dataset() {
 
 function test_gsheet() {
     CLIENT_SECRET="${1}"
-    echo "test_dataset"
+    if [[ "${CLIENT_SECRET}" = "" ]]; then
+        echo "Skipping, could not find ${CLIENT_SECRET}"
+        return
+    fi
     if [[ ! -f "${CLIENT_SECRET}" ]]; then
         echo "Skipping, could not find ${CLIENT_SECRET}"
         return
     fi
-    echo "test_gsheet"
 	if [[ -f "etc/test_gsheet.bash" ]]; then
 		. "etc/test_gsheet.bash"
 	fi
@@ -104,9 +106,15 @@ function test_gsheet() {
 		echo "Skipping test_gsheet(), missing environment variable for SPREADSHEET_ID"
 		exit 1
 	fi
+    echo "test_gsheet ${SPREADSHEET_ID}"
+    WD=$(pwd)
     cd gsheets || exit 1
-    go test -client-secret "../${CLIENT_SECRET}" -spreadsheet-id "${SPREADSHEET_ID}"
-    cd ..
+    if ! go test -client-secret "../${CLIENT_SECRET}" -spreadsheet-id "${SPREADSHEET_ID}"; then
+        echo "Skipping test_gsheet, access not configure correctly"
+        cd "${WD}"
+        return
+    fi
+    cd "${WD}"
 	if [[ -d "testdata/test_gsheet.ds" ]]; then
 		rm -fR testdata/test_gsheet.ds
 	fi
@@ -483,7 +491,7 @@ EOT
     fi
     
     CNT=$(bin/dataset count testdata/myfix.ds)
-    echo "NOTE: expecting ${CNT} error messages on following lines"
+    echo "NOTE: expecting ${CNT} warnings detected on following line"
     echo '{}' > testdata/myfix.ds/collection.json
     bin/dataset -quiet -nl=false check testdata/myfix.ds
     if [[ "$?" == "0" ]]; then
@@ -671,7 +679,7 @@ test_attachments
 test_count
 test_import_export
 #NOTE: test will be skip if there is no etc/client_secret.json found
-test_gsheet credentials.json # etc/client_secret.json
+#test_gsheet credentials.json # etc/client_secret.json
 test_check_and_repair
 test_sync
 echo 'PASS'

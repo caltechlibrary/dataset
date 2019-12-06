@@ -28,6 +28,7 @@ import (
 )
 
 func TestFrame(t *testing.T) {
+	verbose := false
 	os.RemoveAll(path.Join("testdata", "frame_test.ds"))
 	cName := path.Join("testdata", "frame_test.ds")
 	c, err := InitCollection(cName)
@@ -70,16 +71,25 @@ func TestFrame(t *testing.T) {
 	for _, rec := range tRecords {
 		key := rec["_Key"].(string)
 		keys = append(keys, key)
-		err := c.Create(key, rec)
+		src, _ := EncodeJSON(rec)
+		err := c.CreateJSON(key, src)
 		if err != nil {
 			t.Error(err)
 			t.FailNow()
 		}
 	}
 
-	f, err := c.Frame("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, false)
+	f, err := c.FrameCreate("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, verbose)
 	if err != nil {
 		t.Error(err)
+		t.FailNow()
+	}
+	if len(f.ObjectMap) != len(tRecords) {
+		t.Errorf("Expected tRecords (%d) to be same length as objectList (%d) -> %s", len(tRecords), len(f.ObjectMap), f.String())
+		t.FailNow()
+	}
+	if len(f.Keys) != len(tRecords) {
+		t.Errorf("Expected tRecords (%d) to be same length as keys (%d) -> %s", len(tRecords), len(f.Keys), f.String())
 		t.FailNow()
 	}
 	expected := "frame-1"
@@ -95,6 +105,10 @@ func TestFrame(t *testing.T) {
 	//FIXME: need some tests on frame structure.
 	objectList := f.Objects()
 	for i, obj := range objectList {
+		if len(obj) == 0 {
+			t.Errorf("object in object list (%d) should have content, %+v\n", i, objectList)
+			t.FailNow()
+		}
 		rec := tRecords[i]
 		for j, key := range f.Labels {
 			if val, ok := obj[key]; ok != true {
@@ -153,5 +167,196 @@ func TestFrame(t *testing.T) {
 			}
 		}
 	}
+}
 
+func TestIssue9PyDataset(t *testing.T) {
+	verbose := false
+	os.RemoveAll(path.Join("testdata", "frame_test2.ds"))
+	cName := path.Join("testdata", "frame_test2.ds")
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	jsonSrc := []byte(`[
+        { "id":    "A", "nameIdentifiers": [
+                {
+                    "nameIdentifier": "0000-000X-XXXX-XXXX",
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "http://orcid.org/"
+                },
+                {
+                    "nameIdentifier": "H-XXXX-XXXX",
+                    "nameIdentifierScheme": "ResearcherID",
+                    "schemeURI": "http://www.researcherid.com/rid/"
+                }], "two":   22, "three": 3.0, "four":  ["one", "two", "three"] 
+},
+        { "id":    "B", "two":   2000, "three": 3000.1 },
+        { "id": "C" },
+        { "id":    "D", "nameIdentifiers": [
+                {
+                    "nameIdentifier": "0000-000X-XXXX-XXXX",
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "http://orcid.org/"
+                }], "two":   20, "three": 334.1, "four":  [] }
+    ]`)
+	listObjects := []map[string]interface{}{}
+	// FIXME: setup a custom marshaller so numbers are json.Number()
+	err = json.Unmarshal(jsonSrc, &listObjects)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+
+	for i, obj := range listObjects {
+		if id, ok := obj["id"]; ok == true {
+			key := id.(string)
+			src, _ := EncodeJSON(obj)
+			if err := c.CreateJSON(key, src); err != nil {
+				t.Errorf("(%d) key %s, error: %s", i, key, err)
+				t.FailNow()
+			}
+		}
+	}
+	// Now let's see if our frame works ...
+	keys := c.Keys()
+	f, err := c.FrameCreate("f1", keys,
+		[]string{
+			"._Key",
+			".nameIdentifiers",
+			".nameIdentifiers[:].nameIdentifier",
+			".two",
+			".three",
+			".four",
+		}, []string{
+			"id",
+			"nameIdentifiers",
+			"nameIdentifier",
+			"two",
+			"three",
+			"four",
+		}, verbose)
+	if err != nil {
+		t.Errorf("Can't make frame f1, %s", err)
+		t.FailNow()
+	}
+	if f == nil {
+		t.Errorf("Expected a frame named f1, got nil")
+	}
+}
+
+func TestFrameRefresh(t *testing.T) {
+	cName := path.Join("testdata", "frame10.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("expected to create %q, got %s", cName, err)
+		t.FailNow()
+	}
+	key := "k1"
+	src := []byte(`{
+		"title": "Orchids & Moonbeams",
+		"cast": [
+			{ 
+				"last_name": "Lorick",
+				"first_name": "Robert",
+				"character": "Jack Flanders"
+			},
+			{
+				"last_name": "Adams",
+				"first_name": "Dave",
+				"character": "Mojo Sam"
+			},
+			{
+				"last_name": "Poirier",
+				"first_name": "Pascale",
+				"character": "Claudine"
+			},
+			{
+				"last_name": "Donovan",
+				"first_name": "Patrick",
+				"character": "Pat Patternson"
+			},
+			{
+				"last_name": "Goodhart Hebert",
+				"first_name": "Camille",
+				"character": "Bunny"
+			},
+			{
+				"last_name": "Roth",
+				"first_name": "Laura",
+				"character": "Amber"
+			}
+		]
+		}`)
+	if err := c.CreateJSON(key, src); err != nil {
+		t.Errorf("expected to create %q, got %s", key, err)
+		t.FailNow()
+	}
+	src = []byte(`{
+		"title": "The incredible Adventures of Jack Flanders",
+		"cast": [
+			{ 
+				"last_name": "Lorick",
+				"first_name": "Robert",	
+				"character": "Jack Flan"
+			},
+			{
+				"last_name": "Adams",
+				"first_name": "Dave",
+				"character": "Mojo Sam"
+			},
+			{
+				"last_name": "Orte",
+				"first_name": "P. J.",
+				"character": "Little Freda"
+			}
+		]
+	}`)
+	key = "k0"
+	if err := c.CreateJSON(key, src); err != nil {
+		t.Errorf("expected to create %q, got %s", key, err)
+		t.FailNow()
+	}
+	for _, key := range []string{"k0", "k1"} {
+		if _, err := c.ReadJSON(key); err != nil {
+			t.Errorf("expected %q, got error %s", key, err)
+			t.FailNow()
+		}
+	}
+
+	fName := "f1"
+	verbose := false
+	dotPaths := []string{".title", ".cast"}
+	labels := []string{"title", "cast"}
+	keys := []string{"k1"}
+	f, err := c.FrameCreate(fName, keys, dotPaths, labels, verbose)
+	if err != nil {
+		t.Errorf("expected to create frame %q, got %s", key, err)
+		t.FailNow()
+	}
+	ol := f.Objects()
+	if len(ol) != 1 {
+		t.Errorf("expected one object, got %d", len(ol))
+		t.FailNow()
+	}
+	if c.FrameExists(fName) == false {
+		t.Errorf("expected %q, none was found", fName)
+		t.FailNow()
+	}
+	if err := c.FrameRefresh(fName, []string{"k0", "k1"}, verbose); err != nil {
+		t.Errorf("expected successful refresh %q, got %s", fName, err)
+		t.FailNow()
+	}
+	ol2, err := c.FrameObjects(fName)
+	if err != nil {
+		t.Errorf("expected object list, got error %s", err)
+		t.FailNow()
+	}
+	if len(ol2) != 2 {
+		t.Errorf("expected 2 objects, got %d -> %+v", len(ol2), ol2)
+		t.FailNow()
+	}
 }

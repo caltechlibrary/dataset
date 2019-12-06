@@ -77,6 +77,9 @@ func TestMerge(t *testing.T) {
 		iVal int
 		sVal string
 	)
+	verbose := false
+	overwrite := true
+
 	src := []byte(`
 "id","h1","h2","h3"
 0,1,0,10
@@ -93,8 +96,6 @@ func TestMerge(t *testing.T) {
 	table := tbl.TableStringToInterface(csvTable)
 	collectionName := "testdata/merge1.ds"
 	frameName := "f1"
-	overwrite := true
-	verbose := true
 
 	if _, err := os.Stat(collectionName); err == nil {
 		err = os.RemoveAll(collectionName)
@@ -109,11 +110,8 @@ func TestMerge(t *testing.T) {
 		t.FailNow()
 	}
 	defer c.Close()
-	f := new(DataFrame)
-	f.AllKeys = true
-	f.DotPaths = []string{"._Key", ".h1", ".h3"}
-	f.Labels = []string{"id", "h1", "h3"}
-	c.setFrame(frameName, f)
+	// Manually create a frame to merge with.
+	f, err := c.FrameCreate(frameName, []string{}, []string{"._Key", ".h1", ".h3"}, []string{"id", "h1", "h3"}, verbose)
 
 	err = c.MergeFromTable(frameName, table, overwrite, verbose)
 	if err != nil {
@@ -135,10 +133,14 @@ func TestMerge(t *testing.T) {
 	}
 
 	// NOTE: Make sure grid dimensions match table minus header row
-	c.Reframe(frameName, keys, false)
+	c.FrameReframe(frameName, keys, false)
 	f, err = c.getFrame(frameName)
 	if err != nil {
 		t.Errorf("failed to get frame %s, %s", frameName, err)
+		t.FailNow()
+	}
+	if len(f.ObjectMap) != len(f.Keys) {
+		t.Errorf("Expected %d objects for %d keys, got %+v\n", len(f.ObjectMap), len(f.Keys), f)
 		t.FailNow()
 	}
 	grid := f.Grid(false)
@@ -189,7 +191,7 @@ func TestMerge(t *testing.T) {
 	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h4"}
 	f.Labels = []string{"id", "h1", "h2", "h4"}
 	c.setFrame(frameName, f)
-	c.Reframe(frameName, f.Keys, false)
+	c.FrameReframe(frameName, f.Keys, false)
 
 	// Update table values for next merge test
 	for i, row := range table {
@@ -264,7 +266,6 @@ func TestMerge(t *testing.T) {
 		if cell, ok := obj["h5"]; ok == true {
 			t.Errorf("(h5) row %d, key %s, Unexpected value, got %s", i, key, cell)
 		}
-
 	}
 	if len(c.Keys()) != 3 {
 		t.Errorf("Expected three keys in %s, got %d", collectionName, len(c.Keys()))
@@ -329,7 +330,7 @@ func TestMerge(t *testing.T) {
 	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h3", ".h4", ".h5", ".h6"}
 	f.Labels = []string{"id", "h1", "h2", "h3", "h4", "h5", "h6"}
 	c.setFrame(frameName, f)
-	c.Reframe(frameName, c.Keys(), false)
+	c.FrameReframe(frameName, c.Keys(), false)
 	if err != nil {
 		t.Errorf("%s\n", err)
 		t.FailNow()
@@ -369,6 +370,7 @@ func TestMerge(t *testing.T) {
 }
 
 func TestAddedColumns(t *testing.T) {
+	verbose := false
 	expectedCSV := []byte(`
 id,one,two,three,four,five
 0,A,B,C,D,E
@@ -407,7 +409,6 @@ id,one,two
 	frameName := "f1"
 	useHeaderRow := true
 	overwrite := true
-	verbose := true
 
 	if _, err := os.Stat(collectionName); err == nil {
 		err = os.RemoveAll(collectionName)
@@ -423,24 +424,25 @@ id,one,two
 	}
 
 	buf := bytes.NewBuffer(initialCSV)
+	oldV, verbose := verbose, true
 	_, err = c.ImportCSV(buf, 0, useHeaderRow, overwrite, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	verbose = oldV
 
 	keys := c.Keys()
 	if len(keys) == 0 {
-		t.Errorf("Import failed")
+		t.Errorf("Import failed, missing keys from %s", initialCSV)
 		t.FailNow()
 	}
 
-	f, err := c.Frame(frameName, keys, []string{"._Key", ".one", ".two"}, []string{"id", "one", "two"}, verbose)
+	f, err := c.FrameCreate(frameName, keys, []string{"._Key", ".one", ".two"}, []string{"id", "one", "two"}, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	f.AllKeys = true
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -469,7 +471,6 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	f.AllKeys = true
 	f.DotPaths = []string{"._Key", ".one", ".two", ".three", ".four", ".five"}
 	f.Labels = []string{"id", "one", "two", "three", "four", "five"}
 	err = c.SaveFrame(frameName, f)

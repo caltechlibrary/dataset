@@ -25,7 +25,7 @@ cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
 	git add cmd/dataset/assets.go
 
-bin/dataset$(EXT): dataset.go pairtree.go attachments.go semver.go grid.go frame.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go collections.go attachments.go semver.go grid.go frame.go repair.go sort.go gsheets/gsheets.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
 bin/gsheetaccess$(EXT): cmd/gsheetaccess/gsheetaccess.go
@@ -42,7 +42,7 @@ install-man:
 	mkdir -p $(GOPATH)/man/man1
 	$(GOPATH)/bin/dataset -generate-manpage | nroff -Tutf8 -man > $(GOPATH)/man/man1/dataset.1
 
-libdataset: FORCE
+libdataset: libdataset/libdataset.go service.go FORCE
 	cd libdataset && $(MAKE)
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
@@ -106,7 +106,6 @@ update_version:
 
 release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macosx-amd64 dist/raspbian-arm7
 	cd libdataset && $(MAKE) release
-	#if [ "$(OS)" = "Linux" ]; then cd libdataset && $(MAKE) -f CrossCompile.mak release; fi
 
 status:
 	git status

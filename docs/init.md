@@ -4,7 +4,7 @@
 ## Syntax
 
 ```
-    dataset init COLLECT_NAME
+    dataset init COLLECTION_NAME
 ```
 
 ## Description
@@ -36,26 +36,13 @@ correctly.
 
 NOTE: After each envocation of `dataset init` if all went well 
 you will be shown an `OK`. If you want to save typing you can 
-set the environment variable DATASET.  For our examples above 
+set the environment variable use that in your shell.  For our examples above 
 that would look like
-
-```
-    dataset init data.ds
-    export DATASET="data.ds"
-```
-
-or for the Amazon S3 example
 
 ```
     dataset init s3://stuff.example.org/data.ds
     export DATASET="s3://stuff.example.org/data.ds"
-```
-
-or for the Google storage example
-
-```
-    dataset init gs://stuff.example.org/data.ds
-    export DATASET="gs://stuff.example.org/data.ds"
+    dataset keys "${DATASET}"
 ```
 
 ### S3 environment example

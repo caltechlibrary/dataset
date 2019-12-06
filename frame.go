@@ -32,8 +32,7 @@ import (
 )
 
 //
-// NOTE: frame.go presents an Object as the native go type map[string]interface{} and
-// ObjectList as a slice of Objects.
+// NOTE: frame.go presents an Object as the native go type map[string]interface{} and DataFrame is intended to let you work with an ordered list of objects.
 //
 
 // DataFrame is the basic structure holding a list of objects as well as the definition
@@ -51,48 +50,57 @@ type DataFrame struct {
 	// DotPaths is a slice holding the definitions of what each Object attribute's data source is.
 	DotPaths []string `json:"dot_paths"`
 
-	// NOTE: Keys should hold the same values as column zero of the grid.
-	// Keys controls the order of rows in a grid when reframing.
+	// Labels are new attribute names for fields create from the provided
+	// DotPaths.  Typically this is used to surface a deeper dotpath's
+	// value as something more useful in the frame's context (e.g.
+	// first_title from an array of titles might be labeled "title")
+	Labels []string `json:"labels"`
+
+	// NOTE: Keys is an orded list of object keys in the frame.
 	Keys []string `json:"keys"`
 
-	// NOTE: ObjectList is a replacement for Grid. This representaition more
-	// closely mirrors data frames as used in Python and R. It also can help
-	// avoid an inner loop on iteration because we don't need to track a relative
-	// index to get a "cell" value from a column heading.
-	ObjectList []map[string]interface{} `json:"object_list"`
+	// NOTE: Object map privides a quick index by key to object index.
+	ObjectMap map[string]interface{} `json:"object_map"`
 
 	// Created is the date the frame is originally generated and defined
 	Created time.Time `json:"created"`
 
 	// Updated is the date the frame is updated (e.g. reframed)
-	Updated time.Time `json:"updated,omitempty"`
-
-	// AllKeys is a flag used to define a frame as operating over an entire collection,
-	// this allows for simplier update.  NOTE: this value effects how Reframe works.
-	AllKeys bool `json:"use_all_keys"`
-
-	// FilterExpr is a the expression used to filter a collections keys to determine
-	// how a frame is "reframed".  It generally is faster to create your key list outside
-	// the frame but that approach has the disadvantage of not persisting with the frame.
-	// NOTE: this value effects how Reframe works.
-	FilterExpr string `json:"filter_expr,omitempty"`
-
-	// SortExpr holds the sort expression so it persists with the frame. Often you can
-	// get a faster sort outside the frame but that comes at a disadvantage of not being
-	// persisted with the frame. NOTE: this value effects how Reframe works.
-	SortExpr string `json:"sort_expr,omitempty"`
-	// SampleSize is used to hold a frame intended to be a sample. It is used when re-generating
-	// the same. NOTE: this value effects how Reframe works.
-	SampleSize int `json:"sample_size"`
-
-	// Labels are derived from the DotPaths provided but can be replaced without changing
-	// the dotpaths. Typically this is used to surface a deeper dotpath's value as something more
-	// useful in the frame's context (e.g. first_title from an array of titles might be labeled "title")
-	Labels []string `json:"labels,omitempty"`
+	Updated time.Time `json:"updated"`
 }
 
-// ObjectList (on a collection) takes a set of collection keys and builds an array
-// of objects (i.e. map[string]interface{}) from the array of keys, dot paths and
+// frameObject takes a list of dot paths, labels and object key
+// then generates a new object based on that.
+func (c *Collection) frameObject(key string, dotPaths []string, labels []string) (map[string]interface{}, error) {
+	errors := []string{}
+	src, err := c.ReadJSON(key)
+	if err != nil {
+		return nil, err
+	}
+	obj := map[string]interface{}{}
+	err = DecodeJSON(src, &obj)
+	if err != nil {
+		return nil, err
+	}
+
+	o := map[string]interface{}{}
+	for j, dpath := range dotPaths {
+		value, err := dotpath.Eval(dpath, obj)
+		if err == nil {
+			key := labels[j]
+			o[key] = value
+		} else {
+			errors = append(errors, fmt.Sprintf("%q path (%d) not found for key %q", dpath, j, key))
+		}
+	}
+	if len(errors) > 0 {
+		return o, fmt.Errorf("%s", strings.Join(errors, ", "))
+	}
+	return o, nil
+}
+
+// ObjectList (on a collection) takes a set of collection keys and builds
+// an ordered array of objects from the array of keys, dot paths and
 // labels provided.
 func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []string, verbose bool) ([]map[string]interface{}, error) {
 	if len(dotPaths) != len(labels) {
@@ -101,20 +109,17 @@ func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []strin
 	pid := os.Getpid()
 	objectList := make([]map[string]interface{}, len(keys))
 	for i, key := range keys {
-		rec := map[string]interface{}{}
-		err := c.Read(key, rec, false)
-		if err != nil {
-			return nil, err
-		}
-		objectList[i] = make(map[string]interface{})
-		for j, dpath := range dotPaths {
-			value, err := dotpath.Eval(dpath, rec)
-			if err == nil {
-				key := labels[j]
-				objectList[i][key] = value
-			} else if verbose == true {
-				log.Printf("(pid: %d) WARNING: skipped key %s, path %s for row %d and column %d, %s", pid, key, dpath, i, j, err)
+		obj, err := c.frameObject(key, dotPaths, labels)
+		if verbose == true {
+			if err != nil {
+				log.Printf("(pid: %d) WARNING: framing error for key %q (%d), %s", pid, key, i, err)
 			}
+			if obj == nil {
+				log.Printf("(pid: %d) WARNING: skipping object key %q (%d), object is nil", pid, key, i)
+			}
+		}
+		if obj != nil {
+			objectList = append(objectList, obj)
 		}
 		if verbose && (i > 0) && ((i % 1000) == 0) {
 			log.Printf("(pid: %d) %d keys processed", pid, i)
@@ -186,7 +191,7 @@ func (c *Collection) setFrame(key string, f *DataFrame) error {
 	if err != nil {
 		return err
 	}
-	err = c.SaveMetadata()
+	err = c.saveMetadata()
 	return err
 }
 
@@ -198,22 +203,30 @@ func (c *Collection) rmFrame(key string) error {
 	}
 	delete(c.FrameMap, key)
 	err := c.Store.Remove(path.Join(c.workPath, savedPath))
-	err = c.SaveMetadata()
+	err = c.saveMetadata()
 	return err
 }
 
-// Frame takes a set of collection keys, dotpaths and labels
-// builds an ObjectList and assembles metadata returning
-// a new CollectionFrame and error. Frames are
-// associated with the collection and can be re-generated.
-// If the length of labels and dotpaths mis-match an error will be
-// returned. If the frame already exists the definition is NOT
-// UPDATED and the existing frame is returned. If you need to
-// update a frame use ReFrame().
-func (c *Collection) Frame(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
+// FrameCreate takes a set of collection keys, dot paths and labels
+// builds an ObjectList and assembles additional metadata returning
+// a new Frame associated with the collection as well as an error value.
+// If there is a mis-match in number of labels and dot paths an an error
+// will be returned. If the frame already exists an error will be returned.
+//
+// Conceptually a frame is an ordered list of objects.  Frames are
+// associated with a collection and the objects in a frame can
+// easily be refreshed. Frames also serve as the basis for indexing
+// a dataset collection and provide the data paths (expressed
+// as a list of "dot paths"), labels (aka attribute names),
+// and type information needed for indexing and search.
+//
+// If you need to update a frame's objects use FrameRefresh(). If
+// you need to change a frames object ordering use FrameReframe().
+//
+func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	// If frame exists return the existing frame
 	if c.hasFrame(name) {
-		return c.getFrame(name)
+		return nil, fmt.Errorf("frame %q exists in %q", name, c.Name)
 	}
 
 	// Case of new Frame and with ObjectList
@@ -227,23 +240,35 @@ func (c *Collection) Frame(name string, keys []string, dotPaths []string, labels
 	f.CollectionName = c.Name
 	f.DotPaths = dotPaths[:]
 	f.Labels = labels[:]
-	f.Keys = keys[:]
+	f.Keys = []string{}
+	f.ObjectMap = make(map[string]interface{})
 	f.Created = time.Now()
 	f.Updated = time.Now()
 
-	// Populate our ObjectList
-	ol, err := c.ObjectList(keys, dotPaths, labels, verbose)
-	if err != nil {
-		return nil, err
+	// Populate our Object List
+	pid := os.Getpid()
+	for i, key := range keys {
+		obj, err := c.frameObject(key, f.DotPaths, f.Labels)
+		if verbose == true {
+			if err != nil {
+				log.Printf("(pid: %d) WARNING: framing error for key %q (%d), %s", pid, key, i, err)
+			}
+			if obj == nil {
+				log.Printf("(pid: %d) WARNING: skipping object key %q (%d), object is nil", pid, key, i)
+			}
+		}
+		if obj != nil {
+			f.ObjectMap[key] = obj
+			f.Keys = append(f.Keys, key)
+		}
 	}
-	f.ObjectList = ol
-
-	err = c.setFrame(name, f)
+	err := c.setFrame(name, f)
 	return f, err
 }
 
-// HasFrame checkes to see if a frame is already defined.
-func (c *Collection) HasFrame(name string) bool {
+// FrameExists checkes to see if a frame is already defined.
+// Returns true if it exists otherwise false
+func (c *Collection) FrameExists(name string) bool {
 	return c.hasFrame(name)
 }
 
@@ -259,29 +284,96 @@ func (c *Collection) Frames() []string {
 	return keys
 }
 
-// Reframe will re-generate contents of a frame based on the current records in a collection.
-// If a list of keys is supplied then the regenerated frame will be based on the new set of keys provided
-func (c *Collection) Reframe(name string, keys []string, verbose bool) error {
+// FrameRead retrieves a frame from a collection.
+// Returns the DataFrame and an error value
+func (c *Collection) FrameRead(name string) (*DataFrame, error) {
+	return c.getFrame(name)
+}
+
+// FrameRefresh updates of a DataFrames object list based on the keys provided. If a new key is
+// encountered the object is added to the end of the list. Other objects are not touched and
+// the order of the object list is not changed.
+func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
 	}
-	if len(keys) > 0 {
-		if len(f.SortExpr) > 0 {
-			keys, err = c.KeySortByExpression(keys, f.SortExpr)
+	for i, key := range keys {
+		obj, err := c.frameObject(key, f.DotPaths, f.Labels)
+		if verbose == true {
 			if err != nil {
-				return err
+				log.Printf("key %q (%d) frame error %s", key, i, err)
+			}
+			if obj == nil {
+				log.Printf("key %q (%d) frame object is nil", key, i)
 			}
 		}
-		f.Keys = keys
+		if err != nil {
+			if verbose {
+				log.Printf("WARNING could not read %q from %q", key, c.Name)
+			}
+			continue
+		}
+		if obj != nil {
+			if _, ok := f.ObjectMap[key]; ok == false {
+				f.Keys = append(f.Keys, key)
+			}
+			f.ObjectMap[key] = obj
+		} else {
+			delete(f.ObjectMap, key)
+			for i, fkey := range f.Keys {
+				if fkey == key {
+					f.Keys = append(f.Keys[:i], f.Keys[i+1:]...)
+					break
+				}
+			}
+		}
 	}
-	f.Updated = time.Now()
-	// NOTE: ObjectList is replaced Grid, RSD 2019-06-24, v0.0.64
-	ol, err := c.ObjectList(f.Keys, f.DotPaths, f.Labels, verbose)
+	return c.setFrame(name, f)
+}
+
+// FrameReframe updates a DataFrames object list. The order is replaced by the keys provided.
+// Objects not in the key list are pruned and new objects are added.
+func (c *Collection) FrameReframe(name string, keys []string, verbose bool) error {
+	f, err := c.getFrame(name)
 	if err != nil {
 		return err
 	}
-	f.ObjectList = ol
+	// New Keys that will replace the values in f.Keys which are stale.
+	nKeys := []string{}
+	for _, key := range keys {
+		obj, err := c.frameObject(key, f.DotPaths, f.Labels)
+		if verbose == true {
+			if err != nil {
+				log.Printf("key %q frame error %s", key, err)
+			}
+			if obj == nil {
+				log.Printf("key %q framed as nil object", key)
+			}
+		}
+		if obj != nil {
+			f.ObjectMap[key] = obj
+			nKeys = append(nKeys, key)
+		} else if _, ok := f.ObjectMap[key]; ok == true {
+			// remove our stale object
+			delete(f.ObjectMap, key)
+		}
+		// Figure out which objects to garbage collect
+		for i, staleKey := range f.Keys {
+			if key == staleKey {
+				f.Keys = append(f.Keys[:i], f.Keys[i+1:]...)
+			}
+		}
+	}
+	// Now GC the objects in the stale key list
+	for _, key := range f.Keys {
+		if _, ok := f.ObjectMap[key]; ok == true {
+			delete(f.ObjectMap, key)
+		}
+	}
+	// Now update the Keys list with the new keys
+	f.Keys = nKeys
+	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }
 
@@ -290,9 +382,33 @@ func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 	return c.setFrame(name, f)
 }
 
-// DeleteFrame removes a frame from a collection, returns an error if frame can't be deleted.
-func (c *Collection) DeleteFrame(name string) error {
+// FrameClear empties the frame's object and key lists but
+// leaves in place the Frame definition. Use Reframe()
+// to re-populate a frame based on a new key list.
+func (c *Collection) FrameClear(name string) error {
+	f, err := c.getFrame(name)
+	if err != nil {
+		return err
+	}
+	// Emtpy the key and Object list.
+	f.Keys = []string{}
+	f.ObjectMap = make(map[string]interface{})
+	return c.setFrame(name, f)
+}
+
+// FrameDelete removes a frame from a collection, returns an error if frame can't be deleted.
+func (c *Collection) FrameDelete(name string) error {
 	return c.rmFrame(name)
+}
+
+// FrameObjects returns a copy of a DataFrame's object list given a collection's frame name.
+func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error) {
+	f, err := c.FrameRead(fName)
+	if err != nil {
+		return nil, err
+	}
+	ol := f.Objects()
+	return ol, nil
 }
 
 //
@@ -307,36 +423,49 @@ func (f *DataFrame) String() string {
 
 // Grid returns a Grid representaiton of a DataFrame's ObjectList
 func (f *DataFrame) Grid(includeHeaderRow bool) [][]interface{} {
-	rowCnt := len(f.ObjectList)
+	rowCnt := len(f.Keys)
 	colCnt := len(f.Labels)
 	if includeHeaderRow == true {
 		rowCnt++
 	}
-	rows := make([][]interface{}, rowCnt)
+	rows := [][]interface{}{}
 	if includeHeaderRow {
 		header := make([]interface{}, colCnt)
 		for i, val := range f.Labels {
 			header[i] = val
 		}
-		rows[0] = header
+		rows = append(rows, header)
 	}
 	// Now make reset of grid
-	for i, rec := range f.ObjectList {
+	objectList := f.Objects()
+	for i, obj := range objectList {
 		rowNo := i
 		if includeHeaderRow == true {
 			rowNo++
 		}
-		rows[rowNo] = make([]interface{}, colCnt)
-		for j, label := range f.Labels {
-			if val, OK := rec[label]; OK == true {
-				rows[rowNo][j] = val
+		row := make([]interface{}, colCnt)
+		for colNo, label := range f.Labels {
+			if val, OK := obj[label]; OK == true {
+				row[colNo] = val
+			} else {
+				row[colNo] = ""
 			}
+		}
+		if len(row) > 0 {
+			rows = append(rows, row)
 		}
 	}
 	return rows
 }
 
-// Objects returns a copy of DataFrame.ObjectList (array of map[string]interface{})
+// Objects returns a copy of DataFrame's object list (an array of map[string]interface{})
 func (f *DataFrame) Objects() []map[string]interface{} {
-	return f.ObjectList[:]
+	ol := []map[string]interface{}{}
+	for _, key := range f.Keys {
+		if obj, found := f.ObjectMap[key]; found == true && obj != nil {
+			rec := obj.(map[string]interface{})
+			ol = append(ol, rec)
+		}
+	}
+	return ol
 }

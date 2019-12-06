@@ -3,18 +3,31 @@
 
 ## Bugs
 
+## Next (prep for v0.1.0)
 
-## Next (prep for v1.0.0)
-
-+ [x ] Remove labels funcs
++ [ ] Refactor cli to match the exported functions from collections.go, add necessary tests
+    + [ ] Add frame-exists
+    + [ ] Add frame-create as distinct from frame (retrieving an existing frame)
+    + [ ] Add frame-refresh
+    + [ ] Rename refresh to frame-refresh
+    + [x] Add frame-objects and frame-grid verbs to dataset cli
+    + [ ] check SetWho, GetWho
+    + [ ] check SetWhat, GetWhat
+    + [ ] check SetWhen, GetWhen
+    + [ ] check SetWhere, GetWhere
+    + [ ] check SetContact, GetContact
+    + [ ] check SetVersion, GetVersion
++ [ ] Add a service object to support building services with libdataset
++ [ ] Changing metadata for Namaste and Codemeta should re-render both
++ [x] Remove labels funcs
 + [x] Drop ._Key -> _Key requirement in frames
-+ [x] Add frame-objects and frame-grid verbs to dataset cli
-+ [ ] Confirm all documentation is current before v1.0.0 release
-+ [ ] Confirm consensus on the release version v1.0.0 
++ [ ] Confirm all documentation is current before v0.1.0 release
++ [ ] Confirm consensus on the release version v0.1.0 
 
 
-## Roadmap (v2.0.0)
+## Someday, Maybe
 
++ [ ] Missing tests for AttachStream()
 + [x] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
 + [ ] Auto-version attachments by patch, minor or major release per settings in collection.json
 + [ ] Switch from Bleve to Lunr indexes and search
@@ -26,9 +39,6 @@
         + [ ] confirm repair for s3:// collections
         + [ ] confirm migrate for s3:// collections
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
-
-## Someday, Maybe
-
 + [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
 + [ ] Add Experimental R _dataset_ module for scripting collection management in R
 + [ ] Add Experimental PHP _dataset_ module for script collection management in PHP 

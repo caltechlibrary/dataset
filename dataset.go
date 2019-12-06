@@ -28,15 +28,18 @@ import (
 	"math/rand"
 	"net/url"
 	"os"
+	"os/user"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dataset/tbl"
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/namaste"
+	"github.com/caltechlibrary/pairtree"
 	"github.com/caltechlibrary/shuffle"
 	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
@@ -44,7 +47,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.0.66`
+	Version = `v0.1.2`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -64,12 +67,10 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `
 
-	// Sort directions
-	ASC  = iota
-	DESC = iota
-
-	// Pairtree is the only supported file layout
-	PAIRTREE_LAYOUT = iota
+	// Asc is used to identify ascending sorts
+	Asc = iota
+	// Desc is used to identify descending sorts
+	Desc = iota
 
 	// internal virtualize column name format string
 	fmtColumnName = `column_%03d`
@@ -84,7 +85,7 @@ type Collection struct {
 	Name string `json:"name"`
 
 	// workPath holds the path (i.e. non-protocol and hostname, in URI)
-	workPath string `json:"-"`
+	workPath string // `json:"-"`
 
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
@@ -132,6 +133,25 @@ type Collection struct {
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection
 	Where string `json:"where,omitempty"`
+
+	//
+	// private attributes, experiments in performance tuning
+	//
+
+	// unsafeSaveMetadata is set to true when doing batch object
+	// operations so we can save writing collections.json on each
+	// create or delete.
+	unsafeSaveMetadata bool
+
+	// collectionMutex is used to prevent write collisions when writing
+	// collection.json
+	collectionMutex *sync.Mutex
+
+	// objectMutex is used to sync on object writing (e.g. writes involving pairtree path)
+	objectMutex *sync.Mutex
+
+	// frameMutex is used to sync on frame writing (e.g. writes involving _frame path)
+	frameMutex *sync.Mutex
 }
 
 //
@@ -162,8 +182,12 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
-// SaveMetadata writes the collection's metadata to  c.Store and c.workPath
-func (c *Collection) SaveMetadata() error {
+// saveMetadata writes the collection's metadata to  c.Store and c.workPath
+func (c *Collection) saveMetadata() error {
+	if c.unsafeSaveMetadata == true {
+		// NOTE: We're playing fast and loose with the collection metadata, skip saveMetadata().
+		return nil
+	}
 	// Check to see if collection exists, if not create it!
 	if c.Store.Type == storage.FS {
 		if _, err := c.Store.Stat(c.workPath); err != nil {
@@ -176,9 +200,16 @@ func (c *Collection) SaveMetadata() error {
 	if err != nil {
 		return fmt.Errorf("Can't marshal metadata, %s", err)
 	}
+	c.collectionMutex.Lock()
+	defer c.collectionMutex.Unlock()
 	if err := c.Store.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
 	}
+	return nil
+}
+
+// addNamaste writes name as text files for collection in the collection's directory.
+func (c *Collection) addNamaste() error {
 	// Add/Update Namaste
 	loc, err := c.Store.Location(c.workPath)
 	if err == nil {
@@ -222,19 +253,68 @@ func (c *Collection) SaveMetadata() error {
 
 // InitCollection - creates a new collection with default alphabet and names of length 2.
 func InitCollection(name string) (*Collection, error) {
-	var (
-		c   *Collection
-		err error
-	)
-	c, err = pairtreeCreateCollection(name)
+	if len(name) == 0 {
+		return nil, fmt.Errorf("missing a collection name")
+	}
+	store, err := storage.GetStore(name)
 	if err != nil {
 		return nil, err
 	}
-	return c, nil
+	collectionName := collectionNameAsPath(name)
+	// See if we need an open or continue with create
+	_, err = store.Stat(collectionName + "/collection.json")
+	if err == nil {
+		return openCollection(name)
+	}
+
+	if store.Type == storage.FS {
+		err = os.MkdirAll(collectionName, 0775)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	c := new(Collection)
+	// Save the date and time
+	dt := time.Now()
+	// date and time is in RFC3339 format
+	c.Created = dt.Format(time.RFC3339)
+	// When is a date in YYYY-MM-DD format (can be approximate)
+	// e.g. 2019, 2019-01, 2019-01-02
+	c.When = dt.Format("2006-01-02")
+	c.DatasetVersion = Version
+	c.Name = path.Base(collectionName)
+	c.Version = "v0.0.0"
+	userinfo, err := user.Current()
+	if err == nil {
+		if userinfo.Name != "" {
+			c.Who = []string{userinfo.Name}
+		} else {
+			c.Who = []string{userinfo.Username}
+		}
+	}
+	if len(c.Who) > 0 {
+		c.What = fmt.Sprintf("A dataset (%s) collection initilized on %s by %s.", Version, dt.Format("Monday, January 2, 2006 at 3:04pm MST."), strings.Join(c.Who, ", "))
+	} else {
+		c.What = fmt.Sprintf("A dataset %s collection initilized on %s", Version, dt.Format("Monday, January 2, 2006 at 3:04pm MST.."))
+	}
+	c.workPath = collectionName
+	c.KeyMap = map[string]string{}
+	c.Store = store
+
+	c.collectionMutex = new(sync.Mutex)
+	c.objectMutex = new(sync.Mutex)
+	c.frameMutex = new(sync.Mutex)
+	err = c.saveMetadata()
+	if err != nil {
+		return nil, err
+	}
+	err = c.addNamaste()
+	return c, err
 }
 
-// Open reads in a collection's metadata and returns and new collection structure and err
-func Open(name string) (*Collection, error) {
+// openCollection reads in a collection's metadata and returns and new collection structure and err
+func openCollection(name string) (*Collection, error) {
 	store, err := storage.GetStore(name)
 	if err != nil {
 		return nil, err
@@ -252,11 +332,18 @@ func Open(name string) (*Collection, error) {
 	c.Name = path.Base(collectionName)
 	c.workPath = collectionName
 	c.Store = store
+	if c.KeyMap == nil {
+		c.KeyMap = make(map[string]string)
+	}
+
+	c.collectionMutex = new(sync.Mutex)
+	c.objectMutex = new(sync.Mutex)
+	c.frameMutex = new(sync.Mutex)
 	return c, nil
 }
 
-// Delete an entire collection
-func Delete(name string) error {
+// deleteCollection an entire collection
+func deleteCollection(name string) error {
 	store, err := storage.GetStore(name)
 	if err != nil {
 		return err
@@ -284,41 +371,166 @@ func (c *Collection) Close() error {
 	c.workPath = ""
 	c.KeyMap = map[string]string{}
 	c.Store = nil
+
+	c.collectionMutex = nil
+	c.objectMutex = nil
+	c.frameMutex = nil
 	return nil
 }
 
 // CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
 func (c *Collection) CreateJSON(key string, src []byte) error {
-	return c.pairtreeCreateJSON(key, src)
+	key = strings.TrimSpace(key)
+	if key == "" || key == ".json" {
+		return fmt.Errorf("must not be empty")
+	}
+
+	// Enforce the _Key attribute is unique and does not exist in collection already
+	key = normalizeKeyName(key)
+	keyName, FName := keyAndFName(key)
+	if _, keyExists := c.KeyMap[keyName]; keyExists == true {
+		return fmt.Errorf("%s already exists in collection %s", key, c.Name)
+	}
+
+	// Make sure we have an "object" not an array object in JSON notation
+	if bytes.HasPrefix(src, []byte(`{`)) == false {
+		return fmt.Errorf("dataset can only stores JSON objects")
+	}
+	// Add a _Key value if needed in the JSON source
+	if bytes.Contains(src, []byte(`"_Key"`)) == false {
+		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
+	}
+
+	var err error
+	pair := pairtree.Encode(key)
+	pairPath := path.Join("pairtree", pair)
+	if c.Store.Type == storage.FS {
+		err = c.Store.MkdirAll(path.Join(c.workPath, pairPath), 0770)
+		if err != nil {
+			return fmt.Errorf("mkdir %s %s", path.Join(c.workPath, pairPath), err)
+		}
+	}
+
+	// We've almost made it, save the key's name and write the blob to pairtree
+	err = c.Store.WriteFile(path.Join(c.workPath, pairPath, FName), src, 0664)
+	if err != nil {
+		return err
+	}
+	// We now need to update KeyMap
+	c.KeyMap[key] = pairPath
+	return c.saveMetadata()
+}
+
+// CreateObjectsJSON takes a list of keys and creates a default object for each key
+// as quickly as possible. NOTE: if object already exist creation is skipped without
+// reporting an error.
+func (c *Collection) CreateObjectsJSON(keyList []string, src []byte) error {
+	c.unsafeSaveMetadata = true
+	defer func() {
+		c.unsafeSaveMetadata = false
+		c.saveMetadata()
+	}()
+	for _, key := range keyList {
+		if c.KeyExists(key) == false {
+			if err := c.CreateJSON(key, src); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// IsKeyNotFound checks an error message and returns true if
+// it is a key not found error.
+func (c *Collection) IsKeyNotFound(e error) bool {
+	if strings.Compare(e.Error(), "key not found") == 0 {
+		return true
+	}
+	return false
 }
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
-	if c.HasKey(name) == false {
+	if c.KeyExists(name) == false {
 		return nil, fmt.Errorf("key not found")
 	}
-	return c.pairtreeReadJSON(name)
+	name = normalizeKeyName(name)
+	// Handle potentially URL encoded names
+	keyName, FName := keyAndFName(name)
+	pairPath, ok := c.KeyMap[keyName]
+	if ok != true {
+		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
+	}
+	// NOTE: c.Name is the path to the collection not the name of JSON document
+	// we need to join c.Name + bucketName + name to get path do JSON document
+	src, err := c.Store.ReadFile(path.Join(c.workPath, pairPath, FName))
+	if err != nil {
+		return nil, err
+	}
+	return src, nil
 }
 
 // UpdateJSON a JSON doc in a collection, returns an error if there is a problem
 func (c *Collection) UpdateJSON(name string, src []byte) error {
-	if c.HasKey(name) == false {
+	var ()
+	// Normalize key and filenames
+	name = normalizeKeyName(name)
+	keyName, fName := keyAndFName(name)
+	// Make sure Key exists before proceeding with update
+	if c.KeyExists(name) == false {
 		return fmt.Errorf("key not found")
 	}
-	return c.pairtreeUpdateJSON(name, src)
+
+	// Make sure we have an "object" not an array object in JSON notation
+	if bytes.HasPrefix(src, []byte(`{`)) == false {
+		return fmt.Errorf("dataset can only stores JSON objects")
+	}
+
+	// Make sure we preserve attachment metadata
+	if bytes.Contains(src, []byte(`"_Attachments"`)) == false {
+		obj := map[string]interface{}{}
+		if err := c.Read(name, obj, false); err == nil {
+			if val, ok := obj["_Attachments"]; ok == true {
+				vArray := val.([]interface{})
+				if vSrc, err := json.Marshal(vArray); err == nil {
+					vSrc = append(append([]byte(`{"_Attachments":`), vSrc...), []byte(",")...)
+					src = bytes.Replace(src, []byte(`{`), vSrc, 1)
+				}
+			}
+		}
+	}
+
+	// Add a _Key value if needed in the JSON source
+	if bytes.Contains(src, []byte(`"_Key"`)) == false {
+		src = bytes.Replace(src, []byte(`{`), []byte(`{"_Key":"`+keyName+`",`), 1)
+	}
+
+	//NOTE: KeyMap should include pairtree path (e.g. pairtree/AA/BB/CC...)
+	pairPath, ok := c.KeyMap[keyName]
+	if ok != true {
+		return fmt.Errorf("%q does not exist in %q", keyName, c.Name)
+	}
+	if c.Store.Type == storage.FS {
+		err := c.Store.MkdirAll(path.Join(c.workPath, pairPath), 0770)
+		if err != nil {
+			return fmt.Errorf("Update (mkdir) %q, %s", path.Join(c.workPath, pairPath), err)
+		}
+	}
+	return c.Store.WriteFile(path.Join(c.workPath, pairPath, fName), src, 0664)
 }
 
 // Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
 // name must be unique. Document must be an JSON object (not an array).
 func (c *Collection) Create(name string, data map[string]interface{}) error {
-	src, err := json.Marshal(data)
+	src, err := EncodeJSON(data)
 	if err != nil {
 		return fmt.Errorf("%s, %s", name, err)
 	}
 	return c.CreateJSON(name, src)
 }
 
-// Read finds the record in a collection, updates the data interface provide and if problem returns an error
+// Read finds the record in a collection, updates the data
+// interface provide and if problem returns an error
 // name must exist or an error is returned
 func (c *Collection) Read(name string, data map[string]interface{}, cleanObject bool) error {
 	src, err := c.ReadJSON(name)
@@ -348,7 +560,27 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 
 // Delete removes a JSON doc from a collection
 func (c *Collection) Delete(name string) error {
-	return c.pairtreeDelete(name)
+	name = normalizeKeyName(name)
+	keyName, FName := keyAndFName(name)
+
+	pairPath, ok := c.KeyMap[keyName]
+	if ok != true {
+		return fmt.Errorf("%q key not found in %q", keyName, c.Name)
+	}
+
+	//NOTE: Need to remove any stale tarball before removing our record!
+	tarball := strings.TrimSuffix(FName, ".json") + ".tar"
+	p := path.Join(c.workPath, pairPath, tarball)
+	if err := c.Store.RemoveAll(p); err != nil {
+		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
+	}
+	p = path.Join(c.workPath, pairPath, FName)
+	if err := c.Store.Remove(p); err != nil {
+		return fmt.Errorf("Error removing %q, %s", p, err)
+	}
+
+	delete(c.KeyMap, keyName)
+	return c.saveMetadata()
 }
 
 // Keys returns a list of keys in a collection
@@ -360,8 +592,8 @@ func (c *Collection) Keys() []string {
 	return keys
 }
 
-// HasKey returns true if key is in collection's KeyMap, false otherwise
-func (c *Collection) HasKey(key string) bool {
+// KeyExists returns true if key is in collection's KeyMap, false otherwise
+func (c *Collection) KeyExists(key string) bool {
 	_, hasKey := c.KeyMap[key]
 	return hasKey
 }
@@ -431,7 +663,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 			}
 		}
 		if len(key) > 0 && len(record) > 0 {
-			if c.HasKey(key) {
+			if c.KeyExists(key) {
 				if overwrite == true {
 					err = c.Update(key, record)
 					if err != nil {
@@ -509,7 +741,7 @@ func (c *Collection) ImportTable(table [][]interface{}, idCol int, useHeaderRow 
 			record[fieldName] = val
 		}
 		if len(key) > 0 && len(record) > 0 {
-			if c.HasKey(key) == true {
+			if c.KeyExists(key) == true {
 				if overwrite == true {
 					err = c.Update(key, record)
 					if err != nil {
@@ -554,13 +786,7 @@ func colToString(cell interface{}) string {
 // generating rows and exports then as a CSV file
 func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verboseLog bool) (int, error) {
 	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	if f.AllKeys == true {
-		f.Keys = c.Keys()
-	}
-	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
-	if err != nil {
-		return 0, err
-	}
+	keys := f.Keys[:]
 	dotExpr := f.DotPaths
 	colNames := f.Labels
 
@@ -621,14 +847,7 @@ func (c *Collection) ExportCSV(fp io.Writer, eout io.Writer, f *DataFrame, verbo
 // ExportTable takes a reader and frame and iterates over the objects
 // generating rows and exports then as a CSV file
 func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) (int, [][]interface{}, error) {
-	//, filterExpr string, dotExpr []string, colNames []string, verboseLog bool) (int, error) {
-	if f.AllKeys == true {
-		f.Keys = c.Keys()
-	}
-	keys, err := c.KeyFilter(f.Keys, f.FilterExpr)
-	if err != nil {
-		return 0, nil, err
-	}
+	keys := f.Keys[:]
 	dotExpr := f.DotPaths
 	colNames := f.Labels
 
@@ -676,8 +895,8 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 	return cnt, table, nil
 }
 
-// KeyFilter takes a list of keys and  filter expression and returns the list of keys passing
-// through the filter or an error
+// KeyFilter takes a list of keys and  filter expression and returns
+// the list of keys passing through the filter or an error
 func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
 	// Handle the trivial case of filter resolving to true
 	// NOTE: empty filter is treated as "true"
@@ -792,7 +1011,7 @@ func IsCollection(p string) bool {
 // BUG: This is a naive join, it assumes the keys in object are top
 // level properties.
 func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool) error {
-	if c.HasKey(key) == false {
+	if c.KeyExists(key) == false {
 		return c.Create(key, obj)
 	}
 	record := map[string]interface{}{}

@@ -12,7 +12,7 @@ First since dataset is a folder with collections.json, pairtree and frames
 we can "clone" an the complete collection by simply copying the folder 
 and its contents.  This can be done with standard operating system
 tools (e.g. File managers, command line) or in the case of cloud storage 
-with the tools provided by the vender for managing content in the cloud. 
+with the tools provided by the vendor for managing content in the cloud. 
 If you're working with a whole collection this is the best approach.
 
 ## Taking a sample
@@ -53,9 +53,9 @@ what **clone-sample** (or in Python **clone_sample**) is for.
 
 The **clone-sample** verb is about generating sample collections without 
 having to take the extra step of generating a list of sample keys. As an 
-added benefit **clone-sample** knows which keys we not selected in the 
+added benefit **clone-sample** knows which keys were not selected in the 
 sample so it is convienent for creating "training" and "test" collection 
-if you are apply statistical methods.
+if you are applying machine learning techniques.
 
 Let's take a shorten version of generating a sample of size 5 for our 
 friends collection.

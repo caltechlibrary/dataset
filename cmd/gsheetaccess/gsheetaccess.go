@@ -157,7 +157,7 @@ func main() {
 
 	_, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, `
+		fmt.Fprintf(os.Stderr, `
 
 You need a credentials.json file to authenticate. See documentation
 at 
