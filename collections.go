@@ -20,6 +20,7 @@ package dataset
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -426,6 +427,14 @@ func Check(cName string, verbose bool) error {
 // NOTE: Collection objects are locked during repair!
 func Repair(cName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
+		// Check to see if we have a collection.json or pairtree.
+		//FIXME: this needs to also work with uri to S3 like object stores.
+		if _, err := os.Stat(path.Join(cName, "collections.json")); os.IsNotExist(err) {
+			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); fInfo.IsDir() {
+				//FIXME: we need to create a empty collections.json file.
+				// Issue-99 in GitHub
+			}
+		}
 		if err := Open(cName); err != nil {
 			return err
 		}
