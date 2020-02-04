@@ -154,6 +154,10 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 	// convert into DataFrame struct
 	f := new(DataFrame)
 	err = json.Unmarshal(src, &f)
+	// Double check if we have a bad object_map?
+	if f.ObjectMap == nil {
+		f.ObjectMap = map[string]interface{}{}
+	}
 	// return frame and error
 	return f, err
 }
@@ -320,9 +324,11 @@ func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) erro
 			}
 			f.ObjectMap[key] = obj
 		} else {
+			// Remove the stale object
 			delete(f.ObjectMap, key)
 			for i, fkey := range f.Keys {
 				if fkey == key {
+					// Remove the stale key
 					f.Keys = append(f.Keys[:i], f.Keys[i+1:]...)
 					break
 				}

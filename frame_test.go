@@ -84,6 +84,10 @@ func TestFrame(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
+	if len(f.ObjectMap) == 0 {
+		t.Errorf("Expect > 0 objects in ObjectMap")
+		t.FailNow()
+	}
 	if len(f.ObjectMap) != len(tRecords) {
 		t.Errorf("Expected tRecords (%d) to be same length as objectList (%d) -> %s", len(tRecords), len(f.ObjectMap), f.String())
 		t.FailNow()

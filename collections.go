@@ -270,6 +270,12 @@ func DeleteJSON(cName string, key string) error {
 // FrameExists returns true if frame found in service collection,
 // otherwise false
 func FrameExists(cName string, fName string) bool {
+	// We may need to open a dataset collection to check for a frame.
+	if cMap == nil || IsOpen(cName) == false {
+		if err := Open(cName); err != nil {
+			return false
+		}
+	}
 	if IsOpen(cName) == true {
 		if c, found := cMap.collections[cName]; found {
 			return c.FrameExists(fName)

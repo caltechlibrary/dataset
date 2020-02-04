@@ -1997,7 +1997,6 @@ func fnFrameExists(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
-
 	if dataset.FrameExists(cName, frameName) {
 		fmt.Fprintf(out, "true")
 	} else {
@@ -2105,7 +2104,7 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	// Apply Sample Size
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	shuffle.Strings(keys, random)
-	if sampleSize <= len(keys) {
+	if sampleSize <= len(keys) && sampleSize > 0 {
 		keys = keys[0:sampleSize]
 	}
 
@@ -2952,7 +2951,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	app.BoolVar(&prettyPrint, "p,pretty", false, "pretty print output")
 	app.BoolVar(&generateMarkdown, "generate-markdown", false, "generate Markdown documentation")
 	app.BoolVar(&generateManPage, "generate-manpage", false, "output manpage markup")
-	app.BoolVar(&showVerbose, "verbose", false, "output rows processed on importing from CSV")
+	app.BoolVar(&showVerbose, "V,verbose", false, "output rows processed on importing from CSV")
 
 	// Application Verbs
 	app.VerbsRequired = true
