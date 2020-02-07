@@ -19,7 +19,9 @@
 package dataset
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -430,9 +432,19 @@ func Repair(cName string, verbose bool) error {
 		// Check to see if we have a collection.json or pairtree.
 		//FIXME: this needs to also work with uri to S3 like object stores.
 		if _, err := os.Stat(path.Join(cName, "collections.json")); os.IsNotExist(err) {
-			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); fInfo.IsDir() {
+			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); err == nil && fInfo.IsDir() {
 				//FIXME: we need to create a empty collections.json file.
-				// Issue-99 in GitHub
+				// Issue-99 in GitHub so we can then proceed and repair
+				// our collection.
+				c := new(Collection)
+				c.Name = cName
+				src, err := json.Marshal(c)
+				if err != nil {
+					return err
+				}
+				if err := ioutil.WriteFile(path.Join(cName, "collections.json"), src, 0664); err != nil {
+					return err
+				}
 			}
 		}
 		if err := Open(cName); err != nil {
