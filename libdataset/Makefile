@@ -73,7 +73,7 @@ release: $(LIB_NAME)$(EXT)
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	cp -v $(LIB_NAME)$(EXT) ../dist/
 	cp -v $(LIB_NAME).h ../dist/
-	cd ../dist && tar zcvf $(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).tar.gz $(LIB_NAME)$(EXT) $(LIB_NAME).h  README.md LICENSE INSTALL.md
+	cd ../dist && zip $(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h  README.md LICENSE INSTALL.md
 
 
 
