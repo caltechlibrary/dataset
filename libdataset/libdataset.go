@@ -148,7 +148,7 @@ func init_collection(name *C.char) C.int {
 
 // is_open returns true (i.e. one) if a collection has been opened by libdataset, false (i.e. zero) otherwise
 //
-// export is_open
+//export is_open
 func is_open(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 
@@ -160,7 +160,7 @@ func is_open(cName *C.char) C.int {
 
 // open returns 0 on successfully opening a collection 1 otherwise. Sets error messages if needed.
 //
-// export open
+//export open
 func open(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
@@ -172,9 +172,23 @@ func open(cName *C.char) C.int {
 	return C.int(1)
 }
 
+// close closes a collection explicitly. Most of the time you don't want to do this.
+//
+//export close
+func close(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	error_clear()
+	err := dataset.Close(collectionName)
+	if err != nil {
+		error_dispatch(err, "Cannot open %q, %s", collectionName, err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
 // collections returns a JSON list of collection names that are open otherwise an empty list.
 //
-// export collections
+//export collections
 func collections() *C.char {
 	cNames := dataset.Collections()
 	src, err := json.Marshal(cNames)
@@ -184,22 +198,9 @@ func collections() *C.char {
 	return C.CString(fmt.Sprintf("%s", src))
 }
 
-// close closes a collection previously opened.
-//
-// export close
-func close(cName *C.char) C.int {
-	collectionName := C.GoString(cName)
-	error_clear()
-	if err := dataset.Close(collectionName); err != nil {
-		error_dispatch(err, "Cannot close collection %s, %s", collectionName, err)
-		return C.int(0)
-	}
-	return C.int(1)
-}
-
 // close_all closes all collections previously opened
 //
-// export close_all
+//export close_all
 func close_all() C.int {
 	error_clear()
 	if err := dataset.CloseAll(); err != nil {

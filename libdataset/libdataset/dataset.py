@@ -21,7 +21,7 @@
 import json
 import ctypes
 
-from libdataset.cwrapper import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact
+from libdataset.cwrapper import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact, go_is_open, go_open, go_close, go_close_all
 
 #
 # These are our Python idiomatic functions
@@ -100,21 +100,48 @@ def verbose_off():
     return (ok == 1)
 
 # Initializes a Dataset Collection
-def init(collection_name, layout = "pairtree"):
+def init(collection_name):
     '''initialize a dataset collection with the given name'''
     collection_layout = 0
     if layout == "buckets":
         collection_layout = 1
     elif layout == "pairtree":
         collection_layout = 2
-    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')), 
-            ctypes.c_int(collection_layout))
+    ok = go_init(ctypes.c_char_p(collection_name.encode('utf8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+# is_open checks to see if a dataset collection is already open
+def is_open(collection_name):
+    ok = go_is_open(ctypes.c_char_p(collection_name.encode('utf8')))
+    if ok == 1:
+        return True
+    return False
+
+# open opens a dataset collection (it needs to exist)
+def open(collection_name):
+    ok = go_open(ctypes.c_char_p(collection_name.encode('utf8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+# close closes a dataset collection
+def close(collection_name):
+    ok = go_close(ctypes.c_char_p(collection_name.encode('utf8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+# close_all closes all open dataset collection
+def close_all():
+    ok = go_close_all()
     if ok == 1:
         return ''
     return error_message()
 
 # Has key, checks if a key is in the dataset collection
-def key_exists(collection_name, key):
+def has_key(collection_name, key):
     ok = go_key_exists(ctypes.c_char_p(collection_name.encode('utf8')), 
             ctypes.c_char_p(key.encode('utf8')))
     return (ok == 1)
@@ -446,7 +473,7 @@ def frame_create(collection_name, frame_name, keys, dot_paths, labels):
     return error_message()
 
 
-def frame_exists(collection_name, frame_name):
+def has_frame(collection_name, frame_name):
     ok = go_frame_exists(ctypes.c_char_p(collection_name.encode('utf-8')),
             ctypes.c_char_p(frame_name.encode('utf-8')))
     if ok == 1:

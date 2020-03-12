@@ -68,6 +68,22 @@ go_init.argtypes = [ctypes.c_char_p, ctypes.c_int]
 # Returns: true (1), false (0)
 go_init.restype = ctypes.c_int
 
+go_is_open = lib.is_open
+go_is_open.argtypes = [ctypes.c_char_p]
+go_is_open.restype = ctypes.c_int
+
+go_open = lib.is_open
+go_open.argtypes = [ctypes.c_char_p]
+go_open.restype = ctypes.c_int
+
+go_close = lib.close
+go_close.argtypes = [ctypes.c_char_p]
+go_close.restype = ctypes.c_int
+
+go_close_all = lib.close
+go_close_all.argtypes = [ctypes.c_char_p]
+go_close_all.restype = ctypes.c_int
+
 go_create_object = lib.create_object
 # Args: collection_name (string), key (string), value (JSON source)
 go_create_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]

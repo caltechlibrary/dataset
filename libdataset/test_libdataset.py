@@ -4,18 +4,31 @@ import sys
 import shutil
 import json
 
-# Alias this to dataset
-#dataset = libdataset
+
+# Setup our test collection deleting it first if neccessary
+def test_setup(t, collection_name, test_name):
+    if os.path.exists(collection_name) == True:
+        if dataset.is_open(collection_name):
+            t.print(f'{collection_name} is open...')
+            err = dataset.close(collection_name)
+            if err != '':
+                t.error(f'closing {collection_name}, {err}')
+                sys.exit(1)
+        t.print(f'Cleaning stale {collection_name}')
+        shutil.rmtree(collection_name)
+        dataset.close(collection_name)
+    t.print(f'Creating {collection_name} for {test_name}')
+    err = dataset.init(collection_name)
+    if err != '':
+        t.error(f"{test_name} Failed, could not create collection, {err}")
+    if os.path.exists(collection_name) == False:
+        t.print(f"{collection_name} does not exist! {test_name}")
+        sys.exit(1)
+
     
 def test_libdataset(t, c_name):
     # Clean up stale result test collections
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
-    
-    err = dataset.init(c_name)
-    if err != "":
-        t.error(f"expected '', got '{err}' for dataset.init({c_name})")
-        sys.exit(1)
+    test_setup(t, c_name, 'test_libdataset')
     
     src = '''
     [
@@ -56,9 +69,9 @@ def test_libdataset(t, c_name):
             t.error(f"expected '', got '{err}' for dataset.frame_create({c_name}, {f_name}, ...)")
             sys.exit(1)
     
-    ok = dataset.frame_exists(c_name, f_name)
+    ok = dataset.has_frame(c_name, f_name)
     if ok != True:
-            t.error(f"expected 'True', got '{ok}' for dataset.frame_exists({c_name}, {f_name})")
+            t.error(f"expected 'True', got '{ok}' for dataset.has_frame({c_name}, {f_name})")
             sys.exit(1)
     
     
@@ -70,12 +83,22 @@ def test_libdataset(t, c_name):
             t.error(f"expected ({i}) '{expected}', got '{key}' for dataset.frame_keys({c_name}, {f_name})")
             sys.exit(1)
     shutil.rmtree(c_name)
+    if os.path.exists(c_name) == True:
+        t.error(f'{c_name} should have been removed!')
+        sys.exit(1)
 
 #
 # test_basic(collection_name) runs tests on basic CRUD ops
 # 
 def test_basic(t, collection_name):
     '''test_basic(collection_name) runs tests on basic CRUD ops'''
+    test_setup(t, collection_name, 'test_basic')
+    keys = dataset.keys(collection_name)
+    print(f"DEBUG keys {keys} in {collection_name}")
+    if len(keys) != 0:
+        t.error(f"Something is wrong {collection_name} should be empty, got {len(keys)} keys {keys}")
+        sys.exit(1)
+
     # Setup a test record
     key = "2488"
     value = { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
@@ -88,7 +111,7 @@ def test_basic(t, collection_name):
     # Check to see that we have only one record
     key_count = dataset.count(collection_name)
     if key_count != 1:
-        t.error(f"Failed, expected count to be 1, got {key_count}")
+        t.error(f"Failed {collection_name}, expected count to be 1, got {key_count}")
     
     # Do a minimal test to see if the record looks like it has content
     keyList = dataset.keys(collection_name)
@@ -153,6 +176,7 @@ def test_basic(t, collection_name):
 #
 def test_keys(t, collection_name):
     '''test_keys(collection_name) test getting, filter and sorting keys'''
+    test_setup(t, collection_name, 'test_keys')
     # Test count after delete
     key_list = dataset.keys(collection_name)
     cnt = dataset.count(collection_name)
@@ -210,6 +234,7 @@ def test_keys(t, collection_name):
 # test_issue32() make sure issue 32 stays fixed.
 #
 def test_issue32(t, collection_name):
+    test_setup(t, collection_name, 'test_issue32')
     err = dataset.create(collection_name, "k1", {"one":1})
     if err != '':
         t.error("Failed to create k1 in", collection_name, ', ', err)
@@ -221,14 +246,6 @@ def test_issue32(t, collection_name):
     if ok == True:
         t.error("Failed, has_key k2 should return", False)
 
-# Setup our test collection, recreate it if necessary
-def test_setup(t, collection_name):
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
-    err = dataset.init(collection_name, "pairtree")
-    if err != '':
-        t.error("Failed, could not create collection, ", err)
-        return
 
 
 def test_check_repair(t, collection_name):
@@ -983,7 +1000,6 @@ Python 'gsheet' test sequence.
     collection_name = "test_collection.ds"
     test_runner = TestRunner(os.path.basename(__file__))
     test_runner.add(test_libdataset, [collection_name])
-    test_runner.add(test_setup, [collection_name])
     test_runner.add(test_basic, [collection_name])
     test_runner.add(test_keys, [collection_name])
     test_runner.add(test_issue32, [collection_name])
