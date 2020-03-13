@@ -133,7 +133,7 @@ def close(collection_name):
 # close_all closes all open dataset collection
 def close_all():
     ok = go_close_all()
-    if ok == 1:
+    if (ok == 1):
         return ''
     return error_message()
 
@@ -481,8 +481,8 @@ def frame_clear(collection_name, frame_name):
         return ''
     return error_message()
 
-def frame_delete(collection_name, frame_name):
-    ok = go_frame_delete(c_char_p(collection_name.encode('utf-8')),
+def delete_frame(collection_name, frame_name):
+    ok = go_delete_frame(c_char_p(collection_name.encode('utf-8')),
         c_char_p(frame_name.encode('utf-8')))
     if ok == 1:
         return ''

@@ -122,9 +122,7 @@ func messagef(s string, values ...interface{}) {
 //
 //export dataset_version
 func dataset_version() *C.char {
-	messagef("DEBUG dataset version %q", dataset.Version)
 	txt := dataset.Version
-	messagef("DEBUG getting dataset version %q", txt)
 	return C.CString(fmt.Sprintf("%q", txt))
 }
 

@@ -37,7 +37,6 @@ if sys.platform.startswith('linux'):
 # Find our shared library and load it
 dir_path = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 lib_path = os.path.join(dir_path, go_basename+ext)
-print(f'DEBUG dylib -> {lib_path}', file=sys.stderr)
 lib = CDLL(lib_path)
 
 # error_clear clears the error values
@@ -82,8 +81,7 @@ go_close = lib.close
 go_close.restype = c_int
 go_close.argtypes = [c_char_p]
 
-go_close_all = lib.close
-#go_close_all.argtypes = [c_char_p]
+go_close_all = lib.close_all
 go_close_all.restype = c_int
 
 go_create_object = lib.create_object
@@ -306,11 +304,11 @@ go_frame_reframe.argtypes = [c_char_p, c_char_p, c_char_p]
 # Returns: value (JSON object source)
 go_frame_reframe.restype = c_int
 
-go_frame_delete = lib.frame_delete
+go_delete_frame = lib.delete_frame
 # Args: collection_name (string), frame_name (string)
-go_frame_delete.argtypes = [c_char_p, c_char_p]
+go_delete_frame.argtypes = [c_char_p, c_char_p]
 # Returns: true (1), false (0)
-go_frame_delete.restype = c_int
+go_delete_frame.restype = c_int
 
 go_frame_clear = lib.frame_clear
 # Args: collection_name (string), frame_name (string)

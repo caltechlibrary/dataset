@@ -118,7 +118,9 @@ func Collections() []string {
 func Close(cName string) error {
 	if IsOpen(cName) {
 		if c, exists := cMap.collections[cName]; exists == true {
-			return c.Close()
+			err := c.Close()
+			delete(cMap.collections, cName)
+			return err
 		}
 	}
 	return fmt.Errorf("%q not found", cName)

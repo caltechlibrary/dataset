@@ -5,32 +5,46 @@ import shutil
 import json
 from libdataset import * 
 
+def cleanup(c_name):
+    keys = dataset.keys(c_name)
+    fnames = dataset.frames(c_name)
+    for fname in fnames:
+        err = dataset.delete_frame(c_name, fname)
+        if err != '':
+            print(f'DEBUG {c_name} delete frame {fname}, {err}')
+    for key in keys:
+        err = dataset.delete(c_name, key)
+        if err != '':
+            print(f'DEBUG {c_name} delete {key}, {err}')
+    fnames = dataset.frames(c_name)
+    if len(fnames) > 0:
+        print(f'Cleanup failed, {c_name} has following frames {fnames}')
+        sys.exit(1)
+    keys = dataset.keys(c_name)
+    if len(keys) > 0:
+        print(f'Cleanup failed, {c_name} has following keys {keys}')
+        sys.exit(1)
+
 
 # Setup our test collection deleting it first if neccessary
 def test_setup(t, collection_name, test_name):
-    if os.path.exists(collection_name) == True:
-        if dataset.is_open(collection_name):
-            t.print(f'{collection_name} is open...')
-            err = dataset.close(collection_name)
-            if err != '':
-                t.error(f'closing {collection_name}, {err}')
-                sys.exit(1)
-        t.print(f'Cleaning stale {collection_name}')
-        shutil.rmtree(collection_name)
-        dataset.close(collection_name)
-    t.print(f'Creating {collection_name} for {test_name}')
-    err = dataset.init(collection_name)
-    if err != '':
-        t.error(f"{test_name} Failed, could not create collection, {err}")
     if os.path.exists(collection_name) == False:
-        t.print(f"{collection_name} does not exist! {test_name}")
-        sys.exit(1)
+        t.print(f'Creating {collection_name} for {test_name}')
+        err = dataset.init(collection_name)
+        if err != '':
+            t.error(f"{test_name} Failed, could not create collection, {err}")
+            sys.exit(1)
+        if os.path.exists(collection_name) == False:
+            t.print(f"{collection_name} does not exist! {test_name}")
+            sys.exit(1)
+    else:
+        t.print(f'Using {collection_name}')
 
     
 def test_libdataset(t, c_name):
     # Clean up stale result test collections
-    test_setup(t, c_name, 'test_libdataset')
-    
+    cleanup(c_name)
+
     src = '''
     [
         {"_Key": "k1", "title": "One thing", "name": "Fred"},
@@ -43,7 +57,7 @@ def test_libdataset(t, c_name):
         key = obj['_Key']
         err = dataset.create(c_name, key, obj)
         if err != '':
-            t.error(f"expected '', got '{err}' for dataset.create({c_name}, {_key}, {obj})")
+            t.error(f"expected '', got '{err}' for dataset.create({c_name}, {key}, {obj})")
             sys.exit(1)
     
     expected_keys = [ "k1", "k2", "k3" ]
@@ -83,19 +97,15 @@ def test_libdataset(t, c_name):
         if key != expected:
             t.error(f"expected ({i}) '{expected}', got '{key}' for dataset.frame_keys({c_name}, {f_name})")
             sys.exit(1)
-    shutil.rmtree(c_name)
-    if os.path.exists(c_name) == True:
-        t.error(f'{c_name} should have been removed!')
-        sys.exit(1)
 
 #
 # test_basic(collection_name) runs tests on basic CRUD ops
 # 
 def test_basic(t, collection_name):
     '''test_basic(collection_name) runs tests on basic CRUD ops'''
-    test_setup(t, collection_name, 'test_basic')
+    cleanup(collection_name)
+
     keys = dataset.keys(collection_name)
-    print(f"DEBUG keys {keys} in {collection_name}")
     if len(keys) != 0:
         t.error(f"Something is wrong {collection_name} should be empty, got {len(keys)} keys {keys}")
         sys.exit(1)
@@ -120,7 +130,7 @@ def test_basic(t, collection_name):
     if err != "":
         t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     for k, v in value.items():
-       if not isinstance(v, list):
+       if type(v) != list:
             if k in rec and rec[k] == v:
                 t.print("OK, found", k, " -> ", v)
             else:
@@ -140,7 +150,7 @@ def test_basic(t, collection_name):
     if err != "":
         t.error(f"Unexpected error for {key} in {collection_name}, {err}")
     for k, v in value.items():
-       if not isinstance(v, list):
+       if type(v) != list:
            if k in rec and rec[k] == v:
                t.print("OK, found", k, " -> ", v)
            else:
@@ -177,7 +187,6 @@ def test_basic(t, collection_name):
 #
 def test_keys(t, collection_name):
     '''test_keys(collection_name) test getting, filter and sorting keys'''
-    test_setup(t, collection_name, 'test_keys')
     # Test count after delete
     key_list = dataset.keys(collection_name)
     cnt = dataset.count(collection_name)
@@ -235,7 +244,6 @@ def test_keys(t, collection_name):
 # test_issue32() make sure issue 32 stays fixed.
 #
 def test_issue32(t, collection_name):
-    test_setup(t, collection_name, 'test_issue32')
     err = dataset.create(collection_name, "k1", {"one":1})
     if err != '':
         t.error("Failed to create k1 in", collection_name, ', ', err)
@@ -780,7 +788,7 @@ class ATest:
     def error(self, *msg):
         fn_name = self._test_name
         self._error_count += 1
-        print(f"\t{fn_name}", *msg)
+        print(f"{fn_name}: ", *msg)
 
     def error_count(self):
         return self._error_count
@@ -798,11 +806,9 @@ class TestRunner:
     def run(self):
         for test in self._tests:
             fn_name = test[0].__name__
-            print(f'DEBUG running fn_name -> {fn_name}')
             t = ATest(fn_name, self._verbose)
             fn, params = test[0], test[1]
             fn(t, *params)
-            print(f'DEBUG done running fn_name -> {fn_name}')
             error_count = t.error_count()
             if error_count > 0:
                 print(f"\t\t{fn_name} failed, {error_count} errors found")
@@ -830,21 +836,22 @@ if __name__ == "__main__":
     ok = True
 
     print(f'Starting {app_name}')
-    collection_name = "test_collection.ds"
     test_runner = TestRunner(os.path.basename(__file__), True)
-    test_runner.add(test_libdataset, [collection_name])
-#    test_runner.add(test_basic, [collection_name])
-#    test_runner.add(test_keys, [collection_name])
-#    test_runner.add(test_issue32, [collection_name])
-#    test_runner.add(test_attachments, [collection_name])
-#    test_runner.add(test_join, [collection_name])
-#    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
-#    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-#    test_runner.add(test_s3)
-#    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
-#    test_runner.add(test_grid, ["test_grid.ds"])
-#    test_runner.add(test_frame, ["test_frame.ds"])
-#    test_runner.add(test_frame_objects, ["test_frame.ds"])
-#    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+    c_name = 'test_collection.ds'
+    test_runner.add(test_setup, [ c_name, 'test_setup' ])
+    test_runner.add(test_libdataset, [ c_name ])
+    test_runner.add(test_basic, [ c_name ])
+    test_runner.add(test_keys, [ c_name ])
+    test_runner.add(test_issue32, [ c_name ])
+    test_runner.add(test_attachments, [ c_name ])
+    test_runner.add(test_join, [ c_name ])
+    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
+    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
+    test_runner.add(test_s3)
+    test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
+    test_runner.add(test_grid, ["test_grid.ds"])
+    test_runner.add(test_frame, ["test_frame.ds"])
+    test_runner.add(test_frame_objects, ["test_frame.ds"])
+    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
     test_runner.run()
 

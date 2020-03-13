@@ -54,10 +54,6 @@ clean:
 	if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
 	if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
 	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
-	if [ -f "libdataset/$(LIB_NAME).dll" ]; then rm "libdataset/$(LIB_NAME).dll"; fi
-	if [ -f "libdataset/$(LIB_NAME).dylib" ]; then rm "libdataset/$(LIB_NAME).dylib"; fi
-	if [ -f "libdataset/$(LIB_NAME).so" ]; then rm "libdataset/$(LIB_NAME).so"; fi
-	if [ -f "libdataset/$(LIB_NAME).h" ]; then rm "libdataset/$(LIB_NAME).h"; fi
 
 status:
 	git status
