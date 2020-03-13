@@ -6,7 +6,7 @@
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2019, Caltech
+# Copyright (c) 2020, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -72,7 +72,7 @@ go_is_open = lib.is_open
 go_is_open.argtypes = [ctypes.c_char_p]
 go_is_open.restype = ctypes.c_int
 
-go_open = lib.is_open
+go_open = lib.open
 go_open.argtypes = [ctypes.c_char_p]
 go_open.restype = ctypes.c_int
 
@@ -173,31 +173,6 @@ go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_csv.restype = ctypes.c_int
 
 
-
-# NOTE: this diverges from the cli and uses libdataset.go bindings
-# import_gsheet - import a GSheet into a collection
-# syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
-# 
-# options that should support sensible defaults:
-#
-#      UseHeaderRow
-#      Overwrite
-#
-# Returns: true (1), false (0)
-go_import_gsheet = lib.import_gsheet
-go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
-go_import_gsheet.restype = ctypes.c_int
-
-
-# NOTE: this diverges from the cli and uses the libdataset.go bindings
-# export_gsheet - export collection objects to a GSheet
-# syntax examples: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
-#
-# Returns: true (1), false (0)
-go_export_gsheet = lib.export_gsheet
-go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-go_export_gsheet.restype = ctypes.c_int
-
 # NOTE: go_sync_* diverges from cli in that it separates the functions
 # specifically for CSV files and GSheets.
 #
@@ -209,14 +184,6 @@ go_sync_recieve_csv.restype = ctypes.c_int
 go_sync_send_csv = lib.sync_send_csv
 go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 go_sync_send_csv.restype = ctypes.c_int
-
-go_sync_recieve_gsheet = lib.sync_recieve_gsheet
-go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_recieve_gsheet.restype = ctypes.c_int
-
-go_sync_send_gsheet = lib.sync_send_gsheet
-go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_send_gsheet.restype = ctypes.c_int
 
 go_status = lib.status
 # Returns: true (1), false (0)

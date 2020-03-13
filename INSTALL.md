@@ -142,5 +142,5 @@ Or clone the repstory and then compile
     make install
 ```
 
-Compilation assumes [go](https://github.com/golang/go) v1.12
+Compilation assumes [go](https://github.com/golang/go) v1.13
 

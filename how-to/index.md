@@ -8,7 +8,6 @@ with _dataset_ or explore a specific topic.
 
 - [Getting started with dataset](getting-started-with-dataset.html)
 - [Working with CSV](working-with-csv.html)
-- [Working with GSheets](working-with-gsheets.html)
 - [Working with Cloud Storage](working-with-cloud-storage.html)
 
 

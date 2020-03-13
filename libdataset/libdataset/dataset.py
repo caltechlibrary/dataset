@@ -5,7 +5,7 @@
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2019, Caltech
+# Copyright (c) 2020, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,7 +21,7 @@
 import json
 import ctypes
 
-from libdataset.cwrapper import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact, go_is_open, go_open, go_close, go_close_all
+from libdataset.cwrapper import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_sync_recieve_csv , go_sync_send_csv , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact, go_is_open, go_open, go_close, go_close_all
 
 #
 # These are our Python idiomatic functions
@@ -61,7 +61,9 @@ def verbose_off():
 
 # Returns version of dataset shared library
 def dataset_version():
+    print(f'DEBUG getting dataset version')
     value = go_dataset_version()
+    print(f'DEBUG value -> {value}')
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode()
@@ -305,51 +307,6 @@ def export_csv(collection_name, frame_name, csv_name):
         return ''
     return error_message()
 
-# import_gsheet - import a GSheet into a collection
-# syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
-# 
-# options:
-#
-#      UseHeaderRow (bool)
-#      Overwrite (bool)
-#
-# Returns: error string
-def import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, use_header_row = True, overwrite = True):
-    if use_header_row == True:
-        i_use_header_row = 1
-    else:
-        i_use_header_row = 0
-    if overwrite == True:
-        i_overwrite = 1
-    else:
-        i_overwrite = 0
-
-    if isinstance(id_col, str):
-        id_col = int(id_col)
-    ok = go_import_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), 
-            ctypes.c_char_p(sheet_id.encode('utf8')), 
-            ctypes.c_char_p(sheet_name.encode('utf8')), 
-            ctypes.c_int(id_col), 
-            ctypes.c_char_p(cell_range.encode('utf8')), 
-            ctypes.c_int(i_use_header_row), ctypes.c_int(i_overwrite))
-    if ok == 1:
-        return ''
-    return error_message()
-
-# export_gsheet - export collection objects to a GSheet
-# syntax: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
-# 
-# Returns: error string
-def export_gsheet(collection_name, frame_name, sheet_id, sheet_name, cell_range):
-    ok = go_export_gsheet(ctypes.c_char_p(collection_name.encode('utf8')), 
-            ctypes.c_char_p(frame_name.encode('utf8')), 
-            ctypes.c_char_p(sheet_id.encode('utf8')), 
-            ctypes.c_char_p(sheet_name.encode('utf8')), 
-            ctypes.c_char_p(cell_range.encode('utf8')))
-    if ok == 1:
-        return ''
-    return error_message()
-
 def status(collection_name):
     ok = go_status(collection_name.encode('utf8'))
     return (ok == 1)
@@ -576,37 +533,6 @@ def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
         return ''
     return error_message()
 
-
-def sync_recieve_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_range = "A1:ZZ", overwrite = False):
-    overwrite_i  = 0
-    if overwrite == True:
-        overwrite_i = 1
-    ok = go_sync_recieve_gsheet(
-            ctypes.c_char_p(collection_name.encode('utf-8')), 
-            ctypes.c_char_p(frame_name.encode('utf-8')), 
-            ctypes.c_char_p(gsheet_id.encode('utf-8')), 
-            ctypes.c_char_p(gsheet_name.encode('utf-8')), 
-            ctypes.c_char_p(cell_range.encode('utf-8')), 
-            ctypes.c_int(overwrite_i))
-    if ok == 1:
-        return ''
-    return error_message()
-
-
-def sync_send_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_range = "A1:ZZ", overwrite = False):
-    overwrite_i = 0
-    if overwrite == True:
-        overwrite_i = 1
-    ok = go_sync_send_gsheet(
-            ctypes.c_char_p(collection_name.encode('utf-8')), 
-            ctypes.c_char_p(frame_name.encode('utf-8')), 
-            ctypes.c_char_p(gsheet_id.encode('utf-8')), 
-            ctypes.c_char_p(gsheet_name.encode('utf-8')), 
-            ctypes.c_char_p(cell_range.encode('utf-8')), 
-            ctypes.c_int(overwrite_i))
-    if ok == 1:
-        return ''
-    return error_message()
 
 def make_objects(collection_name, keys, default_object):
     c_name = ctypes.c_char_p(collection_name.encode('utf-8'))

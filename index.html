@@ -42,8 +42,7 @@ manage operations such as initialization of collections, creation,
 reading, updating and deleting JSON objects in the collection. Some of
 its enhanced features include the ability to generate data
 <a href="docs/frame.html">frames</a> as well as the ability to
-import, export and synchronize JSON objects to and from CSV files
-and Google Sheets (experimental).</p>
+import, export and synchronize JSON objects to and from CSV files.</p>
 
 <p><em>dataset</em> is written in the <a href="https://golang.org">Go</a> programming language.
 It can be used as a Go package by other Go based software. Go supports
@@ -99,7 +98,7 @@ written in Python or as simple Bash scripts.</p>
 <ul>
 <li>Basic storage actions (<a href="docs/create.html">create</a>, <a href="docs/read.html">read</a>, <a href="docs/update.html">update</a> and <a href="docs/delete.html">delete</a>)</li>
 <li>listing of collection <a href="docs/keys.html">keys</a> (including filtering and sorting)</li>
-<li>import/export  of <a href="how-to/working-with-csv.html">CSV</a> files and <a href="how-to/working-with-gsheets.html">Google Sheets</a></li>
+<li>import/export of <a href="how-to/working-with-csv.html">CSV</a> files</li>
 <li>The ability to reshape data by performing simple object <a href="docs/join.html">joins</a></li>
 <li>The ability to create data <a href="docs/grid.html">grids</a> and <a href="docs/frame.html">frames</a> from collections based on keys lists and <a href="docs/dotpath.html">dot paths</a> into stored JSON objects</li>
 </ul>
@@ -117,7 +116,7 @@ a full blown database.</p>
 <p><em>dataset</em> has many limitations, some are listed below</p>
 
 <ul>
-<li>it is a multi-process, multi-user data store (it&rsquo;s files on &ldquo;disc&rdquo; without locking)</li>
+<li>it is not a multi-process, multi-user data store (it&rsquo;s files on &ldquo;disc&rdquo; without locking)</li>
 <li>it is not a replacement for a repository management system</li>
 <li>it is not a general purpose database system</li>
 <li>it does not supply automatic version control on collections or objects</li>
@@ -143,7 +142,7 @@ See <a href="https://github.com/caltechlibrary/dataset/releases">https://github.
 
 <footer>
 <span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<span>&copy; 2020 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>

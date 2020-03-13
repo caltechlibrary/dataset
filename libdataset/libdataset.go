@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,6 @@ import (
 
 	// Caltech Library Packages
 	"github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/gsheets"
 	"github.com/caltechlibrary/dataset/tbl"
 )
 
@@ -50,10 +49,10 @@ func error_clear() {
 	errorValue = nil
 }
 
-// error_dispatch logs error messages to console based on string template
+// errorDispatch logs error messages to console based on string template
 // Not exported.
 //
-func error_dispatch(err error, s string, values ...interface{}) {
+func errorDispatch(err error, s string, values ...interface{}) {
 	errorValue = err
 	if verbose == true {
 		log.Printf(s, values...)
@@ -119,11 +118,14 @@ func messagef(s string, values ...interface{}) {
 	}
 }
 
-// dataset_version returns the dataset version the libdataset presents.
+// dataset_version returns the version of libdataset.
 //
 //export dataset_version
 func dataset_version() *C.char {
-	return C.CString(dataset.Version)
+	messagef("DEBUG dataset version %q", dataset.Version)
+	txt := dataset.Version
+	messagef("DEBUG getting dataset version %q", txt)
+	return C.CString(fmt.Sprintf("%q", txt))
 }
 
 // init_collection intializes a collection and records as much metadata
@@ -139,7 +141,7 @@ func init_collection(name *C.char) C.int {
 	error_clear()
 	_, err := dataset.InitCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "Cannot create collection %s, %s", collectionName, err)
+		errorDispatch(err, "Cannot create collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	messagef("%s initialized", collectionName)
@@ -164,23 +166,9 @@ func is_open(cName *C.char) C.int {
 func open(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
-	_, err := dataset.GetCollection(collectionName)
+	err := dataset.Open(collectionName)
 	if err != nil {
-		error_dispatch(err, "Cannot open %q, %s", collectionName, err)
-		return C.int(0)
-	}
-	return C.int(1)
-}
-
-// close closes a collection explicitly. Most of the time you don't want to do this.
-//
-//export close
-func close(cName *C.char) C.int {
-	collectionName := C.GoString(cName)
-	error_clear()
-	err := dataset.Close(collectionName)
-	if err != nil {
-		error_dispatch(err, "Cannot open %q, %s", collectionName, err)
+		errorDispatch(err, "Cannot open %q, %s", collectionName, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -198,13 +186,26 @@ func collections() *C.char {
 	return C.CString(fmt.Sprintf("%s", src))
 }
 
+// close closes a collection previously opened.
+//
+//export close
+func close(cName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	error_clear()
+	if err := dataset.Close(collectionName); err != nil {
+		errorDispatch(err, "Cannot close collection %s, %s", collectionName, err)
+		return C.int(0)
+	}
+	return C.int(1)
+}
+
 // close_all closes all collections previously opened
 //
 //export close_all
 func close_all() C.int {
 	error_clear()
 	if err := dataset.CloseAll(); err != nil {
-		error_dispatch(err, "Cannot close all collections, %s", err)
+		errorDispatch(err, "Cannot close all collections, %s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -222,7 +223,7 @@ func create_object(cName, cKey, cSrc *C.char) C.int {
 	error_clear()
 	err := dataset.CreateJSON(collectionName, key, src)
 	if err != nil {
-		error_dispatch(err, "Create %s failed, %s", key, err)
+		errorDispatch(err, "Create %s failed, %s", key, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -242,20 +243,20 @@ func read_object(cName, cKey *C.char, cCleanObject C.int) *C.char {
 		err error
 	)
 	if src, err = dataset.ReadJSON(collectionName, key); err != nil {
-		error_dispatch(err, "Can't read %s, %s", key, err)
+		errorDispatch(err, "Can't read %s, %s", key, err)
 		return C.CString("")
 	}
 	if cleanObject {
 		object := map[string]interface{}{}
 		if err := dataset.DecodeJSON(src, &object); err != nil {
-			error_dispatch(err, "Can't decode %s, %s", key, err)
+			errorDispatch(err, "Can't decode %s, %s", key, err)
 			return C.CString("")
 		}
 		if _, found := object["_Key"]; found {
 			delete(object, "_Key")
 			src, err = dataset.EncodeJSON(object)
 			if err != nil {
-				error_dispatch(err, "Can't encode %s, %s", key, err)
+				errorDispatch(err, "Can't encode %s, %s", key, err)
 				return C.CString("")
 			}
 		}
@@ -282,12 +283,12 @@ func read_object_list(cName *C.char, cKeysAsJSON *C.char, cCleanObject C.int) *C
 	keyList := []string{}
 	err := json.Unmarshal(src, &keyList)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		errorDispatch(err, "Can't unmarshal key list, %s", err)
 		return C.CString("")
 	}
 	if dataset.IsOpen(collectionName) == false {
 		if err = dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
+			errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
 			return C.CString("")
 		}
 	}
@@ -316,7 +317,7 @@ func read_object_list(cName *C.char, cKeysAsJSON *C.char, cCleanObject C.int) *C
 	}
 	if len(errList) > 0 {
 		err = fmt.Errorf("%s", strings.Join(errList, "; "))
-		error_dispatch(err, "Key read errors %s", err)
+		errorDispatch(err, "Key read errors %s", err)
 	}
 
 	txt := fmt.Sprintf("[%s]", strings.Join(l, ","))
@@ -335,7 +336,7 @@ func update_object(cName, cKey, cSrc *C.char) C.int {
 	error_clear()
 	err := dataset.UpdateJSON(collectionName, key, src)
 	if err != nil {
-		error_dispatch(err, "Update %s failed, %s", key, err)
+		errorDispatch(err, "Update %s failed, %s", key, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -351,7 +352,7 @@ func delete_object(cName, cKey *C.char) C.int {
 	error_clear()
 	err := dataset.DeleteJSON(collectionName, key)
 	if err != nil {
-		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
+		errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -371,24 +372,24 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 	error_clear()
 	err := dataset.Open(collectionName)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	newObject := map[string]interface{}{}
 	if err := dataset.DecodeJSON([]byte(objectSrc), &newObject); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	src, err := dataset.ReadJSON(collectionName, key)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	outObject := map[string]interface{}{}
 	if err := dataset.DecodeJSON(src, &outObject); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	// Merge out objects
@@ -405,12 +406,12 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 	}
 	src, err = dataset.EncodeJSON(outObject)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	if err := dataset.UpdateJSON(collectionName, key, src); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -422,8 +423,11 @@ func join(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int) C.int 
 func key_exists(cName, cKey *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-	if dataset.KeyExists(collectionName, key) {
-		return C.int(1)
+
+	if dataset.IsOpen(collectionName) {
+		if dataset.KeyExists(collectionName, key) {
+			return C.int(1)
+		}
 	}
 	return C.int(0)
 }
@@ -438,7 +442,7 @@ func keys(cName *C.char) *C.char {
 	keyList := dataset.Keys(collectionName)
 	src, err := json.Marshal(keyList)
 	if err != nil {
-		error_dispatch(err, "Can't marshal key list, %s", err)
+		errorDispatch(err, "Can't marshal key list, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -457,17 +461,17 @@ func key_filter(cName, cKeyListExpr, cFilterExpr *C.char) *C.char {
 	error_clear()
 	keyList := []string{}
 	if err := json.Unmarshal([]byte(keyListExpr), &keyList); err != nil {
-		error_dispatch(err, "Unable to unmarshal keys", err)
+		errorDispatch(err, "Unable to unmarshal keys", err)
 		return C.CString("")
 	}
 	keys, err := dataset.KeyFilter(collectionName, keyList, filterExpr)
 	if err != nil {
-		error_dispatch(err, "filter error, %s", err)
+		errorDispatch(err, "filter error, %s", err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(keys)
 	if err != nil {
-		error_dispatch(err, "Can't marshal filtered keys, %s", err)
+		errorDispatch(err, "Can't marshal filtered keys, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -486,18 +490,18 @@ func key_sort(cName, cKeyListExpr, cSortExpr *C.char) *C.char {
 	error_clear()
 	keyList := []string{}
 	if err := json.Unmarshal([]byte(keyListExpr), &keyList); err != nil {
-		error_dispatch(err, "Unable to unmarshal keys", err)
+		errorDispatch(err, "Unable to unmarshal keys", err)
 		return C.CString("")
 	}
 
 	keys, err := dataset.KeySortByExpression(collectionName, keyList, sortExpr)
 	if err != nil {
-		error_dispatch(err, "Cannot open collection %s, %s", collectionName, err)
+		errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(keys)
 	if err != nil {
-		error_dispatch(err, "Can't marshal sorted keys, %s", err)
+		errorDispatch(err, "Can't marshal sorted keys, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -539,18 +543,18 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "Can't open %s, %s", collectionName, err)
+			errorDispatch(err, "Can't open %s, %s", collectionName, err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	if idCol < 1 {
-		error_dispatch(fmt.Errorf("invalid column number"), "Column number must be greater than zero, got %s", idCol)
+		errorDispatch(fmt.Errorf("invalid column number"), "Column number must be greater than zero, got %s", idCol)
 		return C.int(0)
 	}
 
@@ -560,12 +564,12 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	// Now import our CSV file
 	fp, err := os.Open(csvFName)
 	if err != nil {
-		error_dispatch(err, "Can't open %s, %s", csvFName, err)
+		errorDispatch(err, "Can't open %s, %s", csvFName, err)
 		return C.int(0)
 	}
 	cnt, err := c.ImportCSV(fp, idCol, useHeaderRow, overwrite, verbose)
 	if err != nil {
-		error_dispatch(err, "%s\n", err)
+		errorDispatch(err, "%s\n", err)
 		return C.int(0)
 	}
 	messagef("%d total rows processed", cnt)
@@ -586,162 +590,40 @@ func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "Can't open %s, %s", collectionName, err)
+			errorDispatch(err, "Can't open %s, %s", collectionName, err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "Can't open %s, %s", collectionName, err)
+		errorDispatch(err, "Can't open %s, %s", collectionName, err)
 		return C.int(0)
 	}
 
 	fp, err := os.Create(csvFName)
 	if err != nil {
-		error_dispatch(err, "Can't create %s, %s", csvFName, err)
+		errorDispatch(err, "Can't create %s, %s", csvFName, err)
 		return C.int(0)
 	}
 	defer fp.Close()
 
 	// Get Frame
 	if c.FrameExists(frameName) == false {
-		error_dispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
+		errorDispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
 		return C.int(0)
 	}
 
 	// Get dotpaths and column labels from frame
 	f, err := c.FrameRead(frameName)
 	if err != nil {
-		error_dispatch(err, "%s\n", err)
+		errorDispatch(err, "%s\n", err)
 		return C.int(0)
 	}
 
 	// Now export to CSV
 	cnt, err := c.ExportCSV(fp, os.Stderr, f, verbose)
 	if err != nil {
-		error_dispatch(err, "Can't export CSV %s, %s", csvFName, err)
-		return C.int(0)
-	}
-	messagef("%d total rows processed", cnt)
-	return C.int(1)
-}
-
-// import_gsheet - import a GSheet into a collection
-// syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
-//
-// options that should support sensible defaults:
-//
-//    cUseHeaderRow
-//    cOverwrite
-//
-//export import_gsheet
-func import_gsheet(cName *C.char, cSheetID *C.char, cSheetName *C.char, cIDCol C.int, cCellRange *C.char, cUseHeaderRow C.int, cOverwrite C.int) C.int {
-	collectionName := C.GoString(cName)
-	sheetID := C.GoString(cSheetID)
-	sheetName := C.GoString(cSheetName)
-	cellRange := C.GoString(cCellRange)
-	idCol := int(cIDCol)
-	useHeaderRow := (C.int(cUseHeaderRow) == 1)
-	overwrite := (C.int(cOverwrite) == 1)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.int(0)
-		}
-	}
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.int(0)
-	}
-
-	// NOTE: we need to adjust to zero based index
-	idCol--
-
-	//FIXME: Need better search process for finding the google access key
-	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
-	if clientSecretJSON == "" {
-		//clientSecretJSON = "client_secret.json"
-		clientSecretJSON = "credentials.json"
-	}
-
-	table, err := gsheets.ReadSheet(clientSecretJSON, sheetID, sheetName, cellRange)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.int(0)
-	}
-
-	cnt, err := c.ImportTable(table, idCol, useHeaderRow, overwrite, verbose)
-	if err != nil {
-		error_dispatch(err, "Errors importing %s %s, %s", sheetID, sheetName, err)
-		return C.int(0)
-	}
-	messagef("%d total rows processed", cnt)
-	return C.int(1)
-}
-
-// export_gsheet - export collection objects to a GSheet
-// syntax: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
-//
-//export export_gsheet
-func export_gsheet(cName *C.char, cFrameName *C.char, cSheetID *C.char, cSheetName *C.char, cCellRange *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFrameName)
-	sheetID := C.GoString(cSheetID)
-	sheetName := C.GoString(cSheetName)
-	cellRange := C.GoString(cCellRange)
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
-			return C.int(0)
-		}
-	}
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		error_dispatch(err, "failed, %s %s, %s", sheetID, sheetName, err)
-		return C.int(0)
-	}
-
-	// Get Frame
-	if c.FrameExists(frameName) == false {
-		error_dispatch(err, "Missing frame %q in %s\n", frameName, collectionName)
-		return C.int(0)
-	}
-
-	// Get dotpaths and column labels from frame
-	f, err := c.FrameRead(frameName)
-	if err != nil {
-		error_dispatch(err, "%s\n", err)
-		return C.int(0)
-	}
-
-	//FIXME: Need a better way to indentify the clientSecretName...
-	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
-	if clientSecretJSON == "" {
-		//clientSecretJSON = "client_secret.json"
-		clientSecretJSON = "credentials.json"
-	}
-	// gSheet expects a cell range, so we will generate one if needed.
-	if cellRange == "" {
-		lastCol := gsheets.ColNoToColLetters(len(f.Labels))
-		lastRow := len(f.Keys) + 2
-		cellRange = fmt.Sprintf("A1:%s%d", lastCol, lastRow)
-	}
-
-	//NOTE: we export to GSheet via creating a table [][]interface{}{}
-	cnt, table, err := c.ExportTable(os.Stderr, f, verbose)
-	if err != nil {
-		error_dispatch(err, "%s\n", err)
-		return C.int(0)
-	}
-	err = gsheets.WriteSheet(clientSecretJSON, sheetID, sheetName, cellRange, table)
-
-	if err != nil {
-		error_dispatch(err, "Failed to write %s %s, %s", sheetID, sheetName, err)
+		errorDispatch(err, "Can't export CSV %s, %s", csvFName, err)
 		return C.int(0)
 	}
 	messagef("%d total rows processed", cnt)
@@ -755,7 +637,7 @@ func status(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
-		error_dispatch(err, "failed, %s, %s", collectionName, err)
+		errorDispatch(err, "failed, %s, %s", collectionName, err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -773,20 +655,20 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 	keys := []string{}
 	err := json.Unmarshal([]byte(sKeys), &keys)
 	if err != nil {
-		error_dispatch(err, "Failed to unmarshal key list, %s", err)
+		errorDispatch(err, "Failed to unmarshal key list, %s", err)
 		return C.CString("")
 	}
 
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "Can't find %q", collectionName)
+		errorDispatch(err, "Can't find %q", collectionName)
 		return C.CString("")
 	}
 
@@ -795,14 +677,14 @@ func list(cName *C.char, cKeys *C.char) *C.char {
 		m := map[string]interface{}{}
 		err = c.Read(name, m, false)
 		if err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 		recs = append(recs, m)
 	}
 	src, err := json.Marshal(recs)
 	if err != nil {
-		error_dispatch(err, "failed to marshal result, %s", err)
+		errorDispatch(err, "failed to marshal result, %s", err)
 		return C.CString("")
 	}
 	return C.CString(string(src))
@@ -819,20 +701,20 @@ func path(cName *C.char, cKey *C.char) *C.char {
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "Can't find %q", collectionName)
+		errorDispatch(err, "Can't find %q", collectionName)
 		return C.CString("")
 	}
 
 	s, err := c.DocPath(key)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
 	return C.CString(s)
@@ -846,7 +728,7 @@ func check(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	err := dataset.Check(collectionName, verbose)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -861,7 +743,7 @@ func repair(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	err := dataset.Repair(collectionName, verbose)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -885,7 +767,7 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	if len(srcFNames) > 0 {
 		err := json.Unmarshal([]byte(srcFNames), &fNames)
 		if err != nil {
-			error_dispatch(err, "Can't unmarshal %q, %s", srcFNames, err)
+			errorDispatch(err, "Can't unmarshal %q, %s", srcFNames, err)
 			return C.int(0)
 		}
 	}
@@ -893,30 +775,30 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	if c.KeyExists(key) == false {
-		error_dispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
+		errorDispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
 		return C.int(0)
 	}
 	// NOTE: fName, fNames are file names NOT frame names
 	for _, fname := range fNames {
 		if _, err := os.Stat(fname); os.IsNotExist(err) {
-			error_dispatch(err, "%s does not exist", fname)
+			errorDispatch(err, "%s does not exist", fname)
 			return C.int(0)
 		}
 	}
 	err = c.AttachFiles(key, semver, fNames...)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -933,23 +815,23 @@ func attachments(cName *C.char, cKey *C.char) *C.char {
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
 
 	if c.KeyExists(key) == false {
-		error_dispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
+		errorDispatch(fmt.Errorf("missing key"), "%q is not in collection", key)
 		return C.CString("")
 	}
 	results, err := c.Attachments(key)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
 	if len(results) > 0 {
@@ -974,30 +856,30 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	if len(srcFNames) > 0 {
 		err := json.Unmarshal([]byte(srcFNames), &fNames)
 		if err != nil {
-			error_dispatch(err, "Can't unmarshal filename list, %s", err)
+			errorDispatch(err, "Can't unmarshal filename list, %s", err)
 			return C.int(0)
 		}
 	}
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	if c.KeyExists(key) == false {
-		error_dispatch(err, "%q is not in collection", key)
+		errorDispatch(err, "%q is not in collection", key)
 		return C.int(0)
 	}
 	err = c.GetAttachedFiles(key, semver, fNames...)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1016,7 +898,7 @@ func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int 
 	if len(srcFNames) > 0 {
 		err := json.Unmarshal([]byte(srcFNames), &fNames)
 		if err != nil {
-			error_dispatch(err, "Can't unmarshal filename list, %s", err)
+			errorDispatch(err, "Can't unmarshal filename list, %s", err)
 			return C.int(0)
 		}
 	}
@@ -1024,19 +906,19 @@ func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int 
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	err = c.Prune(key, semver, fNames...)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1055,25 +937,25 @@ func clone(cName *C.char, cKeys *C.char, dName *C.char) C.int {
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	keys := []string{}
 	err = json.Unmarshal([]byte(srcKeys), &keys)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal keys, %s", err)
+		errorDispatch(err, "Can't unmarshal keys, %s", err)
 		return C.int(0)
 	}
 	err = c.Clone(destName, keys, verbose)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1092,20 +974,20 @@ func clone_sample(cName *C.char, cTrainingName *C.char, cTestName *C.char, cSamp
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
 	keys := c.Keys()
 	err = c.CloneSample(trainingName, testName, keys, sampleSize, verbose)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1122,37 +1004,94 @@ func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
 
 	keys := []string{}
 	err = json.Unmarshal([]byte(srcKeys), &keys)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal keys, %s", err)
+		errorDispatch(err, "Can't unmarshal keys, %s", err)
 		return C.CString("")
 	}
 	dotPaths := []string{}
 	err = json.Unmarshal([]byte(srcDotpaths), &dotPaths)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal dot paths, %s", err)
+		errorDispatch(err, "Can't unmarshal dot paths, %s", err)
 		return C.CString("")
 	}
 	//NOTE: We're picking up the verbose flag from the modules global state
 	g, err := c.Grid(keys, dotPaths, verbose)
 	if err != nil {
-		error_dispatch(err, "failed to create grid, %s", err)
+		errorDispatch(err, "failed to create grid, %s", err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(g)
 	if err != nil {
-		error_dispatch(err, "failed to marshal grid, %s", err)
+		errorDispatch(err, "failed to marshal grid, %s", err)
+		return C.CString("")
+	}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// frame creates a data frame in a collection. It needs a JSON array of
+// keys, dotpaths and labels and returns JSON source of the new frame.
+//
+//export frame
+func frame(cName *C.char, cFName *C.char, cKeys *C.char, cDotPaths *C.char, cLabels *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcKeys := C.GoString(cKeys)
+	srcDotpaths := C.GoString(cDotPaths)
+	srcLabels := C.GoString(cLabels)
+
+	error_clear()
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
+			errorDispatch(err, "%s", err)
+			return C.CString("")
+		}
+	}
+	c, err := dataset.GetCollection(collectionName)
+	if err != nil {
+		errorDispatch(err, "%q not found", collectionName)
+		return C.CString("")
+	}
+
+	keys := []string{}
+	err = json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		errorDispatch(err, "Can't unmarshal keys, %s", err)
+		return C.CString("")
+	}
+	dotPaths := []string{}
+	err = json.Unmarshal([]byte(srcDotpaths), &dotPaths)
+	if err != nil {
+		errorDispatch(err, "Can't unmarshal dot paths, %s", err)
+		return C.CString("")
+	}
+	labels := []string{}
+	err = json.Unmarshal([]byte(srcLabels), &labels)
+	if err != nil {
+		errorDispatch(err, "Can't unmarshal labels, %s", err)
+		return C.CString("")
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	f, err := c.FrameRead(frameName)
+	if err != nil {
+		errorDispatch(err, "failed to create frame, %s", err)
+		return C.CString("")
+	}
+	src, err := json.Marshal(f)
+	if err != nil {
+		errorDispatch(err, "failed to marshal frame, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -1194,7 +1133,7 @@ func frame_create(cName *C.char, cFName *C.char, cKeysSrc *C.char, cDotPathsSrc 
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
 	keysSrc := []byte(C.GoString(cKeysSrc))
-	dotPathSrc := []byte(C.GoString(cDotPathsSrc))
+	dotPathsSrc := []byte(C.GoString(cDotPathsSrc))
 	labelsSrc := []byte(C.GoString(cLabelsSrc))
 	keys := []string{}
 	dotPaths := []string{}
@@ -1202,23 +1141,23 @@ func frame_create(cName *C.char, cFName *C.char, cKeysSrc *C.char, cDotPathsSrc 
 
 	error_clear()
 	if err := json.Unmarshal(keysSrc, &keys); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 
-	if err := json.Unmarshal(dotPathSrc, &dotPaths); err != nil {
-		error_dispatch(err, "%s", err)
+	if err := json.Unmarshal(dotPathsSrc, &dotPaths); err != nil {
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	if err := json.Unmarshal(labelsSrc, &labels); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 
 	_, err := dataset.FrameCreate(collectionName, frameName, keys, dotPaths, labels, verbose)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1233,12 +1172,12 @@ func frame_objects(cName *C.char, cFName *C.char) *C.char {
 	error_clear()
 	ol, err := dataset.FrameObjects(collectionName, frameName)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
 	src, err := json.Marshal(ol)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -1257,11 +1196,11 @@ func frame_refresh(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {
 
 	error_clear()
 	if err := json.Unmarshal([]byte(keysSrc), &keys); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	if err := dataset.FrameRefresh(collectionName, frameName, keys, verbose); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1279,11 +1218,11 @@ func frame_reframe(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {
 
 	error_clear()
 	if err := json.Unmarshal([]byte(keysSrc), &keys); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	if err := dataset.FrameReframe(collectionName, frameName, keys, verbose); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1297,7 +1236,7 @@ func frame_clear(cName *C.char, cFName *C.char) C.int {
 	frameName := C.GoString(cFName)
 	error_clear()
 	if err := dataset.FrameClear(collectionName, frameName); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1311,7 +1250,7 @@ func frame_delete(cName *C.char, cFName *C.char) C.int {
 	frameName := C.GoString(cFName)
 	error_clear()
 	if err := dataset.FrameClear(collectionName, frameName); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1326,7 +1265,7 @@ func frames(cName *C.char) *C.char {
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
@@ -1337,11 +1276,98 @@ func frames(cName *C.char) *C.char {
 	}
 	src, err := json.Marshal(frameNames)
 	if err != nil {
-		error_dispatch(err, "failed to marshal frame names, %s", err)
+		errorDispatch(err, "failed to marshal frame names, %s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
+}
+
+// refresh takes a JSON array of keys and updates the frame's
+// object list.
+//
+//export refresh
+func refresh(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcKeys := C.GoString(cKeys)
+
+	error_clear()
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
+			errorDispatch(err, "%s", err)
+			return C.int(1)
+		}
+	}
+
+	keys := []string{}
+	err := json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		errorDispatch(err, "Can't unmarshal keys, %s", err)
+		return C.int(1)
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	err = dataset.FrameRefresh(collectionName, frameName, keys, verbose)
+	if err != nil {
+		errorDispatch(err, "failed to reframe, %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+// reframe takes a JSON array of keys and updates the frame's
+// object list.
+//
+//export reframe
+func reframe(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+	srcKeys := C.GoString(cKeys)
+
+	error_clear()
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
+			errorDispatch(err, "%s", err)
+			return C.int(1)
+		}
+	}
+
+	keys := []string{}
+	err := json.Unmarshal([]byte(srcKeys), &keys)
+	if err != nil {
+		errorDispatch(err, "Can't unmarshal keys, %s", err)
+		return C.int(1)
+	}
+	//NOTE: We're picking up the verbose flag from the modules global state
+	err = dataset.FrameReframe(collectionName, frameName, keys, verbose)
+	if err != nil {
+		errorDispatch(err, "failed to reframe, %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+// delete_frame removes a frame from a collection.
+//
+//export delete_frame
+func delete_frame(cName *C.char, cFName *C.char) C.int {
+	collectionName := C.GoString(cName)
+	frameName := C.GoString(cFName)
+
+	error_clear()
+	if dataset.IsOpen(collectionName) == false {
+		if err := dataset.Open(collectionName); err != nil {
+			errorDispatch(err, "%s", err)
+			return C.int(1)
+		}
+	}
+
+	err := dataset.FrameDelete(collectionName, frameName)
+	if err != nil {
+		errorDispatch(err, "failed to delete frame %s", err)
+		return C.int(1)
+	}
+	return C.int(0)
 }
 
 // sync_send_csv - synchronize a frame sending data to a CSV file
@@ -1386,13 +1412,13 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
 	c, err = dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(1)
 
 	}
@@ -1461,142 +1487,13 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(1)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
-		return C.int(1)
-
-	}
-
-	// Merge table contents into Collection and Frame
-	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
-// sync_send - synchronize a frame sending data to a GSheet
-//
-//export sync_send_gsheet
-func sync_send_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.char, cSyncOverwrite C.int) C.int {
-
-	var (
-		err error
-	)
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	gSheetID := C.GoString(cGSheetID)
-	gSheetName := C.GoString(cGSheetName)
-	cellRange := C.GoString(cCellRange)
-	syncOverwrite := (cSyncOverwrite == 1)
-
-	table := [][]interface{}{}
-	// Populate table to sync
-	// for GSheet
-	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
-	if clientSecretJSON == "" {
-		//clientSecretJSON = "client_secret.json"
-		clientSecretJSON = "credentials.json"
-	}
-	table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
-	}
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.int(1)
-		}
-	}
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
-		return C.int(1)
-
-	}
-
-	// Merge collection content into table
-	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
-	}
-
-	// Save the resulting table
-	clientSecretJSON = os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
-	if clientSecretJSON == "" {
-		//clientSecretJSON = "client_secret.json"
-		clientSecretJSON = "credentials.json"
-	}
-	// NOTE: WriteSheet expects a [][]interface{} not [][]string,
-	// need to convert. This is a hack...
-	t := [][]interface{}{}
-	for _, row := range table {
-		cells := []interface{}{}
-		for _, cell := range row {
-			cells = append(cells, cell)
-		}
-		t = append(t, cells)
-	}
-	err = gsheets.WriteSheet(clientSecretJSON, gSheetID, gSheetName, cellRange, t)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
-// sync_recieve_gsheet - synchronize a frame recieving data from a GSheet
-//
-//export sync_recieve_gsheet
-func sync_recieve_gsheet(cName, cFName, cGSheetID, cGSheetName, cCellRange *C.char, cSyncOverwrite C.int) C.int {
-	var (
-		err error
-	)
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	gSheetID := C.GoString(cGSheetID)
-	gSheetName := C.GoString(cGSheetName)
-	cellRange := C.GoString(cCellRange)
-	syncOverwrite := (cSyncOverwrite == 1)
-
-	if cellRange == "" {
-		cellRange = "A1:Z"
-	}
-
-	table := [][]interface{}{}
-	// Populate table to sync
-	// for GSheet
-	clientSecretJSON := os.Getenv("GOOGLE_CLIENT_SECRET_JSON")
-	if clientSecretJSON == "" {
-		//clientSecretJSON = "client_secret.json"
-		clientSecretJSON = "credentials.json"
-	}
-	table, err = gsheets.ReadSheet(clientSecretJSON, gSheetID, gSheetName, cellRange)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
-	}
-
-	error_clear()
-	if dataset.IsOpen(collectionName) == false {
-		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
-			return C.int(1)
-		}
-	}
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(1)
 
 	}
@@ -1627,25 +1524,25 @@ func frame_grid(cName *C.char, cFName *C.char, cIncludeHeaderRow C.int) *C.char 
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.CString("")
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.CString("")
 	}
 
 	f, err := c.FrameRead(frameName)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
 	g := f.Grid(includeHeaderRow)
 	src, err := json.Marshal(g)
 	if err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
@@ -1668,13 +1565,13 @@ func make_objects(cName *C.char, keysAsJson *C.char, objectAsJson *C.char) C.int
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
@@ -1683,14 +1580,14 @@ func make_objects(cName *C.char, keysAsJson *C.char, objectAsJson *C.char) C.int
 	keyList := []string{}
 	err = json.Unmarshal(src, &keyList)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		errorDispatch(err, "Can't unmarshal key list, %s", err)
 		return C.int(0)
 	}
 	objectSrc := []byte(C.GoString(objectAsJson))
 
 	err = c.CreateObjectsJSON(keyList, objectSrc)
 	if err != nil {
-		error_dispatch(err, "Create objects failed, %s", err)
+		errorDispatch(err, "Create objects failed, %s", err)
 		return C.int(0)
 	}
 	return C.int(1)
@@ -1710,13 +1607,13 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 	error_clear()
 	if dataset.IsOpen(collectionName) == false {
 		if err := dataset.Open(collectionName); err != nil {
-			error_dispatch(err, "%s", err)
+			errorDispatch(err, "%s", err)
 			return C.int(0)
 		}
 	}
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
-		error_dispatch(err, "%q not found", collectionName)
+		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
 
@@ -1725,19 +1622,19 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 	keyList := []string{}
 	err = json.Unmarshal(src, &keyList)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		errorDispatch(err, "Can't unmarshal key list, %s", err)
 		return C.int(0)
 	}
 	src = []byte(C.GoString(objectsAsJson))
 	objectList := []map[string]interface{}{}
 	err = json.Unmarshal(src, &objectList)
 	if err != nil {
-		error_dispatch(err, "Can't unmarshal key list, %s", err)
+		errorDispatch(err, "Can't unmarshal key list, %s", err)
 		return C.int(0)
 	}
 
 	if len(keyList) != len(objectList) {
-		error_dispatch(err, "expected %d keys for %d objects", len(keyList), len(objectList))
+		errorDispatch(err, "expected %d keys for %d objects", len(keyList), len(objectList))
 		return C.int(0)
 	}
 
@@ -1746,7 +1643,7 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 		if c.KeyExists(key) {
 			err = c.Update(key, objectList[i])
 			if err != nil {
-				error_dispatch(err, "Can't update key %q, %s", key, err)
+				errorDispatch(err, "Can't update key %q, %s", key, err)
 				errorNo = 0
 			}
 		}
@@ -1759,15 +1656,9 @@ func update_objects(cName *C.char, keysAsJson *C.char, objectsAsJson *C.char) C.
 //export set_who
 func set_who(cName *C.char, cNamesSrc *C.char) C.int {
 	collectionName := C.GoString(cName)
-	namesSrc := []byte(C.GoString(cNamesSrc))
-	names := []string{}
-	error_clear()
-	if err := json.Unmarshal(namesSrc, &names); err != nil {
-		error_dispatch(err, "%s", err)
-		return C.int(0)
-	}
+	names := C.GoString(cNamesSrc)
 	if err := dataset.SetWho(collectionName, names); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 
 	}
@@ -1781,13 +1672,7 @@ func get_who(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	error_clear()
 
-	names := dataset.GetWho(collectionName)
-	src, err := json.Marshal(names)
-	if err != nil {
-		error_dispatch(err, "%s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
+	txt := dataset.GetWho(collectionName)
 	return C.CString(txt)
 }
 
@@ -1799,8 +1684,8 @@ func set_what(cName *C.char, cSrc *C.char) C.int {
 	src := C.GoString(cSrc)
 	error_clear()
 
-	if err := dataset.SetWhat(collectionName, src); err != nil {
-		error_dispatch(err, "%s", err)
+	if err := dataset.SetWho(collectionName, src); err != nil {
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 
 	}
@@ -1812,9 +1697,7 @@ func set_what(cName *C.char, cSrc *C.char) C.int {
 //export get_what
 func get_what(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-
-	src := dataset.GetWhat(collectionName)
-	txt := fmt.Sprintf("%s", src)
+	txt := dataset.GetWhat(collectionName)
 	return C.CString(txt)
 }
 
@@ -1827,7 +1710,7 @@ func set_when(cName *C.char, cSrc *C.char) C.int {
 	error_clear()
 
 	if err := dataset.SetWhen(collectionName, src); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 
 	}
@@ -1839,9 +1722,9 @@ func set_when(cName *C.char, cSrc *C.char) C.int {
 //export get_when
 func get_when(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
+	error_clear()
 
-	src := dataset.GetWhen(collectionName)
-	txt := fmt.Sprintf("%s", src)
+	txt := dataset.GetWhen(collectionName)
 	return C.CString(txt)
 }
 
@@ -1854,7 +1737,7 @@ func set_where(cName *C.char, cSrc *C.char) C.int {
 	error_clear()
 
 	if err := dataset.SetWhere(collectionName, src); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 
 	}
@@ -1866,9 +1749,9 @@ func set_where(cName *C.char, cSrc *C.char) C.int {
 //export get_where
 func get_where(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
+	error_clear()
 
-	src := dataset.GetWhere(collectionName)
-	txt := fmt.Sprintf("%s", src)
+	txt := dataset.GetWhere(collectionName)
 	return C.CString(txt)
 }
 
@@ -1881,7 +1764,7 @@ func set_version(cName *C.char, cSrc *C.char) C.int {
 	error_clear()
 
 	if err := dataset.SetVersion(collectionName, src); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 
 	}
@@ -1893,9 +1776,7 @@ func set_version(cName *C.char, cSrc *C.char) C.int {
 //export get_version
 func get_version(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
-
-	src := dataset.GetVersion(collectionName)
-	txt := fmt.Sprintf("%s", src)
+	txt := dataset.GetVersion(collectionName)
 	return C.CString(txt)
 }
 
@@ -1908,7 +1789,7 @@ func set_contact(cName *C.char, cSrc *C.char) C.int {
 	error_clear()
 
 	if err := dataset.SetContact(collectionName, src); err != nil {
-		error_dispatch(err, "%s", err)
+		errorDispatch(err, "%s", err)
 		return C.int(0)
 
 	}
@@ -1920,9 +1801,9 @@ func set_contact(cName *C.char, cSrc *C.char) C.int {
 //export get_contact
 func get_contact(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
+	error_clear()
 
-	src := dataset.GetContact(collectionName)
-	txt := fmt.Sprintf("%s", src)
+	txt := dataset.GetContact(collectionName)
 	return C.CString(txt)
 }
 

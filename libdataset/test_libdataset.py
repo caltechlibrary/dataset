@@ -751,157 +751,6 @@ def test_sync_csv(t, c_name):
         t.error(f"expected has_key(five) == True, got False")
         return
 
-
-#
-# test_basic_gsheet(t, collection_name) - test if basic GSheet
-# import and export work.
-#
-def test_basic_gsheet(t, collection_name):
-    '''if credentials.json and gsheet_test.json exist, run gsheet tests'''
-    client_secret_name = "credentials.json"
-    gsheet_test = "gsheet_test.json"
-    for filename in [ client_secret_name, gsheet_test ]:
-        if os.path.exists(filename) == False:
-            t.print(f"Skipping test_gsheet({collection_name}), no {filename} found")
-            return
-    
-    sheet_id = ""
-    sheet_name = 'Sheet1'
-    cell_range = 'A1:Z100'
-    id_col = 1
-    if os.path.exists('gsheet_test.json') == False:
-        t.error("Can't find gsheet_test.json, skipping")
-        return
-    with open('gsheet_test.json') as f:
-        src = f.read()
-        obj = json.loads(src)
-        if 'gsheet_id' in obj:
-            sheet_id = obj['gsheet_id']
-
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
-    err = dataset.init(collection_name, "pairtree")
-    if err != '':
-        t.error("Failed, could not create collection, ", err)
-        return
-
-    cnt = dataset.count(collection_name)
-    if cnt != 0:
-        t.error("Failed to initialize a fresh collection", collection_name)
-        return
-
-    # Setup some test data to work with.
-    err = dataset.create(collection_name, "Wilson1930",  {"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"})
-    if err != '':
-        t.error("Failed, could not create test record in", collection_name, ', ', err)
-        return
-    
-    cnt = dataset.count(collection_name)
-    if cnt != 1:
-        t.error("Failed, should have one test record in", collection_name)
-        return
-
-    frame_name = 'f1'
-    filter_expr = 'true'
-    dot_exprs = ['.done','.key','.resolver','.subjects','.additional','.identifier_1','.description_1']
-    column_names = ['_Key', 'Done','Key','Resolver','Subjects','Additional','Identifier 1','Description 1']
-    keys = dataset.keys(collection_name)
-
-    if dataset.has_frame(collection_name, frame_name):
-        dataset.delete_frame(collection_name, frame_name)
-    (f1, err) = dataset.frame(collection_name, frame_name, keys, dot_exprs, column_names)
-    if err != '':
-        t.error(err)
-        return
-    dataset.frame_labels(collection_name, frame_name, column_names)
-
-    t.print("Testing gsheet export support", collection_name, frame_name, sheet_id, sheet_name, cell_range)
-    err = dataset.export_gsheet(collection_name, frame_name, sheet_id, sheet_name, cell_range)
-    if err != '':
-        t.error("Failed, count not export-gsheet in", collection_name, ', ', err)
-        return
-
-    # Let's change our collection and see if overwrite works
-    err = dataset.update(collection_name, "Wilson1930", {"Done": "No"})
-    if err != '':
-        t.error(f"Updated obj before import est {err}")
-        return
-
-    t.print("Testing gsheet import support (should fail)", sheet_id, sheet_name, id_col, cell_range, False)
-    err = dataset.import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, overwrite = False)
-    if err != '':
-        t.error(err)
-        return
-   
-    (obj, err) = dataset.read(collection_name, "Wilson1930")
-    if err != "":
-        t.error(err)
-        return
-
-    if "Done" in obj and obj['Done'] == "Yes":
-        t.error(f"should NOT import-gsheet over record with overwrite = False")
-        return
-
-    t.print("Testing gsheet import support (should succeeed)", sheet_id, sheet_name, id_col, cell_range, True)
-    err = dataset.import_gsheet(collection_name, sheet_id, sheet_name, id_col, cell_range, overwrite = True) 
-    if err != '':
-        t.error(err)
-    (obj, err) = dataset.read(collection_name, "Wilson1930")
-    if "Done" in obj and obj['Done'] == "No":
-        t.error(f"should be able to {obj} import with overwrite = True")
-        return
-    
-
-#
-# test_sync_gsheet (issue 80) - add tests for 
-# sync_send_gsheet and sync_recieve_gsheet 
-#
-def test_sync_gsheet(t, c_name):
-    # Setup test collection
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
-    err = dataset.init(c_name, "pairtree")
-    if err != '':
-        t.error(err)
-        return
-
-    # Setup test CSV instance
-    t_data = [
-            { "_Key": "one", "value": 1 },
-            { "_Key": "two", "value": 2 },
-            { "_Key": "three", "value": 3  }
-    ]
-
-    gsheet_id = ""
-    if os.path.exists('gsheet_test.json') == False:
-        t.error("Can't find gsheet_test.json, skipping")
-        return
-    with open('gsheet_test.json') as f:
-        src = f.read()
-        obj = json.loads(src)
-        if 'gsheet_id' in obj:
-            gsheet_id = obj['gsheet_id']
-    gsheet_name = 'Sheet1'
-    cell_range = 'A1:Z100'
-
-    for obj in t_data:
-        err = dataset.create(c_name, obj['_Key'], {"value": obj['value']})
-        if err != '':
-            t.error(f"expected create to succeed, got {err}")
-            return
-
-    f_name = 'test_sync'
-    frame, err = dataset.frame(c_name, f_name, ['._Key', '.value'], ["_Key", "value"])
-    if err != '':
-        t.error(err)
-        return
-
-    err = dataset.export_gsheet(c_name, f_name, gsheet_id, gsheet_name, cell_range)
-    #err = dataset.export_gsheet(c_name, f_name, gsheet_id, gsheet_name)
-    if err != '':
-        t.error(err)
-        return
-
 #
 # Test harness
 #
@@ -972,25 +821,10 @@ class TestRunner:
 if __name__ == "__main__":
     app_name = os.path.basename(sys.argv[0])
     print(f"Starting {app_name}")
-    print("Testing dataset version", dataset.dataset_version())
-    run_gsheet_tests = False
-    if "gsheet" in sys.argv or "gsheets" in sys.argv:
-        if os.path.exists("gsheet_test.json") == True:
-            run_gsheet_tests = True
-        else:
-            print("""
-ERROR: Can't find gsheet_test.json and credentials.json 
-needed run the 'gsheet' tests.
-
-The gsheet testing needs to be setup manually with
-the dataset command line tool before running the
-Python 'gsheet' test sequence.
-
-""")
-            sys.exit(1)
-
-    else:
-        print("NOTICE: Skipped 'gsheet' tests")
+    print("Getting libdataset version")
+    dataset.verbose_on()
+    ds_version = dataset.dataset_version()
+    print(f'Using libdataset version {ds_version}')
 
     # Pre-test check
     error_count = 0
@@ -1013,9 +847,5 @@ Python 'gsheet' test sequence.
     test_runner.add(test_frame, ["test_frame.ds"])
     test_runner.add(test_frame_objects, ["test_frame.ds"])
     test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
-    if run_gsheet_tests == True:
-        test_runner.add(test_basic_gsheet, ["test_gsheet.ds"])
-        test_runner.add(test_sync_gsheet, ["test_sync_gsheet.ds"])
-
     test_runner.run()
 

@@ -14,7 +14,6 @@ and as a series of "how to" style examples.
 ## Internal project concepts
 
 + [upgrading a collection](../how-to/upgrading-a-collection.html) - Describes how to upgrade a collection from a previous version of dataset to a new one
-+ [file system layout](../how-to/file-system-layout.html) - Short describes how collections are organized
 + [how attachments work](../how-to/how-attachments-work.html) - Detailed descriptiojn of attachments and their metadata
 
 ## _dataset_ Operations

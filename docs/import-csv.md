@@ -29,5 +29,5 @@ form of "column_NO" where "NO" is replaced with a left zero
 padded column number (e.g. column_001, column_002, column_003).
 
 
-Related topics: [export-csv](export-csv.html), [import-gsheet](import-gsheet.html), [export-gsheet](export-gsheet.html)
+Related topics: [export-csv](export-csv.html)
 

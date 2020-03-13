@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -461,12 +461,12 @@ func Repair(cName string, verbose bool) error {
 }
 
 // SetWho sets the collection's Who metadata value for a collection
-func SetWho(cName string, names []string) error {
+func SetWho(cName string, names string) error {
 	c, err := GetCollection(cName)
 	if err != nil {
 		return err
 	}
-	c.Who = names
+	c.Who = strings.Split(names, "\n")
 	if err = c.saveMetadata(); err != nil {
 		return err
 	}

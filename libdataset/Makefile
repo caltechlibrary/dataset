@@ -41,13 +41,14 @@ ifeq ($(use_sudo), true)
 	USE_SUDO = sudo
 endif
 
-build: $(LIB_NAME)$(EXT)
+build: $(LIB_NAME)$(EXT) libdataset
 
 $(LIB_NAME)$(EXT): $(LIB_NAME).go ../dataset.go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
-libdataset: .FORCE
-	go build -buildmode=c-shared -o "libdataset/lib/$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+libdataset: $(LIB_NAME)$(EXT) $(LIB_NAME).h
+	cp -v "$(LIB_NAME)$(EXT)" "libdataset/lib/"
+	cp -v "$(LIB_NAME).h" "libdataset/lib/"
 
 test: libdataset
 	python3 test_libdataset.py
@@ -57,6 +58,10 @@ clean:
 	if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
 	if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
 	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	if [ -f "libdataset/lib/$(LIB_NAME).dll" ]; then rm "libdataset/lib/$(LIB_NAME).dll"; fi
+	if [ -f "libdataset/lib/$(LIB_NAME).dylib" ]; then rm "libdataset/lib/$(LIB_NAME).dylib"; fi
+	if [ -f "libdataset/lib/$(LIB_NAME).so" ]; then rm "libdataset/lib/$(LIB_NAME).so"; fi
+	if [ -f "libdataset/lib/$(LIB_NAME).h" ]; then rm "libdataset/lib/$(LIB_NAME).h"; fi
 
 status:
 	git status
