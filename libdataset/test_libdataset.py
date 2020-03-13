@@ -12,11 +12,11 @@ def cleanup(c_name):
     for fname in fnames:
         err = dataset.delete_frame(c_name, fname)
         if err != '':
-            print(f'DEBUG {c_name} delete frame {fname}, {err}')
+            print(f'WARNING delete_frame({c_name}, {fname}) failed, {err}')
     for key in keys:
         err = dataset.delete(c_name, key)
         if err != '':
-            print(f'DEBUG {c_name} delete {key}, {err}')
+            print(f'WARNING delete({c_name}, {key}) failed, {err}')
     fnames = dataset.frames(c_name)
     if len(fnames) > 0:
         print(f'Cleanup failed, {c_name} has following frames {fnames}')
@@ -663,9 +663,11 @@ def test_frame_objects(t, c_name):
     l = dataset.frames(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
-    object_result = dataset.frame_objects(c_name, f_name)
+    (object_result, err) = dataset.frame_objects(c_name, f_name)
+    if err != '':
+        t.error(f'{c_name} {f_name}, {err}')
     if len(object_result) != 4:
-        t.error(f'Did not get correct number of objects back, expected 4 got {len(object_result)}')
+        t.error(f'frame_objects({c_name}, {f_name}), expected 4 got {len(object_result)} -> {object_result}')
     count_nameId = 0
     count_nameIdObj = 0
     for obj in object_result:

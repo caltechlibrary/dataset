@@ -1307,7 +1307,7 @@ func refresh(cName *C.char, cFName *C.char, cKeys *C.char) C.int {
 	//NOTE: We're picking up the verbose flag from the modules global state
 	err = dataset.FrameRefresh(collectionName, frameName, keys, verbose)
 	if err != nil {
-		errorDispatch(err, "failed to reframe, %s", err)
+		errorDispatch(err, "failed to refresh, %s", err)
 		return C.int(1)
 	}
 	return C.int(0)

@@ -294,9 +294,8 @@ func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 	return c.getFrame(name)
 }
 
-// FrameRefresh updates of a DataFrames object list based on the keys provided. If a new key is
-// encountered the object is added to the end of the list. Other objects are not touched and
-// the order of the object list is not changed.
+// FrameRefresh updates a DataFrames' object list based on the keys provided. If a new key is
+// encountered the object is added to the end of the list. The order of the object list is not changed.
 func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {

@@ -293,13 +293,13 @@ go_frames.argtypes = [c_char_p]
 go_frames.restype = c_char_p
 
 go_frame_refresh = lib.frame_refresh
-# Args: collection_name (string), frame_name (string), keys??? (JSON source)
+# Args: collection_name (string), frame_name (string), keys (JSON source)
 go_frame_refresh.argtypes = [c_char_p, c_char_p, c_char_p]
 # Returns: value (JSON object source)
 go_frame_refresh.restype = c_int
 
 go_frame_reframe = lib.frame_reframe
-# Args: collection_name (string), frame_name (string), keys??? (JSON source)
+# Args: collection_name (string), frame_name (string), keys (JSON source)
 go_frame_reframe.argtypes = [c_char_p, c_char_p, c_char_p]
 # Returns: value (JSON object source)
 go_frame_reframe.restype = c_int

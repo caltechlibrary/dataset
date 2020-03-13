@@ -177,10 +177,8 @@ func repair(collectionName string, verbose bool) error {
 	}
 
 	// See if we can open a collection, if not then create an empty struct
-	fmt.Printf("DEBUG opening collection %q\n", collectionName)
 	c, err = openCollection(collectionName)
 	if err != nil {
-		fmt.Printf("DEBUG (%q) writing collection.josn to %q\n", err, store.Join(collectionName, "collection.json"))
 		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
 		err = store.WriteFile(store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
