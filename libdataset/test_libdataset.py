@@ -1,8 +1,9 @@
-from libdataset import dataset 
+#!/usr/bin/env python3.7
 import os
 import sys
 import shutil
 import json
+from libdataset import * 
 
 
 # Setup our test collection deleting it first if neccessary
@@ -797,9 +798,11 @@ class TestRunner:
     def run(self):
         for test in self._tests:
             fn_name = test[0].__name__
+            print(f'DEBUG running fn_name -> {fn_name}')
             t = ATest(fn_name, self._verbose)
             fn, params = test[0], test[1]
             fn(t, *params)
+            print(f'DEBUG done running fn_name -> {fn_name}')
             error_count = t.error_count()
             if error_count > 0:
                 print(f"\t\t{fn_name} failed, {error_count} errors found")
@@ -820,32 +823,28 @@ class TestRunner:
 #
 if __name__ == "__main__":
     app_name = os.path.basename(sys.argv[0])
-    print(f"Starting {app_name}")
-    print("Getting libdataset version")
-    dataset.verbose_on()
-    ds_version = dataset.dataset_version()
-    print(f'Using libdataset version {ds_version}')
+    print(f"Setting up {app_name}")
 
     # Pre-test check
     error_count = 0
     ok = True
-    dataset.verbose_off()
 
+    print(f'Starting {app_name}')
     collection_name = "test_collection.ds"
-    test_runner = TestRunner(os.path.basename(__file__))
+    test_runner = TestRunner(os.path.basename(__file__), True)
     test_runner.add(test_libdataset, [collection_name])
-    test_runner.add(test_basic, [collection_name])
-    test_runner.add(test_keys, [collection_name])
-    test_runner.add(test_issue32, [collection_name])
-    test_runner.add(test_attachments, [collection_name])
-    test_runner.add(test_join, [collection_name])
-    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
-    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-    test_runner.add(test_s3)
-    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
-    test_runner.add(test_grid, ["test_grid.ds"])
-    test_runner.add(test_frame, ["test_frame.ds"])
-    test_runner.add(test_frame_objects, ["test_frame.ds"])
-    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+#    test_runner.add(test_basic, [collection_name])
+#    test_runner.add(test_keys, [collection_name])
+#    test_runner.add(test_issue32, [collection_name])
+#    test_runner.add(test_attachments, [collection_name])
+#    test_runner.add(test_join, [collection_name])
+#    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
+#    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
+#    test_runner.add(test_s3)
+#    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
+#    test_runner.add(test_grid, ["test_grid.ds"])
+#    test_runner.add(test_frame, ["test_frame.ds"])
+#    test_runner.add(test_frame_objects, ["test_frame.ds"])
+#    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
     test_runner.run()
 
