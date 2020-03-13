@@ -3,7 +3,7 @@ import os
 import sys
 import shutil
 import json
-from libdataset import * 
+from libdataset import dataset 
 
 def cleanup(c_name):
     keys = dataset.keys(c_name)
@@ -262,7 +262,7 @@ def test_check_repair(t, collection_name):
     # Make sure we have a left over collection to check and repair
     if os.path.exists(collection_name) == True:
         shutil.rmtree(collection_name)
-    dataset.init(collection_name, "pairtree")
+    dataset.init(collection_name)
     ok = dataset.status(collection_name)
     if ok == False:
         t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
@@ -300,11 +300,12 @@ def test_check_repair(t, collection_name):
 def test_attachments(t, collection_name):
     t.print("Testing attach, attachments, detach and prune")
     # Generate two files to attach.
-    with open('a1.txt', 'w') as text_file:
-        text_file.write('This is file a1')
-    with open('a2.txt', 'w') as text_file:
-        text_file.write('This is file a2')
     filenames = ['a1.txt','a2.txt']
+    for fname in filenames:
+        if os.path.exists(fname) == False:
+            fp = open(fname, 'w')
+            fp.write(f'This is file {fname}')
+            fp.close()
 
     ok = dataset.status(collection_name)
     if ok == False:
