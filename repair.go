@@ -88,7 +88,7 @@ func analyzer(collectionName string, verbose bool) error {
 		wCnt++
 	}
 
-	// NOTE: Check to see if we have a collections.json
+	// NOTE: Check to see if we have a collection.json
 	if hasCollectionJSON == false {
 		repairLog(verbose, "WARNING: Missing collection.json\n")
 		wCnt++
@@ -163,7 +163,7 @@ func analyzer(collectionName string, verbose bool) error {
 
 //
 // repair takes a collection name and calls
-// walks the pairtree and repairs collections.json as appropriate.
+// walks the pairtree and repairs collection.json as appropriate.
 //
 func repair(collectionName string, verbose bool) error {
 	var (
@@ -177,20 +177,24 @@ func repair(collectionName string, verbose bool) error {
 	}
 
 	// See if we can open a collection, if not then create an empty struct
+	fmt.Printf("DEBUG opening collection %q\n", collectionName)
 	c, err = openCollection(collectionName)
 	if err != nil {
+		fmt.Printf("DEBUG (%q) writing collection.josn to %q\n", err, store.Join(collectionName, "collection.json"))
 		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = store.WriteFile(c.Store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		err = store.WriteFile(store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
 			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
 		}
 		repairLog(verbose, "Attempting to re-open %s", collectionName)
+
 		c, err = openCollection(collectionName)
 		if err != nil {
 			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)
 			return err
 		}
+		return err // DEBUG
 	}
 	defer c.Close()
 

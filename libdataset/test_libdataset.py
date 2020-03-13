@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import json
+import csv
 from libdataset import dataset 
 
 def cleanup(c_name):
@@ -402,7 +403,7 @@ def test_s3(t):
     ok = dataset.status(collection_name)
     if ok == False:
         t.print("Missing", collection_name, "attempting to initialize", collection_name)
-        err = dataset.init(collection_name, "pairtree")
+        err = dataset.init(collection_name)
         if err != '':
             t.error("Aborting, couldn't initialize", collection_name, ', ', err)
             return
@@ -488,7 +489,7 @@ def test_issue43(t, collection_name, csv_name):
         shutil.rmtree(collection_name)
     if os.path.exists(csv_name):
         os.remove(csv_name)
-    err = dataset.init(collection_name, "pairtree")
+    err = dataset.init(collection_name)
     if err != '':
         t.error(f'Failed, need a {collection_name} to run test')
         return
@@ -533,8 +534,7 @@ def test_issue43(t, collection_name, csv_name):
     # Setup frame
     frame_name = 'f1'
     keys = dataset.keys(collection_name)
-    (f1, err) = dataset.frame(collection_name, frame_name, keys, 
-        ["._Key",".c1",".c2",".c3",".c4"], ["_Key", "c1", "c2", "c3", "c4"])
+    err = dataset.frame_create(collection_name, frame_name, keys, ["._Key",".c1",".c2",".c3",".c4"], ["_Key", "c1", "c2", "c3", "c4"])
     if err != '':
         t.error(err)
         return
@@ -564,7 +564,7 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
 def test_grid(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name, "pairtree")
+    err = dataset.init(c_name)
     if err != '':
         t.error(err)
         return
@@ -587,7 +587,7 @@ def test_grid(t, c_name):
 def test_frame(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name, "pairtree")
+    err = dataset.init(c_name)
     if err != '':
         t.error(err)
         return
@@ -605,10 +605,10 @@ def test_frame(t, c_name):
         keys.append(key)
         err = dataset.create(c_name, key, row)
     f_name = 'f1'
-    (g, err) = dataset.frame(c_name, f_name, keys, dot_paths, labels)
+    err = dataset.frame_create(c_name, f_name, keys, dot_paths, labels)
     if err != '':
         t.error(err)
-    err = dataset.reframe(c_name, f_name)
+    err = dataset.frame_reframe(c_name, f_name)
     if err != '':
         t.error(err)
     l = dataset.frames(c_name)
@@ -621,7 +621,7 @@ def test_frame(t, c_name):
 def test_frame_objects(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name, "pairtree")
+    err = dataset.init(c_name)
     if err != '':
         t.error(err)
         return
@@ -654,10 +654,10 @@ def test_frame_objects(t, c_name):
         keys.append(key)
         err = dataset.create(c_name, key, row)
     f_name = 'f1'
-    (g, err) = dataset.frame(c_name, f_name, keys, dot_paths, labels)
+    err = dataset.frame_create(c_name, f_name, keys, dot_paths, labels)
     if err != '':
         t.error(err)
-    err = dataset.reframe(c_name, f_name)
+    err = dataset.frame_reframe(c_name, f_name)
     if err != '':
         t.error(err)
     l = dataset.frames(c_name)
@@ -665,7 +665,7 @@ def test_frame_objects(t, c_name):
         t.error(f"expected one frame name, f1, got {l}")
     object_result = dataset.frame_objects(c_name, f_name)
     if len(object_result) != 4:
-        t.error('Did not get correct number of objects back, expected 4 got {len(object_result)}')
+        t.error(f'Did not get correct number of objects back, expected 4 got {len(object_result)}')
     count_nameId = 0
     count_nameIdObj = 0
     for obj in object_result:
@@ -695,7 +695,7 @@ def test_sync_csv(t, c_name):
     # Setup test collection
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    err = dataset.init(c_name, "pairtree")
+    err = dataset.init(c_name)
     if err != '':
         t.error(err)
         return
@@ -730,7 +730,7 @@ def test_sync_csv(t, c_name):
     # Setup frame
     frame_name = 'test_sync'
     keys = dataset.keys(c_name)
-    (frame, err) = dataset.frame(c_name, frame_name, keys, ["._Key", ".value"], ["_Key", "value"] )
+    err = dataset.frame_create(c_name, frame_name, keys, ["._Key", ".value"], ["_Key", "value"] )
     if err != '':
         t.error(err)
         return

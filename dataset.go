@@ -367,14 +367,16 @@ func (c *Collection) DocPath(name string) (string, error) {
 // Close closes a collection, writing the updated keys to disc
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
-	c.Name = ""
-	c.workPath = ""
-	c.KeyMap = map[string]string{}
-	c.Store = nil
+	if c != nil {
+		c.Name = ""
+		c.workPath = ""
+		c.KeyMap = map[string]string{}
+		c.Store = nil
 
-	c.collectionMutex = nil
-	c.objectMutex = nil
-	c.frameMutex = nil
+		c.collectionMutex = nil
+		c.objectMutex = nil
+		c.frameMutex = nil
+	}
 	return nil
 }
 
