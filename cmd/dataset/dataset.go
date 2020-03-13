@@ -297,7 +297,7 @@ func fnWho(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *
 			}
 			who = strings.Split(fmt.Sprintf("%s", src), "\n")
 		}
-		err = dataset.SetWho(cName, who)
+		err = dataset.SetWho(cName, strings.Join(who, "\n"))
 		if err != nil {
 			fmt.Fprintf(eout, "%s", err)
 			return 1
