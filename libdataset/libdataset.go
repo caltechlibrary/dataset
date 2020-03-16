@@ -158,10 +158,10 @@ func is_open(cName *C.char) C.int {
 	return C.int(0)
 }
 
-// open returns 0 on successfully opening a collection 1 otherwise. Sets error messages if needed.
+// open_collection returns 0 on successfully opening a collection 1 otherwise. Sets error messages if needed.
 //
-//export open
-func open(cName *C.char) C.int {
+//export open_collection
+func open_collection(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
 	err := dataset.Open(collectionName)
@@ -184,10 +184,10 @@ func collections() *C.char {
 	return C.CString(fmt.Sprintf("%s", src))
 }
 
-// close closes a collection previously opened.
+// close_collection closes a collection previously opened.
 //
-//export close
-func close(cName *C.char) C.int {
+//export close_collection
+func close_collection(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
 	if err := dataset.Close(collectionName); err != nil {

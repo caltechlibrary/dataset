@@ -116,16 +116,16 @@ def is_open(collection_name):
         return True
     return False
 
-# open opens a dataset collection (it needs to exist)
-def open(collection_name):
-    ok = go_open(c_char_p(collection_name.encode('utf8')))
+# open_collection opens a dataset collection (it needs to exist)
+def open_collection(collection_name):
+    ok = go_open_collection(c_char_p(collection_name.encode('utf8')))
     if ok == 1:
         return ''
     return error_message()
 
 # close closes a dataset collection
-def close(collection_name):
-    ok = go_close(c_char_p(collection_name.encode('utf8')))
+def close_collection(collection_name):
+    ok = go_close_collection(c_char_p(collection_name.encode('utf8')))
     if ok == 1:
         return ''
     return error_message()
