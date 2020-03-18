@@ -192,7 +192,6 @@ func repair(collectionName string, verbose bool) error {
 			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)
 			return err
 		}
-		return err // DEBUG
 	}
 	defer c.Close()
 

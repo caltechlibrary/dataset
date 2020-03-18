@@ -55,4 +55,7 @@ libdataset/*.dll
 libdataset/*.dynlib
 libdataset/*.so
 libdataset/*.h
+libdataset/*.csv
+libdataset/*.ds
 __pycache__
+

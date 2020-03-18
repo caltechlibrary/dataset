@@ -2125,20 +2125,15 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 }
 
 // fnRefresh updates a Frame's object list from the current state
-// of collection using the existing keys or the keys supplied.
+// of collection using the existing frame keys.
 //
-//    dataset refresh -i keys.txt collections.ds my-frame
+//    dataset refresh collections.ds my-frame
 //
 func fnRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
 	var (
-		cName        string
-		frameName    string
-		keys         []string
-		keyPathPairs []string
-		labels       []string
-		dotPaths     []string
-		src          []byte
-		err          error
+		cName     string
+		frameName string
+		err       error
 	)
 
 	err = flagSet.Parse(args)
@@ -2157,25 +2152,9 @@ func fnRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		return 1
 	case len(args) == 2:
 		cName, frameName = args[0], args[1]
-	case len(args) >= 3:
-		cName, frameName, keyPathPairs = args[0], args[1], args[2:]
 	default:
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
-	}
-
-	if len(keyPathPairs) > 0 {
-		for _, item := range keyPathPairs {
-			if strings.Contains(item, "=") {
-				kp := strings.SplitN(item, "=", 2)
-				labels = append(labels, strings.TrimSpace(kp[0]))
-				dotPaths = append(dotPaths, strings.TrimSpace(kp[1]))
-			} else {
-				item = strings.TrimSpace(item)
-				labels = append(labels, strings.TrimPrefix(item, "."))
-				dotPaths = append(dotPaths, item)
-			}
-		}
 	}
 
 	// Check to see if frame exists...
@@ -2184,29 +2163,8 @@ func fnRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		return 1
 	}
 
-	keys = dataset.FrameKeys(cName, frameName)
-
-	// Read from inputFName, update frame's keys
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = keysFromSrc(src)
-	}
-
-	if len(keys) == 0 {
-		fmt.Fprintf(eout, "No keys available to update frame\n")
-		return 1
-	}
-
-	// Now regenerate grid content with Reframe
-	err = dataset.FrameRefresh(cName, frameName, keys, showVerbose)
+	// Now regenerate object list with Refresh
+	err = dataset.FrameRefresh(cName, frameName, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2917,17 +2875,15 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vFrameGrid.BoolVar(&useHeaderRow, "use-header-row", useHeaderRow, "Include labels as a header row")
 	vFrameGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
-	vReframe = app.NewVerb("reframe", "re-generate an existing frame", fnReframe)
+	vReframe = app.NewVerb("reframe", "replace the objects in a frame using the keys provided.", fnReframe)
 	vReframe.SetParams("COLLECTION", "FRAME_NAME")
 	vReframe.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
 	vReframe.IntVar(&sampleSize, "s,sample", -1, "reframe based on a key sample of a given size")
 	vReframe.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
 	vReframe.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 
-	vRefresh = app.NewVerb("refresh", "update an existing frame from a list of keys", fnReframe)
+	vRefresh = app.NewVerb("refresh", "refresh an existing frame based on current collection state.", fnRefresh)
 	vRefresh.SetParams("COLLECTION", "FRAME_NAME")
-	vRefresh.StringVar(&inputFName, "i,input", "", "frame only the keys listed in the file, one key per line")
-	vRefresh.IntVar(&sampleSize, "s,sample", -1, "reframe based on a key sample of a given size")
 	vRefresh.BoolVar(&showVerbose, "v,verbose", false, "use verbose output")
 	vRefresh.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
 

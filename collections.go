@@ -339,7 +339,7 @@ func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) 
 
 // FrameRefresh updates the frame object list's for the keys provided. Any new keys
 //  cause a new object to be appended to the end of the list.
-func FrameRefresh(cName string, fName string, keys []string, verbose bool) error {
+func FrameRefresh(cName string, fName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		if err := Open(cName); err != nil {
 			return err
@@ -349,7 +349,7 @@ func FrameRefresh(cName string, fName string, keys []string, verbose bool) error
 		c.collectionMutex = new(sync.Mutex)
 		c.objectMutex = new(sync.Mutex)
 		c.frameMutex = new(sync.Mutex)
-		return c.FrameRefresh(fName, keys, verbose)
+		return c.FrameRefresh(fName, verbose)
 	}
 	return fmt.Errorf("%q not available", cName)
 }

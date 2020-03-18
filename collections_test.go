@@ -195,7 +195,7 @@ func TestCollections(t *testing.T) {
 			t.Errorf("expected ReadJSON(%q, %q) -> %s", cName, key, src)
 			t.FailNow()
 		}
-		if err := FrameRefresh(cName, fName, []string{key2, key}, verbose); err != nil {
+		if err := FrameRefresh(cName, fName, verbose); err != nil {
 			t.Errorf("expected success frame refresh, got %s", err)
 			t.FailNow()
 		}
@@ -204,16 +204,18 @@ func TestCollections(t *testing.T) {
 			t.Errorf("expected a new copy of object list, got %s", err)
 			t.FailNow()
 		}
-		if len(ol3) != 2 {
-			t.Errorf("expected length 2, got %d, %T -> %+v", len(ol3), ol3, ol3)
+		if len(ol3) != 1 {
+			t.Errorf("expected length 1, got %d, %T -> %+v", len(ol3), ol3, ol3)
 			t.FailNow()
 		}
 		if ol3[0]["title"] != "Orchids & Moonbeams" {
 			t.Errorf("Expected first object to be Orchids & Moonbeams, got %+v", ol3[0])
 		}
-		if ol3[1]["title"] != "The Incredible Adventures of Jack Flanders" {
-			t.Errorf("Expected first object to be The Incredible Adventures of Jack Flanders, got %+v", ol3[1])
-		}
+		/*
+			if ol3[1]["title"] != "The Incredible Adventures of Jack Flanders" {
+				t.Errorf("Expected first object to be The Incredible Adventures of Jack Flanders, got %+v", ol3[1])
+			}
+		*/
 		if err := FrameReframe(cName, fName, []string{key2, key}, verbose); err != nil {
 			t.Errorf("expected success frame refresh, got %s", err)
 			t.FailNow()

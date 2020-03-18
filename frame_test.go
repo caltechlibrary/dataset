@@ -350,7 +350,7 @@ func TestFrameRefresh(t *testing.T) {
 		t.Errorf("expected %q, none was found", fName)
 		t.FailNow()
 	}
-	if err := c.FrameRefresh(fName, []string{"k0", "k1"}, verbose); err != nil {
+	if err := c.FrameRefresh(fName, verbose); err != nil {
 		t.Errorf("expected successful refresh %q, got %s", fName, err)
 		t.FailNow()
 	}
@@ -359,8 +359,8 @@ func TestFrameRefresh(t *testing.T) {
 		t.Errorf("expected object list, got error %s", err)
 		t.FailNow()
 	}
-	if len(ol2) != 2 {
-		t.Errorf("expected 2 objects, got %d -> %+v", len(ol2), ol2)
+	if len(ol2) != 1 {
+		t.Errorf("expected 1 object, got %d -> %+v", len(ol2), ol2)
 		t.FailNow()
 	}
 }

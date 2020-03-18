@@ -10,12 +10,10 @@ def cleanup(c_name):
     keys = dataset.keys(c_name)
     fnames = dataset.frames(c_name)
     for fname in fnames:
-        err = dataset.delete_frame(c_name, fname)
-        if err != '':
+        if dataset.delete_frame(c_name, fname) == False:
             print(f'WARNING delete_frame({c_name}, {fname}) failed, {err}')
     for key in keys:
-        err = dataset.delete(c_name, key)
-        if err != '':
+        if dataset.delete(c_name, key) == False:
             print(f'WARNING delete({c_name}, {key}) failed, {err}')
     fnames = dataset.frames(c_name)
     if len(fnames) > 0:
@@ -24,6 +22,16 @@ def cleanup(c_name):
     keys = dataset.keys(c_name)
     if len(keys) > 0:
         print(f'Cleanup failed, {c_name} has following keys {keys}')
+        sys.exit(1)
+    if dataset.is_open(c_name):
+        err = dataset.close_collection(c_name)
+        if err != '':
+            print(f'Failed, close_collection({c_name}), {err}')
+    elif os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    err = dataset.init(c_name)
+    if err != '':
+        print(f'Failed, init({c_name}), {err}')
         sys.exit(1)
 
 
@@ -213,31 +221,29 @@ def test_keys(t, collection_name):
             t.error("Failed, could not add", k, "to", collection_name, ', ', err)
     
     # Test keys, filtering keys and sorting keys
-    keys = dataset.keys(collection_name)
-    if len(keys) != test_count:
-        t.error("Expected", test_count,"keys back, got", keys)
+    all_keys = dataset.keys(collection_name)
+    if len(all_keys) != test_count:
+        t.error("Expected (a)", test_count,"keys back, got", keys)
     
-    #dataset.verbose_on()
     filter_expr = '(eq .categories "non-fiction, memoir")'
-    keys = dataset.keys(collection_name, filter_expr)
+    keys = dataset.key_filter(collection_name, all_keys, filter_expr)
     if len(keys) != 1:
-        t.error("Expected one key for", filter_expr, "got", keys)
+        t.error("Expected (b) one key for", filter_expr, "got", keys)
     
     filter_expr = '(contains .categories "novel")'
-    keys = dataset.keys(collection_name, filter_expr)
-    if len(keys) != 3:
-        t.error("Expected three keys for", filter_expr, "got", keys)
+    filtered_keys = dataset.key_filter(collection_name, all_keys, filter_expr)
+    if len(filtered_keys) != 3:
+        t.error("Expected (c) three keys for", filter_expr, "got", keys)
     
     sort_expr = '+.title'
-    filter_expr = '(contains .categories "novel")'
-    keys = dataset.keys(collection_name, filter_expr, sort_expr)
+    keys = dataset.key_sort(collection_name, filtered_keys, sort_expr)
     if len(keys) != 3:
-        t.error("Expected three keys for", filter_expr, "got", keys)
+        t.error("Expected (d) three keys for", filter_expr, "got", keys)
     i = 0
-    expected_keys = ["gutenberg:21839", "gutenberg:21489", "gutenberg:2488"]
+    expected_keys = [ "gutenberg:21839", "gutenberg:21489", "gutenberg:2488" ]
     for k in expected_keys:
         if i < len(keys) and keys[i] != k:
-            t.error("Expected", k, "got", keys[i])
+            t.error("Expected (e)", k, "got", keys[i])
         i += 1
     
 
@@ -259,13 +265,11 @@ def test_issue32(t, collection_name):
 
 
 def test_check_repair(t, collection_name):
+    cleanup(collection_name)
     t.print("Testing status on", collection_name)
     # Make sure we have a left over collection to check and repair
-    if os.path.exists(collection_name) == True:
-        shutil.rmtree(collection_name)
     dataset.init(collection_name)
-    ok = dataset.status(collection_name)
-    if ok == False:
+    if dataset.status(collection_name) == False:
         t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
         return
 
@@ -393,6 +397,7 @@ def test_attachments(t, collection_name):
 def test_s3(t):
     collection_name = os.getenv("DATASET", "")
     if collection_name == "":
+        t.verbose_on()
         t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
         return
     if collection_name[0:5] != "s3://":
@@ -400,8 +405,7 @@ def test_s3(t):
         t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
         return
     
-    ok = dataset.status(collection_name)
-    if ok == False:
+    if dataset.status(collection_name) == False:
         t.print("Missing", collection_name, "attempting to initialize", collection_name)
         err = dataset.init(collection_name)
         if err != '':
@@ -444,35 +448,27 @@ def test_join(t, collection_name):
     key = "test_join1"
     obj1 = { "one": 1}
     obj2 = { "two": 2}
-    ok = dataset.status(collection_name)
-    if ok == False:
-        t.error("Failed, collection status is False,", collection_name)
-        return
-    ok = dataset.has_key(collection_name, key)
-    err = ''
-    if ok == True:
-        err = dataset.update(collection_nane, key, obj1)
+    if dataset.has_key(collection_name, key):
+        err = dataset.update(collection_name, key, obj1)
     else:
         err = dataset.create(collection_name, key, obj1)
     if err != '':
-        t.error(f'Failed, could not add record for test ({collection_name}, {key}, {obj1}), {err}')
+        t.error(f'Failed (a), could not add record for test ({collection_name}, {key}, {obj1}), {err}')
         return
-    err = dataset.join(collection_name, key, obj2, overwrite = False)
-    if err != '':
-        t.error(f'Failed, join for {collection_name}, {key}, {obj2}, overwrite = False -> {err}')
+    if dataset.join(collection_name, key, obj2, overwrite = False) == False:
+        t.error(f'Failed (b), join({collection_name}, {key}, {obj2}, overwrite = False) -> returned False')
     obj_result, err = dataset.read(collection_name, key)
     if err != '':
         t.error(f'Unexpected error for {key} in {collection_name}, {err}')
     if obj_result.get('one') != 1:
-        t.error(f'Failed to join append key {key}, {obj_result}')
+        t.error(f'Failed (c) to join append key {key}, {obj_result}')
     if obj_result.get("two") != 2:
-        t.error(f'Failed to join append key {key}, {obj_result}')
+        t.error(f'Failed (d) to join append key {key}, {obj_result}')
     obj2['one'] = 3
     obj2['two'] = 3
     obj2['three'] = 3
-    err = dataset.join(collection_name, key, obj2, overwrite = True)
-    if err != '':
-        t.error(f'Failed to join overwrite {collection_name}, {key}, {obj2}, overwrite = True -> {err}')
+    if dataset.join(collection_name, key, obj2, overwrite = True) == False:
+        t.error(f'Failed (e) join({collection_name}, {key}, {obj2}, overwrite = True) -> False')
     obj_result, err = dataset.read(collection_name, key)
     if err != '':
         t.error(f'Unexpected error for {key} in {collection_name}, {err}')
@@ -485,10 +481,7 @@ def test_join(t, collection_name):
 # use_srict_dotpath(True), the rows are getting miss aligned.
 #
 def test_issue43(t, collection_name, csv_name):
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
-    if os.path.exists(csv_name):
-        os.remove(csv_name)
+    cleanup(collection_name)
     err = dataset.init(collection_name)
     if err != '':
         t.error(f'Failed, need a {collection_name} to run test')
@@ -584,13 +577,13 @@ def test_grid(t, c_name):
     if err != '':
         t.error(err)
 
-def test_frame(t, c_name):
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
+def test_frame1(t, c_name):
+    cleanup(c_name)
     err = dataset.init(c_name)
     if err != '':
-        t.error(err)
+        t.errorf(f'failed to create {c_name}, {err}')
         return
+
     data = [
         { "id":    "A", "one":   "one", "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
         { "id":    "B", "two":   2000, "three": 3000.1 },
@@ -607,24 +600,20 @@ def test_frame(t, c_name):
     f_name = 'f1'
     err = dataset.frame_create(c_name, f_name, keys, dot_paths, labels)
     if err != '':
-        t.error(err)
-    err = dataset.frame_reframe(c_name, f_name)
-    if err != '':
-        t.error(err)
+        t.error(f'frame_create({c_name}, {f_name}, {keys}, {dot_paths}, {labels}) -> {err}')
+        return
+    if dataset.frame_reframe(c_name, f_name, keys) == False:
+        t.error(f'frame_reframe({c_name}, {f_name}) returned False')
     l = dataset.frames(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
-    err = dataset.delete_frame(c_name, f_name)
-    if err != '':
-        t.error(err)
+    if dataset.delete_frame(c_name, f_name) == False:
+        t.error(f'delete_frame({c_name}, {f_name}) returned False.')
 
-def test_frame_objects(t, c_name):
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
-    err = dataset.init(c_name)
-    if err != '':
-        t.error(err)
-        return
+
+def test_frame2(t, c_name):
+    cleanup(c_name)
+
     data = [
         { "id":    "A", "nameIdentifiers": [
                 {
@@ -653,21 +642,35 @@ def test_frame_objects(t, c_name):
         key = row['id']
         keys.append(key)
         err = dataset.create(c_name, key, row)
+    keys = dataset.keys(c_name)
     f_name = 'f1'
     err = dataset.frame_create(c_name, f_name, keys, dot_paths, labels)
     if err != '':
         t.error(err)
-    err = dataset.frame_reframe(c_name, f_name)
-    if err != '':
-        t.error(err)
+        return
+    f = dataset.frame(c_name, f_name)
+    if f == None:
+        t.error(f'after frame_create(), frame({c_name}, {f_name}) returned None, expected frame data')
+        return
+    if dataset.frame_reframe(c_name, f_name, keys) == False:
+        t.error(f'frame_reframe({c_name}, {f_name}) returned False')
+        return
+    f = dataset.frame(c_name, f_name)
+    if f == None:
+        t.error(f'after frame_reframe(), frame({c_name}, {f_name}) returned None, expected frame data')
+        return
+    if len(f['keys']) == 0:
+        t.error(f'missing keys after reframe, frame({c_name}, {f_name}) -> {f}')
+        return
+
     l = dataset.frames(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
-    (object_result, err) = dataset.frame_objects(c_name, f_name)
-    if err != '':
-        t.error(f'{c_name} {f_name}, {err}')
+        return
+    object_result = dataset.frame_objects(c_name, f_name)
     if len(object_result) != 4:
         t.error(f'frame_objects({c_name}, {f_name}), expected 4 got {len(object_result)} -> {object_result}')
+        return
     count_nameId = 0
     count_nameIdObj = 0
     for obj in object_result:
@@ -684,23 +687,19 @@ def test_frame_objects(t, c_name):
                 t.error('Missing object in complex dot path')
     if count_nameId != 2:
         t.error(f"Incorrect number of nameIdentifiers elements, expected 2, got {count_nameId}")
+        return
     if count_nameIdObj != 2:
         t.error(f"Incorrect number of nameIdentifier elements, expected 2, got {count_nameIdObj}")
-    err = dataset.delete_frame(c_name, f_name)
-    if err != '':
-        t.error(err)
+        return
+#    err = dataset.delete_frame(c_name, f_name)
+#    if err != '':
+#        t.error(err)
 
 #
 # test_sync_csv (issue 80) - add tests for sync_send_csv, sync_recieve_csv
 #
 def test_sync_csv(t, c_name):
-    # Setup test collection
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
-    err = dataset.init(c_name)
-    if err != '':
-        t.error(err)
-        return
+    cleanup(c_name)
 
     # Setup test CSV instance
     t_data = [
@@ -815,6 +814,7 @@ class TestRunner:
             error_count = t.error_count()
             if error_count > 0:
                 print(f"\t\t{fn_name} failed, {error_count} errors found")
+                return
             else:
                 print(f"\t\t{fn_name} OK")
             self._error_count += error_count
@@ -848,13 +848,13 @@ if __name__ == "__main__":
     test_runner.add(test_issue32, [ c_name ])
     test_runner.add(test_attachments, [ c_name ])
     test_runner.add(test_join, [ c_name ])
-    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-    test_runner.add(test_s3)
     test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
     test_runner.add(test_grid, ["test_grid.ds"])
-    test_runner.add(test_frame, ["test_frame.ds"])
-    test_runner.add(test_frame_objects, ["test_frame.ds"])
+    test_runner.add(test_frame1, ["test_frame1.ds"])
+    test_runner.add(test_frame2, ["test_frame2.ds"])
     test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+    #test_runner.add(test_s3, [])
+    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.run()
 
