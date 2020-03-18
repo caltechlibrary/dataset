@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -47,13 +47,13 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.1.2`
+	Version = `v0.1.4`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
 %s %s
 
-Copyright (c) 2019, Caltech
+Copyright (c) 2020, Caltech
 All rights not granted herein are expressly reserved by Caltech.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -127,8 +127,8 @@ type Collection struct {
 	Who []string `json:"who,omitempty"`
 	// What - description of collection
 	What string `json:"what,omitempty"`
-	// When - date associated with collection (e.g. 2019,
-	// 2019-10, 2019-10-02), should map to an approx date like in
+	// When - date associated with collection (e.g. 2020,
+	// 2020-10, 2020-10-02), should map to an approx date like in
 	// archival work.
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection
@@ -280,7 +280,7 @@ func InitCollection(name string) (*Collection, error) {
 	// date and time is in RFC3339 format
 	c.Created = dt.Format(time.RFC3339)
 	// When is a date in YYYY-MM-DD format (can be approximate)
-	// e.g. 2019, 2019-01, 2019-01-02
+	// e.g. 2020, 2020-01, 2020-01-02
 	c.When = dt.Format("2006-01-02")
 	c.DatasetVersion = Version
 	c.Name = path.Base(collectionName)
@@ -367,14 +367,16 @@ func (c *Collection) DocPath(name string) (string, error) {
 // Close closes a collection, writing the updated keys to disc
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
-	c.Name = ""
-	c.workPath = ""
-	c.KeyMap = map[string]string{}
-	c.Store = nil
+	if c != nil {
+		c.Name = ""
+		c.workPath = ""
+		c.KeyMap = map[string]string{}
+		c.Store = nil
 
-	c.collectionMutex = nil
-	c.objectMutex = nil
-	c.frameMutex = nil
+		c.collectionMutex = nil
+		c.objectMutex = nil
+		c.frameMutex = nil
+	}
 	return nil
 }
 

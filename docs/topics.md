@@ -28,7 +28,6 @@
 ## Import/Export
 
 - [Working with CSV](../how-to/working-with-csv.html)
-- [Working with Google Sheets](../how-to/working-with-gsheets.html)
 
 
 
@@ -44,8 +43,7 @@
 - [delete-frame](delete-frame.html)
 - [detach](detach.html)
 - [dotpath](dotpath.html)
-- [export](export-csv.html) (csv)
-- [export](export-gsheet.html) (gsheet)
+- [export-csv](export-csv.html)
 - [frame](frame.html)
 - [frame-grid](frame-grid.html)
 - [frame-objects](frame-objects.html)
@@ -53,8 +51,7 @@
 - [grid](grid.html)
 - [hasframe](hasframe.html)
 - [haskey](haskey.html)
-- [import](import-csv.html) (csv)
-- [import](import-gsheet.html) (gsheet)
+- [import-csv](import-csv.html)
 - [init](init.html)
 - [join](join.html)
 - [keys](keys.html)

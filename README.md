@@ -17,8 +17,7 @@ manage operations such as initialization of collections, creation,
 reading, updating and deleting JSON objects in the collection. Some of 
 its enhanced features include the ability to generate data 
 [frames](docs/frame.html) as well as the ability to 
-import, export and synchronize JSON objects to and from CSV files 
-and Google Sheets (experimental).
+import, export and synchronize JSON objects to and from CSV files. 
 
 _dataset_ is written in the [Go](https://golang.org) programming language.
 It can be used as a Go package by other Go based software. Go supports
@@ -77,7 +76,7 @@ written in Python or as simple Bash scripts.
 
 - Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
-- import/export  of [CSV](how-to/working-with-csv.html) files and [Google Sheets](how-to/working-with-gsheets.html)
+- import/export of [CSV](how-to/working-with-csv.html) files
 - The ability to reshape data by performing simple object [joins](docs/join.html)
 - The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based on keys lists and [dot paths](docs/dotpath.html) into stored JSON objects
 
@@ -94,7 +93,7 @@ a full blown database.
 
 _dataset_ has many limitations, some are listed below
 
-- it is a multi-process, multi-user data store (it's files on "disc" without locking)
+- it is not a multi-process, multi-user data store (it's files on "disc" without locking)
 - it is not a replacement for a repository management system
 - it is not a general purpose database system
 - it does not supply automatic version control on collections or objects

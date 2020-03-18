@@ -1,4 +1,10 @@
 
+From v0.1.4 release
+
++ Dropped support for GSheet integration
++ Only support pairtree layout of collection
++ cleaned up libdataset API focusing on removing overloaded functions
+
 From v0.1.0 release
 
 + Updated libdataset API, simplified func names and normalized many of the calls (breaking change)

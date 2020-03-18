@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -88,7 +88,7 @@ func analyzer(collectionName string, verbose bool) error {
 		wCnt++
 	}
 
-	// NOTE: Check to see if we have a collections.json
+	// NOTE: Check to see if we have a collection.json
 	if hasCollectionJSON == false {
 		repairLog(verbose, "WARNING: Missing collection.json\n")
 		wCnt++
@@ -163,7 +163,7 @@ func analyzer(collectionName string, verbose bool) error {
 
 //
 // repair takes a collection name and calls
-// walks the pairtree and repairs collections.json as appropriate.
+// walks the pairtree and repairs collection.json as appropriate.
 //
 func repair(collectionName string, verbose bool) error {
 	var (
@@ -180,12 +180,13 @@ func repair(collectionName string, verbose bool) error {
 	c, err = openCollection(collectionName)
 	if err != nil {
 		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = store.WriteFile(c.Store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		err = store.WriteFile(store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
 			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
 		}
 		repairLog(verbose, "Attempting to re-open %s", collectionName)
+
 		c, err = openCollection(collectionName)
 		if err != nil {
 			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)

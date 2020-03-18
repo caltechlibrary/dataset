@@ -6,7 +6,7 @@
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2019, Caltech
+# Copyright (c) 2020, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,13 +19,13 @@
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
-import ctypes
 import sys
 import os
 import json
+from ctypes import *
 
 # Figure out shared library extension
-go_basename = 'lib/libdataset'
+lib_basename = 'libdataset'
 ext = '.so'
 if sys.platform.startswith('win'):
     ext = '.dll'
@@ -35,101 +35,91 @@ if sys.platform.startswith('linux'):
     ext = '.so'
 
 # Find our shared library and load it
-dir_path = os.path.dirname(os.path.realpath(__file__))
-lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
+dir_path = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+lib_path = os.path.join(dir_path, lib_basename+ext)
+libdataset = CDLL(lib_path)
 
 # error_clear clears the error values
-go_error_clear = lib.error_clear
+libdataset.error_clear.restype = None
 
 # Setup our Go functions to be nicely wrapped
-go_error_message = lib.error_message
-go_error_message.restype = ctypes.c_char_p
+libdataset.error_message.restype = c_char_p
 
-go_use_strict_dotpath = lib.use_strict_dotpath
 # Args: is 1 (true) or 0 (false)
-go_use_strict_dotpath.argtypes = [ctypes.c_int]
-go_use_strict_dotpath.restype = ctypes.c_int
+libdataset.use_strict_dotpath.argtypes = [c_int]
+libdataset.use_strict_dotpath.restype = c_bool
 
-go_dataset_version = lib.dataset_version
-go_dataset_version.restype = ctypes.c_char_p
+libdataset.is_verbose.restype = c_bool
 
-go_is_verbose = lib.is_verbose
-go_is_verbose.restype = ctypes.c_int
+libdataset.verbose_on.restype = c_bool
 
-go_verbose_on = lib.verbose_on
-go_verbose_on.restype = ctypes.c_int
+libdataset.verbose_off.restype = c_bool
 
-go_verbose_off = lib.verbose_off
-go_verbose_off.restype = ctypes.c_int
+libdataset.dataset_version.restype = c_char_p
 
-go_init = lib.init_collection
-# Args: collection_name (string), layout (int - 0 UNKNOWN, 1 BUCKETS, 2 PAIRTREE)
-go_init.argtypes = [ctypes.c_char_p, ctypes.c_int]
+# Args: collection_name (string)
+libdataset.init_collection.argtypes = [c_char_p]
 # Returns: true (1), false (0)
-go_init.restype = ctypes.c_int
+libdataset.init_collection.restype = c_bool
 
-go_create_object = lib.create_object
+libdataset.is_collection_open.restype = c_bool
+
+libdataset.open_collection.argtypes = [c_char_p]
+libdataset.open_collection.restype = c_bool
+
+libdataset.close_collection.argtypes = [c_char_p]
+libdataset.close_collection.restype = c_bool
+
+libdataset.close_all_collections.restype = c_bool
+
 # Args: collection_name (string), key (string), value (JSON source)
-go_create_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_create_object.restype = ctypes.c_int
+libdataset.create_object.argtypes = [c_char_p, c_char_p, c_char_p]
+libdataset.create_object.restype = c_bool
 
-go_read_object = lib.read_object
-# Args: collection_name (string), key (string), clean_object (int)
-go_read_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+# Args: collection_name (string), key (string), clean_object (bool)
+libdataset.read_object.argtypes = [c_char_p, c_char_p, c_bool ]
 # Returns: value (JSON source)
-go_read_object.restype = ctypes.c_char_p
+libdataset.read_object.restype = c_char_p
 
 # THIS IS A HACK, ctypes doesn't **easily** support undemensioned arrays
 # of strings. So we will assume the array of keys has already been
-# transformed into JSON before calling go_read_list.
-go_read_object_list = lib.read_object_list
-# Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (int)
-go_read_object_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+# transformed into JSON before calling libdataset.read_list.
+# Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (bool)
+libdataset.read_object_list.argtypes = [ c_char_p, c_char_p, c_bool ]
 # Returns: value (JSON source)
-go_read_object_list.restype = ctypes.c_char_p
+libdataset.read_object_list.restype = c_char_p
 
-go_update_object = lib.update_object
 # Args: collection_name (string), key (string), value (JSON sourc)
-go_update_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_update_object.restype = ctypes.c_int
+libdataset.update_object.argtypes = [c_char_p, c_char_p, c_char_p ]
+libdataset.update_object.restype = c_bool
 
-go_delete_object = lib.delete_object
 # Args: collection_name (string), key (string)
-go_delete_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_delete_object.restype = ctypes.c_int
+libdataset.delete_object.argtypes = [c_char_p, c_char_p ]
+libdataset.delete_object.restype = c_bool
 
-go_key_exists = lib.key_exists
 # Args: collection_name (string), key (string)
-go_key_exists.argtypes = [ctypes.c_char_p,ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_key_exists.restype = ctypes.c_int
+libdataset.key_exists.argtypes = [c_char_p,c_char_p ]
+libdataset.key_exists.restype = c_bool
 
-go_keys = lib.keys
-# Args: collection_name (string), filter_expr (string), sort_expr (string)
-go_keys.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON source)
-go_keys.restype = ctypes.c_char_p
-
-go_key_filter = lib.key_filter
-# Args: collection_name (string), key_list (JSON array source), filter_expr (string)
-go_key_filter.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON source)
-go_key_filter.restype = ctypes.c_char_p
-
-go_key_sort = lib.key_sort
-# Args: collection_name (string), key_list (JSON array source), sort order (string)
-go_key_sort.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON source)
-go_key_sort.restype = ctypes.c_char_p
-
-go_count = lib.count
 # Args: collection_name (string)
-go_count.argtypes = [ctypes.c_char_p]
+libdataset.keys.argtypes = [c_char_p ]
+# Returns: value (JSON source)
+libdataset.keys.restype = c_char_p
+
+# Args: collection_name (string), key_list (JSON array source), filter_expr (string)
+libdataset.key_filter.argtypes = [c_char_p, c_char_p, c_char_p ]
+# Returns: value (JSON source)
+libdataset.key_filter.restype = c_char_p
+
+# Args: collection_name (string), key_list (JSON array source), sort order (string)
+libdataset.key_sort.argtypes = [c_char_p, c_char_p, c_char_p ]
+# Returns: value (JSON source)
+libdataset.key_sort.restype = c_char_p
+
+# Args: collection_name (string)
+libdataset.count_objects.argtypes = [ c_char_p ]
 # Returns: value (int)
-go_count.restype = ctypes.c_int
+libdataset.count_objects.restype = c_int
 
 # NOTE: this diverges from cli and reflects low level dataset organization
 #
@@ -141,10 +131,10 @@ go_count.restype = ctypes.c_int
 #      UseHeaderRow (bool, 1 true, 0 false)
 #      Overwrite (bool, 1 true, 0 false)
 # 
+# Args: collection_name (string), frame_name (string), ID column (int), use header row (bool), overwrite (bool)
+libdataset.import_csv.argtypes = [ c_char_p, c_char_p, c_int, c_bool, c_bool ]
 # Returns: true (1), false (0)
-go_import_csv = lib.import_csv
-go_import_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-go_import_csv.restype = ctypes.c_int
+libdataset.import_csv.restype = c_bool
 
 # NOTE: this diverges from cli and uses libdataset.go bindings
 #
@@ -152,275 +142,207 @@ go_import_csv.restype = ctypes.c_int
 # syntax examples: COLLECTION FRAME CSV_FILENAME
 # 
 # Returns: true (1), false (0)
-go_export_csv = lib.export_csv
-go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-go_export_csv.restype = ctypes.c_int
+# Args: collection_name (strng), frame_name (string), csv_filename (string)
+libdataset.export_csv.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# Returns: True on success, False otherwise
+libdataset.export_csv.restype = c_bool
 
 
-
-# NOTE: this diverges from the cli and uses libdataset.go bindings
-# import_gsheet - import a GSheet into a collection
-# syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
-# 
-# options that should support sensible defaults:
+# NOTE: libdataset.sync_* diverges from cli and uses libdataset.go bindings
 #
-#      UseHeaderRow
-#      Overwrite
-#
+# Args: 
+libdataset.sync_recieve_csv.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
 # Returns: true (1), false (0)
-go_import_gsheet = lib.import_gsheet
-go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
-go_import_gsheet.restype = ctypes.c_int
-
-
-# NOTE: this diverges from the cli and uses the libdataset.go bindings
-# export_gsheet - export collection objects to a GSheet
-# syntax examples: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
-#
+libdataset.sync_recieve_csv.restype = c_bool
+# Args: 
+libdataset.sync_send_csv.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
 # Returns: true (1), false (0)
-go_export_gsheet = lib.export_gsheet
-go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-go_export_gsheet.restype = ctypes.c_int
+libdataset.sync_send_csv.restype = c_bool
 
-# NOTE: go_sync_* diverges from cli in that it separates the functions
-# specifically for CSV files and GSheets.
-#
 # Returns: true (1), false (0)
-go_sync_recieve_csv = lib.sync_recieve_csv
-go_sync_recieve_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_recieve_csv.restype = ctypes.c_int
+libdataset.collection_status.restype = c_bool
 
-go_sync_send_csv = lib.sync_send_csv
-go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_send_csv.restype = ctypes.c_int
-
-go_sync_recieve_gsheet = lib.sync_recieve_gsheet
-go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_recieve_gsheet.restype = ctypes.c_int
-
-go_sync_send_gsheet = lib.sync_send_gsheet
-go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_send_gsheet.restype = ctypes.c_int
-
-go_status = lib.status
-# Returns: true (1), false (0)
-go_status.restype = ctypes.c_int
-
-go_list = lib.list
 # Args: collection_name (string), key list (JSON array source)
-go_list.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+libdataset.list_objects.argtypes = [ c_char_p, c_char_p ]
 # Returns: value (JSON Array of Objects source)
-go_list.restype = ctypes.c_char_p
+libdataset.list_objects.restype = c_char_p
 
 # FIXME: for Python library only accept single return a single key's path
-go_path = lib.path
 # Args: collection_name (string), key (string)
-go_path.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Retrusn: value (string)
-go_path.restype = ctypes.c_char_p
+libdataset.object_path.argtypes = [ c_char_p, c_char_p ]
+# Returns: value (string)
+libdataset.object_path.restype = c_char_p
 
-go_check = lib.check
 # Args: collection_name (string)
-go_check.argtypes = [ctypes.c_char_p]
+libdataset.check_collection.argtypes = [ c_char_p ]
 # Returns: true (1), false (0)
-go_check.restype = ctypes.c_int
+libdataset.check_collection.restype = c_bool
 
-go_repair = lib.repair
 # Args: collection_name (string)
-go_repair.argtypes = [ctypes.c_char_p]
+libdataset.repair_collection.argtypes = [ c_char_p ]
 # Returns: true (1), false (0)
-go_repair.restype = ctypes.c_int
+libdataset.repair_collection.restype = c_bool
 
-go_attach = lib.attach
 # Args: collection_name (string), key (string), semver (string), filenames (string)
-go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-go_attach.restype = ctypes.c_int
+libdataset.attach.restype = c_bool
 
-go_attachments = lib.attachments
 # Args: collection_name (string), key (string)
-go_attachments.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_attachments.restype = ctypes.c_char_p
+libdataset.attachments.argtypes = [ c_char_p, c_char_p ]
+libdataset.attachments.restype = c_char_p
 
-go_detach = lib.detach
 # Args: collection_name (string), key (string), semver (string), basename (string)
-go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+libdataset.detach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-go_detach.restype = ctypes.c_int
+libdataset.detach.restype = c_bool
 
-go_prune = lib.prune
 # Args: collection_name (string), key (string), semver (string) basename (string)
-go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+libdataset.prune.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-go_prune.restype = ctypes.c_int
+libdataset.prune.restype = c_bool
 
-go_join = lib.join
 # Args: collection_name (string), key (string), value (JSON source), overwrite (1: true, 0: false)
-go_join.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+libdataset.join_objects.argtypes = [ c_char_p, c_char_p, c_char_p, c_bool ]
 # Returns: true (1), false (0)
-go_join.restype = ctypes.c_int
+libdataset.join_objects.restype = c_bool
 
-go_clone = lib.clone
 # Args: collection_name (string), new_collection_name (string), ????
-go_clone.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+libdataset.clone_collection.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-go_clone.restype = ctypes.c_int
+libdataset.clone_collection.restype = c_bool
 
-go_clone_sample = lib.clone_sample
-# Args: collection_name (string), new_sample_collection_name (string), new_rest_collection_name (string), sample size ????
-go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int ]
+# Args: collection_name (string), new_sample_collection_name (string), new_rest_collection_name (string), sample size (int)
+libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
 # Returns: true (1), false (0)
-go_clone_sample.restype = ctypes.c_int
+libdataset.clone_sample.restype = c_bool
 
-go_grid = lib.grid
-# Args: collection_name (string), keys??? (JSON source), dotpaths???? (JSON source)
-go_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), keys (JSON source), dotpaths (JSON source)
+libdataset.grid.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: value (JSON 2D array source)
-go_grid.restype = ctypes.c_char_p
+libdataset.grid.restype = c_char_p
 
-go_frame_create = lib.frame_create
 # Args: collection_name (string), frame_name (string), keys (JSON source), dotpaths (JSON source), labels (JSON source)
-go_frame_create.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+libdataset.frame_create.argtypes = [ c_char_p, c_char_p,  c_char_p, c_char_p, c_char_p ]
 # Returns: value (JSON object source)
-go_frame_create.restype = ctypes.c_int
+libdataset.frame_create.restype = c_bool
 
-go_frame_exists = lib.frame_exists
-# Args: collection_name (string), fame_name (string)
-go_frame_exists.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), frame_name (string)
+libdataset.frame_exists.argtypes = [ c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-go_frame_exists.restype = ctypes.c_int
+libdataset.frame_exists.restype = c_bool
 
-go_frame_keys = lib.frame_keys
-# Args: collection_name (string), fame_name (string)
-go_frame_keys.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), frame_name (string)
+libdataset.frame_keys.argtypes = [ c_char_p, c_char_p ]
 # Returns: value (JSON object source)
-go_frame_keys.restype = ctypes.c_char_p
+libdataset.frame_keys.restype = c_char_p
 
-go_frame_objects = lib.frame_objects
-# Args: collection_name (string), fame_name (string)
-go_frame_objects.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), frame_name (string)
+libdataset.frame.argtypes = [ c_char_p, c_char_p ]
 # Returns: value (JSON object source)
-go_frame_objects.restype = ctypes.c_char_p
+libdataset.frame.restype = c_char_p
 
+# Args: collection_name (string), frame_name (string)
+libdataset.frame_objects.argtypes = [ c_char_p, c_char_p ]
+# Returns: value (JSON object source)
+libdataset.frame_objects.restype = c_char_p
 
-go_frames = lib.frames
 # Args: collection_name)
-go_frames.argtypes = [ctypes.c_char_p]
+libdataset.frames.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_frames.restype = ctypes.c_char_p
+libdataset.frames.restype = c_char_p
 
-go_frame_refresh = lib.frame_refresh
-# Args: collection_name (string), frame_name (string), keys??? (JSON source)
-go_frame_refresh.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON object source)
-go_frame_refresh.restype = ctypes.c_int
-
-go_frame_reframe = lib.frame_reframe
-# Args: collection_name (string), frame_name (string), keys??? (JSON source)
-go_frame_reframe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON object source)
-go_frame_reframe.restype = ctypes.c_int
-
-go_frame_delete = lib.frame_delete
 # Args: collection_name (string), frame_name (string)
-go_frame_delete.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_frame_delete.restype = ctypes.c_int
+libdataset.frame_refresh.argtypes = [ c_char_p, c_char_p]
+# Returns: value (JSON object source)
+libdataset.frame_refresh.restype = c_bool
 
-go_frame_clear = lib.frame_clear
+# Args: collection_name (string), frame_name (string), keys (JSON source)
+libdataset.frame_reframe.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# Returns: value (JSON object source)
+libdataset.frame_reframe.restype = c_bool
+
 # Args: collection_name (string), frame_name (string)
-go_frame_clear.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+libdataset.delete_frame.argtypes = [ c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-go_frame_clear.restype = ctypes.c_int
+libdataset.delete_frame.restype = c_bool
 
-go_frame_grid = lib.frame_grid
-# Args: collection_name (string), frame_name (string), include header (int)
-go_frame_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+# Args: collection_name (string), frame_name (string)
+libdataset.frame_clear.argtypes = [ c_char_p, c_char_p ]
+# Returns: true (1), false (0)
+libdataset.frame_clear.restype = c_bool
+
+# Args: collection_name (string), frame_name (string), include header (bool)
+libdataset.frame_grid.argtypes = [ c_char_p, c_char_p, c_bool ]
 # Returns: frame names (JSON Array Source)
-go_frame_grid.restype = ctypes.c_char_p
+libdataset.frame_grid.restype = c_char_p
 
-go_make_objects = lib.make_objects
 # Args: collection_name (string), keys_as_json (string), object_as_json (string)
-go_make_objects.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 is has errors
-go_make_objects.restype = ctypes.c_int
+libdataset.make_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.make_objects.restype = c_bool
 
-go_update_objects = lib.update_objects
 # Args: collection_name (string), keys_as_json (string), objects_as_json (string)
-go_update_objects.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 is has errors
-go_update_objects.restype = ctypes.c_int
+libdataset.update_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.update_objects.restype = c_bool
 
-go_set_who = lib.set_who
-# Args: collection_name (string), names_as_json (string)
-go_set_who.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 has error(s)
-go_set_who.restype = ctypes.c_int
+# Args: collection_name (string), name (string)
+libdataset.set_who.argtypes = [ c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.set_who.restype = c_bool
 
-go_set_what = lib.set_what
 # Args: collection_name (string), what value (string)
-go_set_what.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 has error(s)
-go_set_what.restype = ctypes.c_int
+libdataset.set_what.argtypes = [ c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.set_what.restype = c_bool
 
-go_set_when = lib.set_when
 # Args: collection_name (string), when value (string)
-go_set_when.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 has error(s)
-go_set_when.restype = ctypes.c_int
+libdataset.set_when.argtypes = [ c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.set_when.restype = c_bool
 
-go_set_where = lib.set_where
 # Args: collection_name (string), where value (string)
-go_set_where.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 has error(s)
-go_set_where.restype = ctypes.c_int
+libdataset.set_where.argtypes = [ c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.set_where.restype = c_bool
 
-go_set_version = lib.set_version
 # Args: collection_name (string), version value (string)
-go_set_version.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 has error(s)
-go_set_version.restype = ctypes.c_int
+libdataset.set_version.argtypes = [ c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.set_version.restype = c_bool
 
-go_set_contact = lib.set_contact
 # Args: collection_name (string), contact value (string)
-go_set_contact.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
-# Returns: int 0 is no error, 1 has error(s)
-go_set_contact.restype = ctypes.c_int
+libdataset.set_contact.argtypes = [ c_char_p, c_char_p ]
+# Returns: True (1) success, False (0) if there are errors
+libdataset.set_contact.restype = c_bool
 
-go_get_who = lib.get_who
 # Args: collection_name (string)
-go_get_who.argtypes = [ ctypes.c_char_p ]
+libdataset.get_who.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_get_who.restype = ctypes.c_char_p
+libdataset.get_who.restype = c_char_p
 
-go_get_what = lib.get_what
 # Args: collection_name (string)
-go_get_what.argtypes = [ ctypes.c_char_p ]
+libdataset.get_what.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_get_what.restype = ctypes.c_char_p
+libdataset.get_what.restype = c_char_p
 
-go_get_where = lib.get_where
 # Args: collection_name (string)
-go_get_where.argtypes = [ ctypes.c_char_p ]
+libdataset.get_where.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_get_where.restype = ctypes.c_char_p
+libdataset.get_where.restype = c_char_p
 
-go_get_when = lib.get_when
 # Args: collection_name (string)
-go_get_when.argtypes = [ ctypes.c_char_p ]
+libdataset.get_when.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_get_when.restype = ctypes.c_char_p
+libdataset.get_when.restype = c_char_p
 
-go_get_version = lib.get_version
 # Args: collection_name (string)
-go_get_version.argtypes = [ ctypes.c_char_p ]
+libdataset.get_version.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_get_version.restype = ctypes.c_char_p
+libdataset.get_version.restype = c_char_p
 
-go_get_contact = lib.get_contact
 # Args: collection_name (string)
-go_get_contact.argtypes = [ ctypes.c_char_p ]
+libdataset.get_contact.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-go_get_contact.restype = ctypes.c_char_p
-
+libdataset.get_contact.restype = c_char_p

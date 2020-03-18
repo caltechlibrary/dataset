@@ -23,7 +23,6 @@ on the command line.
 
 ```
     -c, -collection           sets the collection to be used
-    -client-secret            (import-gsheet, export-gsheet) set the client secret path and filename for GSheet access
     -csv                      (find) format results as a CSV document, used with fields option
     -csv-skip-header          (find) don't output a header row, only values for csv output
     -e, -examples             display examples
@@ -39,7 +38,6 @@ on the command line.
     -json                     (find) format results as a JSON document
     -key-file                 operate on the record keys contained in file, one key per line
     -l, -license              display license
-    -layout                   set file layout for a new collection (i.e. "buckets" or "pairtree")
     -nl, -newline             if set to false suppress the trailing newline
     -o, -output               output file name
     -overwrite                overwrite will treat a create as update if the record exists
@@ -67,7 +65,6 @@ on the command line.
     delete-frame   remove a frame from a collection
     detach         Copy an attach out of an associated JSON record in a collection
     export-csv     Export a JSON records from a collection to a CSV file
-    export-gsheet  Export a collection's JSON records to a GSheet
     frame          define or retrieve a frame from a collection
     frame-objects  retrieve a frame's object list
     frame-grid     retrieve a frame's object list as a 2D JSON array
@@ -76,7 +73,6 @@ on the command line.
     grid           Creates a data grid from a list keys of dot paths
     haskey         Returns true if key is in collection, false otherwise
     import-csv     Import a CSV file's rows as JSON records into a collection
-    import-gsheet  Import a GSheet rows as JSON records into a collection
     init           Initialize a dataset collection
     join           Join a JSON record with a new JSON object in a collection
     keys           List the keys in a collection, support filtering and sorting
@@ -91,6 +87,6 @@ on the command line.
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [export-gsheet](export-gsheet.html), [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html),  [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frame-types](frame-types.html), [frames](frames.html), [grid](grid.html), [haskey](haskey.html), [import-csv](import-csv.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 
 dataset v0.0.45

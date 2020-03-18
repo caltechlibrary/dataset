@@ -32,5 +32,5 @@ is "publications.ds".
 	dataset export publications.ds my-report > output.csv
 ```
 
-Related topics: [frame](frame.html), [import-csv](import-csv.html), [import-gsheet](import-gsheet.html), [export-gsheet](export-gsheet.html)
+Related topics: [frame](frame.html), [import-csv](import-csv.html)
 

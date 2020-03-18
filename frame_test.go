@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -82,6 +82,10 @@ func TestFrame(t *testing.T) {
 	f, err := c.FrameCreate("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, verbose)
 	if err != nil {
 		t.Error(err)
+		t.FailNow()
+	}
+	if len(f.ObjectMap) == 0 {
+		t.Errorf("Expect > 0 objects in ObjectMap")
 		t.FailNow()
 	}
 	if len(f.ObjectMap) != len(tRecords) {
@@ -346,7 +350,7 @@ func TestFrameRefresh(t *testing.T) {
 		t.Errorf("expected %q, none was found", fName)
 		t.FailNow()
 	}
-	if err := c.FrameRefresh(fName, []string{"k0", "k1"}, verbose); err != nil {
+	if err := c.FrameRefresh(fName, verbose); err != nil {
 		t.Errorf("expected successful refresh %q, got %s", fName, err)
 		t.FailNow()
 	}
@@ -355,8 +359,8 @@ func TestFrameRefresh(t *testing.T) {
 		t.Errorf("expected object list, got error %s", err)
 		t.FailNow()
 	}
-	if len(ol2) != 2 {
-		t.Errorf("expected 2 objects, got %d -> %+v", len(ol2), ol2)
+	if len(ol2) != 1 {
+		t.Errorf("expected 1 object, got %d -> %+v", len(ol2), ol2)
 		t.FailNow()
 	}
 }

@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,7 +19,10 @@
 package dataset
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -115,7 +118,9 @@ func Collections() []string {
 func Close(cName string) error {
 	if IsOpen(cName) {
 		if c, exists := cMap.collections[cName]; exists == true {
-			return c.Close()
+			err := c.Close()
+			delete(cMap.collections, cName)
+			return err
 		}
 	}
 	return fmt.Errorf("%q not found", cName)
@@ -270,6 +275,12 @@ func DeleteJSON(cName string, key string) error {
 // FrameExists returns true if frame found in service collection,
 // otherwise false
 func FrameExists(cName string, fName string) bool {
+	// We may need to open a dataset collection to check for a frame.
+	if cMap == nil || IsOpen(cName) == false {
+		if err := Open(cName); err != nil {
+			return false
+		}
+	}
 	if IsOpen(cName) == true {
 		if c, found := cMap.collections[cName]; found {
 			return c.FrameExists(fName)
@@ -328,7 +339,7 @@ func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) 
 
 // FrameRefresh updates the frame object list's for the keys provided. Any new keys
 //  cause a new object to be appended to the end of the list.
-func FrameRefresh(cName string, fName string, keys []string, verbose bool) error {
+func FrameRefresh(cName string, fName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		if err := Open(cName); err != nil {
 			return err
@@ -338,7 +349,7 @@ func FrameRefresh(cName string, fName string, keys []string, verbose bool) error
 		c.collectionMutex = new(sync.Mutex)
 		c.objectMutex = new(sync.Mutex)
 		c.frameMutex = new(sync.Mutex)
-		return c.FrameRefresh(fName, keys, verbose)
+		return c.FrameRefresh(fName, verbose)
 	}
 	return fmt.Errorf("%q not available", cName)
 }
@@ -420,6 +431,24 @@ func Check(cName string, verbose bool) error {
 // NOTE: Collection objects are locked during repair!
 func Repair(cName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
+		// Check to see if we have a collection.json or pairtree.
+		//FIXME: this needs to also work with uri to S3 like object stores.
+		if _, err := os.Stat(path.Join(cName, "collections.json")); os.IsNotExist(err) {
+			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); err == nil && fInfo.IsDir() {
+				//FIXME: we need to create a empty collections.json file.
+				// Issue-99 in GitHub so we can then proceed and repair
+				// our collection.
+				c := new(Collection)
+				c.Name = cName
+				src, err := json.Marshal(c)
+				if err != nil {
+					return err
+				}
+				if err := ioutil.WriteFile(path.Join(cName, "collections.json"), src, 0664); err != nil {
+					return err
+				}
+			}
+		}
 		if err := Open(cName); err != nil {
 			return err
 		}
@@ -434,12 +463,12 @@ func Repair(cName string, verbose bool) error {
 }
 
 // SetWho sets the collection's Who metadata value for a collection
-func SetWho(cName string, names []string) error {
+func SetWho(cName string, names string) error {
 	c, err := GetCollection(cName)
 	if err != nil {
 		return err
 	}
-	c.Who = names
+	c.Who = strings.Split(names, "\n")
 	if err = c.saveMetadata(); err != nil {
 		return err
 	}

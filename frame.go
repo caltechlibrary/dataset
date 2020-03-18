@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2020, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -154,6 +154,10 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 	// convert into DataFrame struct
 	f := new(DataFrame)
 	err = json.Unmarshal(src, &f)
+	// Double check if we have a bad object_map?
+	if f.ObjectMap == nil {
+		f.ObjectMap = map[string]interface{}{}
+	}
 	// return frame and error
 	return f, err
 }
@@ -221,7 +225,7 @@ func (c *Collection) rmFrame(key string) error {
 // and type information needed for indexing and search.
 //
 // If you need to update a frame's objects use FrameRefresh(). If
-// you need to change a frames object ordering use FrameReframe().
+// you need to change a frame's objects or ordering use FrameReframe().
 //
 func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	// If frame exists return the existing frame
@@ -290,15 +294,16 @@ func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 	return c.getFrame(name)
 }
 
-// FrameRefresh updates of a DataFrames object list based on the keys provided. If a new key is
-// encountered the object is added to the end of the list. Other objects are not touched and
-// the order of the object list is not changed.
-func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) error {
+// FrameRefresh updates a DataFrames' object list based on the
+// existing keys in the frame. It doesn't change the order of objects.
+// NOTE: If an object is missing in the collection it gets pruned from
+// the object list.
+func (c *Collection) FrameRefresh(name string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
 	}
-	for i, key := range keys {
+	for i, key := range f.Keys {
 		obj, err := c.frameObject(key, f.DotPaths, f.Labels)
 		if verbose == true {
 			if err != nil {
@@ -320,9 +325,11 @@ func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) erro
 			}
 			f.ObjectMap[key] = obj
 		} else {
+			// Remove the stale object
 			delete(f.ObjectMap, key)
 			for i, fkey := range f.Keys {
 				if fkey == key {
+					// Remove the stale key
 					f.Keys = append(f.Keys[:i], f.Keys[i+1:]...)
 					break
 				}
@@ -332,15 +339,18 @@ func (c *Collection) FrameRefresh(name string, keys []string, verbose bool) erro
 	return c.setFrame(name, f)
 }
 
-// FrameReframe updates a DataFrames object list. The order is replaced by the keys provided.
-// Objects not in the key list are pruned and new objects are added.
+// FrameReframe replaces a frame's object list using the
+// keys provided.
 func (c *Collection) FrameReframe(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
 		return err
 	}
+	// GC the stale objects
+	f.Keys = []string{}
+	f.ObjectMap = make(map[string]interface{})
+
 	// New Keys that will replace the values in f.Keys which are stale.
-	nKeys := []string{}
 	for _, key := range keys {
 		obj, err := c.frameObject(key, f.DotPaths, f.Labels)
 		if verbose == true {
@@ -353,26 +363,10 @@ func (c *Collection) FrameReframe(name string, keys []string, verbose bool) erro
 		}
 		if obj != nil {
 			f.ObjectMap[key] = obj
-			nKeys = append(nKeys, key)
-		} else if _, ok := f.ObjectMap[key]; ok == true {
-			// remove our stale object
-			delete(f.ObjectMap, key)
-		}
-		// Figure out which objects to garbage collect
-		for i, staleKey := range f.Keys {
-			if key == staleKey {
-				f.Keys = append(f.Keys[:i], f.Keys[i+1:]...)
-			}
-		}
-	}
-	// Now GC the objects in the stale key list
-	for _, key := range f.Keys {
-		if _, ok := f.ObjectMap[key]; ok == true {
-			delete(f.ObjectMap, key)
+			f.Keys = append(f.Keys, key)
 		}
 	}
 	// Now update the Keys list with the new keys
-	f.Keys = nKeys
 	f.Updated = time.Now()
 	return c.setFrame(name, f)
 }
