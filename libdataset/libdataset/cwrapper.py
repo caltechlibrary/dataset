@@ -160,7 +160,7 @@ libdataset.sync_send_csv.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
 libdataset.sync_send_csv.restype = c_bool
 
 # Returns: true (1), false (0)
-libdataset.collection_status.restype = c_bool
+libdataset.collection_exits.restype = c_bool
 
 # Args: collection_name (string), key list (JSON array source)
 libdataset.list_objects.argtypes = [ c_char_p, c_char_p ]

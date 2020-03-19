@@ -238,7 +238,7 @@ def export_csv(collection_name, frame_name, csv_name):
     return error_message()
 
 def status(collection_name):
-    return libdataset.collection_status(collection_name.encode('utf8'))
+    return libdataset.collection_exists(collection_name.encode('utf8'))
 
 def list(collection_name, keys = []):
     src_keys = json.dumps(keys)

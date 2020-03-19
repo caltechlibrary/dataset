@@ -213,10 +213,10 @@ func close_all_collections() C.int {
 	return C.int(1)
 }
 
-// collection_status checks to see if a collection exists or not.
+// collection_exits checks to see if a collection exists or not.
 //
-//export collection_status
-func collection_status(cName *C.char) C.int {
+//export collection_exists
+func collection_exists(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
