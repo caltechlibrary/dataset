@@ -743,7 +743,7 @@ class TestRunner:
             error_count = t.error_count()
             if error_count > 0:
                 print(f"\t\t{fn_name} failed, {error_count} errors found")
-                return
+                #return
             else:
                 print(f"\t\t{fn_name} OK")
             self._error_count += error_count
