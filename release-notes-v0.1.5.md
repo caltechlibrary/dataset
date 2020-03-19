@@ -5,6 +5,10 @@ and easy of testing for Windows 10 reployments.
 Build Notes:
 
 + golang v1.14
++ OS used to compiled and test
+    + macOS Catalina
+    + Windows 10
+    + Ubuntu 18.04 LTS
 + Python 3.8 (from Miniconda 3)
 + zip has replaced tar in the releases of libdataset
 
