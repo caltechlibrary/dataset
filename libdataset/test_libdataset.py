@@ -6,6 +6,10 @@ import json
 import csv
 from libdataset import dataset 
 
+path_sep = "/"
+if sys.platform.startswith('win'):
+    path_sep = "\\"
+
 def cleanup(c_name):
     keys = dataset.keys(c_name)
     fnames = dataset.frames(c_name)
@@ -171,7 +175,7 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = "/".join([collection_name, "pairtree", "24", "88", (key+".json")])
+    expected_s = path_sep.join([collection_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
