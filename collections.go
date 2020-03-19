@@ -432,10 +432,9 @@ func Check(cName string, verbose bool) error {
 func Repair(cName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		// Check to see if we have a collection.json or pairtree.
-		//FIXME: this needs to also work with uri to S3 like object stores.
 		if _, err := os.Stat(path.Join(cName, "collections.json")); os.IsNotExist(err) {
 			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); err == nil && fInfo.IsDir() {
-				//FIXME: we need to create a empty collections.json file.
+				//NOTE: we need to create a empty collections.json file.
 				// Issue-99 in GitHub so we can then proceed and repair
 				// our collection.
 				c := new(Collection)

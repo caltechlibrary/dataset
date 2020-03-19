@@ -11,9 +11,7 @@ for these types of operations.
 First since dataset is a folder with collections.json, pairtree and frames 
 we can "clone" an the complete collection by simply copying the folder 
 and its contents.  This can be done with standard operating system
-tools (e.g. File managers, command line) or in the case of cloud storage 
-with the tools provided by the vendor for managing content in the cloud. 
-If you're working with a whole collection this is the best approach.
+tools (e.g. File managers, command line). 
 
 ## Taking a sample
 

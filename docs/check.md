@@ -11,10 +11,7 @@
 
 Check reviews one or more collections and reports if any problems 
 are identified based on the `collection.json` file found in the 
-folder holding the collection's pairtree. Check only works on local 
-disc based collections. If you are storing your collection in
-the cloud (e.g. S3 or Google Cloud Storage) then download a copy 
-before running check.
+folder holding the collection's pairtree. 
 
 ## Usage
 

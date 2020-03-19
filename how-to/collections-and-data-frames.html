@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>COLLECTIONS, GRIDS AND FRAMES</h1>
+
+<p><em>dataset</em> stores JSON objects and can store also data frames similar
+to that used in Python, R and Julia.  This document outlines the ideas
+behings <em>dataset</em>&rsquo;s implementation of data frames.</p>
+
+<h2>COLLECTIONS</h2>
+
+<p>Collections are at the core of the <em>dataset</em> tool. A collection is a
+pairtree directory structure storing JSON objects in plaintext with
+optional attachments. The root folder for the collection contains a
+<em>collection.json</em> file with the metadata associating a name to the
+pairtree path where the json object is stored. One of the guiding
+ideas behind dataset was to keep everything in plain text (i.e. UTF-8)
+whenever reasonable.  The dataset project provides Go package for
+working with dataset collections, a python package (based on a C-shared
+library included in the Go package) and a command line tool.</p>
+
+<p>Dataset collections are typically stored on your local disc but may be
+stored easily in Amazon&rsquo;s S3 (or compatible platform) or Google&rsquo;s cloud
+storage using operating systems integratations (e.g. <a href="https://en.wikipedia.org/wiki/Filesystem_in_Userspace">fuse file system tools</a>).
+Dataset can also import and export CSV files.</p>
+
+<p>Dataset isn&rsquo;t a database (there are plenty of JSON oriented databases out
+there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL and
+Postgresql). <em>dataset</em>&rsquo;s focus is on providing a mechanism to manage
+JSON objects, group them and to provide alternative
+data shapes for the viewing the collection (e.g. data frames and grids).</p>
+
+<h2>DATA FRAMES</h2>
+
+<p>Working with subsets of data in a collection is useful, particularly
+ordered subsets. Implementing this started me thinking about the
+similarity to data frames in Python, Julia and Octave. A <em>frame</em> is an
+ordered list of objects. It&rsquo;s like a grid except that rather than have
+columns and row you have a list of objects and attribute names mapped to
+values.  Frames can be retrieved as a list of objects or a <em>grid</em>
+(2D array).  Frames contain a additional metadata to help them persist.
+Frames include enough metadata to effeciently refresh objects in the list
+or even replace all objects in the list.  If you want to get back a &ldquo;Grid&rdquo;
+of a frame you can optionally include a header row as part of the 2D array
+returned.</p>
+
+<p><em>dataset</em> stores frames with the collection so they are is available for
+later processing. The objects in a frame reflect the objects as they
+existed when the frame was generated.</p>
+
+<p>Frames become handy when moving data from JSON documents (tree like)
+to other formats like spreadsheets (table like). Date frames provide
+a one to one map between a 2D representation and a list of objects
+containing key/value pairs. Frames will become the way we define
+syncronization relationships as well as potentionally the way we
+define indexing should dataset re-aquire a search ability.</p>
+
+<p>The map to frame names is stored in our collection&rsquo;s collection.json
+Each frame itself is stored in a subdirectory of our collection. If you
+copy/clone a collection the frames can travel with it.</p>
+
+<h2>FRAME OPERATIONS</h2>
+
+<ul>
+<li>frame-create (define a frame)</li>
+<li>frame (read a frame back)</li>
+<li>frames (return a list of frame names)</li>
+<li>frame-reframe (replace all frame objects given a list of keys)</li>
+<li>frame-refresh (update objects in a frame pruning objects no longer in the collection)</li>
+<li>frame-exists (check to see if a frame exists in the collection)</li>
+<li>frame-delete</li>
+</ul>
+
+<h3>Create a frame</h3>
+
+<p>Example creating a frame named &ldquo;dois-and-titles&rdquo;</p>
+
+<pre><code class="language-shell">    dataset keys Pubs.ds &gt;pubs.keys
+    dataset frame-create -i pubs.keys Pubs.ds dois-and-titles \
+        &quot;.doi=DOI&quot; \
+        &quot;.title=Title&quot;
+</code></pre>
+
+<p>Or in python</p>
+
+<pre><code class="language-python">    keys = dataset.keys('Pubs.ds')
+    frame = dataset.frame_crate('Pubs.ds', 'dois-and-titles', keys, {
+        '.doi': 'DOI', 
+        '.title': 'Title'
+        })
+</code></pre>
+
+<h3>Retrieve an existing frame</h3>
+
+<p>Example of getting the contents of an existing frame with
+all the metadata.</p>
+
+<pre><code class="language-shell">    dataset frame Pubs.ds dois-and-titles
+</code></pre>
+
+<p>An example of getting the frame&rsquo;s object list only.</p>
+
+<pre><code class="language-shell">    dataset frame-objects Pubs.ds dois-and-titles
+</code></pre>
+
+<p>Or in python getting the full frame with metadata</p>
+
+<pre><code class="language-python">    (frame, err) = dataset.frame('Pubs.ds', 'dois-and-titles')
+    if err != '':
+        print(f'Something went wront {err}')
+</code></pre>
+
+<p>Or only the object list (note: we&rsquo;re going to check for the frame&rsquo;s
+existance first).</p>
+
+<pre><code class="language-python">    if dataset.frame_exists('Pub.ds', 'dois-and-titles'):
+        object_list = dataset.frame_objects('Pubs.ds', 'dois-and-titles')
+</code></pre>
+
+<h3>Regenerating a frame</h3>
+
+<p>Regenerating &ldquo;dois-and-titles&rdquo;.</p>
+
+<pre><code class="language-shell">    dataset reframe Pubs.ds dois-and-titles
+</code></pre>
+
+<p>Or in python</p>
+
+<pre><code class="language-python">    keys = dataset.keys('Pubs.ds')
+    keys.sort()
+    frame = dataset.frame_reframe('Pubs.ds', 'dois-and-titles', keys)
+</code></pre>
+
+<h3>Updating keys associated with the frame</h3>
+
+<pre><code class="language-shell">    dataset Pubs.ds keys &gt;updated.keys
+    dataset frame-refresh -i updated.keys Pubs.ds reframe titles-and-dios
+</code></pre>
+
+<p>In python</p>
+
+<pre><code class="language-python">    frame = dataset.frame-refresh('Pubs.ds', 'dois-and-titles', updated_keys)
+</code></pre>
+
+<h3>Updating labels in a frame</h3>
+
+<p>Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns in addition the required <code>_Key</code> label. The <code>_Key</code> column is implied and with be automatically inserted into the label list. Additionally using <code>frame-labels</code> will cause the object list stored in the frame to be updated.</p>
+
+<pre><code class="language-shell">    dataset frame-labels Pubs.ds dois-and-titles '[&quot;Column 1&quot;, &quot;Column 2&quot;]'
+</code></pre>
+
+<p>In python</p>
+
+<pre><code class="language-python">    err = dataset.frame_labels('Pubs.ds', 'dois-and-titles', [&quot;Column 1&quot;, &quot;Column 2&quot;])
+</code></pre>
+
+<h3>Removing a frame</h3>
+
+<pre><code class="language-shell">    dataset frame-delete Pubs.ds titles-and-dios
+</code></pre>
+
+<p>Or in python</p>
+
+<pre><code class="language-python">    err = dataset.frame_delete('Pubs.ds', 'dois-and-titles')
+</code></pre>
+
+<h2>Listing available frames</h2>
+
+<pre><code class="language-shell">    dataset frames Pubs.ds
+</code></pre>
+
+<p>Or in python</p>
+
+<pre><code class="language-python">    frame_names = dataset.frames('Pubs.ds')
+</code></pre>
+
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2020 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

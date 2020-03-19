@@ -8,13 +8,12 @@ with _dataset_ or explore a specific topic.
 
 - [Getting started with dataset](getting-started-with-dataset.html)
 - [Working with CSV](working-with-csv.html)
-- [Working with Cloud Storage](working-with-cloud-storage.html)
 
 
 ## Additional topics
 
 - [Cloning and samples](cloning-and-samples.html)
-- [Collections grids and frames](collections-grids-and-frames.html)
+- [Collections and data frames](collections-data-frames.html)
 - [File system layout](file-system-layout.html)
 - [How attachments work](how-attachments-work.html)
 - [Filtering keys](filtering-keys.html)

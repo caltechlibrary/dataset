@@ -11,13 +11,12 @@
 <nav>
 <ul>
 <li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
 <li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
+<li><a href="license.html">LICENSE</a></li>
+<li><a href="install.html">INSTALL</a></li>
+<li><a href="docs/">Documentation</a></li>
+<li><a href="how-to/">Tutorials</a></li>
+<li><a href="docs/topics.html">Topics</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
 <li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
@@ -25,12 +24,29 @@
 </nav>
 
 <section>
-<p><em>dataset</em> is a command line tool demonstrating the dataset package
-for managing JSON documents stored on local disc.
-A dataset is organized around collections, collections contain
-JSON documents and their attachments.  In addition to the
-JSON documents dataset maintains metadata for aggregating
-JSON attribute content in data frames.</p>
+<p>This release focuses on refine function names, simplification
+and easy of testing for Windows 10 reployments.</p>
+
+<p>Build Notes:</p>
+
+<ul>
+<li>golang v1.14</li>
+<li>Python 3.8 (from Miniconda 3)</li>
+<li>zip has replaced tar in the releases of libdataset</li>
+</ul>
+
+<p>Renamed functions:</p>
+
+<ul>
+<li>collection_status() is now collection_exists()</li>
+</ul>
+
+<p>Depreciated functions and features:</p>
+
+<ul>
+<li>S3, Google Cloud Storage support dropped.</li>
+<li>grid(), if you need this create a frame first and use frame_grid().</li>
+</ul>
 
 </section>
 

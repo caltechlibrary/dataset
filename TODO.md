@@ -3,41 +3,17 @@
 
 ## Bugs
 
-## Next (prep for v0.1.0)
+## Next (prep for v0.2.x)
 
-+ [ ] Refactor cli to match the exported functions from collections.go, add necessary tests
-    + [ ] Add frame-exists
-    + [ ] Add frame-create as distinct from frame (retrieving an existing frame)
-    + [ ] Add frame-refresh
-    + [ ] Rename refresh to frame-refresh
-    + [x] Add frame-objects and frame-grid verbs to dataset cli
-    + [ ] check SetWho, GetWho
-    + [ ] check SetWhat, GetWhat
-    + [ ] check SetWhen, GetWhen
-    + [ ] check SetWhere, GetWhere
-    + [ ] check SetContact, GetContact
-    + [ ] check SetVersion, GetVersion
-+ [ ] Add a service object to support building services with libdataset
-+ [ ] Changing metadata for Namaste and Codemeta should re-render both
-+ [x] Remove labels funcs
-+ [x] Drop ._Key -> _Key requirement in frames
 + [ ] Confirm all documentation is current before v0.1.0 release
-+ [ ] Confirm consensus on the release version v0.1.0 
-+ [x] Drop Google Sheets support
 
 
 ## Someday, Maybe
 
++ [ ] Changing metadata for Namaste and Codemeta should re-render both
++ [ ] Add a service object to support building services with libdataset
 + [ ] Missing tests for AttachStream()
-+ [x] Need semver.IncPatch(), semver.IncMinor(), semver.IncMajor() functions so we can auto increment version numbers easily
 + [ ] Auto-version attachments by patch, minor or major release per settings in collection.json
-+ [ ] Switch go go-cloud over our storage.go module
-    + [ ] Make check and repair work in cloud storage
-        + [ ] storage package should use go-cloud instead of individual SDKs
-        + [ ] need a working file walker for S3 and GS storage ...
-        + [ ] confirm check for s3:// collections
-        + [ ] confirm repair for s3:// collections
-        + [ ] confirm migrate for s3:// collections
 + [ ] datasetd - a deamon for an http/https service for accessing dataset collections with support for multi-user public or restricted collections
 + [ ] Add Experimental Julia _dataset_ module for script collection management in Julia 
 + [ ] Add Experimental R _dataset_ module for scripting collection management in R

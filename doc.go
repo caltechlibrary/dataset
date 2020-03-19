@@ -1,10 +1,9 @@
 /*
 Package dataset provides a common approach for storing JSON object documents
-on local disc, on S3 and Google Cloud Storage. It is intended as a
-single user system for intermediate processing of JSON content for analysis
-or batch processing.  It is not a database management system (if you need
-a JSON database system I would suggest looking at Couchdb, Mongo and Redis
-as a starting point).
+on local disc. It is intended as a single user system for intermediate
+processing of JSON content for analysis or batch processing.  It is not a
+database management system (if you need a JSON database system I would
+suggest looking at Couchdb, Mongo and Redis as a starting point).
 
 The approach dataset takes is to store JSON documents in a pairtree structure under the collection folder. The keys are the JSON document names.
 JSON documents (and possibly their attachments) are then stored based on

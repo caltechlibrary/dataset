@@ -391,58 +391,6 @@ def test_attachments(t, collection_name):
     if len(l) != 0:
         t.error("Failed, expected zero files after prune for", collection_name, key, "got", l)
 
-    
-
-
-def test_s3(t):
-    collection_name = os.getenv("DATASET", "")
-    if collection_name == "":
-        t.verbose_on()
-        t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
-        return
-    if collection_name[0:5] != "s3://":
-        t.verbose_on()
-        t.print("Skipping test_s3(), missing environment S3 DATASET value to test with")
-        return
-    
-    if dataset.status(collection_name) == False:
-        t.print("Missing", collection_name, "attempting to initialize", collection_name)
-        err = dataset.init(collection_name)
-        if err != '':
-            t.error("Aborting, couldn't initialize", collection_name, ', ', err)
-            return
-    else:
-        t.print("Using collection initialized as", collection_name)
-
-    collection_name = os.getenv("DATASET")
-    record = { "one": 1 }
-    key = "s3t1"
-    err = dataset.create(collection_name, key, record)
-    if err != '':
-        t.error("Failed to create record", collection_name, key, record, ', ', err)
-    record2, err = dataset.read(collection_name, key)
-    if err != "":
-        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
-    if record2.get("one") != 1:
-        t.error("Failed, read", collection_name, key, record2)
-    record["two"] = 2
-    err = dataset.update(collection_name, key, record)
-    if err != '':
-        t.error("Failed to update record", collection_name, key, record, ', ', err)
-    record2, err = dataset.read(collection_name, key)
-    if err != "":
-        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
-    if record2.get("one") != 1:
-        t.error("Failed, 2nd read", collection_name, key, record2)
-    if record2.get("two") != 2:
-        t.error("Failed, 2nd read", collection_name, key, record2)
-    err = dataset.delete(collection_name, key)
-    if err != '':
-        t.error("Failed to delete record", collection_name, key, record, ', ', err)
-    ok = dataset.has_key(collection_name, key)
-    if ok == True:
-        t.error("Failed, delete should have removed key", collection_name, key)
-
 
 def test_join(t, collection_name):
     key = "test_join1"
@@ -553,29 +501,6 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
     err = dataset.clone_sample(c_name, training_name, test_name, sample_size)
     if err != '':
         t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
-
-def test_grid(t, c_name):
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
-    err = dataset.init(c_name)
-    if err != '':
-        t.error(err)
-        return
-    data = [
-        { "id":    "A", "one":   "one", "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
-        { "id":    "B", "two":   2000, "three": 3000.1 },
-        { "id": "C" },
-        { "id":    "D", "one":   "ONE", "two":   20, "three": 334.1, "four":  [] }
-    ]
-    keys = []
-    dot_paths = ["._Key", ".one", ".two", ".three", ".four"]
-    for row in data:
-        key = row['id']
-        keys.append(key)
-        err = dataset.create(c_name, key, row)
-    (g, err) = dataset.grid(c_name, keys, dot_paths)
-    if err != '':
-        t.error(err)
 
 def test_frame1(t, c_name):
     cleanup(c_name)
@@ -850,11 +775,9 @@ if __name__ == "__main__":
     test_runner.add(test_join, [ c_name ])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
-    test_runner.add(test_grid, ["test_grid.ds"])
     test_runner.add(test_frame1, ["test_frame1.ds"])
     test_runner.add(test_frame2, ["test_frame2.ds"])
     test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
-    #test_runner.add(test_s3, [])
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.run()
 

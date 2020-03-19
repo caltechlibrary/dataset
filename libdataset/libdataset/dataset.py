@@ -21,39 +21,45 @@
 import json
 import sys
 import os
-from ctypes import *
-from .cwrapper import libdataset
+from ctypes import c_char_p, c_int, c_bool
+from .libdataset import libdataset
 
 #
 # These are our Python idiomatic functions
 # calling the C type wrapped functions in libdataset.py
 #
+
+# error_clear() clears the errors previously set.
 def error_clear():
     libdataset.error_clear()
 
+# error_message() returns the current error message(s)
+# accumulated.
 def error_message():
     value = libdataset.error_message()
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode()
 
-
+# use_strict_dotpath() will trigger if False will prefix a root period
+# for dot paths and labels when specified in function calls.
 def use_strict_dotpath(on_off = True):
     return libdataset.use_strict_dotpath(True)
 
-# is_verbose returns true is verbose is enabled, false otherwise
+# is_verbose() returns true is verbose is enabled, false otherwise
 def is_verbose():
     return libdataset.is_verbose()
 
-# verbose_on turns verboseness off
+# verbose_on() turns verboseness off
 def verbose_on():
     return libdataset.verbose_on()
 
-# verbose_off turns verboseness on
+# verbose_off() turns verboseness on
 def verbose_off():
     return libdataset.verbose_off()
 
-# Returns version of dataset shared library
+# dataset_version() returns version of dataset 
+# shared library semver.
 def dataset_version():
     value = libdataset.dataset_version()
     if not isinstance(value, bytes):
@@ -326,16 +332,6 @@ def clone_sample(collection_name, training_name, test_name = "", sample_size = 0
     if ok == 1:
         return ''
     return error_message()
-
-def grid(collection_name, keys, dot_paths):
-    src_keys = json.dumps(keys)
-    src_dot_paths = json.dumps(dot_paths)
-    value = libdataset.grid(c_char_p(collection_name.encode('utf-8')), c_char_p(src_keys.encode('utf-8')), c_char_p(src_dot_paths.encode('utf-8')))
-    if not isinstance(value, bytes):
-        value = value.encode('utf8')
-    if value == None or value.strip() == "":
-        return [], error_message()
-    return json.loads(value), ''
 
 def frame_create(collection_name, frame_name, keys, dot_paths, labels):
     src_keys = json.dumps(keys)

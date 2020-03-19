@@ -1,11 +1,6 @@
 
 # Attachment ideas
 
-S3/Google Cloud Storage brings additional overhead for attachments it works 
-like a k/v store where the operations are on files not within them.
-
-## Naive implementation steps for S3/Google Cloud Storage
-
 ### Attach (no other attachments)
 
 1. calc basename of file to be attached as well as the 

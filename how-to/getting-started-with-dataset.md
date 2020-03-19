@@ -334,59 +334,23 @@ a variable called keys.
 ```
 
 
-## grids and frames
+## Data frames and grids
 
 JSON objects are tree like. This structure can be inconvienent
 for some types of analysis like tabulation, comparing values or
-generating summarizing reports. A spreadsheet, table or 2D grid 
-like structure is often a more familair format for these types
-of tasks. _grid_ is dataset's verb for taking a list 
-of keys, a list of dot paths to the JSON objects attributes and 
-returning a 2D grid of the results. The 2D grid is easy to
-iterate over.  A _grid_ doesn't enforce any specifics on the 
-columns and rows. It only contains the values you specified in
-the list of keys and dot paths.
+generating summarizing reports. Many languages support a concept
+of "data frame". Meaning a list of objects, possibly with associated
+metadata about how the list was created. This becomes a convient way
+to process data. Frames can easily be transformed. Sometimes a 
+spreadsheet, table or 2D grid like structure is often a more familair 
+format for these types of tasks. _frame-grid_ is dataset's verb for 
+taking a data frame and returning a 2D list of grid results.
+The 2D grid is easy to iterate over.  A _frame-grid_ doesn't enforce any 
+specifics on the columns and rows. It only contains the values you 
+specified in the list of keys and dot paths when you defined the
+data frame.
 
-
-### grid
-
-Let's create a _grid_ from our *friends.ds* collection.
-
-
-```bash
-    dataset keys friends.ds keys >fiends.keys
-    dataset grid -i=friends.keys friends.ds .name .email .catch_phrase
-```
-
-As with _read_ the _grid_ verb can take the “-p” option to make the 
-JSON grid a little easier to read.
-
-
-```bash
-    dataset grid -p -i=friends.keys friends.ds .name .email .catch_phrase
-```
-
-Notice we make a list of keys first and save those to a file. Then we use 
-that list of keys and create our grid.  The grid output is in JSON 
-notation. In Python making a grid follows a similar patter, generate a 
-list of keys, use those keys and a list of dot paths to define the grid.
-
-
-```python
-    keys = dataset.keys("friends.ds")
-    (g, err) = dataset.grid("friends.ds", keys, 
-               [".name", ".email", "catch_phrase"])
-    if err != "":
-        stop(err)
-    print(json.dumps(g, indent = 4))
-```
-
-In python _grid_ like _create_ and _update_ returns a tuple that 
-has your result and an error status. Finally we print our result using 
-the JSON module's _dumps_.
-
-
-### frame
+### the frame
 
 dataset also comes with a _frame_ verb.  A _frame_ is an order list of
 objects with some additional matadata. It is similar to the "data frames" 
@@ -405,10 +369,6 @@ collection updates.
 
 To define a frame we only need one additional piece of information besides 
 what we used for a grid. We need a name for the frame. 
-
-Working from our previous _grid_ example, let's call this frame 
-"name-and-email".
-
 
 ```bash
     dataset frame-create -i=friends.keys friends.ds \
@@ -481,7 +441,7 @@ Let's add back the Jack record we deleted a few sections ago and
     dataset frame -p friends.ds "name-and-email"
 ```
 
-Like with _grid_ and _read_ before it the “-p” option will cause the 
+NOTE: the _read_ before it the “-p” option will cause the 
 JSON representation of the frame to be pretty printed.
 
 Let's try the same thing in Python
@@ -587,7 +547,5 @@ the list
 Continue exploring dataset with
 
 - [Working with CSV](working-with-csv.html)
-- [Working with GSheets](working-with-gsheets.html)
-- [Working with Cloud Storage](working-with-cloud-storage.html)
 
 
