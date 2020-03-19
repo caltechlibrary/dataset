@@ -25,7 +25,7 @@ cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
 	git add cmd/dataset/assets.go
 
-bin/dataset$(EXT): dataset.go collections.go attachments.go semver.go grid.go frame.go repair.go sort.go cmd/dataset/dataset.go cmd/dataset/assets.go
+bin/dataset$(EXT): dataset.go collections.go attachments.go semver.go frame.go repair.go sort.go cmd/dataset/dataset.go cmd/dataset/assets.go
 	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
 
 
