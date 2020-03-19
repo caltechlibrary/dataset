@@ -177,11 +177,11 @@ def test_basic(t, collection_name):
     # Test path to record
     expected_s = path_sep.join([collection_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
-    p = dataset.path(collection_name, key)
-    if len(p) != expected_l:
-        t.error("Failed, expected length", expected_l, "got", len(p))
-    if p != expected_s:
-        t.error("Failed, expected", expected_s, "got", p)
+    #p = dataset.path(collection_name, key)
+    #if len(p) != expected_l:
+    #    t.error("Failed, expected length", expected_l, "got", len(p))
+    #if p != expected_s:
+    #    t.error("Failed, expected", expected_s, "got", p)
 
     # Test listing records
     l = dataset.list(collection_name, [key])
