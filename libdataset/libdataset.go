@@ -408,6 +408,7 @@ func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 }
 
 // sync_send_csv - synchronize a frame sending data to a CSV file
+// returns 1 (True) on success, 0 (False) otherwise.
 //
 //export sync_send_csv
 func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOverwrite C.int) C.int {
@@ -424,11 +425,11 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	src, err = ioutil.ReadFile(csvFilename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if len(src) == 0 {
 		fmt.Fprintf(os.Stderr, "No data in csv file %s\n", csvFilename)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	table := [][]interface{}{}
@@ -442,7 +443,7 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 	}
 
@@ -450,7 +451,7 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	c, err = dataset.GetCollection(collectionName)
 	if err != nil {
 		errorDispatch(err, "%q not found", collectionName)
-		return C.int(1)
+		return C.int(0)
 
 	}
 
@@ -458,31 +459,32 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	// Save the resulting table
 	if len(src) > 0 {
 		if err = os.Rename(csvFilename, csvFilename+".bak"); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 		out, err := os.Create(csvFilename)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 		w := csv.NewWriter(out)
 		w.WriteAll(tbl.TableInterfaceToString(table))
 		if err = w.Error(); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 	}
-	return C.int(0)
+	return C.int(1)
 }
 
 // sync_recieve_csv - synchronize a frame recieving data from a CSV file
+// returns 1 (True) on success, 0 (False) otherwise.
 //
 //export sync_recieve_csv
 func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOverwrite C.int) C.int {
@@ -498,7 +500,7 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 	src, err = ioutil.ReadFile(csvFilename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	table := [][]interface{}{}
@@ -509,7 +511,7 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 		csvTable, err := r.ReadAll()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 		table = tbl.TableStringToInterface(csvTable)
 	}
@@ -518,17 +520,16 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
 		errorDispatch(err, "%q not found", collectionName)
-		return C.int(1)
-
+		return C.int(0)
 	}
 
 	// Merge table contents into Collection and Frame
 	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
-	return C.int(0)
+	return C.int(1)
 }
 
 /*
@@ -544,7 +545,7 @@ func key_exists(cName, cKey *C.char) C.int {
 
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if dataset.KeyExists(collectionName, key) {
 		return C.int(1)
@@ -1285,7 +1286,7 @@ func frame_refresh(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	if err := dataset.FrameRefresh(collectionName, frameName, verbose); err != nil {
@@ -1306,7 +1307,7 @@ func frame_reframe(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	keys := []string{}
 	if err := json.Unmarshal([]byte(keysSrc), &keys); err != nil {
@@ -1330,7 +1331,7 @@ func frame_clear(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if err := dataset.FrameClear(collectionName, frameName); err != nil {
 		errorDispatch(err, "%s", err)
@@ -1348,7 +1349,7 @@ func frame_delete(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if err := dataset.FrameClear(collectionName, frameName); err != nil {
 		errorDispatch(err, "%s", err)
@@ -1392,7 +1393,7 @@ func delete_frame(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	err := dataset.FrameDelete(collectionName, frameName)
