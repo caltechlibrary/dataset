@@ -24,8 +24,10 @@
 </nav>
 
 <section>
-<p>This release focuses on refine function names, simplification
-and easy of testing for Windows 10 reployments.</p>
+<p>This release focuses on minor bug fixes in libdataset.
+All functions which returned an error string only now return
+True for success and False otherwise.  The error string
+can be retreived with <code>dataset.error_message()</code>.</p>
 
 <p>Build Notes:</p>
 
@@ -47,19 +49,6 @@ and easy of testing for Windows 10 reployments.</p>
 </ul></li>
 <li>Python 3.8 (from Miniconda 3)</li>
 <li>zip has replaced tar in the releases of libdataset</li>
-</ul>
-
-<p>Renamed functions:</p>
-
-<ul>
-<li>collection_status() is now collection_exists()</li>
-</ul>
-
-<p>Depreciated functions and features:</p>
-
-<ul>
-<li>S3, Google Cloud Storage support dropped.</li>
-<li>grid(), if you need this create a frame first and use frame_grid().</li>
 </ul>
 
 <p>Some tests fail on Windows 10 for libdataset. These will be addressed in future releases.</p>
