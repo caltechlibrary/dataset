@@ -380,7 +380,7 @@ def frame_refresh(collection_name, frame_name):
     return libdataset.frame_refresh(c_char_p(collection_name.encode('utf-8')))
 
 def frame_clear(collection_name, frame_name):
-    return libdataset.frame_clear(c_char_p(collection_name.encode('utf-8')))
+    return libdataset.frame_clear(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
 
 def delete_frame(collection_name, frame_name):
     return libdataset.delete_frame(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))

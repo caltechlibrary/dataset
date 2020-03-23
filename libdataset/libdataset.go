@@ -1351,7 +1351,7 @@ func frame_delete(cName *C.char, cFName *C.char) C.int {
 		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
-	if err := dataset.FrameClear(collectionName, frameName); err != nil {
+	if err := dataset.FrameDelete(collectionName, frameName); err != nil {
 		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}

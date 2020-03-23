@@ -746,9 +746,17 @@ def test_issue12(t, c_name):
         err = dataset.error_message()
         t.error(f'expected objects in {f_name}, got zero, {err}')
         return
-    #if not dataset.delete_frame(c_name, f_name):
-    #    err = dataset.error_message()
-    #    t.error(f'expected to delete {f_name} in {c_name}, {err}')
+    # Note test frame_clear should remove keys/objects but leave frame ...
+    if not dataset.frame_clear(c_name, f_name):
+        err = dataset.error_message()
+        t.error(f'expected to clear frame {f_name} in {c_name}, {err}')
+    else:
+        f_objects = dataset.frame_objects(c_name, f_name)
+        if len(f_objects) != 0:
+            t.error(f'frame_clear({c_name}, {f_name}) should have removed objects!')
+    if not dataset.delete_frame(c_name, f_name):
+        err = dataset.error_message()
+        t.error(f'expected to delete {f_name} in {c_name}, {err}')
 
 
 #
@@ -830,19 +838,19 @@ if __name__ == "__main__":
     print(f'Starting {app_name}')
     test_runner = TestRunner(os.path.basename(__file__), True)
     c_name = 'test_collection.ds'
+    test_runner.add(test_setup, [ c_name, 'test_setup' ])
+    test_runner.add(test_libdataset, [ c_name ])
+    test_runner.add(test_basic, [ c_name ])
+    test_runner.add(test_keys, [ c_name ])
+    test_runner.add(test_issue32, [ c_name ])
+    test_runner.add(test_attachments, [ c_name ])
+    test_runner.add(test_join, [ c_name ])
+    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
+    test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
+    test_runner.add(test_frame1, ["test_frame1.ds"])
+    test_runner.add(test_frame2, ["test_frame2.ds"])
+    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.add(test_issue12, [ 'test_issue12.ds' ])
-    #test_runner.add(test_setup, [ c_name, 'test_setup' ])
-    #test_runner.add(test_libdataset, [ c_name ])
-    #test_runner.add(test_basic, [ c_name ])
-    #test_runner.add(test_keys, [ c_name ])
-    #test_runner.add(test_issue32, [ c_name ])
-    #test_runner.add(test_attachments, [ c_name ])
-    #test_runner.add(test_join, [ c_name ])
-    #test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-    #test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
-    #test_runner.add(test_frame1, ["test_frame1.ds"])
-    #test_runner.add(test_frame2, ["test_frame2.ds"])
-    #test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
-    #test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.run()
 
