@@ -696,6 +696,62 @@ def test_sync_csv(t, c_name):
         return
 
 #
+# test_issue12() https://github.com/caltechlibrary/py_dataset/issues/12
+# delete_frame() returns True but frame metadata still in memory.
+#
+def test_issue12(t, c_name):
+    src = '''[
+{"id": "1", "c1": 1, "c2": 2, "c3": 3 },
+{"id": "2", "c1": 2, "c2": 2, "c3": 3 },
+{"id": "3", "c1": 3, "c2": 3, "c3": 3 },
+{"id": "4", "c1": 1, "c2": 1, "c3": 1 },
+{"id": "5", "c1": 6, "c2": 6, "c3": 6 }
+]'''
+    if dataset.status(c_name) == False:
+        if not dataset.init(c_name):
+            err = dataset.error_message()
+            t.error(f'failed to create {c_name} -> {err}')
+            return 
+    objects = json.loads(src)
+    for obj in objects:
+        key = obj['id']
+        if dataset.has_key(c_name, key):
+            dataset.update(c_name, key, obj)
+        else:            
+            dataset.create(c_name, key, obj)
+    f_names = dataset.frames(c_name)
+    for f_name in f_names:
+        if not dataset.delete_frame(c_name, f_name):
+            err = dataset.error_message()
+            t.error(f'Failed to delete {f_name} from {c_name} -> "{err}"')
+    f_name = 'issue12'
+    dot_paths = [ ".c1", "c3" ]
+    labels = [ ".col1", "col3" ]
+    keys = dataset.keys(c_name)
+    if not dataset.frame_create(c_name, f_name, keys, dot_paths, labels):
+        err = dataset.error_message()
+        t.error(f'failed to create {f_name} from {c_name} -> "{err}"')
+        return
+    if not dataset.has_frame(c_name, f_name):
+        err = dataset.error_message()
+        t.error(f'expected frame {f_name} to exists, {err}')
+        return
+    f_keys = dataset.frame_keys(c_name, f_name)
+    if len(f_keys) == 0:
+        err = dataset.error_message()
+        t.error(f'expected keys in {f_name}, got zero, {err}')
+        return
+    f_objects = dataset.frame_objects(c_name, f_name)
+    if len(f_objects) == 0:
+        err = dataset.error_message()
+        t.error(f'expected objects in {f_name}, got zero, {err}')
+        return
+    #if not dataset.delete_frame(c_name, f_name):
+    #    err = dataset.error_message()
+    #    t.error(f'expected to delete {f_name} in {c_name}, {err}')
+
+
+#
 # Test harness
 #
 class ATest:
@@ -774,18 +830,19 @@ if __name__ == "__main__":
     print(f'Starting {app_name}')
     test_runner = TestRunner(os.path.basename(__file__), True)
     c_name = 'test_collection.ds'
-    test_runner.add(test_setup, [ c_name, 'test_setup' ])
-    test_runner.add(test_libdataset, [ c_name ])
-    test_runner.add(test_basic, [ c_name ])
-    test_runner.add(test_keys, [ c_name ])
-    test_runner.add(test_issue32, [ c_name ])
-    test_runner.add(test_attachments, [ c_name ])
-    test_runner.add(test_join, [ c_name ])
-    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-    test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
-    test_runner.add(test_frame1, ["test_frame1.ds"])
-    test_runner.add(test_frame2, ["test_frame2.ds"])
-    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
-    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
+    test_runner.add(test_issue12, [ 'test_issue12.ds' ])
+    #test_runner.add(test_setup, [ c_name, 'test_setup' ])
+    #test_runner.add(test_libdataset, [ c_name ])
+    #test_runner.add(test_basic, [ c_name ])
+    #test_runner.add(test_keys, [ c_name ])
+    #test_runner.add(test_issue32, [ c_name ])
+    #test_runner.add(test_attachments, [ c_name ])
+    #test_runner.add(test_join, [ c_name ])
+    #test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
+    #test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", "test_test.ds"])
+    #test_runner.add(test_frame1, ["test_frame1.ds"])
+    #test_runner.add(test_frame2, ["test_frame2.ds"])
+    #test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+    #test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.run()
 
