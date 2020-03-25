@@ -873,7 +873,7 @@ func object_path(cName *C.char, cKey *C.char) *C.char {
 }
 
 //
-// make_objects - is a function to creates empty a objects in batch.
+// create_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
 // an attempt is made to create a new empty object based on the JSON
 // provided (e.g. `{}`, `{"is_empty": true}`). The reason to do this
@@ -881,8 +881,8 @@ func object_path(cName *C.char, cKey *C.char) *C.char {
 // whole call and that the keys are now reserved to be updated separately.
 // Returns 1 on success, 0 if errors encountered.
 //
-//export make_objects
-func make_objects(cName *C.char, keysAsJSON *C.char, objectAsJSON *C.char) C.int {
+//export create_objects
+func create_objects(cName *C.char, keysAsJSON *C.char, objectAsJSON *C.char) C.int {
 	collectionName := C.GoString(cName)
 
 	error_clear()
@@ -1381,27 +1381,6 @@ func frames(cName *C.char) *C.char {
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
-}
-
-// delete_frame removes a frame from a collection.
-//
-//export delete_frame
-func delete_frame(cName *C.char, cFName *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-
-	error_clear()
-	if _, err := dataset.GetCollection(collectionName); err != nil {
-		errorDispatch(err, "%s", err)
-		return C.int(0)
-	}
-
-	err := dataset.FrameDelete(collectionName, frameName)
-	if err != nil {
-		errorDispatch(err, "failed to delete frame %s", err)
-		return C.int(0)
-	}
-	return C.int(1)
 }
 
 // frame_grid takes a frames object list and returns a grid

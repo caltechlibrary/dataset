@@ -383,7 +383,7 @@ def frame_clear(collection_name, frame_name):
     return libdataset.frame_clear(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
 
 def delete_frame(collection_name, frame_name):
-    return libdataset.delete_frame(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
+    return libdataset.frame_delete(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
 
 def frame_grid(collection_name, frame_name, include_headers = True):
     header_int = 0
@@ -418,11 +418,11 @@ def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
             c_char_p(csv_filename.encode('utf-8')), 
             c_int(overwrite_i))
 
-def make_objects(collection_name, keys, default_object):
+def create_objects(collection_name, keys, default_object):
     c_name = c_char_p(collection_name.encode('utf-8'))
     keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
     object_as_json = c_char_p(json.dumps(default_object).encode('utf8'))
-    return libdataset.make_objects(c_name, keys_as_json, object_as_json)
+    return libdataset.create_objects(c_name, keys_as_json, object_as_json)
 
 def update_objects(collection_name, keys, objects):
     c_name = c_char_p(collection_name.encode('utf-8'))

@@ -258,9 +258,9 @@ libdataset.frame_reframe.argtypes = [ c_char_p, c_char_p, c_char_p ]
 libdataset.frame_reframe.restype = c_bool
 
 # Args: collection_name (string), frame_name (string)
-libdataset.delete_frame.argtypes = [ c_char_p, c_char_p ]
+libdataset.frame_delete.argtypes = [ c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-libdataset.delete_frame.restype = c_bool
+libdataset.frame_delete.restype = c_bool
 
 # Args: collection_name (string), frame_name (string)
 libdataset.frame_clear.argtypes = [ c_char_p, c_char_p ]
@@ -273,9 +273,9 @@ libdataset.frame_grid.argtypes = [ c_char_p, c_char_p, c_bool ]
 libdataset.frame_grid.restype = c_char_p
 
 # Args: collection_name (string), keys_as_json (string), object_as_json (string)
-libdataset.make_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
+libdataset.create_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) success, False (0) if there are errors
-libdataset.make_objects.restype = c_bool
+libdataset.create_objects.restype = c_bool
 
 # Args: collection_name (string), keys_as_json (string), objects_as_json (string)
 libdataset.update_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
