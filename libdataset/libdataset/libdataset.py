@@ -160,7 +160,7 @@ libdataset.sync_send_csv.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
 libdataset.sync_send_csv.restype = c_bool
 
 # Returns: true (1), false (0)
-libdataset.collection_status.restype = c_bool
+libdataset.collection_exists.restype = c_bool
 
 # Args: collection_name (string), key list (JSON array source)
 libdataset.list_objects.argtypes = [ c_char_p, c_char_p ]
@@ -217,11 +217,6 @@ libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
 # Returns: true (1), false (0)
 libdataset.clone_sample.restype = c_bool
 
-# Args: collection_name (string), keys (JSON source), dotpaths (JSON source)
-libdataset.grid.argtypes = [ c_char_p, c_char_p, c_char_p ]
-# Returns: value (JSON 2D array source)
-libdataset.grid.restype = c_char_p
-
 # Args: collection_name (string), frame_name (string), keys (JSON source), dotpaths (JSON source), labels (JSON source)
 libdataset.frame_create.argtypes = [ c_char_p, c_char_p,  c_char_p, c_char_p, c_char_p ]
 # Returns: value (JSON object source)
@@ -263,9 +258,9 @@ libdataset.frame_reframe.argtypes = [ c_char_p, c_char_p, c_char_p ]
 libdataset.frame_reframe.restype = c_bool
 
 # Args: collection_name (string), frame_name (string)
-libdataset.delete_frame.argtypes = [ c_char_p, c_char_p ]
+libdataset.frame_delete.argtypes = [ c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-libdataset.delete_frame.restype = c_bool
+libdataset.frame_delete.restype = c_bool
 
 # Args: collection_name (string), frame_name (string)
 libdataset.frame_clear.argtypes = [ c_char_p, c_char_p ]
@@ -278,9 +273,9 @@ libdataset.frame_grid.argtypes = [ c_char_p, c_char_p, c_bool ]
 libdataset.frame_grid.restype = c_char_p
 
 # Args: collection_name (string), keys_as_json (string), object_as_json (string)
-libdataset.make_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
+libdataset.create_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) success, False (0) if there are errors
-libdataset.make_objects.restype = c_bool
+libdataset.create_objects.restype = c_bool
 
 # Args: collection_name (string), keys_as_json (string), objects_as_json (string)
 libdataset.update_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]

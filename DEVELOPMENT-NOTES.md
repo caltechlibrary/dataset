@@ -5,11 +5,11 @@
 
 Compiler requirements
 
-+ go1.13 or better
++ go1.14 or better
 
 ## Recommend
 
-+ Python v3.7 or better to use the C-Shared library libdataset
++ Python v3.8 or better to use the C-Shared library libdataset
 
 ## Using the _dataset_ package
 
@@ -29,8 +29,7 @@ Compiler requirements
     
     func main() {
         // Create a collection "mystuff" inside the directory called demo
-        collection, err := dataset.InitCollection("demo/mystuff.ds", 
-                           dataset.PAIRTREE_LAYOUT)
+        collection, err := dataset.InitCollection("demo/mystuff.ds")
         if err != nil {
             log.Fatalf("%s", err)
         }
@@ -83,5 +82,4 @@ to vendor any packages assuming you're building from the master branch.
 + [Markdown packages] - used to support rendering Markdown embedded in JSON objects
     + [github.com/microcosm-cc/bluemonday](https://github.com/microcosm-cc/bluemonday)
     + [github.com/russross/blackfriday](https://github.com/russross/blackfriday)
-+ Migrating to [go-cloud](https://github.com/google/go-cloud) from aws-sdk and Google's Go SDK
 

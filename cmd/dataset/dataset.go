@@ -1,5 +1,5 @@
 //
-// dataset is a command line tool, Go package, shared library and Python package for working with JSON objects as collections on disc, in an S3 bucket or in Cloud Storage
+// dataset is a command line tool, Go package, shared library and Python package for working with JSON objects as collections on local disc.
 //
 // @Author R. S. Doiel, <rsdoiel@library.caltech.edu>
 //
@@ -43,7 +43,7 @@ import (
 var (
 	synopsis = `
 _dataset_ is a command line tool for working with JSON objects as
-collections on disc, in an S3 bucket.
+collections on local disc.
 `
 
 	description = `
@@ -196,7 +196,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	vAttachments  *cli.Verb // attachments
 	vDetach       *cli.Verb // detach
 	vPrune        *cli.Verb // prune
-	vGrid         *cli.Verb // grid
 	vImport       *cli.Verb // import
 	vExport       *cli.Verb // export
 	vCheck        *cli.Verb // check
@@ -1555,99 +1554,6 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	return 0
 }
 
-// fnGrid - generate a grid (2D array) based on a list of key(s) and dotpath(s).
-// Keys map to rows, dotpaths map to columns
-//
-// Command Syntax: [VERB_OPTIONS] COLLECTION_NAME DOTPATH [DOTPATH ...]
-// Verb Options: filter-expression (-filter) , key list filename (-i,-input), sample size (-sample), verbose (-v, verbose)
-func fnGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
-	var (
-		cName    string
-		keys     []string
-		dotPaths []string
-		src      []byte
-		err      error
-	)
-
-	err = flagSet.Parse(args)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	args = flagSet.Args()
-
-	switch {
-	case len(args) == 0:
-		fmt.Fprintf(eout, "Missing collection name, key list filename, and dot path(s)\n")
-		return 1
-	case len(args) == 1:
-		fmt.Fprintf(eout, "Missing dot paths\n")
-		return 1
-	case len(args) >= 2:
-		cName, dotPaths = args[0], args[1:]
-	default:
-		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
-		return 1
-	}
-
-	c, err := dataset.GetCollection(cName)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	defer c.Close()
-
-	// Get all keys or read from inputFName
-	keys = c.Keys()
-	if len(inputFName) > 0 {
-		if inputFName == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(inputFName)
-		}
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-		keys = append(keys, keysFromSrc(src)...)
-	}
-
-	// Apply Filter Expression
-	if len(filterExpr) > 0 && filterExpr != "true" {
-		keys, err = c.KeyFilter(keys[:], filterExpr)
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
-			return 1
-		}
-	}
-
-	// Apply Sample Size
-	if sampleSize > 0 {
-		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		shuffle.Strings(keys, random)
-		if sampleSize <= len(keys) {
-			keys = keys[0:sampleSize]
-		}
-	}
-
-	g, err := c.Grid(keys, dotPaths, showVerbose)
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	if prettyPrint {
-		src, err = json.MarshalIndent(g, "", "    ")
-	} else {
-		src, err = json.Marshal(g)
-	}
-	if err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
-	}
-	fmt.Fprintf(out, "%s", src)
-	return 0
-}
-
 // fnFrame - define a data frame and populate it with a list of keys,
 // dotpaths and label pairs
 //
@@ -2848,14 +2754,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vPrune.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
 	vPrune.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
-	// Frames and Grid
-	vGrid = app.NewVerb("grid", "create a 2D JSON array from JSON objects", fnGrid)
-	vGrid.SetParams("COLLECTION", "DOTPATH", "[DOTPATH ...]")
-	vGrid.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")
-	vGrid.IntVar(&sampleSize, "s,sample", -1, "make grid based on a key sample of a given size")
-	vGrid.BoolVar(&showVerbose, "v,verbose", showVerbose, "verbose reporting for grid generation")
-	vGrid.BoolVar(&prettyPrint, "p,pretty", prettyPrint, "pretty print JSON output")
-
+	// Frames
 	vFrame = app.NewVerb("frame", "create or retrieve a data frame", fnFrame)
 	vFrame.SetParams("COLLECTION", "FRAME_NAME", "DOTPATH", "[DOTPATH ...]")
 	vFrame.StringVar(&inputFName, "i,input", "", "use only the keys, one per line, from a file")

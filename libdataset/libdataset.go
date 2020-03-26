@@ -213,10 +213,10 @@ func close_all_collections() C.int {
 	return C.int(1)
 }
 
-// collection_status checks to see if a collection exists or not.
+// collection_exits checks to see if a collection exists or not.
 //
-//export collection_status
-func collection_status(cName *C.char) C.int {
+//export collection_exists
+func collection_exists(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
@@ -408,6 +408,7 @@ func export_csv(cName *C.char, cFrameName *C.char, cCSVFName *C.char) C.int {
 }
 
 // sync_send_csv - synchronize a frame sending data to a CSV file
+// returns 1 (True) on success, 0 (False) otherwise.
 //
 //export sync_send_csv
 func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOverwrite C.int) C.int {
@@ -424,11 +425,11 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	src, err = ioutil.ReadFile(csvFilename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if len(src) == 0 {
 		fmt.Fprintf(os.Stderr, "No data in csv file %s\n", csvFilename)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	table := [][]interface{}{}
@@ -442,7 +443,7 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 	}
 
@@ -450,7 +451,7 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	c, err = dataset.GetCollection(collectionName)
 	if err != nil {
 		errorDispatch(err, "%q not found", collectionName)
-		return C.int(1)
+		return C.int(0)
 
 	}
 
@@ -458,31 +459,32 @@ func sync_send_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOve
 	table, err = c.MergeIntoTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	// Save the resulting table
 	if len(src) > 0 {
 		if err = os.Rename(csvFilename, csvFilename+".bak"); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 		out, err := os.Create(csvFilename)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 		w := csv.NewWriter(out)
 		w.WriteAll(tbl.TableInterfaceToString(table))
 		if err = w.Error(); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 	}
-	return C.int(0)
+	return C.int(1)
 }
 
 // sync_recieve_csv - synchronize a frame recieving data from a CSV file
+// returns 1 (True) on success, 0 (False) otherwise.
 //
 //export sync_recieve_csv
 func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSyncOverwrite C.int) C.int {
@@ -498,7 +500,7 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 	src, err = ioutil.ReadFile(csvFilename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	table := [][]interface{}{}
@@ -509,7 +511,7 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 		csvTable, err := r.ReadAll()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			return C.int(1)
+			return C.int(0)
 		}
 		table = tbl.TableStringToInterface(csvTable)
 	}
@@ -518,17 +520,16 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
 	c, err := dataset.GetCollection(collectionName)
 	if err != nil {
 		errorDispatch(err, "%q not found", collectionName)
-		return C.int(1)
-
+		return C.int(0)
 	}
 
 	// Merge table contents into Collection and Frame
 	err = c.MergeFromTable(frameName, table, syncOverwrite, verbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return C.int(1)
+		return C.int(0)
 	}
-	return C.int(0)
+	return C.int(1)
 }
 
 /*
@@ -544,7 +545,7 @@ func key_exists(cName, cKey *C.char) C.int {
 
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if dataset.KeyExists(collectionName, key) {
 		return C.int(1)
@@ -872,7 +873,7 @@ func object_path(cName *C.char, cKey *C.char) *C.char {
 }
 
 //
-// make_objects - is a function to creates empty a objects in batch.
+// create_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
 // an attempt is made to create a new empty object based on the JSON
 // provided (e.g. `{}`, `{"is_empty": true}`). The reason to do this
@@ -880,8 +881,8 @@ func object_path(cName *C.char, cKey *C.char) *C.char {
 // whole call and that the keys are now reserved to be updated separately.
 // Returns 1 on success, 0 if errors encountered.
 //
-//export make_objects
-func make_objects(cName *C.char, keysAsJSON *C.char, objectAsJSON *C.char) C.int {
+//export create_objects
+func create_objects(cName *C.char, keysAsJSON *C.char, objectAsJSON *C.char) C.int {
 	collectionName := C.GoString(cName)
 
 	error_clear()
@@ -1285,7 +1286,7 @@ func frame_refresh(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 
 	if err := dataset.FrameRefresh(collectionName, frameName, verbose); err != nil {
@@ -1306,7 +1307,7 @@ func frame_reframe(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	keys := []string{}
 	if err := json.Unmarshal([]byte(keysSrc), &keys); err != nil {
@@ -1330,7 +1331,7 @@ func frame_clear(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
 	if err := dataset.FrameClear(collectionName, frameName); err != nil {
 		errorDispatch(err, "%s", err)
@@ -1348,9 +1349,9 @@ func frame_delete(cName *C.char, cFName *C.char) C.int {
 	error_clear()
 	if _, err := dataset.GetCollection(collectionName); err != nil {
 		errorDispatch(err, "%s", err)
-		return C.int(1)
+		return C.int(0)
 	}
-	if err := dataset.FrameClear(collectionName, frameName); err != nil {
+	if err := dataset.FrameDelete(collectionName, frameName); err != nil {
 		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
@@ -1380,27 +1381,6 @@ func frames(cName *C.char) *C.char {
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
-}
-
-// delete_frame removes a frame from a collection.
-//
-//export delete_frame
-func delete_frame(cName *C.char, cFName *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-
-	error_clear()
-	if _, err := dataset.GetCollection(collectionName); err != nil {
-		errorDispatch(err, "%s", err)
-		return C.int(1)
-	}
-
-	err := dataset.FrameDelete(collectionName, frameName)
-	if err != nil {
-		errorDispatch(err, "failed to delete frame %s", err)
-		return C.int(0)
-	}
-	return C.int(1)
 }
 
 // frame_grid takes a frames object list and returns a grid
@@ -1596,52 +1576,6 @@ func get_contact(cName *C.char) *C.char {
 	error_clear()
 
 	txt := dataset.GetContact(collectionName)
-	return C.CString(txt)
-}
-
-/*
- * DEPRECIATED operations
- */
-
-// grid (DEPRECIATED) generates a "Grid" structure from a collection.
-//
-//export grid
-func grid(cName *C.char, cKeys *C.char, cDotPaths *C.char) *C.char {
-	collectionName := C.GoString(cName)
-	srcKeys := C.GoString(cKeys)
-	srcDotpaths := C.GoString(cDotPaths)
-
-	error_clear()
-	c, err := dataset.GetCollection(collectionName)
-	if err != nil {
-		errorDispatch(err, "%q not found", collectionName)
-		return C.CString("")
-	}
-
-	keys := []string{}
-	err = json.Unmarshal([]byte(srcKeys), &keys)
-	if err != nil {
-		errorDispatch(err, "Can't unmarshal keys, %s", err)
-		return C.CString("")
-	}
-	dotPaths := []string{}
-	err = json.Unmarshal([]byte(srcDotpaths), &dotPaths)
-	if err != nil {
-		errorDispatch(err, "Can't unmarshal dot paths, %s", err)
-		return C.CString("")
-	}
-	//NOTE: We're picking up the verbose flag from the modules global state
-	g, err := c.Grid(keys, dotPaths, verbose)
-	if err != nil {
-		errorDispatch(err, "failed to create grid, %s", err)
-		return C.CString("")
-	}
-	src, err := json.Marshal(g)
-	if err != nil {
-		errorDispatch(err, "failed to marshal grid, %s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }
 

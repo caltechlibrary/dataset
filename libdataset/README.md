@@ -15,7 +15,8 @@ library and header file to an appropriate on your system.
 
 ## Windows 10
 
-Install Go 1.13 or better from the Golang website using the provided Windows binaries. Install Miniconda (from Anaconda). Using Miniconda install git and gcc (i.e. m2w64-gcc). Run "make.bat" to compile DLL.
+Install Go 1.13 or better from the Golang website using the provided Windows binaries. Install Miniconda (from Anaconda). Using Miniconda install git, gcc (i.e. m2w64-gcc) and zip (m2-zip). Run "make.bat" to compile DLL. Modify and
+run release.bat to generate a release version.
 
 
 ## Issues

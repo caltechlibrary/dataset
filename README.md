@@ -5,8 +5,8 @@
 
 _dataset_ is a command line tool, Go package, and an experimental C shared 
 library for working with [JSON](https://en.wikipedia.org/wiki/JSON) 
-objects as collections. Collections can be stored on disc or in 
-Cloud Storage.  JSON objects are stored in collections as 
+objects as collections. Collections can be stored on local disc.
+JSON objects are stored in collections as 
 plain UTF-8 text. This means the objects can be accessed with common 
 Unix text processing tools as well as most programming languages. 
 _dataset_ is also available as a Python package, see 
@@ -78,7 +78,7 @@ written in Python or as simple Bash scripts.
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
 - import/export of [CSV](how-to/working-with-csv.html) files
 - The ability to reshape data by performing simple object [joins](docs/join.html)
-- The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based on keys lists and [dot paths](docs/dotpath.html) into stored JSON objects
+- The ability to create data [frames](docs/frame.html) from collections based on keys lists and [dot paths](docs/dotpath.html) into stored JSON objects
 
 You can work with dataset collections via the 
 [command line tool](docs/dataset.html), via Go using the 

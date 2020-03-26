@@ -9,7 +9,7 @@
 
 - [Joining Objects](../how-to/joining-objects.html)
 - [Reshaping collections](../how-to/reshape-json-collections.html)
-- [Frames and grids](../how-to/collections-grids-and-frames.html)
+- [Data Frames](../how-to/collections-and-data-frames.html)
 
 ## Keys, samples and cloning collections
 
@@ -23,7 +23,6 @@
 - [How attachments work](../how-to/how-attachments-work.html)
 - [Managing attachments](../how-to/managing-attachments.html)
 - [Upgrading a collection](../how-to/upgrading-a-collection.html)
-- [Working with Cloud Storage](../how-to/working-with-cloud-storage.html)
 
 ## Import/Export
 
@@ -38,7 +37,6 @@
 - [check](check.html)
 - [count](count.html)
 - [create](create.html)
-- [data grid](grid.html)
 - [delete](delete.html)
 - [delete-frame](delete-frame.html)
 - [detach](detach.html)
@@ -48,7 +46,6 @@
 - [frame-grid](frame-grid.html)
 - [frame-objects](frame-objects.html)
 - [frames](frames.html)
-- [grid](grid.html)
 - [hasframe](hasframe.html)
 - [haskey](haskey.html)
 - [import-csv](import-csv.html)

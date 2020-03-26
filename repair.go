@@ -53,16 +53,6 @@ func analyzer(collectionName string, verbose bool) error {
 		return err
 	}
 	collectionPath := collectionName
-	switch store.Type {
-	case storage.GS:
-		if bucketName, ok := store.Config["GoogleBucket"]; ok == true {
-			collectionPath = strings.TrimPrefix(collectionName, fmt.Sprintf("s3://%s/", bucketName.(string)))
-		}
-	case storage.S3:
-		if bucketName, ok := store.Config["AwsBucket"]; ok == true {
-			collectionPath = strings.TrimPrefix(collectionName, fmt.Sprintf("s3://%s/", bucketName.(string)))
-		}
-	}
 	files, err := store.ReadDir(collectionPath)
 	if err != nil {
 		return err
@@ -313,19 +303,7 @@ func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
 			return nil
 		})
 	} else {
-		// NOTE: S3/GCS don't really have a "directory" concept, as a result we just iterate
-		// over a lists of objects with the requested prefix.
 		storePath := startPath
-		switch store.Type {
-		case storage.GS:
-			if bucketName, ok := store.Config["GoogleBucket"]; ok == true {
-				storePath = strings.TrimPrefix(startPath, fmt.Sprintf("gs://%s/", bucketName.(string)))
-			}
-		case storage.S3:
-			if bucketName, ok := store.Config["AwsBucket"]; ok == true {
-				storePath = strings.TrimPrefix(startPath, fmt.Sprintf("s3://%s/", bucketName.(string)))
-			}
-		}
 		if strings.HasSuffix(storePath, "/") == false {
 			storePath += "/"
 		}

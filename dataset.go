@@ -47,7 +47,7 @@ import (
 
 const (
 	// Version of the dataset package
-	Version = `v0.1.4`
+	Version = `v0.1.8`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -90,7 +90,7 @@ type Collection struct {
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
 
-	// Store holds the storage system information (e.g. local disc, S3, GS)
+	// Store holds the storage system information (i.e. local disc)
 	// and related methods for interacting with it
 	Store *storage.Store `json:"-"`
 

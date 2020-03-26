@@ -21,39 +21,45 @@
 import json
 import sys
 import os
-from ctypes import *
-from .cwrapper import libdataset
+from ctypes import c_char_p, c_int, c_bool
+from .libdataset import libdataset
 
 #
 # These are our Python idiomatic functions
 # calling the C type wrapped functions in libdataset.py
 #
+
+# error_clear() clears the errors previously set.
 def error_clear():
     libdataset.error_clear()
 
+# error_message() returns the current error message(s)
+# accumulated.
 def error_message():
     value = libdataset.error_message()
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode()
 
-
+# use_strict_dotpath() will trigger if False will prefix a root period
+# for dot paths and labels when specified in function calls.
 def use_strict_dotpath(on_off = True):
     return libdataset.use_strict_dotpath(True)
 
-# is_verbose returns true is verbose is enabled, false otherwise
+# is_verbose() returns true is verbose is enabled, false otherwise
 def is_verbose():
     return libdataset.is_verbose()
 
-# verbose_on turns verboseness off
+# verbose_on() turns verboseness off
 def verbose_on():
     return libdataset.verbose_on()
 
-# verbose_off turns verboseness on
+# verbose_off() turns verboseness on
 def verbose_off():
     return libdataset.verbose_off()
 
-# Returns version of dataset shared library
+# dataset_version() returns version of dataset 
+# shared library semver.
 def dataset_version():
     value = libdataset.dataset_version()
     if not isinstance(value, bytes):
@@ -238,7 +244,7 @@ def export_csv(collection_name, frame_name, csv_name):
     return error_message()
 
 def status(collection_name):
-    return libdataset.collection_status(collection_name.encode('utf8'))
+    return libdataset.collection_exists(collection_name.encode('utf8'))
 
 def list(collection_name, keys = []):
     src_keys = json.dumps(keys)
@@ -260,10 +266,7 @@ def check(collection_name):
     return (ok == True)
 
 def repair(collection_name):
-    ok = libdataset.repair_collection(c_char_p(collection_name.encode('utf8')))
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.repair_collection(c_char_p(collection_name.encode('utf8')))
 
 def attach(collection_name, key, filenames = [], semver = ''):
     if semver == '':
@@ -271,10 +274,7 @@ def attach(collection_name, key, filenames = [], semver = ''):
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
-    ok = libdataset.attach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.attach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
     
 def attachments(collection_name, key):
     value = libdataset.attachments(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')))
@@ -292,20 +292,14 @@ def detach(collection_name, key, filenames = [], semver = ''):
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
-    ok = libdataset.detach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.detach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
 
 def prune(collection_name, key, filenames = [], semver = ''):
     '''Delete attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to delete all attachments'''
     if semver == '':
         semver = 'v0.0.0'
     fnames = json.dumps(filenames).encode('utf8')
-    ok = libdataset.prune(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(fnames))
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.prune(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(fnames))
 
 def join(collection_name, key, obj = {}, overwrite = False):
     src = json.dumps(obj).encode('utf8')
@@ -316,26 +310,10 @@ def join(collection_name, key, obj = {}, overwrite = False):
 
 def clone(collection_name, keys, destination_name):
     src_keys = json.dumps(keys)
-    ok = libdataset.clone_collection(c_char_p(collection_name.encode('utf-8')), c_char_p(src_keys.encode('utf-8')), c_char_p(destination_name.encode('utf-8')))
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.clone_collection(c_char_p(collection_name.encode('utf-8')), c_char_p(src_keys.encode('utf-8')), c_char_p(destination_name.encode('utf-8')))
 
 def clone_sample(collection_name, training_name, test_name = "", sample_size = 0):
-    ok = libdataset.clone_sample( c_char_p(collection_name.encode('utf-8')), c_char_p(training_name.encode('utf-8')), c_char_p(test_name.encode('utf-8')), c_int(sample_size))
-    if ok == 1:
-        return ''
-    return error_message()
-
-def grid(collection_name, keys, dot_paths):
-    src_keys = json.dumps(keys)
-    src_dot_paths = json.dumps(dot_paths)
-    value = libdataset.grid(c_char_p(collection_name.encode('utf-8')), c_char_p(src_keys.encode('utf-8')), c_char_p(src_dot_paths.encode('utf-8')))
-    if not isinstance(value, bytes):
-        value = value.encode('utf8')
-    if value == None or value.strip() == "":
-        return [], error_message()
-    return json.loads(value), ''
+    return libdataset.clone_sample( c_char_p(collection_name.encode('utf-8')), c_char_p(training_name.encode('utf-8')), c_char_p(test_name.encode('utf-8')), c_int(sample_size))
 
 def frame_create(collection_name, frame_name, keys, dot_paths, labels):
     src_keys = json.dumps(keys)
@@ -346,22 +324,16 @@ def frame_create(collection_name, frame_name, keys, dot_paths, labels):
                 item = item[1:]
             labels.append(item)
     src_labels = json.dumps(labels)
-    ok = libdataset.frame_create(c_char_p(collection_name.encode('utf-8')),
+    return libdataset.frame_create(c_char_p(collection_name.encode('utf-8')),
         c_char_p(frame_name.encode('utf-8')),
         c_char_p(src_keys.encode('utf-8')),
         c_char_p(src_dot_paths.encode('utf-8')),
         c_char_p(src_labels.encode('utf-8')))
-    if ok == 1:
-        return ''
-    return error_message()
 
 
 def has_frame(collection_name, frame_name):
-    ok = libdataset.frame_exists(c_char_p(collection_name.encode('utf-8')),
+    return libdataset.frame_exists(c_char_p(collection_name.encode('utf-8')),
             c_char_p(frame_name.encode('utf-8')))
-    if ok == 1:
-        return True
-    return False
 
 def frame_keys(collection_name, frame_name):
     value = libdataset.frame_keys(c_char_p(collection_name.encode('utf-8')),
@@ -408,10 +380,10 @@ def frame_refresh(collection_name, frame_name):
     return libdataset.frame_refresh(c_char_p(collection_name.encode('utf-8')))
 
 def frame_clear(collection_name, frame_name):
-    return libdataset.frame_clear(c_char_p(collection_name.encode('utf-8')))
+    return libdataset.frame_clear(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
 
 def delete_frame(collection_name, frame_name):
-    return libdataset.delete_frame(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
+    return libdataset.frame_delete(c_char_p(collection_name.encode('utf-8')), c_char_p(frame_name.encode('utf-8')))
 
 def frame_grid(collection_name, frame_name, include_headers = True):
     header_int = 0
@@ -430,95 +402,63 @@ def sync_recieve_csv(collection_name, frame_name, csv_filename, overwrite = Fals
     overwrite_i  = 0
     if overwrite:
         overwrite_i = 1
-    ok = libdataset.sync_recieve_csv(
+    return libdataset.sync_recieve_csv(
             c_char_p(collection_name.encode('utf-8')), 
             c_char_p(frame_name.encode('utf-8')), 
             c_char_p(csv_filename.encode('utf-8')), 
             c_int(overwrite_i))
-    if ok == 1:
-        return ''
-    return error_message()
-
 
 def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
     overwrite_i = 0
     if overwrite:
         overwrite_i = 1
-    ok = libdataset.sync_send_csv(
+    return libdataset.sync_send_csv(
             c_char_p(collection_name.encode('utf-8')), 
             c_char_p(frame_name.encode('utf-8')), 
             c_char_p(csv_filename.encode('utf-8')), 
             c_int(overwrite_i))
-    if ok == 1:
-        return ''
-    return error_message()
 
-
-def make_objects(collection_name, keys, default_object):
+def create_objects(collection_name, keys, default_object):
     c_name = c_char_p(collection_name.encode('utf-8'))
     keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
     object_as_json = c_char_p(json.dumps(default_object).encode('utf8'))
-    ok = libdataset.make_objects(c_name, keys_as_json, object_as_json)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.create_objects(c_name, keys_as_json, object_as_json)
 
 def update_objects(collection_name, keys, objects):
     c_name = c_char_p(collection_name.encode('utf-8'))
     keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
     objects_as_json = c_char_p(json.dumps(objects).encode('utf8'))
-    ok = libdataset.update_objects(c_name, keys_as_json, objects_as_json)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.update_objects(c_name, keys_as_json, objects_as_json)
 
 def set_who(collection_name, names = []):
     c_name = c_char_p(collection_name.encode('utf-8'))
     names_as_json = c_char_p(json.dumps(names).encode('utf8'))
-    ok = libdataset.set_who(c_name, names_as_json)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.set_who(c_name, names_as_json)
 
 def set_what(collection_name, src = ""):
     c_name = c_char_p(collection_name.encode('utf-8'))
     c_src = c_char_p(src.encode('utf8'))
-    ok = libdataset.set_what(c_name, c_src)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.set_what(c_name, c_src)
 
 def set_when(collection_name, src = ""):
     c_name = c_char_p(collection_name.encode('utf-8'))
     c_src = c_char_p(src.encode('utf8'))
-    ok = libdataset.set_when(c_name, c_src)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.set_when(c_name, c_src)
 
 def set_where(collection_name, src = ""):
     c_name = c_char_p(collection_name.encode('utf-8'))
     c_src = c_char_p(src.encode('utf8'))
-    ok = libdataset.set_where(c_name, c_src)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.set_where(c_name, c_src)
 
 def set_version(collection_name, src = ""):
     c_name = c_char_p(collection_name.encode('utf-8'))
     c_src = c_char_p(src.encode('utf8'))
-    ok = libdataset.set_version(c_name, c_src)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.set_version(c_name, c_src)
 
 def set_contact(collection_name, src = ""):
     c_name = c_char_p(collection_name.encode('utf-8'))
     c_src = c_char_p(src.encode('utf8'))
-    ok = libdataset.set_contact(c_name, c_src)
-    if ok == 1:
-        return ''
-    return error_message()
+    return libdataset.set_contact(c_name, c_src)
 
 
 def get_who(collection_name):

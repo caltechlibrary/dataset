@@ -311,51 +311,23 @@ a variable called keys.</p>
     print(&quot;\n&quot;.join(keys))
 </code></pre>
 
-<h2>grids and frames</h2>
+<h2>Data frames and grids</h2>
 
 <p>JSON objects are tree like. This structure can be inconvienent
 for some types of analysis like tabulation, comparing values or
-generating summarizing reports. A spreadsheet, table or 2D grid
-like structure is often a more familair format for these types
-of tasks. <em>grid</em> is dataset&rsquo;s verb for taking a list
-of keys, a list of dot paths to the JSON objects attributes and
-returning a 2D grid of the results. The 2D grid is easy to
-iterate over.  A <em>grid</em> doesn&rsquo;t enforce any specifics on the
-columns and rows. It only contains the values you specified in
-the list of keys and dot paths.</p>
+generating summarizing reports. Many languages support a concept
+of &ldquo;data frame&rdquo;. Meaning a list of objects, possibly with associated
+metadata about how the list was created. This becomes a convient way
+to process data. Frames can easily be transformed. Sometimes a
+spreadsheet, table or 2D grid like structure is often a more familair
+format for these types of tasks. <em>frame-grid</em> is dataset&rsquo;s verb for
+taking a data frame and returning a 2D list of grid results.
+The 2D grid is easy to iterate over.  A <em>frame-grid</em> doesn&rsquo;t enforce any
+specifics on the columns and rows. It only contains the values you
+specified in the list of keys and dot paths when you defined the
+data frame.</p>
 
-<h3>grid</h3>
-
-<p>Let&rsquo;s create a <em>grid</em> from our <em>friends.ds</em> collection.</p>
-
-<pre><code class="language-bash">    dataset keys friends.ds keys &gt;fiends.keys
-    dataset grid -i=friends.keys friends.ds .name .email .catch_phrase
-</code></pre>
-
-<p>As with <em>read</em> the <em>grid</em> verb can take the “-p” option to make the
-JSON grid a little easier to read.</p>
-
-<pre><code class="language-bash">    dataset grid -p -i=friends.keys friends.ds .name .email .catch_phrase
-</code></pre>
-
-<p>Notice we make a list of keys first and save those to a file. Then we use
-that list of keys and create our grid.  The grid output is in JSON
-notation. In Python making a grid follows a similar patter, generate a
-list of keys, use those keys and a list of dot paths to define the grid.</p>
-
-<pre><code class="language-python">    keys = dataset.keys(&quot;friends.ds&quot;)
-    (g, err) = dataset.grid(&quot;friends.ds&quot;, keys, 
-               [&quot;.name&quot;, &quot;.email&quot;, &quot;catch_phrase&quot;])
-    if err != &quot;&quot;:
-        stop(err)
-    print(json.dumps(g, indent = 4))
-</code></pre>
-
-<p>In python <em>grid</em> like <em>create</em> and <em>update</em> returns a tuple that
-has your result and an error status. Finally we print our result using
-the JSON module&rsquo;s <em>dumps</em>.</p>
-
-<h3>frame</h3>
+<h3>the frame</h3>
 
 <p>dataset also comes with a <em>frame</em> verb.  A <em>frame</em> is an order list of
 objects with some additional matadata. It is similar to the &ldquo;data frames&rdquo;
@@ -374,9 +346,6 @@ collection updates.</p>
 
 <p>To define a frame we only need one additional piece of information besides
 what we used for a grid. We need a name for the frame.</p>
-
-<p>Working from our previous <em>grid</em> example, let&rsquo;s call this frame
-&ldquo;name-and-email&rdquo;.</p>
 
 <pre><code class="language-bash">    dataset frame-create -i=friends.keys friends.ds \
         &quot;name-and-email&quot; \
@@ -439,7 +408,7 @@ way of just retrieving the object list.</p>
     dataset frame -p friends.ds &quot;name-and-email&quot;
 </code></pre>
 
-<p>Like with <em>grid</em> and <em>read</em> before it the “-p” option will cause the
+<p>NOTE: the <em>read</em> before it the “-p” option will cause the
 JSON representation of the frame to be pretty printed.</p>
 
 <p>Let&rsquo;s try the same thing in Python</p>
@@ -534,8 +503,6 @@ its object list</li>
 
 <ul>
 <li><a href="working-with-csv.html">Working with CSV</a></li>
-<li><a href="working-with-gsheets.html">Working with GSheets</a></li>
-<li><a href="working-with-cloud-storage.html">Working with Cloud Storage</a></li>
 </ul>
 
 </section>

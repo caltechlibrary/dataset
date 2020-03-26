@@ -364,3 +364,62 @@ func TestFrameRefresh(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestIssue12PyDataset(t *testing.T) {
+	cName := path.Join("testdata", "test_issue12.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("failed to create %q, %s", cName, err)
+		t.FailNow()
+	}
+	defer c.Close()
+	// Build some test data ...
+	keys := []string{"1", "2", "3", "4", "5"}
+	for i, key := range keys {
+		obj := map[string]interface{}{}
+		src := []byte(fmt.Sprintf(`{"id": "%d", "c1": %d, "c2": %d, "c3": %d}`, i, (i + 1), (i + 3), (i + 5)))
+		if err := json.Unmarshal(src, &obj); err != nil {
+			t.Errorf("failed to marshal %s, %s", src, err)
+			t.FailNow()
+		}
+		if c.KeyExists(key) == true {
+			if err = c.Update(key, obj); err != nil {
+				t.Errorf("failed to update %q in %q, %s", key, cName, err)
+			}
+		} else {
+			if err = c.Create(key, obj); err != nil {
+				t.Errorf("failed to create %q in %q, %s", key, cName, err)
+			}
+		}
+	}
+	// Clear out any stale frames.
+	for i, fName := range c.Frames() {
+		if err := c.FrameDelete(fName); err != nil {
+			t.Errorf("Failed to delete frame (%d) %q in %q, %s", i, fName, cName, err)
+			t.FailNow()
+		}
+	}
+	fName := "issue12"
+	dotPaths := []string{".c1", ".c3"}
+	labels := []string{".col1", ".col3"}
+	verbose := true
+	f, err := c.FrameCreate(fName, keys, dotPaths, labels, verbose)
+	if err != nil {
+		t.Errorf("FrameCreate failed, %q in %q, %s", fName, cName, err)
+		t.FailNow()
+	}
+	if len(f.Keys) != len(keys) {
+		t.Errorf("expected %d keys, got %d", len(keys), len(f.Keys))
+		t.FailNow()
+	}
+	fObjects := f.Objects()
+	if len(fObjects) != len(keys) {
+		t.Errorf("expected %d objects, got %d", len(keys), len(fObjects))
+		t.FailNow()
+	}
+	if err := c.FrameDelete(fName); err != nil {
+		t.Errorf("expected no errors for delete frame, got %s", err)
+		t.FailNow()
+	}
+}
