@@ -453,9 +453,6 @@ func (c *Collection) IsKeyNotFound(e error) bool {
 
 // ReadJSON finds a the record in the collection and returns the JSON source
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
-	if c.KeyExists(name) == false {
-		return nil, fmt.Errorf("key not found")
-	}
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
