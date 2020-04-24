@@ -1296,7 +1296,7 @@ func frame_refresh(cName *C.char, cFName *C.char) C.int {
 	return C.int(1)
 }
 
-// frame_reframe will change of object list in a frame based on the key list provided.
+// frame_reframe will change the object list in a frame based on the key list provided.
 //
 //export frame_reframe
 func frame_reframe(cName *C.char, cFName *C.char, cKeysSrc *C.char) C.int {

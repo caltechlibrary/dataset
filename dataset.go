@@ -619,7 +619,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 		lineNo++
 		fieldNames, err = r.Read()
 		if err != nil {
-			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
+			return lineNo, fmt.Errorf("Can't read header csv table at %d, %s", lineNo, err)
 		}
 	}
 	for {
@@ -629,7 +629,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 			break
 		}
 		if err != nil {
-			return lineNo, fmt.Errorf("Can't read csv table at %d, %s", lineNo, err)
+			return lineNo, fmt.Errorf("Can't read row csv table at %d, %s", lineNo, err)
 		}
 		var fieldName string
 		record := map[string]interface{}{}
@@ -666,7 +666,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 				if overwrite == true {
 					err = c.Update(key, record)
 					if err != nil {
-						return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+						return lineNo, fmt.Errorf("can't update %+v to %s, %s", record, key, err)
 					}
 				} else if verboseLog {
 					log.Printf("Skipping row %d, key %q, already exists", lineNo, key)
@@ -674,7 +674,7 @@ func (c *Collection) ImportCSV(buf io.Reader, idCol int, skipHeaderRow bool, ove
 			} else {
 				err = c.Create(key, record)
 				if err != nil {
-					return lineNo, fmt.Errorf("can't write %+v to %s, %s", record, key, err)
+					return lineNo, fmt.Errorf("can't create %+v to %s, %s", record, key, err)
 				}
 			}
 		} else if verboseLog {
