@@ -339,7 +339,7 @@ func (c *Collection) FrameRefresh(name string, verbose bool) error {
 	return c.setFrame(name, f)
 }
 
-// FrameReframe replaces a frame's object list using the
+// FrameReframe **replaces** a frame's object list based on the
 // keys provided.
 func (c *Collection) FrameReframe(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)

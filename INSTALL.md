@@ -33,9 +33,8 @@ For all the released version go to the project page on Github and click latest r
     + (e.g. if you're on a Windows 10 laptop/Surface with a amd64 style CPU you'd choose the Zip file with "windows-amd64" in the name).
 + Download the zip file and unzip the file.
 + Copy the contents of the folder named "bin" to a folder that is in your path 
-    + (e.g. "$HOME/bin" is common).
+    + (e.g. "bin" in your "HOME" directory is common).
 + Adjust your PATH if needed
-    + (e.g. `export PATH="$HOME/bin:$PATH"`)
 + Test
 
 
@@ -43,7 +42,7 @@ For all the released version go to the project page on Github and click latest r
 
 1. Download the zip file
 2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
+3. Copy the executables to "bin" folder in HOME folder (or another folder in your PATH)
 4. Make sure the new location in in our path
 5. Test
 
@@ -63,7 +62,7 @@ zip file.
 
 1. Download the zip file
 2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
+3. Copy the executables to the "bin" directory in your "HOME" directory (or a folder in your path)
 4. Test
 
 Here's an example of the commands run in from the Bash shell on Windows 10 after
@@ -83,7 +82,7 @@ downloading the zip file.
 
 1. Download the zip file
 2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
+3. Copy the executables to the "bin" directory in your "HOME" directory.
 4. Test
 
 Here's an example of the commands run in from the Bash shell after
@@ -105,7 +104,7 @@ Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 suppo
 
 1. Download the zip file
 2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
+3. Copy the executables to `$HOME/bin` (or a folder in your path)
 4. Test
 
 Here's an example of the commands run in from the Bash shell after
@@ -142,5 +141,5 @@ Or clone the repstory and then compile
     make install
 ```
 
-Compilation assumes [go](https://github.com/golang/go) v1.13
+Compilation assumes [go](https://github.com/golang/go) v1.14.3
 

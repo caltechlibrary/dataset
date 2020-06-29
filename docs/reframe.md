@@ -1,28 +1,26 @@
 
 # reframe
 
-This command will regenerate the contents of a frame based on the
-current records associated with the keys in the collection. Optionally
-you can supply a list of new keys which will then replace the existing
-list of keys before regenerating the content.
+This command replace the current keys and object list in a frame based
+on the keys provided.
 
 In the following example the frame name is "f1", the collection is
 "examples.ds". The first example is reframing an existing frame using
-existing keys while the anod the second is of replace the keys of 
-the frame before regenerating it.
+existing keys coming from standard input, the second example performs
+the same thing but is taking a filename to retrieve the list of keys.
+
 
 ```shell
-    dataset reframe example.ds f1
-    dataset reframe example.ds f1 subset.keys
+    cat f1-updated.keys | dataset reframe example.ds f1
+    dataset reframe example.ds f1 f1-updated.keys
 ```
 
 In python
 
 ```python
-    err = dataset.reframe('example.ds', 'f1')
-    subset_keys = generate_subset(dataset.keys('examples.ds'))
-    err = dataset.reframe('example.ds', 'f1', subset_keys)
+    f1_updated_keys = generate_updates_keys()
+    err = dataset.frame_reframe('example.ds', 'f1', f1_updated_keys)
 ```
 
-Releted topics: [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frames](frames.html), [delete-frame](delete-frame.html)
+Releted topics: [frame](frame.html), [refresh](refresh.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frames](frames.html), [delete-frame](delete-frame.html)
 

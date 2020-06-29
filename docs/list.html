@@ -10,51 +10,69 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>list</h1>
-
-<h2>Syntax</h2>
-
-<pre><code>    dataset list COLLECTION_NAME KEYS
-</code></pre>
-
-<h2>Description</h2>
-
-<p>Write a JSON array to standard out (unless you&rsquo;ve specific an
-alternative location with the &ldquo;-output&rdquo; option) for the provided
-KEYS.  If no ids are provided (or none are found) then an empty
-JSON array is return.</p>
-
-<h2>Usage</h2>
-
-<p>An example we&rsquo;re assuming there is are JSON documents with a KEYS
-of &ldquo;r1&rdquo;, &ldquo;r2&rdquo;, and &ldquo;r3&rdquo;. Our collection name is &ldquo;data.ds&rdquo;</p>
-
-<pre><code class="language-shell">    dataset list data.ds r1 r2 r3
-</code></pre>
-
-<p>If &ldquo;r1&rdquo; was &lsquo;{&ldquo;one&rdquo;:1}&rsquo;, &ldquo;r2&rdquo; was &lsquo;{&ldquo;two&rdquo;:2}&rsquo; and &ldquo;r3&rdquo; was &lsquo;{&ldquo;three&rdquo;:3}&rsquo;
-then the output would be</p>
-
-<pre><code class="language-json">    [{&quot;one&quot;:1},{&quot;two&quot;:2},{&quot;three&quot;:3}]
-</code></pre>
-
-<p>Related topics: <a href="keys.html">keys</a>, <a href="read.html">read</a></p>
-
+<h1 id="list">
+list
+</h1>
+<h2 id="syntax">
+Syntax
+</h2>
+<pre><code>    dataset list COLLECTION_NAME KEYS</code></pre>
+<h2 id="description">
+Description
+</h2>
+<p>
+Write a JSON array to standard out (unless you’ve specific an alternative location with the “-output” option) for the provided KEYS. If no ids are provided (or none are found) then an empty JSON array is return.
+</p>
+<h2 id="usage">
+Usage
+</h2>
+<p>
+An example we’re assuming there is are JSON documents with a KEYS of “r1”, “r2”, and “r3”. Our collection name is “data.ds”
+</p>
+<pre class="shell"><code>    dataset list data.ds r1 r2 r3</code></pre>
+<p>
+If “r1” was ‘{“one”:1}’, “r2” was ‘{“two”:2}’ and “r3” was ‘{“three”:3}’ then the output would be
+</p>
+<div id="cb3" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1"></a>    <span class="ot">[</span><span class="fu">{</span><span class="dt">&quot;one&quot;</span><span class="fu">:</span><span class="dv">1</span><span class="fu">}</span><span class="ot">,</span><span class="fu">{</span><span class="dt">&quot;two&quot;</span><span class="fu">:</span><span class="dv">2</span><span class="fu">}</span><span class="ot">,</span><span class="fu">{</span><span class="dt">&quot;three&quot;</span><span class="fu">:</span><span class="dv">3</span><span class="fu">}</span><span class="ot">]</span></span></code></pre>
+</div>
+<p>
+Related topics: <a href="keys.html">keys</a>, <a href="read.html">read</a>
+</p>
 </section>
 
 <footer>

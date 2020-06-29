@@ -57,6 +57,7 @@
 - [prune](prune.html)
 - [read](read.html)
 - [reframe](reframe.html)
+- [refresh](refresh.html)
 - [repair](repair.html)
 - [samples](../how-to/samples.html)
 - [status](status.html)

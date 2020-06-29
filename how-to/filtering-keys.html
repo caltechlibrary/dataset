@@ -10,43 +10,55 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="../docs/">Documentation</a></li>
-<li><a href="./">Tutorials</a></li>
-<li><a href="../docs/topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="../docs/">Documentation</a>
+</li>
+<li>
+<a href="./">Tutorials</a>
+</li>
+<li>
+<a href="../docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h2>Filters and sorts</h2>
-
-<p><em>dataset keys</em> can be used to to filter and sort a key list.
-Here&rsquo;s is a simple case for match records in a collection named
-<strong>characters.ds</strong> where the given name is equal to &ldquo;Mojo&rdquo;. We will
-save the result in a file called <em>mojo.keys</em>.</p>
-
-<pre><code class="language-shell">   dataset keys characters.ds '(eq .given &quot;Mojo&quot;)' &gt; mojo.keys
-</code></pre>
-
-<p>You can also use an existing key list (e.g. <em>mojo.keys</em>)
-to sub select based on a new filter and/or sort expression.
-We will filter for a family name of &ldquo;Sam&rdquo; and sort by the age field.</p>
-
-<pre><code class="language-shell">   dataset keys -key-file=mojo.keys characters.ds \
-                '(eq .family &quot;Sam&quot;)' '+.age'
-</code></pre>
-
-<p>You can improve the performance of filtering/sorting by
-breaking it down to steps for large collections. First filter
-the keys you want. Then sort the filtered list.</p>
-
+<h2 id="filters-and-sorts">
+Filters and sorts
+</h2>
+<p>
+<em>dataset keys</em> can be used to to filter and sort a key list. Here’s is a simple case for match records in a collection named <strong>characters.ds</strong> where the given name is equal to “Mojo”. We will save the result in a file called <em>mojo.keys</em>.
+</p>
+<pre class="shell"><code>   dataset keys characters.ds &#39;(eq .given &quot;Mojo&quot;)&#39; &gt; mojo.keys</code></pre>
+<p>
+You can also use an existing key list (e.g. <em>mojo.keys</em>) to sub select based on a new filter and/or sort expression. We will filter for a family name of “Sam” and sort by the age field.
+</p>
+<pre class="shell"><code>   dataset keys -key-file=mojo.keys characters.ds \
+                &#39;(eq .family &quot;Sam&quot;)&#39; &#39;+.age&#39;</code></pre>
+<p>
+You can improve the performance of filtering/sorting by breaking it down to steps for large collections. First filter the keys you want. Then sort the filtered list.
+</p>
 </section>
 
 <footer>
