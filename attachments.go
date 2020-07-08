@@ -19,22 +19,18 @@
 package dataset
 
 import (
-	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"time"
 )
 
-// Attachment is a structure for holding non-JSON content you wish to store alongside a JSON document in a collection
+// Attachment is a structure for holding non-JSON content metadata
+// you wish to store alongside a JSON document in a collection
 type Attachment struct {
 	// Name is the filename and path to be used inside the generated tar file
 	Name string `json:"name"`
-
-	// Content is a byte array for storing the content associated with Name
-	// NOTE: It is NOT written out in the Attachment metadata, hence json:"-".
-	Content []byte `json:"-"`
 
 	// Size remains to to help us migrate pre v0.0.61 collections.
 	// It should reflect the last size added.
@@ -209,18 +205,29 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 
 	// Update the metadata
 	// Read in the attachment so I can compute the checksum as well as size.
-	content, err := ioutil.ReadAll(buf)
+	checksum, err := calcChecksum(fullName)
+	if err != nil {
+		return fmt.Errorf("Can't calc checksum, %q, %s", fullName, err)
+	}
+	attachmentObject.Name = fName
+	// Add/update our version href
+	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	// Write out attached filename and calc size and checksum
+	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
 	if err != nil {
 		return err
 	}
-	if len(content) == 0 {
-		return fmt.Errorf("Zero bytes read from file stream")
+	w, err := os.Create(attachmentObject.HRef)
+	if err != nil {
+		return fmt.Errorf("Can't create %q, %s", attachmentObject.HRef, err)
 	}
-	attachmentObject.Content = content
-	attachmentObject.Name = fName
-	attachmentObject.Version = semver
-	l := int64(len(content))
+	defer w.Close()
+	l, err := io.Copy(w, buf)
+	if err != nil {
+		return fmt.Errorf("Can't write %q, %s", attachmentObject.HRef, err)
+	}
 	attachmentObject.Size = l
+	attachmentObject.Version = semver
 	if attachmentObject.Sizes == nil {
 		attachmentObject.Sizes = make(map[string]int64)
 	}
@@ -229,9 +236,7 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	if attachmentObject.Checksums == nil {
 		attachmentObject.Checksums = make(map[string]string)
 	}
-	attachmentObject.Checksums[semver] = fmt.Sprintf("%x", md5.Sum(content))
-	// Add/update our version href
-	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	attachmentObject.Checksums[semver] = checksum
 	// We need to make the semver directory if necessary
 	if attachmentObject.VersionHRefs == nil {
 		attachmentObject.VersionHRefs = make(map[string]string)
@@ -243,15 +248,6 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	}
 	attachmentObject.Modified = now.Format(time.RFC3339)
 
-	// Write out attached filename
-	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
-	if err != nil {
-		return err
-	}
-	err = c.Store.WriteFile(attachmentObject.HRef, attachmentObject.Content, 0777)
-	if err != nil {
-		return err
-	}
 	jsonObject["_Attachments"] = updateAttachmentList(attachmentList, attachmentObject)
 
 	// Write out updated JSON Object and return any error
@@ -300,17 +296,34 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 
 	// Update the metadata
 	// Read in the attachment so I can compute the checksum as well as size.
-	content, err := ioutil.ReadFile(fullName)
+	checksum, err := calcChecksum(fullName)
 	if err != nil {
-		return err
+		return fmt.Errorf("Checksum error %q, %s", fullName, err)
 	}
-	if len(content) == 0 {
-		return fmt.Errorf("Zero bytes read from %s", fullName)
-	}
-	attachmentObject.Content = content
+
 	attachmentObject.Name = fName
 	attachmentObject.Version = semver
-	l := int64(len(content))
+	// Add/update our version href
+	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	// Write out attached filename and update size.
+	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
+	if err != nil {
+		return fmt.Errorf("Can't create directory for %q, %s", attachmentObject.HRef, err)
+	}
+	r, err := os.Open(fullName)
+	if err != nil {
+		return fmt.Errorf("Can't read %q, %s", fullName, err)
+	}
+	defer r.Close()
+	w, err := os.Create(attachmentObject.HRef)
+	if err != nil {
+		return fmt.Errorf("Can't create %q, %s", attachmentObject.HRef, err)
+	}
+	defer w.Close()
+	l, err := io.Copy(w, r)
+	if err != nil {
+		return fmt.Errorf("Copy error, %s", err)
+	}
 	attachmentObject.Size = l
 	if attachmentObject.Sizes == nil {
 		attachmentObject.Sizes = make(map[string]int64)
@@ -320,9 +333,7 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	if attachmentObject.Checksums == nil {
 		attachmentObject.Checksums = make(map[string]string)
 	}
-	attachmentObject.Checksums[semver] = fmt.Sprintf("%x", md5.Sum(content))
-	// Add/update our version href
-	attachmentObject.HRef = c.Store.Join(docDir, semver, fName)
+	attachmentObject.Checksums[semver] = checksum
 	// We need to make the semver directory if necessary
 	if attachmentObject.VersionHRefs == nil {
 		attachmentObject.VersionHRefs = make(map[string]string)
@@ -334,15 +345,6 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	}
 	attachmentObject.Modified = now.Format(time.RFC3339)
 
-	// Write out attached filename
-	err = c.Store.MkdirAll(c.Store.Dir(attachmentObject.HRef), 0777)
-	if err != nil {
-		return err
-	}
-	err = c.Store.WriteFile(attachmentObject.HRef, attachmentObject.Content, 0777)
-	if err != nil {
-		return err
-	}
 	jsonObject["_Attachments"] = updateAttachmentList(attachmentList, attachmentObject)
 
 	// Write out updated JSON Object and return any error
