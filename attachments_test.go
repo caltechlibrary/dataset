@@ -59,9 +59,8 @@ func TestAttachments(t *testing.T) {
 	semver := "v0.0.0"
 	motto := []byte("Wowie Zowie!")
 	data := &Attachment{
-		Name:    "impressed.txt",
-		Content: motto,
-		Size:    int64(len(motto)),
+		Name: "impressed.txt",
+		Size: int64(len(motto)),
 		Checksums: map[string]string{
 			semver: fmt.Sprintf("%x", md5.Sum(motto)),
 		},
@@ -70,7 +69,7 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("marshal error %s", err)
 		t.FailNow()
 	}
-	if err := ioutil.WriteFile(path.Join("testdata", data.Name), data.Content, 0777); err != nil {
+	if err := ioutil.WriteFile(path.Join("testdata", data.Name), motto, 0777); err != nil {
 		t.Errorf("Can't create test %q, %s", data.Name, err)
 		t.FailNow()
 	}
