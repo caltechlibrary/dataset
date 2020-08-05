@@ -10,151 +10,73 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="../how-to/">Tutorials</a></li>
+<li><a href="topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="keys">
-keys
-</h1>
-<h2 id="syntax">
-Syntax
-</h2>
-<pre><code>    dataset keys COLLECTION_NAME</code></pre>
-<h2 id="description">
-Description
-</h2>
-<p>
-List the JSON_DOCUMENT_ID available in a collection. Normally order is not guaranted to be the between calls. <em>keys</em> also supports <em>filter</em> and <em>sort</em> expressions. For each JSON document which the filter expression evaluates to true for a key will be return. If no sort expression is supplied the order is not guaranteed. If a sort expression is supplied then it will be used to sort the keys matching the filter expression.
-</p>
-<p>
-<em>key</em> also accepts atone to two additional The “keys” option
-</p>
-<h2 id="usage">
-Usage
-</h2>
-<p>
-Three examples of usage are shown below - return all keys (unsorted), return all keys sorted by descending <code>.family_name</code>, return only keys where the <code>.group</code> is <code>“alumni”</code> sorted by ascending <code>.family_name</code>.
-</p>
+<h1>keys</h1>
+<h2>Syntax</h2>
+<pre><code>    dataset keys COLLECTION_NAME
+</code></pre>
+<h2>Description</h2>
+<p>List the JSON_DOCUMENT_ID available in a collection. Normally order is not guaranted to be the between calls. <em>keys</em> also supports <em>filter</em> and <em>sort</em> expressions. For each JSON document which the filter expression evaluates to true for a key will be return. If no sort expression is supplied the order is not guaranteed. If a sort expression is supplied then it will be used to sort the keys matching the filter expression.</p>
+<p><em>key</em> also accepts atone to two additional The "keys" option</p>
+<h2>Usage</h2>
+<p>Three examples of usage are shown below - return all keys (unsorted), return all keys sorted by descending <code>.family_name</code>, return only keys where the <code>.group</code> is <code>"alumni"</code> sorted by ascending <code>.family_name</code>.</p>
 <pre class="shell"><code>    dataset keys COLLECTION_NAME
     dataset keys COLLECTION_NAME true &#39;-.family_name&#39;
-    dataset keys COLLECTION_NAME &#39;(eq .group &quot;alumni&quot;)&#39; &#39;+.family_name&#39;</code></pre>
-<h2 id="filter-expressions">
-filter expressions
-</h2>
-<p>
-A <em>filter expression</em> is based on the Go template conditional expressions. It uses a prefix notation for the logic (e.g.  eq - equal, ne - not equal, lt - less than, gt greater than) and the value(s) to be compared in <a href="dotpath.html">dotpath notation</a>.
-</p>
-<p>
-Filters can be simple expressions that result in “true” or “false” or compound expressions (e.g. expressions combined with <em>and</em> and <em>or</em>) that evaluate to “true” or “false”. Simple expressions can isolated by parenthasis (e.g. <code>(and (eq .i 1) (ne .s “1”) (ne .s “one”))</code>).
-</p>
-<p>
-Example filter operators
-</p>
+    dataset keys COLLECTION_NAME &#39;(eq .group &quot;alumni&quot;)&#39; &#39;+.family_name&#39;
+</code></pre>
+<h2>filter expressions</h2>
+<p>A <em>filter expression</em> is based on the Go template conditional expressions. It uses a prefix notation for the logic (e.g. eq - equal, ne - not equal, lt - less than, gt greater than) and the value(s) to be compared in <a href="dotpath.html">dotpath notation</a>.</p>
+<p>Filters can be simple expressions that result in "true" or "false" or compound expressions (e.g. expressions combined with <em>and</em> and <em>or</em>) that evaluate to "true" or "false". Simple expressions can isolated by parenthasis (e.g. <code>(and (eq .i 1) (ne .s "1") (ne .s "one"))</code>).</p>
+<p>Example filter operators</p>
 <ul>
-<li>
-eq - equal (must be same type and value, e.g. 1 does not equal “1”)
-</li>
-<li>
-nq - not equal (comparing same type but different values)
-</li>
-<li>
-lt - less than
-</li>
-<li>
-gt - greater than
-</li>
-<li>
-match - given a regular expression and string data return true if they match
-</li>
-<li>
-and - allows you to combine two expression and if both true the expression is true.
-</li>
-<li>
-or - allows you to combine two or more expressions where one is true then expression is true.
-</li>
+<li>eq - equal (must be same type and value, e.g. 1 does not equal "1")</li>
+<li>nq - not equal (comparing same type but different values)</li>
+<li>lt - less than</li>
+<li>gt - greater than</li>
+<li>match - given a regular expression and string data return true if they match</li>
+<li>and - allows you to combine two expression and if both true the expression is true.</li>
+<li>or - allows you to combine two or more expressions where one is true then expression is true.</li>
 </ul>
-<h4 id="simple">
-Simple
-</h4>
-<p>
-A field, <code>.family_name</code>, matches a known value, “Feynman”.
-</p>
-<pre><code>    &#39;(eq .family_name &quot;Feynman&quot;)&#39;</code></pre>
-<p>
-A field, <code>.family_name</code>, does not match a known value, “Feynman”.
-</p>
-<p>
-A field, <code>.family_name</code>, does not match value
-</p>
-<pre><code>    &#39;(ne .family_name &quot;Feynman&quot;)&#39;</code></pre>
-<p>
-A field, <code>.family_name</code>, match the regular expression <code>Feym*n</code>.
-</p>
-<pre><code>    &#39;(match &quot;Feynm*n&quot; .family_name)&#39;</code></pre>
-<h4 id="compound">
-Compound
-</h4>
-<p>
-Two fields match, <code>.family_name</code> and <code>.given_name</code>, known values “Feynman” and “Richard”.
-</p>
-<pre><code>    &#39;(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))&#39;</code></pre>
-<p>
-NOTE: That the filters experessions are data type aware. So “1” is not the same as 1. Likewise 1 is not the same as 1.0.
-</p>
-<h2 id="sort-expressions">
-sort expressions
-</h2>
-<p>
-The “keys” option provides for simple one level sorting. Sorting is described by a plus or minus followed by a dotpath to a simple field type (i.e. string, int, or float JSON types). In our previous examples sorting ascending by <code>.family_name</code> would be expressed as <code>+.family_name</code>. To sort by descending <code>.family_name</code> you would use the expression <code>-.family_name</code>. By default we assume an ascending sort so in practice you can omit a leading “+”.
-</p>
-<p>
-In this example we listing last names of “Smith” sorting by ascending given name. The collection name is “people.ds”.
-</p>
-<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;.given_name&#39;</code></pre>
-<p>
-In this example we list last anes of “Smith” sorted by descending given name.
-</p>
-<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;-.given_name&#39;</code></pre>
-<h2 id="getting-a-sample-of-keys">
-Getting a “sample” of keys
-</h2>
-<p>
-The <em>dataset</em> command respects an option named <code>-sample N</code> where N is the size (number) of the keys to include in the sample. The sample is taken after any filters are applied but may be less than requested size if the the filtered results are few than the sample size. The basic process is to get a set of keys, randomly sort the keys, then return the top N number of those keys.
-</p>
-<p>
-Related topics: <a href="count.html">count</a>, <a href="clone">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="frame.html">frame</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-objects.html">frame-objects</a>
-</p>
+<h4>Simple</h4>
+<p>A field, <code>.family_name</code>, matches a known value, "Feynman".</p>
+<pre><code>    &#39;(eq .family_name &quot;Feynman&quot;)&#39;
+</code></pre>
+<p>A field, <code>.family_name</code>, does not match a known value, "Feynman".</p>
+<p>A field, <code>.family_name</code>, does not match value</p>
+<pre><code>    &#39;(ne .family_name &quot;Feynman&quot;)&#39;
+</code></pre>
+<p>A field, <code>.family_name</code>, match the regular expression <code>Feym*n</code>.</p>
+<pre><code>    &#39;(match &quot;Feynm*n&quot; .family_name)&#39;
+</code></pre>
+<h4>Compound</h4>
+<p>Two fields match, <code>.family_name</code> and <code>.given_name</code>, known values "Feynman" and "Richard".</p>
+<pre><code>    &#39;(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))&#39;
+</code></pre>
+<p>NOTE: That the filters experessions are data type aware. So "1" is not the same as 1. Likewise 1 is not the same as 1.0.</p>
+<h2>sort expressions</h2>
+<p>The "keys" option provides for simple one level sorting. Sorting is described by a plus or minus followed by a dotpath to a simple field type (i.e. string, int, or float JSON types). In our previous examples sorting ascending by <code>.family_name</code> would be expressed as <code>+.family_name</code>. To sort by descending <code>.family_name</code> you would use the expression <code>-.family_name</code>. By default we assume an ascending sort so in practice you can omit a leading "+".</p>
+<p>In this example we listing last names of "Smith" sorting by ascending given name. The collection name is "people.ds".</p>
+<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;.given_name&#39;
+</code></pre>
+<p>In this example we list last anes of "Smith" sorted by descending given name.</p>
+<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;-.given_name&#39;
+</code></pre>
+<h2>Getting a "sample" of keys</h2>
+<p>The <em>dataset</em> command respects an option named <code>-sample N</code> where N is the size (number) of the keys to include in the sample. The sample is taken after any filters are applied but may be less than requested size if the the filtered results are few than the sample size. The basic process is to get a set of keys, randomly sort the keys, then return the top N number of those keys.</p>
+<p>Related topics: <a href="count.html">count</a>, <a href="clone">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="frame.html">frame</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-objects.html">frame-objects</a></p>
 </section>
 
 <footer>

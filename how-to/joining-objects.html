@@ -10,78 +10,36 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h2 id="joining-objects">
-Joining Objects
-</h2>
-<p>
-You can augement JSON key/value pairs for a JSON document in your collection using the join operation. This works similar to the datatools cli called jsonjoin.
-</p>
-<p>
-In this example our collection is called <em>people.ds</em>. Let’s assume you have a record in your collection with a key ‘jane.doe’. It has three fields - name, email, age.
-</p>
-<div id="cb1" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}</span></span></code></pre>
-</div>
-<p>
-You also have an external JSON document called profile.json. It looks like
-</p>
-<div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;world renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre>
-</div>
-<p>
-You can merge the unique fields in profile.json with your existing jane.doe record
-</p>
-<pre class="shell"><code>    dataset join people.ds jane.doe profile.json</code></pre>
-<p>
-The result would look like
-</p>
-<div id="cb4" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre>
-</div>
-<p>
-If you wanted to overwrite the common fields you would use ‘join overwrite’
-</p>
-<pre class="shell"><code>    dataset join -overwrite people.ds jane.doe profile.json</code></pre>
-<p>
-Which would result in a record like
-</p>
-<div id="cb6" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre>
-</div>
+<h2>Joining Objects</h2>
+<p>You can augement JSON key/value pairs for a JSON document in your collection using the join operation. This works similar to the datatools cli called jsonjoin.</p>
+<p>In this example our collection is called <em>people.ds</em>. Let's assume you have a record in your collection with a key 'jane.doe'. It has three fields - name, email, age.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}</span></span></code></pre></div>
+<p>You also have an external JSON document called profile.json. It looks like</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;world renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>You can merge the unique fields in profile.json with your existing jane.doe record</p>
+<pre class="shell"><code>    dataset join people.ds jane.doe profile.json
+</code></pre>
+<p>The result would look like</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>If you wanted to overwrite the common fields you would use 'join overwrite'</p>
+<pre class="shell"><code>    dataset join -overwrite people.ds jane.doe profile.json
+</code></pre>
+<p>Which would result in a record like</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre></div>
 </section>
 
 <footer>

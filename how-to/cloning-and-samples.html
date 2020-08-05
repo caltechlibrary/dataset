@@ -10,106 +10,51 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="cloning">
-Cloning
-</h1>
-<p>
-There are times where it is useful to make a copy of a collection, take a random sample of a collection or even split a collection into a training set and test set. Cloning is the general term used in dataset for these types of operations.
-</p>
-<h2 id="cloning-an-entire-collection">
-Cloning an entire collection
-</h2>
-<p>
-First since dataset is a folder with collections.json, pairtree and frames we can “clone” an the complete collection by simply copying the folder and its contents. This can be done with standard operating system tools (e.g. File managers, command line).
-</p>
-<h2 id="taking-a-sample">
-Taking a sample
-</h2>
-<p>
-More frequently I’ve found I need to take a sample of a collection (e.g. because I am developing a bash or Python script that does some batch processing and testing on the whole collection takes too long). This is where you want to use <em>dataset</em>’s <strong>clone</strong> verb. The basic idea is to get a sample list of keys then use the <strong>clone</strong>. In the command line version we use the “-sample” option with the <strong>keys</strong> verb, in Python you need to supply your own function to get a sample list of keys.
-</p>
-<p>
-In the following examples the origin collection is <em>friends.ds</em> or new sample collection will be <em>friends-sample.ds</em>
-</p>
-<p>
-On the command line –
-</p>
+<h1>Cloning</h1>
+<p>There are times where it is useful to make a copy of a collection, take a random sample of a collection or even split a collection into a training set and test set. Cloning is the general term used in dataset for these types of operations.</p>
+<h2>Cloning an entire collection</h2>
+<p>First since dataset is a folder with collections.json, pairtree and frames we can "clone" an the complete collection by simply copying the folder and its contents. This can be done with standard operating system tools (e.g. File managers, command line).</p>
+<h2>Taking a sample</h2>
+<p>More frequently I've found I need to take a sample of a collection (e.g. because I am developing a bash or Python script that does some batch processing and testing on the whole collection takes too long). This is where you want to use <em>dataset</em>'s <strong>clone</strong> verb. The basic idea is to get a sample list of keys then use the <strong>clone</strong>. In the command line version we use the "-sample" option with the <strong>keys</strong> verb, in Python you need to supply your own function to get a sample list of keys.</p>
+<p>In the following examples the origin collection is <em>friends.ds</em> or new sample collection will be <em>friends-sample.ds</em></p>
+<p>On the command line --</p>
 <pre class="shell"><code>    dataset keys -sample=5 friends.ds &gt; sample.keys
-    dataset clone -i sample.keys friends.ds friends-sample.ds</code></pre>
-<p>
-In Python I am assuming you have defined a function called “get_sample_keys()” your self.
-</p>
-<div id="cb2" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a>    keys <span class="op">=</span> get_sample_keys(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>    err <span class="op">=</span> dataset.clone(<span class="st">&#39;friends.ds&#39;</span>, keys, <span class="st">&#39;friends-sample.ds&#39;</span>)</span></code></pre>
-</div>
-<p>
-As you can see this version of clone works off a set of supplied keys. What if you don’t want to calculate the key list first? e.g I am working in Python and I don’t want to have to write “get_sample_keys()”! That’s what <strong>clone-sample</strong> (or in Python <strong>clone_sample</strong>) is for.
-</p>
-<h2 id="clone-sample">
-Clone sample
-</h2>
-<p>
-The <strong>clone-sample</strong> verb is about generating sample collections without having to take the extra step of generating a list of sample keys. As an added benefit <strong>clone-sample</strong> knows which keys were not selected in the sample so it is convienent for creating “training” and “test” collection if you are applying machine learning techniques.
-</p>
-<p>
-Let’s take a shorten version of generating a sample of size 5 for our friends collection.
-</p>
-<pre class="shell"><code>    dataset clone-sample -size=5 friends.ds friends-sample.ds</code></pre>
-<p>
-Likewise in python this becomes
-</p>
-<div id="cb4" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>    err <span class="op">=</span> dataset.clone_sample(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>, <span class="st">&#39;friends-sample.ds&#39;</span>)</span>
+    dataset clone -i sample.keys friends.ds friends-sample.ds
+</code></pre>
+<p>In Python I am assuming you have defined a function called "get_sample_keys()" your self.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a>    keys <span class="op">=</span> get_sample_keys(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>    err <span class="op">=</span> dataset.clone(<span class="st">&#39;friends.ds&#39;</span>, keys, <span class="st">&#39;friends-sample.ds&#39;</span>)</span></code></pre></div>
+<p>As you can see this version of clone works off a set of supplied keys. What if you don't want to calculate the key list first? e.g I am working in Python and I don't want to have to write "get_sample_keys()"! That's what <strong>clone-sample</strong> (or in Python <strong>clone_sample</strong>) is for.</p>
+<h2>Clone sample</h2>
+<p>The <strong>clone-sample</strong> verb is about generating sample collections without having to take the extra step of generating a list of sample keys. As an added benefit <strong>clone-sample</strong> knows which keys were not selected in the sample so it is convienent for creating "training" and "test" collection if you are applying machine learning techniques.</p>
+<p>Let's take a shorten version of generating a sample of size 5 for our friends collection.</p>
+<pre class="shell"><code>    dataset clone-sample -size=5 friends.ds friends-sample.ds
+</code></pre>
+<p>Likewise in python this becomes</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>    err <span class="op">=</span> dataset.clone_sample(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>, <span class="st">&#39;friends-sample.ds&#39;</span>)</span>
 <span id="cb4-2"><a href="#cb4-2"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
-<span id="cb4-3"><a href="#cb4-3"></a>        <span class="bu">print</span>(err)</span></code></pre>
-</div>
-<h3 id="training-and-test-collections">
-Training and test collections
-</h3>
-<p>
-By adding a second target collection name we can use <strong>clone-sample</strong> to create both the training and test collection. Here’s an example with our <em>friends.ds</em> collection creating <em>training.ds</em> and <em>test.ds</em>.
-</p>
-<pre class="shell"><code>    dataset clone-sample -size=5 friends.ds training.ds test.ds</code></pre>
-<div id="cb6" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>    err <span class="op">=</span> dataset.clone_sample(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>, <span class="st">&#39;training.ds&#39;</span>, <span class="st">&#39;test.ds&#39;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a>        <span class="bu">print</span>(err)</span></code></pre></div>
+<h3>Training and test collections</h3>
+<p>By adding a second target collection name we can use <strong>clone-sample</strong> to create both the training and test collection. Here's an example with our <em>friends.ds</em> collection creating <em>training.ds</em> and <em>test.ds</em>.</p>
+<pre class="shell"><code>    dataset clone-sample -size=5 friends.ds training.ds test.ds
+</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1"></a>    err <span class="op">=</span> dataset.clone_sample(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>, <span class="st">&#39;training.ds&#39;</span>, <span class="st">&#39;test.ds&#39;</span>)</span>
 <span id="cb6-2"><a href="#cb6-2"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
-<span id="cb6-3"><a href="#cb6-3"></a>        <span class="bu">print</span>(err)</span></code></pre>
-</div>
+<span id="cb6-3"><a href="#cb6-3"></a>        <span class="bu">print</span>(err)</span></code></pre></div>
 </section>
 
 <footer>

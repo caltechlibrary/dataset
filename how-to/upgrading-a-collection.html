@@ -10,51 +10,28 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="upgrading-your-dataset-collections">
-Upgrading your dataset collection(s)
-</h1>
-<p>
-The <em>dataset</em> Go package is still rapidly evolving though it is now commonly used at Caltech Library. As a result we’ve developed an easy method for migration collections from an old version to a new version. There “usual” to upgrading your is to use use the “check” and “repair” features of the <em>dataset</em> command line tool.
-</p>
+<h1>Upgrading your dataset collection(s)</h1>
+<p>The <em>dataset</em> Go package is still rapidly evolving though it is now commonly used at Caltech Library. As a result we've developed an easy method for migration collections from an old version to a new version. There "usual" to upgrading your is to use use the "check" and "repair" features of the <em>dataset</em> command line tool.</p>
 <pre><code>    dataset check mycollection.ds
     # you&#39;ll get a verbose report to the console
     dataset repair mycollection.ds
     # dataset will not attempt to &quot;repair&quot; including upgrade, 
-    # your collection</code></pre>
+    # your collection
+</code></pre>
 </section>
 
 <footer>

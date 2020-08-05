@@ -10,70 +10,35 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="samples">
-Samples
-</h1>
-<p>
-Getting a sample of a collection and be done by generating a random sample of keys or by cloning a collection based on a random sample of objects.
-</p>
-<h2 id="getting-a-random-sample-of-keys">
-Getting a random sample of keys
-</h2>
-<p>
-Create a random sample of keys. This uses the keys verb.
-</p>
-<p>
-In this example 3 randomly selected keys would be returned from the collection named “mycollection.ds”.
-</p>
-<pre class="shell"><code>    dataset keys -sample 3 mycollection.ds</code></pre>
-<h2 id="cloning-a-random-sample-of-objects-from-a-collection">
-Cloning a random sample of objects from a collection
-</h2>
-<p>
-When cloning a randomize sample of objects from a collection you often want two collections. Typically this is a training collection and a test collection. The “clone-sample” verb supports this when you provide two collection destinations.
-</p>
-<p>
-In this example we create a training and testing collections based on a training sample size of 1000.
-</p>
-<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds training.ds test.ds</code></pre>
-<p>
-If you only want a single sample collection skip the second collection name.
-</p>
-<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds small-sample.ds</code></pre>
+<h1>Samples</h1>
+<p>Getting a sample of a collection and be done by generating a random sample of keys or by cloning a collection based on a random sample of objects.</p>
+<h2>Getting a random sample of keys</h2>
+<p>Create a random sample of keys. This uses the keys verb.</p>
+<p>In this example 3 randomly selected keys would be returned from the collection named "mycollection.ds".</p>
+<pre class="shell"><code>    dataset keys -sample 3 mycollection.ds
+</code></pre>
+<h2>Cloning a random sample of objects from a collection</h2>
+<p>When cloning a randomize sample of objects from a collection you often want two collections. Typically this is a training collection and a test collection. The "clone-sample" verb supports this when you provide two collection destinations.</p>
+<p>In this example we create a training and testing collections based on a training sample size of 1000.</p>
+<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds training.ds test.ds
+</code></pre>
+<p>If you only want a single sample collection skip the second collection name.</p>
+<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds small-sample.ds
+</code></pre>
 </section>
 
 <footer>

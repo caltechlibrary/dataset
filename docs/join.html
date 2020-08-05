@@ -10,95 +10,46 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="../how-to/">Tutorials</a></li>
+<li><a href="topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="join">
-join
-</h1>
-<h2 id="syntax">
-Syntax
-</h2>
+<h1>join</h1>
+<h2>Syntax</h2>
 <pre><code>    dataset join [OPTION] COLLECTION_NAME KEY JSON_EXPRESSION
     dataset join [OPTION] COLLECTION_NAME KEY JSON_FILENAME
     dataset join -overwrite COLLECTION_NAME KEY JSON_FILENAME
     dataset join -i JSON_DOCUMENT_NAME COLLECTION_NAME KEY
-    cat JSON_DOCUMENT_NAME | dataset join -i - COLLECTION_NAME KEY</code></pre>
-<h2 id="description">
-Description
-</h2>
-<p>
-<em>join</em> will allow you to merge by appending or merge by overwriting to an existing JSON document stored in a collection identified by KEY. With “append” only new fields will be added to the record. If you specify “overwrite” new fields will be added and existing fields in common will be overwritten.
-</p>
-<p>
-<em>join</em> is helpful in building up an aggregated record where you have a common KEY.
-</p>
-<h2 id="usage">
-Usage
-</h2>
-<p>
-Let’s assume you have a record in your collection with a key ‘jane.doe’. It has three fields - name, email, age.
-</p>
-<div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}</span></span></code></pre>
-</div>
-<p>
-You also have an external JSON document called profile.json. It looks like
-</p>
-<div id="cb3" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;world renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre>
-</div>
-<p>
-You can merge the unique fields in profile.json with your existing jane.doe record (where the existing record id is “jane.doe”). The collection is “people.ds”
-</p>
-<pre class="shell"><code>    dataset join people.ds jane.doe profile.json</code></pre>
-<p>
-The result would look like
-</p>
-<div id="cb5" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre>
-</div>
-<p>
-If you wanted to overwrite the common fields you would use ‘join overwrite’
-</p>
-<pre class="shell"><code>    dataset join -overwrite people.ds jane.doe profile.json</code></pre>
-<p>
-Which would result in a record like
-</p>
-<div id="cb7" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre>
-</div>
+    cat JSON_DOCUMENT_NAME | dataset join -i - COLLECTION_NAME KEY
+</code></pre>
+<h2>Description</h2>
+<p><em>join</em> will allow you to merge by appending or merge by overwriting to an existing JSON document stored in a collection identified by KEY. With "append" only new fields will be added to the record. If you specify "overwrite" new fields will be added and existing fields in common will be overwritten.</p>
+<p><em>join</em> is helpful in building up an aggregated record where you have a common KEY.</p>
+<h2>Usage</h2>
+<p>Let's assume you have a record in your collection with a key 'jane.doe'. It has three fields - name, email, age.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">}</span></span></code></pre></div>
+<p>You also have an external JSON document called profile.json. It looks like</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;world renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>You can merge the unique fields in profile.json with your existing jane.doe record (where the existing record id is "jane.doe"). The collection is "people.ds"</p>
+<pre class="shell"><code>    dataset join people.ds jane.doe profile.json
+</code></pre>
+<p>The result would look like</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jd@example.org&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>If you wanted to overwrite the common fields you would use 'join overwrite'</p>
+<pre class="shell"><code>    dataset join -overwrite people.ds jane.doe profile.json
+</code></pre>
+<p>Which would result in a record like</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Doe, Jane&quot;</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;jane.doe@example.edu&quot;</span><span class="fu">,</span> <span class="dt">&quot;age&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span> <span class="dt">&quot;bio&quot;</span><span class="fu">:</span> <span class="st">&quot;renowned geophysist&quot;</span><span class="fu">}</span></span></code></pre></div>
 </section>
 
 <footer>

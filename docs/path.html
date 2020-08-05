@@ -10,63 +10,31 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="./">Documentation</a></li>
+<li><a href="../how-to/">Tutorials</a></li>
+<li><a href="topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="path">
-path
-</h1>
-<h2 id="syntax">
-Syntax
-</h2>
-<pre><code>    dataset path COLLETION_NAME KEY</code></pre>
-<h2 id="description">
-Description
-</h2>
-<p>
-<em>path</em> will return the full path to a JSON Document with the provided KEY. This is particularly useful when you have your <em>dataset</em> collection on local disc. This allows you to process the JSON document directory with whatever tools you have at hand. Use with caution.
-</p>
-<h2 id="usage">
-Usage
-</h2>
-<p>
-In this example we are trying to find the full path to a JSON document with an KEY of “r1”. Our collection name is “data.ds”.
-</p>
-<pre class="shell"><code>    dataset path data.ds r1</code></pre>
-<p>
-Related topics: <a href="keys.html">keys</a>, <a href="read.html">read</a>
-</p>
+<h1>path</h1>
+<h2>Syntax</h2>
+<pre><code>    dataset path COLLETION_NAME KEY
+</code></pre>
+<h2>Description</h2>
+<p><em>path</em> will return the full path to a JSON Document with the provided KEY. This is particularly useful when you have your <em>dataset</em> collection on local disc. This allows you to process the JSON document directory with whatever tools you have at hand. Use with caution.</p>
+<h2>Usage</h2>
+<p>In this example we are trying to find the full path to a JSON document with an KEY of "r1". Our collection name is "data.ds".</p>
+<pre class="shell"><code>    dataset path data.ds r1
+</code></pre>
+<p>Related topics: <a href="keys.html">keys</a>, <a href="read.html">read</a></p>
 </section>
 
 <footer>

@@ -10,57 +10,31 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="samples">
-Samples
-</h1>
-<p>
-<em>dataset keys</em> and <em>dataset find …</em> support the <code>-sample</code> option. The sample option expects a sample size as an argument. If the sample size is greater than zero then a sample output will be taken. On <em>dataset keys</em> the sample is taken after any filter is supplied.<br /> Likewise for <em>dataset find</em> the sample is taken after the query results have been calculated. Is the sample size is greater then the results returned then the who results set is return without random sampling.<br /> If sample size is less than result set then a random sampling of the results is taken.
-</p>
-<p>
-If you are doing Machine Leaning type of sampling (e.g. calculating a test and training set) then normally you create a <em>test</em> key list like this
-</p>
-<pre><code>    dataset -sample=&quot;$N&quot; keys</code></pre>
-<p>
-where
-</p>
-<pre><code>    $N</code></pre>
-<p>
-holds the test sample size. After keylist is generated you can then create a training set by excluding the keys associated with the sample.
-</p>
+<h1>Samples</h1>
+<p><em>dataset keys</em> and <em>dataset find ...</em> support the <code>-sample</code> option. The sample option expects a sample size as an argument. If the sample size is greater than zero then a sample output will be taken. On <em>dataset keys</em> the sample is taken after any filter is supplied.<br />
+Likewise for <em>dataset find</em> the sample is taken after the query results have been calculated. Is the sample size is greater then the results returned then the who results set is return without random sampling.<br />
+If sample size is less than result set then a random sampling of the results is taken.</p>
+<p>If you are doing Machine Leaning type of sampling (e.g. calculating a test and training set) then normally you create a <em>test</em> key list like this</p>
+<pre><code>    dataset -sample=&quot;$N&quot; keys
+</code></pre>
+<p>where</p>
+<pre><code>    $N
+</code></pre>
+<p>holds the test sample size. After keylist is generated you can then create a training set by excluding the keys associated with the sample.</p>
 </section>
 
 <footer>

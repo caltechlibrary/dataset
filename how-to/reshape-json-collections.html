@@ -10,225 +10,147 @@
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+<li><a href="/">Home</a></li>
+<li><a href="../">Up</a></li>
+<li><a href="../">README</a></li>
+<li><a href="../license.html">LICENSE</a></li>
+<li><a href="../install.html">INSTALL</a></li>
+<li><a href="../docs/">Documentation</a></li>
+<li><a href="./">Tutorials</a></li>
+<li><a href="../docs/topics.html">Topics</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
+<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="reshape-json-collections">
-Reshape JSON collections
-</h1>
-<h2 id="problem">
-Problem
-</h2>
-<p>
-You have a <em>dataset</em> collection of JSON documents but the fields you’re interested in are nested. Using <em>dataset</em> and <a href="https://github.com/caltechlibrary/datatools/releases/latest">datatools</a>’s <em>jsonmunge</em> you can reshape your existing collection’s record to the shape you prefer.
-</p>
-<p>
-In this how to we will look at mondify a single record then once we have the record looking the way we want apply that transformation to the whole collection.
-</p>
-<h2 id="example">
-Example
-</h2>
-<p>
-In our collection we have record with an id of 12345. Running <code>dataset read 12345</code> we can see our record looks like–
-</p>
-<div id="cb1" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="fu">{</span></span>
+<h1>Reshape JSON collections</h1>
+<h2>Problem</h2>
+<p>You have a <em>dataset</em> collection of JSON documents but the fields you're interested in are nested. Using <em>dataset</em> and <a href="https://github.com/caltechlibrary/datatools/releases/latest">datatools</a>'s <em>jsonmunge</em> you can reshape your existing collection's record to the shape you prefer.</p>
+<p>In this how to we will look at mondify a single record then once we have the record looking the way we want apply that transformation to the whole collection.</p>
+<h2>Example</h2>
+<p>In our collection we have record with an id of 12345. Running <code>dataset read 12345</code> we can see our record looks like--</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="fu">{</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
 <span id="cb1-5"><a href="#cb1-5"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span><span class="fu">}</span></span>
 <span id="cb1-6"><a href="#cb1-6"></a>        <span class="ot">]</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<p>
-What we’d like is a flattened version of the author names.
-</p>
-<div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>What we'd like is a flattened version of the author names.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a>        <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules Brown and Verne Brown&quot;</span><span class="fu">,</span></span>
 <span id="cb2-4"><a href="#cb2-4"></a>        <span class="er">...</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<p>
-We’re going to pull out each others name object and then format them the way we prefer. <em>jsonmunge</em> lets us apply a Go text template to our JSON data and then output something. In our case our formatted names.
-</p>
-<h3 id="building-up-a-template">
-Building up a template
-</h3>
-<p>
-Generating our <code>.author_display_names</code> field can be broken down into simpler parts. First we are going to look at formatting a single name and then look at how to format both names and finally format an number of names. Inside <code>.authors</code> array we have a name object. It has <code>.family</code> and <code>.given</code> attributes. A simple template would reach in to the <code>.authors</code> array by index and then order the <code>.given</code> and <code>.family</code> attributes as desired. Array indexes count from zero so the first author’s index is zero. The template function <em>dotpath</em> lets us reach inside the array.
-</p>
-<p>
-Try this
-</p>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>We're going to pull out each others name object and then format them the way we prefer. <em>jsonmunge</em> lets us apply a Go text template to our JSON data and then output something. In our case our formatted names.</p>
+<h3>Building up a template</h3>
+<p>Generating our <code>.author_display_names</code> field can be broken down into simpler parts. First we are going to look at formatting a single name and then look at how to format both names and finally format an number of names. Inside <code>.authors</code> array we have a name object. It has <code>.family</code> and <code>.given</code> attributes. A simple template would reach in to the <code>.authors</code> array by index and then order the <code>.given</code> and <code>.family</code> attributes as desired. Array indexes count from zero so the first author's index is zero. The template function <em>dotpath</em> lets us reach inside the array.</p>
+<p>Try this</p>
 <pre class="shell"><code>    dataset read 12345 | \
-       jsonmunge -i - -E &#39;{{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }}&#39;</code></pre>
-<p>
-Let’s take this command pipeline apart. We retrieved our dataset record 12345 with <code>dataset read 12345</code>. We send that record to <em>jsonmunge</em> (<code>-i -</code> is idiomatic of datatool commands for saying read from standard input since the record should be coming from <em>dataset</em>’s standard output) and the <code>-E</code> to evaluate a simple template ordering out first author name.
-</p>
-<pre><code>    Jules Brown</code></pre>
-<p>
-It’s a bit ugly (and long) but we can adapt that to display both names.
-</p>
+       jsonmunge -i - -E &#39;{{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }}&#39;
+</code></pre>
+<p>Let's take this command pipeline apart. We retrieved our dataset record 12345 with <code>dataset read 12345</code>. We send that record to <em>jsonmunge</em> (<code>-i -</code> is idiomatic of datatool commands for saying read from standard input since the record should be coming from <em>dataset</em>'s standard output) and the <code>-E</code> to evaluate a simple template ordering out first author name.</p>
+<pre><code>    Jules Brown
+</code></pre>
+<p>It's a bit ugly (and long) but we can adapt that to display both names.</p>
 <pre class="shell"><code>    dataset read 12345 | \
-       jsonmunge -i - -E &#39;{{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }} and {{ dotpath . &quot;.authors[1].given&quot; &quot;&quot; }} {{ dotpath . &quot;authors[1].family&quot; &quot;&quot; }}&#39;</code></pre>
-<p>
-getting
-</p>
-<pre><code>    Jules Brown and Verne Brown</code></pre>
-<p>
-That command line is getting pretty long. Let’s take that expression and put it in a template file called “flatten.tmpl”.
-</p>
-<pre><code>    {{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }} and {{ dotpath . &quot;.authors[1].given&quot; &quot;&quot; }} {{ dotpath . &quot;authors[1].family&quot; &quot;&quot; }}</code></pre>
-<p>
-Run the template and see the results with
-</p>
-<pre class="shell"><code>    dataset read 12345 | jsonmunge -i - flatten.tmpl</code></pre>
-<p>
-We should again see
-</p>
-<pre><code>    Jules Brown and Verne Brown</code></pre>
-<p>
-What happens for the next record where the number of authors is different? Looking at our original data we see that <code>.authors</code> is an array of objects. Go’s text templates have a function called <em>range</em> which makes it easy to iterate over arrays. <em>range</em> can return the index value as well as the object at that index. Applying the <em>range</em> function would look like this version of “flatten.tmpl”.
-</p>
+       jsonmunge -i - -E &#39;{{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }} and {{ dotpath . &quot;.authors[1].given&quot; &quot;&quot; }} {{ dotpath . &quot;authors[1].family&quot; &quot;&quot; }}&#39;
+</code></pre>
+<p>getting</p>
+<pre><code>    Jules Brown and Verne Brown
+</code></pre>
+<p>That command line is getting pretty long. Let's take that expression and put it in a template file called "flatten.tmpl".</p>
+<pre><code>    {{ dotpath . &quot;.authors[0].given&quot; &quot;&quot; }} {{ dotpath . &quot;.authors[0].family&quot; &quot;&quot; }} and {{ dotpath . &quot;.authors[1].given&quot; &quot;&quot; }} {{ dotpath . &quot;authors[1].family&quot; &quot;&quot; }}
+</code></pre>
+<p>Run the template and see the results with</p>
+<pre class="shell"><code>    dataset read 12345 | jsonmunge -i - flatten.tmpl
+</code></pre>
+<p>We should again see</p>
+<pre><code>    Jules Brown and Verne Brown
+</code></pre>
+<p>What happens for the next record where the number of authors is different? Looking at our original data we see that <code>.authors</code> is an array of objects. Go's text templates have a function called <em>range</em> which makes it easy to iterate over arrays. <em>range</em> can return the index value as well as the object at that index. Applying the <em>range</em> function would look like this version of "flatten.tmpl".</p>
 <pre><code>    {{ range $i,$author := .authors }}
         {{ if (gt $i 0) }} and {{ end }}
         {{ $author.given }} {{ $author.family }}
-    {{ end }}</code></pre>
-<p>
-Running
-</p>
-<pre class="shell"><code>    dataset read 12345 | jsonmunge -i - flatten.tmpl</code></pre>
-<p>
-we get
-</p>
+    {{ end }}
+</code></pre>
+<p>Running</p>
+<pre class="shell"><code>    dataset read 12345 | jsonmunge -i - flatten.tmpl
+</code></pre>
+<p>we get</p>
 <pre><code>       Jules Brown
 
         and
-       Verne Brown</code></pre>
-<p>
-That sorta gives us what we wanted but the spacing is all wrong and we have some extra line breaks. We could put all the template parts in one line but that would make it hard to read and debug. Fortunately Go templates elements and indicate if leading or trailing whitespace should be trimmed. You do that by using <code>{{-</code> and <code>-}}</code> for trimming leading and trailing whitespace. The revised template will look like
-</p>
+       Verne Brown
+</code></pre>
+<p>That sorta gives us what we wanted but the spacing is all wrong and we have some extra line breaks. We could put all the template parts in one line but that would make it hard to read and debug. Fortunately Go templates elements and indicate if leading or trailing whitespace should be trimmed. You do that by using <code>{{-</code> and <code>-}}</code> for trimming leading and trailing whitespace. The revised template will look like</p>
 <pre><code>    {{- range $i,$author := .authors }}
         {{- if (gt $i 0) }} and {{ end -}}
         {{- $author.given }} {{ $author.family -}}
-    {{- end -}}</code></pre>
-<p>
-and a running that through <code>dataset read 12345 | jsonmunge -i - flatten.tmpl</code> gives us
-</p>
-<pre><code>    Jules Brown and Verne Brown</code></pre>
-<p>
-Ok, so how does this help us reshape our origin 12345 record? Well first we need to turn our string “Jules Brown and Verne Brown” into an object. Updating our template the curly brackets and attribute nations gives us
-</p>
+    {{- end -}}
+</code></pre>
+<p>and a running that through <code>dataset read 12345 | jsonmunge -i - flatten.tmpl</code> gives us</p>
+<pre><code>    Jules Brown and Verne Brown
+</code></pre>
+<p>Ok, so how does this help us reshape our origin 12345 record? Well first we need to turn our string "Jules Brown and Verne Brown" into an object. Updating our template the curly brackets and attribute nations gives us</p>
 <pre><code>    {
         &quot;author_display_names&quot;: &quot;{{- range $i,$author := .authors }}
             {{- if (gt $i 0) }} and {{ end -}}
             {{- $author.given }} {{ $author.family -}}
         {{- end -}}&quot;
-    }</code></pre>
-<p>
-Now running <code>dataset read 12345 | jsonmunge -i - flatten.tmpl</code> gives us our new object.
-</p>
+    }
+</code></pre>
+<p>Now running <code>dataset read 12345 | jsonmunge -i - flatten.tmpl</code> gives us our new object.</p>
 <pre><code>    {
         &quot;author_display_names&quot;: &quot;Jules Brown and Verne Brown&quot;
-    }</code></pre>
-<p>
-Now we ready to “join” our new object with the 12345 record. We can do that by extending our pipe line.
-</p>
-<pre class="shell"><code>    dataset read 12345 | jsonmunge -i - flatten.tmpl | dataset -i - join update 12345</code></pre>
-<p>
-We can check to make sure it worked with <code>dataset read 12345</code>. You should see something like (order of attributes may vary)
-</p>
-<div id="cb18" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb18-1"><a href="#cb18-1"></a>    <span class="fu">{</span></span>
+    }
+</code></pre>
+<p>Now we ready to "join" our new object with the 12345 record. We can do that by extending our pipe line.</p>
+<pre class="shell"><code>    dataset read 12345 | jsonmunge -i - flatten.tmpl | dataset -i - join update 12345
+</code></pre>
+<p>We can check to make sure it worked with <code>dataset read 12345</code>. You should see something like (order of attributes may vary)</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb18-1"><a href="#cb18-1"></a>    <span class="fu">{</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a>      <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules Brown and Verne Brown&quot;</span><span class="fu">,</span></span>
 <span id="cb18-3"><a href="#cb18-3"></a>      <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb18-4"><a href="#cb18-4"></a>        <span class="fu">{</span> <span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
 <span id="cb18-5"><a href="#cb18-5"></a>        <span class="fu">{</span> <span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span> <span class="fu">}</span></span>
 <span id="cb18-6"><a href="#cb18-6"></a>      <span class="ot">]</span><span class="fu">,</span></span>
 <span id="cb18-7"><a href="#cb18-7"></a>      <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span></span>
-<span id="cb18-8"><a href="#cb18-8"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<p>
-Notice we now have a new <code>.author_display_names</code> attribute in our object. We still see our old <code>.authors</code>. The <em>join</em> function will not overwriting fields nor trim others. It adds the attributes of one object to the other.
-</p>
-<p>
-Now let’s say you decide you’d rather have the names in “family, given” order for the individual names. Using <em>join -overwrite</em> we can replace the value in <code>.author_display_names</code> with a new one.
-</p>
-<p>
-<strong>flatten.tmpl</strong> should now look like
-</p>
+<span id="cb18-8"><a href="#cb18-8"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>Notice we now have a new <code>.author_display_names</code> attribute in our object. We still see our old <code>.authors</code>. The <em>join</em> function will not overwriting fields nor trim others. It adds the attributes of one object to the other.</p>
+<p>Now let's say you decide you'd rather have the names in "family, given" order for the individual names. Using <em>join -overwrite</em> we can replace the value in <code>.author_display_names</code> with a new one.</p>
+<p><strong>flatten.tmpl</strong> should now look like</p>
 <pre><code>    {
         &quot;author_display_names&quot;: &quot;{{- range $i,$author := .authors }}
             {{- if (gt $i 0) }} and {{ end -}}
             {{- $author.family -}}, {{ $author.given -}}
         {{- end -}}&quot;
-    }</code></pre>
-<p>
-Running
-</p>
+    }
+</code></pre>
+<p>Running</p>
 <pre class="shell"><code>    dataset read 12345 | \
       jsonmunge -i - flatten.tmpl | \
-          dataset -i - join overwrite 12345` </code></pre>
-<p>
-yields our new results
-</p>
-<div id="cb21" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1"></a>    <span class="fu">{</span></span>
+          dataset -i - join overwrite 12345` 
+</code></pre>
+<p>yields our new results</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1"></a>    <span class="fu">{</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb21-4"><a href="#cb21-4"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
 <span id="cb21-5"><a href="#cb21-5"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span><span class="fu">}</span></span>
 <span id="cb21-6"><a href="#cb21-6"></a>        <span class="ot">]</span><span class="fu">,</span></span>
 <span id="cb21-7"><a href="#cb21-7"></a>        <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown, Jules and Brown, Verne&quot;</span></span>
-<span id="cb21-8"><a href="#cb21-8"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<h3 id="putting-it-together">
-Putting it together
-</h3>
-<p>
-We can transform a single record but how about transforming the entire collction? That turns out to be easy we just loop over each key in the collection applying our pipeline.
-</p>
+<span id="cb21-8"><a href="#cb21-8"></a>    <span class="fu">}</span></span></code></pre></div>
+<h3>Putting it together</h3>
+<p>We can transform a single record but how about transforming the entire collction? That turns out to be easy we just loop over each key in the collection applying our pipeline.</p>
 <pre class="shell"><code>    dataset keys | while read K; do
         dataset read &quot;$K&quot; | \
            jsonmunge -i - flatten.tmpl | \
                dataset join overwrite &quot;$K&quot;
-    done</code></pre>
-<p>
-Where we had “12345” before we now have <code>“$K”</code>. The rest is just waiting on the computer to finish.
-</p>
+    done
+</code></pre>
+<p>Where we had "12345" before we now have <code>"$K"</code>. The rest is just waiting on the computer to finish.</p>
 </section>
 
 <footer>
