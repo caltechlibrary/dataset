@@ -1,10 +1,10 @@
+A Shell Example
+---------------
 
-## A Shell Example
+Below is a simple example of shell based interaction with dataset a
+collection using the command line dataset tool.
 
-Below is a simple example of shell based interaction with dataset 
-a collection using the command line dataset tool.
-
-```shell
+``` {.shell}
     # Create a collection "friends.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
     dataset init friends.ds
     # if successful then you should see an OK otherwise an error message

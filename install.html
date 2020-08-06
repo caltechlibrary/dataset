@@ -10,53 +10,123 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="how-to/">Tutorials</a></li>
-<li><a href="docs/topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="license.html">LICENSE</a>
+</li>
+<li>
+<a href="install.html">INSTALL</a>
+</li>
+<li>
+<a href="docs/">Documentation</a>
+</li>
+<li>
+<a href="how-to/">Tutorials</a>
+</li>
+<li>
+<a href="docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
 </nav>
 
 <section>
-<h1>Installation</h1>
-<p><em>dataset</em> is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents into a collection by unique filename.</p>
-<p>This is generalized instructions for a release. For deployment suggestions see NOTES.md</p>
-<h2>Compiled version</h2>
-<p>Compiled versions are available for Mac OS X (amd64 processor, macosx-amd64), Linux (amd64 process, linux-amd64), Windows (amd64 processor, windows-amd64) and Rapsberry Pi (arm7 processor, raspbian-arm7)</p>
-<p>VERSION_NUMBER is a <a href="http://semver.org/">symantic version number</a> (e.g. v0.1.2)</p>
-<p>For all the released version go to the project page on Github and click latest release</p>
+<h1>
+Installation
+</h1>
+<p>
+<em>dataset</em> is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents into a collection by unique filename.
+</p>
+<p>
+This is generalized instructions for a release. For deployment suggestions see NOTES.md
+</p>
+<h2>
+Compiled version
+</h2>
+<p>
+Compiled versions are available for Mac OS X (amd64 processor, macosx-amd64), Linux (amd64 process, linux-amd64), Windows (amd64 processor, windows-amd64) and Rapsberry Pi (arm7 processor, raspbian-arm7)
+</p>
+<p>
+VERSION_NUMBER is a <a href="http://semver.org/">symantic version number</a> (e.g. v0.1.2)
+</p>
+<p>
+For all the released version go to the project page on Github and click latest release
+</p>
 <blockquote>
-<p>https://github.com/caltechlibrary/dataset/releases/latest</p>
+<p>
+https://github.com/caltechlibrary/dataset/releases/latest
+</p>
 </blockquote>
-<p>| Platform | Zip Filename | |-------------|------------------------------------------| | Windows | dataset-VERSION_NUMBER-windows-amd64.zip | | Mac OS X | dataset-VERSION_NUMBER-macosx-amd64.zip | | Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip | | Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |</p>
-<h2>The basic recipe</h2>
+<pre><code>| Platform    | Zip Filename                             | 
+|-------------|------------------------------------------|
+| Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
+| Mac OS X    | dataset-VERSION_NUMBER-macosx-amd64.zip  |
+| Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip   |
+| Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |
+</code></pre>
+<h2>
+The basic recipe
+</h2>
 <ul>
-<li>Find the Zip file listed matching the architecture you're running and download it
+<li>
+Find the Zip file listed matching the architecture you’re running and download it
 <ul>
-<li>(e.g. if you're on a Windows 10 laptop/Surface with a amd64 style CPU you'd choose the Zip file with "windows-amd64" in the name).</li>
-</ul></li>
-<li>Download the zip file and unzip the file.</li>
-<li>Copy the contents of the folder named "bin" to a folder that is in your path
-<ul>
-<li>(e.g. "bin" in your "HOME" directory is common).</li>
-</ul></li>
-<li>Adjust your PATH if needed</li>
-<li>Test</li>
+<li>
+(e.g. if you’re on a Windows 10 laptop/Surface with a amd64 style CPU you’d choose the Zip file with “windows-amd64” in the name).
+</li>
 </ul>
-<h3>Mac OS X</h3>
+</li>
+<li>
+Download the zip file and unzip the file.
+</li>
+<li>
+Copy the contents of the folder named “bin” to a folder that is in your path
+<ul>
+<li>
+(e.g. “bin” in your “HOME” directory is common).
+</li>
+</ul>
+</li>
+<li>
+Adjust your PATH if needed
+</li>
+<li>
+Test
+</li>
+</ul>
+<h3>
+Mac OS X
+</h3>
 <ol>
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executables to "bin" folder in HOME folder (or another folder in your PATH)</li>
-<li>Make sure the new location in in our path</li>
-<li>Test</li>
+<li>
+Download the zip file
+</li>
+<li>
+Unzip the zip file
+</li>
+<li>
+Copy the executables to “bin” folder in HOME folder (or another folder in your PATH)
+</li>
+<li>
+Make sure the new location in in our path
+</li>
+<li>
+Test
+</li>
 </ol>
-<p>Here's an example of the commands run in the Terminal App after downloading the zip file.</p>
+<p>
+Here’s an example of the commands run in the Terminal App after downloading the zip file.
+</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-macosx-amd64.zip
     mkdir -p $HOME/bin
@@ -64,14 +134,26 @@
     export PATH=$HOME/bin:$PATH
     dataset -version
 </code></pre>
-<h3>Windows</h3>
+<h3>
+Windows
+</h3>
 <ol>
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executables to the "bin" directory in your "HOME" directory (or a folder in your path)</li>
-<li>Test</li>
+<li>
+Download the zip file
+</li>
+<li>
+Unzip the zip file
+</li>
+<li>
+Copy the executables to the “bin” directory in your “HOME” directory (or a folder in your path)
+</li>
+<li>
+Test
+</li>
 </ol>
-<p>Here's an example of the commands run in from the Bash shell on Windows 10 after downloading the zip file.</p>
+<p>
+Here’s an example of the commands run in from the Bash shell on Windows 10 after downloading the zip file.
+</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
@@ -79,14 +161,26 @@
     export PATH=$HOME/bin:$PATH
     dataset -version
 </code></pre>
-<h3>Linux</h3>
+<h3>
+Linux
+</h3>
 <ol>
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executables to the "bin" directory in your "HOME" directory.</li>
-<li>Test</li>
+<li>
+Download the zip file
+</li>
+<li>
+Unzip the zip file
+</li>
+<li>
+Copy the executables to the “bin” directory in your “HOME” directory.
+</li>
+<li>
+Test
+</li>
 </ol>
-<p>Here's an example of the commands run in from the Bash shell after downloading the zip file.</p>
+<p>
+Here’s an example of the commands run in from the Bash shell after downloading the zip file.
+</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-linux-amd64.zip
     mkdir -p $HOME/bin
@@ -94,15 +188,29 @@
     export PATH=$HOME/bin:$PATH
     dataset -version
 </code></pre>
-<h3>Raspberry Pi</h3>
-<p>Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).</p>
+<h3>
+Raspberry Pi
+</h3>
+<p>
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
+</p>
 <ol>
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executables to <code>$HOME/bin</code> (or a folder in your path)</li>
-<li>Test</li>
+<li>
+Download the zip file
+</li>
+<li>
+Unzip the zip file
+</li>
+<li>
+Copy the executables to <code>$HOME/bin</code> (or a folder in your path)
+</li>
+<li>
+Test
+</li>
 </ol>
-<p>Here's an example of the commands run in from the Bash shell after downloading the zip file.</p>
+<p>
+Here’s an example of the commands run in from the Bash shell after downloading the zip file.
+</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-raspbian-arm7.zip
     mkdir -p $HOME/bin
@@ -110,11 +218,17 @@
     export PATH=$HOME/bin:$PATH
     dataset -version
 </code></pre>
-<h2>Compiling from source</h2>
-<p><em>dataset</em> is "go gettable". Use the "go get" command to download the dependant packages as well as <em>dataset</em>'s source code.</p>
+<h2>
+Compiling from source
+</h2>
+<p>
+<em>dataset</em> is “go gettable”. Use the “go get” command to download the dependant packages as well as <em>dataset</em>’s source code.
+</p>
 <pre class="shell"><code>    go get -u github.com/caltechlibrary/dataset/...
 </code></pre>
-<p>Or clone the repstory and then compile</p>
+<p>
+Or clone the repstory and then compile
+</p>
 <pre class="shell"><code>    cd
     git clone https://github.com/caltechlibrary/dataset src/github.com/caltechlibrary/dataset
     cd src/github.com/caltechlibrary/dataset
@@ -122,7 +236,9 @@
     make test
     make install
 </code></pre>
-<p>Compilation assumes <a href="https://github.com/golang/go">go</a> v1.14.3</p>
+<p>
+Compilation assumes <a href="https://github.com/golang/go">go</a> v1.14.3
+</p>
 </section>
 
 <footer>

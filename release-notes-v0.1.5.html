@@ -10,48 +10,104 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="how-to/">Tutorials</a></li>
-<li><a href="docs/topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="license.html">LICENSE</a>
+</li>
+<li>
+<a href="install.html">INSTALL</a>
+</li>
+<li>
+<a href="docs/">Documentation</a>
+</li>
+<li>
+<a href="how-to/">Tutorials</a>
+</li>
+<li>
+<a href="docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
 </nav>
 
 <section>
-<p>This release focuses on refine function names, simplification and easy of testing for Windows 10 reployments.</p>
-<p>Build Notes:</p>
+<p>
+This release focuses on refine function names, simplification and easy of testing for Windows 10 reployments.
+</p>
+<p>
+Build Notes:
+</p>
 <ul>
-<li>golang v1.14</li>
-<li>Caltech library go packages
+<li>
+golang v1.14
+</li>
+<li>
+Caltech library go packages
 <ul>
-<li>storage v0.1.0</li>
-<li>namaste v0.0.5</li>
-<li>pairtree v0.0.4</li>
-</ul></li>
-<li>OS used to compiled and test
-<ul>
-<li>macOS Catalina</li>
-<li>Windows 10</li>
-<li>Ubuntu 18.04 LTS</li>
-</ul></li>
-<li>Python 3.8 (from Miniconda 3)</li>
-<li>zip has replaced tar in the releases of libdataset</li>
+<li>
+storage v0.1.0
+</li>
+<li>
+namaste v0.0.5
+</li>
+<li>
+pairtree v0.0.4
+</li>
 </ul>
-<p>Renamed functions:</p>
+</li>
+<li>
+OS used to compiled and test
 <ul>
-<li>collection_status() is now collection_exists()</li>
+<li>
+macOS Catalina
+</li>
+<li>
+Windows 10
+</li>
+<li>
+Ubuntu 18.04 LTS
+</li>
 </ul>
-<p>Depreciated functions and features:</p>
+</li>
+<li>
+Python 3.8 (from Miniconda 3)
+</li>
+<li>
+zip has replaced tar in the releases of libdataset
+</li>
+</ul>
+<p>
+Renamed functions:
+</p>
 <ul>
-<li>S3, Google Cloud Storage support dropped.</li>
-<li>grid(), if you need this create a frame first and use frame_grid().</li>
+<li>
+collection_status() is now collection_exists()
+</li>
 </ul>
-<p>Some tests fail on Windows 10 for libdataset. These will be addressed in future releases.</p>
+<p>
+Depreciated functions and features:
+</p>
+<ul>
+<li>
+S3, Google Cloud Storage support dropped.
+</li>
+<li>
+grid(), if you need this create a frame first and use frame_grid().
+</li>
+</ul>
+<p>
+Some tests fail on Windows 10 for libdataset. These will be addressed in future releases.
+</p>
 </section>
 
 <footer>

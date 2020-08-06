@@ -19,12 +19,14 @@ For all the released version go to the project page on Github and click latest r
 >    https://github.com/caltechlibrary/dataset/releases/latest
 
 
-| Platform    | Zip Filename                             |
+```
+| Platform    | Zip Filename                             | 
 |-------------|------------------------------------------|
 | Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
 | Mac OS X    | dataset-VERSION_NUMBER-macosx-amd64.zip  |
 | Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip   |
 | Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |
+```
 
 
 ## The basic recipe
