@@ -37,7 +37,6 @@ import (
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
 	"github.com/caltechlibrary/dataset/tbl"
-	"github.com/caltechlibrary/shuffle"
 )
 
 var (
@@ -1012,7 +1011,9 @@ func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	// Apply Sample Size
 	if sampleSize > 0 {
 		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		shuffle.Strings(keys, random)
+		random.Shuffle(len(keys), func(i, j int) {
+			keys[i], keys[j] = keys[j], keys[i]
+		})
 		if sampleSize <= len(keys) {
 			keys = keys[0:sampleSize]
 		}
@@ -1674,7 +1675,9 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 	// Apply Sample Size
 	if sampleSize > 0 {
 		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		shuffle.Strings(keys, random)
+		random.Shuffle(len(keys), func(i, j int) {
+			keys[i], keys[j] = keys[j], keys[i]
+		})
 		if sampleSize <= len(keys) {
 			keys = keys[0:sampleSize]
 		}
@@ -2008,7 +2011,9 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 
 	// Apply Sample Size
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	shuffle.Strings(keys, random)
+	random.Shuffle(len(keys), func(i, j int) {
+		keys[i], keys[j] = keys[j], keys[i]
+	})
 	if sampleSize <= len(keys) && sampleSize > 0 {
 		keys = keys[0:sampleSize]
 	}

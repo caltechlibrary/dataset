@@ -147,7 +147,7 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 		return nil, fmt.Errorf("frame %s not defined", key)
 	}
 	// read frame json from storage
-	src, err := c.Store.ReadFile(path.Join(c.workPath, savedPath))
+	src, err := os.ReadFile(path.Join(c.workPath, savedPath))
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +165,8 @@ func (c *Collection) getFrame(key string) (*DataFrame, error) {
 // setFrame writes a DataFrame struct to the collection
 func (c *Collection) setFrame(key string, f *DataFrame) error {
 	// Check to see if we have a _frames directory to store our frames in
-	if _, err := c.Store.Stat(path.Join(c.workPath, "_frames")); err != nil {
-		if err := c.Store.MkdirAll(path.Join(c.workPath, "_frames"), 0775); err != nil {
+	if _, err := os.Stat(path.Join(c.workPath, "_frames")); err != nil {
+		if err := os.MkdirAll(path.Join(c.workPath, "_frames"), 0775); err != nil {
 			return err
 		}
 	}
@@ -191,7 +191,7 @@ func (c *Collection) setFrame(key string, f *DataFrame) error {
 	}
 	c.FrameMap[key] = savedPath
 	// save metadata and return
-	err = c.Store.WriteFile(path.Join(c.workPath, savedPath), src, 0664)
+	err = os.WriteFile(path.Join(c.workPath, savedPath), src, 0664)
 	if err != nil {
 		return err
 	}
@@ -206,7 +206,7 @@ func (c *Collection) rmFrame(key string) error {
 		return fmt.Errorf("Frame %s not found", key)
 	}
 	delete(c.FrameMap, key)
-	err := c.Store.Remove(path.Join(c.workPath, savedPath))
+	err := os.Remove(path.Join(c.workPath, savedPath))
 	err = c.saveMetadata()
 	return err
 }

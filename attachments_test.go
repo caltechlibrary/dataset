@@ -35,7 +35,7 @@ func TestAttachments(t *testing.T) {
 
 	c, err := InitCollection(cName)
 	if err != nil {
-		t.Errorf("Can't create collection %q (%d)", cName, err)
+		t.Errorf("Can't create collection %q (%s)", cName, err)
 		t.FailNow()
 	}
 

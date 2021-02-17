@@ -40,14 +40,12 @@ import (
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
-	"github.com/caltechlibrary/shuffle"
-	"github.com/caltechlibrary/storage"
 	"github.com/caltechlibrary/tmplfn"
 )
 
 const (
 	// Version of the dataset package
-	Version = `v0.1.10`
+	Version = `v0.1.11`
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
@@ -89,10 +87,6 @@ type Collection struct {
 
 	// KeyMap holds the document key to path in the collection
 	KeyMap map[string]string `json:"keymap"`
-
-	// Store holds the storage system information (i.e. local disc)
-	// and related methods for interacting with it
-	Store *storage.Store `json:"-"`
 
 	// FrameMap is a list of frame names and with rel path to the frame defined in the collection
 	FrameMap map[string]string `json:"frames"`
@@ -182,18 +176,16 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
-// saveMetadata writes the collection's metadata to  c.Store and c.workPath
+// saveMetadata writes the collection's metadata to c.workPath
 func (c *Collection) saveMetadata() error {
 	if c.unsafeSaveMetadata == true {
 		// NOTE: We're playing fast and loose with the collection metadata, skip saveMetadata().
 		return nil
 	}
 	// Check to see if collection exists, if not create it!
-	if c.Store.Type == storage.FS {
-		if _, err := c.Store.Stat(c.workPath); err != nil {
-			if err := c.Store.MkdirAll(c.workPath, 0775); err != nil {
-				return err
-			}
+	if _, err := os.Stat(c.workPath); err != nil {
+		if err := os.MkdirAll(c.workPath, 0775); err != nil {
+			return err
 		}
 	}
 	src, err := json.Marshal(c)
@@ -202,7 +194,7 @@ func (c *Collection) saveMetadata() error {
 	}
 	c.collectionMutex.Lock()
 	defer c.collectionMutex.Unlock()
-	if err := c.Store.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
+	if err := os.WriteFile(path.Join(c.workPath, "collection.json"), src, 0664); err != nil {
 		return fmt.Errorf("Can't store collection metadata, %s", err)
 	}
 	return nil
@@ -211,37 +203,34 @@ func (c *Collection) saveMetadata() error {
 // addNamaste writes name as text files for collection in the collection's directory.
 func (c *Collection) addNamaste() error {
 	// Add/Update Namaste
-	loc, err := c.Store.Location(c.workPath)
-	if err == nil {
-		namaste.DirType(loc, fmt.Sprintf("dataset_%s", Version[1:]))
-		if len(c.Who) > 0 {
-			for _, who := range c.Who {
-				namaste.Who(loc, who)
-			}
+	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
+	if len(c.Who) > 0 {
+		for _, who := range c.Who {
+			namaste.Who(c.workPath, who)
 		}
-		if c.What != "" {
-			if strings.Contains(c.What, "\n") {
-				s := strings.Split(c.What, "\n")
-				namaste.What(loc, s[0]+"...")
-			} else {
-				namaste.What(loc, c.What)
-			}
+	}
+	if c.What != "" {
+		if strings.Contains(c.What, "\n") {
+			s := strings.Split(c.What, "\n")
+			namaste.What(c.workPath, s[0]+"...")
+		} else {
+			namaste.What(c.workPath, c.What)
 		}
-		if c.When != "" {
-			if strings.Contains(c.When, "\n") {
-				s := strings.Split(c.When, "\n")
-				namaste.When(loc, s[0]+"...")
-			} else {
-				namaste.When(loc, c.When)
-			}
+	}
+	if c.When != "" {
+		if strings.Contains(c.When, "\n") {
+			s := strings.Split(c.When, "\n")
+			namaste.When(c.workPath, s[0]+"...")
+		} else {
+			namaste.When(c.workPath, c.When)
 		}
-		if c.Where != "" {
-			if strings.Contains(c.Where, "\n") {
-				s := strings.Split(c.Where, "\n")
-				namaste.Where(loc, s[0]+"...")
-			} else {
-				namaste.Where(loc, c.Where)
-			}
+	}
+	if c.Where != "" {
+		if strings.Contains(c.Where, "\n") {
+			s := strings.Split(c.Where, "\n")
+			namaste.Where(c.workPath, s[0]+"...")
+		} else {
+			namaste.Where(c.workPath, c.Where)
 		}
 	}
 	return nil
@@ -251,27 +240,21 @@ func (c *Collection) addNamaste() error {
 // Public interface for dataset
 //
 
-// InitCollection - creates a new collection with default alphabet and names of length 2.
+// InitCollection - creates a new collection.
 func InitCollection(name string) (*Collection, error) {
 	if len(name) == 0 {
 		return nil, fmt.Errorf("missing a collection name")
 	}
-	store, err := storage.GetStore(name)
-	if err != nil {
-		return nil, err
-	}
 	collectionName := collectionNameAsPath(name)
 	// See if we need an open or continue with create
-	_, err = store.Stat(collectionName + "/collection.json")
+	_, err := os.Stat(collectionName + "/collection.json")
 	if err == nil {
 		return openCollection(name)
 	}
 
-	if store.Type == storage.FS {
-		err = os.MkdirAll(collectionName, 0775)
-		if err != nil {
-			return nil, err
-		}
+	err = os.MkdirAll(collectionName, 0775)
+	if err != nil {
+		return nil, err
 	}
 
 	c := new(Collection)
@@ -300,7 +283,6 @@ func InitCollection(name string) (*Collection, error) {
 	}
 	c.workPath = collectionName
 	c.KeyMap = map[string]string{}
-	c.Store = store
 
 	c.collectionMutex = new(sync.Mutex)
 	c.objectMutex = new(sync.Mutex)
@@ -315,12 +297,12 @@ func InitCollection(name string) (*Collection, error) {
 
 // openCollection reads in a collection's metadata and returns and new collection structure and err
 func openCollection(name string) (*Collection, error) {
-	store, err := storage.GetStore(name)
+	_, err := os.Stat(name)
 	if err != nil {
 		return nil, err
 	}
 	collectionName := collectionNameAsPath(name)
-	src, err := store.ReadFile(path.Join(collectionName, "collection.json"))
+	src, err := os.ReadFile(path.Join(collectionName, "collection.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +313,6 @@ func openCollection(name string) (*Collection, error) {
 	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
 	c.Name = path.Base(collectionName)
 	c.workPath = collectionName
-	c.Store = store
 	if c.KeyMap == nil {
 		c.KeyMap = make(map[string]string)
 	}
@@ -344,12 +325,12 @@ func openCollection(name string) (*Collection, error) {
 
 // deleteCollection an entire collection
 func deleteCollection(name string) error {
-	store, err := storage.GetStore(name)
+	_, err := os.Stat(name)
 	if err != nil {
 		return err
 	}
 	collectionName := collectionNameAsPath(name)
-	if err := store.RemoveAll(collectionName); err != nil {
+	if err := os.RemoveAll(collectionName); err != nil {
 		return err
 	}
 	return nil
@@ -371,7 +352,6 @@ func (c *Collection) Close() error {
 		c.Name = ""
 		c.workPath = ""
 		c.KeyMap = map[string]string{}
-		c.Store = nil
 
 		c.collectionMutex = nil
 		c.objectMutex = nil
@@ -406,15 +386,13 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 	var err error
 	pair := pairtree.Encode(key)
 	pairPath := path.Join("pairtree", pair)
-	if c.Store.Type == storage.FS {
-		err = c.Store.MkdirAll(path.Join(c.workPath, pairPath), 0770)
-		if err != nil {
-			return fmt.Errorf("mkdir %s %s", path.Join(c.workPath, pairPath), err)
-		}
+	err = os.MkdirAll(path.Join(c.workPath, pairPath), 0770)
+	if err != nil {
+		return fmt.Errorf("mkdir %s %s", path.Join(c.workPath, pairPath), err)
 	}
 
 	// We've almost made it, save the key's name and write the blob to pairtree
-	err = c.Store.WriteFile(path.Join(c.workPath, pairPath, FName), src, 0664)
+	err = os.WriteFile(path.Join(c.workPath, pairPath, FName), src, 0664)
 	if err != nil {
 		return err
 	}
@@ -462,7 +440,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	}
 	// NOTE: c.Name is the path to the collection not the name of JSON document
 	// we need to join c.Name + bucketName + name to get path do JSON document
-	src, err := c.Store.ReadFile(path.Join(c.workPath, pairPath, FName))
+	src, err := os.ReadFile(path.Join(c.workPath, pairPath, FName))
 	if err != nil {
 		return nil, err
 	}
@@ -509,13 +487,11 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	if ok != true {
 		return fmt.Errorf("%q does not exist in %q", keyName, c.Name)
 	}
-	if c.Store.Type == storage.FS {
-		err := c.Store.MkdirAll(path.Join(c.workPath, pairPath), 0770)
-		if err != nil {
-			return fmt.Errorf("Update (mkdir) %q, %s", path.Join(c.workPath, pairPath), err)
-		}
+	err := os.MkdirAll(path.Join(c.workPath, pairPath), 0770)
+	if err != nil {
+		return fmt.Errorf("Update (mkdir) %q, %s", path.Join(c.workPath, pairPath), err)
 	}
-	return c.Store.WriteFile(path.Join(c.workPath, pairPath, fName), src, 0664)
+	return os.WriteFile(path.Join(c.workPath, pairPath, fName), src, 0664)
 }
 
 // Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
@@ -570,11 +546,11 @@ func (c *Collection) Delete(name string) error {
 	//NOTE: Need to remove any stale tarball before removing our record!
 	tarball := strings.TrimSuffix(FName, ".json") + ".tar"
 	p := path.Join(c.workPath, pairPath, tarball)
-	if err := c.Store.RemoveAll(p); err != nil {
+	if err := os.RemoveAll(p); err != nil {
 		return fmt.Errorf("Can't remove attachment for %q, %s", keyName, err)
 	}
 	p = path.Join(c.workPath, pairPath, FName)
-	if err := c.Store.Remove(p); err != nil {
+	if err := os.Remove(p); err != nil {
 		return fmt.Errorf("Error removing %q, %s", p, err)
 	}
 
@@ -978,7 +954,9 @@ func (c *Collection) CloneSample(trainingCollectionName string, testCollectionNa
 	}
 	// Apply Sample Size
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	shuffle.Strings(keys, random)
+	random.Shuffle(len(keys), func(i, j int) {
+		keys[i], keys[j] = keys[j], keys[i]
+	})
 	trainingKeys := keys[0:sampleSize]
 	if err := c.Clone(trainingCollectionName, trainingKeys, verbose); err != nil {
 		return err
@@ -995,11 +973,8 @@ func (c *Collection) CloneSample(trainingCollectionName string, testCollectionNa
 // IsCollection checks to see if a given path contains a
 // collection.json file
 func IsCollection(p string) bool {
-	store, err := storage.GetStore(p)
-	if err != nil {
-		return false
-	}
-	if store.IsFile(path.Join(p, "collection.json")) {
+	finfo, err := os.Stat(path.Join(p, "collection.json"))
+	if (err == nil) && (finfo.IsDir() == false) {
 		return true
 	}
 	return false
