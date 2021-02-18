@@ -34,6 +34,7 @@ by collection and JSON document level.
     + [frame-objects](frame-objects.html)
     + [frame-grid](frame-grid.html)
     + [frames](frames.html)
+    + [refresh](refresh.html)
     + [reframe](reframe.html)
     + [delete-frame](delete-frame.html)
     + [hasframe](hasframe.html)

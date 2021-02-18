@@ -629,6 +629,24 @@ def test_frame2(t, c_name):
         return
 
 #
+# test_import_csv
+#
+def test_import_csv(t, c_name):
+    csv_name = c_name.strip(".ds") + ".csv"
+    if os.path.exists(csv_name):
+        os.remove(csv_name)
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    dataset.init(c_name)
+    with open(csv_name, 'w') as csvfile:
+        csv_writer = csv.DictWriter(csvfile, fieldnames, [ 'name', 'email', 'id' ])
+        csv_writer.writeheader()
+        csv_writer.writer_row({'name': 'Gandolf', 'email': 'gtw@middleearth.example.edu', 'id': 'gtw'})
+    err = dataset.import_csv(c_name, csv_name, False, True)
+
+  
+
+#
 # test_sync_csv (issue 80) - add tests for sync_send_csv, sync_recieve_csv
 #
 def test_sync_csv(t, c_name):
@@ -650,7 +668,7 @@ def test_sync_csv(t, c_name):
             csv_writer.writerow(obj)
         
     # Import CSV into collection
-    dataset.import_csv(c_name, csv_name, 1)
+    dataset.import_csv(c_name, csv_name, True, True)
     for key in [ "one", "two", "three" ]:
         if dataset.has_key(c_name, key) == False:
             t.error(f"expected has_key({key}) == True, got False")

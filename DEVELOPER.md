@@ -5,7 +5,7 @@ On Unix-like systems (e.g. Darwin, Linux) building dataset and libdataset is gen
 
 ## Windows 10
 
-+ Install Go 1.12.x via the Windows' installer available from https://golang.org/downloads
++ Install Go 1.16 via the Windows' installer available from https://golang.org/downloads
 
 + install git and gcc via Miniconda
 + run `go get -u github.com\caltechlibrary\dataset`

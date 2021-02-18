@@ -10,47 +10,66 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>haskey</h1>
-
-<h2>Syntax</h2>
-
-<pre><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
-</code></pre>
-
-<h2>Description</h2>
-
-<p>Checks if a given key is in the a collection. Returns &ldquo;true&rdquo; if
-found, &ldquo;false&rdquo; otherwise. The collection name is &ldquo;people.ds&rdquo;</p>
-
-<h2>Usage</h2>
-
-<pre><code>    dataset haskey people.ds '0000-0003-0900-6903'
-    dataset haskey people.ds r1
-</code></pre>
-
-<p>In python</p>
-
-<pre><code>    dataset.has_key('people.ds', '0000-0003-0900-6903')
-    dataset.has_key('people.ds', 'r1')
-</code></pre>
-
-<p>Related topics: <a href="keys.html">keys</a></p>
-
+<h1 id="haskey">
+haskey
+</h1>
+<h2 id="syntax">
+Syntax
+</h2>
+<pre><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR</code></pre>
+<h2 id="description">
+Description
+</h2>
+<p>
+Checks if a given key is in the a collection. Returns “true” if found, “false” otherwise. The collection name is “people.ds”
+</p>
+<h2 id="usage">
+Usage
+</h2>
+<pre><code>    dataset haskey people.ds &#39;0000-0003-0900-6903&#39;
+    dataset haskey people.ds r1</code></pre>
+<p>
+In python
+</p>
+<pre><code>    dataset.has_key(&#39;people.ds&#39;, &#39;0000-0003-0900-6903&#39;)
+    dataset.has_key(&#39;people.ds&#39;, &#39;r1&#39;)</code></pre>
+<p>
+Related topics: <a href="keys.html">keys</a>
+</p>
 </section>
 
 <footer>

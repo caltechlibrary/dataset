@@ -10,47 +10,68 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>frame-objects</h1>
-
-<h2>Usage</h2>
-
-<pre><code>    frame-objects COLLECTION FRAME_NAME
-</code></pre>
-
-<p>Returns the object list of a frame.</p>
-
-<h2>OPTIONS</h2>
-
+<h1 id="frame-objects">
+frame-objects
+</h1>
+<h2 id="usage">
+Usage
+</h2>
+<pre><code>    frame-objects COLLECTION FRAME_NAME</code></pre>
+<p>
+Returns the object list of a frame.
+</p>
+<h2 id="options">
+OPTIONS
+</h2>
 <dl>
-<dt>-p, -pretty</dt>
-<dd>pretty print JSON output</dd>
+<dt>
+-p, -pretty
+</dt>
+<dd>
+pretty print JSON output
+</dd>
 </dl>
-
-<h2>Example</h2>
-
-<p>If I want to get a list of objects (JSON array of objects)
-for a frame named &ldquo;captions-dates-locations&rdquo; from my collection
-called &ldquo;photos.ds&rdquo; I would do the following (will be using the
-<code>-p</code> option to pretty print the results)</p>
-
-<pre><code>    dataset frame-objects -p photos.ds captions-dates-locations
-</code></pre>
-
+<h2 id="example">
+Example
+</h2>
+<p>
+If I want to get a list of objects (JSON array of objects) for a frame named “captions-dates-locations” from my collection called “photos.ds” I would do the following (will be using the <code>-p</code> option to pretty print the results)
+</p>
+<pre><code>    dataset frame-objects -p photos.ds captions-dates-locations</code></pre>
 </section>
 
 <footer>

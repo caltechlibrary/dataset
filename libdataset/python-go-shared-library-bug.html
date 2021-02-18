@@ -10,40 +10,54 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="how-to/">Tutorials</a></li>
-<li><a href="docs/topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="license.html">LICENSE</a>
+</li>
+<li>
+<a href="install.html">INSTALL</a>
+</li>
+<li>
+<a href="docs/">Documentation</a>
+</li>
+<li>
+<a href="how-to/">Tutorials</a>
+</li>
+<li>
+<a href="docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>Go based C-Shared libraries on Mac OS X 10.x</h1>
-
-<p>When I use multiple Go based C-Shared libraries from Python 3.7 I get a
-runtime error, &ldquo;runtime/cgo: could not obtain pthread keys&rdquo;.  This appears
-to be a Go linking issue for Mac OS X 10.x and Go 1.10.x. It appears that
-when the go runtime starts on the second shared library that it can&rsquo;t
-find the <strong>pthread_keys</strong> entry point.  This appears to be a known but
-unresolved, see issue <a href="https://github.com/golang/go/issues/17200">#17200</a>
-in Go&rsquo;s Github repository. It appears this problem goes back several years
-and re-occurs in numerious forms.  It doesn&rsquo;t appear to be solvabled
-without seriously hacking the Go linker based on the version of Go an OS
-you&rsquo;re usiing.</p>
-
-<h2>Additional references</h2>
-
+<h1 id="go-based-c-shared-libraries-on-mac-os-x-10.x">
+Go based C-Shared libraries on Mac OS X 10.x
+</h1>
+<p>
+When I use multiple Go based C-Shared libraries from Python 3.7 I get a runtime error, “runtime/cgo: could not obtain pthread keys”. This appears to be a Go linking issue for Mac OS X 10.x and Go 1.10.x. It appears that when the go runtime starts on the second shared library that it can’t find the <strong>pthread_keys</strong> entry point. This appears to be a known but unresolved, see issue <a href="https://github.com/golang/go/issues/17200">#17200</a> in Go’s Github repository. It appears this problem goes back several years and re-occurs in numerious forms. It doesn’t appear to be solvabled without seriously hacking the Go linker based on the version of Go an OS you’re usiing.
+</p>
+<h2 id="additional-references">
+Additional references
+</h2>
 <ul>
-<li><a href="https://go-review.googlesource.com/c/go/+/108679">https://go-review.googlesource.com/c/go/+/108679</a></li>
-<li><a href="http://grokbase.com/t/gg/golang-nuts/159wwdy87y/go-nuts-how-can-i-do-to-fix-%60runtime-cgo-could-not-obtain-pthread-keys-on-darwin-amd64">http://grokbase.com/t/gg/golang-nuts/159wwdy87y/go-nuts-how-can-i-do-to-fix-%60runtime-cgo-could-not-obtain-pthread-keys-on-darwin-amd64</a></li>
+<li>
+https://go-review.googlesource.com/c/go/+/108679
+</li>
+<li>
+http://grokbase.com/t/gg/golang-nuts/159wwdy87y/go-nuts-how-can-i-do-to-fix-%60runtime-cgo-could-not-obtain-pthread-keys-on-darwin-amd64
+</li>
 </ul>
-
 </section>
 
 <footer>

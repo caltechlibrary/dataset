@@ -13,7 +13,19 @@ results is taken.
 
 If you are doing Machine Leaning type of sampling (e.g. calculating a 
 test and training set) then normally you create a *test* key list like 
-this `dataset -sample="$N" keys` where `$N` holds the test sample size. 
+this 
+
+```
+    dataset -sample="$N" keys
+``` 
+
+where 
+
+```
+    $N
+```
+
+holds the test sample size. 
 After keylist is generated you can then create a training set by 
 excluding the keys associated with the sample.
 

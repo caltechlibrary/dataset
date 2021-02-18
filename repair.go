@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"github.com/caltechlibrary/pairtree"
-	"github.com/caltechlibrary/storage"
 )
 
 //
@@ -48,12 +47,8 @@ func analyzer(collectionName string, verbose bool) error {
 		err  error
 	)
 
-	store, err := storage.GetStore(collectionName)
-	if err != nil {
-		return err
-	}
 	collectionPath := collectionName
-	files, err := store.ReadDir(collectionPath)
+	files, err := os.ReadDir(collectionPath)
 	if err != nil {
 		return err
 	}
@@ -85,7 +80,7 @@ func analyzer(collectionName string, verbose bool) error {
 	} else {
 		// Make sure we can JSON parse the file
 		docPath := path.Join(collectionPath, "collection.json")
-		if src, err := store.ReadFile(docPath); err == nil {
+		if src, err := os.ReadFile(docPath); err == nil {
 			if err := json.Unmarshal(src, &data); err == nil {
 				// release the memory
 				data = nil
@@ -110,13 +105,16 @@ func analyzer(collectionName string, verbose bool) error {
 	// Check to see if records can be found in their buckets
 	for k, v := range c.KeyMap {
 		dirPath := path.Join(collectionPath, v)
+		_, err := os.Stat(dirPath)
+		if err != nil {
+			repairLog(verbose, "ERROR: %s is missing (%q)", k, dirPath)
+			eCnt++
+		}
 		// NOTE: k needs to be urlencoded before checking for file
 		fname := url.QueryEscape(k) + ".json"
 		docPath := path.Join(collectionPath, v, fname)
-		if store.Type == storage.FS && store.IsDir(dirPath) == false {
-			repairLog(verbose, "ERROR: %s is missing (%q)", k, dirPath)
-			eCnt++
-		} else if store.IsFile(docPath) == false {
+		_, err = os.Stat(docPath)
+		if err != nil {
 			repairLog(verbose, "ERROR: %s is missing (%q)", k, docPath)
 			eCnt++
 		}
@@ -130,7 +128,7 @@ func analyzer(collectionName string, verbose bool) error {
 	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
-	pairs, err := walkPairtree(c.Store, c.Store.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
 	if err != nil && len(c.KeyMap) > 0 {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		eCnt++
@@ -161,16 +159,11 @@ func repair(collectionName string, verbose bool) error {
 		err error
 	)
 
-	store, err := storage.GetStore(collectionName)
-	if err != nil {
-		return fmt.Errorf("Repair only works supported storage types, %s", err)
-	}
-
 	// See if we can open a collection, if not then create an empty struct
 	c, err = openCollection(collectionName)
 	if err != nil {
 		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = store.WriteFile(store.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+		err = os.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
 			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
@@ -190,7 +183,7 @@ func repair(collectionName string, verbose bool) error {
 	}
 	c.DatasetVersion = Version
 	repairLog(verbose, "Getting a list of pairs")
-	pairs, err := walkPairtree(c.Store, c.Store.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
 	if err != nil {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		return err
@@ -214,7 +207,7 @@ func repair(collectionName string, verbose bool) error {
 		if err != nil {
 			break
 		}
-		if _, err := store.Stat(p); os.IsNotExist(err) == true {
+		if _, err := os.Stat(p); os.IsNotExist(err) == true {
 			//NOTE: Mac OS X file system sensitivety handling can
 			// mess this assumption up, need to see if we can find
 			// the keys we remove and reattach walking the file system.
@@ -227,7 +220,7 @@ func repair(collectionName string, verbose bool) error {
 	if len(missingList) > 0 {
 		sort.Strings(missingList)
 		repairLog(verbose, "Trying to locate %d un-associated keys", len(missingList))
-		err = filepath.Walk(c.Store.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
+		err = filepath.Walk(path.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
 			if info.IsDir() == false {
 				if key, err := url.QueryUnescape(strings.TrimSuffix(info.Name(), ".json")); err == nil {
 					// Search our list of keys to see if we can fix path issue...
@@ -279,49 +272,27 @@ func repairLog(verbose bool, rest ...interface{}) {
 
 // walkPairtree takes a store, a start path and returns a list
 // of pairs found that also contain a pair's ${ID}.json file
-func walkPairtree(store *storage.Store, startPath string) ([]string, error) {
+func walkPairtree(startPath string) ([]string, error) {
 	var err error
 	// pairs holds a list of discovered pairs
 	pairs := []string{}
-	if store.Type == storage.FS {
-		err = filepath.Walk(startPath, func(p string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() == false {
-				f := path.Base(p)
-				e := path.Ext(f)
-				if e == ".json" {
-					//NOTE: should be URL encoded at this point.
-					key := strings.TrimSuffix(f, e)
-					pair := pairtree.Encode(key)
-					if strings.Contains(p, path.Join("pairtree", pair, f)) {
-						pairs = append(pairs, pair)
-					}
-				}
-			}
-			return nil
-		})
-	} else {
-		storePath := startPath
-		if strings.HasSuffix(storePath, "/") == false {
-			storePath += "/"
-		}
-		dirsInfo, err := store.ReadDir(storePath)
+	err = filepath.Walk(startPath, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil, err
+			return err
 		}
-		for _, pInfo := range dirsInfo {
-			if pInfo.IsDir() == false {
-				f := pInfo.Name()
-				e := path.Ext(f)
-				if e == ".json" {
-					key := strings.TrimSuffix(f, e)
-					pair := pairtree.Encode(key)
+		if info.IsDir() == false {
+			f := path.Base(p)
+			e := path.Ext(f)
+			if e == ".json" {
+				//NOTE: should be URL encoded at this point.
+				key := strings.TrimSuffix(f, e)
+				pair := pairtree.Encode(key)
+				if strings.Contains(p, path.Join("pairtree", pair, f)) {
 					pairs = append(pairs, pair)
 				}
 			}
 		}
-	}
+		return nil
+	})
 	return pairs, err
 }

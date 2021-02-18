@@ -10,50 +10,77 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>frame-grid</h1>
-
-<h2>USAGE</h2>
-
-<pre><code>    frame-grid COLLECTION FRAME_NAME
-</code></pre>
-
-<p>Returns the object list as a 2D array.</p>
-
-<h2>OPTIONS</h2>
-
+<h1 id="frame-grid">
+frame-grid
+</h1>
+<h2 id="usage">
+USAGE
+</h2>
+<pre><code>    frame-grid COLLECTION FRAME_NAME</code></pre>
+<p>
+Returns the object list as a 2D array.
+</p>
+<h2 id="options">
+OPTIONS
+</h2>
 <dl>
-<dt>-p, -pretty</dt>
-<dd>pretty print JSON output</dd>
-<dt>-use-header-row</dt>
-<dd>Include labels as a header row</dd>
+<dt>
+-p, -pretty
+</dt>
+<dd>
+pretty print JSON output
+</dd>
+<dt>
+-use-header-row
+</dt>
+<dd>
+Include labels as a header row
+</dd>
 </dl>
-
-<h2>Example</h2>
-
-<p>If I have a collection named &ldquo;photos.ds&rdquo; and a previously
-defined frame name &ldquo;captions-dates-locations&rdquo; I can get that
-as a 2D JSON array with the folllowing&mdash;</p>
-
-<pre><code>    dataset frame-grid -p photos.ds captions-dates-locations
-</code></pre>
-
-<p>The <code>-p</code> is the pretty print option for JSON output.</p>
-
+<h2 id="example">
+Example
+</h2>
+<p>
+If I have a collection named “photos.ds” and a previously defined frame name “captions-dates-locations” I can get that as a 2D JSON array with the folllowing—
+</p>
+<pre><code>    dataset frame-grid -p photos.ds captions-dates-locations</code></pre>
+<p>
+The <code>-p</code> is the pretty print option for JSON output.
+</p>
 </section>
 
 <footer>

@@ -10,54 +10,66 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>update</h1>
-
-<h2>Syntax</h2>
-
-<pre><code>    dataset update COLLECTION_NAME KEY
-</code></pre>
-
-<h2>Description</h2>
-
-<p><em>update</em> will replace a JSON document in a dataset collection for
-a given KEY.  By default the JSON document is read from standard
-input but you can specific a spefic file with the &ldquo;-input&rdquo;
-option. The JSON document should aready exist in the collection
-when you use update.</p>
-
-<h2>Usage</h2>
-
-<p>In this example we assume there is a JSON document on local disc
-named <em>jane-doe.json</em>. It contains <code>{&quot;name&quot;:&quot;Jane Doe&quot;}</code> and the
-KEY is &ldquo;jane.doe&rdquo;. In the first one we specify the full JSON document
-via the command line after the KEY.  In the second example we read the
-data from <em>jane-doe.json</em>. Finally in the last we read the JSON
-document from standard input and save the update to &ldquo;jane.doe&rdquo;.
-The collection name is &ldquo;people.ds&rdquo;.</p>
-
-<pre><code class="language-shell">    dataset update people.ds jane.doe '{&quot;name&quot;:&quot;Jane Doiel&quot;}'
+<h1 id="update">
+update
+</h1>
+<h2 id="syntax">
+Syntax
+</h2>
+<pre><code>    dataset update COLLECTION_NAME KEY</code></pre>
+<h2 id="description">
+Description
+</h2>
+<p>
+<em>update</em> will replace a JSON document in a dataset collection for a given KEY. By default the JSON document is read from standard input but you can specific a spefic file with the “-input” option. The JSON document should aready exist in the collection when you use update.
+</p>
+<h2 id="usage">
+Usage
+</h2>
+<p>
+In this example we assume there is a JSON document on local disc named <em>jane-doe.json</em>. It contains <code>{“name”:“Jane Doe”}</code> and the KEY is “jane.doe”. In the first one we specify the full JSON document via the command line after the KEY. In the second example we read the data from <em>jane-doe.json</em>. Finally in the last we read the JSON document from standard input and save the update to “jane.doe”. The collection name is “people.ds”.
+</p>
+<pre class="shell"><code>    dataset update people.ds jane.doe &#39;{&quot;name&quot;:&quot;Jane Doiel&quot;}&#39;
     dataset update people.ds jane.doe jane-doe.json
     dataset update -i jane-doe.json people.ds jane.doe
-    cat jane-doe.json | dataset update people.ds jane.doe
-</code></pre>
-
-<p>Related topics: <a href="keys.html">keys</a>, <a href="create.html">create</a>, <a href="read.html">read</a>, <a href="delete.html">delete</a></p>
-
+    cat jane-doe.json | dataset update people.ds jane.doe</code></pre>
+<p>
+Related topics: <a href="keys.html">keys</a>, <a href="create.html">create</a>, <a href="read.html">read</a>, <a href="delete.html">delete</a>
+</p>
 </section>
 
 <footer>

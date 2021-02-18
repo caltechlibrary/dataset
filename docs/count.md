@@ -23,7 +23,7 @@ Count all records in collection "publications.ds"
     dataset count "publications.ds"
 ```
 
-Count records where the `.published` field is true.
+Count records where the ".published" field is true.
 
 ```shell
     dataset count "publications.ds" '(eq .published true)'

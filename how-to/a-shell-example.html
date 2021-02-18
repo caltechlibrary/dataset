@@ -10,33 +10,53 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="../docs/">Documentation</a></li>
-<li><a href="./">Tutorials</a></li>
-<li><a href="../docs/topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="../docs/">Documentation</a>
+</li>
+<li>
+<a href="./">Tutorials</a>
+</li>
+<li>
+<a href="../docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h2>A Shell Example</h2>
-
-<p>Below is a simple example of shell based interaction with dataset
-a collection using the command line dataset tool.</p>
-
-<pre><code class="language-shell">    # Create a collection &quot;friends.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that's the collection to use. 
+<h2 id="a-shell-example">
+A Shell Example
+</h2>
+<p>
+Below is a simple example of shell based interaction with dataset a collection using the command line dataset tool.
+</p>
+<pre class="shell"><code>    # Create a collection &quot;friends.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that&#39;s the collection to use. 
     dataset init friends.ds
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
     dataset create friends.ds frieda \
-        '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}'
+        &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
@@ -47,14 +67,14 @@ a collection using the command line dataset tool.</p>
 
     # Update a JSON document
     dataset update friends.ds frieda \
-        '{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}'
+        &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}&#39;
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
     dataset keys friends.ds
 
     # Get keys filtered for the name &quot;frieda&quot;
-    dataset keys friends.ds '(eq .name &quot;frieda&quot;)'
+    dataset keys friends.ds &#39;(eq .name &quot;frieda&quot;)&#39;
 
     # Join frieda-profile.json with &quot;frieda&quot; adding unique key/value pairs
     dataset join friends.ds frieda frieda-profile.json
@@ -70,9 +90,7 @@ a collection using the command line dataset tool.</p>
     dataset import friends.ds my-data.csv 1
 
     # To remove the collection just use the Unix shell command
-    rm -fR friends.ds
-</code></pre>
-
+    rm -fR friends.ds</code></pre>
 </section>
 
 <footer>

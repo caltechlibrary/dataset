@@ -10,50 +10,67 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>count</h1>
-
-<h2>Syntax</h2>
-
-<pre><code>    dataset count COLLECTION_NAME [FILTER EXPRESSION]
-</code></pre>
-
-<h2>Description</h2>
-
-<p>This returns a count of the keys in the collection. It is reasonable
-quick as only the collection metadata is read in. <em>count</em> also can
-accept a filter expression. This is slower as it iterates over all
-the records and counts those which evaluate to true based on the
-filter expression provided.</p>
-
-<h2>Usage</h2>
-
-<p>Count all records in collection &ldquo;publications.ds&rdquo;</p>
-
-<pre><code class="language-shell">    dataset count &quot;publications.ds&quot;
-</code></pre>
-
-<p>Count records where the <code>.published</code> field is true.</p>
-
-<pre><code class="language-shell">    dataset count &quot;publications.ds&quot; '(eq .published true)'
-</code></pre>
-
-<p>Related topic: <a href="keys.html">keys</a></p>
-
+<h1 id="count">
+count
+</h1>
+<h2 id="syntax">
+Syntax
+</h2>
+<pre><code>    dataset count COLLECTION_NAME [FILTER EXPRESSION]</code></pre>
+<h2 id="description">
+Description
+</h2>
+<p>
+This returns a count of the keys in the collection. It is reasonable quick as only the collection metadata is read in. <em>count</em> also can accept a filter expression. This is slower as it iterates over all the records and counts those which evaluate to true based on the filter expression provided.
+</p>
+<h2 id="usage">
+Usage
+</h2>
+<p>
+Count all records in collection “publications.ds”
+</p>
+<pre class="shell"><code>    dataset count &quot;publications.ds&quot;</code></pre>
+<p>
+Count records where the “.published” field is true.
+</p>
+<pre class="shell"><code>    dataset count &quot;publications.ds&quot; &#39;(eq .published true)&#39;</code></pre>
+<p>
+Related topic: <a href="keys.html">keys</a>
+</p>
 </section>
 
 <footer>

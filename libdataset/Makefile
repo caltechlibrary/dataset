@@ -22,7 +22,7 @@ endif
 ifeq ($(OS), Darwin)
 	EXT = .dylib
 	ARCH = $(shell arch)
-	OS = macosx
+	OS = macos
 endif
 ifeq ($(OS), Linux)
 	EXT = .so

@@ -7,7 +7,7 @@ such as Python 3 via the ctypes binding.
 
 ## Linux/Darwin
 
-To compile you need to have Go 1.13 and 
+To compile you need to have Go 1.16 and 
 GNU Make. Running `make` in this directory will generate the compiled 
 shared library and create header file (e.g. libdataset.so, libdataset.dll, 
 or libdataset.dylib and libdataset.h).  You can then copy the shared 
@@ -15,7 +15,7 @@ library and header file to an appropriate on your system.
 
 ## Windows 10
 
-Install Go 1.13 or better from the Golang website using the provided Windows binaries. Install Miniconda (from Anaconda). Using Miniconda install git, gcc (i.e. m2w64-gcc) and zip (m2-zip). Run "make.bat" to compile DLL. Modify and
+Install Go 1.16 or better from the Golang website using the provided Windows binaries. Install Miniconda (from Anaconda). Using Miniconda install git, gcc (i.e. m2w64-gcc) and zip (m2-zip). Run "make.bat" to compile DLL. Modify and
 run release.bat to generate a release version.
 
 

@@ -10,53 +10,69 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>export</h1>
-
-<h2>Syntax</h2>
-
-<pre><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
-</code></pre>
-
-<h2>Description</h2>
-
-<p><em>export</em> will render the contents of a collection as a CSV file
-based on a frame defined in the collection.</p>
-
-<h2>Usage</h2>
-
-<p>In the following examples we will be using a newly defined
-&ldquo;frame&rdquo; named &ldquo;my-report&rdquo;.  The frame will have the following fields are
-being exported - ._Key,.title, and .pubDate with the following
-labels for those fields &ndash; id, title and publication date.</p>
-
-<pre><code class="language-shell">    dataset frame publications.ds my-report \
+<h1 id="export">
+export
+</h1>
+<h2 id="syntax">
+Syntax
+</h2>
+<pre><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]</code></pre>
+<h2 id="description">
+Description
+</h2>
+<p>
+<em>export</em> will render the contents of a collection as a CSV file based on a frame defined in the collection.
+</p>
+<h2 id="usage">
+Usage
+</h2>
+<p>
+In the following examples we will be using a newly defined “frame” named “my-report”. The frame will have the following fields are being exported - ._Key,.title, and .pubDate with the following labels for those fields – id, title and publication date.
+</p>
+<pre class="shell"><code>    dataset frame publications.ds my-report \
         &quot;._Key=id&quot; &quot;.title=title&quot; \
-        &quot;.pubDate=publication date&quot;
-</code></pre>
-
-<p>The example blow creates a CSV file named &lsquo;output.csv&rsquo;. The collection
-is &ldquo;publications.ds&rdquo;.</p>
-
-<pre><code class="language-shell">	dataset export publications.ds my-report &gt; output.csv
-</code></pre>
-
-<p>Related topics: <a href="frame.html">frame</a>, <a href="import-csv.html">import-csv</a></p>
-
+        &quot;.pubDate=publication date&quot;</code></pre>
+<p>
+The example blow creates a CSV file named ‘output.csv’. The collection is “publications.ds”.
+</p>
+<pre class="shell"><code>    dataset export publications.ds my-report &gt; output.csv</code></pre>
+<p>
+Related topics: <a href="frame.html">frame</a>, <a href="import-csv.html">import-csv</a>
+</p>
 </section>
 
 <footer>

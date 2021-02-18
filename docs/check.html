@@ -10,46 +10,64 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">Up</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="../how-to/">Tutorials</a></li>
-<li><a href="topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>check</h1>
-
-<h2>syntax</h2>
-
-<pre><code class="language-shell">    dataset check COLLECTION_NAME [COLLECTION_NAME ...]
-</code></pre>
-
-<h2>Description</h2>
-
-<p>Check reviews one or more collections and reports if any problems
-are identified based on the <code>collection.json</code> file found in the
-folder holding the collection&rsquo;s pairtree.</p>
-
-<h2>Usage</h2>
-
-<p>If multiple instances of dataset write (e.g. create or update) to
-a collection then it is possible that the JSON file <code>collection.json</code>
-will become inaccurate.</p>
-
-<pre><code class="language-shell">    dataset check MyRecordCollection.ds
-    dataset check MyBrokenCollection.ds MyRecordCollection.ds
-</code></pre>
-
-<p>Related topics: <a href="repair.html">repair</a></p>
-
+<h1 id="check">
+check
+</h1>
+<h2 id="syntax">
+syntax
+</h2>
+<pre class="shell"><code>    dataset check COLLECTION_NAME [COLLECTION_NAME ...]</code></pre>
+<h2 id="description">
+Description
+</h2>
+<p>
+Check reviews one or more collections and reports if any problems are identified based on the <code>collection.json</code> file found in the folder holding the collection’s pairtree.
+</p>
+<h2 id="usage">
+Usage
+</h2>
+<p>
+If multiple instances of dataset write (e.g. create or update) to a collection then it is possible that the JSON file <code>collection.json</code> will become inaccurate.
+</p>
+<pre class="shell"><code>    dataset check MyRecordCollection.ds
+    dataset check MyBrokenCollection.ds MyRecordCollection.ds</code></pre>
+<p>
+Related topics: <a href="repair.html">repair</a>
+</p>
 </section>
 
 <footer>

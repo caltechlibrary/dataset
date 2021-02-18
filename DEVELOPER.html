@@ -10,40 +10,76 @@
 </header>
 <nav>
 <ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="how-to/">Tutorials</a></li>
-<li><a href="docs/topics.html">Topics</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a></li>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="license.html">LICENSE</a>
+</li>
+<li>
+<a href="install.html">INSTALL</a>
+</li>
+<li>
+<a href="docs/">Documentation</a>
+</li>
+<li>
+<a href="how-to/">Tutorials</a>
+</li>
+<li>
+<a href="docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
 </ul>
-
 </nav>
 
 <section>
-<h1>Compilation Notes</h1>
-
-<p>On Unix-like systems (e.g. Darwin, Linux) building dataset and libdataset is generally as easy as running the GNU Make command. On Windows you need to take a more Window-ish approach and run <code>make.bat</code>.</p>
-
-<h2>Windows 10</h2>
-
+<h1 id="compilation-notes">
+Compilation Notes
+</h1>
+<p>
+On Unix-like systems (e.g. Darwin, Linux) building dataset and libdataset is generally as easy as running the GNU Make command. On Windows you need to take a more Window-ish approach and run <code>make.bat</code>.
+</p>
+<h2 id="windows-10">
+Windows 10
+</h2>
 <ul>
-<li><p>Install Go 1.12.x via the Windows&rsquo; installer available from <a href="https://golang.org/downloads">https://golang.org/downloads</a></p></li>
-
-<li><p>install git and gcc via Miniconda</p></li>
-
-<li><p>run <code>go get -u github.com\caltechlibrary\dataset</code></p></li>
-
-<li><p>run <code>go get -u github.com\caltechlibrary\cli</code></p></li>
-
-<li><p>run the make.bat</p></li>
+<li>
+<p>
+Install Go 1.16 via the Windows’ installer available from https://golang.org/downloads
+</p>
+</li>
+<li>
+<p>
+install git and gcc via Miniconda
+</p>
+</li>
+<li>
+<p>
+run <code>go get -u github.com</code>
+</p>
+</li>
+<li>
+<p>
+run <code>go get -u github.com</code>
+</p>
+</li>
+<li>
+<p>
+run the make.bat
+</p>
+</li>
 </ul>
-
-<p>Here&rsquo;s an example of what I&rsquo;ve done after openning the &ldquo;Anaconda Prompt&rdquo;</p>
-
+<p>
+Here’s an example of what I’ve done after openning the “Anaconda Prompt”
+</p>
 <pre><code>    cd %USERPROFILE%
     mkdir go
     mkdir go\bin
@@ -54,18 +90,15 @@
     go get -u github.com\caltechlibrary\cli
     cd go\src\caltechlibrary\dataset
     .\make.bat
-    move dataset.exe &quot;%USERPROFILE\go\bin\dataset.exe&quot;
-</code></pre>
-
-<p>To build the DLL</p>
-
+    move dataset.exe &quot;%USERPROFILE\go\bin\dataset.exe&quot;</code></pre>
+<p>
+To build the DLL
+</p>
 <pre><code>    cd libdataset
-    .\make.bat
-</code></pre>
-
-<p>Both the dataset command line exe and DLL will need to be copied
-to where they available to your windows applications.</p>
-
+    .\make.bat</code></pre>
+<p>
+Both the dataset command line exe and DLL will need to be copied to where they available to your windows applications.
+</p>
 </section>
 
 <footer>
