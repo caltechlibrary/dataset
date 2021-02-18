@@ -41,19 +41,19 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="compilation-notes">
 Compilation Notes
 </h1>
 <p>
 On Unix-like systems (e.g. Darwin, Linux) building dataset and libdataset is generally as easy as running the GNU Make command. On Windows you need to take a more Window-ish approach and run <code>make.bat</code>.
 </p>
-<h2>
+<h2 id="windows-10">
 Windows 10
 </h2>
 <ul>
 <li>
 <p>
-Install Go 1.12.x via the Windows’ installer available from https://golang.org/downloads
+Install Go 1.16 via the Windows’ installer available from https://golang.org/downloads
 </p>
 </li>
 <li>
@@ -90,14 +90,12 @@ Here’s an example of what I’ve done after openning the “Anaconda Prompt”
     go get -u github.com\caltechlibrary\cli
     cd go\src\caltechlibrary\dataset
     .\make.bat
-    move dataset.exe &quot;%USERPROFILE\go\bin\dataset.exe&quot;
-</code></pre>
+    move dataset.exe &quot;%USERPROFILE\go\bin\dataset.exe&quot;</code></pre>
 <p>
 To build the DLL
 </p>
 <pre><code>    cd libdataset
-    .\make.bat
-</code></pre>
+    .\make.bat</code></pre>
 <p>
 Both the dataset command line exe and DLL will need to be copied to where they available to your windows applications.
 </p>

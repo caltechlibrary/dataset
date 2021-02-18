@@ -14,16 +14,16 @@ are tagged "pre-release" on Github. Releases intended to be used in our producti
 ### Pre-releases
 
 Pre-releases may or may not have zip'ed executables ready 
-for installion.  Where they do we are currently targetting Linux on AMD64, 
-Raspbian on ARM 7, Mac OS X on AMD64 and Windows 10 (for use from 
-Window's command prompt) on AMD 64.  From time to time preleases may 
-also include an experiemental Python module compiled for Mac OS X and 
-Linux.
+for installion.  Where they do we are currently targetting Linux on x86, 
+Raspbian on ARM 7, Mac OS X on x86 and M1 processors as well as 
+Windows 10 (for use from Window's command prompt) on x86. From time 
+to time preleases may also include an experiemental Python module 
+compiled for Mac OS X and Linux.
 
 ### Production releases
 
 Production releases will include zip files for installing pre-compiled
-binaries for Linux on AMD64, Mac OS X AMD 64, Windows 10 on AMD 64 and
+binaries for Linux on x86, Mac OS X x86 and M1, Windows 10 on x86 and
 Raspberry Pi on ARM 7. Production release may include experiement code
 or utilities like the Python module for dataset.
 

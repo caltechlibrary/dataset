@@ -44,22 +44,22 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="delete-frame">
 delete-frame
 </h1>
 <p>
 This is used to removed a frame from a collection.
 </p>
-<pre class="{.shell}"><code>    dataset delete-frame example.ds f1
-</code></pre>
+<pre class="shell"><code>    dataset delete-frame example.ds f1</code></pre>
 <p>
 delete frame f1 from collection called example.ds
 </p>
 <p>
 In python
 </p>
-<pre class="{.python}"><code>    err = dataset.delete_frame(&#39;example.ds&#39;, &#39;f1&#39;)
-</code></pre>
+<div id="cb2" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.delete_frame(<span class="st">&#39;example.ds&#39;</span>, <span class="st">&#39;f1&#39;</span>)</span></code></pre>
+</div>
 <p>
 Related topics: <a href="frame.html">frame</a>, <a href="frames.html">frames</a>, <a href="frame-types.html">frame-types</a>
 </p>

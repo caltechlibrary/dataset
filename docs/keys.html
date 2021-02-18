@@ -44,15 +44,14 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="keys">
 keys
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset keys COLLECTION_NAME
-</code></pre>
-<h2>
+<pre><code>    dataset keys COLLECTION_NAME</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
@@ -61,7 +60,7 @@ List the JSON_DOCUMENT_ID available in a collection. Normally order is not guara
 <p>
 <em>key</em> also accepts atone to two additional The “keys” option
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <p>
@@ -69,13 +68,12 @@ Three examples of usage are shown below - return all keys (unsorted), return all
 </p>
 <pre class="shell"><code>    dataset keys COLLECTION_NAME
     dataset keys COLLECTION_NAME true &#39;-.family_name&#39;
-    dataset keys COLLECTION_NAME &#39;(eq .group &quot;alumni&quot;)&#39; &#39;+.family_name&#39;
-</code></pre>
-<h2>
+    dataset keys COLLECTION_NAME &#39;(eq .group &quot;alumni&quot;)&#39; &#39;+.family_name&#39;</code></pre>
+<h2 id="filter-expressions">
 filter expressions
 </h2>
 <p>
-A <em>filter expression</em> is based on the Go template conditional expressions. It uses a prefix notation for the logic (e.g. eq - equal, ne - not equal, lt - less than, gt greater than) and the value(s) to be compared in <a href="dotpath.html">dotpath notation</a>.
+A <em>filter expression</em> is based on the Go template conditional expressions. It uses a prefix notation for the logic (e.g.  eq - equal, ne - not equal, lt - less than, gt greater than) and the value(s) to be compared in <a href="dotpath.html">dotpath notation</a>.
 </p>
 <p>
 Filters can be simple expressions that result in “true” or “false” or compound expressions (e.g. expressions combined with <em>and</em> and <em>or</em>) that evaluate to “true” or “false”. Simple expressions can isolated by parenthasis (e.g. <code>(and (eq .i 1) (ne .s “1”) (ne .s “one”))</code>).
@@ -106,39 +104,35 @@ and - allows you to combine two expression and if both true the expression is tr
 or - allows you to combine two or more expressions where one is true then expression is true.
 </li>
 </ul>
-<h4>
+<h4 id="simple">
 Simple
 </h4>
 <p>
 A field, <code>.family_name</code>, matches a known value, “Feynman”.
 </p>
-<pre><code>    &#39;(eq .family_name &quot;Feynman&quot;)&#39;
-</code></pre>
+<pre><code>    &#39;(eq .family_name &quot;Feynman&quot;)&#39;</code></pre>
 <p>
 A field, <code>.family_name</code>, does not match a known value, “Feynman”.
 </p>
 <p>
 A field, <code>.family_name</code>, does not match value
 </p>
-<pre><code>    &#39;(ne .family_name &quot;Feynman&quot;)&#39;
-</code></pre>
+<pre><code>    &#39;(ne .family_name &quot;Feynman&quot;)&#39;</code></pre>
 <p>
 A field, <code>.family_name</code>, match the regular expression <code>Feym*n</code>.
 </p>
-<pre><code>    &#39;(match &quot;Feynm*n&quot; .family_name)&#39;
-</code></pre>
-<h4>
+<pre><code>    &#39;(match &quot;Feynm*n&quot; .family_name)&#39;</code></pre>
+<h4 id="compound">
 Compound
 </h4>
 <p>
 Two fields match, <code>.family_name</code> and <code>.given_name</code>, known values “Feynman” and “Richard”.
 </p>
-<pre><code>    &#39;(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))&#39;
-</code></pre>
+<pre><code>    &#39;(and (eq .family_name &quot;Feynman&quot;) (eq .given_name &quot;Richard&quot;))&#39;</code></pre>
 <p>
 NOTE: That the filters experessions are data type aware. So “1” is not the same as 1. Likewise 1 is not the same as 1.0.
 </p>
-<h2>
+<h2 id="sort-expressions">
 sort expressions
 </h2>
 <p>
@@ -147,14 +141,12 @@ The “keys” option provides for simple one level sorting. Sorting is describe
 <p>
 In this example we listing last names of “Smith” sorting by ascending given name. The collection name is “people.ds”.
 </p>
-<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;.given_name&#39;
-</code></pre>
+<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;.given_name&#39;</code></pre>
 <p>
 In this example we list last anes of “Smith” sorted by descending given name.
 </p>
-<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;-.given_name&#39;
-</code></pre>
-<h2>
+<pre><code>    dataset keys people.ds &#39;(eq &quot;Smith&quot; .family_name)&#39; &#39;-.given_name&#39;</code></pre>
+<h2 id="getting-a-sample-of-keys">
 Getting a “sample” of keys
 </h2>
 <p>

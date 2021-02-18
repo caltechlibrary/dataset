@@ -44,13 +44,13 @@
 </nav>
 
 <section>
-<h2>
+<h2 id="a-shell-example">
 A Shell Example
 </h2>
 <p>
 Below is a simple example of shell based interaction with dataset a collection using the command line dataset tool.
 </p>
-<pre class="{.shell}"><code>    # Create a collection &quot;friends.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that&#39;s the collection to use. 
+<pre class="shell"><code>    # Create a collection &quot;friends.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that&#39;s the collection to use. 
     dataset init friends.ds
     # if successful then you should see an OK otherwise an error message
 
@@ -90,8 +90,7 @@ Below is a simple example of shell based interaction with dataset a collection u
     dataset import friends.ds my-data.csv 1
 
     # To remove the collection just use the Unix shell command
-    rm -fR friends.ds
-</code></pre>
+    rm -fR friends.ds</code></pre>
 </section>
 
 <footer>

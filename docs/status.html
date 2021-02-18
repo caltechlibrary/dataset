@@ -44,29 +44,27 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="status">
 status
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset status COLLECTION_NAME [COLLECTION_NAME ...]
-</code></pre>
-<h2>
+<pre><code>    dataset status COLLECTION_NAME [COLLECTION_NAME ...]</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
 Checks to see if a <code>collection.json</code> file is associated with the COLLECTION_NAME. Can work on multiple collection names. Returns “OK” if it is.
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <p>
 Collection names are “MyRecordCollection.ds” and “MyBookCollection.ds”.
 </p>
 <pre><code>    dataset status MyRecordCollection.ds
-    dataset status MyRecordCollection.ds MyBookCollection.ds
-</code></pre>
+    dataset status MyRecordCollection.ds MyBookCollection.ds</code></pre>
 <p>
 Related topic: <a href="init.html">init</a>
 </p>

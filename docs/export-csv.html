@@ -44,21 +44,20 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="export">
 export
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
-</code></pre>
-<h2>
+<pre><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
 <em>export</em> will render the contents of a collection as a CSV file based on a frame defined in the collection.
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <p>
@@ -66,13 +65,11 @@ In the following examples we will be using a newly defined “frame” named “
 </p>
 <pre class="shell"><code>    dataset frame publications.ds my-report \
         &quot;._Key=id&quot; &quot;.title=title&quot; \
-        &quot;.pubDate=publication date&quot;
-</code></pre>
+        &quot;.pubDate=publication date&quot;</code></pre>
 <p>
 The example blow creates a CSV file named ‘output.csv’. The collection is “publications.ds”.
 </p>
-<pre class="shell"><code>    dataset export publications.ds my-report &gt; output.csv
-</code></pre>
+<pre class="shell"><code>    dataset export publications.ds my-report &gt; output.csv</code></pre>
 <p>
 Related topics: <a href="frame.html">frame</a>, <a href="import-csv.html">import-csv</a>
 </p>

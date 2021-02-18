@@ -44,7 +44,7 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="samples">
 Samples
 </h1>
 <p>
@@ -53,13 +53,11 @@ Samples
 <p>
 If you are doing Machine Leaning type of sampling (e.g. calculating a test and training set) then normally you create a <em>test</em> key list like this
 </p>
-<pre><code>    dataset -sample=&quot;$N&quot; keys
-</code></pre>
+<pre><code>    dataset -sample=&quot;$N&quot; keys</code></pre>
 <p>
 where
 </p>
-<pre><code>    $N
-</code></pre>
+<pre><code>    $N</code></pre>
 <p>
 holds the test sample size. After keylist is generated you can then create a training set by excluding the keys associated with the sample.
 </p>

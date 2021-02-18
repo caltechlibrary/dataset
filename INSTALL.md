@@ -8,8 +8,8 @@ This is generalized instructions for a release.  For deployment suggestions see 
 
 ## Compiled version
 
-Compiled versions are available for Mac OS X (amd64 processor, macosx-amd64), Linux (amd64 process, linux-amd64), 
-Windows (amd64 processor, windows-amd64) and Rapsberry Pi (arm7 processor, raspbian-arm7)
+Compiled versions are available for Mac OS X (x86 and M1 processors as macos-amd64, macos-arm64), Linux (x86 processor as linux-amd64), 
+Windows (x86 processor as windows-amd64) and Rapsberry Pi (arm7 processor as raspbian-arm7)
 
 VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
 
@@ -23,7 +23,8 @@ For all the released version go to the project page on Github and click latest r
 | Platform    | Zip Filename                             | 
 |-------------|------------------------------------------|
 | Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
-| Mac OS X    | dataset-VERSION_NUMBER-macosx-amd64.zip  |
+| macOS (x86) | dataset-VERSION_NUMBER-macos-amd64.zip  |
+| macOS (M1)  | dataset-VERSION_NUMBER-macos-arm64.zip  |
 | Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip   |
 | Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |
 ```
@@ -53,7 +54,7 @@ zip file.
 
 ```shell
     cd Downloads/
-    unzip dataset-*-macosx-amd64.zip
+    unzip dataset-*-macos-amd64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
@@ -102,7 +103,7 @@ downloading the zip file.
 
 ### Raspberry Pi
 
-Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit Raspberry Pi OS.
 
 1. Download the zip file
 2. Unzip the zip file
@@ -143,5 +144,5 @@ Or clone the repstory and then compile
     make install
 ```
 
-Compilation assumes [go](https://github.com/golang/go) v1.14.3
+Compilation assumes [go](https://github.com/golang/go) v1.16
 

@@ -44,31 +44,34 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="frame-objects">
 frame-objects
 </h1>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
-<pre><code>    frame-objects COLLECTION FRAME_NAME
-</code></pre>
+<pre><code>    frame-objects COLLECTION FRAME_NAME</code></pre>
 <p>
 Returns the object list of a frame.
 </p>
-<h2>
+<h2 id="options">
 OPTIONS
 </h2>
-<p>
--p, -pretty : pretty print JSON output
-</p>
-<h2>
+<dl>
+<dt>
+-p, -pretty
+</dt>
+<dd>
+pretty print JSON output
+</dd>
+</dl>
+<h2 id="example">
 Example
 </h2>
 <p>
 If I want to get a list of objects (JSON array of objects) for a frame named “captions-dates-locations” from my collection called “photos.ds” I would do the following (will be using the <code>-p</code> option to pretty print the results)
 </p>
-<pre><code>    dataset frame-objects -p photos.ds captions-dates-locations
-</code></pre>
+<pre><code>    dataset frame-objects -p photos.ds captions-dates-locations</code></pre>
 </section>
 
 <footer>

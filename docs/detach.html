@@ -44,39 +44,35 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="detach">
 detach
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
 <pre><code>    dataset detach COLLECTION_NAME KEY [SEMVER]
-    dataset detach COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
-</code></pre>
-<h2>
+    dataset detach COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
 <em>detach</em> writes out (to local disc) the items that have been attached to a JSON record in the collection with the matching KEY
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <p>
 Write out all the attached files for k1 in collection named “publications.ds”
 </p>
-<pre class="shell"><code>    dataset detach publications.ds k1
-</code></pre>
+<pre class="shell"><code>    dataset detach publications.ds k1</code></pre>
 <p>
 Write out only the <em>stats.xlsx</em> file attached to k1
 </p>
-<pre class="shell"><code>    dataset detach publications.ds k1 stats.xlsx
-</code></pre>
+<pre class="shell"><code>    dataset detach publications.ds k1 stats.xlsx</code></pre>
 <p>
 Write out only the v0.0.1 <em>stats.xlsx</em> file attached to k1
 </p>
-<pre class="shell"><code>    dataset detach publications.ds k1 v0.0.1 stats.xlsx
-</code></pre>
+<pre class="shell"><code>    dataset detach publications.ds k1 v0.0.1 stats.xlsx</code></pre>
 <p>
 Related topics: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, and <a href="prune.html">prune</a>
 </p>

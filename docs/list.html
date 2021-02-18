@@ -44,33 +44,32 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="list">
 list
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset list COLLECTION_NAME KEYS
-</code></pre>
-<h2>
+<pre><code>    dataset list COLLECTION_NAME KEYS</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
 Write a JSON array to standard out (unless you’ve specific an alternative location with the “-output” option) for the provided KEYS. If no ids are provided (or none are found) then an empty JSON array is return.
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <p>
 An example we’re assuming there is are JSON documents with a KEYS of “r1”, “r2”, and “r3”. Our collection name is “data.ds”
 </p>
-<pre class="{.shell}"><code>    dataset list data.ds r1 r2 r3
-</code></pre>
+<pre class="shell"><code>    dataset list data.ds r1 r2 r3</code></pre>
 <p>
 If “r1” was ‘{“one”:1}’, “r2” was ‘{“two”:2}’ and “r3” was ‘{“three”:3}’ then the output would be
 </p>
-<pre class="{.json}"><code>    [{&quot;one&quot;:1},{&quot;two&quot;:2},{&quot;three&quot;:3}]
-</code></pre>
+<div id="cb3" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>    <span class="ot">[</span><span class="fu">{</span><span class="dt">&quot;one&quot;</span><span class="fu">:</span><span class="dv">1</span><span class="fu">}</span><span class="ot">,</span><span class="fu">{</span><span class="dt">&quot;two&quot;</span><span class="fu">:</span><span class="dv">2</span><span class="fu">}</span><span class="ot">,</span><span class="fu">{</span><span class="dt">&quot;three&quot;</span><span class="fu">:</span><span class="dv">3</span><span class="fu">}</span><span class="ot">]</span></span></code></pre>
+</div>
 <p>
 Related topics: <a href="keys.html">keys</a>, <a href="read.html">read</a>
 </p>

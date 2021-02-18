@@ -44,19 +44,19 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="cloning">
 Cloning
 </h1>
 <p>
 There are times where it is useful to make a copy of a collection, take a random sample of a collection or even split a collection into a training set and test set. Cloning is the general term used in dataset for these types of operations.
 </p>
-<h2>
+<h2 id="cloning-an-entire-collection">
 Cloning an entire collection
 </h2>
 <p>
 First since dataset is a folder with collections.json, pairtree and frames we can “clone” an the complete collection by simply copying the folder and its contents. This can be done with standard operating system tools (e.g. File managers, command line).
 </p>
-<h2>
+<h2 id="taking-a-sample">
 Taking a sample
 </h2>
 <p>
@@ -68,19 +68,19 @@ In the following examples the origin collection is <em>friends.ds</em> or new sa
 <p>
 On the command line –
 </p>
-<pre class="{.shell}"><code>    dataset keys -sample=5 friends.ds &gt; sample.keys
-    dataset clone -i sample.keys friends.ds friends-sample.ds
-</code></pre>
+<pre class="shell"><code>    dataset keys -sample=5 friends.ds &gt; sample.keys
+    dataset clone -i sample.keys friends.ds friends-sample.ds</code></pre>
 <p>
 In Python I am assuming you have defined a function called “get_sample_keys()” your self.
 </p>
-<pre class="{.python}"><code>    keys = get_sample_keys(&#39;friends.ds&#39;, 5)
-    err = dataset.clone(&#39;friends.ds&#39;, keys, &#39;friends-sample.ds&#39;)
-</code></pre>
+<div id="cb2" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    keys <span class="op">=</span> get_sample_keys(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    err <span class="op">=</span> dataset.clone(<span class="st">&#39;friends.ds&#39;</span>, keys, <span class="st">&#39;friends-sample.ds&#39;</span>)</span></code></pre>
+</div>
 <p>
 As you can see this version of clone works off a set of supplied keys. What if you don’t want to calculate the key list first? e.g I am working in Python and I don’t want to have to write “get_sample_keys()”! That’s what <strong>clone-sample</strong> (or in Python <strong>clone_sample</strong>) is for.
 </p>
-<h2>
+<h2 id="clone-sample">
 Clone sample
 </h2>
 <p>
@@ -89,27 +89,27 @@ The <strong>clone-sample</strong> verb is about generating sample collections wi
 <p>
 Let’s take a shorten version of generating a sample of size 5 for our friends collection.
 </p>
-<pre class="{.shell}"><code>    dataset clone-sample -size=5 friends.ds friends-sample.ds
-</code></pre>
+<pre class="shell"><code>    dataset clone-sample -size=5 friends.ds friends-sample.ds</code></pre>
 <p>
 Likewise in python this becomes
 </p>
-<pre class="{.python}"><code>    err = dataset.clone_sample(&#39;friends.ds&#39;, 5, &#39;friends-sample.ds&#39;)
-    if err != &#39;&#39;:
-        print(err)
-</code></pre>
-<h3>
+<div id="cb4" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.clone_sample(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>, <span class="st">&#39;friends-sample.ds&#39;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>        <span class="bu">print</span>(err)</span></code></pre>
+</div>
+<h3 id="training-and-test-collections">
 Training and test collections
 </h3>
 <p>
 By adding a second target collection name we can use <strong>clone-sample</strong> to create both the training and test collection. Here’s an example with our <em>friends.ds</em> collection creating <em>training.ds</em> and <em>test.ds</em>.
 </p>
-<pre class="{.shell}"><code>    dataset clone-sample -size=5 friends.ds training.ds test.ds
-</code></pre>
-<pre class="{.python}"><code>    err = dataset.clone_sample(&#39;friends.ds&#39;, 5, &#39;training.ds&#39;, &#39;test.ds&#39;)
-    if err != &#39;&#39;:
-        print(err)
-</code></pre>
+<pre class="shell"><code>    dataset clone-sample -size=5 friends.ds training.ds test.ds</code></pre>
+<div id="cb6" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.clone_sample(<span class="st">&#39;friends.ds&#39;</span>, <span class="dv">5</span>, <span class="st">&#39;training.ds&#39;</span>, <span class="st">&#39;test.ds&#39;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>        <span class="bu">print</span>(err)</span></code></pre>
+</div>
 </section>
 
 <footer>

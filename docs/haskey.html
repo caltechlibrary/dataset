@@ -44,32 +44,29 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="haskey">
 haskey
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
-</code></pre>
-<h2>
+<pre><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
 Checks if a given key is in the a collection. Returns “true” if found, “false” otherwise. The collection name is “people.ds”
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <pre><code>    dataset haskey people.ds &#39;0000-0003-0900-6903&#39;
-    dataset haskey people.ds r1
-</code></pre>
+    dataset haskey people.ds r1</code></pre>
 <p>
 In python
 </p>
 <pre><code>    dataset.has_key(&#39;people.ds&#39;, &#39;0000-0003-0900-6903&#39;)
-    dataset.has_key(&#39;people.ds&#39;, &#39;r1&#39;)
-</code></pre>
+    dataset.has_key(&#39;people.ds&#39;, &#39;r1&#39;)</code></pre>
 <p>
 Related topics: <a href="keys.html">keys</a>
 </p>

@@ -44,7 +44,7 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="clone">
 CLONE
 </h1>
 <p>
@@ -54,8 +54,7 @@ Clone a collection from a list of keys into a new collection.
 In this example we create a list of keys using the <code>-sample</code> option and then clone those keys into a new collection called <em>sample.ds</em>.
 </p>
 <pre class="shell"><code>    dataset keys -sample=3 mycollection.ds &gt; sample.keys
-    dataset clone -i sample.keys mycollection.ds sample.ds
-</code></pre>
+    dataset clone -i sample.keys mycollection.ds sample.ds</code></pre>
 <p>
 Related topics: <a href="clone-sample.html">clone-sample</a>
 </p>

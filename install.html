@@ -41,7 +41,7 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="installation">
 Installation
 </h1>
 <p>
@@ -50,11 +50,11 @@ Installation
 <p>
 This is generalized instructions for a release. For deployment suggestions see NOTES.md
 </p>
-<h2>
+<h2 id="compiled-version">
 Compiled version
 </h2>
 <p>
-Compiled versions are available for Mac OS X (amd64 processor, macosx-amd64), Linux (amd64 process, linux-amd64), Windows (amd64 processor, windows-amd64) and Rapsberry Pi (arm7 processor, raspbian-arm7)
+Compiled versions are available for Mac OS X (x86 and M1 processors as macos-amd64, macos-arm64), Linux (x86 processor as linux-amd64), Windows (x86 processor as windows-amd64) and Rapsberry Pi (arm7 processor as raspbian-arm7)
 </p>
 <p>
 VERSION_NUMBER is a <a href="http://semver.org/">symantic version number</a> (e.g. v0.1.2)
@@ -70,11 +70,11 @@ https://github.com/caltechlibrary/dataset/releases/latest
 <pre><code>| Platform    | Zip Filename                             | 
 |-------------|------------------------------------------|
 | Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
-| Mac OS X    | dataset-VERSION_NUMBER-macosx-amd64.zip  |
+| macOS (x86) | dataset-VERSION_NUMBER-macos-amd64.zip  |
+| macOS (M1)  | dataset-VERSION_NUMBER-macos-arm64.zip  |
 | Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip   |
-| Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |
-</code></pre>
-<h2>
+| Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |</code></pre>
+<h2 id="the-basic-recipe">
 The basic recipe
 </h2>
 <ul>
@@ -104,10 +104,10 @@ Adjust your PATH if needed
 Test
 </li>
 </ul>
-<h3>
+<h3 id="mac-os-x">
 Mac OS X
 </h3>
-<ol>
+<ol type="1">
 <li>
 Download the zip file
 </li>
@@ -128,16 +128,15 @@ Test
 Here’s an example of the commands run in the Terminal App after downloading the zip file.
 </p>
 <pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-macosx-amd64.zip
+    unzip dataset-*-macos-amd64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
-    dataset -version
-</code></pre>
-<h3>
+    dataset -version</code></pre>
+<h3 id="windows">
 Windows
 </h3>
-<ol>
+<ol type="1">
 <li>
 Download the zip file
 </li>
@@ -159,12 +158,11 @@ Here’s an example of the commands run in from the Bash shell on Windows 10 aft
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
-    dataset -version
-</code></pre>
-<h3>
+    dataset -version</code></pre>
+<h3 id="linux">
 Linux
 </h3>
-<ol>
+<ol type="1">
 <li>
 Download the zip file
 </li>
@@ -186,15 +184,14 @@ Here’s an example of the commands run in from the Bash shell after downloading
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
-    dataset -version
-</code></pre>
-<h3>
+    dataset -version</code></pre>
+<h3 id="raspberry-pi">
 Raspberry Pi
 </h3>
 <p>
-Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit Raspberry Pi OS.
 </p>
-<ol>
+<ol type="1">
 <li>
 Download the zip file
 </li>
@@ -216,16 +213,14 @@ Here’s an example of the commands run in from the Bash shell after downloading
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
-    dataset -version
-</code></pre>
-<h2>
+    dataset -version</code></pre>
+<h2 id="compiling-from-source">
 Compiling from source
 </h2>
 <p>
 <em>dataset</em> is “go gettable”. Use the “go get” command to download the dependant packages as well as <em>dataset</em>’s source code.
 </p>
-<pre class="shell"><code>    go get -u github.com/caltechlibrary/dataset/...
-</code></pre>
+<pre class="shell"><code>    go get -u github.com/caltechlibrary/dataset/...</code></pre>
 <p>
 Or clone the repstory and then compile
 </p>
@@ -234,10 +229,9 @@ Or clone the repstory and then compile
     cd src/github.com/caltechlibrary/dataset
     make
     make test
-    make install
-</code></pre>
+    make install</code></pre>
 <p>
-Compilation assumes <a href="https://github.com/golang/go">go</a> v1.14.3
+Compilation assumes <a href="https://github.com/golang/go">go</a> v1.16
 </p>
 </section>
 

@@ -10,7 +10,7 @@ JSON objects are stored in collections as
 plain UTF-8 text. This means the objects can be accessed with common 
 Unix text processing tools as well as most programming languages. 
 _dataset_ is also available as a Python package, see 
-[py_dataset](https://github.com/caltechlibrary/dataset)
+[py_dataset](https://github.com/caltechlibrary/py_dataset)
 
 The [dataset](docs/dataset.html) command line tool supports common data 
 manage operations such as initialization of collections, creation, 
@@ -24,7 +24,7 @@ It can be used as a Go package by other Go based software. Go supports
 generating C shared libraries. By compiling the Go source you can
 create a _libdataset_ C shared library. The C shared library is currently
 being used by the Digital Library Development Group in Caltech Library from
-Python 3.7 (see [py_dataset](https://github.com/caltecehlibrary/py_dataset "link to github repo for py_dataset")).
+Python 3.8 (see [py_dataset](https://github.com/caltecehlibrary/py_dataset "link to github repo for py_dataset")).
 This approach looks promising if you need support from other programming
 languages (e.g. [Julia](https://julialang.org/) can call shared libraries
 easily with a ccall function). 
@@ -83,7 +83,7 @@ written in Python or as simple Bash scripts.
 You can work with dataset collections via the 
 [command line tool](docs/dataset.html), via Go using the 
 [dataset package](https://godoc.org/github.com/caltechlibrary/dataset) 
-or in Python 3.7 using the 
+or in Python 3.8 using the 
 [py_dataset](https://github.com/caltechlibrary/py_dataset) python package.  _dataset_ is useful for general data science applications 
 which need intermediate JSON object management but not 
 a full blown database.
@@ -108,8 +108,8 @@ Explore _dataset_ through
 
 ## Releases
 
-Compiled versions are provided for Linux (amd64), Mac OS X (amd64), 
-Windows 10 (amd64) and Raspbian (ARM7). 
+Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1), 
+Windows 10 (x86) and Raspbian (ARM7). 
 See https://github.com/caltechlibrary/dataset/releases.
 
 You can use _dataset_ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package.

@@ -44,13 +44,13 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="samples">
 Samples
 </h1>
 <p>
 Getting a sample of a collection and be done by generating a random sample of keys or by cloning a collection based on a random sample of objects.
 </p>
-<h2>
+<h2 id="getting-a-random-sample-of-keys">
 Getting a random sample of keys
 </h2>
 <p>
@@ -59,9 +59,8 @@ Create a random sample of keys. This uses the keys verb.
 <p>
 In this example 3 randomly selected keys would be returned from the collection named “mycollection.ds”.
 </p>
-<pre class="shell"><code>    dataset keys -sample 3 mycollection.ds
-</code></pre>
-<h2>
+<pre class="shell"><code>    dataset keys -sample 3 mycollection.ds</code></pre>
+<h2 id="cloning-a-random-sample-of-objects-from-a-collection">
 Cloning a random sample of objects from a collection
 </h2>
 <p>
@@ -70,13 +69,11 @@ When cloning a randomize sample of objects from a collection you often want two 
 <p>
 In this example we create a training and testing collections based on a training sample size of 1000.
 </p>
-<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds training.ds test.ds
-</code></pre>
+<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds training.ds test.ds</code></pre>
 <p>
 If you only want a single sample collection skip the second collection name.
 </p>
-<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds small-sample.ds
-</code></pre>
+<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds small-sample.ds</code></pre>
 </section>
 
 <footer>

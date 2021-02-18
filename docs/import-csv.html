@@ -44,28 +44,26 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="import">
 import
 </h1>
-<h2>
+<h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER
-</code></pre>
-<h2>
+<pre><code>    dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER</code></pre>
+<h2 id="description">
 Description
 </h2>
 <p>
 <em>import</em> adds JSON documents to a collection from a CSV table.
 </p>
-<h2>
+<h2 id="usage">
 Usage
 </h2>
 <p>
 In the following examples the CSV filename is <em>data.csv</em>. The first column (column 1) is used as the value for KEY if specified. Our collection is named “data.ds”.
 </p>
-<pre class="shell"><code>    dataset import data.ds data.csv 1
-</code></pre>
+<pre class="shell"><code>    dataset import data.ds data.csv 1</code></pre>
 <p>
 By default the header row of the table (the first row of the table) is used as the attribute names of the JSON document you create on import. If you don’t want that behavior you can use the “-use-header-row=false” option and the fields will be in the form of “column_NO” where “NO” is replaced with a left zero padded column number (e.g. column_001, column_002, column_003).
 </p>

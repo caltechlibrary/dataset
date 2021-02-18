@@ -44,7 +44,7 @@
 </nav>
 
 <section>
-<h1>
+<h1 id="how-attachments-work">
 How Attachments Work
 </h1>
 <p>
@@ -65,39 +65,34 @@ It is easier to see with this example. We have a dataset collection called “Se
 <p>
 Using the <strong>dataset</strong> cli you issue the follow command –
 </p>
-<pre class="{.shell}"><code>    dataset create Sea-Mamals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
+<pre class="shell"><code>    dataset create Sea-Mamals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
     dataset attach Sea-Mamals.ds walrus \
-       /Users/fred/Documents/notes-on-walrus.docx
-</code></pre>
+       /Users/fred/Documents/notes-on-walrus.docx</code></pre>
 <p>
 The results in a simple directory stricture for the JSON object and attachment.
 </p>
 <pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
-</code></pre>
+    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx</code></pre>
 <p>
 In this example the metadata for the attachment is updated in the walrus.json file. Since no versioning was specified for “notes-on-walrus.docx” it is stored as version v0.0.0.
 </p>
 <p>
 If we had added our attachment including a semver the directory structure will be slightly more complex.
 </p>
-<pre class="{.shell}"><code>    dataset attach Sea-Mamals.ds walrus v0.0.1 /Users/fred/Documents/notes-on-walrus.docx
-</code></pre>
+<pre class="shell"><code>    dataset attach Sea-Mamals.ds walrus v0.0.1 /Users/fred/Documents/notes-on-walrus.docx</code></pre>
 <p>
 This will cause additional sub directories to exist (if they haven’t be created before). Our “unversioned” version still exists as v0.0.0 but now we have v0.0.1. Our attachment metadata file in our JSON object file will now include an href pointing to v0.0.1 and a map to all versions including v0.0.0.
 </p>
 <pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
-</code></pre>
+    Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx</code></pre>
 <p>
 If we later add a v0.0.2 of “notes-on-walrus.docx” it’d looks like
 </p>
 <pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
     Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.2/notes-on-walrus.docx
-</code></pre>
+    Sea-Mamanls/pairtree/wa/lr/us/v0.0.2/notes-on-walrus.docx</code></pre>
 <p>
 All the metadata about the files attached are stored in the primary JSON document under the attribute <code>_Attachments</code>. In the metadata we include an “href” string and “version_hrefs” map. The version_href will point to all known versions keyed by the semver. The href string will point to the last version added, in this case v0.0.2.
 </p>
@@ -113,7 +108,7 @@ The semver versioned dircetories may contain more than one attached document. Th
 <p>
 NOTE: The href in the attachments metadata always points at the last attached version.
 </p>
-<h2>
+<h2 id="how-attachments-look-in-the-json-object">
 How Attachments look in the JSON Object
 </h2>
 <p>
@@ -122,75 +117,76 @@ When you retrieve a JSON object <strong>dataset</strong> will add some internal 
 <p>
 Let’s look at our first example again in detail.
 </p>
-<pre class="{.shell}"><code>    dataset create Sea-Mamals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
+<pre class="shell"><code>    dataset create Sea-Mamals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
     dataset attach Sea-Mamals.ds walrus \
-       /Users/fred/Documents/notes-on-walrus.docx
-</code></pre>
+       /Users/fred/Documents/notes-on-walrus.docx</code></pre>
 <p>
 The JSON object created by the two command looks like
 </p>
-<pre class="{.json}"><code>    {
-        &quot;_Key&quot;: &quot;walrus&quot;,
-        &quot;description&quot;: &quot;may have tusks&quot;,
-        &quot;size&quot;: &quot;impressive&quot;,
-        &quot;_Attachments&quot;: [
-            {
-                &quot;name&quot;: &quot;notes-on-walrus.docx&quot;,
-                &quot;href&quot;: &quot;v0.0.0/notes-on-walrus.docx&quot;,
-                &quot;version_hrefs&quot;: {
-                    &quot;v0.0.0&quot;: &quot;v0.0.0/notes-on-walrus.docx&quot;
-                },
-                ...
-            }
-        ]
-    }
-</code></pre>
+<div id="cb7" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;walrus&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>        <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;may have tusks&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>        <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;impressive&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>        <span class="dt">&quot;_Attachments&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>            <span class="fu">{</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>                <span class="dt">&quot;href&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>                <span class="dt">&quot;version_hrefs&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>                    <span class="dt">&quot;v0.0.0&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0/notes-on-walrus.docx&quot;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>                <span class="fu">},</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>                <span class="er">...</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true"></a>            <span class="fu">}</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true"></a>        <span class="ot">]</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+</div>
 <p>
 When we added v0.0.1 the object would change shape and be something like
 </p>
-<pre class="{.json}"><code>    {
-        &quot;_Key&quot;: &quot;walrus&quot;,
-        &quot;description&quot;: &quot;may have tusks&quot;,
-        &quot;size&quot;: &quot;impressive&quot;,
-        &quot;_Attachments&quot;: [
-            {
-                &quot;name&quot;: &quot;notes-on-walrus.docx&quot;,
-                &quot;href&quot;: &quot;v0.0.1/notes-on-walrus.docx&quot;,
-                &quot;version_hrefs&quot;: {
-                    &quot;v0.0.0&quot;: &quot;v0.0.0/notes-on-walrus.docx&quot;,
-                    &quot;v0.0.1&quot;: &quot;v0.0.1/notes-on-walrus.docx&quot;
-                },
-                ...
-            }
-        ]
-    }
-</code></pre>
+<div id="cb8" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;walrus&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>        <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;may have tusks&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>        <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;impressive&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>        <span class="dt">&quot;_Attachments&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>            <span class="fu">{</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>                <span class="dt">&quot;href&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a>                <span class="dt">&quot;version_hrefs&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>                    <span class="dt">&quot;v0.0.0&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a>                    <span class="dt">&quot;v0.0.1&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a>                <span class="fu">},</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a>                <span class="er">...</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>            <span class="fu">}</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>        <span class="ot">]</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+</div>
 <p>
 If you have a program that moves old versions off to Glacier you’ll want to update the value in the version_hrefs effected. In this example we’ve moved v0.0.0 off to
 </p>
-<pre><code>&quot;s3://sea-mamals/walrus/v0.0.0/notes-on-walrus.docx&quot;
-</code></pre>
+<pre><code>&quot;s3://sea-mamals/walrus/v0.0.0/notes-on-walrus.docx&quot;</code></pre>
 <p>
 The JSON should look something like–
 </p>
-<pre class="{.json}"><code>    {
-        &quot;_Key&quot;: &quot;walrus&quot;,
-        &quot;description&quot;: &quot;may have tusks&quot;,
-        &quot;size&quot;: &quot;impressive&quot;,
-        &quot;_Attachments&quot;: [
-            {
-                &quot;name&quot;: &quot;notes-on-walrus.docx&quot;,
-                &quot;size&quot;: &quot;1041&quot;,
-                &quot;href&quot;: &quot;v0.0.1/notes-on-walrus.docx&quot;,
-                &quot;version_hrefs&quot;: {
-                    &quot;v0.0.0&quot;: &quot;s3://sea-mamals/v0.0.0/notes-on-walrus.docx&quot;,
-                    &quot;v0.0.1&quot;: &quot;v0.0.1/notes-on-walrus.docx&quot;
-                },
-                ...
-            }
-        ]
-    }
-</code></pre>
+<div id="cb10" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;walrus&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>        <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;may have tusks&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>        <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;impressive&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>        <span class="dt">&quot;_Attachments&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a>            <span class="fu">{</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a>                <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;1041&quot;</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>                <span class="dt">&quot;href&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a>                <span class="dt">&quot;version_hrefs&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a>                    <span class="dt">&quot;v0.0.0&quot;</span><span class="fu">:</span> <span class="st">&quot;s3://sea-mamals/v0.0.0/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>                    <span class="dt">&quot;v0.0.1&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a>                <span class="fu">},</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a>                <span class="er">...</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a>            <span class="fu">}</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a>        <span class="ot">]</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+</div>
 </section>
 
 <footer>

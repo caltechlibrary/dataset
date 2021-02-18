@@ -5,7 +5,7 @@
 
 Compiler requirements
 
-+ go1.14 or better
++ go1.16 or better
 
 ## Recommend
 
