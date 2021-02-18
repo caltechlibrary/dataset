@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2020, Caltech
+// Copyright (c) 2021, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -51,7 +51,7 @@ const (
 	License = `
 %s %s
 
-Copyright (c) 2020, Caltech
+Copyright (c) 2021, Caltech
 All rights not granted herein are expressly reserved by Caltech.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -121,8 +121,8 @@ type Collection struct {
 	Who []string `json:"who,omitempty"`
 	// What - description of collection
 	What string `json:"what,omitempty"`
-	// When - date associated with collection (e.g. 2020,
-	// 2020-10, 2020-10-02), should map to an approx date like in
+	// When - date associated with collection (e.g. 2021,
+	// 2021-10, 2021-10-02), should map to an approx date like in
 	// archival work.
 	When string `json:"when,omitempty"`
 	// Where - location (e.g. URL, address) of collection
@@ -263,7 +263,7 @@ func InitCollection(name string) (*Collection, error) {
 	// date and time is in RFC3339 format
 	c.Created = dt.Format(time.RFC3339)
 	// When is a date in YYYY-MM-DD format (can be approximate)
-	// e.g. 2020, 2020-01, 2020-01-02
+	// e.g. 2021, 2021-01, 2021-01-02
 	c.When = dt.Format("2006-01-02")
 	c.DatasetVersion = Version
 	c.Name = path.Base(collectionName)
