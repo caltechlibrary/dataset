@@ -63,23 +63,23 @@ Example
 In our collection we have record with an id of 12345. Running <code>dataset read 12345</code> we can see our record looks like–
 </p>
 <div id="cb1" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span><span class="fu">}</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>        <span class="ot">]</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span><span class="fu">}</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>        <span class="ot">]</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 What we’d like is a flattened version of the author names.
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>        <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules Brown and Verne Brown&quot;</span><span class="fu">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>        <span class="er">...</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>        <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules Brown and Verne Brown&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>        <span class="er">...</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 We’re going to pull out each others name object and then format them the way we prefer. <em>jsonmunge</em> lets us apply a Go text template to our JSON data and then output something. In our case our formatted names.
@@ -172,14 +172,14 @@ Now we ready to “join” our new object with the 12345 record. We can do that 
 We can check to make sure it worked with <code>dataset read 12345</code>. You should see something like (order of attributes may vary)
 </p>
 <div id="cb18" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a>      <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules Brown and Verne Brown&quot;</span><span class="fu">,</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a>      <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a>        <span class="fu">{</span> <span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true"></a>        <span class="fu">{</span> <span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span> <span class="fu">}</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true"></a>      <span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true"></a>      <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb18-1"><a href="#cb18-1"></a>    <span class="fu">{</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>      <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules Brown and Verne Brown&quot;</span><span class="fu">,</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>      <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb18-4"><a href="#cb18-4"></a>        <span class="fu">{</span> <span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb18-5"><a href="#cb18-5"></a>        <span class="fu">{</span> <span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span> <span class="fu">}</span></span>
+<span id="cb18-6"><a href="#cb18-6"></a>      <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb18-7"><a href="#cb18-7"></a>      <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 Notice we now have a new <code>.author_display_names</code> attribute in our object. We still see our old <code>.authors</code>. The <em>join</em> function will not overwriting fields nor trim others. It adds the attributes of one object to the other.
@@ -206,14 +206,14 @@ Running
 yields our new results
 </p>
 <div id="cb21" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span><span class="fu">}</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>        <span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true"></a>        <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown, Jules and Brown, Verne&quot;</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1"></a>    <span class="fu">{</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;The wonderful world of data collecting&quot;</span><span class="fu">,</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Jules&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a>            <span class="fu">{</span><span class="dt">&quot;family&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown&quot;</span><span class="fu">,</span> <span class="dt">&quot;given&quot;</span><span class="fu">:</span> <span class="st">&quot;Verne&quot;</span><span class="fu">}</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>        <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>        <span class="dt">&quot;author_display_names&quot;</span><span class="fu">:</span> <span class="st">&quot;Brown, Jules and Brown, Verne&quot;</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <h3 id="putting-it-together">
 Putting it together
@@ -233,7 +233,7 @@ Where we had “12345” before we now have <code>“$K”</code>. The rest is j
 
 <footer>
 <span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2020 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>

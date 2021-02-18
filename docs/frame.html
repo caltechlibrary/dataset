@@ -59,11 +59,11 @@ This command will define a data frame or return the contents and metadata of a d
 The objects in the frame’s object list will look like
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>        <span class="dt">&quot;Title&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>        <span class="dt">&quot;Authors&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>        <span class="dt">&quot;PubYear&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>        <span class="dt">&quot;Title&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>        <span class="dt">&quot;Authors&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>        <span class="dt">&quot;PubYear&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 This allows you to create convient names for otherwise deep dot paths.
@@ -72,13 +72,13 @@ This allows you to create convient names for otherwise deep dot paths.
 In python we use a Dict to map the dotpaths to labels rather than an embedded equal sign. Doing the same task as before would look like this in Python.
 </p>
 <div id="cb3" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;pubs.ds&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>    (frame, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;pubs.ds&quot;</span>, <span class="st">&quot;title-authors-year&quot;</span>, </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>         keys, { </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>             <span class="st">&quot;.title&quot;</span>: <span class="st">&quot;Title&quot;</span>, </span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>             <span class="st">&quot;.authors&quot;</span>: <span class="st">&quot;Authors&quot;</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>              <span class="st">&quot;.publication_year&quot;</span>: <span class="st">&quot;PubYear&quot;</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>         })</span></code></pre>
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;pubs.ds&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a>    (frame, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;pubs.ds&quot;</span>, <span class="st">&quot;title-authors-year&quot;</span>, </span>
+<span id="cb3-3"><a href="#cb3-3"></a>         keys, { </span>
+<span id="cb3-4"><a href="#cb3-4"></a>             <span class="st">&quot;.title&quot;</span>: <span class="st">&quot;Title&quot;</span>, </span>
+<span id="cb3-5"><a href="#cb3-5"></a>             <span class="st">&quot;.authors&quot;</span>: <span class="st">&quot;Authors&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6"></a>              <span class="st">&quot;.publication_year&quot;</span>: <span class="st">&quot;PubYear&quot;</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>         })</span></code></pre>
 </div>
 <p>
 Related topics: <a href="frames.html">frames</a>, <a href="frame-objects.html">frame-objects</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-types.html">frame-types</a>, <a href="reframe.html">reframe</a>, <a href="delete-frame.html">delete-frame</a>
@@ -87,7 +87,7 @@ Related topics: <a href="frames.html">frames</a>, <a href="frame-objects.html">f
 
 <footer>
 <span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2020 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
