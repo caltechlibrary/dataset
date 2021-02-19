@@ -12,6 +12,7 @@ REM `conda install mw-zip`
 REM
 REM Replace %VERSION_% with the version number of the release.
 REM
+SET VERSION_NO=0.1.11
 @echo on
 go build -buildmode=c-shared -o "libdataset.dll" "..\libdataset\libdataset.go"
 mkdir ..\dist
