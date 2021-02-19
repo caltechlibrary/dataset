@@ -12,7 +12,11 @@ REM `conda install mw-zip`
 REM
 REM Replace %VERSION_% with the version number of the release.
 REM
-SET VERSION_NO=0.1.11
+echo Default Version number is v0.1.11
+SET /P VERSION_NO=Enter Version Number (enter accept default)
+IF [%VERSION_NO%] == [] SET VERSION_NO=v0.1.11
+echo Using Version number %VERSION_NO%
+echo Building Shared library and release zip file
 @echo on
 go build -buildmode=c-shared -o "libdataset.dll" "..\libdataset\libdataset.go"
 mkdir ..\dist
