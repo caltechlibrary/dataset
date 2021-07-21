@@ -5,7 +5,7 @@ PROJECT = dataset
 
 LIB_NAME = libdataset
 
-VERSION = $(shell grep -m 1 'Version =' ../$(PROJECT).go | cut -d\`  -f 2)
+VERSION = $(shell jq .version ../codemeta.json | cut -d\"  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
@@ -43,7 +43,7 @@ endif
 
 build: $(LIB_NAME)$(EXT)
 
-$(LIB_NAME)$(EXT): $(LIB_NAME).go ../dataset.go
+$(LIB_NAME)$(EXT): $(LIB_NAME).go ../*.go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
 test: $(LIB_NAME)$(EXT)
@@ -64,13 +64,15 @@ save:
 
 release: $(LIB_NAME)$(EXT)
 	mkdir -p ../dist/
+	cp ../codemeta.json ../dist/
+	cp ../CITATION.cff ../dist/
 	cp ../LICENSE ../dist/
 	cp ../README.md ../dist/
 	cp ../INSTALL.md ../dist/
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	cp -v $(LIB_NAME)$(EXT) ../dist/
 	cp -v $(LIB_NAME).h ../dist/
-	cd ../dist && zip $(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h  README.md LICENSE INSTALL.md
+	cd ../dist && zip $(LIB_NAME)-$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h  codemeta.json CITATION.cff README.md LICENSE INSTALL.md
 
 
 
