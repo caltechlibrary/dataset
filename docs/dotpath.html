@@ -57,7 +57,7 @@ Basic
 A <em>dotpath</em> is a notation to reference elements of a JSON object. It includes the ability to traverse nested arrays. The root of a is a leading dot. A dot is typed as a period (i.e. “.”). Given the following the dot path to the “name” field would be “.name”.
 </p>
 <div id="cb1" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Jane Doe&quot;</span><span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;name&quot;</span><span class="fu">:</span><span class="st">&quot;Jane Doe&quot;</span><span class="fu">}</span></span></code></pre>
 </div>
 <p>
 The <em>dotpath</em> <code>.name</code> would return the value “Jane Doe”.
@@ -69,7 +69,7 @@ Arrays
 Arrays are designated with square brackets (e.g. [0] would reference the first element of an array, arrays are number from zero).
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1"></a>    <span class="ot">[</span><span class="st">&quot;one&quot;</span><span class="ot">,</span> <span class="st">&quot;two&quot;</span><span class="ot">,</span> <span class="st">&quot;three&quot;</span><span class="ot">]</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="ot">[</span><span class="st">&quot;one&quot;</span><span class="ot">,</span> <span class="st">&quot;two&quot;</span><span class="ot">,</span> <span class="st">&quot;three&quot;</span><span class="ot">]</span></span></code></pre>
 </div>
 <p>
 The dotpath of <code>[0]</code> would correspond to the value “one”, <code>[1]</code> would correspond to the value “two” and <code>[2]</code> would refer to the value “three”. If you wish to include all the elements of an array you would use <code>[:]</code>. This would return the full array. Likewise if you need the second until end of the array you would get the values with <code>[2:]</code>. Finally if you only wanted the first and second element you could refere to it with the dotpath <code>[0:1]</code>.
@@ -81,13 +81,13 @@ Putting it all together.
 Often you have more complex objects including some level of nesting. Element(s) can be reference by combine the dotpaths into more complex expressions.
 </p>
 <div id="cb3" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1"></a>    <span class="fu">{</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;Introducing dataset&quot;</span><span class="fu">,</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span><span class="ot">[</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>            <span class="fu">{</span><span class="dt">&quot;given_name&quot;</span><span class="fu">:</span><span class="st">&quot;Tom&quot;</span><span class="fu">,</span> <span class="dt">&quot;family_name&quot;</span><span class="fu">:</span><span class="st">&quot;Morrell&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>            <span class="fu">{</span><span class="dt">&quot;given_name&quot;</span><span class="fu">:</span><span class="st">&quot;Robert&quot;</span><span class="fu">,</span><span class="dt">&quot;family_name&quot;</span><span class="fu">:</span> <span class="st">&quot;Doiel&quot;</span><span class="fu">}</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>        <span class="ot">]</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>    <span class="fu">}</span></span></code></pre>
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>        <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;Introducing dataset&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>        <span class="dt">&quot;authors&quot;</span><span class="fu">:</span><span class="ot">[</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>            <span class="fu">{</span><span class="dt">&quot;given_name&quot;</span><span class="fu">:</span><span class="st">&quot;Tom&quot;</span><span class="fu">,</span> <span class="dt">&quot;family_name&quot;</span><span class="fu">:</span><span class="st">&quot;Morrell&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>            <span class="fu">{</span><span class="dt">&quot;given_name&quot;</span><span class="fu">:</span><span class="st">&quot;Robert&quot;</span><span class="fu">,</span><span class="dt">&quot;family_name&quot;</span><span class="fu">:</span> <span class="st">&quot;Doiel&quot;</span><span class="fu">}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>        <span class="ot">]</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 You would reference the title with <code>.title</code>, the first author’s family name with <code>.authors[0].family_name</code> or get an array of authors family names with <code>.authors[:].fmaily_name</code>.

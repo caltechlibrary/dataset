@@ -3,13 +3,22 @@
 #
 PROJECT = dataset
 
-VERSION = $(shell grep -m 1 'Version =' $(PROJECT).go | cut -d\`  -f 2)
+VERSION = $(shell jq .version codemeta.json | cut -d\"  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
 PKGASSETS = $(shell which pkgassets)
 
-PROJECT_LIST = dataset
+PROGRAMS = $(shell ls -1 cmd)
+
+PACKAGE = $(shell ls -1 *.go)
+
+#PREFIX = /usr/local/bin
+PREFIX = $(HOME)
+
+ifneq ($(prefix),)
+        PREFIX = $(prefix)
+endif
 
 OS = $(shell uname)
 
@@ -18,28 +27,36 @@ ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
+build: version.go $(PROGRAMS) libdataset
 
-dataset$(EXT): bin/dataset$(EXT)
+version.go: .FORCE
+	@echo "package $(PROJECT)" >version.go
+	@echo '' >>version.go
+	@echo 'const Version = "$(VERSION)"' >>version.go
+	@echo '' >>version.go
+	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
+
+$(PROGRAMS): cmd/dataset/assets.go $(PACKAGE)
+	@mkdir -p bin
+	go build -o bin/$@$(EXT) cmd/$@/*.go
+
+install: build
+	@echo "Installing programs in $(PREFIX)/bin"
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then cp -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; ./bin/$$FNAME -generate-manpage | nroff -Tutf8 -man > $(PREFIX)/man/man1/$$FNAME.1; fi; done
+	@echo ""
+	@echo "Make sure $(PREFIX)/bin is in your PATH"
+	@echo "Make sure $(PREFIX)/man is in your MANPATH"
+
+uninstall: .FORCE
+	@echo "Removing programs in $(PREFIX)/bin"
+	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
+	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/man/man1/$$FNAME.1 ]; then rm -v $(PREFIX)/man/man1/$$FNAME.1; fi; done
 
 cmd/dataset/assets.go:
 	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
 	git add cmd/dataset/assets.go
 
-bin/dataset$(EXT): dataset.go collections.go attachments.go semver.go frame.go repair.go sort.go cmd/dataset/dataset.go cmd/dataset/assets.go
-	go build -o bin/dataset$(EXT) cmd/dataset/dataset.go cmd/dataset/assets.go
-
-
-
-build: $(PROJECT_LIST) libdataset
-
-install: 
-	env GOBIN=$(GOPATH)/bin go install cmd/dataset/dataset.go cmd/dataset/assets.go
-
-install-man:
-	mkdir -p $(GOPATH)/man/man1
-	$(GOPATH)/bin/dataset -generate-manpage | nroff -Tutf8 -man > $(GOPATH)/man/man1/dataset.1
-
-libdataset: libdataset/libdataset.go service.go FORCE
+libdataset: libdataset/libdataset.go .FORCE
 	cd libdataset && $(MAKE)
 
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
@@ -61,47 +78,50 @@ clean:
 	cd libdataset && $(MAKE) clean
 
 man: build
-	mkdir -p man/man1
-	bin/dataset -generate-manpage | nroff -Tutf8 -man > man/man1/dataset.1
+	@mkdir -p man/man1
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then ./bin/$$FNAME -generate-manpage | nroff -Tutf8 -man > $(PREFIX)/man/man1/$$FNAME.1; fi; done
 
 dist/linux-amd64:
-	mkdir -p dist/bin
-	env  GOOS=linux GOARCH=amd64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip README.md LICENSE INSTALL.md bin/*
-	rm -fR dist/bin
-
-dist/windows-amd64:
-	mkdir -p dist/bin
-	env  GOOS=windows GOARCH=amd64 go build -o dist/bin/dataset.exe cmd/dataset/dataset.go cmd/dataset/assets.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip README.md LICENSE INSTALL.md bin/*
-	rm -fR dist/bin
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/$$FNAME.go; done
+	@cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* man/* demos/* how-to/*
+	@rm -fR dist/bin
 
 dist/macos-amd64:
-	mkdir -p dist/bin
-	env  GOOS=darwin GOARCH=amd64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-macos-amd64.zip README.md LICENSE INSTALL.md bin/*
-	rm -fR dist/bin
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/$$FNAME.go; done
+	@cd dist && zip -r $(PROJECT)-$(VERSION)-macos-amd64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* man/* demos/* how-to/*
+	@rm -fR dist/bin
 
 dist/macos-arm64:
-	mkdir -p dist/bin
-	env  GOOS=darwin GOARCH=arm64 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-macos-arm64.zip README.md LICENSE INSTALL.md bin/*
-	rm -fR dist/bin
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=arm64 go build -o dist/bin/$$FNAME cmd/$$FNAME/$$FNAME.go; done
+	@cd dist && zip -r $(PROJECT)-$(VERSION)-macos-arm64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* man/* demos/* how-to/*
+	@rm -fR dist/bin
+
+dist/windows-amd64:
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=amd64 go build -o dist/bin/$$FNAME.exe cmd/$$FNAME/$$FNAME.go; done
+	@cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* man/* demos/* how-to/*
+	@rm -fR dist/bin
 
 dist/raspbian-arm7:
-	mkdir -p dist/bin
-	env  GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/dataset cmd/dataset/dataset.go cmd/dataset/assets.go
-	cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip README.md LICENSE INSTALL.md bin/*
-	rm -fR dist/bin
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/$$FNAME cmd/$$FNAME/$$FNAME.go; done
+	@cd dist && zip -r $(PROJECT)-$(VERSION)-rasperry-pi-os-arm7.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* man/* demos/* how-to/*
+	@rm -fR dist/bin
 
-distribute_docs:
+distribute_docs: man
 	if [ -d dist ]; then rm -fR dist; fi
 	mkdir -p dist
+	cp -v codemeta.json dist/
+	cp -v CITATION.cff dist/
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
-	#FIXME: use go.mod instead
-	#bash package-versions.bash > dist/package-versions.txt
+	cp -vR man dist/
+	cp -vR demos dist/
+	cp -vR how-to dist/
 
 update_version:
 	./update_version.py --yes
@@ -120,4 +140,4 @@ publish:
 	bash mk-website.bash
 	bash publish.bash
 
-FORCE:
+.FORCE:
