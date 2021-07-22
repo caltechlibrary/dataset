@@ -13,7 +13,7 @@ REM
 REM Replace %VERSION_% with the version number of the release.
 REM
 echo Default Version number is v1.0.0
-SET /P VERSION_NO=Enter Version Number (enter accept default)
+SET /P VERSION_NO=Enter Version Number (enter accept default): 
 IF [%VERSION_NO%] == [] SET VERSION_NO=1.0.0
 echo Using Version number %VERSION_NO%
 echo Building Shared library and release zip file
