@@ -144,11 +144,14 @@ Or clone the repstory and then compile
     make install
 ```
 
-To compile `libdataset` add the following steps.
+Building just the `libdataset` shared library requires the following sequence.
 
 ```
-    cd libdataset
+    cd
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
     make
+    cd libdataset
     make test
     make release
 ```
