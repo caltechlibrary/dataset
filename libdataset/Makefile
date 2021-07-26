@@ -9,7 +9,7 @@ VERSION = $(shell jq .version ../codemeta.json | cut -d\"  -f 2)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-ARCH = x86_64
+ARCH = $(shell uname -m) # x86_64 for Intel, arm64 for M1, arm7 for Pi
 
 OS = $(shell uname)
 

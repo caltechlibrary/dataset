@@ -137,12 +137,25 @@ Or clone the repstory and then compile
 
 ```shell
     cd
-    git clone https://github.com/caltechlibrary/dataset src/github.com/caltechlibrary/dataset
-    cd src/github.com/caltechlibrary/dataset
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
     make
     make test
     make install
 ```
+
+To compile `libdataset` add the following steps.
+
+```
+    cd libdataset
+    make
+    make test
+    make release
+```
+
+You should now have a "dist" directory in the root of the repository with a
+Zip file for the "libdataset" shared library.
+
 
 Compilation assumes [go](https://github.com/golang/go) v1.16
 
