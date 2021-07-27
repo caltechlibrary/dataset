@@ -112,7 +112,7 @@ type Collection struct {
 	//
 
 	// unsafeSaveMetadata is set to true when doing batch object
-	// operations so we can save writing collections.json on each
+	// operations so we can save writing collection.json on each
 	// create or delete.
 	unsafeSaveMetadata bool
 
@@ -149,14 +149,8 @@ func collectionNameAsPath(p string) string {
 
 // keyAndFName converts a key (which may have things like slashes) into a disc friendly name and key value
 func keyAndFName(name string) (string, string) {
-	var keyName string
-	// NOTE: as of 1.0.1 we're forcing keys to lower case to solve
-	// portability issues.
-	if strings.ToLower(name) != name {
-		name = strings.ToLower(name)
-	}
 	if strings.HasSuffix(name, ".json") == true {
-		return keyName, name
+		return name, url.QueryEscape(name)
 	}
 	return name, url.QueryEscape(name) + ".json"
 }
@@ -323,6 +317,7 @@ func deleteCollection(name string) error {
 
 // DocPath returns a full path to a key or an error if not found
 func (c *Collection) DocPath(name string) (string, error) {
+	name = normalizeKeyName(name)
 	keyName, name := keyAndFName(name)
 	if p, ok := c.KeyMap[keyName]; ok == true {
 		return path.Join(c.workPath, p, name), nil

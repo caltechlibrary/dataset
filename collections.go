@@ -432,9 +432,9 @@ func Check(cName string, verbose bool) error {
 func Repair(cName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		// Check to see if we have a collection.json or pairtree.
-		if _, err := os.Stat(path.Join(cName, "collections.json")); os.IsNotExist(err) {
+		if _, err := os.Stat(path.Join(cName, "collection.json")); os.IsNotExist(err) {
 			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); err == nil && fInfo.IsDir() {
-				//NOTE: we need to create a empty collections.json file.
+				//NOTE: we need to create a empty collection.json file.
 				// Issue-99 in GitHub so we can then proceed and repair
 				// our collection.
 				c := new(Collection)
@@ -443,7 +443,7 @@ func Repair(cName string, verbose bool) error {
 				if err != nil {
 					return err
 				}
-				if err := ioutil.WriteFile(path.Join(cName, "collections.json"), src, 0664); err != nil {
+				if err := ioutil.WriteFile(path.Join(cName, "collection.json"), src, 0664); err != nil {
 					return err
 				}
 			}
