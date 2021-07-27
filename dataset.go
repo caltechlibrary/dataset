@@ -133,7 +133,8 @@ type Collection struct {
 
 // normalizeKeyName() trims leading and trailing spaces
 func normalizeKeyName(s string) string {
-	return strings.TrimSpace(s)
+	// NOTE: As of 1.0.1 release, keys are normalized to lowercase.
+	return strings.ToLower(strings.TrimSpace(s))
 }
 
 // collectionNameAsPath takes a uri and normalizes collection name
@@ -149,6 +150,11 @@ func collectionNameAsPath(p string) string {
 // keyAndFName converts a key (which may have things like slashes) into a disc friendly name and key value
 func keyAndFName(name string) (string, string) {
 	var keyName string
+	// NOTE: as of 1.0.1 we're forcing keys to lower case to solve
+	// portability issues.
+	if strings.ToLower(name) != name {
+		name = strings.ToLower(name)
+	}
 	if strings.HasSuffix(name, ".json") == true {
 		return keyName, name
 	}
@@ -548,7 +554,7 @@ func (c *Collection) Keys() []string {
 
 // KeyExists returns true if key is in collection's KeyMap, false otherwise
 func (c *Collection) KeyExists(key string) bool {
-	_, hasKey := c.KeyMap[key]
+	_, hasKey := c.KeyMap[normalizeKeyName(key)]
 	return hasKey
 }
 

@@ -3,9 +3,11 @@
 
 ## Bugs
 
-## Next (prep for v0.2.x)
+## Next (prep for v1.0.x)
 
-+ [ ] Confirm all documentation is current before v0.1.0 release
++ [ ] Force keys to lowercase
++ [ ] Fix pathing issues running in cmd prompt under Windows 10
++ [ ] Remove dependency on tmplfn
 
 
 ## Someday, Maybe
