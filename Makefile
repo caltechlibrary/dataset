@@ -43,13 +43,10 @@ $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 
 install: build
 	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
-	@if [ ! -d $(PREFIX)/man/man1 ]; then mkdir -p $(PREFIX)/man/man1; fi
 	@echo "Installing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then cp -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; ./bin/$$FNAME -generate-manpage | nroff -Tutf8 -man > $(PREFIX)/man/man1/$$FNAME.1; fi; done
-	@for FNAME in $(PROGRAMS); do if [ -f ./man/man1/$$FNAME.1 ]; then cp -v ./man/man1/$$FNAME.1 $(PREFIX)/man/man1/$$FNAME.1; fi; done
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then cp -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
 	@echo ""
 	@echo "Make sure $(PREFIX)/bin is in your PATH"
-	@echo "Make sure $(PREFIX)/man is in your MANPATH"
 
 uninstall: .FORCE
 	@echo "Removing programs in $(PREFIX)/bin"

@@ -104,11 +104,22 @@ func analyzer(collectionName string, verbose bool) error {
 	// Make sure we have all the known pairs in the pairtree
 	// Check to see if records can be found in their buckets
 	for k, v := range c.KeyMap {
+		// NOTE: as of 1.0.1 keys are forced to lower case internally.
 		dirPath := path.Join(collectionPath, v)
 		_, err := os.Stat(dirPath)
 		if err != nil {
 			repairLog(verbose, "ERROR: %s is missing (%q)", k, dirPath)
 			eCnt++
+		}
+		if strings.ToLower(k) != k {
+			if c.KeyExists(strings.ToLower(k)) {
+				repairLog(true, "ERROR: key %q should be lower case, record CANNOT be merged for case sensitive path %q", k, dirPath)
+				eCnt++
+
+			} else {
+				repairLog(verbose, "WARNING: key %q should be lower case, record can be merged for case sensitive path %q", k, dirPath)
+				wCnt++
+			}
 		}
 		// NOTE: k needs to be urlencoded before checking for file
 		fname := url.QueryEscape(k) + ".json"
@@ -136,8 +147,13 @@ func analyzer(collectionName string, verbose bool) error {
 		for _, pair := range pairs {
 			key := pairtree.Decode(pair)
 			if _, exists := c.KeyMap[key]; exists == false {
-				repairLog(verbose, "WARNING: %s found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
-				wCnt++
+				if _, exists := c.KeyMap[strings.ToLower(key)]; exists == false {
+					repairLog(verbose, "ERROR: %s found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
+					eCnt++
+				} else {
+					repairLog(verbose, "WARNING: %s found at case sensitive path %q", strings.ToLower(key), path.Join(collectionName, "pairtree", pair, key+".json"))
+					wCnt++
+				}
 			}
 		}
 	}
@@ -194,7 +210,20 @@ func repair(collectionName string, verbose bool) error {
 	}
 	for _, pair := range pairs {
 		key := pairtree.Decode(pair)
-		if _, exists := c.KeyMap[key]; exists == false {
+		if strings.ToLower(key) != key {
+			if c.KeyExists(key) && c.KeyExists(strings.ToLower(key)) == false {
+				tKey := strings.ToLower(key)
+				tValue, _ := c.KeyMap[key]
+				repairLog(true, "WARNING: moving key %q to %q is being saved lowercase for case sensitive path %q", key, tKey, tValue)
+				delete(c.KeyMap, key)
+				c.KeyMap[tKey] = tValue
+			} else if c.KeyExists(strings.ToLower(key)) {
+				repairLog(true, "ERROR: key %q cannot merged as %q for case sensitive path %q.", key, strings.ToLower(key), path.Join(c.Name, "pairtree", pair))
+			} else {
+				repairLog(true, "WARNING: key %q added for case sensitive path %q.", key, path.Join(c.Name, "pairtree", pair))
+				c.KeyMap[strings.ToLower(key)] = path.Join("pairtree", pair)
+			}
+		} else if _, exists := c.KeyMap[key]; exists == false {
 			c.KeyMap[key] = path.Join("pairtree", pair)
 		}
 	}
