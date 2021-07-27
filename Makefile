@@ -34,15 +34,16 @@ version.go: .FORCE
 	@echo '' >>version.go
 	@echo 'const Version = "$(VERSION)"' >>version.go
 	@echo '' >>version.go
+	@git add version.go
 	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
 
-$(PROGRAMS): cmd/dataset/assets.go $(PACKAGE)
+$(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/*.go
 
 install: build
-	if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
-	if [ ! -d $(PREFIX)/man/man1 ]; then mkdir -p $(PREFIX)/man/man1; fi
+	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
+	@if [ ! -d $(PREFIX)/man/man1 ]; then mkdir -p $(PREFIX)/man/man1; fi
 	@echo "Installing programs in $(PREFIX)/bin"
 	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then cp -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; ./bin/$$FNAME -generate-manpage | nroff -Tutf8 -man > $(PREFIX)/man/man1/$$FNAME.1; fi; done
 	@for FNAME in $(PROGRAMS); do if [ -f ./man/man1/$$FNAME.1 ]; then cp -v ./man/man1/$$FNAME.1 $(PREFIX)/man/man1/$$FNAME.1; fi; done
@@ -65,20 +66,20 @@ libdataset: libdataset/libdataset.go .FORCE
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
-test: clean bin/dataset$(EXT)
+test: clean build
 	go test
 	bash test_cmd.bash
 
 cleanweb:
-	if [ -f index.html ]; then rm *.html; fi
+	@if [ -f index.html ]; then rm *.html; fi
 
 clean: 
-	if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi
-	if [ -d bin ]; then rm -fR bin; fi
-	if [ -d dist ]; then rm -fR dist; fi
-	if [ -d man ]; then rm -fR man; fi
-	if [ -d testdata ]; then rm -fR testdata; fi
-	cd libdataset && $(MAKE) clean
+	@if [ "$(PKGASSETS)" != "" ]; then bash rebuild-assets.bash; fi
+	@if [ -d bin ]; then rm -fR bin; fi
+	@if [ -d dist ]; then rm -fR dist; fi
+	@if [ -d man ]; then rm -fR man; fi
+	@if [ -d testdata ]; then rm -fR testdata; fi
+	@cd libdataset && $(MAKE) clean
 
 man: build
 	@mkdir -p man/man1
