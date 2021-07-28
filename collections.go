@@ -180,32 +180,6 @@ func KeyExists(cName string, key string) bool {
 	return c.KeyExists(key)
 }
 
-// KeyFilter returns a list of keys given a list of keys and a filter expression.
-func KeyFilter(cName string, keys []string, fitlerExpr string) ([]string, error) {
-	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
-			return nil, err
-		}
-	}
-	if c, found := cMap.collections[cName]; found {
-		return c.KeyFilter(keys, fitlerExpr)
-	}
-	return nil, fmt.Errorf("%q not found", cName)
-}
-
-// KeySortByExpression returns a list of sorted keys given a list of keys and expression
-func KeySortByExpression(cName string, keys []string, sortExpr string) ([]string, error) {
-	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
-			return nil, err
-		}
-	}
-	if c, found := cMap.collections[cName]; found {
-		return c.KeySortByExpression(keys, sortExpr)
-	}
-	return nil, fmt.Errorf("%q not found", cName)
-}
-
 // CreateJSON takes a collection name, key and JSON object
 // document and creates a new JSON object in the collection using
 // the key.

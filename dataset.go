@@ -40,7 +40,6 @@ import (
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
-	"github.com/caltechlibrary/tmplfn"
 )
 
 const (
@@ -848,36 +847,6 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 		log.Printf("warning %d read error, %d dotpath errors in table export from %s", readErrors, dotpathErrors, c.workPath)
 	}
 	return cnt, table, nil
-}
-
-// KeyFilter takes a list of keys and  filter expression and returns
-// the list of keys passing through the filter or an error
-func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
-	// Handle the trivial case of filter resolving to true
-	// NOTE: empty filter is treated as "true"
-	if filterExpr == "true" || filterExpr == "" {
-		return keyList, nil
-	}
-
-	// Some sort of filter is involved
-	filter, err := tmplfn.ParseFilter(filterExpr)
-	if err != nil {
-		return nil, err
-	}
-
-	keys := []string{}
-	for _, key := range keyList {
-		key = strings.TrimSpace(key)
-		if len(key) > 0 {
-			m := map[string]interface{}{}
-			if err := c.Read(key, m, false); err == nil {
-				if ok, err := filter.Apply(m); err == nil && ok == true {
-					keys = append(keys, key)
-				}
-			}
-		}
-	}
-	return keys, nil
 }
 
 // Clone copies the current collection records into a newly initialized collection given a list of keys

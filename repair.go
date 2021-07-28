@@ -273,6 +273,14 @@ func repair(collectionName string, verbose bool) error {
 		if err != nil {
 			repairLog(verbose, "Walking file path error, %s", err)
 		}
+		// NOTE: the pairtree path in collection.json should be
+		// using POSIX path separator.
+		for key, value := range c.KeyMap {
+			// force paths to be POSIX version.
+			if strings.Contains(value, "\\") {
+				c.KeyMap[key] = strings.ReplaceAll(value, "\\", "/")
+			}
+		}
 		if len(missingList) > 0 {
 			repairLog(verbose, "Unable to find the following keys - %s", strings.Join(missingList, ", "))
 		}
