@@ -54,7 +54,7 @@ Tests from py_dataset now have been ported to the test library for libdataset.
 Redundant functions have been removed (we had accumulated multiple definitions for the same thing in libdataset). Where possible code has been simplified.
 </p>
 <p>
-Most libdataset functions will cause an “open” on a dataset collection automatically. Some additional functions around collections have been added primarily to make testing eaisier (e.g. open_collection(), is_open(), close_collection(), close_all()).
+Most libdataset functions will cause an “open” on a dataset collection automatically. Some additional functions around collections have been added primarily to make testing easier (e.g. open_collection(), is_open(), close_collection(), close_all()).
 </p>
 <p>
 Functions that were overloaded via optional parameters have been simplified. E.g. keys() now returns all keys in collection, use key_filter() and key_sort() accordingly.

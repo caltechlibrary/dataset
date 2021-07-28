@@ -1,18 +1,21 @@
+attachments
+===========
 
-# attachments
-
-## Syntax
+Syntax
+------
 
 ```
     dataset attachments COLLECTION_NAME KEY
 ```
 
-## Description
+Description
+-----------
 
 List the files attached to the JSON record matching the KEY
 in the collection.
 
-## Usage
+Usage
+-----
 
 List all the attachments for _k1_ in collection "stats.ds".
 

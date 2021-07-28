@@ -4,10 +4,10 @@ Reshape JSON collections
 Problem
 -------
 
-You have a *dataset* collection of JSON documents but the fields you\'re
-interested in are nested. Using *dataset* and
+You have a __dataset__ collection of JSON documents but the fields you\'re
+interested in are nested. Using __dataset__ and
 [datatools](https://github.com/caltechlibrary/datatools/releases/latest)\'s
-*jsonmunge* you can reshape your existing collection\'s record to the
+__jsonmunge__ you can reshape your existing collection\'s record to the
 shape you prefer.
 
 In this how to we will look at mondify a single record then once we have
@@ -41,7 +41,7 @@ What we\'d like is a flattened version of the author names.
 ```
 
 We\'re going to pull out each others name object and then format them
-the way we prefer. *jsonmunge* lets us apply a Go text template to our
+the way we prefer. __jsonmunge__ lets us apply a Go text template to our
 JSON data and then output something. In our case our formatted names.
 
 ### Building up a template
@@ -64,9 +64,9 @@ Try this
 ```
 
 Let\'s take this command pipeline apart. We retrieved our dataset record
-12345 with `dataset read 12345`. We send that record to *jsonmunge*
+12345 with `dataset read 12345`. We send that record to __jsonmunge__
 (`-i -` is idiomatic of datatool commands for saying read from standard
-input since the record should be coming from *dataset*\'s standard
+input since the record should be coming from __dataset__\'s standard
 output) and the `-E` to evaluate a simple template ordering out first
 author name.
 
@@ -222,7 +222,7 @@ yields our new results
 ### Putting it together
 
 We can transform a single record but how about transforming the entire
-collction? That turns out to be easy we just loop over each key in the
+collection? That turns out to be easy we just loop over each key in the
 collection applying our pipeline.
 
 ``` {.shell}

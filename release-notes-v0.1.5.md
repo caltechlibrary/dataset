@@ -1,10 +1,10 @@
 
 This release focuses on refine function names, simplification
-and easy of testing for Windows 10 reployments.
+and easy of testing for Windows 10 deployments.
 
 Build Notes:
 
-+ golang v1.14
++ Golang v1.14
 + Caltech library go packages
     + storage v0.1.0
     + namaste v0.0.5

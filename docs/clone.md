@@ -1,5 +1,5 @@
-
-# CLONE
+clone
+=====
 
 Clone a collection from a list of keys into a new collection.
 

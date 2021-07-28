@@ -1,18 +1,20 @@
+sync-receive
+============
 
-
-# sync-recieve
-
-## Syntax
+Syntax
+------
 
 ```
     sync-recieve COLLECTION FRAME_NAME CSV_FILENAME
 ```
 
-## Usage
+Usage
+-----
 
-sync a frame of objects recieving data from a CSV file.
+sync a frame of objects receiving data from a CSV file.
 
-## OPTIONS
+OPTIONS
+-------
 
     -O, -overwrite  overwrite existing cells in frame
     -i, -input  read CSV content from a file

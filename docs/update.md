@@ -1,22 +1,25 @@
+update
+======
 
-# update
-
-## Syntax
+Syntax
+------
 
 ```
     dataset update COLLECTION_NAME KEY
 ```
 
-## Description
+Description
+-----------
 
 _update_ will replace a JSON document in a dataset collection for 
 a given KEY.  By default the JSON document is read from standard 
-input but you can specific a spefic file with the "-input" 
-option. The JSON document should aready exist in the collection
+input but you can specific a specific file with the "-input" 
+option. The JSON document should already exist in the collection
 when you use update.
 
 
-## Usage
+Usage
+------
 
 In this example we assume there is a JSON document on local disc 
 named _jane-doe.json_. It contains `{"name":"Jane Doe"}` and the 

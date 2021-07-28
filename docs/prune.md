@@ -1,20 +1,23 @@
+prune
+=====
 
-# prune
-
-## Syntax
+Syntax
+------
 
 ```
     dataset prune COLLECTION_NAME KEY [SEMVER]
     dataset prune COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
 ```
 
-## Description
+Description
+-----------
 
 prune removes all or specific attachments to a JSON document. If only
 the key is supplied then all attachments are removed if an attachment
 name is supplied then only the specific attachment is removed.
 
-## Usage
+Usage
+-----
 
 In the following examples _r1_ is the KEY, *stats.xlsx* is the 
 attached file. In the first example only *stats.xlsx* is removed in

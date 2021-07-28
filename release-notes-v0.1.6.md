@@ -2,11 +2,11 @@
 This release focuses on minor bug fixes in libdataset.
 All functions which returned an error string only now return
 True for success and False otherwise.  The error string
-can be retreived with `dataset.error_message()`.
+can be retrieved with `dataset.error_message()`.
 
 Build Notes:
 
-+ golang v1.14
++ Golang v1.14
 + Caltech library go packages
     + storage v0.1.0
     + namaste v0.0.5

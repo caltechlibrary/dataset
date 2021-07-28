@@ -1,7 +1,8 @@
+create
+======
 
-# create
-
-## Syntax
+Syntax
+------
 
 ```
     cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
@@ -10,13 +11,15 @@
     dataset create COLLECTION_NAME KEY JSON_FILENAME
 ```
 
-## Description
+Description
+-----------
 
 create adds or replaces a JSON document to a collection. The JSON 
 document can be read from a standard in, a named file (with a 
 ".json" file extension) or expressed literally on the command line.
 
-## Usage
+Usage
+-----
 
 In the following four examples *jane-doe.json* is a file on the 
 local file system contains JSON data containing the JSON_VALUE 

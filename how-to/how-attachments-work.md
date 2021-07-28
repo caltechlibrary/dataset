@@ -1,7 +1,7 @@
 How Attachments Work
 ====================
 
-The primary use case of the **dataset** tool is managing JSON documents.
+The primary use case of the __dataset__ tool is managing JSON documents.
 There exist a common secondary use case of including support for
 \"attached\" non-JSON documents. Example 1, when we harvest content from
 a system who does not support JSON natively it is handy to keep a
@@ -16,9 +16,9 @@ arbitrary number of attachments for JSON object document? How do you
 handle versioning when some types of collections need it for attachments
 and others don\'t?
 
-The **dataset** command line tool and related Go package store the
-attachments unversioned by default in the pairtree. The metadata about
-the attached document is stored in a sub folder `_docs`. The unversioned
+The __dataset__ command line tool and related Go package store the
+attachments un-versioned by default in the pairtree. The metadata about
+the attached document is stored in a sub folder `_docs`. The un-versioned
 attached document is stored in `v0.0.0` folder. The attached document is
 stored by its basename. The basename must be unique among the documents
 attached otherwise it will be overwritten when attaching another
@@ -36,7 +36,7 @@ called \"Sea-Mamals.ds\". We have a JSON object stored called
 \"walrus\". We want to attach \"notes-on-walrus.docx\" which is on our
 local drive under \"/Users/fred/Documents/notes-on-walrus.docx\".
 
-Using the **dataset** cli you issue the follow command \--
+Using the __dataset__ cli you issue the follow command \--
 
 ``` {.shell}
     dataset create Sea-Mamals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
@@ -62,7 +62,7 @@ structure will be slightly more complex.
 ```
 
 This will cause additional sub directories to exist (if they haven\'t be
-created before). Our \"unversioned\" version still exists as v0.0.0 but
+created before). Our \"un-versioned\" version still exists as v0.0.0 but
 now we have v0.0.1. Our attachment metadata file in our JSON object file
 will now include an href pointing to v0.0.1 and a map to all versions
 including v0.0.0.
@@ -86,11 +86,11 @@ point to the last version added, in this case v0.0.2.
 
 IMPORTANT: If you provide the same semver and attach a file with the
 same basename the previously stored version will be overwritten. Example
-if we issue our original unversioned command the v0.0.0 copy of
+if we issue our original un-versioned command the v0.0.0 copy of
 \"notes-on-walrus.docx\" will be overwritten!
 
-**dataset** attachment versioning is user driven. The only implicit
-version is v0.0.0 if no semver is provided. **dataset** is not a
+__dataset__ attachment versioning is user driven. The only implicit
+version is v0.0.0 if no semver is provided. __dataset__ is not a
 substitute for a version control system like [Subversion]() or [Git]()
 and is not substitute for a versioned file systems like [ZFS](). If your
 program needs to avoid overwriting an existing version or to \"auto
@@ -98,11 +98,11 @@ increment\" the semver you need to check the existing versions and
 decide what the new version will be before attaching the new version of
 the document.
 
-The semver versioned dircetories may contain more than one attached
+The semver versioned directories may contain more than one attached
 document. The documents attached can be of various versions though if
 you attach more than one document at a time they will carry the same
 semver. This is because their is an implied semver is v0.0.0 when using
-the command line without semver **dataset** otherwise the first valid
+the command line without semver __dataset__ otherwise the first valid
 semver is used for all files being attached in that command execution.
 
 NOTE: The href in the attachments metadata always points at the last
@@ -111,7 +111,7 @@ attached version.
 How Attachments look in the JSON Object
 ---------------------------------------
 
-When you retrieve a JSON object **dataset** will add some internal
+When you retrieve a JSON object __dataset__ will add some internal
 fields. The first is a `_Key` and if you have any attachments a
 `_Attachments` array will be added. The later holds the metadata we
 create during the attachment process.

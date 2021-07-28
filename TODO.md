@@ -33,7 +33,7 @@
         + e.g. create tar, bag or web archive formatted instance
 + [ ] Remove dependency on github.com/caltechlibrary/tmplfn
 + [ ] Add some additional metadata fields
-    + [ ] version control on/off for attachments (we could verison via Subversion or git depending...)
+    + [ ] version control on/off for attachments (we could version via Subversion or git depending...)
     + [ ] Date/time repair was done
     + [ ] Date/time clone was executed as well as basename name of cloned
         + [ ] clone should include info about where it was cloned from
@@ -48,23 +48,23 @@
     - Browser based for UI, localhost restrict server for interacting with file system
     - Interactively build up of command strings, display results and saving off commands to runnable Bash scripts
     - Support importing datasets from s3:// and gs:// to local disc for interactive work
-+ [ ] Integrate lunrjs and an index.html file into the root folder of a collection, this could be used to provide a web browser read interface to the collection without installing dataset itself.
++ [ ] Integrate Lunrjs and an index.html file into the root folder of a collection, this could be used to provide a web browser read interface to the collection without installing dataset itself.
 + [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     - Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
     - for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
     - for size info, call Stats first to get the filesize to include in tarball header
 + [ ] Add support for https:// based datasets (in addition to local disc and s3://)
-+ [ ] Inaddition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
++ [ ] In addition to UUID, add support for ULID (https://github.com/oklog/ulid) or provide an option for using ulid instead of uuid
 + [ ] VCARD and VCAL importer
 + [ ] Should the keymap in collection.json be a separate file(s)?
-+ [ ] optional strageties for including arrays in a single column of CSV output
-    - provide a hint for eaching express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
++ [ ] optional strategies for including arrays in a single column of CSV output
+    - provide a hint for   express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
 + [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
 + [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
     + [ ] N35.0000,W118.0000 or S35.000,E118.000
     + [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
 + [ ] take KeyMap out of collection.json so collection.json is smaller
-    - support for segmented key maps (to limit memory consuption for very large collections)
+    - support for segmented key maps (to limit memory consumption for very large collections)
 + [ ] dsbagit would generate a "BagIt" bag for preservation of collection objects
 + [ ] OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
 - dataset "versioning" support via something like libgit2

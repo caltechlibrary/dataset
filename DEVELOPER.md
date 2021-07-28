@@ -12,7 +12,7 @@ On Unix-like systems (e.g. Darwin, Linux) building dataset and libdataset is gen
 + run `go get -u github.com\caltechlibrary\cli`
 + run the make.bat 
 
-Here's an example of what I've done after openning the "Anaconda Prompt"
+Here's an example of what I've done after opening the "Anaconda Prompt"
 
 ```
     cd %USERPROFILE%

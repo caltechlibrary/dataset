@@ -27,7 +27,7 @@ ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
-build: version.go $(PROGRAMS) libdataset
+build: version.go assets $(PROGRAMS) libdataset
 
 version.go: .FORCE
 	@echo "package $(PROJECT)" >version.go
@@ -53,8 +53,10 @@ uninstall: .FORCE
 	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
 	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/man/man1/$$FNAME.1 ]; then rm -v $(PREFIX)/man/man1/$$FNAME.1; fi; done
 
-cmd/dataset/assets.go:
-	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs/dataset
+assets: cmd/dataset/assets.go
+
+cmd/dataset/assets.go: .FORCE
+	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs
 	git add cmd/dataset/assets.go
 
 libdataset: libdataset/libdataset.go .FORCE

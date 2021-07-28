@@ -1,11 +1,11 @@
+Upgrading your dataset collection(s)
+====================================
 
-# Upgrading your dataset collection(s)
-
-The _dataset_ Go package is still rapidly evolving though it is
+The __dataset__ Go package is still rapidly evolving though it is
 now commonly used at Caltech Library. As a result we've developed
 an easy method for migration collections from an old version to
 a new version. There "usual" to upgrading your is to use 
-use the "check" and "repair" features of the _dataset_ command 
+use the "check" and "repair" features of the __dataset__ command 
 line tool.
 
 ```

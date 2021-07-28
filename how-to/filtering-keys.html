@@ -44,21 +44,49 @@
 </nav>
 
 <section>
-<h2 id="filters-and-sorts">
-Filters and sorts
+<h1 id="filters-and-sorting">
+Filters and sorting
+</h1>
+<p>
+<strong>dataset</strong> does not support internally sorting or filtering of keys. It does support data frames which can be used to do that with external tools.
+</p>
+<h2 id="example">
+Example
 </h2>
+<ol type="1">
+<li>
+Create a data frame using <code>frame</code> verb containing the field “.given” and the record “.id”
+</li>
+<li>
+Iterate over the frame objects and in the frame using <code>frame-objects</code> verb.
+</li>
+<li>
+For desired keys output the key and send to a new “filtered” frame using <code>frame</code> verb.
+</li>
+</ol>
 <p>
-<em>dataset keys</em> can be used to to filter and sort a key list. Here’s is a simple case for match records in a collection named <strong>characters.ds</strong> where the given name is equal to “Mojo”. We will save the result in a file called <em>mojo.keys</em>.
+NOTE: In the example below I’ve used <strong>jsonrange</strong> and <strong>jsoncols</strong> for iterating and filtering our objects. These are provided by <a href="https://github.com/caltechlibrary/datatools/releases">datatools</a>. See <a href="filtering-keys.bash">filtering-keys.bash</a>.
 </p>
-<pre class="shell"><code>   dataset keys characters.ds &#39;(eq .given &quot;Mojo&quot;)&#39; &gt; mojo.keys</code></pre>
-<p>
-You can also use an existing key list (e.g. <em>mojo.keys</em>) to sub select based on a new filter and/or sort expression. We will filter for a family name of “Sam” and sort by the age field.
-</p>
-<pre class="shell"><code>   dataset keys -key-file=mojo.keys characters.ds \
-                &#39;(eq .family &quot;Sam&quot;)&#39; &#39;+.age&#39;</code></pre>
-<p>
-You can improve the performance of filtering/sorting by breaking it down to steps for large collections. First filter the keys you want. Then sort the filtered list.
-</p>
+<pre><code>#
+# Frames, filter for given name &quot;Mojo&quot;
+#
+
+# Step 1.
+dataset frame friends.ds &quot;unfiltered&quot; &quot;._Key=id&quot; &quot;.given=given&quot; &quot;.family=family&quot;&gt;/dev/null
+
+# Step 2. do our filtering iterating over the unfiltered frame (piping the results)
+for OBJ in $(dataset frame-objects friends.ds unfiltered | jsonrange -values ); do
+    GIVEN=$(echo &quot;${OBJ}&quot; | jsoncols -i - .given | sed -E &#39;s/&quot;//g&#39;)
+    # This is the filter, we&#39;re checking if the record is about Mojo.
+    if [ &quot;${GIVEN}&quot; = &quot;Mojo&quot; ]; then
+        echo &quot;${OBJ}&quot; | jsoncols -i - .id | sed -E &#39;s/&quot;//g&#39;
+    fi
+done |\
+# Step 3. create a filtered frame
+  dataset -i - frame friends.ds filtered &quot;._Key=id&quot; &quot;.given=given&quot; &quot;.family=family&quot;&gt;/dev/null
+
+echo &quot;We now have a frame with only Mojo.&quot;
+dataset -pretty frame friends.ds filtered</code></pre>
 </section>
 
 <footer>

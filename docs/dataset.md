@@ -1,9 +1,13 @@
+dataset
+=======
 
-# USAGE
+USAGE
+-----
 
 	dataset [OPTIONS] VERB COLLECTION_NAME [ACTION PARAMETERS...]
 
-## SYNOPSIS
+SYNOPSIS
+--------
 
 
 dataset is a command line tool demonstrating dataset package for 
@@ -14,9 +18,8 @@ documents dataset maintains metadata for management of the
 documents, their attachments as well as a ability to generate 
 select lists based JSON document keys (aka JSON document names).
 
-
-
-## OPTIONS
+OPTIONS
+-------
 
 Options are shared between all actions and must precede the action 
 on the command line.
@@ -51,7 +54,8 @@ on the command line.
 ```
 
 
-## VERBS
+VERBS
+-----
 
 ```
     attach         Attach a document (file) to a JSON record in a collection

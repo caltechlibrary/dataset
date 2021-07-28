@@ -1,18 +1,21 @@
+export
+======
 
-# export
-
-## Syntax
+Syntax
+------
 
 ```
     dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]
 ```
 
-## Description
+Description
+-----------
 
 _export_ will render the contents of a collection as a CSV file
 based on a frame defined in the collection. 
 
-## Usage
+Usage
+-----
 
 In the following examples we will be using a newly defined
 "frame" named "my-report".  The frame will have the following fields are 

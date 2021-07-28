@@ -1,7 +1,7 @@
 Windows Notes
 =============
 
-Windows' command prompt presents some challenges for workinging
+Windows' command prompt presents some challenges for working
 with JSON on the command line. A command line
 
 ```

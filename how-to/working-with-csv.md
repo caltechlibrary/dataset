@@ -1,6 +1,5 @@
-
-
-# Working with CSV
+Working with CSV
+================
 
 [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) files are 
 commonly used to share data. Most spreadsheets and many database systems 
@@ -22,7 +21,8 @@ from the objects become the subsequent rows.
     release method for working with CSV files.
 
 
-## Import objects from a CSV file
+Import objects from a CSV file
+------------------------------
 
 You can import rows of a CSV document as JSON documents. This is 
 useful when you have a large number of simple structures.
@@ -108,7 +108,8 @@ Our records look like...
 ```
 
 
-## What if the CSV file has no header row?
+What if the CSV file has no header row?
+---------------------------------------
 
 Let's create a new collection and try the "-use-header-row=false" option.
 
@@ -164,9 +165,11 @@ Setting "-use-header-row" to false can be used with column numbers and or
 Explore what you see.
 
 
-# imports and exports
+imports and exports
+===================
 
-## importing data into a collection
+importing data into a collection
+--------------------------------
 
 We can import data from a CSV file and store each row as a JSON document 
 in dataset. You need to pick a column with unique values to be the key 
@@ -182,7 +185,8 @@ You can create a CSV export by providing the dot paths for each column and
 then givening columns a name.
 
 
-## exporting data from a collection
+exporting data from a collection
+--------------------------------
 
 ```shell
    dataset frame-create -all mydata.ds export-frame \

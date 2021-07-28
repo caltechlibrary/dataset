@@ -56,7 +56,7 @@ Clone sample
 The **clone-sample** verb is about generating sample collections without
 having to take the extra step of generating a list of sample keys. As an
 added benefit **clone-sample** knows which keys were not selected in the
-sample so it is convienent for creating \"training\" and \"test\"
+sample so it is convenient for creating \"training\" and \"test\"
 collection if you are applying machine learning techniques.
 
 Let\'s take a shorten version of generating a sample of size 5 for our

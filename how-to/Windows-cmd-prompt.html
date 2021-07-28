@@ -44,26 +44,17 @@
 </nav>
 
 <section>
-<h1 id="samples">
-Samples
+<h1 id="windows-notes">
+Windows Notes
 </h1>
 <p>
-<strong>dataset keys</strong> support the <code>-sample</code> option. The sample option expects a sample size as an argument. If the sample size is greater than zero then a sample output will be taken.
+Windows’ command prompt presents some challenges for working with JSON on the command line. A command line
 </p>
+<pre><code>dataset create T1.ds one &#39;{&quot;one&quot;:1}&#39;</code></pre>
 <p>
-If the sample size is greater then the results returned then the who results set is return without random sampling. If sample size is less than result set then a random sampling of the results is taken.
+which would work in a POSIX shell fails. The command prompt makes the JSON expression look like <code>{one:1}</code> which is NOT JSON and also not a filename. As a result working with dataset at the Windows command prompt requires conforming to the command prompt’s expectation on quoting. This will work.
 </p>
-<p>
-If you are doing Machine Leaning type of sampling (e.g. calculating a test and training set) then normally you create a <em>test</em> key list like this
-</p>
-<pre><code>    dataset -sample=&quot;$N&quot; keys</code></pre>
-<p>
-where
-</p>
-<pre><code>    $N</code></pre>
-<p>
-holds the test sample size. After keylist is generated you can then create a training set by excluding the keys associated with the sample.
-</p>
+<pre><code>dataset create T1.ds one &quot;{&quot;&quot;&quot;one&quot;&quot;&quot;:1}</code></pre>
 </section>
 
 <footer>

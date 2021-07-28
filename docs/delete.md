@@ -1,18 +1,21 @@
+delete
+======
 
-# delete
-
-## Syntax
+Syntax
+------
 
 ```
     dataset delete COLLECTION_NAME KEY
 ```
 
-## Description
+Description
+-----------
 
-+ delete - removes a JSON document from collection
-  + requires JSON document name
+- delete - removes a JSON document from collection
+  - requires JSON document name
 
-## Usage
+Usage
+-----
 
 This usage example will delete the JSON document withe the key _r1_ in 
 the collection named "publications.ds".

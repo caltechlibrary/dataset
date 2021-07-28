@@ -5,7 +5,7 @@
 
 Namaste is a practice of creating files with specific names
 in a directory to indicate the purpose and usefulness of the
-directory's content. In otherwords it allows us to add metadata
+directory's content. In other words it allows us to add metadata
 about the directory around the concepts of type, who, what, where, 
 and when. "Name as text" has shorthanded by the phrase "namaste".
 

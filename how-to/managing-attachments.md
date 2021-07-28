@@ -1,5 +1,5 @@
-
-## Managing File Attachments
+Managing File Attachments
+=========================
 
 In the following examples we are using a collection named *characters.ds*.
 

@@ -48,7 +48,7 @@
 Getting started with dataset
 </h1>
 <p>
-<em>dataset</em> is designed to easily manage collections of JSON objects. Objects are associated with a unique key you provide. The objects themselves are stored on disc in a folder inside the collection folder. The collection folder contains a JSON object document called <em>collection.json</em>. This file stores metadata about the collection including the association of keys with paths to their objects. <em>dataset</em> comes in several flavors — a command line program called <em>dataset</em>, a Go langauge package also called dataset, a shared library called libdataset and a Python 3.7 package called <a href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>. This tutorial talks both the command line program and the Python package. The command line is great for simple setup but Python is often more convienent for more complex operations.
+<em>dataset</em> is designed to easily manage collections of JSON objects. Objects are associated with a unique key you provide. The objects themselves are stored on disc in a folder inside the collection folder. The collection folder contains a JSON object document called <em>collection.json</em>. This file stores metadata about the collection including the association of keys with paths to their objects. <em>dataset</em> comes in several flavors — a command line program called <em>dataset</em>, a Go language package also called dataset, a shared library called libdataset and a Python 3.7 package called <a href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>. This tutorial talks both the command line program and the Python package. The command line is great for simple setup but Python is often more convenient for more complex operations.
 </p>
 <h2 id="create-a-collection-with-init">
 Create a collection with init
@@ -86,7 +86,7 @@ Working in Python is similar to the command line. We import the modules needed t
 <p>
 In Python the error message is an empty string if everything is ok, otherwise we call stop which prints the message and exits. You will see this pattern followed in a number of upcoming Python examples.
 </p>
-<h3 id="removing-friendsds">
+<h3 id="removing-friends.ds">
 removing friends.ds
 </h3>
 <p>
@@ -154,7 +154,7 @@ command line –
 <pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>    <span class="ex">dataset</span> read friends.ds frieda</span></code></pre>
 </div>
 <p>
-This command emitts a JSON object. The JSON is somewhat hard to read. To get a pretty version of the JSON object used the “-p” option.
+This command emits a JSON object. The JSON is somewhat hard to read. To get a pretty version of the JSON object used the “-p” option.
 </p>
 <div id="cb8" class="sourceCode">
 <pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>    <span class="ex">dataset</span> read -p friends.ds frieda</span></code></pre>
@@ -317,13 +317,13 @@ If you are following along in Python then you can just save the keys to a variab
 Data frames and grids
 </h2>
 <p>
-JSON objects are tree like. This structure can be inconvienent for some types of analysis like tabulation, comparing values or generating summarizing reports. Many languages support a concept of “data frame”. Meaning a list of objects, possibly with associated metadata about how the list was created. This becomes a convient way to process data. Frames can easily be transformed. Sometimes a spreadsheet, table or 2D grid like structure is often a more familair format for these types of tasks. <em>frame-grid</em> is dataset’s verb for taking a data frame and returning a 2D list of grid results. The 2D grid is easy to iterate over. A <em>frame-grid</em> doesn’t enforce any specifics on the columns and rows. It only contains the values you specified in the list of keys and dot paths when you defined the data frame.
+JSON objects are tree like. This structure can be inconvenient for some types of analysis like tabulation, comparing values or generating summarizing reports. Many languages support a concept of “data frame”. Meaning a list of objects, possibly with associated metadata about how the list was created. This becomes a convenient way to process data. Frames can easily be transformed. Sometimes a spreadsheet, table or 2D grid like structure is often a more familiar format for these types of tasks. <em>frame-grid</em> is dataset’s verb for taking a data frame and returning a 2D list of grid results. The 2D grid is easy to iterate over. A <em>frame-grid</em> doesn’t enforce any specifics on the columns and rows. It only contains the values you specified in the list of keys and dot paths when you defined the data frame.
 </p>
 <h3 id="the-frame">
 the frame
 </h3>
 <p>
-dataset also comes with a <em>frame</em> verb. A <em>frame</em> is an order list of objects with some additional matadata. It is similar to the “data frames” concepts in languages like Julia, Matlab, Octave, Python and R. It is a data structure that can be easily mapped to a grid (2D array or rows and columns). A frame is represented as an array of objects there the column names correspond to a attribute name in an object. It enforces a structure that behaves like a grid but is also easy to iterate over for other types of processing. Like our “grid” command a a <em>frame</em> will also derive heading labels (object attribute names) from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a <em>frame</em> stays with the collection. Frames are persistent and can be easily recalculated based on collection updates.
+dataset also comes with a <em>frame</em> verb. A <em>frame</em> is an order list of objects with some additional metadata. It is similar to the “data frames” concepts in languages like Julia, Matlab, Octave, Python and R. It is a data structure that can be easily mapped to a grid (2D array or rows and columns). A frame is represented as an array of objects there the column names correspond to a attribute name in an object. It enforces a structure that behaves like a grid but is also easy to iterate over for other types of processing. Like our “grid” command a a <em>frame</em> will also derive heading labels (object attribute names) from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a <em>frame</em> stays with the collection. Frames are persistent and can be easily recalculated based on collection updates.
 </p>
 <p>
 To define a frame we only need one additional piece of information besides what we used for a grid. We need a name for the frame.
