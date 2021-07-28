@@ -1,7 +1,8 @@
+frame-grid
+==========
 
-# frame-grid
-
-## USAGE
+USAGE
+-----
 
 ```
     frame-grid COLLECTION FRAME_NAME
@@ -9,7 +10,8 @@
 
 Returns the object list as a 2D array.
 
-## OPTIONS
+OPTIONS
+-------
 
 -p, -pretty
 : pretty print JSON output
@@ -17,11 +19,12 @@ Returns the object list as a 2D array.
 -use-header-row
 : Include labels as a header row
 
-## Example
+Example
+-------
 
 If I have a collection named "photos.ds" and a previously
 defined frame name "captions-dates-locations" I can get that
-as a 2D JSON array with the folllowing---
+as a 2D JSON array with the following---
 
 ```
     dataset frame-grid -p photos.ds captions-dates-locations

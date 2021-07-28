@@ -17,7 +17,7 @@ code has been simplified.
 
 Most libdataset functions will cause an "open" on a dataset collection
 automatically. Some additional functions around collections have been
-added primarily to make testing eaisier (e.g. open_collection(), is_open(),
+added primarily to make testing easier (e.g. open_collection(), is_open(),
 close_collection(), close_all()).
 
 Functions that were overloaded via optional parameters have been simplified.

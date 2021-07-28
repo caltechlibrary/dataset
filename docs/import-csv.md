@@ -1,17 +1,20 @@
+import
+======
 
-# import
-
-## Syntax
+Syntax
+------
 
 ```
     dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER
 ```
 
-## Description
+Description
+-----------
 
 _import_ adds JSON documents to a collection from a CSV table. 
 
-## Usage
+Usage
+-----
 
 In the following examples the CSV filename is _data.csv_.
 The first column (column 1) is used as the value for KEY if

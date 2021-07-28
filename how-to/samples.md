@@ -1,11 +1,12 @@
-
-# Samples
+Samples
+=======
 
 Getting a sample of a collection and be done by generating
 a random sample of keys or by cloning a collection based on
 a random sample of objects.
 
-## Getting a random sample of keys
+Getting a random sample of keys
+-------------------------------
 
 Create a random sample of keys. This uses the keys verb.
 
@@ -16,7 +17,8 @@ from the collection named "mycollection.ds".
     dataset keys -sample 3 mycollection.ds
 ```
 
-## Cloning a random sample of objects from a collection
+Cloning a random sample of objects from a collection
+----------------------------------------------------
 
 When cloning a randomize sample of objects from a collection
 you often want two collections. Typically this is a training 
@@ -36,5 +38,3 @@ name.
 ```shell
     dataset clone-sample -size=1000 mycollection.ds small-sample.ds
 ```
-
-

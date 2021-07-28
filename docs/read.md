@@ -1,19 +1,22 @@
+read
+====
 
-# read
-
-## Syntax
+Syntax
+------
 
 ```
     dataset read COLLECTION_NAME KEY
 ```
 
-## Description
+Description
+-----------
 
 The writes the JSON document to standard out (unless you've 
 specific an alternative location with the "-output" option)
 for the given KEY.
 
-## Usage
+Usage
+-----
 
 An example we're assuming there is a JSON document with a KEY 
 of "r1". Our collection name is "data.ds"
@@ -22,7 +25,8 @@ of "r1". Our collection name is "data.ds"
     dataset read data.ds r1
 ```
 
-### Options
+Options
+-------
 
 Normally dataset adds two values when it stores an object, `._Key`
 and possibly `._Attachments`. You can get the object without these

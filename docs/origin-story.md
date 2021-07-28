@@ -1,7 +1,8 @@
 
-## Origin story
+Origin story
+============
 
-The inspiration for _dataset_ grew from the desire to process metadata as
+The inspiration for __dataset__ grew from the desire to process metadata as
 JSON object collections using simple Unix shell utilities and data
 pipelines. The core use case evolved at
 [Caltech Library](https://library.caltech.edu) working with various

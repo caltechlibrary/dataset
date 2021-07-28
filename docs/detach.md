@@ -1,19 +1,22 @@
+detach
+======
 
-# detach
-
-## Syntax
+Syntax
+------
 
 ```
     dataset detach COLLECTION_NAME KEY [SEMVER]
     dataset detach COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
 ```
 
-## Description
+Description
+-----------
 
 _detach_ writes out (to local disc) the items that have been 
 attached to a JSON record in the collection with the matching KEY
 
-## Usage
+Usage
+-----
 
 Write out all the attached files for k1 in collection named 
 "publications.ds"

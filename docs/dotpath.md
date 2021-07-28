@@ -31,7 +31,7 @@ correspond to the value \"two\" and `[2]` would refer to the value
 \"three\". If you wish to include all the elements of an array you would
 use `[:]`. This would return the full array. Likewise if you need the
 second until end of the array you would get the values with `[2:]`.
-Finally if you only wanted the first and second element you could refere
+Finally if you only wanted the first and second element you could refer
 to it with the dotpath `[0:1]`.
 
 ### Putting it all together. {#putting-it-all-together}

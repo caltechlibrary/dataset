@@ -28,9 +28,6 @@ collection using the command line dataset tool.
     # List the keys in the collection
     dataset keys friends.ds
 
-    # Get keys filtered for the name "frieda"
-    dataset keys friends.ds '(eq .name "frieda")'
-
     # Join frieda-profile.json with "frieda" adding unique key/value pairs
     dataset join friends.ds frieda frieda-profile.json
 

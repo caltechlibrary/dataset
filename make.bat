@@ -7,12 +7,12 @@ REM
 go version
 echo "Getting ready to build the dataset.exe"
 
-go build -o dataset.exe "cmd\dataset\dataset.go" "cmd\dataset\assets.go"
+go build -o bin\dataset.exe "cmd\dataset\dataset.go" "cmd\dataset\assets.go"
 
 echo "Checking compile should see version number of dataset"
-.\dataset.exe -version
+.\bin\dataset.exe -version
 
 echo "If OK, you can now copy the dataset.exe to %USERPROFILE%\go\bin"
 echo ""
-echo "      copy dataset.exe %USERPROFILE%\go\bin
+echo "      copy bin\dataset.exe %USERPROFILE%\go\bin
 echo ""

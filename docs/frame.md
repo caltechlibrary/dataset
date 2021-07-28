@@ -32,7 +32,7 @@ The objects in the frame\'s object list will look like
     }
 ```
 
-This allows you to create convient names for otherwise deep dot paths.
+This allows you to create convenient names for otherwise deep dot paths.
 
 In python we use a Dict to map the dotpaths to labels rather than an
 embedded equal sign. Doing the same task as before would look like this

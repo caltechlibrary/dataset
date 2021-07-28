@@ -73,9 +73,6 @@ Below is a simple example of shell based interaction with dataset a collection u
     # List the keys in the collection
     dataset keys friends.ds
 
-    # Get keys filtered for the name &quot;frieda&quot;
-    dataset keys friends.ds &#39;(eq .name &quot;frieda&quot;)&#39;
-
     # Join frieda-profile.json with &quot;frieda&quot; adding unique key/value pairs
     dataset join friends.ds frieda frieda-profile.json
 

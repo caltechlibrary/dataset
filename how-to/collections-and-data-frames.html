@@ -48,73 +48,59 @@
 COLLECTIONS, GRIDS AND FRAMES
 </h1>
 <p>
-<em>dataset</em> stores JSON objects and can store also data frames similar to that used in Python, R and Julia. This document outlines the ideas behings <em>dataset</em>’s implementation of data frames.
+<strong>dataset</strong> stores JSON objects and can store also data frames similar to that used in Python, R and Julia. This document outlines the ideas behind <strong>dataset</strong>’s implementation of data frames.
 </p>
 <h2 id="collections">
 COLLECTIONS
 </h2>
 <p>
-Collections are at the core of the <em>dataset</em> tool. A collection is a pairtree directory structure storing JSON objects in plaintext with optional attachments. The root folder for the collection contains a <em>collection.json</em> file with the metadata associating a name to the pairtree path where the json object is stored. One of the guiding ideas behind dataset was to keep everything in plain text (i.e. UTF-8) whenever reasonable. The dataset project provides Go package for working with dataset collections, a python package (based on a C-shared library included in the Go package) and a command line tool.
+Collections are at the core of the <strong>dataset</strong> tool. A collection is a pairtree directory structure storing JSON objects in plain text with optional attachments. The root folder for the collection contains a <em>collection.json</em> file with the metadata associating a name to the pairtree path where the json object is stored. One of the guiding ideas behind dataset was to keep everything in plain text (i.e. UTF-8) whenever reasonable. The dataset project provides Go package for working with dataset collections, a python package (based on a C-shared library included in the Go package) and a command line tool.
 </p>
 <p>
-Dataset collections are typically stored on your local disc but may be stored easily in Amazon’s S3 (or compatible platform) or Google’s cloud storage using operating systems integratations (e.g. <a href="https://en.wikipedia.org/wiki/Filesystem_in_Userspace">fuse file system tools</a>). Dataset can also import and export CSV files.
+Dataset collections are typically stored on your local disc but may be stored easily in Amazon’s S3 (or compatible platform) or Google’s cloud storage using operating systems integration (e.g. <a href="https://en.wikipedia.org/wiki/Filesystem_in_Userspace">fuse file system tools</a>). Dataset can also import and export CSV files.
 </p>
 <p>
-Dataset isn’t a database (there are plenty of JSON oriented databases out there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL and Postgresql). <em>dataset</em>’s focus is on providing a mechanism to manage JSON objects, group them and to provide alternative data shapes for the viewing the collection (e.g. data frames and grids).
+Dataset isn’t a database (there are plenty of JSON oriented databases out there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL and Postgresql). <strong>dataset</strong>’s focus is on providing a mechanism to manage JSON objects, group them and to provide alternative data shapes for the viewing the collection (e.g. data frames and grids).
 </p>
 <h2 id="data-frames">
 DATA FRAMES
 </h2>
 <p>
-Working with subsets of data in a collection is useful, particularly ordered subsets. Implementing this started me thinking about the similarity to data frames in Python, Julia and Octave. A <em>frame</em> is an ordered list of objects. It’s like a grid except that rather than have columns and row you have a list of objects and attribute names mapped to values. Frames can be retrieved as a list of objects or a <em>grid</em> (2D array). Frames contain a additional metadata to help them persist. Frames include enough metadata to effeciently refresh objects in the list or even replace all objects in the list. If you want to get back a “Grid” of a frame you can optionally include a header row as part of the 2D array returned.
+Working with subsets of data in a collection is useful, particularly ordered subsets. Implementing this started me thinking about the similarity to data frames in Python, Julia and Octave. A <em>frame</em> is an ordered list of objects. It’s like a grid except that rather than have columns and row you have a list of objects and attribute names mapped to values. Frames can be retrieved as a list of objects or a <em>grid</em> (2D array). Frames contain a additional metadata to help them persist. Frames include enough metadata to efficiently refresh objects in the list or even replace all objects in the list. If you want to get back a “Grid” of a frame you can optionally include a header row as part of the 2D array returned.
 </p>
 <p>
-<em>dataset</em> stores frames with the collection so they are is available for later processing. The objects in a frame reflect the objects as they existed when the frame was generated.
+<strong>dataset</strong> stores frames with the collection so they are is available for later processing. The objects in a frame reflect the objects as they existed when the frame was generated.
 </p>
 <p>
-Frames become handy when moving data from JSON documents (tree like) to other formats like spreadsheets (table like). Date frames provide a one to one map between a 2D representation and a list of objects containing key/value pairs. Frames will become the way we define syncronization relationships as well as potentionally the way we define indexing should dataset re-aquire a search ability.
+Frames become handy when moving data from JSON documents (tree like) to other formats like spreadsheets (table like). Date frames provide a one to one map between a 2D representation and a list of objects containing key/value pairs. Frames will become the way we define synchronization relationships as well as potentially the way we define indexing should dataset re-aquire a search ability.
 </p>
 <p>
-The map to frame names is stored in our collection’s collection.json Each frame itself is stored in a subdirectory of our collection. If you copy/clone a collection the frames can travel with it.
+The map to frame names is stored in our collection’s collection.json Each frame itself is stored in a sub directory of our collection. If you copy/clone a collection the frames can travel with it.
 </p>
 <h2 id="frame-operations">
 FRAME OPERATIONS
 </h2>
 <ul>
 <li>
-<p>
 frame-create (define a frame)
-</p>
 </li>
 <li>
-<p>
 frame (read a frame back)
-</p>
 </li>
 <li>
-<p>
 frames (return a list of frame names)
-</p>
 </li>
 <li>
-<p>
 frame-reframe (replace all frame objects given a list of keys)
-</p>
 </li>
 <li>
-<p>
 frame-refresh (update objects in a frame pruning objects no longer in the collection)
-</p>
 </li>
 <li>
-<p>
 frame-exists (check to see if a frame exists in the collection)
-</p>
 </li>
 <li>
-<p>
 frame-delete
-</p>
 </li>
 </ul>
 <h3 id="create-a-frame">
@@ -153,7 +139,7 @@ Or in python getting the full frame with metadata
     if err != &#39;&#39;:
         print(f&#39;Something went wront {err}&#39;)</code></pre>
 <p>
-Or only the object list (note: we’re going to check for the frame’s existance first).
+Or only the object list (note: we’re going to check for the frame’s existence first).
 </p>
 <pre class="{.{.python}}"><code>    if dataset.frame_exists(&#39;Pub.ds&#39;, &#39;dois-and-titles&#39;):
         object_list = dataset.frame_objects(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;)</code></pre>

@@ -44,9 +44,9 @@
 </nav>
 
 <section>
-<h2 id="file-system-layout">
+<h1 id="file-system-layout">
 File system layout
-</h2>
+</h1>
 <p>
 dataset provides a way to organize your JSON Objects on disc. It uses a technique called a <a href="https://tools.ietf.org/html/draft-kunze-pairtree-01">pairtree</a>. The layout managed/described by the collection.json document located in the root folder of the collection. The file pairtree supports “attachments” by creating a sub directory next the the JSON document. The sub directory uses a <a href="https://semver.org">semver</a> as its name, e.g. <code>v0.0.0</code>. The sequence of characters will not collide with pairtree semantics and is legal on common file systems. E.g. storing the document “hello-world.json” with the attachment “smiles.png” in a collection named “C” would result in paths like
 </p>
@@ -83,7 +83,7 @@ a file, collection.json, holding metadata about the collection
 a directory named "_frames" holding frame definitions for the collection
 </li>
 <li>
-a directory named “pairtree” holding the pairtree where the JSON document and attachmetns are stored.
+a directory named “pairtree” holding the pairtree where the JSON document and attachments are stored.
 </li>
 </ul>
 </li>

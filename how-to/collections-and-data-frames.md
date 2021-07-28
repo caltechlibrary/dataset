@@ -1,15 +1,15 @@
 COLLECTIONS, GRIDS AND FRAMES
 =============================
 
-*dataset* stores JSON objects and can store also data frames similar to
+__dataset__ stores JSON objects and can store also data frames similar to
 that used in Python, R and Julia. This document outlines the ideas
-behings *dataset*\'s implementation of data frames.
+behind __dataset__\'s implementation of data frames.
 
 COLLECTIONS
 -----------
 
-Collections are at the core of the *dataset* tool. A collection is a
-pairtree directory structure storing JSON objects in plaintext with
+Collections are at the core of the __dataset__ tool. A collection is a
+pairtree directory structure storing JSON objects in plain text with
 optional attachments. The root folder for the collection contains a
 *collection.json* file with the metadata associating a name to the
 pairtree path where the json object is stored. One of the guiding ideas
@@ -20,13 +20,13 @@ included in the Go package) and a command line tool.
 
 Dataset collections are typically stored on your local disc but may be
 stored easily in Amazon\'s S3 (or compatible platform) or Google\'s
-cloud storage using operating systems integratations (e.g. [fuse file
+cloud storage using operating systems integration (e.g. [fuse file
 system tools](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)).
 Dataset can also import and export CSV files.
 
 Dataset isn\'t a database (there are plenty of JSON oriented databases
 out there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL
-and Postgresql). *dataset*\'s focus is on providing a mechanism to
+and Postgresql). __dataset__\'s focus is on providing a mechanism to
 manage JSON objects, group them and to provide alternative data shapes
 for the viewing the collection (e.g. data frames and grids).
 
@@ -40,43 +40,38 @@ ordered list of objects. It\'s like a grid except that rather than have
 columns and row you have a list of objects and attribute names mapped to
 values. Frames can be retrieved as a list of objects or a *grid* (2D
 array). Frames contain a additional metadata to help them persist.
-Frames include enough metadata to effeciently refresh objects in the
+Frames include enough metadata to efficiently refresh objects in the
 list or even replace all objects in the list. If you want to get back a
 \"Grid\" of a frame you can optionally include a header row as part of
 the 2D array returned.
 
-*dataset* stores frames with the collection so they are is available for
+__dataset__ stores frames with the collection so they are is available for
 later processing. The objects in a frame reflect the objects as they
 existed when the frame was generated.
 
 Frames become handy when moving data from JSON documents (tree like) to
 other formats like spreadsheets (table like). Date frames provide a one
 to one map between a 2D representation and a list of objects containing
-key/value pairs. Frames will become the way we define syncronization
-relationships as well as potentionally the way we define indexing should
+key/value pairs. Frames will become the way we define synchronization
+relationships as well as potentially the way we define indexing should
 dataset re-aquire a search ability.
 
 The map to frame names is stored in our collection\'s collection.json
-Each frame itself is stored in a subdirectory of our collection. If you
+Each frame itself is stored in a sub directory of our collection. If you
 copy/clone a collection the frames can travel with it.
 
 FRAME OPERATIONS
 ----------------
 
 -   frame-create (define a frame)
-
 -   frame (read a frame back)
-
 -   frames (return a list of frame names)
-
 -   frame-reframe (replace all frame objects given a list of keys)
-
 -   frame-refresh (update objects in a frame pruning objects no longer
     in the collection)
-
 -   frame-exists (check to see if a frame exists in the collection)
-
 -   frame-delete
+
 
 ### Create a frame
 
@@ -123,7 +118,7 @@ Or in python getting the full frame with metadata
 ```
 
 Or only the object list (note: we\'re going to check for the frame\'s
-existance first).
+existence first).
 
 ``` {.{.python}}
     if dataset.frame_exists('Pub.ds', 'dois-and-titles'):

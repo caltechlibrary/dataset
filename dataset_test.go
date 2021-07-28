@@ -20,8 +20,11 @@ package dataset
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -345,4 +348,57 @@ func TestCloneSample(t *testing.T) {
 			t.Errorf("Could not find %s in %s or %s", key, trainingName, testName)
 		}
 	}
+}
+
+func TestCaseHandling(t *testing.T) {
+	// Setup a test collection and data
+	cName := path.Join("testdata", "test_case_handling.ds")
+	os.RemoveAll(cName)
+	c, err := InitCollection(cName)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o := map[string]interface{}{}
+	o["a"] = 1
+	err = c.Create("A", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o["b"] = 2
+	err = c.Create("B", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o["c"] = 3
+	err = c.Create("C", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Get back a list of keys, should all be lowercase.const
+	keys := c.Keys()
+	for _, key := range keys {
+		if key == strings.ToUpper(key) {
+			t.Errorf("Expected lower case %q, got %q", strings.ToLower(key), key)
+		}
+		p, err := c.DocPath(strings.ToUpper(key))
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		// Check if p has the OS's separator.
+		if !strings.Contains(p, fmt.Sprintf("%c", filepath.Separator)) {
+			t.Errorf("Path seperator does not match host OS, %q <- %c", p, filepath.Separator)
+			t.FailNow()
+		}
+	}
+	cnt := c.Length()
+	if cnt != 3 {
+		t.Errorf("Expected 3, got %d", cnt)
+		t.FailNow()
+	}
+	c.Close()
 }

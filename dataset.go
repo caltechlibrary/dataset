@@ -40,31 +40,9 @@ import (
 	"github.com/caltechlibrary/dotpath"
 	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
-	"github.com/caltechlibrary/tmplfn"
 )
 
 const (
-	// Version of the dataset package
-	Version = `v0.1.11`
-
-	// License is a formatted from for dataset package based command line tools
-	License = `
-%s %s
-
-Copyright (c) 2021, Caltech
-All rights not granted herein are expressly reserved by Caltech.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-`
-
 	// Asc is used to identify ascending sorts
 	Asc = iota
 	// Desc is used to identify descending sorts
@@ -133,7 +111,7 @@ type Collection struct {
 	//
 
 	// unsafeSaveMetadata is set to true when doing batch object
-	// operations so we can save writing collections.json on each
+	// operations so we can save writing collection.json on each
 	// create or delete.
 	unsafeSaveMetadata bool
 
@@ -154,7 +132,8 @@ type Collection struct {
 
 // normalizeKeyName() trims leading and trailing spaces
 func normalizeKeyName(s string) string {
-	return strings.TrimSpace(s)
+	// NOTE: As of 1.0.1 release, keys are normalized to lowercase.
+	return strings.ToLower(strings.TrimSpace(s))
 }
 
 // collectionNameAsPath takes a uri and normalizes collection name
@@ -169,11 +148,21 @@ func collectionNameAsPath(p string) string {
 
 // keyAndFName converts a key (which may have things like slashes) into a disc friendly name and key value
 func keyAndFName(name string) (string, string) {
-	var keyName string
 	if strings.HasSuffix(name, ".json") == true {
-		return keyName, name
+		return name, url.QueryEscape(name)
 	}
 	return name, url.QueryEscape(name) + ".json"
+}
+
+// localizePairPath checks if map has value and adjusts value
+// to localized OS path separator (e.g. for Windows).
+func localizePairPath(key string, m map[string]string) (string, bool) {
+	value, ok := m[key]
+	if ok && (os.PathSeparator != '/') {
+		parts := strings.Split(value, "/")
+		value = path.Join(parts...)
+	}
+	return value, ok
 }
 
 // saveMetadata writes the collection's metadata to c.workPath
@@ -186,6 +175,12 @@ func (c *Collection) saveMetadata() error {
 	if _, err := os.Stat(c.workPath); err != nil {
 		if err := os.MkdirAll(c.workPath, 0775); err != nil {
 			return err
+		}
+	}
+	// Make sure pair paths in c.KeyMap are encoded POSIX style
+	for key, value := range c.KeyMap {
+		if strings.Contains(value, "\\") {
+			c.KeyMap[key] = strings.ReplaceAll(value, "\\", "/")
 		}
 	}
 	src, err := json.Marshal(c)
@@ -338,8 +333,9 @@ func deleteCollection(name string) error {
 
 // DocPath returns a full path to a key or an error if not found
 func (c *Collection) DocPath(name string) (string, error) {
+	name = normalizeKeyName(name)
 	keyName, name := keyAndFName(name)
-	if p, ok := c.KeyMap[keyName]; ok == true {
+	if p, ok := localizePairPath(keyName, c.KeyMap); ok == true {
 		return path.Join(c.workPath, p, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
@@ -434,7 +430,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
-	pairPath, ok := c.KeyMap[keyName]
+	pairPath, ok := localizePairPath(keyName, c.KeyMap)
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
 	}
@@ -483,7 +479,7 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	}
 
 	//NOTE: KeyMap should include pairtree path (e.g. pairtree/AA/BB/CC...)
-	pairPath, ok := c.KeyMap[keyName]
+	pairPath, ok := localizePairPath(keyName, c.KeyMap)
 	if ok != true {
 		return fmt.Errorf("%q does not exist in %q", keyName, c.Name)
 	}
@@ -538,7 +534,7 @@ func (c *Collection) Delete(name string) error {
 	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
 
-	pairPath, ok := c.KeyMap[keyName]
+	pairPath, ok := localizePairPath(keyName, c.KeyMap)
 	if ok != true {
 		return fmt.Errorf("%q key not found in %q", keyName, c.Name)
 	}
@@ -569,7 +565,7 @@ func (c *Collection) Keys() []string {
 
 // KeyExists returns true if key is in collection's KeyMap, false otherwise
 func (c *Collection) KeyExists(key string) bool {
-	_, hasKey := c.KeyMap[key]
+	_, hasKey := c.KeyMap[normalizeKeyName(key)]
 	return hasKey
 }
 
@@ -868,36 +864,6 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 		log.Printf("warning %d read error, %d dotpath errors in table export from %s", readErrors, dotpathErrors, c.workPath)
 	}
 	return cnt, table, nil
-}
-
-// KeyFilter takes a list of keys and  filter expression and returns
-// the list of keys passing through the filter or an error
-func (c *Collection) KeyFilter(keyList []string, filterExpr string) ([]string, error) {
-	// Handle the trivial case of filter resolving to true
-	// NOTE: empty filter is treated as "true"
-	if filterExpr == "true" || filterExpr == "" {
-		return keyList, nil
-	}
-
-	// Some sort of filter is involved
-	filter, err := tmplfn.ParseFilter(filterExpr)
-	if err != nil {
-		return nil, err
-	}
-
-	keys := []string{}
-	for _, key := range keyList {
-		key = strings.TrimSpace(key)
-		if len(key) > 0 {
-			m := map[string]interface{}{}
-			if err := c.Read(key, m, false); err == nil {
-				if ok, err := filter.Apply(m); err == nil && ok == true {
-					keys = append(keys, key)
-				}
-			}
-		}
-	}
-	return keys, nil
 }
 
 // Clone copies the current collection records into a newly initialized collection given a list of keys

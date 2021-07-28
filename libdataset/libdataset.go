@@ -570,65 +570,6 @@ func keys(cName *C.char) *C.char {
 	return C.CString(txt)
 }
 
-// key_filter returns JSON source of an array of keys passing
-// through the filter of objects in the collection.
-//
-//export key_filter
-func key_filter(cName, cKeyListExpr, cFilterExpr *C.char) *C.char {
-	collectionName := C.GoString(cName)
-	keyListExpr := C.GoString(cKeyListExpr)
-	filterExpr := C.GoString(cFilterExpr)
-
-	error_clear()
-	keyList := []string{}
-	if err := json.Unmarshal([]byte(keyListExpr), &keyList); err != nil {
-		errorDispatch(err, "Unable to unmarshal keys %s", err)
-		return C.CString("")
-	}
-	keys, err := dataset.KeyFilter(collectionName, keyList, filterExpr)
-	if err != nil {
-		errorDispatch(err, "filter error, %s", err)
-		return C.CString("")
-	}
-	src, err := json.Marshal(keys)
-	if err != nil {
-		errorDispatch(err, "Can't marshal filtered keys, %s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
-	return C.CString(txt)
-}
-
-// key_sort returns JSON source of an array of keys sorted by
-// the sort expression applied to the objects in the collection.
-//
-//export key_sort
-func key_sort(cName, cKeyListExpr, cSortExpr *C.char) *C.char {
-	collectionName := C.GoString(cName)
-	keyListExpr := C.GoString(cKeyListExpr)
-	sortExpr := C.GoString(cSortExpr)
-
-	error_clear()
-	keyList := []string{}
-	if err := json.Unmarshal([]byte(keyListExpr), &keyList); err != nil {
-		errorDispatch(err, "Unable to unmarshal keys, %s", err)
-		return C.CString("")
-	}
-
-	keys, err := dataset.KeySortByExpression(collectionName, keyList, sortExpr)
-	if err != nil {
-		errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		return C.CString("")
-	}
-	src, err := json.Marshal(keys)
-	if err != nil {
-		errorDispatch(err, "Can't marshal sorted keys, %s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
-	return C.CString(txt)
-}
-
 /*
  * Object operations
  */

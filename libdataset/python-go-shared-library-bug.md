@@ -8,9 +8,9 @@ when the go runtime starts on the second shared library that it can't
 find the **pthread_keys** entry point.  This appears to be a known but 
 unresolved, see issue [#17200](https://github.com/golang/go/issues/17200) 
 in Go's Github repository. It appears this problem goes back several years 
-and re-occurs in numerious forms.  It doesn't appear to be solvabled 
+and re-occurs in numerious forms.  It doesn't appear to be solvable 
 without seriously hacking the Go linker based on the version of Go an OS 
-you're usiing.
+you're using.
 
 
 ## Additional references

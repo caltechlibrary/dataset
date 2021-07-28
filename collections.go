@@ -180,32 +180,6 @@ func KeyExists(cName string, key string) bool {
 	return c.KeyExists(key)
 }
 
-// KeyFilter returns a list of keys given a list of keys and a filter expression.
-func KeyFilter(cName string, keys []string, fitlerExpr string) ([]string, error) {
-	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
-			return nil, err
-		}
-	}
-	if c, found := cMap.collections[cName]; found {
-		return c.KeyFilter(keys, fitlerExpr)
-	}
-	return nil, fmt.Errorf("%q not found", cName)
-}
-
-// KeySortByExpression returns a list of sorted keys given a list of keys and expression
-func KeySortByExpression(cName string, keys []string, sortExpr string) ([]string, error) {
-	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
-			return nil, err
-		}
-	}
-	if c, found := cMap.collections[cName]; found {
-		return c.KeySortByExpression(keys, sortExpr)
-	}
-	return nil, fmt.Errorf("%q not found", cName)
-}
-
 // CreateJSON takes a collection name, key and JSON object
 // document and creates a new JSON object in the collection using
 // the key.
@@ -432,9 +406,9 @@ func Check(cName string, verbose bool) error {
 func Repair(cName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		// Check to see if we have a collection.json or pairtree.
-		if _, err := os.Stat(path.Join(cName, "collections.json")); os.IsNotExist(err) {
+		if _, err := os.Stat(path.Join(cName, "collection.json")); os.IsNotExist(err) {
 			if fInfo, err := os.Stat(path.Join(cName, "pairtree")); err == nil && fInfo.IsDir() {
-				//NOTE: we need to create a empty collections.json file.
+				//NOTE: we need to create a empty collection.json file.
 				// Issue-99 in GitHub so we can then proceed and repair
 				// our collection.
 				c := new(Collection)
@@ -443,7 +417,7 @@ func Repair(cName string, verbose bool) error {
 				if err != nil {
 					return err
 				}
-				if err := ioutil.WriteFile(path.Join(cName, "collections.json"), src, 0664); err != nil {
+				if err := ioutil.WriteFile(path.Join(cName, "collection.json"), src, 0664); err != nil {
 					return err
 				}
 			}

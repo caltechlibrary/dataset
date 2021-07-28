@@ -6,11 +6,11 @@
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "0.1.11",
+    "version": "1.0.1",
     "author": [
         {
             "@type": "Person",
-            "givenName": "Robert",
+            "givenName": "R. S.",
             "familyName": "Doiel",
             "affiliation": "Caltech Library",
             "email": "rsdoiel@caltech.edu",
@@ -26,7 +26,7 @@
         }
     ],
     "developmentStatus": "active",
-    "downloadUrl": "https://github.com/caltechlibrary/dataset/releases",
+    "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
     "keywords": [
         "GitHub",
         "metadata",
@@ -36,6 +36,14 @@
     ],
     "maintainer": "https://orcid.org/0000-0003-0900-6903",
     "programmingLanguage": [
-        "Go"
-    ]
+        "Go",
+        "Python"
+    ],
+    "funder":[
+  {
+    "@id": "https://doi.org/10.13039/100006961",
+    "@type": "Organization",
+    "name": "Caltech Library"
+  }
+]
 }

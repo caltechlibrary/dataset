@@ -45,7 +45,7 @@
 Installation
 </h1>
 <p>
-<em>dataset</em> is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents into a collection by unique filename.
+<strong>dataset</strong> is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents into a collection by unique filename.
 </p>
 <p>
 This is generalized instructions for a release. For deployment suggestions see NOTES.md
@@ -54,26 +54,73 @@ This is generalized instructions for a release. For deployment suggestions see N
 Compiled version
 </h2>
 <p>
-Compiled versions are available for Mac OS X (x86 and M1 processors as macos-amd64, macos-arm64), Linux (x86 processor as linux-amd64), Windows (x86 processor as windows-amd64) and Rapsberry Pi (arm7 processor as raspbian-arm7)
+Compiled versions are available for macOS (Intel and M1), Linux (Intel), Windows (Intel) and Raspberry Pi (ARM).
 </p>
 <p>
-VERSION_NUMBER is a <a href="http://semver.org/">symantic version number</a> (e.g. v0.1.2)
+VERSION_NUMBER is a <a href="http://semver.org/">semantic version number</a> (e.g. v1.0.2)
 </p>
 <p>
-For all the released version go to the project page on Github and click latest release
+For all the released version go to the project page on GitHub and click latest release
 </p>
 <blockquote>
 <p>
 https://github.com/caltechlibrary/dataset/releases/latest
 </p>
 </blockquote>
-<pre><code>| Platform    | Zip Filename                             | 
-|-------------|------------------------------------------|
-| Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
-| macOS (x86) | dataset-VERSION_NUMBER-macos-amd64.zip  |
-| macOS (M1)  | dataset-VERSION_NUMBER-macos-arm64.zip  |
-| Linux/Intel | dataset-VERSION_NUMBER-linux-amd64.zip   |
-| Raspbery Pi | dataset-VERSION_NUMBER-raspbian-arm7.zip |</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>
+Platform
+</th>
+<th>
+Zip Filename
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>
+Windows
+</td>
+<td>
+dataset-VERSION_NUMBER-windows-amd64.zip
+</td>
+</tr>
+<tr class="even">
+<td>
+macOS (Intel)
+</td>
+<td>
+dataset-VERSION_NUMBER-macos-amd64.zip
+</td>
+</tr>
+<tr class="odd">
+<td>
+macOS (M1)
+</td>
+<td>
+dataset-VERSION_NUMBER-macos-arm64.zip
+</td>
+</tr>
+<tr class="even">
+<td>
+Linux (Intel)
+</td>
+<td>
+dataset-VERSION_NUMBER-linux-amd64.zip
+</td>
+</tr>
+<tr class="odd">
+<td>
+Raspberry Pi OS (ARM)
+</td>
+<td>
+dataset-VERSION_NUMBER-raspbian-arm7.zip
+</td>
+</tr>
+</tbody>
+</table>
 <h2 id="the-basic-recipe">
 The basic recipe
 </h2>
@@ -104,8 +151,8 @@ Adjust your PATH if needed
 Test
 </li>
 </ul>
-<h3 id="mac-os-x">
-Mac OS X
+<h3 id="macos">
+macOS
 </h3>
 <ol type="1">
 <li>
@@ -115,7 +162,7 @@ Download the zip file
 Unzip the zip file
 </li>
 <li>
-Copy the executables to “bin” folder in HOME folder (or another folder in your PATH)
+Copy the executable to “bin” folder in HOME folder (or another folder in your PATH)
 </li>
 <li>
 Make sure the new location in in our path
@@ -144,7 +191,7 @@ Download the zip file
 Unzip the zip file
 </li>
 <li>
-Copy the executables to the “bin” directory in your “HOME” directory (or a folder in your path)
+Copy the executable to the “bin” directory in your “HOME” directory (or a folder in your path)
 </li>
 <li>
 Test
@@ -170,7 +217,7 @@ Download the zip file
 Unzip the zip file
 </li>
 <li>
-Copy the executables to the “bin” directory in your “HOME” directory.
+Copy the executable to the “bin” directory in your “HOME” directory.
 </li>
 <li>
 Test
@@ -185,8 +232,8 @@ Here’s an example of the commands run in from the Bash shell after downloading
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
-<h3 id="raspberry-pi">
-Raspberry Pi
+<h3 id="raspberry-pi-os">
+Raspberry Pi OS
 </h3>
 <p>
 Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit Raspberry Pi OS.
@@ -199,7 +246,7 @@ Download the zip file
 Unzip the zip file
 </li>
 <li>
-Copy the executables to <code>$HOME/bin</code> (or a folder in your path)
+Copy the executable to <code>$HOME/bin</code> (or a folder in your path)
 </li>
 <li>
 Test
@@ -218,18 +265,31 @@ Here’s an example of the commands run in from the Bash shell after downloading
 Compiling from source
 </h2>
 <p>
-<em>dataset</em> is “go gettable”. Use the “go get” command to download the dependant packages as well as <em>dataset</em>’s source code.
+<em>dataset</em> is “go get-able”. Use the “go get” command to download the dependent packages as well as <em>dataset</em>’s source code.
 </p>
 <pre class="shell"><code>    go get -u github.com/caltechlibrary/dataset/...</code></pre>
 <p>
-Or clone the repstory and then compile
+Or clone the repository and then compile
 </p>
 <pre class="shell"><code>    cd
-    git clone https://github.com/caltechlibrary/dataset src/github.com/caltechlibrary/dataset
-    cd src/github.com/caltechlibrary/dataset
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
     make
     make test
     make install</code></pre>
+<p>
+Building just the <code>libdataset</code> shared library requires the following sequence.
+</p>
+<pre><code>    cd
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
+    make
+    cd libdataset
+    make test
+    make release</code></pre>
+<p>
+You should now have a “dist” directory in the root of the repository with a Zip file for the “libdataset” shared library.
+</p>
 <p>
 Compilation assumes <a href="https://github.com/golang/go">go</a> v1.16
 </p>

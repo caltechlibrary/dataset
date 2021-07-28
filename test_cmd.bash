@@ -670,6 +670,7 @@ EOF
 	echo "test_sync, OK"
 }
 
+
 echo "Testing command line tools"
 test_dataset
 test_issue19

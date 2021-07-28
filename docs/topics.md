@@ -1,36 +1,42 @@
 
-# Topics by concepts
+Topics by concepts
+==================
 
-## Getting started
+Getting started
+---------------
 
 - [Getting started with dataset](../how-to/getting-started-with-dataset.html)
 
-## Data shapes
+Data shapes
+-----------
 
 - [Joining Objects](../how-to/joining-objects.html)
 - [Reshaping collections](../how-to/reshape-json-collections.html)
 - [Data Frames](../how-to/collections-and-data-frames.html)
 
-## Keys, samples and cloning collections
+Keys, samples and cloning collections
+-------------------------------------
 
 - [keys and filters](../how-to/filtering-keys.html)
 - [taking samples](../how-to/taking-samples.html)
 - [cloning and samples](../how-to/cloning-and-samples.html)
 
-## Attachments and storage
+Attachments and storage
+-----------------------
 
 - [File system layout](../how-to/file-system-layout.html)
 - [How attachments work](../how-to/how-attachments-work.html)
 - [Managing attachments](../how-to/managing-attachments.html)
 - [Upgrading a collection](../how-to/upgrading-a-collection.html)
 
-## Import/Export
+Import/Export
+-------------
 
 - [Working with CSV](../how-to/working-with-csv.html)
 
 
-
-# Topics A-Z
+Topics A-Z
+==========
 
 - [attach](attach.html)
 - [attachments](attachments.html)

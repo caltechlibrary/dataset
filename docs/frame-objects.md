@@ -1,7 +1,8 @@
+frame-objects
+=============
 
-# frame-objects
-
-## Usage
+Usage
+-----
 
 ```
     frame-objects COLLECTION FRAME_NAME
@@ -9,12 +10,14 @@
 
 Returns the object list of a frame.
 
-## OPTIONS
+OPTIONS
+-------
 
 -p, -pretty
 : pretty print JSON output
 
-## Example
+Example
+-------
 
 If I want to get a list of objects (JSON array of objects) 
 for a frame named "captions-dates-locations" from my collection

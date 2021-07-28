@@ -8,12 +8,12 @@ The collection folder contains a JSON object document called
 *collection.json*. This file stores metadata about the collection
 including the association of keys with paths to their objects. *dataset*
 comes in several flavors --- a command line program called *dataset*, a
-Go langauge package also called dataset, a shared library called
+Go language package also called dataset, a shared library called
 libdataset and a Python 3.7 package called
 [py_dataset](https://github.com/caltechlibrary/py_dataset). This
 tutorial talks both the command line program and the Python package. The
 command line is great for simple setup but Python is often more
-convienent for more complex operations.
+convenient for more complex operations.
 
 Create a collection with init
 -----------------------------
@@ -58,7 +58,7 @@ In Python the error message is an empty string if everything is ok,
 otherwise we call stop which prints the message and exits. You will see
 this pattern followed in a number of upcoming Python examples.
 
-### removing friends.ds {#removing-friendsds}
+### removing friends.ds {#removing-friends.ds}
 
 There is no dataset verb to remove a collection. A collection is just a
 folder with some files in it. You can delete the collection by throwing
@@ -135,7 +135,7 @@ command line \--
     dataset read friends.ds frieda
 ```
 
-This command emitts a JSON object. The JSON is somewhat hard to read. To
+This command emits a JSON object. The JSON is somewhat hard to read. To
 get a pretty version of the JSON object used the \"-p\" option.
 
 ``` {.bash}
@@ -312,13 +312,13 @@ a variable called keys.
 Data frames and grids
 ---------------------
 
-JSON objects are tree like. This structure can be inconvienent for some
+JSON objects are tree like. This structure can be inconvenient for some
 types of analysis like tabulation, comparing values or generating
 summarizing reports. Many languages support a concept of \"data frame\".
 Meaning a list of objects, possibly with associated metadata about how
-the list was created. This becomes a convient way to process data.
+the list was created. This becomes a convenient way to process data.
 Frames can easily be transformed. Sometimes a spreadsheet, table or 2D
-grid like structure is often a more familair format for these types of
+grid like structure is often a more familiar format for these types of
 tasks. *frame-grid* is dataset\'s verb for taking a data frame and
 returning a 2D list of grid results. The 2D grid is easy to iterate
 over. A *frame-grid* doesn\'t enforce any specifics on the columns and
@@ -328,7 +328,7 @@ dot paths when you defined the data frame.
 ### the frame
 
 dataset also comes with a *frame* verb. A *frame* is an order list of
-objects with some additional matadata. It is similar to the \"data
+objects with some additional metadata. It is similar to the \"data
 frames\" concepts in languages like Julia, Matlab, Octave, Python and R.
 It is a data structure that can be easily mapped to a grid (2D array or
 rows and columns). A frame is represented as an array of objects there
