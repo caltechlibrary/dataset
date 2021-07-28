@@ -154,6 +154,17 @@ func keyAndFName(name string) (string, string) {
 	return name, url.QueryEscape(name) + ".json"
 }
 
+// localizePairPath checks if map has value and adjusts value
+// to localized OS path separator (e.g. for Windows).
+func localizePairPath(key string, m map[string]string) (string, bool) {
+	value, ok := m[key]
+	if ok && (os.PathSeparator != '/') {
+		parts := strings.Split(value, "/")
+		value = path.Join(parts...)
+	}
+	return value, ok
+}
+
 // saveMetadata writes the collection's metadata to c.workPath
 func (c *Collection) saveMetadata() error {
 	if c.unsafeSaveMetadata == true {
@@ -164,6 +175,12 @@ func (c *Collection) saveMetadata() error {
 	if _, err := os.Stat(c.workPath); err != nil {
 		if err := os.MkdirAll(c.workPath, 0775); err != nil {
 			return err
+		}
+	}
+	// Make sure pair paths in c.KeyMap are encoded POSIX style
+	for key, value := range c.KeyMap {
+		if strings.Contains(value, "\\") {
+			c.KeyMap[key] = strings.ReplaceAll(value, "\\", "/")
 		}
 	}
 	src, err := json.Marshal(c)
@@ -318,7 +335,7 @@ func deleteCollection(name string) error {
 func (c *Collection) DocPath(name string) (string, error) {
 	name = normalizeKeyName(name)
 	keyName, name := keyAndFName(name)
-	if p, ok := c.KeyMap[keyName]; ok == true {
+	if p, ok := localizePairPath(keyName, c.KeyMap); ok == true {
 		return path.Join(c.workPath, p, name), nil
 	}
 	return "", fmt.Errorf("Can't find %q", name)
@@ -413,7 +430,7 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
 	keyName, FName := keyAndFName(name)
-	pairPath, ok := c.KeyMap[keyName]
+	pairPath, ok := localizePairPath(keyName, c.KeyMap)
 	if ok != true {
 		return nil, fmt.Errorf("%q does not exist in %s", keyName, c.Name)
 	}
@@ -462,7 +479,7 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	}
 
 	//NOTE: KeyMap should include pairtree path (e.g. pairtree/AA/BB/CC...)
-	pairPath, ok := c.KeyMap[keyName]
+	pairPath, ok := localizePairPath(keyName, c.KeyMap)
 	if ok != true {
 		return fmt.Errorf("%q does not exist in %q", keyName, c.Name)
 	}
@@ -517,7 +534,7 @@ func (c *Collection) Delete(name string) error {
 	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
 
-	pairPath, ok := c.KeyMap[keyName]
+	pairPath, ok := localizePairPath(keyName, c.KeyMap)
 	if ok != true {
 		return fmt.Errorf("%q key not found in %q", keyName, c.Name)
 	}
