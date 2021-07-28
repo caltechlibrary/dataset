@@ -26,7 +26,7 @@
         }
     ],
     "developmentStatus": "active",
-    "downloadUrl": "https://github.com/caltechlibrary/dataset/releases",
+    "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
     "keywords": [
         "GitHub",
         "metadata",
@@ -38,5 +38,12 @@
     "programmingLanguage": [
         "Go",
         "Python"
-    ]
+    ],
+    "funder":[
+  {
+    "@id": "https://doi.org/10.13039/100006961",
+    "@type": "Organization",
+    "name": "Caltech Library"
+  }
+]
 }
