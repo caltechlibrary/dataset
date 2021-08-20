@@ -1,0 +1,22 @@
+Bottler will be much easier to implement is dataset has a web service implementation such that is can support asynchronous use via HTTP/HTTPS. The path structure should map to the verbs used in the command line tool. Assuming a hostname of "dataset.local" here's some examples of what that might look like. Our collection name will be called "Messages"
+
+1. Create a collection
+2. Create an object in a collection
+3. List keys in a collection
+4. Read (access) an object
+5. Update an object
+6. Delete in object
+
+```shell
+curl https://dataset.local/init/Messages
+curl -X POST -H 'Content-Type:application/json' --data-binary '{"id":1,"message": "Hello World!"}' https://dataset.local/create/Messages
+curl https://dataset.local/keys/Messages
+curl https://dataset.local/read/Messages/1
+curl -X POST -H 'Content-Type:application/json' https://dataset.local/update/Messages/1 --data-binary  '{"id":1, "message":"Good to see you."}'
+curl https://dataset.local/delete/Messages/1
+```
+
+If the dataset collection knew about Solr then the dataset daemon could also make an appropriate call to Solr to update the index.
+
+In addition a "dsclient" could be created similar to the Solr `bin/post` client so operations on a dataset collection could function similarly to Solr (e.g. for doing bulk imports or updates).
+
