@@ -243,7 +243,7 @@ func main() {
 	appName := path.Base(os.Args[0])
 	flagSet := flag.NewFlagSet(appName, flag.ContinueOnError)
 	// Standard Options
-	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display detailed help")
 	flagSet.BoolVar(&showLicense, "license", false, "display license")
 	flagSet.BoolVar(&showVersion, "version", false, "display version")
 
