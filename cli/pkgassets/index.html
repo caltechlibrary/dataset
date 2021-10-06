@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="index.html">README</a></li>
+<li><a href="license.html">LICENSE</a></li>
+<li><a href="install.html">INSTALL</a></li>
+<li><a href="https://github.com/caltechlibrary/pkgassets">Github</a></li>
+</ul>
+
+</nav>
+
+<section>
+<h1>pkgassets</h1>
+
+<h2>USAGE</h2>
+
+<pre><code>    pkgassets [OPTIONS] VARIABLE_NAME DIR_HOLDING_ASSETS [VARIABLE_NAME DIR_HOLDING_ASSETS ...]
+</code></pre>
+
+<h2>Description</h2>
+
+<p><em>pkgassets</em> generates a Go source directory whos file assets are embedded in a <code>map[string][]byte</code> variable.
+This is useful where you want to embed web content, template source code, help docs and other assets that
+can be used for default behavior in a Go command line program or service.</p>
+
+<p>The map content is harvested from directory holding the assets to be embedded. By default the
+path key starts with a slash and does not include the hosting directory (e.g. htdocs/index.html
+would become /index.html if htdocs was used to harvest assets). The prefix and suffix on the
+key can be modified based on <em>pkgassets</em>&rsquo;s command line options.</p>
+
+<h2>OPTIONS</h2>
+
+<pre><code>-c  comment file to be included
+-comment    comment file to be included
+-example    display example(s)
+-ext    Only include files with matching extension
+-h  display help
+-help   display help
+-l  display license
+-license    display license
+-o  output filename
+-output output filename
+-p  package name, if missing defauls to lowercase of variable name
+-package    package name, if missing defauls to lowercase of variable name
+-strip-prefix   strip the prefix from the map key
+-strip-suffix   strip the suffix from the map key
+-v  display version
+-version    display version
+</code></pre>
+
+<h2>EXAMPLE</h2>
+
+<pre><code>    pkgassets MAP_VARAIBLE_NAME NAME_OF_DIRECTORY_HOLDING_ASSETS
+</code></pre>
+
+<p>This will result in a Go of type map[string][]byte holding the assets discovered by walking the directory
+tree provided. The map&rsquo;s key will represent a path (beginning with &ldquo;/&rdquo;) pointing at the asset ingested.</p>
+
+<pre><code class="language-shell">    pkgassets DefaultSite htdocs
+</code></pre>
+
+<p>Assuming that <em>htdocs</em> held</p>
+
+<ul>
+<li>index.html</li>
+<li>css/site.css</li>
+</ul>
+
+<p>In this example the htdocs directory will be crawled and all the files found harvested as a an asset. The
+path in the map will not include htdocs and would result in a Go source file like</p>
+
+<pre><code class="language-golang">    package defaultsite
+
+    var DefaultSite = map[string][]byte{
+        &quot;/index.html&quot;: []byte{}, // ... the contents of index.html would be here ...
+        &quot;/css/site.css&quot;: []byte{}, // ... the contents of css/site.css would be here ...
+    }
+</code></pre>
+
+<p>If a package name is not provided then the package name will a lowercase name of the map variable name (e.g.
+&ldquo;var DefaultSite&rdquo; becomes &ldquo;package defaultsite&rdquo;). Likewise if a output name is not provided then the file
+name will be the name of the package plus the &ldquo;.go&rdquo; extension.</p>
+
+<p>Related examples: <a href="examples/help.html">help</a>, <a href="examples/htdocs.html">htdocs</a>.</p>
+
+<p>pkgassets v0.0.6</p>
+
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2018 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
