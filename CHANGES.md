@@ -1,3 +1,10 @@
+Release 1.0.2:
+
+Added support for __datasetd__, a localhost web service for
+dataset collections.
+
+Migrated cli package into dataset repository sub-package "github.com/caltechlibrary/dataset/cli". Eventually this package will be replaced by "datasetCli.go" in the root folder.
+
 Release 1.0.1:
 
 - Keys are stored lowercase

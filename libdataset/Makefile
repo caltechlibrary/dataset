@@ -50,10 +50,10 @@ test: $(LIB_NAME)$(EXT)
 	python3 test_libdataset.py
 
 clean:
-	if [ -f "$(LIB_NAME).dll" ]; then rm "$(LIB_NAME).dll"; fi
-	if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
-	if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
-	if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	@if [ -f "$(LIB_NAME).dll" ]; then rm "$(LIB_NAME).dll"; fi
+	@if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
+	@if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
+	@if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
 
 status:
 	git status

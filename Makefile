@@ -7,7 +7,8 @@ VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-PKGASSETS = $(shell which pkgassets)
+
+CODEMETA2CFF = $(shell which codemeta2cff)
 
 PROGRAMS = $(shell ls -1 cmd)
 
@@ -27,7 +28,13 @@ ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
-build: version.go assets $(PROGRAMS) libdataset
+PKGASSETS = ./bin/pkgassets$(EXT)
+
+build: $(PKGASSETS) version.go assets $(PROGRAMS) libdataset
+
+
+$(PKGASSETS): cmd/pkgassets/pkgassets.go
+	go build -o $(PKGASSETS) cmd/pkgassets/pkgassets.go
 
 version.go: .FORCE
 	@echo "package $(PROJECT)" >version.go
@@ -36,6 +43,7 @@ version.go: .FORCE
 	@echo '' >>version.go
 	@git add version.go
 	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
+	$(CODEMETA2CFF)
 
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
@@ -56,7 +64,7 @@ uninstall: .FORCE
 assets: cmd/dataset/assets.go
 
 cmd/dataset/assets.go: .FORCE
-	pkgassets -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs
+	$(PKGASSETS) -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs
 	git add cmd/dataset/assets.go
 
 libdataset: libdataset/libdataset.go .FORCE

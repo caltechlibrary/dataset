@@ -34,8 +34,8 @@ import (
 	"time"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/cli"
 	"github.com/caltechlibrary/dataset/tbl"
 )
 
