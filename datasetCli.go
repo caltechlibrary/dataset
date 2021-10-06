@@ -1,5 +1,12 @@
 package dataset
 
+import (
+	"flag"
+	"fmt"
+	"io"
+	"strings"
+)
+
 func DisplayLicense(out io.Writer, appName string, license string) {
 	fmt.Fprintf(out, strings.ReplaceAll(strings.ReplaceAll(license, "{app_name}", appName), "{version}", Version))
 }

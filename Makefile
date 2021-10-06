@@ -7,7 +7,6 @@ VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-
 CODEMETA2CFF = $(shell which codemeta2cff)
 
 PROGRAMS = $(shell ls -1 cmd)

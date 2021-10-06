@@ -1,6 +1,4 @@
 github.com/caltechlibrary/cli v0.0.16/go.mod h1:BVT+6d/QqcN4UApWR3ufjkkKj2O6+48B4G6iUpP8m38=
-github.com/caltechlibrary/cli v0.0.18 h1:Z1NjhJ2ar2lWCFlA00wVDa5j0qnsL2XeI/qtgX2wOXU=
-github.com/caltechlibrary/cli v0.0.18/go.mod h1:9crFPycCNeyTWautZ0t/YjaW8Clsr9uQZfq/SNNwhak=
 github.com/caltechlibrary/dotpath v0.0.3 h1:E8aDD8vh+cmbCF4Pb+2yPnnrcROXtB3EE+EEPkRbTQk=
 github.com/caltechlibrary/dotpath v0.0.3/go.mod h1:rAu0NPuhTaEa9szxXq92x/JmMmedjsEEdHl5uTxzzs0=
 github.com/caltechlibrary/namaste v1.0.1 h1:T3ySGlsVRDUC95Ye6it1/Ws05+zbXsgrFrXEbqLkyjM=
