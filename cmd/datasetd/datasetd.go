@@ -24,7 +24,7 @@ var (
 USAGE
 =====
 
-	{app_name} [OPTIONS] [SETTINGS_FILENAME]
+	{app_name} [SETTINGS_FILENAME]
 
 SYNPOSIS
 --------
