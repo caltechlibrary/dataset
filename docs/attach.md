@@ -31,5 +31,5 @@ Attaching the file as version v0.0.1
     dataset attach stats.ds t1 v0.0.1 start.xlsx
 ```
 
-Related topics: [attachments](attachments.html), [detach](detach.html) and [prune](prune.html)
+Related topics: [attachments](attachments.html), [retrieve](retrieve.html) and [prune](prune.html)
 

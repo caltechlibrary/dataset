@@ -16,11 +16,11 @@ Next (prep for v2.x)
     - [ ] delete
 - [ ] Evaluate the following end points for datasetd
     - [ ] attach
-    - [ ] attechments
-    - [ ] retrieve
-    - [ ] remove
-- [ ] Add pid lock support for processes accessing dataset collections
-- [ ] Document example Shell access to datasetd via cURL
+    - [ ] attachments
+    - [ ] retrieve (aka detach)
+    - [ ] prune
+- [x] Add pid lock support for processes accessing dataset collections
+- [x] Document example Shell access to datasetd via cURL
 - [ ] Document dataesetd access from Python 3
 - [x] Migrate cli package into dataset package
 

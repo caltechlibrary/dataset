@@ -34,6 +34,10 @@ Import/Export
 
 - [Working with CSV](../how-to/working-with-csv.html)
 
+Dataset as a web service
+------------------------
+
+See [datasetd](datasetd.html)
 
 Topics A-Z
 ==========
@@ -45,7 +49,6 @@ Topics A-Z
 - [create](create.html)
 - [delete](delete.html)
 - [delete-frame](delete-frame.html)
-- [detach](detach.html)
 - [dotpath](dotpath.html)
 - [export-csv](export-csv.html)
 - [frame](frame.html)
@@ -65,6 +68,7 @@ Topics A-Z
 - [reframe](reframe.html)
 - [refresh](refresh.html)
 - [repair](repair.html)
+- [retrieve](retrieve.html) (formerly known as detach)
 - [samples](../how-to/samples.html)
 - [status](status.html)
 - [sync-receive](sync-receive.html)

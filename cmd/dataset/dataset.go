@@ -175,7 +175,8 @@ too.
 	vPath         *cli.Verb // path
 	vAttach       *cli.Verb // attach
 	vAttachments  *cli.Verb // attachments
-	vDetach       *cli.Verb // detach
+	vDetach       *cli.Verb // detach (depreciated)
+	vRetrieve     *cli.Verb // retrieve (replaces detach)
 	vPrune        *cli.Verb // prune
 	vImport       *cli.Verb // import
 	vExport       *cli.Verb // export
@@ -2707,9 +2708,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vAttachments.SetParams("COLLECTION", "KEY")
 	vAttachments.StringVar(&inputFName, "i,input", "", "read keys(s), one per line, from a file")
 
-	vDetach = app.NewVerb("detach", "detach a copy of the attachment from a JSON object", fnDetach)
+	vDetach = app.NewVerb("detach", "(depreciated in favor of retrieve) detach a copy of the attachment from a JSON object", fnDetach)
 	vDetach.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
 	vDetach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
+
+	vRetrieve = app.NewVerb("retrieve", "detach a copy of the attachment from a JSON object", fnDetach)
+	vRetrieve.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
+	vRetrieve.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	vPrune = app.NewVerb("prune", "prune an the attachment to a JSON object", fnPrune)
 	vPrune.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")

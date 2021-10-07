@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
+</ul>
+</nav>
+
+<section>
+<h1 id="datasetd">
+Datasetd
+</h1>
+<h2 id="overview">
+Overview
+</h2>
+<p>
+<strong>datasetd</strong> is a minimal web service typically run on localhost port 8485 that exposes a dataset collection as a web service. It features a subset of functionallity available with the dataset command line program. <strong>datasetd</strong> does support multi-process/asynchronous update to a dataset collection.
+</p>
+<p>
+<strong>datasetd</strong> is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a stand alone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL style solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). <strong>datasetd</strong> is a simple, miminal service.
+</p>
+<p>
+NOTE: You could run <strong>datasetd</strong> with access control based on a predictable set of URL paths by a web server such as Apache2 or NginX proxying to <strong>datasetd</strong>. That would require a robust understanding of the front end web server, it’s access control mechanisms and how to defend a proxies service. That is beyond the skope of this project.
+</p>
+<h2 id="configuration">
+Configuration
+</h2>
+<p>
+<strong>datasetd</strong> can make one or more dataset collections visible over HTTP/HTTPS. The dataset collections hosted need to be avialable on the same file system as where <strong>datasetd</strong> is running. <strong>datasetd</strong> is configured by reading a “settings.json” file in either the local directory where it is launch or by a specified directory on the command line.
+</p>
+<p>
+The “settings.json” file has the following structure
+</p>
+<pre><code>    {
+        &quot;host&quot;: &quot;localhost:8483&quot;,
+        &quot;collections&quot;: {
+            &quot;&lt;COLLECTION_ID&gt;&quot;: {
+                &quot;dataset&quot;: &quot;&lt;PATH_TO_DATASET_COLLECTION&gt;&quot;,
+                &quot;keys&quot;: true,
+                &quot;create&quot;: true,
+                &quot;read&quot;: true,
+                &quot;update&quot;: true,
+                &quot;delete&quot;: false
+            }
+        }
+    }</code></pre>
+<p>
+In the “collections” object the “<COLLECTION_ID>” is a string which will be used as the start of the path in the URL. The “dataset” attribute sets the path to the dataset collection made available at “<COLLECTION_ID>”. For each collection you can allow the following sub-paths, “create”, “read”, “update”, “delete” and “keys”. These sub-paths correspond to their counter parts in the dataset command line tool. By varying the settings of these you can support read only collections, drop off collections and function as a object store behind a web application.
+</p>
+<h2 id="running-datasetd">
+Running datasetd
+</h2>
+<p>
+<strong>datasetd</strong> runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP. You should only run <strong>datasetd</strong> on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by <strong>datasetd</strong> regardless of the file permissions they may in their account. E.g. If all dataset collections are in a directory only allowed access to be the “web-data” user but another user on the system can run cURL then they can access the dataset collections based on the rights of the “web-data” user. This is a typical situation for most web services and you need to be aware of it if you choose to run <strong>datasetd</strong>.
+</p>
+<h2 id="supported-features">
+Supported Features
+</h2>
+<p>
+<strong>datasetd</strong> provide a limitted subset of actions support by the standard datset command line tool. It only supports the following verbs
+</p>
+<ol type="1">
+<li>
+keys (return a list of all keys in the collection)
+<ul>
+<li>
+must be a GET request
+</li>
+</ul>
+</li>
+<li>
+create (create a new JSON document in the collection)
+<ul>
+<li>
+must be a POST request ended as JSON with a content type of “application/json”
+</li>
+</ul>
+</li>
+<li>
+read (read a JSON document from a collection)
+<ul>
+<li>
+must be a GET request
+</li>
+</ul>
+</li>
+<li>
+update (update a JSON document in the collection)
+<ul>
+<li>
+must be a POST request ended as JSON with a content type of “application/json”
+</li>
+</ul>
+</li>
+<li>
+delete (delete a JSON document in the collection)
+<ul>
+<li>
+must be a GET request
+</li>
+</ul>
+</li>
+<li>
+collections (list as a JSON array of objects the collections avialable)
+<ul>
+<li>
+must be a GET request
+</li>
+</ul>
+</li>
+</ol>
+<p>
+Each of theses “actions” can be restricted in the configuration ( i.e. “settings.json” file) by setting the value to “false”. If the attribute for the action is not specified in the JSON settings file then it is assumed to be “false”.
+</p>
+<h2 id="example">
+Example
+</h2>
+<p>
+E.g. if I have a settings file for “recipes” based on the collection “recipes.ds” and want to make it read only I would make the attribute “read” set to true and if I want the option of listing the keys in the collection I would set that true also.
+</p>
+<pre><code>{
+    &quot;host&quot;: &quot;localhost:8485&quot;,
+    &quot;collections&quot;: {
+        &quot;recipes&quot;: {
+            &quot;dataset&quot;: &quot;recipes.ds&quot;,
+            &quot;keys&quot;: true,
+            &quot;read&quot;: true
+        }
+    }
+}</code></pre>
+<p>
+I would start <strong>datasetd</strong> with the following command line.
+</p>
+<pre class="shell"><code>    datasetd settings.json</code></pre>
+<p>
+This would display the start up message and log output of the service.
+</p>
+<p>
+In another shell session I could then use cURL to list the keys and read a record. In this example I assume that “waffles” is a JSON document in dataset collection “recipes.ds”.
+</p>
+<pre class="shell"><code>    curl http://localhost:8485/recipies/read/waffles</code></pre>
+<p>
+This would return the “waffles” JSON document or a 404 error if the document was not found.
+</p>
+<p>
+Listing the keys for “recipes.ds” could be done with this cURL command.
+</p>
+<pre class="shell"><code>    curl http://localhost:8485/recipies/keys</code></pre>
+<p>
+This would return a list of keys, one per line. You could show all JSON documents in the collection be retrieving a list of keys and iterating over them using cURL. Here’s a simple example in Bash.
+</p>
+<pre class="shell"><code>    for KEY in $(curl http://localhost:8485/recipes/keys); do
+       curl &quot;http://localhost/8485/recipe/read/${KEY}&quot;
+    done</code></pre>
+<p>
+Add a new JSON object to a collection.
+</p>
+<pre class="shell"><code>    KEY=&quot;sunday&quot;
+    curl -X POST -H &#39;Content-Type:application/json&#39; \
+        &quot;http://localhost/8485/recipe/create/${KEY}&quot; \
+     -d &#39;{&quot;ingredients&quot;:[&quot;banana&quot;,&quot;ice cream&quot;,&quot;chocalate syrup&quot;]}&#39;</code></pre>
+<h2 id="documentation">
+Documentation
+</h2>
+<p>
+<strong>datasetd</strong> provide documentation as plain text output via request to the service end points without parameters. Continuing with our “recipes” example. Try the following URLs with cURL.
+</p>
+<pre><code>    curl http://localhost:8485
+    curl http://localhost:8485/recipes
+    curl http://localhost:8485/recipes/read</code></pre>
+<p>
+<strong>datasetd</strong> is intended to be combined with other services like Solr 8.9. <strong>datasetd</strong> only implements the simplest of object storage.
+</p>
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
