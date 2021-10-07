@@ -71,10 +71,12 @@ E.g. if I have a settings file for "recipes" based on the collection
 ```
 {
     "host": "localhost:8485",
-    "recipes": {
-        "dataset": "recipes.ds",
-        "keys": true,
-        "read": true
+    "collections": {
+        "recipes": {
+            "dataset": "recipes.ds",
+            "keys": true,
+            "read": true
+        }
     }
 }
 ```

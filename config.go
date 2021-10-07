@@ -8,32 +8,43 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
 )
 
 // Config holds a configuration file structure used by EPrints Extended API
 // Configuration file is expected to be in JSON format.
 type Config struct {
 	// Hostname for running service
-	Hostname string `json:"hostname"`
+	Hostname string `json:"host" default:"localhost:8485"`
 
 	// Collections are defined by a COLLECTION_ID (string)
 	// that points at path to where the collection is saved on file system.
-	Collections map[string]string `json:"collections"`
+	Collections map[string]*Settings `json:"collections,required"`
+
+	// Routes are mappings of collections to supported routes.
+	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, string, string) (int, error) `json:"-"`
 }
 
-// DataSource can contain one or more types of datasources. E.g.
-// E.g. dsn for MySQL connections and also data for REST API access.
-type DataSource struct {
-	// DSN is used to connect to a MySQL style DB.
-	DSN string `json:"dsn,omitempty"`
-	// Rest is used to connect to EPrints REST API
-	// NOTE: assumes Basic Auth for authentication
-	RestAPI string `json:"rest,omitempty"`
+// Settings holds the specific settings for a collection.
+type Settings struct {
+	Dataset string `json:"dataset,required"`
+	Keys    bool   `json:"keys" default:"false"`
+	Create  bool   `json:"create" default:"false"`
+	Read    bool   `json:"read" default:"false"`
+	Update  bool   `json:"update" default:"false"`
+	Delete  bool   `json:"delete" default:"false"`
 }
 
+func (config *Config) String() string {
+	src, _ := json.MarshalIndent(config, "", "    ")
+	return fmt.Sprintf("%s", src)
+}
+
+// LoadConfig reads the JSON configuration file provided, validates it
+// and either returns a Config structure or error.
 func LoadConfig(fname string) (*Config, error) {
 	config := new(Config)
-	config.Collections = map[string]string{}
 	src, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return nil, err
@@ -44,6 +55,18 @@ func LoadConfig(fname string) (*Config, error) {
 	}
 	if config.Hostname == "" {
 		config.Hostname = "localhost:8485"
+	}
+	if len(config.Collections) == 0 {
+		return nil, fmt.Errorf("No collections defined in %s", fname)
+	}
+	//FIXME: check and make sure defaults makes sense.
+	for collectionID, settings := range config.Collections {
+		if settings.Dataset == "" {
+			return nil, fmt.Errorf("Settings for %q missing dataset path", collectionID)
+		}
+		if _, err := os.Stat(settings.Dataset); err != nil {
+			return nil, err
+		}
 	}
 	return config, nil
 }

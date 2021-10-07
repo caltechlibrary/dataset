@@ -99,10 +99,12 @@ E.g. if I have a settings file for "recipes" based on the collection
 
     {
         "host": "localhost:8485",
-        "recipes": {
-            "dataset": "recipes.ds",
-            "keys": true,
-            "read": true
+        "collections": {
+			"recipes": {
+            	"dataset": "recipes.ds",
+            	"keys": true,
+            	"read": true
+			}
         }
     }
 
@@ -169,13 +171,15 @@ In the "setttings.json" file the JSON should look like.
 
     {
 		"host": "localhost:8485",
-		"t1": {
-			"dataset": "t1.ds",
-			"keys": true,
-			"create": true,
-			"read": true,
-			"update": true,
-			"delete": true
+		"collections": {
+    		"t1": {
+    			"dataset": "t1.ds",
+    			"keys": true,
+    			"create": true,
+    			"read": true,
+    			"update": true,
+    			"delete": true
+    		}
 		}
 	}
 
@@ -270,15 +274,22 @@ func main() {
 	if len(args) > 0 {
 		settings = args[0]
 	}
+	if _, err := os.Stat(settings); err != nil {
+		fmt.Fprintf(os.Stderr, `Could not find %s
+
+Try %s --help for usage details
+`, settings, appName)
+		os.Exit(1)
+	}
 
 	/* Iniitialize API */
 	if err := dataset.InitDatasetAPI(settings); err != nil {
-		fmt.Fprintf(os.Stderr, "InitDatasetAPI(%q) failed, %s", settings, err)
+		fmt.Fprintf(os.Stderr, "InitDatasetAPI(%q) failed, %s\n", settings, err)
 		os.Exit(1)
 	}
 
 	/* Run API */
 	if err := dataset.RunDatasetAPI(appName); err != nil {
-		fmt.Fprintf(os.Stderr, "RunDatasetAPI(%q) failed, %s", appName, err)
+		fmt.Fprintf(os.Stderr, "RunDatasetAPI(%q) failed, %s\n", appName, err)
 	}
 }
