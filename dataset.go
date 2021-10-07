@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/url"
@@ -296,6 +297,16 @@ func openCollection(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Check for lock.pid
+	pidLock := path.Join(name, "lock.pid")
+	if _, err := os.Stat(pidLock); err == nil {
+		src, _ := ioutil.ReadFile(pidLock)
+		return nil, fmt.Errorf("%s is in use by process %s", name, src)
+	}
+	pid := os.Getpid()
+	if err := ioutil.WriteFile(pidLock, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
+		return nil, fmt.Errorf("Failed to gain lock for %s, %s", name, err)
+	}
 	collectionName := collectionNameAsPath(name)
 	src, err := os.ReadFile(path.Join(collectionName, "collection.json"))
 	if err != nil {
@@ -345,6 +356,8 @@ func (c *Collection) DocPath(name string) (string, error) {
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
 	if c != nil {
+		pidLock := path.Join(c.Name, "lock.pid")
+		os.Remove(pidLock)
 		c.Name = ""
 		c.workPath = ""
 		c.KeyMap = map[string]string{}

@@ -3,8 +3,12 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
 )
 
@@ -12,6 +16,10 @@ const (
 	// timestamp holds the Format of a MySQL time field
 	timestamp = "2006-01-02 15:04:05"
 	datestamp = "2006-01-02"
+
+	// sizeLimit is the maximum size JSON object we'll accept via
+	// our service. Current 1 MB (2^20)
+	sizeLimit = 1048576
 )
 
 var (
@@ -202,39 +210,176 @@ func collectionsEndPoint(w http.ResponseWriter, r *http.Request) (int, error) {
 
 //
 // End Point handlers (route as defined `/<COLLECTION_ID>/<END-POINT>`,
-// or '`/<COLLECTION_ID/<END-POINT>/<KEY>`)
+// or `/<COLLECTION_ID/<END-POINT>/<KEY>`)
 //
 
 func keysEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	return 501, fmt.Errorf("Not Implemented")
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "GET" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if ok == false {
+		return 400, fmt.Errorf("Bad Request")
+	}
+	ds := config.Collections[collectionID].DS
+	if ds == nil {
+		return 500, fmt.Errorf("Internal Server Error")
+	}
+	keys := ds.Keys()
+	src, err := json.MarshalIndent(keys, "", "    ")
+	if err != nil {
+		return 500, fmt.Errorf("Internal Server Error")
+	}
+	return packageJSON(w, collectionID, src, err)
 }
 
 func createEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
 	if key == "" {
 		return packageDocument(w, createDocument(collectionID))
 	}
-	return 501, fmt.Errorf("Not Implemented")
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "POST" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s`, r.Method, contentType)
+	}
+	if contentType != "application/json" {
+		return 415, fmt.Errorf(`Unsupported Media Type
+%s %s`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if ok == false {
+		return 400, fmt.Errorf(`Bad Request
+%s %s`, r.Method, contentType)
+	}
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, sizeLimit))
+	if err != nil {
+		return 400, fmt.Errorf(`Bad Request
+cannot read request body for %s
+
+%s
+`, key, err)
+	}
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(body, &data); err != nil {
+		return 400, fmt.Errorf(`Bad Request
+Invalid JSON Object %s
+
+%s
+`, key, err)
+	}
+	ds := config.Collections[collectionID].DS
+	if err := ds.Create(key, data); err != nil {
+		return 507, fmt.Errorf(`Insufficient Storage
+cannot create %s
+
+%s
+`, key, err)
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, "OK, created %s", key)
+	return 201, nil
 }
 
 func readEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
 	if key == "" {
 		return packageDocument(w, readDocument(collectionID))
 	}
-	return 501, fmt.Errorf("Not Implemented")
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "GET" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if ok == false {
+		return 400, fmt.Errorf("Bad Request")
+	}
+	ds := config.Collections[collectionID].DS
+	if ds == nil {
+		return 500, fmt.Errorf("Internal Server Error")
+	}
+	data := map[string]interface{}{}
+	if err := ds.Read(key, data, false); err != nil {
+		return 404, fmt.Errorf(`Not Found
+%s
+`, err)
+	}
+	src, err := json.MarshalIndent(data, "", "   ")
+	return packageJSON(w, collectionID, src, err)
 }
 
 func updateEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
 	if key == "" {
-		return packageDocument(w, updateDocument(collectionID))
+		return packageDocument(w, createDocument(collectionID))
 	}
-	return 501, fmt.Errorf("Not Implemented")
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "POST" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s
+`, r.Method, contentType)
+	}
+	if contentType != "application/json" {
+		return 415, fmt.Errorf(`Unsupported Media Type
+%s %s
+`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if ok == false {
+		return 400, fmt.Errorf(`Bad Request
+%s %s
+`, r.Method, contentType)
+	}
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, sizeLimit))
+	if err != nil {
+		return 400, fmt.Errorf(`Bad Request
+cannot read request body for %s
+
+%s
+`, key, err)
+	}
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(body, &data); err != nil {
+		return 400, fmt.Errorf(`Bad Request
+Invalid JSON Object %s
+
+%s
+`, key, err)
+	}
+	ds := config.Collections[collectionID].DS
+	if err := ds.Update(key, data); err != nil {
+		return 507, fmt.Errorf(`Insufficient Storage
+cannot update %s
+
+%s
+`, key, err)
+	}
+	return packageDocument(w, fmt.Sprintf("OK, updated %s", key))
 }
 
 func deleteEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
 	if key == "" {
-		return packageDocument(w, deleteDocument(collectionID))
+		return packageDocument(w, createDocument(collectionID))
 	}
-	return 501, fmt.Errorf("Not Implemented")
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "GET" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s
+`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if (r.Method != "GET") || (ok == false) {
+		return 400, fmt.Errorf("Bad Request")
+	}
+	ds := config.Collections[collectionID].DS
+	if err := ds.Delete(key); err != nil {
+		return 500, fmt.Errorf(`Internal Server Error
+cannot delete %s
+
+%s
+`, key, err)
+	}
+	return packageDocument(w, fmt.Sprintf("OK, deleted %s", key))
 }
 
 //
@@ -282,7 +427,7 @@ func routeEndPoints(w http.ResponseWriter, r *http.Request) (int, error) {
 	if len(args) == 2 {
 		collectionID, endPoint, key = args[0], args[1], ""
 	} else {
-		collectionID, endPoint, key = args[0], args[1], key
+		collectionID, endPoint, key = args[0], args[1], args[2]
 	}
 	if routes, hasCollection := config.Routes[collectionID]; hasCollection == true {
 		// Confirm we have a route
@@ -364,6 +509,24 @@ func InitDatasetAPI(settings string) error {
 	return nil
 }
 
+//FIXME: Need to handle a reload/restart for SIGHUP
+
+func Shutdown(appName string) int {
+	exitCode := 0
+	pid := os.Getpid()
+	for cName, c := range config.Collections {
+		if c.DS != nil {
+			log.Printf("Closing %s", cName)
+			c.DS.Close()
+		} else {
+			log.Printf("Lost connection to %s", cName)
+			exitCode = 1
+		}
+	}
+	log.Printf(`Shutdown down %s pid: %d exit code: %d `, appName, pid, exitCode)
+	return exitCode
+}
+
 func RunDatasetAPI(appName string) error {
 	/* Setup web server */
 	log.Printf(`
@@ -373,6 +536,22 @@ Listening on http://%s
 
 Press ctl-c to terminate.
 `, appName, Version, config.Hostname)
+	processControl := make(chan os.Signal, 1)
+	signal.Notify(processControl, os.Interrupt)
+	go func() {
+		<-processControl
+		os.Exit(Shutdown(appName))
+	}()
+	for cName, c := range config.Collections {
+		log.Printf("Opening collection %s", cName)
+		if c.DS == nil {
+			ds, err := openCollection(c.CName)
+			if err != nil {
+				return err
+			}
+			c.DS = ds
+		}
+	}
 	http.HandleFunc("/", api)
 	return http.ListenAndServe(config.Hostname, nil)
 }

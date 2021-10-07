@@ -28,12 +28,13 @@ type Config struct {
 
 // Settings holds the specific settings for a collection.
 type Settings struct {
-	Dataset string `json:"dataset,required"`
-	Keys    bool   `json:"keys" default:"false"`
-	Create  bool   `json:"create" default:"false"`
-	Read    bool   `json:"read" default:"false"`
-	Update  bool   `json:"update" default:"false"`
-	Delete  bool   `json:"delete" default:"false"`
+	CName  string      `json:"dataset,required"`
+	Keys   bool        `json:"keys" default:"false"`
+	Create bool        `json:"create" default:"false"`
+	Read   bool        `json:"read" default:"false"`
+	Update bool        `json:"update" default:"false"`
+	Delete bool        `json:"delete" default:"false"`
+	DS     *Collection `json:"-"`
 }
 
 func (config *Config) String() string {
@@ -61,10 +62,10 @@ func LoadConfig(fname string) (*Config, error) {
 	}
 	//FIXME: check and make sure defaults makes sense.
 	for collectionID, settings := range config.Collections {
-		if settings.Dataset == "" {
+		if settings.CName == "" {
 			return nil, fmt.Errorf("Settings for %q missing dataset path", collectionID)
 		}
-		if _, err := os.Stat(settings.Dataset); err != nil {
+		if _, err := os.Stat(settings.CName); err != nil {
 			return nil, err
 		}
 	}
