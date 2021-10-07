@@ -4,12 +4,11 @@ Datasetd
 Overview
 --------
 
-__datasetd__ is a minimal web service typically run on localhost port 8485
-that exposes a dataset collection as a web service. It features a subset of functionality available with the dataset command line program. __datasetd__ does support multi-process/asynchronous update to a dataset collection. 
+__datasetd__ is a minimal web service typically run on localhost port 8485 that exposes a dataset collection as a web service. It features a subset of functionallity available with the dataset command line program. __datasetd__ does support multi-process/asynchronous update to a dataset collection. 
 
 __datasetd__ is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a stand alone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL style solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). __datasetd__ is a simple, miminal service.
 
-NOTE: You could run __datasetd__ with access control based on a set of set of URL paths by running __datasetd__ behind a full feature web server like Apache 2 or NginX but that is beyond the skope of this project.
+NOTE: You could run __datasetd__ with access control based on a predictable set of URL paths by a web server such as Apache2 or NginX proxying to __datasetd__. That would require a robust understanding of the front end web server, it's access control mechanisms and how to defend a proxies service. That is beyond the skope of this project.
 
 Configuration
 -------------
@@ -22,8 +21,8 @@ The "settings.json" file has the following structure
     {
         "host": "localhost:8483",
         "collections": {
-            "COLLECTION_ID": {
-                "dataset": "PATH_TO_DATASET_COLLECTION",
+            "<COLLECTION_ID>": {
+                "dataset": "<PATH_TO_DATASET_COLLECTION>",
                 "keys": true,
                 "create": true,
                 "read": true,
@@ -34,15 +33,12 @@ The "settings.json" file has the following structure
     }
 ```
 
-In the "collections" object the "COLLECTION_ID" is a string which will be used as the start of the path in the URL. The "dataset" attribute sets the path to the dataset collection made available at "COLLECTION_ID". For each
-collection you can allow the following sub-paths, "create", "read", "update", "delete" and "keys". These sub-paths correspond to their counter parts in the dataset command line tool. In this way would can have a
-dataset collection function as a drop box, a read only list or a simple JSON
-object storage service.
+In the "collections" object the "<COLLECTION_ID>" is a string which will be used as the start of the path in the URL. The "dataset" attribute sets the path to the dataset collection made available at "<COLLECTION_ID>". For each collection you can allow the following sub-paths, "create", "read", "update", "delete" and "keys". These sub-paths correspond to their counter parts in the dataset command line tool. By varying the settings of these you can support read only collections, drop off collections and function as a object store behind a web application.
 
 Running datasetd
 ----------------
 
-__datasetd__ runs as a HTTP/HTTPS service and as such can be exploit as other network based services can be.  It is recommend you only run __datasetd__ on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by __datasetd__ regardless of the file permissions they may in their account.
+__datasetd__ runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP.  You should only run __datasetd__ on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by __datasetd__ regardless of the file permissions they may in their account.
 E.g. If all dataset collections are in a directory only allowed access to be the "web-data" user but another user on the system can run cURL then they can access the dataset collections based on the rights of the "web-data" user.  This is a typical situation for most web services and you need to be aware of it if you choose to run __datasetd__.
 
 Supported Features
