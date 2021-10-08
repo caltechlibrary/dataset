@@ -241,6 +241,26 @@ cannot delete %s
 }
 
 func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+	if key == "" {
+		return packageDocument(w, attachDocument(collectionID))
+	}
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "POST" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s
+`, r.Method, contentType)
+	}
+	if contentType != `multipart/form-data` {
+		return 415, fmt.Errorf(`Unsupported Media Type
+%s %s
+`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if ok == false {
+		return 400, fmt.Errorf(`Bad Request
+%s %s
+`, r.Method, contentType)
+	}
 	log.Printf("attachEndPoint() not implemented")
 	return 501, fmt.Errorf("Not Implemented")
 }

@@ -53,7 +53,7 @@ Features
     - [create](docs/create.html)
     - [read](docs/read.html)
     - [update](docs/update.html)
-    - [delete](docs/delete.html))
+    - [delete](docs/delete.html)
     - Documents attachments
         - [attach](docs/attach.html)
         - [retrieve](docs/retrieve.html)
@@ -71,7 +71,7 @@ Features
     - [create](docs/create.html)
     - [read](docs/read.html)
     - [update](docs/update.html)
-    - [delete](docs/delete.html))
+    - [delete](docs/delete.html)
     - Documents attachments
         - [attach](docs/attach.html)
         - [retrieve](docs/retrieve.html)
@@ -85,23 +85,25 @@ Limitations of _dataset_ and _datasetd_
 
 _dataset_ has many limitations, some are listed below
 
-- it is not a multi-process, multi-user data store (it stores files on the file system out our system wide locking)
-- it is not a replacement for a repository management system
+- it is not a multi-process, multi-user data store
 - it is not a general purpose database system
 - it does not supply automatic version control on collections, objects or attachments
 - it stores all keys to lower case in order to deal with file systems that are not case sensitive
-- it does not have a built-in query language for filtering or sorting
+- it does not have a built-in query language, search or sorting
+- it should NOT be used for sensitive or secret information
 
 _datasetd_ is a simple web service intended to run on "localhost:8485".
 
 - it is not a RESTful service
-- it does not support a query language, search, filtering or sorting
+- it does not include support for authentication
+- it does not support a query language, search or sorting
 - it does not support data frames
-- it does not support access control by users or roles or specific documents- it does not provide auto key generation or versioning
+- it does not support access control by users or roles
+- it does not provide auto key generation or versioning
 - it limits the size of JSON documents stored to less than 1 MiB
 - it limits the size of attachment files to less than 250 MiB
 - it does not support partial JSON record updates or retrieval
-- it does not provide a Web UI for working interactively with dataset collections
+- it does not provide an interactive Web UI for working with dataset collections
 - it does not support HTTPS or "at rest" encryption
 - it should NOT be used for sensitive or secret information
 

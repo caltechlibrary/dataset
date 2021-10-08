@@ -4,16 +4,16 @@ Datasetd
 Overview
 --------
 
-__datasetd__ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. __datasetd__ does support multi-process/asynchronous update to a dataset collection. 
+_datasetd_ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. _datasetd_ does support multi-process/asynchronous update to a dataset collection. 
 
-__datasetd__ is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). __datasetd__ is a simple, miminal service.
+_datasetd_ is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). _datasetd_ is a simple, miminal service.
 
-NOTE: You could run __datasetd__ could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on __datasetd__'s predictable URL paths. That would require a robust understanding of the front end web server, it's access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
+NOTE: You could run _datasetd_ could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on _datasetd_'s predictable URL paths. That would require a robust understanding of the front end web server, it's access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
 
 Configuration
 -------------
 
-__datasetd__ can make one or more dataset collections visible over HTTP/HTTPS. The dataset collections hosted need to be avialable on the same file system as where __datasetd__ is running. __datasetd__ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.  
+_datasetd_ can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where _datasetd_ is running. _datasetd_ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.  
 
 The "settings.json" file has the following structure
 
@@ -43,17 +43,17 @@ The sub-paths correspond to their counter parts in the dataset command line tool
 Running datasetd
 ----------------
 
-__datasetd__ runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP.  You should only run __datasetd__ on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by __datasetd__ regardless of the file permissions they may in their account.
+_datasetd_ runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP.  You should only run _datasetd_ on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by _datasetd_ regardless of the file permissions they may in their account.
 
-Example: If all dataset collections are in a directory only allowed access to be the "web-data" user but another users on the machine have access to cURL they can access the dataset collections based on the rights of the "web-data" user by access the HTTP service.  This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run __datasetd__.
+Example: If all dataset collections are in a directory only allowed access to be the "web-data" user but another users on the machine have access to curl they can access the dataset collections based on the rights of the "web-data" user by access the HTTP service.  This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run _datasetd_.
 
-__datasetd__ should NOT be used to store confidential, sensitive or secret information.
+_datasetd_ should NOT be used to store confidential, sensitive or secret information.
 
 
 Supported Features
 ------------------
 
-__datasetd__ provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
+_datasetd_ provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
 
 1. keys (return a list of all keys in the collection)
     - must be a GET request
@@ -98,7 +98,7 @@ If I have a settings file for "recipes" based on the collection
 }
 ```
 
-I would start __datasetd__ with the following command line.
+I would start _datasetd_ with the following command line.
 
 ```shell
     datasetd settings.json
@@ -106,7 +106,7 @@ I would start __datasetd__ with the following command line.
 
 This would display the start up message and log output of the service.
 
-In another shell session I could then use cURL to list the keys and read
+In another shell session I could then use curl to list the keys and read
 a record. In this example I assume that "waffles" is a JSON document
 in dataset collection "recipes.ds".
 
@@ -117,7 +117,7 @@ in dataset collection "recipes.ds".
 This would return the "waffles" JSON document or a 404 error if the 
 document was not found.
 
-Listing the keys for "recipes.ds" could be done with this cURL command.
+Listing the keys for "recipes.ds" could be done with this curl command.
 
 ```shell
     curl http://localhost:8485/recipies/keys
@@ -125,7 +125,7 @@ Listing the keys for "recipes.ds" could be done with this cURL command.
 
 This would return a list of keys, one per line. You could show
 all JSON documents in the collection be retrieving a list of keys
-and iterating over them using cURL. Here's a simple example in Bash.
+and iterating over them using curl. Here's a simple example in Bash.
 
 ```shell
     for KEY in $(curl http://localhost:8485/recipes/keys); do
@@ -145,9 +145,9 @@ Add a new JSON object to a collection.
 Online Documentation
 --------------------
 
-__datasetd__ provide documentation as plain text output via request
+_datasetd_ provide documentation as plain text output via request
 to the service end points without parameters. Continuing with our
-"recipes" example. Try the following URLs with cURL.
+"recipes" example. Try the following URLs with curl.
 
 ```
     curl http://localhost:8485
@@ -164,9 +164,9 @@ to the service end points without parameters. Continuing with our
 End points
 ----------
 
-The following end points are supported by __datasetd__ 
+The following end points are supported by _datasetd_ 
 
-- `/` returns documentation for __datasetd__
+- `/` returns documentation for _datasetd_
 - `/collections` returns a list of available collections.
 
 The following end points are per colelction. They are available
@@ -187,7 +187,7 @@ end points support the GET method exclusively.
 - `/<COLLECTION_ID>/delete` returns documentation on the "delete" end point
 - `/COLLECTION_ID>/delete/<KEY>` requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
 - `/<COLLECTION_ID>/attach` returns documentation on attaching a file to a JSON document in the collection.
-- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>` requires a POST method and expects a content type of "application/octet-stream". Both key and semver (semantic version number) are required. See https://semver.org/ for more information on semantic version numbers.
+- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>` requires a POST method and expects a multi-part web form providing the filename. The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`. See https://semver.org/ for more information on semantic version numbers.
 - `/<COLLECTION_ID>/retrieve` returns documentation on how to retrieve a versioned attachment from a JSON document.
 - `/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>` returns the versioned attachment from a JSON document or an HTTP error if that fails
 - `/<COLLECTION_ID>/prune` removes a versioned attachment from a JSON document or returns an HTTP error if that fails.

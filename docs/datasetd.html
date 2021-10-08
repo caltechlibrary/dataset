@@ -51,19 +51,19 @@ Datasetd
 Overview
 </h2>
 <p>
-<strong>datasetd</strong> is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. <strong>datasetd</strong> does support multi-process/asynchronous update to a dataset collection.
+<em>datasetd</em> is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. <em>datasetd</em> does support multi-process/asynchronous update to a dataset collection.
 </p>
 <p>
-<strong>datasetd</strong> is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). <strong>datasetd</strong> is a simple, miminal service.
+<em>datasetd</em> is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). <em>datasetd</em> is a simple, miminal service.
 </p>
 <p>
-NOTE: You could run <strong>datasetd</strong> could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on <strong>datasetd</strong>’s predictable URL paths. That would require a robust understanding of the front end web server, it’s access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
+NOTE: You could run <em>datasetd</em> could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on <em>datasetd</em>’s predictable URL paths. That would require a robust understanding of the front end web server, it’s access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
 </p>
 <h2 id="configuration">
 Configuration
 </h2>
 <p>
-<strong>datasetd</strong> can make one or more dataset collections visible over HTTP/HTTPS. The dataset collections hosted need to be avialable on the same file system as where <strong>datasetd</strong> is running. <strong>datasetd</strong> is configured by reading a “settings.json” file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
+<em>datasetd</em> can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where <em>datasetd</em> is running. <em>datasetd</em> is configured by reading a “settings.json” file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
 </p>
 <p>
 The “settings.json” file has the following structure
@@ -94,19 +94,19 @@ The sub-paths correspond to their counter parts in the dataset command line tool
 Running datasetd
 </h2>
 <p>
-<strong>datasetd</strong> runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP. You should only run <strong>datasetd</strong> on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by <strong>datasetd</strong> regardless of the file permissions they may in their account.
+<em>datasetd</em> runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP. You should only run <em>datasetd</em> on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by <em>datasetd</em> regardless of the file permissions they may in their account.
 </p>
 <p>
-Example: If all dataset collections are in a directory only allowed access to be the “web-data” user but another users on the machine have access to cURL they can access the dataset collections based on the rights of the “web-data” user by access the HTTP service. This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run <strong>datasetd</strong>.
+Example: If all dataset collections are in a directory only allowed access to be the “web-data” user but another users on the machine have access to curl they can access the dataset collections based on the rights of the “web-data” user by access the HTTP service. This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run <em>datasetd</em>.
 </p>
 <p>
-<strong>datasetd</strong> should NOT be used to store confidential, sensitive or secret information.
+<em>datasetd</em> should NOT be used to store confidential, sensitive or secret information.
 </p>
 <h2 id="supported-features">
 Supported Features
 </h2>
 <p>
-<strong>datasetd</strong> provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
+<em>datasetd</em> provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
 </p>
 <ol type="1">
 <li>
@@ -190,25 +190,25 @@ If I have a settings file for “recipes” based on the collection “recipes.d
     }
 }</code></pre>
 <p>
-I would start <strong>datasetd</strong> with the following command line.
+I would start <em>datasetd</em> with the following command line.
 </p>
 <pre class="shell"><code>    datasetd settings.json</code></pre>
 <p>
 This would display the start up message and log output of the service.
 </p>
 <p>
-In another shell session I could then use cURL to list the keys and read a record. In this example I assume that “waffles” is a JSON document in dataset collection “recipes.ds”.
+In another shell session I could then use curl to list the keys and read a record. In this example I assume that “waffles” is a JSON document in dataset collection “recipes.ds”.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485/recipies/read/waffles</code></pre>
 <p>
 This would return the “waffles” JSON document or a 404 error if the document was not found.
 </p>
 <p>
-Listing the keys for “recipes.ds” could be done with this cURL command.
+Listing the keys for “recipes.ds” could be done with this curl command.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485/recipies/keys</code></pre>
 <p>
-This would return a list of keys, one per line. You could show all JSON documents in the collection be retrieving a list of keys and iterating over them using cURL. Here’s a simple example in Bash.
+This would return a list of keys, one per line. You could show all JSON documents in the collection be retrieving a list of keys and iterating over them using curl. Here’s a simple example in Bash.
 </p>
 <pre class="shell"><code>    for KEY in $(curl http://localhost:8485/recipes/keys); do
        curl &quot;http://localhost/8485/recipe/read/${KEY}&quot;
@@ -224,7 +224,7 @@ Add a new JSON object to a collection.
 Online Documentation
 </h2>
 <p>
-<strong>datasetd</strong> provide documentation as plain text output via request to the service end points without parameters. Continuing with our “recipes” example. Try the following URLs with cURL.
+<em>datasetd</em> provide documentation as plain text output via request to the service end points without parameters. Continuing with our “recipes” example. Try the following URLs with curl.
 </p>
 <pre><code>    curl http://localhost:8485
     curl http://localhost:8485/recipes
@@ -239,11 +239,11 @@ Online Documentation
 End points
 </h2>
 <p>
-The following end points are supported by <strong>datasetd</strong>
+The following end points are supported by <em>datasetd</em>
 </p>
 <ul>
 <li>
-<code>/</code> returns documentation for <strong>datasetd</strong>
+<code>/</code> returns documentation for <em>datasetd</em>
 </li>
 <li>
 <code>/collections</code> returns a list of available collections.

@@ -1,5 +1,5 @@
-Documentation for dataset
-=========================
+dataset
+=======
 
 The documentation is organized around the command line options 
 and as a series of "how to" style examples.
@@ -76,7 +76,7 @@ Collection health
 - [repair](repair.html) - repairs/upgrades a collection based on the current version of the tool
 
 Dataset as a web service
-------------------------
+========================
 
 New as of version v2.x is a web service providing access to dataset
 collections. This is described in the [datasetd](datasetd.html) 

@@ -57,10 +57,10 @@ The Dataset Project provides tools for working with collections of JSON Object d
 dataset command line tool
 </h2>
 <p>
-<a href="doc/dataset.html">dataset</a> is a command line tool for working with collections of <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> objects. Collections are stored on the file system. JSON objects are stored in collections as plain UTF-8 text files. This means the objects can be accessed with common Unix text processing tools as well as most programming languages.
+<a href="doc/dataset.html">dataset</a> is a command line tool for working with collections of <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> objects. Collections are stored on the file system. JSON objects are stored in collections as plain UTF-8 text files. This means the objects can be accessed with common <a href="https://en.wikipedia.org/wiki/Unix">Unix</a> text processing tools as well as most programming languages.
 </p>
 <p>
-The <em>dataset</em> command line tool supports common data management operations such as initialization of collections; document creation, reading, updating and deleting; listing keys of JSON objects in the collection and non-JSON documents (attachments) associated with specific JSON documents in the collection.
+The <em>dataset</em> command line tool supports common data management operations such as initialization of collections; document creation, reading, updating and deleting; listing keys of JSON objects in the collection; and associating non-JSON documents (attachments) with specific JSON documents in the collection.
 </p>
 <h3 id="enhanced-features-include">
 enhanced features include
@@ -120,7 +120,7 @@ Object level actions
 <a href="docs/update.html">update</a>
 </li>
 <li>
-<a href="docs/delete.html">delete</a>)
+<a href="docs/delete.html">delete</a>
 </li>
 <li>
 Documents attachments
@@ -176,7 +176,7 @@ Object level actions
 <a href="docs/update.html">update</a>
 </li>
 <li>
-<a href="docs/delete.html">delete</a>)
+<a href="docs/delete.html">delete</a>
 </li>
 <li>
 Documents attachments
@@ -206,10 +206,7 @@ Limitations of <em>dataset</em> and <em>datasetd</em>
 </p>
 <ul>
 <li>
-it is not a multi-process, multi-user data store (it stores files on the file system out our system wide locking)
-</li>
-<li>
-it is not a replacement for a repository management system
+it is not a multi-process, multi-user data store
 </li>
 <li>
 it is not a general purpose database system
@@ -221,7 +218,10 @@ it does not supply automatic version control on collections, objects or attachme
 it stores all keys to lower case in order to deal with file systems that are not case sensitive
 </li>
 <li>
-it does not have a built-in query language for filtering or sorting
+it does not have a built-in query language, search or sorting
+</li>
+<li>
+it should NOT be used for sensitive or secret information
 </li>
 </ul>
 <p>
@@ -232,13 +232,19 @@ it does not have a built-in query language for filtering or sorting
 it is not a RESTful service
 </li>
 <li>
-it does not support a query language, search, filtering or sorting
+it does not include support for authentication
+</li>
+<li>
+it does not support a query language, search or sorting
 </li>
 <li>
 it does not support data frames
 </li>
 <li>
-it does not support access control by users or roles or specific documents- it does not provide auto key generation or versioning
+it does not support access control by users or roles
+</li>
+<li>
+it does not provide auto key generation or versioning
 </li>
 <li>
 it limits the size of JSON documents stored to less than 1 MiB
@@ -250,7 +256,7 @@ it limits the size of attachment files to less than 250 MiB
 it does not support partial JSON record updates or retrieval
 </li>
 <li>
-it does not provide a Web UI for working interactively with dataset collections
+it does not provide an interactive Web UI for working with dataset collections
 </li>
 <li>
 it does not support HTTPS or “at rest” encryption
