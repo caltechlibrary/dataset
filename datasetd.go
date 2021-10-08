@@ -252,12 +252,15 @@ func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string,
 	if len(args) != 3 {
 		return 400, fmt.Errorf("Bad Request")
 	}
-	key, semver, filename := args[0], args[1], args[2]
+	//key, semver, filename := args[0], args[1], args[2]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "POST" {
 		return 405, fmt.Errorf(`Method Not Allowed
-%s %s
-`, r.Method, contentType)
+%s %s`, r.Method, contentType)
+	}
+	if contentType != "application/octet-stream" {
+		return 415, fmt.Errorf(`Unsupported Media Type
+%s %s`, r.Method, contentType)
 	}
 	_, ok := config.Collections[collectionID]
 	if ok == false || config.Collections[collectionID].DS == nil {
@@ -265,26 +268,21 @@ func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string,
 %s %s
 `, r.Method, contentType)
 	}
-	ds := config.Collections[collectionID].DS
 
-	r.ParseMultipartForm(attachmentSizeLimit)
-	fp, _, err := r.FormFile("filename")
-	if err != nil {
-		return 400, fmt.Errorf(`Bad request
-Multipart form: %s %s %s
+	//FIXME decide how I want to handle upload.
+	/*
+			ds := config.Collections[collectionID].DS
+			if err := ds.AttachStream(key, semver, filename, fp); err != nil {
+				return 507, fmt.Errorf(`Insufficient Storage
+						   Multipart form: %s %s
 
-%s
-`, key, semver, filename, err)
-	}
-	defer fp.Close()
-	if err = ds.AttachStream(key, semver, filename, fp); err != nil {
-		return 507, fmt.Errorf(`Insufficient Storage
-Multipart form: %s %s
-
-%s
-`, key, semver, err)
-	}
-	return 200, nil
+						   %s
+		`, key, semver, err)
+			}
+			return 200, nil
+	*/
+	log.Printf("attachEndPoint() not implemented")
+	return 501, fmt.Errorf("Not Implemented")
 }
 
 func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
@@ -293,8 +291,33 @@ func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID strin
 }
 
 func pruneEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
-	log.Printf("pruneEndPoint() not implemented")
-	return 501, fmt.Errorf("Not Implemented")
+	if len(args) == 0 || args[0] == "" {
+		return packageDocument(w, attachDocument(collectionID))
+	}
+	if len(args) != 3 {
+		return 400, fmt.Errorf("Bad Request")
+	}
+	key, semver, filename := args[0], args[1], args[2]
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "GET" {
+		return 405, fmt.Errorf(`Method Not Allowed
+%s %s`, r.Method, contentType)
+	}
+	_, ok := config.Collections[collectionID]
+	if ok == false || config.Collections[collectionID].DS == nil {
+		return 400, fmt.Errorf(`Bad Request
+%s %s
+`, r.Method, contentType)
+	}
+	ds := config.Collections[collectionID].DS
+	if err := ds.Prune(key, semver, filename); err != nil {
+		return 500, fmt.Errorf(`Internal Server Error
+cannot prune %s %s %s
+
+%s
+`, key, semver, filename, err)
+	}
+	return packageDocument(w, fmt.Sprintf("OK, pruned %s %s %s", key, semver, filename))
 }
 
 //
