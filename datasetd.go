@@ -68,17 +68,18 @@ func collectionsEndPoint(w http.ResponseWriter, r *http.Request) (int, error) {
 
 //
 // End Point handlers (route as defined `/<COLLECTION_ID>/<END-POINT>`,
-// or `/<COLLECTION_ID/<END-POINT>/<KEY>`)
+// `/<COLLECTION_ID/<END-POINT>/<KEY>` or
+// `/COLLECTION_ID/<END-POINT>/<KEY>/<SEMVER>`)
 //
 
-func keysEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+func keysEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "GET" {
 		return 405, fmt.Errorf(`Method Not Allowed
 %s %s`, r.Method, contentType)
 	}
 	_, ok := config.Collections[collectionID]
-	if ok == false {
+	if ok == false || config.Collections[collectionID].DS == nil {
 		return 400, fmt.Errorf("Bad Request")
 	}
 	ds := config.Collections[collectionID].DS
@@ -93,10 +94,11 @@ func keysEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, k
 	return packageJSON(w, collectionID, src, err)
 }
 
-func createEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	if key == "" {
+func createEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if len(args) == 0 || args[0] == "" {
 		return packageDocument(w, createDocument(collectionID))
 	}
+	key := args[0]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "POST" {
 		return 405, fmt.Errorf(`Method Not Allowed
@@ -140,10 +142,11 @@ cannot create %s
 	return 201, nil
 }
 
-func readEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	if key == "" {
+func readEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if len(args) == 0 || args[0] == "" {
 		return packageDocument(w, readDocument(collectionID))
 	}
+	key := args[0]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "GET" {
 		return 405, fmt.Errorf(`Method Not Allowed
@@ -167,10 +170,11 @@ func readEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, k
 	return packageJSON(w, collectionID, src, err)
 }
 
-func updateEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	if key == "" {
+func updateEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if len(args) == 0 || args[0] == "" {
 		return packageDocument(w, createDocument(collectionID))
 	}
+	key := args[0]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "POST" {
 		return 405, fmt.Errorf(`Method Not Allowed
@@ -215,10 +219,11 @@ cannot update %s
 	return packageDocument(w, fmt.Sprintf("OK, updated %s", key))
 }
 
-func deleteEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	if key == "" {
+func deleteEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if len(args) == 0 || args[0] == "" {
 		return packageDocument(w, createDocument(collectionID))
 	}
+	key := args[0]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "GET" {
 		return 405, fmt.Errorf(`Method Not Allowed
@@ -240,42 +245,54 @@ cannot delete %s
 	return packageDocument(w, fmt.Sprintf("OK, deleted %s", key))
 }
 
-func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	if key == "" {
+func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if len(args) == 0 || args[0] == "" {
 		return packageDocument(w, attachDocument(collectionID))
 	}
+	if len(args) != 3 {
+		return 400, fmt.Errorf("Bad Request")
+	}
+	key, semver, filename := args[0], args[1], args[2]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "POST" {
 		return 405, fmt.Errorf(`Method Not Allowed
 %s %s
 `, r.Method, contentType)
 	}
-	if contentType != `multipart/form-data` {
-		return 415, fmt.Errorf(`Unsupported Media Type
-%s %s
-`, r.Method, contentType)
-	}
 	_, ok := config.Collections[collectionID]
-	if ok == false {
+	if ok == false || config.Collections[collectionID].DS == nil {
 		return 400, fmt.Errorf(`Bad Request
 %s %s
 `, r.Method, contentType)
 	}
-	log.Printf("attachEndPoint() not implemented")
-	return 501, fmt.Errorf("Not Implemented")
+	ds := config.Collections[collectionID].DS
+
+	r.ParseMultipartForm(attachmentSizeLimit)
+	fp, _, err := r.FormFile("filename")
+	if err != nil {
+		return 400, fmt.Errorf(`Bad request
+Multipart form: %s %s %s
+
+%s
+`, key, semver, filename, err)
+	}
+	defer fp.Close()
+	if err = ds.AttachStream(key, semver, filename, fp); err != nil {
+		return 507, fmt.Errorf(`Insufficient Storage
+Multipart form: %s %s
+
+%s
+`, key, semver, err)
+	}
+	return 200, nil
 }
 
-func attachmentsEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
-	log.Printf("attachmentsEndPoint() not implemented")
-	return 501, fmt.Errorf("Not Implemented")
-}
-
-func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
 	log.Printf("retrieveEndPoint() not implemented")
 	return 501, fmt.Errorf("Not Implemented")
 }
 
-func pruneEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+func pruneEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
 	log.Printf("pruneEndPoint() not implemented")
 	return 501, fmt.Errorf("Not Implemented")
 }
@@ -321,19 +338,19 @@ func routeEndPoints(w http.ResponseWriter, r *http.Request) (int, error) {
 		return packageDocument(w, strings.ReplaceAll(readmeDocument(), "<COLLECTION_ID>", args[0]))
 	}
 	// Expected URL structure of `/<COLLECTION_ID>/<END-POINT>/<KEY>`
-	collectionID, endPoint, key := "", "", ""
+	collectionID, endPoint := "", ""
 	if len(args) == 2 {
-		collectionID, endPoint, key = args[0], args[1], ""
-	} else {
-		collectionID, endPoint, key = args[0], args[1], args[2]
+		collectionID, endPoint, args = args[0], args[1], []string{}
+	} else if len(args) > 2 {
+		collectionID, endPoint, args = args[0], args[1], args[2:]
 	}
 	if routes, hasCollection := config.Routes[collectionID]; hasCollection == true {
 		// Confirm we have a route
 		if fn, hasRoute := routes[endPoint]; hasRoute == true {
-			return fn(w, r, collectionID, key)
+			return fn(w, r, collectionID, args)
 		}
 	}
-	return 404, fmt.Errorf("Not Found")
+	return 404, fmt.Errorf("Not Found (end point not found)")
 }
 
 func api(w http.ResponseWriter, r *http.Request) {
@@ -379,13 +396,13 @@ func InitDatasetAPI(settings string) error {
 		return fmt.Errorf("Failed to generate a valid configuration")
 	}
 	if config.Routes == nil {
-		config.Routes = map[string]map[string]func(http.ResponseWriter, *http.Request, string, string) (int, error){}
+		config.Routes = map[string]map[string]func(http.ResponseWriter, *http.Request, string, []string) (int, error){}
 	}
 	// Now setup the routes for each collection.
 	for collectionID, cfg := range config.Collections {
 		// Initialize the map.
 		if config.Routes[collectionID] == nil {
-			config.Routes[collectionID] = map[string]func(http.ResponseWriter, *http.Request, string, string) (int, error){}
+			config.Routes[collectionID] = map[string]func(http.ResponseWriter, *http.Request, string, []string) (int, error){}
 		}
 		// Add routes (end points) for the target repository
 		if cfg.Keys {
@@ -402,6 +419,15 @@ func InitDatasetAPI(settings string) error {
 		}
 		if cfg.Delete {
 			config.Routes[collectionID]["delete"] = deleteEndPoint
+		}
+		if cfg.Attach {
+			config.Routes[collectionID]["attach"] = attachEndPoint
+		}
+		if cfg.Retrieve {
+			config.Routes[collectionID]["retrieve"] = retrieveEndPoint
+		}
+		if cfg.Prune {
+			config.Routes[collectionID]["prune"] = pruneEndPoint
 		}
 	}
 	return nil

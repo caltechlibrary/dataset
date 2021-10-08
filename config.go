@@ -23,18 +23,21 @@ type Config struct {
 	Collections map[string]*Settings `json:"collections,required"`
 
 	// Routes are mappings of collections to supported routes.
-	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, string, string) (int, error) `json:"-"`
+	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, string, []string) (int, error) `json:"-"`
 }
 
 // Settings holds the specific settings for a collection.
 type Settings struct {
-	CName  string      `json:"dataset,required"`
-	Keys   bool        `json:"keys" default:"false"`
-	Create bool        `json:"create" default:"false"`
-	Read   bool        `json:"read" default:"false"`
-	Update bool        `json:"update" default:"false"`
-	Delete bool        `json:"delete" default:"false"`
-	DS     *Collection `json:"-"`
+	CName    string      `json:"dataset,required"`
+	Keys     bool        `json:"keys" default:"false"`
+	Create   bool        `json:"create" default:"false"`
+	Read     bool        `json:"read" default:"false"`
+	Update   bool        `json:"update" default:"false"`
+	Delete   bool        `json:"delete" default:"false"`
+	Attach   bool        `json:"attach" default:"false"`
+	Retrieve bool        `json:"retrieve" default:"false"`
+	Prune    bool        `json:"prune" default:"false"`
+	DS       *Collection `json:"-"`
 }
 
 func (config *Config) String() string {
@@ -60,7 +63,6 @@ func LoadConfig(fname string) (*Config, error) {
 	if len(config.Collections) == 0 {
 		return nil, fmt.Errorf("No collections defined in %s", fname)
 	}
-	//FIXME: check and make sure defaults makes sense.
 	for collectionID, settings := range config.Collections {
 		if settings.CName == "" {
 			return nil, fmt.Errorf("Settings for %q missing dataset path", collectionID)

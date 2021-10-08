@@ -186,11 +186,14 @@ end points support the GET method exclusively.
 - `/COLLECTION_ID>/update/<KEY>` requires the POST method with content type header of "application/json". It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
 - `/<COLLECTION_ID>/delete` returns documentation on the "delete" end point
 - `/COLLECTION_ID>/delete/<KEY>` requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
+
+JSON document attachments:
+
 - `/<COLLECTION_ID>/attach` returns documentation on attaching a file to a JSON document in the collection.
-- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>` requires a POST method and expects a multi-part web form providing the filename. The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`. See https://semver.org/ for more information on semantic version numbers.
+- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>` requires a POST method and expects a multi-part web form providing the filename in the field "filaname". The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`. See https://semver.org/ for more information on semantic version numbers.
 - `/<COLLECTION_ID>/retrieve` returns documentation on how to retrieve a versioned attachment from a JSON document.
-- `/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>` returns the versioned attachment from a JSON document or an HTTP error if that fails
+- `/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>/<FILENAME>` returns the versioned attachment from a JSON document or an HTTP error if that fails
 - `/<COLLECTION_ID>/prune` removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
-- `/<COLLECTION_ID>/prune/<KEY>/<SEMVER>` removes a versioned attachment from a JSON document.
+- `/<COLLECTION_ID>/prune/<KEY>/<SEMVER>/<FILENAME>` removes a versioned attachment from a JSON document.
 
 
