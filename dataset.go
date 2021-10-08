@@ -301,7 +301,13 @@ func openCollection(name string) (*Collection, error) {
 	pidLock := path.Join(name, "lock.pid")
 	if _, err := os.Stat(pidLock); err == nil {
 		src, _ := ioutil.ReadFile(pidLock)
-		return nil, fmt.Errorf("%s is in use by process %s", name, src)
+		pid, err := strconv.Atoi(string(src))
+		if err != nil {
+			return nil, fmt.Errorf("Lock file exists for %s, cannot determine process id", name)
+		}
+		if os.Getpid() != pid {
+			return nil, fmt.Errorf("%s is in use by process %s", name, src)
+		}
 	}
 	pid := os.Getpid()
 	if err := ioutil.WriteFile(pidLock, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
@@ -356,8 +362,13 @@ func (c *Collection) DocPath(name string) (string, error) {
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
 	if c != nil {
-		pidLock := path.Join(c.Name, "lock.pid")
-		os.Remove(pidLock)
+		dName := collectionNameAsPath(c.Name)
+		lockName := path.Join(dName, "lock.pid")
+		if _, err := os.Stat(lockName); os.IsNotExist(err) == false {
+			if err := os.Remove(lockName); err != nil {
+				return fmt.Errorf("WARNING: could not remove %s, %s\n", lockName, err)
+			}
+		}
 		c.Name = ""
 		c.workPath = ""
 		c.KeyMap = map[string]string{}

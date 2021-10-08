@@ -17,9 +17,13 @@ const (
 	timestamp = "2006-01-02 15:04:05"
 	datestamp = "2006-01-02"
 
-	// sizeLimit is the maximum size JSON object we'll accept via
+	// jsonSizeLimit is the maximum size JSON object we'll accept via
 	// our service. Current 1 MB (2^20)
-	sizeLimit = 1048576
+	jsonSizeLimit = 1048576
+
+	// attachmentSizeLimit is the maximum size of Attachments we'll
+	// accept via our service. Current 250 MiB
+	attachmentSizeLimit = (jsonSizeLimit * 250)
 )
 
 var (
@@ -107,7 +111,7 @@ func createEndPoint(w http.ResponseWriter, r *http.Request, collectionID string,
 		return 400, fmt.Errorf(`Bad Request
 %s %s`, r.Method, contentType)
 	}
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, sizeLimit))
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, jsonSizeLimit))
 	if err != nil {
 		return 400, fmt.Errorf(`Bad Request
 cannot read request body for %s
@@ -184,7 +188,7 @@ func updateEndPoint(w http.ResponseWriter, r *http.Request, collectionID string,
 %s %s
 `, r.Method, contentType)
 	}
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, sizeLimit))
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, jsonSizeLimit))
 	if err != nil {
 		return 400, fmt.Errorf(`Bad Request
 cannot read request body for %s
@@ -234,6 +238,26 @@ cannot delete %s
 `, key, err)
 	}
 	return packageDocument(w, fmt.Sprintf("OK, deleted %s", key))
+}
+
+func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+	log.Printf("attachEndPoint() not implemented")
+	return 501, fmt.Errorf("Not Implemented")
+}
+
+func attachmentsEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+	log.Printf("attachmentsEndPoint() not implemented")
+	return 501, fmt.Errorf("Not Implemented")
+}
+
+func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+	log.Printf("retrieveEndPoint() not implemented")
+	return 501, fmt.Errorf("Not Implemented")
+}
+
+func pruneEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, key string) (int, error) {
+	log.Printf("pruneEndPoint() not implemented")
+	return 501, fmt.Errorf("Not Implemented")
 }
 
 //

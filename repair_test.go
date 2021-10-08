@@ -102,11 +102,19 @@ func TestRepair(t *testing.T) {
 		t.FailNow()
 	}
 	c.Close()
+	lockName := path.Join(cName, "lock.pid")
+	if _, err := os.Stat(lockName); os.IsNotExist(err) == false {
+		t.Errorf("Close is not removing lock for %s, aborting test", cName)
+		t.FailNow()
+	}
+
 	err = Repair(cName, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+
+	c.Close()
 	c, err = openCollection(cName)
 	if err != nil {
 		t.Errorf("%s", err)
