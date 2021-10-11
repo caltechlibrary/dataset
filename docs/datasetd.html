@@ -158,7 +158,7 @@ must be a GET request
 </ul>
 </li>
 <li>
-attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB
+attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB. The POST must be a multi-part encoded web form where the upload name is identified as “filename” in the form and the URL path identifies the name to use for the saved attachment.
 </li>
 <li>
 retrieve allows you to download an versioned attachment from a JSON document
@@ -253,7 +253,7 @@ The following end points are supported by <em>datasetd</em>
 The following end points are per colelction. They are available for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.
 </p>
 <p>
-The terms <code>&lt;COLLECTION_ID&gt;</code>, <code>&lt;KEY&gt;</code> and <code>&lt;SEMVER&gt;</code> refer to the collection path, the string representing the “key” to a JSON document and semantic version number for attachment. Unless specified end points support the GET method exclusively.
+The terms “<COLLECTION_ID>”, “<KEY>” and “<SEMVER>” refer to the collection path, the string representing the “key” to a JSON document and semantic version number for attachment. Unless specified end points support the GET method exclusively.
 </p>
 <ul>
 <li>
@@ -263,25 +263,25 @@ The terms <code>&lt;COLLECTION_ID&gt;</code>, <code>&lt;KEY&gt;</code> and <code
 <code>/&lt;COLLECTION_ID&gt;/keys</code> returns a list of keys available in the collection
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/create</code> returns documentation on the “create” end point
+<code>/&lt;COLLECTION_ID&gt;/create</code> returns documentation on the <code>create</code> end point
 </li>
 <li>
-<code>/&lt;COLLECTION_IO&gt;/create/&lt;KEY&gt;</code> requires the POST method with content type header of “application/json”. It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
+<code>/&lt;COLLECTION_IO&gt;/create/&lt;KEY&gt;</code> requires the POST method with content type header of <code>application/json</code>. It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/read</code> returns documentation on the “read” end point
+<code>/&lt;COLLECTION_ID&gt;/read</code> returns documentation on the <code>read</code> end point
 </li>
 <li>
 <code>/&lt;COLLECTION_ID&gt;/read/&lt;KEY&gt;</code> returns a JSON object for key or a HTTP error
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/update</code> returns documentation on the “update” end point
+<code>/&lt;COLLECTION_ID&gt;/update</code> returns documentation on the <code>update</code> end point
 </li>
 <li>
-<code>/COLLECTION_ID&gt;/update/&lt;KEY&gt;</code> requires the POST method with content type header of “application/json”. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
+<code>/COLLECTION_ID&gt;/update/&lt;KEY&gt;</code> requires the POST method with content type header of <code>application/json</code>. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/delete</code> returns documentation on the “delete” end point
+<code>/&lt;COLLECTION_ID&gt;/delete</code> returns documentation on the <code>delete</code> end point
 </li>
 <li>
 <code>/COLLECTION_ID&gt;/delete/&lt;KEY&gt;</code> requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
@@ -290,19 +290,19 @@ The terms <code>&lt;COLLECTION_ID&gt;</code>, <code>&lt;KEY&gt;</code> and <code
 <code>/&lt;COLLECTION_ID&gt;/attach</code> returns documentation on attaching a file to a JSON document in the collection.
 </li>
 <li>
-<code>/COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;</code> requires a POST method and expects a content type of “application/octet-stream”. Both key and semver (semantic version number) are required. See https://semver.org/ for more information on semantic version numbers.
+<code>/COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code> requires a POST method and expects a multi-part web form providing the filename in the <code>filename</code> field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by <code>&lt;KEY&gt;</code> in sub directory indicated by <code>&lt;SEMVER&gt;</code>. See https://semver.org/ for more information on semantic version numbers.
 </li>
 <li>
 <code>/&lt;COLLECTION_ID&gt;/retrieve</code> returns documentation on how to retrieve a versioned attachment from a JSON document.
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/retrieve/&lt;KEY&gt;/&lt;SEMVER&gt;</code> returns the versioned attachment from a JSON document or an HTTP error if that fails
+<code>/&lt;COLLECTION_ID&gt;/retrieve/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code> returns the versioned attachment from a JSON document or an HTTP error if that fails
 </li>
 <li>
 <code>/&lt;COLLECTION_ID&gt;/prune</code> removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/prune/&lt;KEY&gt;/&lt;SEMVER&gt;</code> removes a versioned attachment from a JSON document.
+<code>/&lt;COLLECTION_ID&gt;/prune/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code> removes a versioned attachment from a JSON document.
 </li>
 </ul>
 </section>

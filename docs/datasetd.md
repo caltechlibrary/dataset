@@ -1,10 +1,11 @@
+
 Datasetd
 ========
 
 Overview
 --------
 
-_datasetd_ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. _datasetd_ does support multi-process/asynchronous update to a dataset collection. 
+_datasetd_ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. _datasetd_ does support multi-process/asynchronous update to a dataset collection.
 
 _datasetd_ is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). _datasetd_ is a simple, miminal service.
 
@@ -13,7 +14,7 @@ NOTE: You could run _datasetd_ could be combined with a front end web service li
 Configuration
 -------------
 
-_datasetd_ can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where _datasetd_ is running. _datasetd_ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.  
+_datasetd_ can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where _datasetd_ is running. _datasetd_ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
 
 The "settings.json" file has the following structure
 
@@ -67,7 +68,7 @@ _datasetd_ provides a limitted subset of actions supportted by the standard dats
     - must be a GET request
 6. collections (list as a JSON array of objects the collections avialable)
     - must be a GET request
-7. attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB
+7. attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB. The POST must be a multi-part encoded web form where the upload name is identified as "filename" in the form and the URL path identifies the name to use for the saved attachment.
 8. retrieve allows you to download an versioned attachment from a JSON document
 9. prune removes versioned attachments from a JSON document
 
@@ -114,7 +115,7 @@ in dataset collection "recipes.ds".
     curl http://localhost:8485/recipies/read/waffles
 ```
 
-This would return the "waffles" JSON document or a 404 error if the 
+This would return the "waffles" JSON document or a 404 error if the
 document was not found.
 
 Listing the keys for "recipes.ds" could be done with this curl command.
@@ -164,33 +165,30 @@ to the service end points without parameters. Continuing with our
 End points
 ----------
 
-The following end points are supported by _datasetd_ 
+The following end points are supported by _datasetd_
 
 - `/` returns documentation for _datasetd_
 - `/collections` returns a list of available collections.
 
 The following end points are per colelction. They are available
-for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types. 
+for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.
 
-The terms `<COLLECTION_ID>`, `<KEY>` and `<SEMVER>` refer to 
+The terms "<COLLECTION_ID>", "<KEY>" and "<SEMVER>" refer to
 the collection path, the string representing the "key" to a JSON document and semantic version number for attachment. Unless specified
 end points support the GET method exclusively.
 
 - `/<COLLECTION_ID>` returns general dataset documentation with some tailoring to the collection.
 - `/<COLLECTION_ID>/keys` returns a list of keys available in the collection
-- `/<COLLECTION_ID>/create` returns documentation on the "create" end point
-- `/<COLLECTION_IO>/create/<KEY>` requires the POST method with content type header of "application/json". It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
-- `/<COLLECTION_ID>/read` returns documentation on the "read" end point
+- `/<COLLECTION_ID>/create` returns documentation on the `create` end point
+- `/<COLLECTION_IO>/create/<KEY>` requires the POST method with content type header of `application/json`. It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
+- `/<COLLECTION_ID>/read` returns documentation on the `read` end point
 - `/<COLLECTION_ID>/read/<KEY>` returns a JSON object for key or a HTTP error
-- `/<COLLECTION_ID>/update` returns documentation on the "update" end point
-- `/COLLECTION_ID>/update/<KEY>` requires the POST method with content type header of "application/json". It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
-- `/<COLLECTION_ID>/delete` returns documentation on the "delete" end point
+- `/<COLLECTION_ID>/update` returns documentation on the `update` end point
+- `/COLLECTION_ID>/update/<KEY>` requires the POST method with content type header of `application/json`. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
+- `/<COLLECTION_ID>/delete` returns documentation on the `delete` end point
 - `/COLLECTION_ID>/delete/<KEY>` requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
-
-JSON document attachments:
-
 - `/<COLLECTION_ID>/attach` returns documentation on attaching a file to a JSON document in the collection.
-- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>` requires a POST method and expects a multi-part web form providing the filename in the field "filaname". The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`. See https://semver.org/ for more information on semantic version numbers.
+- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>` requires a POST method and expects a multi-part web form providing the filename in the `filename` field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`. See https://semver.org/ for more information on semantic version numbers.
 - `/<COLLECTION_ID>/retrieve` returns documentation on how to retrieve a versioned attachment from a JSON document.
 - `/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>/<FILENAME>` returns the versioned attachment from a JSON document or an HTTP error if that fails
 - `/<COLLECTION_ID>/prune` removes a versioned attachment from a JSON document or returns an HTTP error if that fails.

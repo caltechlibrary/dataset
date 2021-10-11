@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
+</ul>
+</nav>
+
+<section>
+<h1 id="read-end-point">
+Read (end point)
+</h1>
+<p>
+Interacting with the <strong>datasetd</strong> web service can be done with any web client. For documentation purposes I am assuming you are using <a href="https://curl.se/">curl</a>. This command line program is available on most POSIX systems including Linux, macOS and Windows.
+</p>
+<p>
+Retrieve a JSON document from a collection.
+</p>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/read/&lt;KEY&gt;`</code></pre>
+<p>
+Requires a “GET” HTTP method.
+</p>
+<p>
+Returns the JSON document for given <code>&lt;KEY&gt;</code> found in <code>&lt;COLLECTION_ID&gt;</code> or a HTTP error if not found.
+</p>
+<h2 id="example">
+Example
+</h2>
+<p>
+Curl accessing “t1” with a key of “one”
+</p>
+<pre class="shell"><code>    curl http://localhost:8485/t1/read/one</code></pre>
+<p>
+An example JSON document (this example happens to have an attachment) returned.
+</p>
+<pre><code>{
+   &quot;_Attachments&quot;: [
+      {
+         &quot;checksums&quot;: {
+            &quot;0.0.1&quot;: &quot;bb327f7bcca0f88649f1c6acfdc0920f&quot;
+         },
+         &quot;created&quot;: &quot;2021-10-11T11:09:51-07:00&quot;,
+         &quot;href&quot;: &quot;T1.ds/pairtree/on/e/0.0.1/a1.png&quot;,
+         &quot;modified&quot;: &quot;2021-10-11T11:09:51-07:00&quot;,
+         &quot;name&quot;: &quot;a1.png&quot;,
+         &quot;size&quot;: 32511,
+         &quot;sizes&quot;: {
+            &quot;0.0.1&quot;: 32511
+         },
+         &quot;version&quot;: &quot;0.0.1&quot;,
+         &quot;version_hrefs&quot;: {
+            &quot;0.0.1&quot;: &quot;T1.ds/pairtree/on/e/0.0.1/a1.png&quot;
+         }
+      }
+   ],
+   &quot;_Key&quot;: &quot;one&quot;,
+   &quot;four&quot;: &quot;four&quot;,
+   &quot;one&quot;: 1,
+   &quot;three&quot;: 3,
+   &quot;two&quot;: 2
+}</code></pre>
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

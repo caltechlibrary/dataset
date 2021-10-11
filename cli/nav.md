@@ -1,8 +1,12 @@
 
 + [Home](/)
-+ [README](index.html)
-+ [LICENSE](license.html)
-+ [INSTALL](install.html)
-+ [Documentation](docs/)
-+ [Github](https://github.com/caltechlibrary/pkgassets)
++ [Up](../)
++ [README](../)
++ [LICENSE](../license.html)
++ [INSTALL](../install.html)
++ [Documentation](../docs/)
++ [Tutorials](../how-to/)
++ [Topics](topics.html)
++ [Github](https://github.com/caltechlibrary/dataset)
++ [Releases](https://github.com/caltechlibrary/dataset/releases/)
 

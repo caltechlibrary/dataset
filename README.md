@@ -31,7 +31,7 @@ Design choices
 
 _dataset_ and _datasetd_ are intended to be simple tools for managing collections JSON object documents in a predictable structured way. 
 
-_dataset_ and _datasetd_ are guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on Unix command line. _dataset_ is intended to be simple to use with minimal setup (e.g.  `dataset init mycollection.ds` creates a new collection called 'mycollection.ds'). 
+_dataset_ and _datasetd_ are guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on the Unix command line. _dataset_ is intended to be simple to use with minimal setup (e.g.  `dataset init mycollection.ds` creates a new collection called 'mycollection.ds'). 
 - _dataset_ and _datasetd_ store JSON object documents in collections
     - collections are folder(s) containing
         - collection.json metadata file describing the collection and keys
@@ -39,14 +39,13 @@ _dataset_ and _datasetd_ are guided by the idea that you should be able to work 
         - non-JSON attachments can be associated with a JSON document and found in a semver (semantic version number) named sub directory
 
 
-The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string
-operations and a JSON encoding and decoding. The current implementation is in the Go language.
+The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current implementation is in the Go language.
 
 
 Features
 --------
 
-[dataset](docs/dataset) supports 
+[dataset](docs/dataset.html) supports 
 
 - Listing [Keys](docs/keys.html) in a collection
 - Object level actions
@@ -54,7 +53,7 @@ Features
     - [read](docs/read.html)
     - [update](docs/update.html)
     - [delete](docs/delete.html)
-    - Documents attachments
+    - Documents as attachments
         - [attach](docs/attach.html)
         - [retrieve](docs/retrieve.html)
         - [prune](docs/prune.html)
@@ -63,21 +62,21 @@ Features
 - The ability to create data [frames](docs/frame.html) from while collections or based on keys lists
     - frames are defined using [dot paths](docs/dotpath.html) describing what is to be pulled out of a stored JSON objects
 
-[datasetd](docs/datasetd) supports
+[datasetd](docs/datasetd.html) supports
 
-- List collections available from the web service
-- List collection [Keys](docs/keys.html)
+- List [collections](docs/collections-endpoint.html) available from the web service
+- List a collection's [Keys](docs/keys.html)
 - Object level actions
-    - [create](docs/create.html)
-    - [read](docs/read.html)
-    - [update](docs/update.html)
-    - [delete](docs/delete.html)
-    - Documents attachments
-        - [attach](docs/attach.html)
-        - [retrieve](docs/retrieve.html)
-        - [prune](docs/prune.html)
+    - [create](docs/create-endpoint.html)
+    - [read](docs/read-endpoint.html)
+    - [update](docs/update-endpoint.html)
+    - [delete](docs/delete-endpoint.html)
+    - Documents as attachments
+        - [attach](docs/attach-endpoint.html)
+        - [retrieve](docs/retrieve-endpoint.html)
+        - [prune](docs/prune-endpoint.html)
 
-Both  _dataset_  and _datasetd_ are useful for general data science applications which need intermediate JSON object management but not a full blown database or repository system.
+Both _dataset_  and _datasetd_ maybe useful for general data science applications needing intermediate JSON object management but not a full blown database or repository system.
 
 
 Limitations of _dataset_ and _datasetd_
@@ -101,7 +100,7 @@ _datasetd_ is a simple web service intended to run on "localhost:8485".
 - it does not support access control by users or roles
 - it does not provide auto key generation or versioning
 - it limits the size of JSON documents stored to less than 1 MiB
-- it limits the size of attachment files to less than 250 MiB
+- it limits the size of attached files to less than 250 MiB
 - it does not support partial JSON record updates or retrieval
 - it does not provide an interactive Web UI for working with dataset collections
 - it does not support HTTPS or "at rest" encryption
@@ -111,8 +110,8 @@ _datasetd_ is a simple web service intended to run on "localhost:8485".
 Read next ...
 -------------
 
-- About the [dataset](doc/dataset.html) command
-- About [datasetd](doc/datasetd.html) web service
+- About the [dataset](docs/dataset.html) command
+- About [datasetd](docs/datasetd.html) web service
 - [Installation](install.html)
 - [License](license.html)
 - [Contributing](contributing.html)
@@ -133,7 +132,9 @@ Authors and history
 Releases
 --------
 
-Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1), Windows 10 (x86) and Raspberry Pi OS (ARM7).  See https://github.com/caltechlibrary/dataset/releases.
+Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1), Windows 10 (x86) and Raspberry Pi OS (ARM7). 
+
+[github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 
 Related projects
 ----------------

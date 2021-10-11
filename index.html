@@ -92,16 +92,16 @@ Design choices
 <em>dataset</em> and <em>datasetd</em> are intended to be simple tools for managing collections JSON object documents in a predictable structured way.
 </p>
 <p>
-<em>dataset</em> and <em>datasetd</em> are guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on Unix command line. <em>dataset</em> is intended to be simple to use with minimal setup (e.g. <code>dataset init mycollection.ds</code> creates a new collection called ‘mycollection.ds’). - <em>dataset</em> and <em>datasetd</em> store JSON object documents in collections - collections are folder(s) containing - collection.json metadata file describing the collection and keys - a pairtree of JSON object documents - non-JSON attachments can be associated with a JSON document and found in a semver (semantic version number) named sub directory
+<em>dataset</em> and <em>datasetd</em> are guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on the Unix command line. <em>dataset</em> is intended to be simple to use with minimal setup (e.g. <code>dataset init mycollection.ds</code> creates a new collection called ‘mycollection.ds’). - <em>dataset</em> and <em>datasetd</em> store JSON object documents in collections - collections are folder(s) containing - collection.json metadata file describing the collection and keys - a pairtree of JSON object documents - non-JSON attachments can be associated with a JSON document and found in a semver (semantic version number) named sub directory
 </p>
 <p>
-The choice of plain UTF-8 is intended to help future proof reading dataset collections. Care has been taken to keep <em>dataset</em> simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. <em>dataset</em> can be re-implement in any programming language supporting file input and output, common string operations and a JSON encoding and decoding. The current implementation is in the Go language.
+The choice of plain UTF-8 is intended to help future proof reading dataset collections. Care has been taken to keep <em>dataset</em> simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. <em>dataset</em> can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current implementation is in the Go language.
 </p>
 <h2 id="features">
 Features
 </h2>
 <p>
-<a href="docs/dataset">dataset</a> supports
+<a href="docs/dataset.html">dataset</a> supports
 </p>
 <ul>
 <li>
@@ -123,7 +123,7 @@ Object level actions
 <a href="docs/delete.html">delete</a>
 </li>
 <li>
-Documents attachments
+Documents as attachments
 <ul>
 <li>
 <a href="docs/attach.html">attach</a>
@@ -154,41 +154,41 @@ frames are defined using <a href="docs/dotpath.html">dot paths</a> describing wh
 </li>
 </ul>
 <p>
-<a href="docs/datasetd">datasetd</a> supports
+<a href="docs/datasetd.html">datasetd</a> supports
 </p>
 <ul>
 <li>
-List collections available from the web service
+List <a href="docs/collections-endpoint.html">collections</a> available from the web service
 </li>
 <li>
-List collection <a href="docs/keys.html">Keys</a>
+List a collection’s <a href="docs/keys.html">Keys</a>
 </li>
 <li>
 Object level actions
 <ul>
 <li>
-<a href="docs/create.html">create</a>
+<a href="docs/create-endpoint.html">create</a>
 </li>
 <li>
-<a href="docs/read.html">read</a>
+<a href="docs/read-endpoint.html">read</a>
 </li>
 <li>
-<a href="docs/update.html">update</a>
+<a href="docs/update-endpoint.html">update</a>
 </li>
 <li>
-<a href="docs/delete.html">delete</a>
+<a href="docs/delete-endpoint.html">delete</a>
 </li>
 <li>
-Documents attachments
+Documents as attachments
 <ul>
 <li>
-<a href="docs/attach.html">attach</a>
+<a href="docs/attach-endpoint.html">attach</a>
 </li>
 <li>
-<a href="docs/retrieve.html">retrieve</a>
+<a href="docs/retrieve-endpoint.html">retrieve</a>
 </li>
 <li>
-<a href="docs/prune.html">prune</a>
+<a href="docs/prune-endpoint.html">prune</a>
 </li>
 </ul>
 </li>
@@ -196,7 +196,7 @@ Documents attachments
 </li>
 </ul>
 <p>
-Both <em>dataset</em> and <em>datasetd</em> are useful for general data science applications which need intermediate JSON object management but not a full blown database or repository system.
+Both <em>dataset</em> and <em>datasetd</em> maybe useful for general data science applications needing intermediate JSON object management but not a full blown database or repository system.
 </p>
 <h2 id="limitations-of-dataset-and-datasetd">
 Limitations of <em>dataset</em> and <em>datasetd</em>
@@ -250,7 +250,7 @@ it does not provide auto key generation or versioning
 it limits the size of JSON documents stored to less than 1 MiB
 </li>
 <li>
-it limits the size of attachment files to less than 250 MiB
+it limits the size of attached files to less than 250 MiB
 </li>
 <li>
 it does not support partial JSON record updates or retrieval
@@ -270,10 +270,10 @@ Read next …
 </h2>
 <ul>
 <li>
-About the <a href="doc/dataset.html">dataset</a> command
+About the <a href="docs/dataset.html">dataset</a> command
 </li>
 <li>
-About <a href="doc/datasetd.html">datasetd</a> web service
+About <a href="docs/datasetd.html">datasetd</a> web service
 </li>
 <li>
 <a href="install.html">Installation</a>
@@ -323,7 +323,10 @@ Tommy Morrell
 Releases
 </h2>
 <p>
-Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1), Windows 10 (x86) and Raspberry Pi OS (ARM7). See https://github.com/caltechlibrary/dataset/releases.
+Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1), Windows 10 (x86) and Raspberry Pi OS (ARM7).
+</p>
+<p>
+<a href="https://github.com/caltechlibrary/dataset/releases">github.com/caltechlibrary/dataset/releases</a>
 </p>
 <h2 id="related-projects">
 Related projects

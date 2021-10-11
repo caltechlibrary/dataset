@@ -1,8 +1,6 @@
 package dataset
 
-import (
-	"fmt"
-)
+import ()
 
 //
 // End point documentation for datasetd.go
@@ -10,14 +8,14 @@ import (
 
 // readmeDocument() provides a copy of docs/datasetd.md
 func readmeDocument() string {
-	return fmt.Sprintf(`
+	return `
 Datasetd
 ========
 
 Overview
 --------
 
-_datasetd_ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. _datasetd_ does support multi-process/asynchronous update to a dataset collection. 
+_datasetd_ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. _datasetd_ does support multi-process/asynchronous update to a dataset collection.
 
 _datasetd_ is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). _datasetd_ is a simple, miminal service.
 
@@ -26,7 +24,7 @@ NOTE: You could run _datasetd_ could be combined with a front end web service li
 Configuration
 -------------
 
-_datasetd_ can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where _datasetd_ is running. _datasetd_ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.  
+_datasetd_ can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where _datasetd_ is running. _datasetd_ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
 
 The "settings.json" file has the following structure
 
@@ -34,7 +32,7 @@ The "settings.json" file has the following structure
     {
         "host": "localhost:8485",
         "collections": {
-            "<COLLECTION_ID>": {
+            '<COLLECTION_ID>': {
                 "dataset": "<PATH_TO_DATASET_COLLECTION>",
                 "keys": true,
                 "create": true,
@@ -49,7 +47,7 @@ The "settings.json" file has the following structure
     }
 ` + "```" + `
 
-In the "collections" object the "<COLLECTION_ID>" is a string which will be used as the start of the path in the URL. The "dataset" attribute sets the path to the dataset collection made available at "<PATH_TO_DATASET_COLLECTION>". For each collection you can allow the following sub-paths for JSON object interaction "keys", "create", "read", "update" and "delete". JSON document attachments are supported by "attach", "retrieve", "prune". If any of these attributes are missing from the settings they are assumed to be set to false.
+In the "collections" object the '<COLLECTION_ID>' is a string which will be used as the start of the path in the URL. The "dataset" attribute sets the path to the dataset collection made available at '<PATH_TO_DATASET_COLLECTION>'. For each collection you can allow the following sub-paths for JSON object interaction "keys", "create", "read", "update" and "delete". JSON document attachments are supported by "attach", "retrieve", "prune". If any of these attributes are missing from the settings they are assumed to be set to false.
 
 The sub-paths correspond to their counter parts in the dataset command line tool. By varying the settings of these you can support read only collections, drop off collections or function as a object store running behind a web application.
 
@@ -80,7 +78,7 @@ _datasetd_ provides a limitted subset of actions supportted by the standard dats
     - must be a GET request
 6. collections (list as a JSON array of objects the collections avialable)
     - must be a GET request
-7. attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB
+7. attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB. The POST must be a multi-part encoded web form where the upload name is identified as "filename" in the form and the URL path identifies the name to use for the saved attachment.
 8. retrieve allows you to download an versioned attachment from a JSON document
 9. prune removes versioned attachments from a JSON document
 
@@ -127,7 +125,7 @@ in dataset collection "recipes.ds".
     curl http://localhost:8485/recipies/read/waffles
 ` + "```" + `
 
-This would return the "waffles" JSON document or a 404 error if the 
+This would return the "waffles" JSON document or a 404 error if the
 document was not found.
 
 Listing the keys for "recipes.ds" could be done with this curl command.
@@ -177,130 +175,337 @@ to the service end points without parameters. Continuing with our
 End points
 ----------
 
-The following end points are supported by _datasetd_ 
+The following end points are supported by _datasetd_
 
-- "/" returns documentation for _datasetd_
-- "/collections" returns a list of available collections.
+- '/' returns documentation for _datasetd_
+- '/collections' returns a list of available collections.
 
 The following end points are per colelction. They are available
-for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types. 
+for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.
 
-The terms "<COLLECTION_ID>", "<KEY>" and "<SEMVER>" refer to 
+The terms '<COLLECTION_ID>', '<KEY>' and '<SEMVER>' refer to
 the collection path, the string representing the "key" to a JSON document and semantic version number for attachment. Unless specified
 end points support the GET method exclusively.
 
-- "/<COLLECTION_ID>" returns general dataset documentation with some tailoring to the collection.
-- "/<COLLECTION_ID>/keys" returns a list of keys available in the collection
-- "/<COLLECTION_ID>/create" returns documentation on the "create" end point
-- "/<COLLECTION_IO>/create/<KEY>" requires the POST method with content type header of "application/json". It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
-- "/<COLLECTION_ID>/read" returns documentation on the "read" end point
-- "/<COLLECTION_ID>/read/<KEY>" returns a JSON object for key or a HTTP error
-- "/<COLLECTION_ID>/update" returns documentation on the "update" end point
-- "/COLLECTION_ID>/update/<KEY>" requires the POST method with content type header of "application/json". It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
-- "/<COLLECTION_ID>/delete" returns documentation on the "delete" end point
-- "/COLLECTION_ID>/delete/<KEY>" requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
-- "/<COLLECTION_ID>/attach" returns documentation on attaching a file to a JSON document in the collection.
-- "/COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>" requires a POST method and expects a multi-part web form providing the filename in the "filename" field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by "<KEY>" in sub directory indicated by "<SEMVER>". See https://semver.org/ for more information on semantic version numbers.
-- "/<COLLECTION_ID>/retrieve" returns documentation on how to retrieve a versioned attachment from a JSON document.
-- "/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>/<FILENAME>" returns the versioned attachment from a JSON document or an HTTP error if that fails
-- "/<COLLECTION_ID>/prune" removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
-- "/<COLLECTION_ID>/prune/<KEY>/<SEMVER>/<FILENAME>" removes a versioned attachment from a JSON document.
+- '/<COLLECTION_ID>' returns general dataset documentation with some tailoring to the collection.
+- '/<COLLECTION_ID>/keys' returns a list of keys available in the collection
+- '/<COLLECTION_ID>/create' returns documentation on the 'create' end point
+- '/<COLLECTION_IO>/create/<KEY>' requires the POST method with content type header of 'application/json'. It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
+- '/<COLLECTION_ID>/read' returns documentation on the 'read' end point
+- '/<COLLECTION_ID>/read/<KEY>' returns a JSON object for key or a HTTP error
+- '/<COLLECTION_ID>/update' returns documentation on the 'update' end point
+- '/COLLECTION_ID>/update/<KEY>' requires the POST method with content type header of 'application/json'. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
+- '/<COLLECTION_ID>/delete' returns documentation on the 'delete' end point
+- '/COLLECTION_ID>/delete/<KEY>' requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
+- '/<COLLECTION_ID>/attach' returns documentation on attaching a file to a JSON document in the collection.
+- '/COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>' requires a POST method and expects a multi-part web form providing the filename in the 'filename' field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by '<KEY>' in sub directory indicated by '<SEMVER>'. See https://semver.org/ for more information on semantic version numbers.
+- '/<COLLECTION_ID>/retrieve' returns documentation on how to retrieve a versioned attachment from a JSON document.
+- '/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>/<FILENAME>' returns the versioned attachment from a JSON document or an HTTP error if that fails
+- '/<COLLECTION_ID>/prune' removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
+- '/<COLLECTION_ID>/prune/<KEY>/<SEMVER>/<FILENAME>' removes a versioned attachment from a JSON document.
 
-`)
+`
 }
 
 func keysDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Retieve a JSON array of Keys from a collection.
+	return `
+Keys (end point)
+================
 
-	"http://%s/%s/keys" accepts a "GET" HTTP method.
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-`, config.Hostname, collectionID)
+This end point lists keys available in a collection.
+
+    'http://localhost:8485/<COLLECTION_ID>/keys'
+
+Requires a "GET" method.
+
+The keys are turned as a JSON array or http error if not found.
+
+Example
+-------
+
+In this example '<COLLECTION_ID>' is "t1".
+
+` + "```" + `{.shell}
+    curl http://localhost:8485/t1/keys
+` + "```" + `
+
+The document return looks some like
+
+` + "```" + `
+    [
+        "one",
+        "two",
+        "three"
+    ]
+` + "```" + `
+
+For a "t1" containing the keys of "one", "two" and "three".
+
+`
 }
 
 func createDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Create a JSON document in the collection. Requires a unique key
-in the URL and the content most be JSON less than 1 MiB in size.
+	return `
+Create (end point)
+==================
 
-	"http://%s/%s/created/<KEY>" requires a "POST" HTTP method
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-Creates a JSON document for the <KEY> provided and HTTP 201 OK or 
-HTTP error if creation fails. The "POST" needs to be JSON encoded
-and using a Content-Type of "application/json"
-in the request header.
+Create a JSON document in the collection. Requires a unique key in the URL and the content most be JSON less than 1 MiB in size.
 
-`, config.Hostname, collectionID)
+    'http://localhost:8485/<COLLECTION_ID>/created/<KEY>' 
+
+Requires a "POST" HTTP method with.
+
+Creates a JSON document for the '<KEY>' in collection '<COLLECTION_ID>'. On success it returns HTTP 201 OK. Otherwise an HTTP error if creation fails.
+
+The "POST" needs to be JSON encoded and using a Content-Type of "application/json" in the request header.
+
+Example
+-------
+
+The '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" The content posted is
+
+` + "```" + `{.json}
+    {
+       "one": 1
+    }
+` + "```" + `
+
+Posting using CURL is done like
+
+` + "```" + `shell
+    curl -X POST -H 'Content-Type: application.json' \
+      -d '{"one": 1}' \
+      http://locahost:8485/t1/create/one 
+` + "```" + `
+
+`
 }
 
 func readDocument(collectionID string) string {
-	return fmt.Sprintf(`
+	return `
+Read (end point)
+================
+
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+
 Retrieve a JSON document from a collection.
 
-	"http://%s/%s/read/<KEY>" requires a "GET" HTTP method
+    'http://localhost:8485/<COLLECTION_ID>/read/<KEY>'
 
-Returns the JSON document for given <KEY> or a HTTP error
-if not found.
-`, config.Hostname, collectionID)
+Requires a "GET" HTTP method.
+
+Returns the JSON document for given '<KEY>' found in '<COLLECTION_ID>' or a HTTP error if not found.
+
+Example
+-------
+
+Curl accessing "t1" with a key of "one"
+
+` + "```" + `{.shell}
+    curl http://localhost:8485/t1/read/one
+` + "```" + `
+
+An example JSON document (this example happens to have an attachment) returned.
+
+` + "```" + `
+{
+   "_Attachments": [
+      {
+         "checksums": {
+            "0.0.1": "bb327f7bcca0f88649f1c6acfdc0920f"
+         },
+         "created": "2021-10-11T11:09:51-07:00",
+         "href": "T1.ds/pairtree/on/e/0.0.1/a1.png",
+         "modified": "2021-10-11T11:09:51-07:00",
+         "name": "a1.png",
+         "size": 32511,
+         "sizes": {
+            "0.0.1": 32511
+         },
+         "version": "0.0.1",
+         "version_hrefs": {
+            "0.0.1": "T1.ds/pairtree/on/e/0.0.1/a1.png"
+         }
+      }
+   ],
+   "_Key": "one",
+   "four": "four",
+   "one": 1,
+   "three": 3,
+   "two": 2
+}
+` + "```" + `
+
+`
 }
 
 func updateDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Update a JSON document in a collection.
+	return `
+Update (end point)
+==================
 
-    "http://%s/%s/updated/<KEY>" requires "POST" HTTP method
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-Updates the JSON document the <KEY> provided and returns 
-HTTP 200 OK or HTTP error if update fails. The "POST" needs to 
-be JSON encoded and using a Content-Type of "application/json"
-in the request header.
-`, config.Hostname, collectionID)
+Update a JSON document in the collection. Requires a key to an existing
+JSON record in the URL and the content most be JSON less than 1 MiB in size.
+
+    'http://localhost:8485/<COLLECTION_ID>/update/<KEY>'
+
+Requires a "POST" HTTP method.
+
+Update a JSON document for the '<KEY>' in collection '<COLLECTION_ID>'. On success it returns HTTP 200 OK. Otherwise an HTTP error if creation fails.
+
+The "POST" needs to be JSON encoded and using a Content-Type of "application/json" in the request header.
+
+Example
+-------
+
+The '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" The revised content posted is
+
+` + "```" + `{.json}
+    {
+       "one": 1,
+       "two": 2,
+       "three": 3,
+       "four": 4
+    }
+` + "```" + `
+
+Posting using CURL is done like
+
+` + "```" + `shell
+    curl -X POST -H 'Content-Type: application.json' \
+      -d '{"one": 1, "two": 2, "three": 3, "four": 4}' \
+      http://locahost:8485/t1/update/one 
+` + "```" + `
+
+`
 }
 
 func deleteDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Deletes a JSON document from a collection.
+	return `
+Delete (end point)
+==================
 
-    "http://%s/%s/deleted/<KEY>" requires a "GET" HTTP method
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-Returns HTTP 200 OK on successful deletion or an HTTP error otherwise.
-`, config.Hostname, collectionID)
+Delete a JSON document in the collection. Requires the document key and collection name.
+
+    'http://localhost:8485/<COLLECTION_ID>/delete/<KEY>'
+
+Requires a 'GET' HTTP method.
+
+Deletes a JSON document for the '<KEY>' in collection '<COLLECTION_ID>'. On success it returns HTTP 200 OK. Otherwise an HTTP error if creation fails.
+
+Example
+-------
+
+The '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" The content posted is
+
+Posting using CURL is done like
+
+` + "```" + `shell
+    curl -X GET -H 'Content-Type: application.json' \
+      http://locahost:8485/t1/delete/one 
+` + "```" + `
+
+`
 }
 
 func attachDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Attaches a document to a JSON Document using <KEY>, <SEMVER> and
-<FILENAME>.
+	return `
+Attach (end point)
+==================
 
-     "http://%s%s/attach/<KEY>/<SEMVER>/<FILENAME>" 
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-Requires a POST method and expects a multi-part web form providing the
-filename. The document will be written the JSON document directory by
-"<KEY>" in sub directory indicated by "<SEMVER>". 
+Attaches a document to a JSON Document using '<KEY>', '<SEMVER>' and '<FILENAME>'.
+
+    'http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>'
+
+Requires a "POST" method. The "POST" is expected to be a multi-part web form providing the source filename in the field "filename".  The document will be written the JSON document directory by '<KEY>' in sub directory indicated by '<SEMVER>'.
 
 See https://semver.org/ for more information on semantic version numbers.
 
-`, config.Hostname, collectionID)
+Example
+=======
+
+In this example the '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" and
+the content upload is "a1.png" in the home directory "/home/jane.doe".
+The '<SEMVER>' is "0.0.1".
+
+` + "```" + `shell
+    curl -X POST -H 'Content-Type: multipart/form-data' \
+       -F 'filename=@/home/jane.doe/a1.png' \
+       http://localhost:8485/t1/attach/one/0.0.1/a1.png
+` + "```" + `
+
+NOTE: The URL contains the filename used in the saved attachment. If
+I didn't want to call it "a1.png" I could have provided a different
+name in the URL path.
+
+`
 }
 
 func retrieveDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Download the attached file indicated <SEMVER> and <FILENAME>
+	return `
+Retrieve (end point)
+====================
 
-    "http://%s/%s/retrieve/<KEY>/<SEMVER>/<FILENAME>" 
+Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-Returns the versioned attachment from a JSON document or an
-HTTP error if that fails
-`, config.Hostname, collectionID)
+Retrieves an s attached document from a JSON record using '<KEY>', '<SEMVER>' and '<FILENAME>'.
+
+    'http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>'
+
+Requires a POST method and expects a multi-part web form providing the filename. The document will be written the JSON document directory by '<KEY>' in sub directory indicated by '<SEMVER>'. 
+
+See https://semver.org/ for more information on semantic version numbers.
+
+Example
+-------
+
+In this example we're retieving the '<FILENAME>' of "a1.png", with the '<SEMVER>' of "0.0.1" from the '<COLLECTION_ID>' of "t1" and '<KEY>'
+of "one" using curl.
+
+` + "```" + `{.shell}
+    curl http://localhost:8485/t1/retrieve/one/0.0.1/a1.png
+` + "```" + `
+
+This should trigger a download of the "a1.png" image file in the
+collection for document "one".
+
+`
 }
 
 func pruneDocument(collectionID string) string {
-	return fmt.Sprintf(`
-Remove the attachment described by <SEMVER> and <FILENAME> from
-a JSON document indivated by <KEY>.
+	return `
+Prune (end point)
+=================
 
-    "http://%s/%s/prune/<KEY>/<SEMVER>/<FILENAME>"
+Removes an attached document from a JSON record using '<KEY>', '<SEMVER>' and '<FILENAME>'.
 
-Removes a versioned attachment from a JSON document.
-`, config.Hostname, collectionID)
+    'http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>'
+
+Requires a GET method. Returns an HTTP 200 OK on success or an HTTP error code if not.
+
+See https://semver.org/ for more information on semantic version numbers.
+
+Example
+-------
+
+In this example '<COLLECTION_ID>' is "t1", '<KEY>' is "one", '<SEMVER>' is "0.0.1" and '<FILENAME>' is "a1.png". Once again our example uses curl.
+
+` + "```" + `
+    curl http://localhost:8485/t1/prune/one/0.0.1/a1.png
+` + "```" + `
+
+This will cause the attached file to be removed from the record
+and collection.
+
+`
 }

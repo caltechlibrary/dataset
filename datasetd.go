@@ -50,6 +50,40 @@ func packageJSON(w http.ResponseWriter, collectionID string, src []byte, err err
 	return 200, nil
 }
 
+// hanldeAttachmentUpload accepts a request for uploading an attachment.
+func handleAttachmentUpload(w http.ResponseWriter, r *http.Request, c *Collection, keyName string, semver string, filename string) (int, error) {
+	if r.Method != "POST" {
+		// Upload the file to a temp filename
+		// Attach file as the requested name
+		return 405, fmt.Errorf("Method not allowed")
+	}
+	r.ParseMultipartForm(attachmentSizeLimit)
+	fp, _, err := r.FormFile("filename")
+	if err != nil {
+		return 400, fmt.Errorf(`Bad Request
+failed to save %s, %s`, filename, err)
+	}
+	fp.Close()
+	tmp, err := ioutil.TempFile(os.TempDir(), filename)
+	if err != nil {
+		return 400, fmt.Errorf(`Bad Request
+cannot create temp file for %s, %s`, filename, err)
+	}
+	tmpName := tmp.Name()
+	defer os.Remove(tmpName)
+	if _, err := io.Copy(tmp, fp); err != nil {
+		log.Printf("Failed to copy uploaded content to temp file, %s", err)
+	}
+	if err := tmp.Close(); err != nil {
+		log.Printf("Failed to close tmp file %s, %s", tmpName, err)
+	}
+	if err := c.AttachFileAs(keyName, semver, filename, tmpName); err != nil {
+		return 400, fmt.Errorf(`Bad Request
+failed to save %s, %s`, filename, err)
+	}
+	return 200, nil
+}
+
 //
 // Expose the collections available
 //
@@ -252,14 +286,40 @@ func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string,
 	if len(args) != 3 {
 		return 400, fmt.Errorf("Bad Request")
 	}
-	//key, semver, filename := args[0], args[1], args[2]
+	keyName, semver, filename := args[0], args[1], args[2]
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "POST" {
 		return 405, fmt.Errorf(`Method Not Allowed
 %s %s`, r.Method, contentType)
 	}
-	if contentType != "application/octet-stream" {
-		return 415, fmt.Errorf(`Unsupported Media Type
+	log.Printf("DEBUG content-type: %s\n", contentType)
+	/*
+			if contentType != "multipart/form-data" {
+				return 415, fmt.Errorf(`Unsupported Media Type
+		%s %s`, r.Method, contentType)
+			}
+	*/
+	_, ok := config.Collections[collectionID]
+	if ok == false || config.Collections[collectionID].DS == nil {
+		return 400, fmt.Errorf(`Bad Request
+%s %s
+`, r.Method, contentType)
+	}
+	ds := config.Collections[collectionID].DS
+	return handleAttachmentUpload(w, r, ds, keyName, semver, filename)
+}
+
+func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if len(args) == 0 || args[0] == "" {
+		return packageDocument(w, retrieveDocument(collectionID))
+	}
+	if len(args) != 3 {
+		return 400, fmt.Errorf("Bad Request")
+	}
+	keyName, semver, srcName := args[0], args[1], args[2]
+	contentType := r.Header.Get("Content-Type")
+	if r.Method != "GET" {
+		return 405, fmt.Errorf(`Method Not Allowed
 %s %s`, r.Method, contentType)
 	}
 	_, ok := config.Collections[collectionID]
@@ -268,31 +328,30 @@ func attachEndPoint(w http.ResponseWriter, r *http.Request, collectionID string,
 %s %s
 `, r.Method, contentType)
 	}
-
-	//FIXME decide how I want to handle upload.
-	/*
-			ds := config.Collections[collectionID].DS
-			if err := ds.AttachStream(key, semver, filename, fp); err != nil {
-				return 507, fmt.Errorf(`Insufficient Storage
-						   Multipart form: %s %s
-
-						   %s
-		`, key, semver, err)
-			}
-			return 200, nil
-	*/
-	log.Printf("attachEndPoint() not implemented")
-	return 501, fmt.Errorf("Not Implemented")
-}
-
-func retrieveEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
-	log.Printf("retrieveEndPoint() not implemented")
-	return 501, fmt.Errorf("Not Implemented")
+	ds := config.Collections[collectionID].DS
+	//FIXME: retrieve the file and return it
+	filePath, err := ds.AttachmentPath(keyName, semver, srcName)
+	if err != nil {
+		return 400, fmt.Errorf(`Bad Request
+%s %s
+`, r.Method, contentType)
+	}
+	log.Printf("DEBUG attachment path: %s", filePath)
+	// Open filePath and write result to w.
+	in, err := os.Open(filePath)
+	if err != nil {
+		return 400, fmt.Errorf(`Bad Request
+%s %s
+`, r.Method, contentType)
+	}
+	defer in.Close()
+	io.Copy(w, in)
+	return 200, nil
 }
 
 func pruneEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
 	if len(args) == 0 || args[0] == "" {
-		return packageDocument(w, attachDocument(collectionID))
+		return packageDocument(w, pruneDocument(collectionID))
 	}
 	if len(args) != 3 {
 		return 400, fmt.Errorf("Bad Request")

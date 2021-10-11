@@ -82,3 +82,17 @@ New as of version v2.x is a web service providing access to dataset
 collections. This is described in the [datasetd](datasetd.html) 
 documentation page.
 
+[datasetd](datasetd.html) supports the following end points.
+
+- List [collections](collections-endpoint.html) available from the web service
+- List a collection's [Keys](keys-endpoint.html)
+- Object level actions
+    - [create](create-endpoint.html)
+    - [read](read-endpoint.html)
+    - [update](update-endpoint.html)
+    - [delete](delete-endpoint.html)
+    - Documents as attachments
+        - [attach](attach-endpoint.html)
+        - [retrieve](retrieve-endpoint.html)
+        - [prune](prune-endpoint.html)
+

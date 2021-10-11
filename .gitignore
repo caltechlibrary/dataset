@@ -59,3 +59,4 @@ libdataset/*.csv
 libdataset/*.ds
 __pycache__
 settings.json
+pandoc.*.json
