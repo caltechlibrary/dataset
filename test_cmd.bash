@@ -23,6 +23,11 @@ function assert_equal() {
 	fi
 }
 
+function fail_now() {
+    echo $@
+    exit 1
+}
+
 #
 # Tests
 #
@@ -50,23 +55,27 @@ function test_dataset() {
 	EXPECTED="OK"
 	RESULT=$(bin/dataset init testdata/test1.ds)
 	assert_equal "init testdata/test1.ds" "$EXPECTED" "$RESULT"
+	export DATASET="testdata/test1.ds"
+
 	assert_exists "collection create" "testdata/test1.ds"
 	assert_exists "collection created metadata" "testdata/test1.ds/collection.json"
 
-	export DATASET="testdata/test1.ds"
 
 	# Test create
-	EXPECTED="OK"
-	RESULT=$(bin/dataset create "${DATASET}" 1 '{"one":1}')
-	assert_equal "create 1:" "$EXPECTED" "$RESULT"
-	RESULT=$(echo -n '{"two":2}' | bin/dataset create -i - "${DATASET}" 2)
-	assert_equal "create 2:" "$EXPECTED" "$RESULT"
+	if ! bin/dataset create "${DATASET}" 1 '{"one":1}'; then
+       fail_now "Failed to create record 1 in ${DATASET}" 
+    fi
+	if ! echo '{"two":2}' | bin/dataset create -i - "${DATASET}" 2; then
+       fail_now "Failed to create record 2 in ${DATASET}" 
+    fi
 	echo '{"three":3}' >"testdata/test3.json"
-	RESULT=$(bin/dataset create -i testdata/test3.json "${DATASET}" 3)
-	assert_equal "create 3:" "$EXPECTED" "$RESULT"
+	if ! bin/dataset create -i testdata/test3.json "${DATASET}" 3; then
+       fail_now "Failed to create record 3 in ${DATASET}" 
+    fi
 	echo '{"four":4}' >"testdata/test4.json"
-	RESULT=$(bin/dataset create "${DATASET}" 4 testdata/test4.json)
-	assert_equal "create 4:" "$EXPECTED" "$RESULT"
+    if ! bin/dataset create "${DATASET}" 4 testdata/test4.json; then
+       fail_now "Failed to create record 4 in ${DATASET}" 
+    fi
 
 	# Test read
 	EXPECTED='{"_Key":"1","one":1}'
@@ -75,6 +84,7 @@ function test_dataset() {
 	EXPECTED='{"_Key":"2","two":2}'
 	RESULT=$(echo -n '2' | bin/dataset -i - read "${DATASET}")
 	assert_equal "read 2:" "$EXPECTED" "$RESULT"
+
 
 	# Test keys
 	EXPECTED="1 2 3 4 "
@@ -87,95 +97,6 @@ function test_dataset() {
 		rm -fR testdata/test1.ds
 	fi
 	echo "test_dataset, OK"
-}
-
-function test_gsheet() {
-    CLIENT_SECRET="${1}"
-    if [[ "${CLIENT_SECRET}" = "" ]]; then
-        echo "Skipping, could not find ${CLIENT_SECRET}"
-        return
-    fi
-    if [[ ! -f "${CLIENT_SECRET}" ]]; then
-        echo "Skipping, could not find ${CLIENT_SECRET}"
-        return
-    fi
-	if [[ -f "etc/test_gsheet.bash" ]]; then
-		. "etc/test_gsheet.bash"
-	fi
-	if [[ "${SPREADSHEET_ID}" == "" ]]; then
-		echo "Skipping test_gsheet(), missing environment variable for SPREADSHEET_ID"
-		exit 1
-	fi
-    echo "test_gsheet ${SPREADSHEET_ID}"
-    WD=$(pwd)
-    cd gsheets || exit 1
-    if ! go test -client-secret "../${CLIENT_SECRET}" -spreadsheet-id "${SPREADSHEET_ID}"; then
-        echo "Skipping test_gsheet, access not configure correctly"
-        cd "${WD}"
-        return
-    fi
-    cd "${WD}"
-	if [[ -d "testdata/test_gsheet.ds" ]]; then
-		rm -fR testdata/test_gsheet.ds
-	fi
-	bin/dataset -nl=false -quiet init "testdata/test_gsheet.ds"
-	if [[ "$?" != "0" ]]; then
-		echo "Count not initialize testdata/test_gsheet.ds"
-		exit 1
-	fi
-	export DATASET="testdata/test_gsheet.ds"
-
-	bin/dataset -nl=false -quiet create "${DATASET}" "Wilson1930" '{"additional":"Supplemental Files Information:\nGeologic Plate: Supplement 1 from \"The geology of a portion of the Repetto Hills\" (Thesis)\n","description_1":"Supplement 1 in CaltechDATA: Geologic Plate","done":"yes","identifier_1":"https://doi.org/10.22002/D1.638","key":"Wilson1930","resolver":"http://resolver.caltech.edu/CaltechTHESIS:12032009-111148185","subjects":"Repetto Hills, Coyote Pass, sandstones, shales"}'
-	if [[ "$?" != "0" ]]; then
-		echo "Could not create test record in testdata/test_gsheet.ds"
-		exit 1
-	fi
-	CNT=$(bin/dataset -quiet -nl=false count "${DATASET}")
-	if [[ "${CNT}" != "1" ]]; then
-		echo "Should have one record to export"
-		exit 1
-	fi
-
-	echo -n "test_gsheet: frame setup, "
-	SHEET_NAME="Sheet1"
-    if [[ "$(bin/dataset hasframe "${DATASET}" f1)" = "true" ]]; then
-        bin/dataset delete-frame "${DATASET}" f1
-    fi
-    if [[ "$(bin/dataset hasframe "${DATASET}" f2)" = "true" ]]; then
-        bin/dataset delete-frame "${DATASET}" f2
-    fi
-
-
-    # Setup Frame
-    bin/dataset frame -p -all "${DATASET}" f1 \
-		'._Key=Key' '.done=Done' '.key=Key As ID' \
-        '.resolver=Resolver' '.subjects=Subjects' \
-        '.additional=Additional' \
-        '.identifier_1=Identifier 1' \
-        '.description_1=Description 1' > /dev/null
-	if [[ "$?" != "0" ]]; then
-		echo "Could not frame ${DATASET} f1 ..."
-		exit 1
-	fi
-
-	echo -n "test_gsheet: test export of frame f1 to gsheet ${SHEET_NAME}, "
-	bin/dataset -quiet -nl=false export -client-secret "${CLIENT_SECRET}" "${DATASET}" f1 "${SPREADSHEET_ID}" "${SHEET_NAME}"
-	if [[ "$?" != "0" ]]; then
-		echo "Could not export-gsheet"
-		exit 1
-    else
-        echo "OK"
-	fi
-
-	echo -n "test_gsheet: test import from gsheet ${SHEET_NAME}, "
-
-	bin/dataset import -overwrite -client-secret "${CLIENT_SECRET}" "${DATASET}" "${SPREADSHEET_ID}" "${SHEET_NAME}" 3 'A1:CZ'
-	if [[ "$?" != "0" ]]; then
-		echo "Should be able to import gsheet over existing collection"
-		exit 1
-	fi
-
-	echo "test_gsheet, OK"
 }
 
 

@@ -16,7 +16,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-package dataset
+package main
 
 import (
 	"encoding/json"
@@ -25,7 +25,8 @@ import (
 	"os"
 	"path"
 	"strings"
-	"sync"
+
+	"github.com/caltechlibrary/dataset"
 )
 
 /**
@@ -36,9 +37,9 @@ import (
  * Python via py_dataset needs save writes.
  */
 
-// CMap holds a map of collection names to *Collection
+// CMap holds a map of collection names to *dataset.Collection
 type CMap struct {
-	collections map[string]*Collection
+	collections map[string]*dataset.Collection
 }
 
 var (
@@ -64,18 +65,18 @@ func IsOpen(cName string) bool {
 // Writes to the collections are run through a mutex
 // to prevent collisions. Subsequent CMapOpen() will open
 // additional collections under the the service.
-func Open(cName string) error {
+func OpenCollection(cName string) error {
 	var (
 		err error
 	)
 	if cMap == nil {
 		cMap = new(CMap)
-		cMap.collections = make(map[string]*Collection)
+		cMap.collections = make(map[string]*dataset.Collection)
 	}
 	if _, exists := cMap.collections[cName]; exists == true {
 		return fmt.Errorf("%q opened previously", cName)
 	}
-	c, err := openCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		return fmt.Errorf("%q failed to open, %s", cName, err)
 	}
@@ -85,9 +86,9 @@ func Open(cName string) error {
 
 // GetCollection takes a collection name, opens it if necessary and returns a handle
 // to the CMapCollection struct and error value.
-func GetCollection(cName string) (*Collection, error) {
+func GetCollection(cName string) (*dataset.Collection, error) {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return nil, err
 		}
 	}
@@ -150,7 +151,7 @@ func CloseAll() error {
 // StartCMap.
 func Keys(cName string) []string {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return []string{}
 		}
 	}
@@ -162,17 +163,6 @@ func Keys(cName string) []string {
 
 // KeyExists returns true if the key exists in the collection or false otherwise
 func KeyExists(cName string, key string) bool {
-	/*
-		if cMap == nil || IsOpen(cName) == false {
-			if err := Open(cName); err != nil {
-				return false
-			}
-		}
-		if c, found := cMap.collections[cName]; found == true && c != nil {
-			return c.KeyExists(key)
-		}
-		return false
-	*/
 	c, err := GetCollection(cName)
 	if err != nil {
 		return false
@@ -185,14 +175,12 @@ func KeyExists(cName string, key string) bool {
 // the key.
 func CreateJSON(cName string, key string, src []byte) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.objectMutex.Lock()
 		err := c.CreateJSON(key, src)
-		c.objectMutex.Unlock()
 		return err
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -202,7 +190,7 @@ func CreateJSON(cName string, key string, src []byte) error {
 // document.
 func ReadJSON(cName string, key string) ([]byte, error) {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return nil, err
 		}
 	}
@@ -216,14 +204,12 @@ func ReadJSON(cName string, key string) ([]byte, error) {
 // document and updates the collection.
 func UpdateJSON(cName string, key string, src []byte) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.objectMutex.Lock()
 		err := c.UpdateJSON(key, src)
-		c.objectMutex.Unlock()
 		return err
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -233,14 +219,12 @@ func UpdateJSON(cName string, key string, src []byte) error {
 // and JSON object from the collection.
 func DeleteJSON(cName string, key string) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.objectMutex.Lock()
 		err := c.Delete(key)
-		c.objectMutex.Unlock()
 		return err
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -251,7 +235,7 @@ func DeleteJSON(cName string, key string) error {
 func FrameExists(cName string, fName string) bool {
 	// We may need to open a dataset collection to check for a frame.
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return false
 		}
 	}
@@ -266,7 +250,7 @@ func FrameExists(cName string, fName string) bool {
 // FrameKeys returns the ordered list of keys for the frame.
 func FrameKeys(cName string, fName string) []string {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return nil
 		}
 	}
@@ -283,14 +267,12 @@ func FrameKeys(cName string, fName string) []string {
 // FrameCreate creates a frame in a service collection
 func FrameCreate(cName string, fName string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return nil, err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.objectMutex.Lock()
 		f, err := c.FrameCreate(fName, keys, dotPaths, labels, verbose)
-		c.objectMutex.Unlock()
 		return f, err
 	}
 	return nil, fmt.Errorf("%q not available", cName)
@@ -301,7 +283,7 @@ func FrameCreate(cName string, fName string, keys []string, dotPaths []string, l
 // object list
 func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return nil, err
 		}
 	}
@@ -315,14 +297,12 @@ func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) 
 //  cause a new object to be appended to the end of the list.
 func FrameRefresh(cName string, fName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.collectionMutex = new(sync.Mutex)
-		c.objectMutex = new(sync.Mutex)
-		c.frameMutex = new(sync.Mutex)
+		c.Close()
 		return c.FrameRefresh(fName, verbose)
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -332,13 +312,11 @@ func FrameRefresh(cName string, fName string, verbose bool) error {
 // the object will be replaced with updated objects based on the keys provided.
 func FrameReframe(cName string, fName string, keys []string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.frameMutex.Lock()
-		defer c.frameMutex.Unlock()
 		return c.FrameReframe(fName, keys, verbose)
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -347,13 +325,11 @@ func FrameReframe(cName string, fName string, keys []string, verbose bool) error
 // FrameClear clears the object and key list from a frame
 func FrameClear(cName string, fName string) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.frameMutex.Lock()
-		defer c.frameMutex.Unlock()
 		return c.FrameClear(fName)
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -362,13 +338,11 @@ func FrameClear(cName string, fName string) error {
 // FrameDelete deletes a frame from a service collection
 func FrameDelete(cName string, fName string) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.frameMutex.Lock()
-		defer c.frameMutex.Unlock()
 		return c.FrameDelete(fName)
 	}
 	return fmt.Errorf("%q not available", cName)
@@ -388,14 +362,12 @@ func Frames(cName string) []string {
 // NOTE: Collection objects are locked during check!
 func Check(cName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
 	if c, found := cMap.collections[cName]; found {
-		c.objectMutex.Lock()
-		err := analyzer(cName, verbose)
-		c.objectMutex.Unlock()
+		err := dataset.Analyzer(cName, verbose)
 		return err
 	}
 	return fmt.Errorf("%q not found", cName)
@@ -411,7 +383,7 @@ func Repair(cName string, verbose bool) error {
 				//NOTE: we need to create a empty collection.json file.
 				// Issue-99 in GitHub so we can then proceed and repair
 				// our collection.
-				c := new(Collection)
+				c := new(dataset.Collection)
 				c.Name = cName
 				src, err := json.Marshal(c)
 				if err != nil {
@@ -422,14 +394,12 @@ func Repair(cName string, verbose bool) error {
 				}
 			}
 		}
-		if err := Open(cName); err != nil {
+		if err := OpenCollection(cName); err != nil {
 			return err
 		}
 	}
-	if c, found := cMap.collections[cName]; found {
-		c.objectMutex.Lock()
-		err := repair(cName, verbose)
-		c.objectMutex.Unlock()
+	if _, found := cMap.collections[cName]; found {
+		err := dataset.Repair(cName, verbose)
 		return err
 	}
 	return fmt.Errorf("%q not found", cName)

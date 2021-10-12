@@ -34,7 +34,7 @@ func TestCollection(t *testing.T) {
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	c, err := InitCollection(colName)
+	c, err := Init(colName)
 	if err != nil {
 		t.Errorf("error create() a collection %q", err)
 		t.FailNow()
@@ -54,7 +54,7 @@ func TestCollection(t *testing.T) {
 	}
 
 	// Now open the existing collection of colName
-	c, err = openCollection(colName)
+	c, err = Open(colName)
 	if err != nil {
 		t.Errorf("error Open() a collection %q", err)
 		t.FailNow()
@@ -209,7 +209,7 @@ func TestComplexKeys(t *testing.T) {
 	os.RemoveAll(colName)
 
 	// Create a new collection
-	c, err := InitCollection(colName)
+	c, err := Init(colName)
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
@@ -294,7 +294,7 @@ func TestCloneSample(t *testing.T) {
 	os.RemoveAll(trainingName)
 	os.RemoveAll(testName)
 
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Errorf("Can't create %s, %s", cName, err)
 		t.FailNow()
@@ -313,13 +313,13 @@ func TestCloneSample(t *testing.T) {
 	if err := c.CloneSample(trainingName, testName, keys, trainingSize, false); err != nil {
 		t.Errorf("Failed to create samples %s (%d) and %s, %s", trainingName, trainingSize, testName, err)
 	}
-	training, err := openCollection(trainingName)
+	training, err := Open(trainingName)
 	if err != nil {
 		t.Errorf("Could not open %s, %s", trainingName, err)
 		t.FailNow()
 	}
 	defer training.Close()
-	test, err := openCollection(testName)
+	test, err := Open(testName)
 	if err != nil {
 		t.Errorf("Could not open %s, %s", testName, err)
 		t.FailNow()
@@ -354,7 +354,7 @@ func TestCaseHandling(t *testing.T) {
 	// Setup a test collection and data
 	cName := path.Join("testdata", "test_case_handling.ds")
 	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

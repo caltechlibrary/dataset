@@ -31,7 +31,7 @@ func TestFrame(t *testing.T) {
 	verbose := false
 	os.RemoveAll(path.Join("testdata", "frame_test.ds"))
 	cName := path.Join("testdata", "frame_test.ds")
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -177,7 +177,7 @@ func TestIssue9PyDataset(t *testing.T) {
 	verbose := false
 	os.RemoveAll(path.Join("testdata", "frame_test2.ds"))
 	cName := path.Join("testdata", "frame_test2.ds")
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -254,7 +254,7 @@ func TestIssue9PyDataset(t *testing.T) {
 func TestFrameRefresh(t *testing.T) {
 	cName := path.Join("testdata", "frame10.ds")
 	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Errorf("expected to create %q, got %s", cName, err)
 		t.FailNow()
@@ -368,7 +368,7 @@ func TestFrameRefresh(t *testing.T) {
 func TestIssue12PyDataset(t *testing.T) {
 	cName := path.Join("testdata", "test_issue12.ds")
 	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Errorf("failed to create %q, %s", cName, err)
 		t.FailNow()

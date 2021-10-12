@@ -39,7 +39,6 @@ import (
 	// Caltech Library packages
 	"github.com/caltechlibrary/dataset/tbl"
 	"github.com/caltechlibrary/dotpath"
-	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
 )
 
@@ -196,38 +195,15 @@ func (c *Collection) saveMetadata() error {
 	return nil
 }
 
-// addNamaste writes name as text files for collection in the collection's directory.
-func (c *Collection) addNamaste() error {
-	// Add/Update Namaste
-	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
-	if len(c.Who) > 0 {
-		for _, who := range c.Who {
-			namaste.Who(c.workPath, who)
-		}
+// deleteCollection an entire collection
+func deleteCollection(name string) error {
+	_, err := os.Stat(name)
+	if err != nil {
+		return err
 	}
-	if c.What != "" {
-		if strings.Contains(c.What, "\n") {
-			s := strings.Split(c.What, "\n")
-			namaste.What(c.workPath, s[0]+"...")
-		} else {
-			namaste.What(c.workPath, c.What)
-		}
-	}
-	if c.When != "" {
-		if strings.Contains(c.When, "\n") {
-			s := strings.Split(c.When, "\n")
-			namaste.When(c.workPath, s[0]+"...")
-		} else {
-			namaste.When(c.workPath, c.When)
-		}
-	}
-	if c.Where != "" {
-		if strings.Contains(c.Where, "\n") {
-			s := strings.Split(c.Where, "\n")
-			namaste.Where(c.workPath, s[0]+"...")
-		} else {
-			namaste.Where(c.workPath, c.Where)
-		}
+	collectionName := collectionNameAsPath(name)
+	if err := os.RemoveAll(collectionName); err != nil {
+		return err
 	}
 	return nil
 }
@@ -236,8 +212,53 @@ func (c *Collection) addNamaste() error {
 // Public interface for dataset
 //
 
-// InitCollection - creates a new collection.
-func InitCollection(name string) (*Collection, error) {
+// Open reads in a collection's metadata and returns
+// and new collection structure or error
+func Open(name string) (*Collection, error) {
+	_, err := os.Stat(name)
+	if err != nil {
+		return nil, err
+	}
+	// Check for lock.pid
+	lockName := path.Join(name, "lock.pid")
+	if _, err := os.Stat(lockName); err == nil {
+		src, _ := ioutil.ReadFile(lockName)
+		pid, err := strconv.Atoi(string(src))
+		if err != nil {
+			return nil, fmt.Errorf("Lock file exists for %s, cannot determine process id", name)
+		}
+		if os.Getpid() != pid {
+			return nil, fmt.Errorf("%s is in use by process %s", name, src)
+		}
+	}
+	pid := os.Getpid()
+	if err := ioutil.WriteFile(lockName, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
+		return nil, fmt.Errorf("Failed to gain lock for %s, %s", name, err)
+	}
+	collectionName := collectionNameAsPath(name)
+	src, err := os.ReadFile(path.Join(collectionName, "collection.json"))
+	if err != nil {
+		return nil, err
+	}
+	c := new(Collection)
+	if err := json.Unmarshal(src, &c); err != nil {
+		return nil, err
+	}
+	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
+	c.Name = path.Base(collectionName)
+	c.workPath = collectionName
+	if c.KeyMap == nil {
+		c.KeyMap = make(map[string]string)
+	}
+
+	c.collectionMutex = new(sync.Mutex)
+	c.objectMutex = new(sync.Mutex)
+	c.frameMutex = new(sync.Mutex)
+	return c, nil
+}
+
+// Init - creates a new collection.
+func Init(name string) (*Collection, error) {
 	if len(name) == 0 {
 		return nil, fmt.Errorf("missing a collection name")
 	}
@@ -245,9 +266,8 @@ func InitCollection(name string) (*Collection, error) {
 	// See if we need an open or continue with create
 	_, err := os.Stat(collectionName + "/collection.json")
 	if err == nil {
-		return openCollection(name)
+		return Open(name)
 	}
-
 	err = os.MkdirAll(collectionName, 0775)
 	if err != nil {
 		return nil, err
@@ -287,65 +307,13 @@ func InitCollection(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = c.addNamaste()
-	return c, err
-}
-
-// openCollection reads in a collection's metadata and returns and new collection structure and err
-func openCollection(name string) (*Collection, error) {
-	_, err := os.Stat(name)
-	if err != nil {
-		return nil, err
-	}
-	// Check for lock.pid
-	pidLock := path.Join(name, "lock.pid")
-	if _, err := os.Stat(pidLock); err == nil {
-		src, _ := ioutil.ReadFile(pidLock)
-		pid, err := strconv.Atoi(string(src))
-		if err != nil {
-			return nil, fmt.Errorf("Lock file exists for %s, cannot determine process id", name)
-		}
-		if os.Getpid() != pid {
-			return nil, fmt.Errorf("%s is in use by process %s", name, src)
-		}
-	}
+	// Create a lock file since we're returnging an open collection.
+	lockName := path.Join(name, "lock.pid")
 	pid := os.Getpid()
-	if err := ioutil.WriteFile(pidLock, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
+	if err := ioutil.WriteFile(lockName, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
 		return nil, fmt.Errorf("Failed to gain lock for %s, %s", name, err)
 	}
-	collectionName := collectionNameAsPath(name)
-	src, err := os.ReadFile(path.Join(collectionName, "collection.json"))
-	if err != nil {
-		return nil, err
-	}
-	c := new(Collection)
-	if err := json.Unmarshal(src, &c); err != nil {
-		return nil, err
-	}
-	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
-	c.Name = path.Base(collectionName)
-	c.workPath = collectionName
-	if c.KeyMap == nil {
-		c.KeyMap = make(map[string]string)
-	}
-
-	c.collectionMutex = new(sync.Mutex)
-	c.objectMutex = new(sync.Mutex)
-	c.frameMutex = new(sync.Mutex)
-	return c, nil
-}
-
-// deleteCollection an entire collection
-func deleteCollection(name string) error {
-	_, err := os.Stat(name)
-	if err != nil {
-		return err
-	}
-	collectionName := collectionNameAsPath(name)
-	if err := os.RemoveAll(collectionName); err != nil {
-		return err
-	}
-	return nil
+	return c, err
 }
 
 // DocPath returns a full path to a key or an error if not found
@@ -362,12 +330,10 @@ func (c *Collection) DocPath(name string) (string, error) {
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
 	if c != nil {
-		dName := collectionNameAsPath(c.Name)
-		lockName := path.Join(dName, "lock.pid")
-		if _, err := os.Stat(lockName); os.IsNotExist(err) == false {
-			if err := os.Remove(lockName); err != nil {
-				return fmt.Errorf("WARNING: could not remove %s, %s\n", lockName, err)
-			}
+		//dName := c.workPath // collectionNameAsPath(c.Name)
+		lockName := path.Join(c.workPath, "lock.pid")
+		if err := os.Remove(lockName); err != nil {
+			return fmt.Errorf("WARNING: could not remove %s, %s\n", lockName, err)
 		}
 		c.Name = ""
 		c.workPath = ""
@@ -897,7 +863,7 @@ func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error 
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
-	clone, err := InitCollection(cloneName)
+	clone, err := Init(cloneName)
 	if err != nil {
 		return err
 	}
@@ -995,4 +961,13 @@ func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool
 
 	// Update record and return
 	return c.Update(key, record)
+}
+
+// Save writes the collection's metadata to c.workPath
+func (c *Collection) Save() error {
+	if c.unsafeSaveMetadata == true {
+		// NOTE: We're playing fast and loose with the collection metadata, skip saveMetadata().
+		return nil
+	}
+	return c.saveMetadata()
 }

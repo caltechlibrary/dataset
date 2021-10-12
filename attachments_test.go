@@ -33,7 +33,7 @@ func TestAttachments(t *testing.T) {
 	cName := path.Join("testdata", "col3.ds")
 	os.RemoveAll(cName)
 
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Errorf("Can't create collection %q (%s)", cName, err)
 		t.FailNow()

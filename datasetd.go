@@ -557,7 +557,7 @@ Press ctl-c to terminate.
 	for cName, c := range config.Collections {
 		log.Printf("Opening collection %s", cName)
 		if c.DS == nil {
-			ds, err := openCollection(c.CName)
+			ds, err := Open(c.CName)
 			if err != nil {
 				return err
 			}

@@ -288,6 +288,15 @@ func (c *Collection) Frames() []string {
 	return keys
 }
 
+// FrameKeys retrieves a list of keys assocaited with a data frame
+func (c *Collection) FrameKeys(name string) []string {
+	frame, err := c.FrameRead(name)
+	if err != nil {
+		return []string{}
+	}
+	return frame.Keys
+}
+
 // FrameRead retrieves a frame from a collection.
 // Returns the DataFrame and an error value
 func (c *Collection) FrameRead(name string) (*DataFrame, error) {

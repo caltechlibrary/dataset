@@ -32,7 +32,7 @@ func TestMain(m *testing.M) {
 	}
 	cName := path.Join(dName, "t1.ds")
 	if _, err := os.Stat(cName); os.IsNotExist(err) {
-		if _, err := InitCollection(cName); err != nil {
+		if _, err := Init(cName); err != nil {
 			fmt.Fprintf(os.Stderr, "Cannot create %s, %s\n", cName, err)
 			fmt.Fprintf(os.Stderr, "Aborting %s\n", appName)
 			os.Exit(1)

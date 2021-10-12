@@ -1,3 +1,34 @@
+Release 1.0.3:
+
+Added attachment support for __datasetd__.
+
+Depreciated dependency on namaste package and Namaste support in command line tools. Removed "collections.go and collections_test.go" from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go.
+
+The dataset.Init() now places a lock file in the collection directory and leves the collection in an "Open" state, it should be explicitly closed.
+
+E.g. 
+
+```
+   c, err := dataset.Init("MyData.ds")
+   ...
+   defer c.Close()
+```
+
+Removed "set_*" for collection metadata fields from libdataset.go. These should be set using the dataset command line tool only.
+
+The dataset.Analzyer() and dataset.Repair() commands expect the dataset collections to be closed before being called. E.g..
+
+```
+    c, err := dataset.Open("MyData.ds")
+    ...
+    c.Close()
+    err := dataset.Analyzer("MyData.ds", true)
+    if err == nil {
+        c, err = dataset.Open("MyData.ds")
+        ...
+    }
+```
+
 Release 1.0.2:
 
 Added support for __datasetd__, a localhost web service for

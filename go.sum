@@ -1,7 +1,4 @@
-github.com/caltechlibrary/cli v0.0.16/go.mod h1:BVT+6d/QqcN4UApWR3ufjkkKj2O6+48B4G6iUpP8m38=
 github.com/caltechlibrary/dotpath v0.0.3 h1:E8aDD8vh+cmbCF4Pb+2yPnnrcROXtB3EE+EEPkRbTQk=
 github.com/caltechlibrary/dotpath v0.0.3/go.mod h1:rAu0NPuhTaEa9szxXq92x/JmMmedjsEEdHl5uTxzzs0=
-github.com/caltechlibrary/namaste v1.0.1 h1:T3ySGlsVRDUC95Ye6it1/Ws05+zbXsgrFrXEbqLkyjM=
-github.com/caltechlibrary/namaste v1.0.1/go.mod h1:lyxWeI4YoqJYaLyuEM96rOrAIcUM4Fu2j0zeQ06n+dw=
 github.com/caltechlibrary/pairtree v1.0.2 h1:zcsFibPW7tBvjOvbxHzkE1CIPm0BxUCfQrLCa+bB5qc=
 github.com/caltechlibrary/pairtree v1.0.2/go.mod h1:VZdWqmXgJ+tMxM37n/W+CjS8CQVPus+0ReFdRL10AS4=

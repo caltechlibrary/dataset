@@ -34,10 +34,10 @@ import (
 )
 
 //
-// analyzer checks the collection version and either calls
-// bucketAnalyzer or pairtreeAnalyzer as appropriate.
+// Analyzer checks the collection version and analyzes current
+// state of collection reporting on errors.
 //
-func analyzer(collectionName string, verbose bool) error {
+func Analyzer(collectionName string, verbose bool) error {
 	var (
 		eCnt int
 		wCnt int
@@ -52,25 +52,16 @@ func analyzer(collectionName string, verbose bool) error {
 	if err != nil {
 		return err
 	}
-	hasNamaste := false
 	hasCollectionJSON := false
 	for _, file := range files {
 		fname := file.Name()
 		switch {
-		case strings.HasPrefix(fname, "0=dataset_"):
-			hasNamaste = true
 		case fname == "collection.json":
 			hasCollectionJSON = true
 		}
-		if hasNamaste && hasCollectionJSON {
+		if hasCollectionJSON {
 			break
 		}
-	}
-
-	// NOTE: Check for Namaste 0=, warn if missing
-	if hasNamaste == false {
-		repairLog(verbose, "WARNING: Missing Namaste 0=dataset_%s\n", Version[1:])
-		wCnt++
 	}
 
 	// NOTE: Check to see if we have a collection.json
@@ -95,10 +86,11 @@ func analyzer(collectionName string, verbose bool) error {
 	}
 
 	// Now try to open the collection ...
-	c, err = openCollection(collectionName)
+	c, err = Open(collectionName)
 	if err != nil {
 		return err
 	}
+	defer c.Close()
 
 	// Set layout to PAIRTREE_LAYOUT
 	// Make sure we have all the known pairs in the pairtree
@@ -167,17 +159,17 @@ func analyzer(collectionName string, verbose bool) error {
 }
 
 //
-// repair takes a collection name and calls
+// Repair takes a collection name and calls
 // walks the pairtree and repairs collection.json as appropriate.
 //
-func repair(collectionName string, verbose bool) error {
+func Repair(collectionName string, verbose bool) error {
 	var (
 		c   *Collection
 		err error
 	)
 
 	// See if we can open a collection, if not then create an empty struct
-	c, err = openCollection(collectionName)
+	c, err = Open(collectionName)
 	if err != nil {
 		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
 		err = os.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
@@ -187,7 +179,7 @@ func repair(collectionName string, verbose bool) error {
 		}
 		repairLog(verbose, "Attempting to re-open %s", collectionName)
 
-		c, err = openCollection(collectionName)
+		c, err = Open(collectionName)
 		if err != nil {
 			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)
 			return err
