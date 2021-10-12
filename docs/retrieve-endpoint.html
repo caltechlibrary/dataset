@@ -51,11 +51,11 @@ Retrieve (end point)
 Interacting with the <strong>datasetd</strong> web service can be done with any web client. For documentation purposes I am assuming you are using <a href="https://curl.se/">curl</a>. This command line program is available on most POSIX systems including Linux, macOS and Windows.
 </p>
 <p>
-Attaches a document to a JSON Document using <code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and <code>&lt;FILENAME&gt;</code>.
+Retrieves an s attached document from a JSON record using <code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and <code>&lt;FILENAME&gt;</code>.
 </p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;` </code></pre>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;`</code></pre>
 <p>
-Requires a POST method and expects a multi-part web form providing the filename. The document will be written the JSON document directory by “<KEY>” in sub directory indicated by “<SEMVER>”.
+Requires a POST method and expects a multi-part web form providing the filename. The document will be written the JSON document directory by <code>&lt;KEY&gt;</code> in sub directory indicated by <code>&lt;SEMVER&gt;</code>.
 </p>
 <p>
 See https://semver.org/ for more information on semantic version numbers.
@@ -64,7 +64,7 @@ See https://semver.org/ for more information on semantic version numbers.
 Example
 </h2>
 <p>
-In this example we’re retieving the <code>&lt;FILENAME&gt;</code> of “a1.png”, with the <code>&lt;SEMVER&gt;</code> of “0.0.1” from the <code>&lt;COLLECTION_ID&gt;</code> of “t1” and <code>&lt;KEY&gt;</code> of “one” using curl.
+In this example we<code>re retieving the</code><FILENAME><code>of “a1.png”, with the</code><SEMVER><code>of “0.0.1” from the</code><COLLECTION_ID><code>of “t1” and</code><KEY>` of “one” using curl.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485/t1/retrieve/one/0.0.1/a1.png</code></pre>
 <p>

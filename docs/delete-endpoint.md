@@ -1,3 +1,4 @@
+
 Delete (end point)
 ==================
 
@@ -20,6 +21,6 @@ Posting using CURL is done like
 
 ```shell
     curl -X GET -H 'Content-Type: application.json' \
-      http://locahost:8485/t1/delete/one 
+      http://locahost:8485/t1/delete/one
 ```
 

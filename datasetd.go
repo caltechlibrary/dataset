@@ -89,6 +89,9 @@ failed to save %s, %s`, filename, err)
 //
 
 func collectionsEndPoint(w http.ResponseWriter, r *http.Request) (int, error) {
+	if strings.HasSuffix(r.URL.Path, "/help") {
+		return packageDocument(w, collectionsDocument())
+	}
 	collections := []string{}
 	for collectionID, _ := range config.Collections {
 		collections = append(collections, collectionID)
@@ -107,6 +110,9 @@ func collectionsEndPoint(w http.ResponseWriter, r *http.Request) (int, error) {
 //
 
 func keysEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
+	if strings.HasSuffix(r.URL.Path, "/help") {
+		return packageDocument(w, keysDocument(collectionID))
+	}
 	contentType := r.Header.Get("Content-Type")
 	if r.Method != "GET" {
 		return 405, fmt.Errorf(`Method Not Allowed
@@ -206,7 +212,7 @@ func readEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, a
 
 func updateEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
 	if len(args) == 0 || args[0] == "" {
-		return packageDocument(w, createDocument(collectionID))
+		return packageDocument(w, updateDocument(collectionID))
 	}
 	key := args[0]
 	contentType := r.Header.Get("Content-Type")
@@ -255,7 +261,7 @@ cannot update %s
 
 func deleteEndPoint(w http.ResponseWriter, r *http.Request, collectionID string, args []string) (int, error) {
 	if len(args) == 0 || args[0] == "" {
-		return packageDocument(w, createDocument(collectionID))
+		return packageDocument(w, deleteDocument(collectionID))
 	}
 	key := args[0]
 	contentType := r.Header.Get("Content-Type")
@@ -445,13 +451,13 @@ func api(w http.ResponseWriter, r *http.Request) {
 		statusCode, err = 405, fmt.Errorf("Method Not Allowed")
 		handleError(w, statusCode, err)
 	} else {
-		switch r.URL.Path {
-		case "/favicon.ico":
+		switch {
+		case r.URL.Path == "/favicon.ico":
 			statusCode, err = 200, nil
 			fmt.Fprintf(w, "")
 			//statusCode, err = 404, fmt.Errorf("Not Found")
 			//handleError(w, statusCode, err)
-		case "/collections":
+		case strings.HasPrefix(r.URL.Path, "/collections"):
 			statusCode, err = collectionsEndPoint(w, r)
 			if err != nil {
 				handleError(w, statusCode, err)

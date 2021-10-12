@@ -1,7 +1,8 @@
+
 Prune (end point)
 =================
 
-Removes an attached document from a JSON Document using `<KEY>`, `<SEMVER>` and `<FILENAME>`.
+Removes an attached document from a JSON record using `<KEY>`, `<SEMVER>` and `<FILENAME>`.
 
     `http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>`
 
@@ -20,4 +21,5 @@ In this example `<COLLECTION_ID>` is "t1", `<KEY>` is "one", `<SEMVER>` is "0.0.
 
 This will cause the attached file to be removed from the record
 and collection.
+
 

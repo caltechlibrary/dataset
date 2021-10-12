@@ -1,14 +1,14 @@
+
 Attach (end point)
 ==================
 
 Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-Attaches a document to a JSON Document using `<KEY>`, `<SEMVER>` and
-`<FILENAME>`.
+Attaches a document to a JSON Document using `<KEY>`, `<SEMVER>` and `<FILENAME>`.
 
     `http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>`
 
-Requires a POST method and expects a multi-part web form providing the source filename in the field "filename".  The document will be written the JSON document directory by "<KEY>" in sub directory indicated by "<SEMVER>".
+Requires a "POST" method. The "POST" is expected to be a multi-part web form providing the source filename in the field "filename".  The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`.
 
 See https://semver.org/ for more information on semantic version numbers.
 
@@ -26,7 +26,6 @@ The `<SEMVER>` is "0.0.1".
 ```
 
 NOTE: The URL contains the filename used in the saved attachment. If
-I didn't want to call it "a1.png" I could have provided a different
+I did not want to call it "a1.png" I could have provided a different
 name in the URL path.
-
 
