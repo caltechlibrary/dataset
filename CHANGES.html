@@ -42,7 +42,7 @@
 
 <section>
 <p>
-Release 1.0.3:
+Release 1.1.0:
 </p>
 <p>
 Added attachment support for <strong>datasetd</strong>.
@@ -57,6 +57,24 @@ Added “MetadataJSON()” function for Collection to quickly copy out the metad
     ...
     defer c.Close()
     fmt.Printf(&quot;%s&quot;, c.MetadataJSON())</code></pre>
+<p>
+Added “MetadataUpdate()” function to update a collection’s metadata.
+</p>
+<pre><code>    c, err := dataset.Open(&quot;MyData.ds&quot;)
+    ...
+    defer c.Close()
+    meta := new(Collection)
+    meta.Description = &quot;A test dataset&quot;
+    meta.Version = &quot;1.0.0&quot;
+    meta.Author = []*PersonOrOrg{
+        &amp;Person{
+            Type: &quot;Person&quot;,
+            GivenName: &quot;Jane&quot;,
+            FamilyName: &quot;Doe&quot;,
+        },
+    }
+    err = c.MetadataUpdate(meta)
+    ...</code></pre>
 <p>
 Depreciated dependency on namaste package and Namaste support in command line tools. Removed “collections.go and collections_test.go” from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection’s metadata are now depreciated.
 </p>
