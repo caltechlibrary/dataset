@@ -162,6 +162,7 @@ too.
 	setValue       bool // Note: set a collection level metadata value
 
 	// Application Verbs
+	vMetadata     *cli.Verb // metadata
 	vInit         *cli.Verb // init
 	vStatus       *cli.Verb // status
 	vCreate       *cli.Verb // create
@@ -245,6 +246,35 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	if quiet == false {
 		fmt.Fprintf(out, "OK")
 	}
+	return 0
+}
+
+// fnMetadata - return the metadata for a collection as JSON
+func fnMetadata(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	if len(args) < 1 {
+		fmt.Fprintf(eout,
+			"expected a collection name and/or person(s) name\n")
+		return 1
+	}
+	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
+	src := c.MetadataJSON()
+	fmt.Fprintf(out, "%s", src)
 	return 0
 }
 
@@ -2728,6 +2758,10 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// Application Verbs
 	app.VerbsRequired = true
 
+	// Collection metadata
+	vMetadata = app.NewVerb("metadata", "Retrieve JSON metadata of the collection", fnMetadata)
+	vMetadata.SetParams("COLLECTION")
+
 	// Collection oriented functions
 	vInit = app.NewVerb("init", "initialize a collection", fnInit)
 	vInit.SetParams("COLLECTION")
@@ -2930,7 +2964,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintln(app.Out, "%s\n", dataset.License)
+		fmt.Fprintf(app.Out, "%s\n\n", dataset.License)
 		os.Exit(0)
 	}
 	if showVersion {

@@ -7,14 +7,17 @@ import (
 	"strings"
 )
 
+// DisplayLicense returns the license associated with dataset application.
 func DisplayLicense(out io.Writer, appName string, license string) {
 	fmt.Fprintf(out, strings.ReplaceAll(strings.ReplaceAll(license, "{app_name}", appName), "{version}", Version))
 }
 
+// DisplayVersion returns the of the dataset application.
 func DisplayVersion(out io.Writer, appName string) {
 	fmt.Fprintf(out, "%s %s\n", appName, Version)
 }
 
+// DisplayUsage displays a usage message.
 func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, description string, examples string, license string) {
 	// Convert {app_name} and {version} in description
 	if description != "" {

@@ -38,6 +38,7 @@ $(PKGASSETS): cmd/pkgassets/pkgassets.go
 version.go: .FORCE
 	@echo "package $(PROJECT)" >version.go
 	@echo '' >>version.go
+	@echo '// Version of package' >>version.go
 	@echo 'const Version = "$(VERSION)"' >>version.go
 	@echo '' >>version.go
 	@git add version.go
