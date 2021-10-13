@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
+</ul>
+</nav>
+
+<section>
+<h1 id="keys-end-point">
+Keys (end point)
+</h1>
+<p>
+Interacting with the <strong>datasetd</strong> web service can be done with any web client. For documentation purposes I am assuming you are using <a href="https://curl.se/">curl</a>. This command line program is available on most POSIX systems including Linux, macOS and Windows.
+</p>
+<p>
+This end point lists keys available in a collection.
+</p>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/keys`</code></pre>
+<p>
+Requires a “GET” method.
+</p>
+<p>
+The keys are turned as a JSON array or http error if not found.
+</p>
+<h2 id="example">
+Example
+</h2>
+<p>
+In this example <code>&lt;COLLECTION_ID&gt;</code> is “t1”.
+</p>
+<pre class="shell"><code>    curl http://localhost:8485/t1/keys</code></pre>
+<p>
+The document return looks some like
+</p>
+<pre><code>    [
+        &quot;one&quot;,
+        &quot;two&quot;,
+        &quot;three&quot;
+    ]</code></pre>
+<p>
+For a “t1” containing the keys of “one”, “two” and “three”.
+</p>
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

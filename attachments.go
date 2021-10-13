@@ -69,20 +69,6 @@ type Attachment struct {
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// attachmentNames takes a key, semver and filename and returns a path to the
-// metadata and a path to where the file should be stored. Returns an error
-// if the key is not found in collection.
-func (c *Collection) attachmentNames(keyName, semver, fName string) (string, string, error) {
-	var (
-		attachmentFile     string
-		attachmentMetadata string
-	)
-	if c.KeyExists(keyName) == false {
-		return "", "", fmt.Errorf("No key found for %q", keyName)
-	}
-	return attachmentFile, attachmentMetadata, nil
-}
-
 // getAttachmentList takes a JSON objects, pulls our "_Attachments" and reads them into
 // and array of Attachment. Returns true if we have a list, false otherwise
 func getAttachmentList(jsonObject map[string]interface{}) ([]*Attachment, bool) {
@@ -257,9 +243,19 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 	return err
 }
 
-// AttachFile is for attaching a single non-JSON document to a dataset record. It will replace
-// ANY existing attached content with the same semver and basename.
-func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
+// AttachFile is for attaching a single non-JSON document to a
+// dataset record. It will replace ANY existing attached content
+// with the same semver and basename.
+func (c *Collection) AttachFile(keyName string, semver string, fullName string) error {
+	// Normalize fName to basename of srcName
+	dstName := path.Base(fullName)
+	return c.AttachFileAs(keyName, semver, dstName, fullName)
+}
+
+// AttachFileAs is for attaching a single non-JSON document to a
+// dataset record with a specific attachment name. It will replace ANY
+// existing attached content with the same semver and destintation name.
+func (c *Collection) AttachFileAs(keyName string, semver string, dstName string, srcName string) error {
 	if c.KeyExists(keyName) == false {
 		return fmt.Errorf("No key found for %q", keyName)
 	}
@@ -267,8 +263,6 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 		// We use version v0.0.0 for "unversioned" attachments.
 		semver = "v0.0.0"
 	}
-	// Normalize fName to basename of fullName
-	fName := path.Base(fullName)
 
 	// Read in JSON object and metadata objects.
 	jsonObject := map[string]interface{}{}
@@ -289,7 +283,7 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 	attachmentList, ok := getAttachmentList(jsonObject)
 	if ok == true {
 		for _, obj := range attachmentList {
-			if obj.Name == fName {
+			if obj.Name == dstName {
 				attachmentObject = obj
 				break
 			}
@@ -298,23 +292,23 @@ func (c *Collection) AttachFile(keyName, semver string, fullName string) error {
 
 	// Update the metadata
 	// Read in the attachment so I can compute the checksum as well as size.
-	checksum, err := calcChecksum(fullName)
+	checksum, err := calcChecksum(srcName)
 	if err != nil {
-		return fmt.Errorf("Checksum error %q, %s", fullName, err)
+		return fmt.Errorf("Checksum error %q, %s", srcName, err)
 	}
 
-	attachmentObject.Name = fName
+	attachmentObject.Name = dstName
 	attachmentObject.Version = semver
 	// Add/update our version href
-	attachmentObject.HRef = path.Join(docDir, semver, fName)
+	attachmentObject.HRef = path.Join(docDir, semver, dstName)
 	// Write out attached filename and update size.
 	err = os.MkdirAll(path.Dir(attachmentObject.HRef), 0777)
 	if err != nil {
 		return fmt.Errorf("Can't create directory for %q, %s", attachmentObject.HRef, err)
 	}
-	r, err := os.Open(fullName)
+	r, err := os.Open(srcName)
 	if err != nil {
-		return fmt.Errorf("Can't read %q, %s", fullName, err)
+		return fmt.Errorf("Can't read %q, %s", srcName, err)
 	}
 	defer r.Close()
 	w, err := os.Create(attachmentObject.HRef)
@@ -383,6 +377,23 @@ func (c *Collection) Attachments(keyName string) ([]string, error) {
 		s = append(s, fmt.Sprintf("%s %d", attachment.Name, size))
 	}
 	return s, nil
+}
+
+// AttachmentPath takes a key, semver and filename and returns the path
+// to the attached file (if found).
+func (c *Collection) AttachmentPath(keyName string, semver string, filename string) (string, error) {
+	if c.KeyExists(keyName) == false {
+		return "", fmt.Errorf("No key found for %q", keyName)
+	}
+	objPath, err := c.DocPath(keyName)
+	if err != nil {
+		return "", fmt.Errorf("Cannot find object %s", keyName)
+	}
+	fName := path.Join(path.Dir(objPath), semver, filename)
+	if _, err := os.Stat(fName); os.IsNotExist(err) {
+		return "", fmt.Errorf("Cannot find %s %s/%s", keyName, semver, filename)
+	}
+	return fName, nil
 }
 
 func filterNameFound(a []string, target string) bool {

@@ -44,8 +44,11 @@
 </nav>
 
 <section>
-<h2 id="a-shell-example">
+<h1 id="a-shell-example">
 A Shell Example
+</h1>
+<h2 id="dataset">
+dataset
 </h2>
 <p>
 Below is a simple example of shell based interaction with dataset a collection using the command line dataset tool.
@@ -88,6 +91,58 @@ Below is a simple example of shell based interaction with dataset a collection u
 
     # To remove the collection just use the Unix shell command
     rm -fR friends.ds</code></pre>
+<h2 id="datasetd">
+datasetd
+</h2>
+<p>
+We need to have two shell sessions running for this example.
+</p>
+<p>
+For this example we’re going to use the “friends.ds” collection created in the previous example. We need to create a “settings.json” file in the same directory where you have “friends.ds”. We will use it to start <em>datasetd</em>. That file should contain
+</p>
+<div id="cb2" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>        <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>        <span class="dt">&quot;collections&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>            <span class="dt">&quot;friends&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>                <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;friends.ds&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>                <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>                <span class="dt">&quot;create&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>                <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>                <span class="dt">&quot;update&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>                <span class="dt">&quot;delete&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>            <span class="fu">}</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>        <span class="fu">}</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+</div>
+<p>
+We start up <em>datasetd</em> with the following command.
+</p>
+<pre class="shell"><code>    datasetd settings.json</code></pre>
+<p>
+In this first session you will see log output to the console. We can use that to see how the service handles the requests.
+</p>
+<p>
+In a second shell session we’re going to use the <a href="https://curl.se/">curl</a> command to interact with our collections.
+</p>
+<pre class="shell"><code>    # Create a JSON document 
+    curl -X POST -H &#39;application/json&#39; \
+    &#39;http://localhost:8485/friends/create/frieda&#39; \
+    -d &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
+
+    # Read a JSON document
+    curl &#39;http://localhost:8485/friends/read/frieda&#39;
+    
+    # Update a JSON document
+    curl -X POST -H &#39;application/json&#39; \
+    &#39;http://localhost:8485/friends/update/frieda&#39; \
+    -d &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}&#39;
+
+    # List the keys in the collection
+    curl &#39;http://localhost:8485/friends/keys&#39;
+
+    # Delete a JSON document
+    curl &#39;http://localhost:8485/friends/delete/frieda&#39;</code></pre>
 </section>
 
 <footer>

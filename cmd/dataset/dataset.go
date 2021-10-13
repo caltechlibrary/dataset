@@ -34,8 +34,8 @@ import (
 	"time"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/cli"
 	"github.com/caltechlibrary/dataset/tbl"
 )
 
@@ -162,6 +162,7 @@ too.
 	setValue       bool // Note: set a collection level metadata value
 
 	// Application Verbs
+	vMetadata     *cli.Verb // metadata
 	vInit         *cli.Verb // init
 	vStatus       *cli.Verb // status
 	vCreate       *cli.Verb // create
@@ -175,7 +176,8 @@ too.
 	vPath         *cli.Verb // path
 	vAttach       *cli.Verb // attach
 	vAttachments  *cli.Verb // attachments
-	vDetach       *cli.Verb // detach
+	vDetach       *cli.Verb // detach (depreciated)
+	vRetrieve     *cli.Verb // retrieve (replaces detach)
 	vPrune        *cli.Verb // prune
 	vImport       *cli.Verb // import
 	vExport       *cli.Verb // export
@@ -234,7 +236,7 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	for _, cName := range args {
-		c, err = dataset.InitCollection(cName)
+		c, err = dataset.Init(cName)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -244,6 +246,35 @@ func fnInit(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	if quiet == false {
 		fmt.Fprintf(out, "OK")
 	}
+	return 0
+}
+
+// fnMetadata - return the metadata for a collection as JSON
+func fnMetadata(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *flag.FlagSet) int {
+	var (
+		err error
+	)
+	err = flagSet.Parse(args)
+	if err != nil {
+		fmt.Fprintf(eout, "%s\n", err)
+		return 1
+	}
+	args = flagSet.Args()
+
+	if len(args) < 1 {
+		fmt.Fprintf(eout,
+			"expected a collection name and/or person(s) name\n")
+		return 1
+	}
+	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
+	src := c.MetadataJSON()
+	fmt.Fprintf(out, "%s", src)
 	return 0
 }
 
@@ -265,6 +296,11 @@ func fnWho(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *
 		return 1
 	}
 	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+	}
+	defer c.Close()
 	if setValue {
 		who := []string{}
 		if len(args) > 1 {
@@ -277,13 +313,14 @@ func fnWho(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet *
 			}
 			who = strings.Split(fmt.Sprintf("%s", src), "\n")
 		}
-		err = dataset.SetWho(cName, strings.Join(who, "\n"))
+		c.Who = who
+		err = c.Save()
 		if err != nil {
 			fmt.Fprintf(eout, "%s", err)
 			return 1
 		}
 	} else {
-		fmt.Fprintf(out, "%s", dataset.GetWho(cName))
+		fmt.Fprintf(out, "%s", strings.Join(c.Who, "\n"))
 	}
 	return 0
 }
@@ -304,23 +341,36 @@ func fnWhat(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Unable to open collection %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
 	if setValue {
 		if len(args) > 1 {
-			err = dataset.SetWhat(cName, strings.Join(args[1:], "\n"))
+			c.What = strings.Join(args[1:], "\n")
+			if err := c.Save(); err != nil {
+				fmt.Fprintf(eout, "Failed to save metadata for %q, %q\n", cName, err)
+			}
 		} else {
 			src, err := ioutil.ReadAll(in)
 			if err != nil {
 				fmt.Fprintf(eout, "failed to read description, %s\n", err)
 				return 1
 			}
-			err = dataset.SetWhat(cName, fmt.Sprintf("%s", src))
+			c.What = fmt.Sprintf("%s", src)
+			if err := c.Save(); err != nil {
+				fmt.Fprintf(eout, "Failed to save metadata for %q, %q\n", cName, err)
+				return 1
+			}
 		}
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
 	} else {
-		fmt.Fprintf(out, "%s", dataset.GetWhat(cName))
+		fmt.Fprintf(out, "%s", c.What)
 	}
 	return 0
 }
@@ -341,23 +391,39 @@ func fnWhen(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "could not open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
+
 	if setValue {
 		if len(args) > 1 {
-			err = dataset.SetWhen(cName, strings.Join(args[1:], "\n"))
+			c.When = strings.Join(args[1:], "\n")
+			if err = c.Save(); err != nil {
+				fmt.Fprintf(eout, "failed to save metadata for %q, %s\n", cName, err)
+				return 1
+			}
+
 		} else {
 			src, err := ioutil.ReadAll(in)
 			if err != nil {
 				fmt.Fprintf(eout, "failed to read date(s), %s\n", err)
 				return 1
 			}
-			err = dataset.SetWhen(cName, fmt.Sprintf("%s", src))
+			c.When = fmt.Sprintf("%s", src)
+			if err := c.Save(); err != nil {
+				fmt.Fprintf(eout, "failed to save metadata for %q, %s\n", cName, err)
+				return 1
+			}
 		}
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
 	} else {
-		fmt.Fprintf(out, "%s", dataset.GetWhen(cName))
+		fmt.Fprintf(out, "%s", c.When)
 	}
 	return 0
 }
@@ -379,23 +445,37 @@ func fnWhere(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	}
 	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
 	if setValue {
 		if len(args) > 1 {
-			err = dataset.SetWhere(cName, strings.Join(args[1:], "\n"))
+			c.Where = strings.Join(args[1:], "\n")
+			if err := c.Save(); err != nil {
+				fmt.Fprintf(eout, "failed to save metadata for %q, %s\n", cName, err)
+				return 1
+			}
 		} else {
 			src, err := ioutil.ReadAll(in)
 			if err != nil {
 				fmt.Fprintf(eout, "failed to read location, %s\n", err)
 				return 1
 			}
-			err = dataset.SetWhere(cName, fmt.Sprintf("%s", src))
+			c.Where = fmt.Sprintf("%s", src)
+			if err := c.Save(); err != nil {
+				fmt.Fprintf(eout, "failed to save metadata for %q, %s\n", cName, err)
+				return 1
+			}
 		}
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
 	} else {
-		fmt.Fprintf(out, "%s", dataset.GetWhere(cName))
+		fmt.Fprintf(out, "%s", c.Where)
 	}
 	return 0
 }
@@ -416,6 +496,12 @@ func fnVersion(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		return 1
 	}
 	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
 	if setValue {
 		src := []byte("")
 		if len(args) > 1 {
@@ -432,13 +518,16 @@ func fnVersion(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 			fmt.Fprintf(eout, "failed to parse semvar version string %q, %s\n", src, err)
 			return 1
 		}
-		err = dataset.SetVersion(cName, semver.String())
+		c.DatasetVersion = semver.String()
+		if err := c.Save(); err != nil {
+			fmt.Fprintf(eout, "Failed to save metadata %q, %s\n", cName, err)
+		}
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
 		}
 	} else {
-		fmt.Fprintf(out, "%s", dataset.GetVersion(cName))
+		fmt.Fprintf(out, "%s", c.DatasetVersion)
 	}
 	return 0
 }
@@ -459,6 +548,12 @@ func fnContact(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		return 1
 	}
 	cName := args[0]
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
 	if setValue {
 		src := []byte("")
 		if len(args) > 1 {
@@ -470,13 +565,13 @@ func fnContact(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 				return 1
 			}
 		}
-		err = dataset.SetContact(cName, fmt.Sprintf("%s", src))
-		if err != nil {
-			fmt.Fprintf(eout, "%s\n", err)
+		c.Contact = fmt.Sprintf("%s", src)
+		if err := c.Save(); err != nil {
+			fmt.Fprintf(eout, "Failed to save metadata %q, %s\n", cName, err)
 			return 1
 		}
 	} else {
-		fmt.Fprintf(out, "%s", dataset.GetContact(cName))
+		fmt.Fprintf(out, "%s", c.Contact)
 	}
 	return 0
 }
@@ -505,7 +600,7 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 	for _, cName := range args {
-		c, err := dataset.GetCollection(cName)
+		c, err := dataset.Open(cName)
 		if err != nil {
 			fmt.Fprintf(eout, "%s\n", err)
 			return 1
@@ -513,10 +608,7 @@ func fnStatus(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		if showVerbose {
 			fmt.Fprintf(out, "%s, dataset version %s, collection version %s\n", cName, c.DatasetVersion, c.Version)
 		}
-	}
-	if err := dataset.CloseAll(); err != nil {
-		fmt.Fprintf(eout, "%s\n", err)
-		return 1
+		c.Close()
 	}
 	if quiet == false {
 		fmt.Fprintf(out, "OK")
@@ -583,8 +675,14 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		fmt.Fprintf(eout, "%s must be a valid JSON Object, %s", key, err)
 		return 1
 	}
-	if dataset.KeyExists(cName, key) == true && overwrite == true {
-		if err := dataset.UpdateJSON(cName, key, src); err != nil {
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open collection %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
+	if c.KeyExists(key) == true && overwrite == true {
+		if err := c.UpdateJSON(key, src); err != nil {
 			fmt.Fprintf(eout, "failed to update %q in %s, %s\n", key, cName, err)
 			return 1
 		}
@@ -593,8 +691,7 @@ func fnCreate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		}
 		return 0
 	}
-
-	if err := dataset.CreateJSON(cName, key, src); err != nil {
+	if err := c.CreateJSON(key, src); err != nil {
 		fmt.Fprintf(eout, "failed to create %q in %s, %s\n", key, cName, err)
 		return 1
 	}
@@ -646,7 +743,7 @@ func fnRead(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -751,7 +848,7 @@ func fnUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 	if strings.HasSuffix(key, ".json") {
 		key = strings.TrimSuffix(key, ".json")
 	}
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -816,7 +913,7 @@ func fnDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -893,7 +990,7 @@ func fnJoin(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 	if strings.HasSuffix(key, ".json") {
 		key = strings.TrimSuffix(key, ".json")
 	}
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -957,7 +1054,7 @@ func fnKeys(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1056,7 +1153,7 @@ func fnHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		keys = append(keys, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1121,7 +1218,7 @@ func fnCount(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		keys = append(keys, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1185,7 +1282,7 @@ func fnPath(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet 
 		keys = append(keys, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1268,7 +1365,7 @@ func fnAttach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		fNames = append(fNames, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1341,7 +1438,7 @@ func fnAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		keys = append(keys, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1420,7 +1517,7 @@ func fnDetach(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		fNames = append(fNames, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1498,7 +1595,7 @@ func fnPrune(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		fNames = append(fNames, keysFromSrc(src)...)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1581,7 +1678,7 @@ func fnFrame(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		}
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1709,7 +1806,7 @@ func fnFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string, 
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1766,7 +1863,7 @@ func fnFrameGrid(in io.Reader, out io.Writer, eout io.Writer, args []string, fla
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1819,7 +1916,7 @@ func fnFrames(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1861,7 +1958,13 @@ func fnFrameExists(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
-	if dataset.FrameExists(cName, frameName) {
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
+	if c.FrameExists(frameName) {
 		fmt.Fprintf(out, "true")
 	} else {
 		fmt.Fprintf(out, "false")
@@ -1897,7 +2000,13 @@ func fnFrameDelete(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
-	err = dataset.FrameDelete(cName, frameName)
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
+	err = c.FrameDelete(frameName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -1942,14 +2051,20 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
 
 	// Check to see if frame exists...
-	if dataset.FrameExists(cName, frameName) == false {
+	if c.FrameExists(frameName) == false {
 		fmt.Fprintf(eout, "Frame %q not defined in %s\n", frameName, cName)
 		return 1
 	}
 
-	keys = dataset.FrameKeys(cName, frameName)
+	keys = c.FrameKeys(frameName)
 
 	// Read from inputFName, update frame's keys
 	if len(inputFName) > 0 {
@@ -1980,7 +2095,7 @@ func fnReframe(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 	}
 
 	// Now regenerate the objects in the frame
-	err = dataset.FrameReframe(cName, frameName, keys, showVerbose)
+	err = c.FrameReframe(frameName, keys, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2023,15 +2138,21 @@ func fnRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string, flagS
 		fmt.Fprintf(eout, "Don't understand parameters, %s\n", strings.Join(args, " "))
 		return 1
 	}
+	c, err := dataset.Open(cName)
+	if err != nil {
+		fmt.Fprintf(eout, "Failed to open %q, %s\n", cName, err)
+		return 1
+	}
+	defer c.Close()
 
 	// Check to see if frame exists...
-	if dataset.FrameExists(cName, frameName) == false {
+	if c.FrameExists(frameName) == false {
 		fmt.Fprintf(eout, "Frame %q not defined in %s\n", frameName, cName)
 		return 1
 	}
 
 	// Now regenerate object list with Refresh
-	err = dataset.FrameRefresh(cName, frameName, showVerbose)
+	err = c.FrameRefresh(frameName, showVerbose)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2080,7 +2201,7 @@ func fnImport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2162,7 +2283,7 @@ func fnExport(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSe
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2269,7 +2390,7 @@ func fnSyncSend(in io.Reader, out io.Writer, eout io.Writer, args []string, flag
 		return 1
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2373,7 +2494,7 @@ func fnSyncRecieve(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		table = tbl.TableStringToInterface(csvTable)
 	}
 
-	c, err := dataset.GetCollection(cName)
+	c, err := dataset.Open(cName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2410,7 +2531,7 @@ func fnCheck(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	}
 	for _, cName := range args {
-		err = dataset.Check(cName, showVerbose)
+		err = dataset.Analyzer(cName, showVerbose)
 		if err != nil {
 			fmt.Fprintf(eout, "error in %q, %s\n", cName, err)
 			return 1
@@ -2480,7 +2601,7 @@ func fnClone(in io.Reader, out io.Writer, eout io.Writer, args []string, flagSet
 		return 1
 	}
 
-	c, err := dataset.GetCollection(srcCollectionName)
+	c, err := dataset.Open(srcCollectionName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2550,7 +2671,7 @@ func fnCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string, f
 		return 1
 	}
 
-	c, err := dataset.GetCollection(srcCollectionName)
+	c, err := dataset.Open(srcCollectionName)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		return 1
@@ -2637,6 +2758,10 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	// Application Verbs
 	app.VerbsRequired = true
 
+	// Collection metadata
+	vMetadata = app.NewVerb("metadata", "Retrieve JSON metadata of the collection", fnMetadata)
+	vMetadata.SetParams("COLLECTION")
+
 	// Collection oriented functions
 	vInit = app.NewVerb("init", "initialize a collection", fnInit)
 	vInit.SetParams("COLLECTION")
@@ -2707,9 +2832,13 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vAttachments.SetParams("COLLECTION", "KEY")
 	vAttachments.StringVar(&inputFName, "i,input", "", "read keys(s), one per line, from a file")
 
-	vDetach = app.NewVerb("detach", "detach a copy of the attachment from a JSON object", fnDetach)
+	vDetach = app.NewVerb("detach", "(depreciated in favor of retrieve) detach a copy of the attachment from a JSON object", fnDetach)
 	vDetach.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
 	vDetach.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
+
+	vRetrieve = app.NewVerb("retrieve", "detach a copy of the attachment from a JSON object", fnDetach)
+	vRetrieve.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
+	vRetrieve.StringVar(&inputFName, "i,input", "", "read filename(s), one per line, from a file")
 
 	vPrune = app.NewVerb("prune", "prune an the attachment to a JSON object", fnPrune)
 	vPrune.SetParams("COLLECTION", "KEY", "[SEMVER]", "[FILENAMES]")
@@ -2782,7 +2911,6 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 	vSyncRecieve.BoolVar(&syncOverwrite, "O,overwrite", true, "overwrite existing cells in frame")
 	vSyncRecieve.BoolVar(&showVerbose, "v,verbose", false, "verbose output")
 
-	// Namaste and collection metadata support
 	vWho = app.NewVerb("who", "authorship, owner or maintainer name(s)", fnWho)
 	vWho.SetParams("COLLECTION", "[WHO]")
 	vWho.BoolVar(&setValue, "set", false, "set the value(s)")
@@ -2836,7 +2964,7 @@ To view a specific example use --help EXAMPLE\_NAME where EXAMPLE\_NAME is one o
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintln(app.Out, "%s\n", dataset.License)
+		fmt.Fprintf(app.Out, "%s\n\n", dataset.License)
 		os.Exit(0)
 	}
 	if showVersion {

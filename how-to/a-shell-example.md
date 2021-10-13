@@ -1,8 +1,10 @@
 A Shell Example
----------------
+===============
 
-Below is a simple example of shell based interaction with dataset a
-collection using the command line dataset tool.
+dataset
+-------
+
+Below is a simple example of shell based interaction with dataset a collection using the command line dataset tool.
 
 ``` {.shell}
     # Create a collection "friends.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
@@ -44,3 +46,58 @@ collection using the command line dataset tool.
     # To remove the collection just use the Unix shell command
     rm -fR friends.ds
 ```
+
+datasetd
+--------
+
+We need to have two shell sessions running for this example.
+
+For this example we're going to use the "friends.ds" collection created in the previous example.  We need to create a "settings.json" file in the same directory where you have "friends.ds".  We will use it to start _datasetd_. That file should contain
+
+```{.json}
+    {
+        "host": "localhost:8485",
+        "collections": {
+            "friends": {
+                "dataset": "friends.ds",
+                "keys": true,
+                "create": true,
+                "read": true,
+                "update": true,
+                "delete": true
+            }
+        }
+    }
+```
+
+We start up _datasetd_ with the following command.
+
+```{.shell}
+    datasetd settings.json
+```
+
+In this first session you will see log output to the console. We can use that to see how the service handles the requests.
+
+In a second shell session we're going to use the [curl](https://curl.se/) command to interact with our collections.
+
+``` {.shell}
+    # Create a JSON document 
+    curl -X POST -H 'application/json' \
+    'http://localhost:8485/friends/create/frieda' \
+    -d '{"name":"frieda","email":"frieda@inverness.example.org"}'
+
+    # Read a JSON document
+    curl 'http://localhost:8485/friends/read/frieda'
+    
+    # Update a JSON document
+    curl -X POST -H 'application/json' \
+    'http://localhost:8485/friends/update/frieda' \
+    -d '{"name":"frieda","email":"frieda@zbs.example.org", "count": 2}'
+
+    # List the keys in the collection
+    curl 'http://localhost:8485/friends/keys'
+
+    # Delete a JSON document
+    curl 'http://localhost:8485/friends/delete/frieda'
+```
+

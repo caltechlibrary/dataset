@@ -29,7 +29,7 @@ import (
 
 func TestPairtree(t *testing.T) {
 	cName := "testdata/pairtree_test.ds"
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -67,7 +67,7 @@ func TestRepair(t *testing.T) {
 	// Setup a test collection and data
 	cName := path.Join("testdata", "test_repair.ds")
 	os.RemoveAll(cName)
-	c, err := InitCollection(cName)
+	c, err := Init(cName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -102,12 +102,20 @@ func TestRepair(t *testing.T) {
 		t.FailNow()
 	}
 	c.Close()
+	lockName := path.Join(cName, "lock.pid")
+	if _, err := os.Stat(lockName); os.IsNotExist(err) == false {
+		t.Errorf("Close is not removing lock for %s, aborting test", cName)
+		t.FailNow()
+	}
+
 	err = Repair(cName, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	c, err = openCollection(cName)
+
+	c.Close()
+	c, err = Open(cName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -118,7 +126,7 @@ func TestRepair(t *testing.T) {
 		t.FailNow()
 	}
 	c.Close()
-	if err := Check(cName, false); err != nil {
+	if err := Repair(cName, false); err != nil {
 		t.Errorf("Expected no error on Check of %q, got %s", cName, err)
 		t.FailNow()
 	}

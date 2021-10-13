@@ -1,5 +1,5 @@
-Documentation for dataset
-=========================
+dataset
+=======
 
 The documentation is organized around the command line options 
 and as a series of "how to" style examples.
@@ -59,7 +59,7 @@ JSON Document Attachments
 
 - [attach](attach.html) a file to a JSON document in a collection
 - [attachments](attachments.html) lists the files attached to a JSON document in a collection
-- [detach](detach.html) retrieve an attached file associated with a JSON document in a collection
+- [retrieve](retrieve.html) retrieve an attached file associated with a JSON document in a collection
 - [prune](prune.html) delete one or more attached files of a JSON document in a collection
 
 Samples and cloning
@@ -74,4 +74,26 @@ Collection health
 
 - [check](check.html) - checks a collection against the current version of tools
 - [repair](repair.html) - repairs/upgrades a collection based on the current version of the tool
+
+Dataset as a web service
+========================
+
+New as of version v2.x is a web service providing access to dataset
+collections. This is described in the [datasetd](datasetd.html) 
+documentation page.
+
+[datasetd](datasetd.html) supports the following end points.
+
+- List [collections](collections-endpoint.html) available from the web service
+- List or update a [collection](collection-endpoint.html)'s metadata
+- List a collection's [Keys](keys-endpoint.html)
+- Object level actions
+    - [create](create-endpoint.html)
+    - [read](read-endpoint.html)
+    - [update](update-endpoint.html)
+    - [delete](delete-endpoint.html)
+    - Documents as attachments
+        - [attach](attach-endpoint.html)
+        - [retrieve](retrieve-endpoint.html)
+        - [prune](prune-endpoint.html)
 

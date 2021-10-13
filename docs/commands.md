@@ -35,7 +35,7 @@ replaced with one of the commands below --
 - [path](path.html) - given a document name return the full path to document
 - [attachments](attachments.html) - lists any attached content for JSON document
     - [attach](attach.html) - attaches a non-JSON content to a JSON record
-    - [detach](detach.html) - returns attachments for a JSON document
+    - [retrieve](retrieve.html) - returns attachments for a JSON document
     - [prune](prune.html) - remove attachments to a JSON document
 - [import-csv](import-csv.html) - import a CSV file's rows as JSON documents
     - [import-gsheet](import-gsheet.html) - import a Google Sheets sheet rows

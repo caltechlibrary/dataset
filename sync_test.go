@@ -104,7 +104,7 @@ func TestMerge(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	c, err := InitCollection(collectionName)
+	c, err := Init(collectionName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -417,7 +417,7 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	c, err := InitCollection(collectionName)
+	c, err := Init(collectionName)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

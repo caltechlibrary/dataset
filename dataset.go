@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/url"
@@ -38,7 +39,6 @@ import (
 	// Caltech Library packages
 	"github.com/caltechlibrary/dataset/tbl"
 	"github.com/caltechlibrary/dotpath"
-	"github.com/caltechlibrary/namaste"
 	"github.com/caltechlibrary/pairtree"
 )
 
@@ -55,7 +55,7 @@ const (
 // Collection is the container holding a pairtree containing JSON docs
 type Collection struct {
 	// DatasetVersion of the collection
-	DatasetVersion string `json:"dataset_version"`
+	DatasetVersion string `json:"dataset,omitempty"`
 
 	// Name (filename) of collection
 	Name string `json:"name"`
@@ -64,14 +64,17 @@ type Collection struct {
 	workPath string // `json:"-"`
 
 	// KeyMap holds the document key to path in the collection
-	KeyMap map[string]string `json:"keymap"`
+	KeyMap map[string]string `json:"keymap,omitempty"`
 
 	// FrameMap is a list of frame names and with rel path to the frame defined in the collection
-	FrameMap map[string]string `json:"frames"`
+	FrameMap map[string]string `json:"frames,omitempty"`
 
 	//
 	// Metadata for collection.
 	//
+
+	// Description describes what is in the collection.
+	Description string `json:"description,omitempty"`
 
 	// Created is the date/time the init command was run in
 	// RFC1123 format.
@@ -83,16 +86,30 @@ type Collection struct {
 	// Contact info
 	Contact string `json:"contact,omitempty"`
 
-	// CodeMeta is a relative path or URL to a Code Meta
-	// JSON document for the collection.  Often it'll be
-	// in the collection's root and have the value "codemeta.json"
-	// but also may be stored someplace else. It should be
-	// an empty string if the codemeta.json file has not been
-	// created.
-	CodeMeta string `json:"codemeta,omitempty"`
+	// Author holds a list of PersonOrOrg
+	Author []*PersonOrOrg `json:"author,omitempty"`
+
+	// Contributors holds a list of PersonOrOrg
+	Contributor []*PersonOrOrg `json:"contributor,omitempty"`
+
+	// Funder holds a list of PersonOrOrg
+	Funder []*PersonOrOrg `json:"funder,omitempty"`
+
+	// DOI holds the digital object identifier if defined.
+	DOI string `json:"doi,omitempty"`
+
+	// License holds a pointer to the license information for
+	// the collection. E.g. CC0 URL
+	License string `json:"license,omitempty"`
+
+	// Annotation is a map to any addition metadata associated with
+	// the Collection's metadata.
+	Annotation map[string]interface{} `json:"annotation,omitempty"`
 
 	//
-	// The following are the Namaste fields
+	// The following are the Namaste fields are depreciated
+	// they are left in place so we can easily migrate their
+	// content into more appropriate fields or annotations.
 	//
 
 	// Who is the person(s)/organization(s) that created the collection
@@ -124,6 +141,26 @@ type Collection struct {
 
 	// frameMutex is used to sync on frame writing (e.g. writes involving _frame path)
 	frameMutex *sync.Mutex
+}
+
+// PersonOrOrg holds a the description of a person or organizaion
+// associated with the dataset collection. e.g. author, contributor
+// or funder.
+type PersonOrOrg struct {
+	// Type is either "Person" or "Organization"
+	Type string `json:"@type,omitempty"`
+	// ID is either an ORCID or ROR
+	ID string `json:"@id,omitempty"`
+	// Name of an organization, empty if person
+	Name string `json:"name,omitempty"`
+	// Given name for a person, empty of organization
+	GivenName string `json:"givenName,omitempty"`
+	// Family name for a person, empty of organization
+	FamilyName string `json:"familyName,omitempty"`
+	// Affiliation holds the intitution affiliation of a person.
+	Affiliation []*PersonOrOrg `json:"affiliation,omitempty"`
+	// Annotation holds custom fields, e.g. a grant number of a funder
+	Annotation map[string]interface{} `json:"annotation,omitempty"`
 }
 
 //
@@ -195,38 +232,15 @@ func (c *Collection) saveMetadata() error {
 	return nil
 }
 
-// addNamaste writes name as text files for collection in the collection's directory.
-func (c *Collection) addNamaste() error {
-	// Add/Update Namaste
-	namaste.DirType(c.workPath, fmt.Sprintf("dataset_%s", Version[1:]))
-	if len(c.Who) > 0 {
-		for _, who := range c.Who {
-			namaste.Who(c.workPath, who)
-		}
+// deleteCollection an entire collection
+func deleteCollection(name string) error {
+	_, err := os.Stat(name)
+	if err != nil {
+		return err
 	}
-	if c.What != "" {
-		if strings.Contains(c.What, "\n") {
-			s := strings.Split(c.What, "\n")
-			namaste.What(c.workPath, s[0]+"...")
-		} else {
-			namaste.What(c.workPath, c.What)
-		}
-	}
-	if c.When != "" {
-		if strings.Contains(c.When, "\n") {
-			s := strings.Split(c.When, "\n")
-			namaste.When(c.workPath, s[0]+"...")
-		} else {
-			namaste.When(c.workPath, c.When)
-		}
-	}
-	if c.Where != "" {
-		if strings.Contains(c.Where, "\n") {
-			s := strings.Split(c.Where, "\n")
-			namaste.Where(c.workPath, s[0]+"...")
-		} else {
-			namaste.Where(c.workPath, c.Where)
-		}
+	collectionName := collectionNameAsPath(name)
+	if err := os.RemoveAll(collectionName); err != nil {
+		return err
 	}
 	return nil
 }
@@ -235,8 +249,82 @@ func (c *Collection) addNamaste() error {
 // Public interface for dataset
 //
 
-// InitCollection - creates a new collection.
-func InitCollection(name string) (*Collection, error) {
+// Open reads in a collection's metadata and returns
+// and new collection structure or error. It creates
+// a "lock.pid" file in the collection's root.
+// An opened collection should be closed to clear the lock.
+//
+// ```
+//    var (
+//       c *Collection
+//       err error
+//    )
+//    c, err = dataset.Open("collection.ds")
+//    if err != nil {
+//       // ... handle error
+//    }
+//    defer c.Close()
+// ```
+//
+func Open(name string) (*Collection, error) {
+	_, err := os.Stat(name)
+	if err != nil {
+		return nil, err
+	}
+	// Check for lock.pid
+	lockName := path.Join(name, "lock.pid")
+	if _, err := os.Stat(lockName); err == nil {
+		src, _ := ioutil.ReadFile(lockName)
+		pid, err := strconv.Atoi(string(src))
+		if err != nil {
+			return nil, fmt.Errorf("Lock file exists for %s, cannot determine process id", name)
+		}
+		if os.Getpid() != pid {
+			return nil, fmt.Errorf("%s is in use by process %s", name, src)
+		}
+	}
+	pid := os.Getpid()
+	if err := ioutil.WriteFile(lockName, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
+		return nil, fmt.Errorf("Failed to gain lock for %s, %s", name, err)
+	}
+	collectionName := collectionNameAsPath(name)
+	src, err := os.ReadFile(path.Join(collectionName, "collection.json"))
+	if err != nil {
+		return nil, err
+	}
+	c := new(Collection)
+	if err := json.Unmarshal(src, &c); err != nil {
+		return nil, err
+	}
+	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
+	c.Name = path.Base(collectionName)
+	c.workPath = collectionName
+	if c.KeyMap == nil {
+		c.KeyMap = make(map[string]string)
+	}
+
+	c.collectionMutex = new(sync.Mutex)
+	c.objectMutex = new(sync.Mutex)
+	c.frameMutex = new(sync.Mutex)
+	return c, nil
+}
+
+// Init - creates a new collection and opens it. Like Open
+// it creates a "lock.pid" file in the root of the collection.
+// An initialized collection should be closed to clear the lock.
+//
+//```
+//   var (
+//      c *Collection
+//      err error
+//   )
+//   c, err = dataset.Init("collection.ds")
+//   if err != nil {
+//     // ... handle error
+//   }
+//   defer c.Close()
+//```
+func Init(name string) (*Collection, error) {
 	if len(name) == 0 {
 		return nil, fmt.Errorf("missing a collection name")
 	}
@@ -244,9 +332,8 @@ func InitCollection(name string) (*Collection, error) {
 	// See if we need an open or continue with create
 	_, err := os.Stat(collectionName + "/collection.json")
 	if err == nil {
-		return openCollection(name)
+		return Open(name)
 	}
-
 	err = os.MkdirAll(collectionName, 0775)
 	if err != nil {
 		return nil, err
@@ -286,52 +373,24 @@ func InitCollection(name string) (*Collection, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = c.addNamaste()
+	// Create a lock file since we're returnging an open collection.
+	lockName := path.Join(name, "lock.pid")
+	pid := os.Getpid()
+	if err := ioutil.WriteFile(lockName, []byte(fmt.Sprintf("%d", pid)), 0664); err != nil {
+		return nil, fmt.Errorf("Failed to gain lock for %s, %s", name, err)
+	}
 	return c, err
 }
 
-// openCollection reads in a collection's metadata and returns and new collection structure and err
-func openCollection(name string) (*Collection, error) {
-	_, err := os.Stat(name)
-	if err != nil {
-		return nil, err
-	}
-	collectionName := collectionNameAsPath(name)
-	src, err := os.ReadFile(path.Join(collectionName, "collection.json"))
-	if err != nil {
-		return nil, err
-	}
-	c := new(Collection)
-	if err := json.Unmarshal(src, &c); err != nil {
-		return nil, err
-	}
-	//NOTE: we need to reset collectionName so we're working with a path useable to get to the JSON documents.
-	c.Name = path.Base(collectionName)
-	c.workPath = collectionName
-	if c.KeyMap == nil {
-		c.KeyMap = make(map[string]string)
-	}
-
-	c.collectionMutex = new(sync.Mutex)
-	c.objectMutex = new(sync.Mutex)
-	c.frameMutex = new(sync.Mutex)
-	return c, nil
-}
-
-// deleteCollection an entire collection
-func deleteCollection(name string) error {
-	_, err := os.Stat(name)
-	if err != nil {
-		return err
-	}
-	collectionName := collectionNameAsPath(name)
-	if err := os.RemoveAll(collectionName); err != nil {
-		return err
-	}
-	return nil
-}
-
 // DocPath returns a full path to a key or an error if not found
+//
+// ```
+//    c, err := dataset.Open("my_collection.ds")
+//    if err != nil { /* ... handle error ... */ }
+//    defer c.Close()
+//    key := "my-object-key"
+//    docPath := c.DocPath(key)
+// ```
 func (c *Collection) DocPath(name string) (string, error) {
 	name = normalizeKeyName(name)
 	keyName, name := keyAndFName(name)
@@ -342,9 +401,26 @@ func (c *Collection) DocPath(name string) (string, error) {
 }
 
 // Close closes a collection, writing the updated keys to disc
+// Close removes the "lock.pid" file in the collection root.
+// Close is often called in conjunction with "defer" keyword.
+//
+// ```
+//    c, err := dataset.Open("my_collection.ds")
+//    if err != nil { /* .. handle error ... */ }
+//    /* do some stuff with the collection */
+//    if err := c.Close(); err != nil {
+//       /* ... handle closing error ... */
+//    }
+// ```
+//
 func (c *Collection) Close() error {
 	// Cleanup c so it can't accidentally get reused
 	if c != nil {
+		//dName := c.workPath // collectionNameAsPath(c.Name)
+		lockName := path.Join(c.workPath, "lock.pid")
+		if err := os.Remove(lockName); err != nil {
+			return fmt.Errorf("could not remove %s, %s", lockName, err)
+		}
 		c.Name = ""
 		c.workPath = ""
 		c.KeyMap = map[string]string{}
@@ -356,7 +432,21 @@ func (c *Collection) Close() error {
 	return nil
 }
 
-// CreateJSON adds a JSON doc to a collection, if a problem occurs it returns an error
+// CreateJSON adds a JSON doc to a collection, if a problem occurs
+// it returns an error. It requires a collection to be (e.g. Open or Init)
+//
+// ```
+//    var (
+//       c *Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//    src := []byte(`{"one": 1}`)
+//    key := "object-1"
+//    if err := c.CreateJSON(key, src); err != nil {
+//       /* ... handle error ... */
+//    }
+// ```
+//
 func (c *Collection) CreateJSON(key string, src []byte) error {
 	key = strings.TrimSpace(key)
 	if key == "" || key == ".json" {
@@ -397,9 +487,13 @@ func (c *Collection) CreateJSON(key string, src []byte) error {
 	return c.saveMetadata()
 }
 
-// CreateObjectsJSON takes a list of keys and creates a default object for each key
-// as quickly as possible. NOTE: if object already exist creation is skipped without
+// CreateObjectsJSON takes a list of keys and creates a default object
+// for each key as quickly as possible. This is useful in vary narrow
+// situation like quickly creating test data. Use with caution.
+//
+// NOTE: if object already exist creation is skipped without
 // reporting an error.
+//
 func (c *Collection) CreateObjectsJSON(keyList []string, src []byte) error {
 	c.unsafeSaveMetadata = true
 	defer func() {
@@ -425,7 +519,22 @@ func (c *Collection) IsKeyNotFound(e error) bool {
 	return false
 }
 
-// ReadJSON finds a the record in the collection and returns the JSON source
+// ReadJSON finds a the record in the collection and
+// returns the JSON source or an error.
+//
+// ```
+//    var (
+//       c *Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//    key := "object-1"
+//    src, err := c.ReadJSON(key)
+//    if err != nil {
+//       /* ... handle error ... */
+//    }
+//    /* ... do something with the JSON encoded "src" value ... */
+// ```
+//
 func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	name = normalizeKeyName(name)
 	// Handle potentially URL encoded names
@@ -443,7 +552,23 @@ func (c *Collection) ReadJSON(name string) ([]byte, error) {
 	return src, nil
 }
 
-// UpdateJSON a JSON doc in a collection, returns an error if there is a problem
+// UpdateJSON replaces a JSON doc in a collection with the JSON encoded
+// values in the byte array. It returns an error if there is a problem.
+// Like Update() the a record matching the key needs to exist in the
+// collection already.
+//
+// ```
+//    var (
+//       c *Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//    key := "object-1"
+//    src := []byte(`{"one":1, "two": 2}`)
+//    if err := c.Update(key, src); err != nil {
+//       /* ... handle error ... */
+//    }
+// ```
+//
 func (c *Collection) UpdateJSON(name string, src []byte) error {
 	var ()
 	// Normalize key and filenames
@@ -490,8 +615,26 @@ func (c *Collection) UpdateJSON(name string, src []byte) error {
 	return os.WriteFile(path.Join(c.workPath, pairPath, fName), src, 0664)
 }
 
-// Create a JSON doc from an map[string]interface{} and adds it  to a collection, if problem returns an error
+// Create a JSON doc from an map[string]interface{} and
+// adds it  to a collection, if problem returns an error
 // name must be unique. Document must be an JSON object (not an array).
+//
+// ```
+//    var (
+//       c *Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//    key := "object-2"
+//    obj := map[]interface{}{
+//        "one": 2,
+//        "two": 3,
+//        "four": 4,
+//    }
+//    if err := c.Create(key, obj); err != nil {
+//       /* ... handle error ... */
+//    }
+// ```
+//
 func (c *Collection) Create(name string, data map[string]interface{}) error {
 	src, err := EncodeJSON(data)
 	if err != nil {
@@ -503,6 +646,16 @@ func (c *Collection) Create(name string, data map[string]interface{}) error {
 // Read finds the record in a collection, updates the data
 // interface provide and if problem returns an error
 // name must exist or an error is returned
+//
+// ```
+//    var (
+//       c *dataset.Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//    key := "object-2"
+//    obj, err := c.Read(key)
+//    if err != nil { /* ... handle error ... */  }
+// ```
 func (c *Collection) Read(name string, data map[string]interface{}, cleanObject bool) error {
 	src, err := c.ReadJSON(name)
 	if err != nil {
@@ -520,7 +673,23 @@ func (c *Collection) Read(name string, data map[string]interface{}, cleanObject 
 	return nil
 }
 
-// Update JSON doc in a collection from the provided data interface (note: JSON doc must exist or returns an error )
+// Update replaces a JSON doc in a collection from the provided data map
+// to interface (note: JSON doc must exist or it returns an error )
+//
+// ```
+//     var (
+//         c *dataset.Collection
+//         obj map[string]interface{}
+//     )
+//     /* ... collection previously opened and assigned to "c" ... */
+//
+//     /* ... populate our replacement obj ... */
+//     key := "object-2"
+//     if err := c.Update(key, obj); err != nil {
+//         /* ... handle error ... */
+//     }
+// ```
+//
 func (c *Collection) Update(name string, data map[string]interface{}) error {
 	src, err := json.Marshal(data)
 	if err != nil {
@@ -530,6 +699,19 @@ func (c *Collection) Update(name string, data map[string]interface{}) error {
 }
 
 // Delete removes a JSON doc from a collection
+//
+// ```
+//    var (
+//       c *dataset.Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//
+//    key := "object-1"
+//    if err := c.Delete(key); err != nil {
+//        /* ... handle error ... */
+//    }
+// ```
+//
 func (c *Collection) Delete(name string) error {
 	name = normalizeKeyName(name)
 	keyName, FName := keyAndFName(name)
@@ -555,6 +737,18 @@ func (c *Collection) Delete(name string) error {
 }
 
 // Keys returns a list of keys in a collection
+//    var (
+//       c *dataset.Collection
+//       keys []string
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//
+//    keys := c.Keys()
+//    for _, key := range keys {
+//       /* ... do something with the list of keys ... */
+//    }
+// ```
+//
 func (c *Collection) Keys() []string {
 	keys := []string{}
 	for k := range c.KeyMap {
@@ -564,12 +758,34 @@ func (c *Collection) Keys() []string {
 }
 
 // KeyExists returns true if key is in collection's KeyMap, false otherwise
+//
+//    var (
+//       c *dataset.Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//
+//    key := "object-1"
+//    if c.KeyExists(key) == true {
+//       /* ... do something with the key ... */
+//    }
+// ```
+//
 func (c *Collection) KeyExists(key string) bool {
 	_, hasKey := c.KeyMap[normalizeKeyName(key)]
 	return hasKey
 }
 
 // Length returns the number of keys in a collection
+//
+//    var (
+//       c *dataset.Collection
+//    )
+//    /* ... collection previously opened and assigned to "c" ... */
+//
+//    l := c.Length()
+//    /* ... do something with the number of itemsin the collection ... */
+// ```
+//
 func (c *Collection) Length() int {
 	return len(c.KeyMap)
 }
@@ -866,14 +1082,15 @@ func (c *Collection) ExportTable(eout io.Writer, f *DataFrame, verboseLog bool) 
 	return cnt, table, nil
 }
 
-// Clone copies the current collection records into a newly initialized collection given a list of keys
-// and new collection name. Returns an error value if there is a problem. Clone does NOT copy
-// attachments, only the JSON records.
+// Clone copies the current collection records into a newly initialized
+// collection given a list of keys and new collection name. Returns an
+// error value if there is a problem. NOTE: Clone does NOT copy
+// attachments only the JSON records.
 func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error {
 	if len(keys) == 0 {
 		return fmt.Errorf("Zero keys clone from %s to %s", c.Name, cloneName)
 	}
-	clone, err := InitCollection(cloneName)
+	clone, err := Init(cloneName)
 	if err != nil {
 		return err
 	}
@@ -898,13 +1115,16 @@ func (c *Collection) Clone(cloneName string, keys []string, verbose bool) error 
 	return nil
 }
 
-// CloneSample takes the current collection, a sample size, a training collection name and a test collection
-// name. The training collection will be created and receive a random sample of the records from the current
-// collection based on the sample size provided. Sample size must be greater than zero and less than the total
-// number of records in the current collection.
+// CloneSample takes the current collection, a sample size, a training
+// collection name and a test collection name. The training collection
+// will be created and receive a random sample of the records from the
+// current collection based on the sample size provided. Sample size
+// must be greater than zero and less than the total number of records
+// in the current collection.
 //
-// If the test collection name is not an empty string it will be created and any records not in the training
-// collection will be cloned from the current collection into the test collection.
+// If the test collection name is not an empty string it will be
+// created and any records not in the training collection will be cloned
+// from the current collection into the test collection.
 func (c *Collection) CloneSample(trainingCollectionName string, testCollectionName string, keys []string, sampleSize int, verbose bool) error {
 	if sampleSize < 1 {
 		return fmt.Errorf("sample size should be greater than zero")
@@ -971,4 +1191,130 @@ func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool
 
 	// Update record and return
 	return c.Update(key, record)
+}
+
+// MetadataJSON() returns a collection's metadata fields as a
+// JSON encoded byte array.
+func (c *Collection) MetadataJSON() []byte {
+	meta := new(Collection)
+	meta.DatasetVersion = c.DatasetVersion
+	meta.Name = c.Name
+	meta.Description = c.Description
+	meta.DOI = c.DOI
+	meta.Created = c.Created
+	meta.Version = c.Version
+	meta.Contact = c.Contact
+	if c.Author != nil {
+		meta.Author = []*PersonOrOrg{}
+		for _, obj := range c.Author {
+			meta.Author = append(meta.Author, obj)
+		}
+	}
+	if c.Contributor != nil {
+		meta.Contributor = []*PersonOrOrg{}
+		for _, obj := range c.Contributor {
+			meta.Contributor = append(meta.Contributor, obj)
+		}
+	}
+	if c.Funder != nil {
+		meta.Funder = []*PersonOrOrg{}
+		for _, obj := range c.Funder {
+			meta.Funder = append(meta.Funder, obj)
+		}
+	}
+	meta.License = c.License
+	if c.Annotation != nil {
+		meta.Annotation = map[string]interface{}{}
+		for key, value := range c.Annotation {
+			meta.Annotation[key] = value
+		}
+	}
+	src, err := json.MarshalIndent(meta, "", "    ")
+	if err != nil {
+		src = []byte{}
+	}
+	return src
+}
+
+// setStringValue takes a current value, a new value and set it. If
+// you want to set a value to an empty string then pass the value as "-"
+func setStringValue(original string, value string) string {
+	if value == "-" {
+		return ""
+	}
+	if value == "" {
+		return original
+	}
+	return value
+}
+
+// MetadataUpdate() returns update a collection's metadata fields
+// based on a Collection data structure. You can remove
+func (c *Collection) MetadataUpdate(meta *Collection) error {
+	c.DatasetVersion = setStringValue(c.DatasetVersion, meta.DatasetVersion)
+	c.Name = setStringValue(c.Name, meta.Name)
+	c.Description = setStringValue(c.Description, meta.Description)
+	c.DOI = setStringValue(c.DOI, meta.DOI)
+	c.Created = setStringValue(c.Created, meta.Created)
+	c.Version = setStringValue(c.Version, meta.Version)
+	c.Contact = setStringValue(c.Contact, meta.Contact)
+	if meta.Author != nil {
+		c.Author = []*PersonOrOrg{}
+		for _, obj := range meta.Author {
+			c.Author = append(c.Author, obj)
+		}
+	}
+	if meta.Contributor != nil {
+		c.Contributor = []*PersonOrOrg{}
+		for _, obj := range meta.Contributor {
+			c.Contributor = append(c.Contributor, obj)
+		}
+	}
+	if meta.Funder != nil {
+		c.Funder = []*PersonOrOrg{}
+		for _, obj := range meta.Funder {
+			c.Funder = append(c.Funder, obj)
+		}
+	}
+	c.License = setStringValue(c.License, meta.License)
+	if c.Annotation != nil {
+		c.Annotation = map[string]interface{}{}
+		for key, value := range meta.Annotation {
+			c.Annotation[key] = value
+		}
+	}
+	return nil
+}
+
+// Save writes the collection's metadata to c.workPath
+// This is useful for things like updating a collection's metadata.
+//
+// ```
+//    c, err := dataset.Open("collection.ds")
+//    if err != nil { /* ... handle error ... */ }
+//    defer c.Close()
+//    person := &PersonOrOrg{
+//        GivenName: "Jane",
+//        FaimlyName: "Doe",
+//        ID: "https://orcid.org/0000-0000-0000-0000",
+//    }
+//    funder := &PersonOrOrg {
+//        Name: "Example University Library",
+//        ID: "https://ror.org/0000000",
+//    }
+//
+//    c.Author = append(c.Author, person)
+//    c.Funder = append(c.Funder, funder)
+//    c.Description = "This is a dataset for Jane Doe's Adventure game."
+//    if err := c.Save(); err != nil {
+//        /* ... handle error ... */
+//    }
+// ```
+//
+func (c *Collection) Save() error {
+	if c.unsafeSaveMetadata == true {
+		// NOTE: We're playing fast and loose with the collection metadata, skip saveMetadata().
+		return nil
+	}
+	return c.saveMetadata()
 }

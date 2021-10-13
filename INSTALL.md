@@ -159,5 +159,5 @@ You should now have a "dist" directory in the root of the repository with a
 Zip file for the "libdataset" shared library.
 
 
-Compilation assumes [go](https://github.com/golang/go) v1.16
+Compilation assumes [go](https://github.com/golang/go) v1.17.2
 

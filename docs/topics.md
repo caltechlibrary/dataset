@@ -34,18 +34,21 @@ Import/Export
 
 - [Working with CSV](../how-to/working-with-csv.html)
 
+Dataset as a web service
+------------------------
+
+See [datasetd](datasetd.html)
 
 Topics A-Z
 ==========
 
-- [attach](attach.html)
+- [attach](attach.html), [attach end point](attach-endpoint.html)
 - [attachments](attachments.html)
 - [check](check.html)
 - [count](count.html)
 - [create](create.html)
-- [delete](delete.html)
+- [delete](delete.html), [delete end point](delete-endpoint.html)
 - [delete-frame](delete-frame.html)
-- [detach](detach.html)
 - [dotpath](dotpath.html)
 - [export-csv](export-csv.html)
 - [frame](frame.html)
@@ -60,14 +63,15 @@ Topics A-Z
 - [keys](keys.html)
 - [list](list.html)
 - [path](path.html)
-- [prune](prune.html)
+- [prune](prune.html), [prune end point](prune-endpoint.html)
 - [read](read.html)
 - [reframe](reframe.html)
 - [refresh](refresh.html)
 - [repair](repair.html)
+- [retrieve](retrieve.html "formerly known as detach"), [retrieve end point](retrieve-endpoint.html)
 - [samples](../how-to/samples.html)
 - [status](status.html)
 - [sync-receive](sync-receive.html)
 - [sync-send](sync-send.html)
-- [update](update.html)
+- [update](update.html), [update end point](update-endpoint.html)
 

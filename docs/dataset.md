@@ -67,7 +67,7 @@ VERBS
     create         Create a JSON record in a collection
     delete         Delete a JSON record (and attachments) from a collection
     delete-frame   remove a frame from a collection
-    detach         Copy an attach out of an associated JSON record in a collection
+    retrieve         Copy an attach out of an associated JSON record in a collection
     export-csv     Export a JSON records from a collection to a CSV file
     frame          define or retrieve a frame from a collection
     frame-objects  retrieve a frame's object list
@@ -90,5 +90,5 @@ VERBS
 ```
 
 
-Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [detach](detach.html), [export-csv](export-csv.html), [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frame-types](frame-types.html), [frames](frames.html), [haskey](haskey.html), [import-csv](import-csv.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
+Related: [attach](attach.html), [attachments](attachments.html), [check](check.html), [clone](clone.html), [clone-sample](clone-sample.html), [count](count.html), [create](create.html), [delete](delete.html), [delete-frame](delete-frame.html), [retrieve](retrieve.html), [export-csv](export-csv.html), [frame](frame.html), [frame-objects](frame-objects.html), [frame-grid](frame-grid.html), [frame-types](frame-types.html), [frames](frames.html), [haskey](haskey.html), [import-csv](import-csv.html), [init](init.html), [join](join.html), [keys](keys.html), [list](list.html), [path](path.html), [prune](prune.html), [read](read.html), [reframe](reframe.html), [repair](repair.html), [status](status.html), [update](update.html)
 

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">Up</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="../license.html">LICENSE</a>
+</li>
+<li>
+<a href="../install.html">INSTALL</a>
+</li>
+<li>
+<a href="./">Documentation</a>
+</li>
+<li>
+<a href="../how-to/">Tutorials</a>
+</li>
+<li>
+<a href="topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
+</ul>
+</nav>
+
+<section>
+<h1 id="prune-end-point">
+Prune (end point)
+</h1>
+<p>
+Removes an attached document from a JSON record using <code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and <code>&lt;FILENAME&gt;</code>.
+</p>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;`</code></pre>
+<p>
+Requires a GET method. Returns an HTTP 200 OK on success or an HTTP error code if not.
+</p>
+<p>
+See https://semver.org/ for more information on semantic version numbers.
+</p>
+<h2 id="example">
+Example
+</h2>
+<p>
+In this example <code>&lt;COLLECTION_ID&gt;</code> is “t1”, <code>&lt;KEY&gt;</code> is “one”, <code>&lt;SEMVER&gt;</code> is “0.0.1” and <code>&lt;FILENAME&gt;</code> is “a1.png”. Once again our example uses curl.
+</p>
+<pre><code>    curl http://localhost:8485/t1/prune/one/0.0.1/a1.png</code></pre>
+<p>
+This will cause the attached file to be removed from the record and collection.
+</p>
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>

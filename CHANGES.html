@@ -42,6 +42,81 @@
 
 <section>
 <p>
+Release 1.1.0:
+</p>
+<p>
+Added attachment support for <strong>datasetd</strong>.
+</p>
+<p>
+Updated the metadata fields to include richer PersonOrOrg data structures for author, contributor, funder as well as added an annotation map field for custom metadata.
+</p>
+<p>
+Added “MetadataJSON()” function for Collection to quickly copy out the metadata values from a collection.
+</p>
+<pre><code>    c, err := dataset.Open(&quot;MyData.ds&quot;)
+    ...
+    defer c.Close()
+    fmt.Printf(&quot;%s&quot;, c.MetadataJSON())</code></pre>
+<p>
+Added “MetadataUpdate()” function to update a collection’s metadata.
+</p>
+<pre><code>    c, err := dataset.Open(&quot;MyData.ds&quot;)
+    ...
+    defer c.Close()
+    meta := new(Collection)
+    meta.Description = &quot;A test dataset&quot;
+    meta.Version = &quot;1.0.0&quot;
+    meta.Author = []*PersonOrOrg{
+        &amp;Person{
+            Type: &quot;Person&quot;,
+            GivenName: &quot;Jane&quot;,
+            FamilyName: &quot;Doe&quot;,
+        },
+    }
+    err = c.MetadataUpdate(meta)
+    ...</code></pre>
+<p>
+Depreciated dependency on namaste package and Namaste support in command line tools. Removed “collections.go and collections_test.go” from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection’s metadata are now depreciated.
+</p>
+<p>
+The dataset.Init() now places a lock file in the collection directory and leves the collection in an “Open” state, it should be explicitly closed.
+</p>
+<p>
+E.g.
+</p>
+<pre><code>   c, err := dataset.Init(&quot;MyData.ds&quot;)
+   ...
+   defer c.Close()</code></pre>
+<p>
+Removed "set_*" for collection metadata fields from libdataset.go. These should be set using the dataset command line tool only.
+</p>
+<p>
+The dataset.Analzyer() and dataset.Repair() commands expect the dataset collections to be closed before being called. E.g..
+</p>
+<pre><code>    c, err := dataset.Open(&quot;MyData.ds&quot;)
+    ...
+    c.Close()
+    err := dataset.Analyzer(&quot;MyData.ds&quot;, true)
+    if err == nil {
+        c, err = dataset.Open(&quot;MyData.ds&quot;)
+        ...
+    }</code></pre>
+<p>
+Release 1.0.2:
+</p>
+<p>
+Added support for <strong>datasetd</strong>, a localhost web service for dataset collections. The web service supports a subset of the command line tool.
+</p>
+<p>
+Both <strong>datasetd</strong> and <strong>dataset</strong> command line program now include a “lock.pid” file in the collection root. This is to prevent multiple processes from clashing when maintaining the “collections.json” file in the collection root.
+</p>
+<p>
+Migrated cli package into dataset repository sub-package “github.com/caltechlibrary/dataset/cli”. Eventually this package will be replaced by “datasetCli.go” in the root folder.
+</p>
+<p>
+In the dataset command line program the verb “detach” has been renamed “retrieve” better describe the action. “detach” is depreciated and will be removed in upcoming releases.
+</p>
+<p>
 Release 1.0.1:
 </p>
 <ul>
@@ -73,6 +148,297 @@ Release 1.0.0:
 <ul>
 <li>
 Initial Stable Release
+</li>
+</ul>
+<p>
+Release 0.1.11:
+</p>
+<ul>
+<li>
+Requires go1.16 compilation
+</li>
+<li>
+Add macOS M1 compiled binaries
+</li>
+</ul>
+<p>
+Release 0.1.10:
+</p>
+<ul>
+<li>
+Improved memory handling when handling for large attachments
+</li>
+</ul>
+<p>
+Release 0.1.8:
+</p>
+<p>
+This release focuses on minor bug fixes in libdataset.
+</p>
+<ul>
+<li>
+Removing duplicate functions:
+<ul>
+<li>
+<code>delete_frame()</code> has been superseded by <code>frame_delete()</code>
+</li>
+</ul>
+</li>
+<li>
+Renamed functions:
+<ul>
+<li>
+<code>make_objects()</code> has been renamed <code>create_objects()</code> to be more consistent with naming scheme.
+</li>
+</ul>
+</li>
+<li>
+Build Notes:
+<ul>
+<li>
+Golang v1.14
+<ul>
+<li>
+Caltech library go packages
+<ul>
+<li>
+storage v0.1.0
+</li>
+<li>
+namaste v0.0.5
+</li>
+<li>
+pairtree v0.0.4
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+OS used to compiled and test
+<ul>
+<li>
+macOS Catalina
+</li>
+<li>
+Windows 10
+</li>
+<li>
+Ubuntu 18.04 LTS
+</li>
+</ul>
+</li>
+<li>
+Python 3.8 (from Miniconda 3)
+<ul>
+<li>
+zip has replaced tar in the releases of libdataset
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+Some tests fail on Windows 10 for libdataset. These will be addressed in future releases.
+</li>
+</ul>
+<p>
+Release 0.1.6:
+</p>
+<p>
+This release focuses on minor bug fixes in libdataset. All functions which returned an error string only now return True for success and False otherwise. The error string can be retrieved with <code>dataset.error_message()</code>.
+</p>
+<ul>
+<li>
+Build Notes:
+<ul>
+<li>
+Golang v1.14
+</li>
+<li>
+Caltech library go packages
+</li>
+<li>
+storage v0.1.0
+</li>
+<li>
+namaste v0.0.5
+</li>
+<li>
+pairtree v0.0.4
+</li>
+</ul>
+</li>
+<li>
+OS used to compiled and test
+<ul>
+<li>
+macOS Catalina
+</li>
+<li>
+Windows 10
+</li>
+<li>
+Ubuntu 18.04 LTS
+</li>
+</ul>
+</li>
+<li>
+Python 3.8 (from Miniconda 3)
+</li>
+<li>
+zip has replaced tar in the releases of libdataset
+</li>
+<li>
+Some tests fail on Windows 10 for libdataset. These will be addressed in future releases.
+</li>
+</ul>
+<p>
+Release 0.1.5:
+</p>
+<p>
+This release focuses on refine function names, simplification and easy of testing for Windows 10 deployments.
+</p>
+<ul>
+<li>
+Build Notes:
+<ul>
+<li>
+Golang v1.14
+</li>
+<li>
+Caltech library go packages
+<ul>
+<li>
+storage v0.1.0
+</li>
+<li>
+namaste v0.0.5
+</li>
+<li>
+pairtree v0.0.4
+</li>
+</ul>
+</li>
+<li>
+OS used to compiled and test
+<ul>
+<li>
+macOS Catalina
+</li>
+<li>
+Windows 10
+</li>
+<li>
+Ubuntu 18.04 LTS
+</li>
+</ul>
+</li>
+<li>
+Python 3.8 (from Miniconda 3)
+</li>
+<li>
+zip has replaced tar in the releases of libdataset
+</li>
+</ul>
+</li>
+<li>
+Renamed functions:
+<ul>
+<li>
+collection_status() is now collection_exists()
+</li>
+</ul>
+</li>
+<li>
+Depreciated functions and features:
+<ul>
+<li>
+S3, Google Cloud Storage support dropped.
+</li>
+<li>
+grid(), if you need this create a frame first and use frame_grid().
+</li>
+</ul>
+</li>
+<li>
+Some tests fail on Windows 10 for libdataset. These will be addressed in future releases.
+</li>
+</ul>
+<p>
+Release 0.1.4:
+</p>
+<p>
+This release has breaking changes with release v0.1.3 and early. Many functions in libdataset have been renamed to prevent collisions in the environments using libdataset C-shared library. Most function names now have two parts separated by a underscore (e.g. status has become collection_status, repair has become collection_repair).
+</p>
+<p>
+Google Sheet integration has been dropped. It was just more trouble then it was worth to maintain.
+</p>
+<p>
+Tests from py_dataset now have been ported to the test library for libdataset.
+</p>
+<p>
+Redundant functions have been removed (we had accumulated multiple definitions for the same thing in libdataset). Where possible code has been simplified.
+</p>
+<p>
+Most libdataset functions will cause an “open” on a dataset collection automatically. Some additional functions around collections have been added primarily to make testing easier (e.g. open_collection(), is_open(), close_collection(), close_all()).
+</p>
+<p>
+Functions that were overloaded via optional parameters have been simplified. E.g. keys() now returns all keys in collection, use key_filter() and key_sort() accordingly.
+</p>
+<ul>
+<li>
+Dropped support for GSheet integration
+</li>
+<li>
+Only support pairtree layout of collection
+</li>
+<li>
+cleaned up libdataset API focusing on removing overloaded functions
+</li>
+</ul>
+<p>
+Release 0.1.3:
+</p>
+<ul>
+<li>
+Bug fixes
+</li>
+</ul>
+<p>
+Release 0.1.2:
+</p>
+<ul>
+<li>
+Persisting _Attachments metadata when updating with clean objects using the same technique as _Key
+</li>
+</ul>
+<p>
+Release 0.1.1:
+</p>
+<ul>
+<li>
+Fixed problem where keys_exist called before an open command.
+</li>
+</ul>
+<p>
+Release 0.1.0:
+</p>
+<ul>
+<li>
+Updated libdataset API, simplified func names and normalized many of the calls (breaking change)
+</li>
+<li>
+libdataset now manages opening dataset collections, inspired by Oberon System file riders (breaking change)
+</li>
+<li>
+Added Python test code for libdataset to make sure libdataset works
+</li>
+<li>
+Added support for check and repair when working on S3 deployed collections
+</li>
+<li>
+Refactored and simplified frame behavior (breaking change)
 </li>
 </ul>
 </section>
