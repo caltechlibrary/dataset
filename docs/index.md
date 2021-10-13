@@ -85,6 +85,7 @@ documentation page.
 [datasetd](datasetd.html) supports the following end points.
 
 - List [collections](collections-endpoint.html) available from the web service
+- List or update a [collection](collection-endpoint.html)'s metadata
 - List a collection's [Keys](keys-endpoint.html)
 - Object level actions
     - [create](create-endpoint.html)

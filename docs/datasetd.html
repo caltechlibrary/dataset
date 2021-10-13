@@ -248,6 +248,9 @@ The following end points are supported by <em>datasetd</em>
 <li>
 <code>/collections</code> returns a list of available collections.
 </li>
+<li>
+<code>/collection/&lt;COLLECTION_ID&gt;</code> with an HTTP GET returns the metadata for a collection, with an HTTP POST it updates the collections metadata.
+</li>
 </ul>
 <p>
 The following end points are per colelction. They are available for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.

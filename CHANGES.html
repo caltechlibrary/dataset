@@ -42,6 +42,48 @@
 
 <section>
 <p>
+Release 1.0.3:
+</p>
+<p>
+Added attachment support for <strong>datasetd</strong>.
+</p>
+<p>
+Updated the metadata fields to include richer PersonOrOrg data structures for author, contributor, funder as well as added an annotation map field for custom metadata.
+</p>
+<p>
+Added “MetadataJSON()” function for Collection to quickly copy out the metadata values from a collection.
+</p>
+<pre><code>    c, err := dataset.Open(&quot;MyData.ds&quot;)
+    ...
+    defer c.Close()
+    fmt.Printf(&quot;%s&quot;, c.MetadataJSON())</code></pre>
+<p>
+Depreciated dependency on namaste package and Namaste support in command line tools. Removed “collections.go and collections_test.go” from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection’s metadata are now depreciated.
+</p>
+<p>
+The dataset.Init() now places a lock file in the collection directory and leves the collection in an “Open” state, it should be explicitly closed.
+</p>
+<p>
+E.g.
+</p>
+<pre><code>   c, err := dataset.Init(&quot;MyData.ds&quot;)
+   ...
+   defer c.Close()</code></pre>
+<p>
+Removed "set_*" for collection metadata fields from libdataset.go. These should be set using the dataset command line tool only.
+</p>
+<p>
+The dataset.Analzyer() and dataset.Repair() commands expect the dataset collections to be closed before being called. E.g..
+</p>
+<pre><code>    c, err := dataset.Open(&quot;MyData.ds&quot;)
+    ...
+    c.Close()
+    err := dataset.Analyzer(&quot;MyData.ds&quot;, true)
+    if err == nil {
+        c, err = dataset.Open(&quot;MyData.ds&quot;)
+        ...
+    }</code></pre>
+<p>
 Release 1.0.2:
 </p>
 <p>

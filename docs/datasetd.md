@@ -169,6 +169,7 @@ The following end points are supported by _datasetd_
 
 - `/` returns documentation for _datasetd_
 - `/collections` returns a list of available collections.
+- `/collection/<COLLECTION_ID>` with an HTTP GET returns the metadata for a collection, with an HTTP POST it updates the collections metadata.
 
 The following end points are per colelction. They are available
 for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.

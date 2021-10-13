@@ -55,7 +55,7 @@ const (
 // Collection is the container holding a pairtree containing JSON docs
 type Collection struct {
 	// DatasetVersion of the collection
-	DatasetVersion string `json:"dataset_version"`
+	DatasetVersion string `json:"dataset,omitempty"`
 
 	// Name (filename) of collection
 	Name string `json:"name"`
@@ -1196,9 +1196,6 @@ func (c *Collection) Join(key string, obj map[string]interface{}, overwrite bool
 // MetadataJSON() returns a collection's metadata fields as a
 // JSON encoded byte array.
 func (c *Collection) MetadataJSON() []byte {
-	var (
-		src []byte
-	)
 	meta := new(Collection)
 	meta.DatasetVersion = c.DatasetVersion
 	meta.Name = c.Name
@@ -1237,6 +1234,56 @@ func (c *Collection) MetadataJSON() []byte {
 		src = []byte{}
 	}
 	return src
+}
+
+// setStringValue takes a current value, a new value and set it. If
+// you want to set a value to an empty string then pass the value as "-"
+func setStringValue(original string, value string) string {
+	if value == "-" {
+		return ""
+	}
+	if value == "" {
+		return original
+	}
+	return value
+}
+
+// MetadataUpdate() returns update a collection's metadata fields
+// based on a Collection data structure. You can remove
+func (c *Collection) MetadataUpdate(meta *Collection) error {
+	c.DatasetVersion = setStringValue(c.DatasetVersion, meta.DatasetVersion)
+	c.Name = setStringValue(c.Name, meta.Name)
+	c.Description = setStringValue(c.Description, meta.Description)
+	c.DOI = setStringValue(c.DOI, meta.DOI)
+	c.Created = setStringValue(c.Created, meta.Created)
+	c.Version = setStringValue(c.Version, meta.Version)
+	c.Contact = setStringValue(c.Contact, meta.Contact)
+	if meta.Author != nil {
+		c.Author = []*PersonOrOrg{}
+		for _, obj := range meta.Author {
+			c.Author = append(c.Author, obj)
+		}
+	}
+	if meta.Contributor != nil {
+		c.Contributor = []*PersonOrOrg{}
+		for _, obj := range meta.Contributor {
+			c.Contributor = append(c.Contributor, obj)
+		}
+	}
+	if meta.Funder != nil {
+		c.Funder = []*PersonOrOrg{}
+		for _, obj := range meta.Funder {
+			c.Funder = append(c.Funder, obj)
+		}
+	}
+	c.License = setStringValue(c.License, meta.License)
+	if c.Annotation != nil {
+		c.Annotation = map[string]interface{}{}
+		for key, value := range meta.Annotation {
+			c.Annotation[key] = value
+		}
+	}
+	return nil
 }
 
 // Save writes the collection's metadata to c.workPath

@@ -65,6 +65,7 @@ Features
 [datasetd](docs/datasetd.html) supports
 
 - List [collections](docs/collections-endpoint.html) available from the web service
+- List or update a [collection](collection-endpoint.html)'s metadata
 - List a collection's [Keys](docs/keys-endpoint.html)
 - Object level actions
     - [create](docs/create-endpoint.html)

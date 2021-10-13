@@ -109,20 +109,45 @@ func collectionsEndPoint(w http.ResponseWriter, r *http.Request) (int, error) {
 // a GET is received it returns the metadata, if a POST is received
 // it updates it.
 //
-/*
-func collectionEndPoint(w http.ResponseWriter, r *http.Request, collectionID) (int, error) {
-	c, ok := config.Collections[collectionID]
-	if ok == false {
-		return 404, fmt.Errorf(`not found`)
+func collectionEndPoint(w http.ResponseWriter, r *http.Request, collectionID string) (int, error) {
+	if collectionID == "" || strings.HasSuffix(r.URL.Path, "/help") {
+		return packageDocument(w, collectionDocument(collectionID))
 	}
-	switch r.Method {
-		case "GET":
-		   return packageJSON(w, "", c.MetadataJSON(), err)
-		case "POST":
+	_, ok := config.Collections[collectionID]
+	if ok == false || config.Collections[collectionID].DS == nil {
+		return 400, fmt.Errorf(`bad request`)
 	}
-	return 405,fmt.Errorf(`method not supported`)
+	ds := config.Collections[collectionID].DS
+	if ds == nil {
+		return 500, fmt.Errorf(`internal server error`)
+	}
+	// If we recieve a POST update the collection metadata based on
+	// on the JSON object submitted and then display the updated record.
+	contentType := r.Header.Get("Content-Type")
+	if r.Method == "POST" && contentType == "application/json" {
+		body, err := ioutil.ReadAll(io.LimitReader(r.Body, jsonSizeLimit))
+		if err != nil {
+			return 400, fmt.Errorf(`bad request, %s`, err)
+		}
+		meta := new(Collection)
+		if err := json.Unmarshal(body, &meta); err != nil {
+			return 400, fmt.Errorf(`bad request, invalid JSON object %s`, err)
+		}
+		if err := ds.MetadataUpdate(meta); err != nil {
+			return 400, fmt.Errorf(`bad request, update failed, %s`, err)
+		}
+		ds.Save()
+		// Return the updated JSON document
+		w.Header().Set("Content-Type", "application/json")
+		src, err := json.MarshalIndent(ds, "", "  ")
+		if err != nil {
+			return 500, fmt.Errorf("internal server error, %s", err)
+		}
+		fmt.Fprintf(w, "%s", src)
+		return 201, nil
+	}
+	return packageJSON(w, collectionID, ds.MetadataJSON(), nil)
 }
-*/
 
 //
 // End Point handlers (route as defined `/<COLLECTION_ID>/<END-POINT>`,
@@ -406,7 +431,7 @@ func api(w http.ResponseWriter, r *http.Request) {
 		err        error
 		statusCode int
 	)
-	// FIXME: the API should reject requests that are not application/json or text/plain since that is all we provide.
+	// NOTE: the API should reject requests that are not application/json or text/plain since that is all we provide.
 	if (r.Method != "GET") && (r.Method != "POST") {
 		statusCode, err = 405, fmt.Errorf(`method not allowed`)
 		handleError(w, statusCode, err)
@@ -419,6 +444,15 @@ func api(w http.ResponseWriter, r *http.Request) {
 			//handleError(w, statusCode, err)
 		case strings.HasPrefix(r.URL.Path, "/collections"):
 			statusCode, err = collectionsEndPoint(w, r)
+			if err != nil {
+				handleError(w, statusCode, err)
+			}
+		case strings.HasPrefix(r.URL.Path, "/collection"):
+			collectionID := strings.TrimPrefix(r.URL.Path, "/collection")
+			if strings.HasPrefix(collectionID, "/") {
+				collectionID = strings.TrimPrefix(collectionID, "/")
+			}
+			statusCode, err = collectionEndPoint(w, r, collectionID)
 			if err != nil {
 				handleError(w, statusCode, err)
 			}

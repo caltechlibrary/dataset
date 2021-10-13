@@ -2,7 +2,20 @@ Release 1.0.3:
 
 Added attachment support for __datasetd__.
 
-Depreciated dependency on namaste package and Namaste support in command line tools. Removed "collections.go and collections_test.go" from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go.
+Updated the metadata fields to include richer PersonOrOrg data structures
+for author, contributor, funder as well as added an annotation map field for custom metadata.
+
+Added "MetadataJSON()" function for Collection to quickly copy out
+the metadata values from a collection.
+
+```
+    c, err := dataset.Open("MyData.ds")
+    ...
+    defer c.Close()
+    fmt.Printf("%s", c.MetadataJSON())
+```
+
+Depreciated dependency on namaste package and Namaste support in command line tools. Removed "collections.go and collections_test.go" from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection's metadata are now depreciated.
 
 The dataset.Init() now places a lock file in the collection directory and leves the collection in an "Open" state, it should be explicitly closed.
 
