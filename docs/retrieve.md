@@ -4,7 +4,7 @@ retrieve
 Syntax
 ------
 
-```
+```shell
     dataset retrieve COLLECTION_NAME KEY [SEMVER]
     dataset retrieve COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
 ```

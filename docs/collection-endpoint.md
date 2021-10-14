@@ -45,13 +45,13 @@ The assumption is that we have __datasetd__ running on port "8485" of "localhost
 
 Retrieving metatadata
 
-```{.shell}
+```shell
     curl -X GET https://localhost:8485/collection/characters
 ```
 
 This would return the metadata found for our characters' collection.
 
-```
+```json
     {
         "dataset_version": "v0.1.10",
         "name": "characters.ds",
@@ -102,7 +102,7 @@ Update metadata requires a POST with content type "application/json". In
 this example the dataset collection is named "t1" only the "name" and
 "dataset_version" set.
 
-```{.shell}
+```shell
     curl -X POST -H 'Content-Type: application/json' \
     http://localhost:8485/collection/t1 \
     -d '{"author":[{"@type":"Person","givenName":"Jane","familyName":"Doe"}]}'
@@ -110,7 +110,7 @@ this example the dataset collection is named "t1" only the "name" and
 
 The curl calls returns
 
-```{.json}
+```json
     {
         "dataset_version": "1.0.1",
         "name": "T1.ds",

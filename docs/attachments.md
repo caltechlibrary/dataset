@@ -4,7 +4,7 @@ attachments
 Syntax
 ------
 
-```
+```shell
     dataset attachments COLLECTION_NAME KEY
 ```
 

@@ -4,7 +4,7 @@ repair
 Syntax
 ------
 
-```
+```shell
     dataset repair COLLECTION_NAME
 ```
 
@@ -19,7 +19,7 @@ Usage
 
 Our collection name is "MyCollectiond.ds".
 
-```
+```shell
    dataset repair MyCollection.ds
 ```
 

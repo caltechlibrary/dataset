@@ -11,7 +11,7 @@ includes the ability to traverse nested arrays. The root of a is a
 leading dot. A dot is typed as a period (i.e. \".\"). Given the
 following the dot path to the \"name\" field would be \".name\".
 
-``` {.json}
+```json
     {"name":"Jane Doe"}
 ```
 
@@ -22,7 +22,7 @@ The *dotpath* `.name` would return the value \"Jane Doe\".
 Arrays are designated with square brackets (e.g. \[0\] would reference
 the first element of an array, arrays are number from zero).
 
-``` {.json}
+```json
     ["one", "two", "three"]
 ```
 
@@ -40,7 +40,7 @@ Often you have more complex objects including some level of nesting.
 Element(s) can be reference by combine the dotpaths into more complex
 expressions.
 
-``` {.json}
+```json
     {
         "title": "Introducing dataset",
         "authors":[

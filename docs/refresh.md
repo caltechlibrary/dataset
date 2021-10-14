@@ -9,13 +9,13 @@ also be removed.
 In the following example the frame name is \"f1\", the collection is
 \"examples.ds\". The example is refreshing the object list.
 
-``` {.shell}
+```shell
     dataset refresh example.ds f1
 ```
 
 In python
 
-``` {.python}
+```python
     err = dataset.frame_refresh('example.ds', 'f1')
 ```
 

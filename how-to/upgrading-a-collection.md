@@ -8,7 +8,7 @@ a new version. There "usual" to upgrading your is to use
 use the "check" and "repair" features of the __dataset__ command 
 line tool.
 
-```
+```shell
     dataset check mycollection.ds
     # you'll get a verbose report to the console
     dataset repair mycollection.ds

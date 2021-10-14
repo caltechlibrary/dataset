@@ -38,7 +38,7 @@ local drive under \"/Users/fred/Documents/notes-on-walrus.docx\".
 
 Using the __dataset__ cli you issue the follow command \--
 
-``` {.shell}
+```shell
     dataset create Sea-Mamals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
     dataset attach Sea-Mamals.ds walrus \
        /Users/fred/Documents/notes-on-walrus.docx
@@ -57,7 +57,7 @@ walrus.json file. Since no versioning was specified for
 If we had added our attachment including a semver the directory
 structure will be slightly more complex.
 
-``` {.shell}
+```shell
     dataset attach Sea-Mamals.ds walrus v0.0.1 /Users/fred/Documents/notes-on-walrus.docx
 ```
 
@@ -118,7 +118,7 @@ create during the attachment process.
 
 Let\'s look at our first example again in detail.
 
-``` {.shell}
+```shell
     dataset create Sea-Mamals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
     dataset attach Sea-Mamals.ds walrus \
        /Users/fred/Documents/notes-on-walrus.docx
@@ -126,7 +126,7 @@ Let\'s look at our first example again in detail.
 
 The JSON object created by the two command looks like
 
-``` {.json}
+```json
     {
         "_Key": "walrus",
         "description": "may have tusks",
@@ -146,7 +146,7 @@ The JSON object created by the two command looks like
 
 When we added v0.0.1 the object would change shape and be something like
 
-``` {.json}
+```json
     {
         "_Key": "walrus",
         "description": "may have tusks",
@@ -173,7 +173,7 @@ we\'ve moved v0.0.0 off to
 
 The JSON should look something like\--
 
-``` {.json}
+```json
     {
         "_Key": "walrus",
         "description": "may have tusks",

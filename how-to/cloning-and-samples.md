@@ -31,7 +31,7 @@ sample collection will be *friends-sample.ds*
 
 On the command line \--
 
-``` {.shell}
+```shell
     dataset keys -sample=5 friends.ds > sample.keys
     dataset clone -i sample.keys friends.ds friends-sample.ds
 ```
@@ -39,7 +39,7 @@ On the command line \--
 In Python I am assuming you have defined a function called
 \"get_sample_keys()\" your self.
 
-``` {.python}
+```python
     keys = get_sample_keys('friends.ds', 5)
     err = dataset.clone('friends.ds', keys, 'friends-sample.ds')
 ```
@@ -62,13 +62,13 @@ collection if you are applying machine learning techniques.
 Let\'s take a shorten version of generating a sample of size 5 for our
 friends collection.
 
-``` {.shell}
+```shell
     dataset clone-sample -size=5 friends.ds friends-sample.ds
 ```
 
 Likewise in python this becomes
 
-``` {.python}
+```python
     err = dataset.clone_sample('friends.ds', 5, 'friends-sample.ds')
     if err != '':
         print(err)
@@ -80,11 +80,11 @@ By adding a second target collection name we can use **clone-sample** to
 create both the training and test collection. Here\'s an example with
 our *friends.ds* collection creating *training.ds* and *test.ds*.
 
-``` {.shell}
+```shell
     dataset clone-sample -size=5 friends.ds training.ds test.ds
 ```
 
-``` {.python}
+```python
     err = dataset.clone_sample('friends.ds', 5, 'training.ds', 'test.ds')
     if err != '':
         print(err)

@@ -4,7 +4,7 @@ keys
 Syntax
 ------
 
-```
+```shell
     dataset keys COLLECTION_NAME
 ```
 
@@ -33,7 +33,7 @@ including sorting number strings.
 Getting a "sample" of keys
 --------------------------
 
-The _dataset_ command respects an option named `-sample N` where N 
+The __dataset__ command respects an option named `-sample N` where N 
 is the size (number) of the keys to include in the sample. The sample 
 is taken after any filters are applied but may be less than requested 
 size if the the filtered results are few than the sample size.  The 

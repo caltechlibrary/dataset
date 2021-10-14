@@ -3,13 +3,13 @@ hasframe
 
 Check to see if a frame name exists in a collection.
 
-``` {.shell}
+```shell
     dataset hasframe pubs.ds f1
 ```
 
 In python
 
-``` {.python}
+```python
     if dataset.has_frame('pubs.ds', 'f1') == true:
         print('We have frame f1 in pubs.ds')
 ```

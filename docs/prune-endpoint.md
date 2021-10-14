@@ -15,7 +15,7 @@ Example
 
 In this example `<COLLECTION_ID>` is "t1", `<KEY>` is "one", `<SEMVER>` is "0.0.1" and `<FILENAME>` is "a1.png". Once again our example uses curl.
 
-```
+```shell
     curl http://localhost:8485/t1/prune/one/0.0.1/a1.png
 ```
 

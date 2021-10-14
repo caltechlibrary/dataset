@@ -4,7 +4,7 @@ frame-objects
 Usage
 -----
 
-```
+```shell
     frame-objects COLLECTION FRAME_NAME
 ```
 
@@ -24,7 +24,7 @@ for a frame named "captions-dates-locations" from my collection
 called "photos.ds" I would do the following (will be using the
 `-p` option to pretty print the results)
 
-```
+```shell
     dataset frame-objects -p photos.ds captions-dates-locations
 ```
 

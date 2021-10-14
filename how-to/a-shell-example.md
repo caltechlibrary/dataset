@@ -6,7 +6,7 @@ dataset
 
 Below is a simple example of shell based interaction with dataset a collection using the command line dataset tool.
 
-``` {.shell}
+```shell
     # Create a collection "friends.ds", the ".ds" lets the bin/dataset command know that's the collection to use. 
     dataset init friends.ds
     # if successful then you should see an OK otherwise an error message
@@ -54,7 +54,7 @@ We need to have two shell sessions running for this example.
 
 For this example we're going to use the "friends.ds" collection created in the previous example.  We need to create a "settings.json" file in the same directory where you have "friends.ds".  We will use it to start _datasetd_. That file should contain
 
-```{.json}
+```json
     {
         "host": "localhost:8485",
         "collections": {
@@ -72,7 +72,7 @@ For this example we're going to use the "friends.ds" collection created in the p
 
 We start up _datasetd_ with the following command.
 
-```{.shell}
+```shell
     datasetd settings.json
 ```
 
@@ -80,7 +80,7 @@ In this first session you will see log output to the console. We can use that to
 
 In a second shell session we're going to use the [curl](https://curl.se/) command to interact with our collections.
 
-``` {.shell}
+```shell
     # Create a JSON document 
     curl -X POST -H 'application/json' \
     'http://localhost:8485/friends/create/frieda' \

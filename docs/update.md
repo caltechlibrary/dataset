@@ -4,7 +4,7 @@ update
 Syntax
 ------
 
-```
+```shell
     dataset update COLLECTION_NAME KEY
 ```
 

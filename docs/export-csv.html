@@ -50,18 +50,18 @@ export
 <h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]</code></pre>
+<pre class="shell"><code>    dataset export COLLECTION_NAME FRAME_NAME [CSV_FILENAME]</code></pre>
 <h2 id="description">
 Description
 </h2>
 <p>
-<em>export</em> will render the contents of a collection as a CSV file based on a frame defined in the collection.
+<strong>export</strong> will render the contents of a collection as a CSV file based on a frame defined in the collection.
 </p>
 <h2 id="usage">
 Usage
 </h2>
 <p>
-In the following examples we will be using a newly defined “frame” named “my-report”. The frame will have the following fields are being exported - ._Key,.title, and .pubDate with the following labels for those fields – id, title and publication date.
+In the following examples we will be using a newly defined “frame” named “my-report”. The frame will have the following fields are being exported - <code>._Key,.title</code>, and <code>.pubDate</code> with the following labels for those fields – id, title and publication date.
 </p>
 <pre class="shell"><code>    dataset frame publications.ds my-report \
         &quot;._Key=id&quot; &quot;.title=title&quot; \
@@ -83,5 +83,27 @@ Related topics: <a href="frame.html">frame</a>, <a href="import-csv.html">import
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

@@ -4,7 +4,7 @@ count
 Syntax
 ------
 
-```
+```shell
     dataset count COLLECTION_NAME [FILTER EXPRESSION]
 ```
 

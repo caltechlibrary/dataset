@@ -28,14 +28,14 @@ Usage
 Let\'s assume you have a record in your collection with a key
 \'jane.doe\'. It has three fields - name, email, age.
 
-``` {.json}
+```json
     {"name":"Doe, Jane", "email": "jd@example.org", "age": 42}
 ```
 
 You also have an external JSON document called profile.json. It looks
 like
 
-``` {.json}
+```json
     {"name": "Doe, Jane", "email": "jane.doe@example.edu", "bio": "world renowned geophysist"}
 ```
 
@@ -43,25 +43,25 @@ You can merge the unique fields in profile.json with your existing
 jane.doe record (where the existing record id is \"jane.doe\"). The
 collection is \"people.ds\"
 
-``` {.shell}
+```shell
     dataset join people.ds jane.doe profile.json
 ```
 
 The result would look like
 
-``` {.json}
+```json
     {"name":"Doe, Jane", "email": "jd@example.org", "age": 42, "bio": "renowned geophysist"}
 ```
 
 If you wanted to overwrite the common fields you would use \'join
 overwrite\'
 
-``` {.shell}
+```shell
     dataset join -overwrite people.ds jane.doe profile.json
 ```
 
 Which would result in a record like
 
-``` {.json}
+```json
     {"name":"Doe, Jane", "email": "jane.doe@example.edu", "age": 42, "bio": "renowned geophysist"}
 ```

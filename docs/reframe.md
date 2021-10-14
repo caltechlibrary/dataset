@@ -9,14 +9,14 @@ In the following example the frame name is \"f1\", the collection is
 existing keys coming from standard input, the second example performs
 the same thing but is taking a filename to retrieve the list of keys.
 
-``` {.shell}
+```shell
     cat f1-updated.keys | dataset reframe example.ds f1
     dataset reframe example.ds f1 f1-updated.keys
 ```
 
 In python
 
-``` {.python}
+```python
     f1_updated_keys = generate_updates_keys()
     err = dataset.frame_reframe('example.ds', 'f1', f1_updated_keys)
 ```

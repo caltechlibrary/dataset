@@ -19,7 +19,7 @@ Example
 
 The `<COLLECTION_ID>` is "t1", the `<KEY>` is "one" The content posted is
 
-```{.json}
+```json
     {
        "one": 1
     }

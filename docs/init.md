@@ -4,7 +4,7 @@ init
 Syntax
 ------
 
-```
+```shell
     dataset init COLLECTION_NAME
 ```
 
@@ -20,7 +20,7 @@ Usage
 The following example command create a dataset collection 
 named "data.ds".
 
-```
+```shell
     dataset init data.ds
 ```
 

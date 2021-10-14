@@ -4,7 +4,7 @@ delete
 Syntax
 ------
 
-```
+```shell
     dataset delete COLLECTION_NAME KEY
 ```
 

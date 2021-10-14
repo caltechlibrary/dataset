@@ -17,13 +17,13 @@ Example
 
 In this example `<COLLECTION_ID>` is "t1".
 
-```{.shell}
+```shell
     curl http://localhost:8485/t1/keys
 ```
 
 The document return looks some like
 
-```
+```json
     [
         "one",
         "two",

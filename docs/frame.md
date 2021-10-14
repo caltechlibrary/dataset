@@ -14,7 +14,7 @@ from a dataset collection called `pubs.ds`. Note the labels of
 \"Title\", \"Authors\", \"PubYear\" are on the right side the an equal
 sign and the dot paths to the left.
 
-``` {.shell}
+```shell
     dataset keys pubs.ds |\
         dataset frame pubs.ds "title-authors-year" \
                 ".title=Title" \
@@ -24,7 +24,7 @@ sign and the dot paths to the left.
 
 The objects in the frame\'s object list will look like
 
-``` {.json}
+```json
     {
         "Title": ...,
         "Authors": ...,
@@ -38,7 +38,7 @@ In python we use a Dict to map the dotpaths to labels rather than an
 embedded equal sign. Doing the same task as before would look like this
 in Python.
 
-``` {.python}
+```python
     keys = dataset.keys("pubs.ds")
     (frame, err) = dataset.frame("pubs.ds", "title-authors-year", 
          keys, { 

@@ -4,7 +4,7 @@ Python Basics
 This is an example of creating a dataset called *fiends.ds*, saving a
 record called \"littlefreda.json\" and reading it back.
 
-``` {.python}
+```python
     import sys
     import json
     from py_dataset import dataset
@@ -39,7 +39,7 @@ second part of the tuple is any error messages.
 
 Now check to see if the key, littlefreda, is in the collection
 
-``` {.python}
+```python
    dataset.haskey(c_name, 'littlefreda')
 ```
 
@@ -48,7 +48,7 @@ convert it first to a Python dict. In theses examples we are creating
 for Mojo Sam and Capt. Jack then reading back all the keys and
 displaying their paths and the JSON document created.
 
-``` {.python}
+```python
     with open("mojosam.json") as f:
         src = f.read().encoding('utf-8')
         dataset.create(c_name, "mojosam", json.loads(src))
@@ -67,7 +67,7 @@ It is also possible to filter and sort keys from python by providing
 extra parameters to the keys method. First we\'ll display a list of keys
 filtered by email ending in \"example.org\" then sorted by email.
 
-``` {.python}
+```python
     print(f"Filtered only")
     keys = dataset.keys(c_name, '(has_suffix .email "example.org")')
     for key in keys:
@@ -86,7 +86,7 @@ Filter and sorting a large collection can take time due to the number of
 disc reads. It can also use allot of memory. It is more effecient to
 first filter your keys then sort the filtered keys.
 
-``` {.python}
+```python
     print(f"Filtered, sort by stages")
     all_keys = dataset.keys(c_name)
     keys = dataset.key_filter(c_name, keys, '(has_suffix .email "example.org")')

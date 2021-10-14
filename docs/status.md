@@ -4,7 +4,7 @@ status
 Syntax
 ------
 
-```
+```shell
     dataset status COLLECTION_NAME [COLLECTION_NAME ...]
 ```
 
@@ -20,7 +20,7 @@ Usage
 
 Collection names are "MyRecordCollection.ds" and "MyBookCollection.ds".
 
-```
+```shell
     dataset status MyRecordCollection.ds
     dataset status MyRecordCollection.ds MyBookCollection.ds
 ```

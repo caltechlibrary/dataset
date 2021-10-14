@@ -77,7 +77,7 @@ FRAME OPERATIONS
 
 Example creating a frame named \"dois-and-titles\"
 
-``` {.{.shell}}
+```shell
     dataset keys Pubs.ds >pubs.keys
     dataset frame-create -i pubs.keys Pubs.ds dois-and-titles \
         ".doi=DOI" \
@@ -86,7 +86,7 @@ Example creating a frame named \"dois-and-titles\"
 
 Or in python
 
-``` {.{.python}}
+```python
     keys = dataset.keys('Pubs.ds')
     frame = dataset.frame_crate('Pubs.ds', 'dois-and-titles', keys, {
         '.doi': 'DOI', 
@@ -99,19 +99,19 @@ Or in python
 Example of getting the contents of an existing frame with all the
 metadata.
 
-``` {.{.shell}}
+```shell
     dataset frame Pubs.ds dois-and-titles
 ```
 
 An example of getting the frame\'s object list only.
 
-``` {.{.shell}}
+```shell
     dataset frame-objects Pubs.ds dois-and-titles
 ```
 
 Or in python getting the full frame with metadata
 
-``` {.{.python}}
+```python
     (frame, err) = dataset.frame('Pubs.ds', 'dois-and-titles')
     if err != '':
         print(f'Something went wront {err}')
@@ -120,7 +120,7 @@ Or in python getting the full frame with metadata
 Or only the object list (note: we\'re going to check for the frame\'s
 existence first).
 
-``` {.{.python}}
+```python
     if dataset.frame_exists('Pub.ds', 'dois-and-titles'):
         object_list = dataset.frame_objects('Pubs.ds', 'dois-and-titles')
 ```
@@ -129,13 +129,13 @@ existence first).
 
 Regenerating \"dois-and-titles\".
 
-``` {.{.shell}}
+```shell
     dataset reframe Pubs.ds dois-and-titles
 ```
 
 Or in python
 
-``` {.{.python}}
+```python
     keys = dataset.keys('Pubs.ds')
     keys.sort()
     frame = dataset.frame_reframe('Pubs.ds', 'dois-and-titles', keys)
@@ -143,14 +143,14 @@ Or in python
 
 ### Updating keys associated with the frame
 
-``` {.{.shell}}
+```shell
     dataset Pubs.ds keys >updated.keys
     dataset frame-refresh -i updated.keys Pubs.ds reframe titles-and-dios
 ```
 
 In python
 
-``` {.{.python}}
+```python
     frame = dataset.frame-refresh('Pubs.ds', 'dois-and-titles', updated_keys)
 ```
 
@@ -163,37 +163,37 @@ The `_Key` column is implied and with be automatically inserted into the
 label list. Additionally using `frame-labels` will cause the object list
 stored in the frame to be updated.
 
-``` {.{.shell}}
+```shell
     dataset frame-labels Pubs.ds dois-and-titles '["Column 1", "Column 2"]'
 ```
 
 In python
 
-``` {.{.python}}
+```python
     err = dataset.frame_labels('Pubs.ds', 'dois-and-titles', ["Column 1", "Column 2"])
 ```
 
 ### Removing a frame
 
-``` {.{.shell}}
+```shell
     dataset frame-delete Pubs.ds titles-and-dios
 ```
 
 Or in python
 
-``` {.{.python}}
+```python
     err = dataset.frame_delete('Pubs.ds', 'dois-and-titles')
 ```
 
 Listing available frames
 ------------------------
 
-``` {.{.shell}}
+```shell
     dataset frames Pubs.ds
 ```
 
 Or in python
 
-``` {.{.python}}
+```python
     frame_names = dataset.frames('Pubs.ds')
 ```
