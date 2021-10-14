@@ -18,7 +18,7 @@ Example
 In this example we`re retieving the `<FILENAME>` of "a1.png", with the `<SEMVER>` of "0.0.1" from the `<COLLECTION_ID>` of "t1" and `<KEY>`
 of "one" using curl.
 
-```{.shell}
+```shell
     curl http://localhost:8485/t1/retrieve/one/0.0.1/a1.png
 ```
 

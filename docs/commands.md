@@ -3,7 +3,7 @@ commands
 
 Documentation on individual commands can be see with
 
-```
+```shell
     dataset -help COMMAND_NAME
 ```
 

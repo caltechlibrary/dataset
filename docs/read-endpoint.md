@@ -17,13 +17,13 @@ Example
 
 Curl accessing "t1" with a key of "one"
 
-```{.shell}
+```shell
     curl http://localhost:8485/t1/read/one
 ```
 
 An example JSON document (this example happens to have an attachment) returned.
 
-```
+```json
 {
    "_Attachments": [
       {

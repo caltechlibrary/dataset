@@ -4,7 +4,7 @@ create
 Syntax
 ------
 
-```
+```shell
     cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
     dataset create -i JSON_DOCNAME COLLECTION_NAME KEY
     dataset create COLLECTION_NAME KEY JSON_VALUE

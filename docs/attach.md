@@ -5,7 +5,7 @@ attach
 Syntax
 ------
 
-```
+```shell
     dataset attach COLLECTION_NAME KEY [SEMVER] FILENAME(S)
 ```
 

@@ -158,6 +158,21 @@ Building just the `libdataset` shared library requires the following sequence.
 You should now have a "dist" directory in the root of the repository with a
 Zip file for the "libdataset" shared library.
 
+### Windows compilation
+
+The tool chain to compile on Windows make several assumptions.
+
+1. You're using Anaconda shell and have the C tool chain installed for cgo to work
+2. You have Stephen Dolan's jq command available (so the version.go file can be regenerated)
+3. You have the latest go installed
+
+Since I don't assume a POSIX shell environment on windows I have made
+batch files to perform some of what Make under Linux and macOS would do.
+
+- make.bat builds our application and depends on go and jq commands
+- release.bat builds a release, will prompt for version
+- clean.bat removes executables and temp files
+
 
 Compilation assumes [go](https://github.com/golang/go) v1.17.2
 

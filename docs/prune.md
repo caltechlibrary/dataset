@@ -4,7 +4,7 @@ prune
 Syntax
 ------
 
-```
+```shell
     dataset prune COLLECTION_NAME KEY [SEMVER]
     dataset prune COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
 ```

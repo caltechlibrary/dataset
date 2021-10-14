@@ -109,89 +109,105 @@ Create a frame
 <p>
 Example creating a frame named “dois-and-titles”
 </p>
-<pre class="{.{.shell}}"><code>    dataset keys Pubs.ds &gt;pubs.keys
+<pre class="shell"><code>    dataset keys Pubs.ds &gt;pubs.keys
     dataset frame-create -i pubs.keys Pubs.ds dois-and-titles \
         &quot;.doi=DOI&quot; \
         &quot;.title=Title&quot;</code></pre>
 <p>
 Or in python
 </p>
-<pre class="{.{.python}}"><code>    keys = dataset.keys(&#39;Pubs.ds&#39;)
-    frame = dataset.frame_crate(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;, keys, {
-        &#39;.doi&#39;: &#39;DOI&#39;, 
-        &#39;.title&#39;: &#39;Title&#39;
-        })</code></pre>
+<div id="cb2" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&#39;Pubs.ds&#39;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    frame <span class="op">=</span> dataset.frame_crate(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>, keys, {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>        <span class="st">&#39;.doi&#39;</span>: <span class="st">&#39;DOI&#39;</span>, </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>        <span class="st">&#39;.title&#39;</span>: <span class="st">&#39;Title&#39;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>        })</span></code></pre>
+</div>
 <h3 id="retrieve-an-existing-frame">
 Retrieve an existing frame
 </h3>
 <p>
 Example of getting the contents of an existing frame with all the metadata.
 </p>
-<pre class="{.{.shell}}"><code>    dataset frame Pubs.ds dois-and-titles</code></pre>
+<pre class="shell"><code>    dataset frame Pubs.ds dois-and-titles</code></pre>
 <p>
 An example of getting the frame’s object list only.
 </p>
-<pre class="{.{.shell}}"><code>    dataset frame-objects Pubs.ds dois-and-titles</code></pre>
+<pre class="shell"><code>    dataset frame-objects Pubs.ds dois-and-titles</code></pre>
 <p>
 Or in python getting the full frame with metadata
 </p>
-<pre class="{.{.python}}"><code>    (frame, err) = dataset.frame(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;)
-    if err != &#39;&#39;:
-        print(f&#39;Something went wront {err}&#39;)</code></pre>
+<div id="cb5" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>    (frame, err) <span class="op">=</span> dataset.frame(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>        <span class="bu">print</span>(<span class="ss">f&#39;Something went wront </span><span class="sc">{</span>err<span class="sc">}</span><span class="ss">&#39;</span>)</span></code></pre>
+</div>
 <p>
 Or only the object list (note: we’re going to check for the frame’s existence first).
 </p>
-<pre class="{.{.python}}"><code>    if dataset.frame_exists(&#39;Pub.ds&#39;, &#39;dois-and-titles&#39;):
-        object_list = dataset.frame_objects(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;)</code></pre>
+<div id="cb6" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>    <span class="cf">if</span> dataset.frame_exists(<span class="st">&#39;Pub.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>        object_list <span class="op">=</span> dataset.frame_objects(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>)</span></code></pre>
+</div>
 <h3 id="regenerating-a-frame">
 Regenerating a frame
 </h3>
 <p>
 Regenerating “dois-and-titles”.
 </p>
-<pre class="{.{.shell}}"><code>    dataset reframe Pubs.ds dois-and-titles</code></pre>
+<pre class="shell"><code>    dataset reframe Pubs.ds dois-and-titles</code></pre>
 <p>
 Or in python
 </p>
-<pre class="{.{.python}}"><code>    keys = dataset.keys(&#39;Pubs.ds&#39;)
-    keys.sort()
-    frame = dataset.frame_reframe(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;, keys)</code></pre>
+<div id="cb8" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&#39;Pubs.ds&#39;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>    keys.sort()</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>    frame <span class="op">=</span> dataset.frame_reframe(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>, keys)</span></code></pre>
+</div>
 <h3 id="updating-keys-associated-with-the-frame">
 Updating keys associated with the frame
 </h3>
-<pre class="{.{.shell}}"><code>    dataset Pubs.ds keys &gt;updated.keys
+<pre class="shell"><code>    dataset Pubs.ds keys &gt;updated.keys
     dataset frame-refresh -i updated.keys Pubs.ds reframe titles-and-dios</code></pre>
 <p>
 In python
 </p>
-<pre class="{.{.python}}"><code>    frame = dataset.frame-refresh(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;, updated_keys)</code></pre>
+<div id="cb10" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>    frame <span class="op">=</span> dataset.frame<span class="op">-</span>refresh(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>, updated_keys)</span></code></pre>
+</div>
 <h3 id="updating-labels-in-a-frame">
 Updating labels in a frame
 </h3>
 <p>
 Labels are represented as a JSON array, when we set the labels explicitly we’re replacing the entire array at once. In this example the frame’s grid has two columns in addition the required <code>_Key</code> label. The <code>_Key</code> column is implied and with be automatically inserted into the label list. Additionally using <code>frame-labels</code> will cause the object list stored in the frame to be updated.
 </p>
-<pre class="{.{.shell}}"><code>    dataset frame-labels Pubs.ds dois-and-titles &#39;[&quot;Column 1&quot;, &quot;Column 2&quot;]&#39;</code></pre>
+<pre class="shell"><code>    dataset frame-labels Pubs.ds dois-and-titles &#39;[&quot;Column 1&quot;, &quot;Column 2&quot;]&#39;</code></pre>
 <p>
 In python
 </p>
-<pre class="{.{.python}}"><code>    err = dataset.frame_labels(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;, [&quot;Column 1&quot;, &quot;Column 2&quot;])</code></pre>
+<div id="cb12" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_labels(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>, [<span class="st">&quot;Column 1&quot;</span>, <span class="st">&quot;Column 2&quot;</span>])</span></code></pre>
+</div>
 <h3 id="removing-a-frame">
 Removing a frame
 </h3>
-<pre class="{.{.shell}}"><code>    dataset frame-delete Pubs.ds titles-and-dios</code></pre>
+<pre class="shell"><code>    dataset frame-delete Pubs.ds titles-and-dios</code></pre>
 <p>
 Or in python
 </p>
-<pre class="{.{.python}}"><code>    err = dataset.frame_delete(&#39;Pubs.ds&#39;, &#39;dois-and-titles&#39;)</code></pre>
+<div id="cb14" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&#39;Pubs.ds&#39;</span>, <span class="st">&#39;dois-and-titles&#39;</span>)</span></code></pre>
+</div>
 <h2 id="listing-available-frames">
 Listing available frames
 </h2>
-<pre class="{.{.shell}}"><code>    dataset frames Pubs.ds</code></pre>
+<pre class="shell"><code>    dataset frames Pubs.ds</code></pre>
 <p>
 Or in python
 </p>
-<pre class="{.{.python}}"><code>    frame_names = dataset.frames(&#39;Pubs.ds&#39;)</code></pre>
+<div id="cb16" class="sourceCode">
+<pre class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>    frame_names <span class="op">=</span> dataset.frames(<span class="st">&#39;Pubs.ds&#39;</span>)</span></code></pre>
+</div>
 </section>
 
 <footer>
@@ -202,5 +218,27 @@ Or in python
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

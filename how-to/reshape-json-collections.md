@@ -20,7 +20,7 @@ Example
 In our collection we have record with an id of 12345. Running
 `dataset read 12345` we can see our record looks like\--
 
-``` {.json}
+```json
     {
         "title": "The wonderful world of data collecting",
         "authors": [
@@ -32,7 +32,7 @@ In our collection we have record with an id of 12345. Running
 
 What we\'d like is a flattened version of the author names.
 
-``` {.json}
+```json
     {
         "title": "The wonderful world of data collecting",
         "author_display_names": "Jules Brown and Verne Brown",
@@ -58,7 +58,7 @@ inside the array.
 
 Try this
 
-``` {.shell}
+```shell
     dataset read 12345 | \
        jsonmunge -i - -E '{{ dotpath . ".authors[0].given" "" }} {{ dotpath . ".authors[0].family" "" }}'
 ```
@@ -74,7 +74,7 @@ author name.
 
 It\'s a bit ugly (and long) but we can adapt that to display both names.
 
-``` {.shell}
+```shell
     dataset read 12345 | \
        jsonmunge -i - -E '{{ dotpath . ".authors[0].given" "" }} {{ dotpath . ".authors[0].family" "" }} and {{ dotpath . ".authors[1].given" "" }} {{ dotpath . "authors[1].family" "" }}'
 ```
@@ -90,7 +90,7 @@ and put it in a template file called \"flatten.tmpl\".
 
 Run the template and see the results with
 
-``` {.shell}
+```shell
     dataset read 12345 | jsonmunge -i - flatten.tmpl
 ```
 
@@ -112,7 +112,7 @@ would look like this version of \"flatten.tmpl\".
 
 Running
 
-``` {.shell}
+```shell
     dataset read 12345 | jsonmunge -i - flatten.tmpl
 ```
 
@@ -162,14 +162,14 @@ our new object.
 Now we ready to \"join\" our new object with the 12345 record. We can do
 that by extending our pipe line.
 
-``` {.shell}
+```shell
     dataset read 12345 | jsonmunge -i - flatten.tmpl | dataset -i - join update 12345
 ```
 
 We can check to make sure it worked with `dataset read 12345`. You
 should see something like (order of attributes may vary)
 
-``` {.json}
+```json
     {
       "author_display_names": "Jules Brown and Verne Brown",
       "authors": [
@@ -200,7 +200,7 @@ replace the value in `.author_display_names` with a new one.
 
 Running
 
-``` {.shell}
+```shell
     dataset read 12345 | \
       jsonmunge -i - flatten.tmpl | \
           dataset -i - join overwrite 12345` 
@@ -208,7 +208,7 @@ Running
 
 yields our new results
 
-``` {.json}
+```json
     {
         "title": "The wonderful world of data collecting",
         "authors": [
@@ -225,7 +225,7 @@ We can transform a single record but how about transforming the entire
 collection? That turns out to be easy we just loop over each key in the
 collection applying our pipeline.
 
-``` {.shell}
+```shell
     dataset keys | while read K; do
         dataset read "$K" | \
            jsonmunge -i - flatten.tmpl | \

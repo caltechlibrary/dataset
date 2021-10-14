@@ -4,7 +4,7 @@ sync-send
 Syntax
 ------
 
-```
+```shell
     dataset sync-send COLLECTION FRAME_NAME CSV_FILENAME
 ```
 

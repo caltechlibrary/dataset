@@ -25,7 +25,7 @@ well as the Python module of the same name.
 Let\'s create a collection called *friends.ds*. At the command line type
 the following.
 
-``` {.bash}
+```bash
     dataset init friends.ds
 ```
 
@@ -38,7 +38,7 @@ needed then use them. For these exercises we\'ll be importing the
 following modules *sys*, *os*, *json* and of course *dataset* via
 `from py_dataset import dataset`.
 
-``` {.python}
+```python
     import sys
     import os
     import json
@@ -79,7 +79,7 @@ collection called *friends.ds*. I am going to store their name and email
 address so I can contact them. Their names are Little Frieda, Mojo Sam
 and Jack Flanders.
 
-``` {.bash}
+```bash
     dataset create friends.ds frieda \
       '{"name":"Little Frieda","email":"frieda@inverness.example.org"}'
 ```
@@ -88,7 +88,7 @@ Notice the \"OK\". Just like *init* the *create* verb returns a status.
 \"OK\" means everything is good, otherwise an error is shown. Doing the
 same thing in Python would look like.
 
-``` {.python}
+```python
     err = dataset.create("friends.ds", "frieda", 
           {"name":"Little Frieda","email":"frieda@inverness.example.org"})
     if err != "":
@@ -101,7 +101,7 @@ add records for Mojo Sam and Jack Flanders.
 
 command line \--
 
-``` {.bash}
+```bash
     dataset create friends.ds "mojo" \
         '{"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"}'
     dataset create friends.ds "jack" \
@@ -110,7 +110,7 @@ command line \--
 
 in python \--
 
-``` {.python}
+```python
     err = dataset.create("friends.ds", "mojo", 
           {"name": "Mojo Sam, the Yudoo Man", 
           "email": "mojosam@cosmic-cafe.example.org"})
@@ -131,14 +131,14 @@ verb.
 
 command line \--
 
-``` {.bash}
+```bash
     dataset read friends.ds frieda
 ```
 
 This command emits a JSON object. The JSON is somewhat hard to read. To
 get a pretty version of the JSON object used the \"-p\" option.
 
-``` {.bash}
+```bash
     dataset read -p friends.ds frieda
 ```
 
@@ -146,7 +146,7 @@ On the command line you can easily pipe the results to a file for latter
 modification. Let\'s do this for each of the records we have created so
 far.
 
-``` {.bash}
+```bash
     dataset read -p friends.ds frieda >frieda-profile.json
     dataset read -p friends.ds mojo >mojo-profile.json
     dataset read -p friends.ds jack >jack-profile.json
@@ -157,7 +157,7 @@ structures to a file we\'re going to keep them in memory as Python dict.
 
 In Python \--
 
-``` {.python}
+```python
     (frieda_profile, err) = dataset.read("friends.ds", "frieda")
     if err != "":
         stop(err)
@@ -179,7 +179,7 @@ version). We\'re going to add a key/value pair for \"catch_phrase\"
 associated with each JSON object in *friends.ds*. For Little Frieda edit
 freida-profile.json to look like \--
 
-``` {.json}
+```json
     {
         "_Key": "frieda",
         "email": "frieda@inverness.example.org",
@@ -190,7 +190,7 @@ freida-profile.json to look like \--
 
 For Mojo\'s mojo-profile.json \--
 
-``` {.json}
+```json
     {
         "_Key": "mojo",
         "email": "mojosam@cosmic-cafe.example.org",
@@ -201,7 +201,7 @@ For Mojo\'s mojo-profile.json \--
 
 An Jack\'s jack-profile.json \--
 
-``` {.json}
+```json
     {
         "_Key": "jack",
         "email": "capt-jack@cosmic-voyager.example.org",
@@ -215,7 +215,7 @@ results in the collection with the *update* verb. Like with *init* and
 *create* the *update* verb will return an "OK" or error message. Let\'s
 update each of our JSON objects.
 
-``` {.bash}
+```bash
     dataset update friends.ds freida frieda-profile.json
     dataset update friends.ds mojo mojo-profile.json
     dataset update friends.ds jack jack-profile.json
@@ -230,7 +230,7 @@ In Python we can work with each of the dictionaries variables we save
 from our previous *read* example. We add our "catch_phrase" attribute
 then *update* each record.
 
-``` {.python}
+```python
     frieda_profile["catch_phrase"] = "Wowee Zowee"
     mojo_profile["catch_phrase"] = "Feet Don't Fail Me Now!"
     jack_profile["catch_phrase"] = "What is coming at you is coming from you"
@@ -256,7 +256,7 @@ Let\'s remove Jack Flander\'s record for now.
 
 command line \--
 
-``` {.bash}
+```bash
     dataset delete friends.ds jack
 ```
 
@@ -265,7 +265,7 @@ JSON object from the collection.
 
 An perhaps as you\'ve already guessed working in Python looks like \--
 
-``` {.python}
+```python
     err = dataset.delete("friends.ds", "jack")
     if err != "":
        stop(err)
@@ -284,27 +284,27 @@ Now that we\'ve deleted a few things let\'s see how many keys are in
 
 Command line \--
 
-``` {.bash}
+```bash
     dataset count friends.ds
 ```
 
 In Python \--
 
-``` {.python}
+```python
     cnt = dataset.count("friends.ds")
     print(f"Total Records Now: {cnt}")
 ```
 
 Likewise we can get a list of the keys with the *keys* verb.
 
-``` {.bash}
+```bash
     dataset keys friends.ds
 ```
 
 If you are following along in Python then you can just save the keys to
 a variable called keys.
 
-``` {.python}
+```python
     keys = dataset.keys("friends.ds")
     print("\n".join(keys))
 ```
@@ -345,7 +345,7 @@ on collection updates.
 To define a frame we only need one additional piece of information
 besides what we used for a grid. We need a name for the frame.
 
-``` {.bash}
+```bash
     dataset frame-create -i=friends.keys friends.ds \
         "name-and-email" \
         .name=name .email=email \
@@ -354,7 +354,7 @@ besides what we used for a grid. We need a name for the frame.
 
 In python it would look like
 
-``` {.python}
+```python
     keys = dataset.keys("friends.ds")
     err = dataset.frame_create("friends.ds", "name-and-email", 
           keys, { 
@@ -369,13 +369,13 @@ In python it would look like
 To see the full contents of a frame we only need to supply the
 collection and frame names.
 
-``` {.bash}
+```bash
     dataset frame friends.ds "name-and-email"
 ```
 
 In Python it\'d look like
 
-``` {.python}
+```python
     (f, err) = dataset.frame("friends.ds", "name-and-email")
     if err != "":
         stop(err)
@@ -389,20 +389,20 @@ more complex interactions.
 Most of the time you don\'t want the metadata, so you we have a way of
 just retrieving the object list.
 
-``` {.bash}
+```bash
     dataset frame-objects friends.ds "name-and-email"
 ```
 
 Or in Python
 
-``` {.python}
+```python
     object_list = dataset.frame_objects("friends.ds", "name-and-email")
 ```
 
 Let\'s add back the Jack record we deleted a few sections ago and
 "reframe" our "name-and-email" frame.
 
-``` {.bash}
+```bash
     # Adding back Jack
     dataset create friends.ds jack jack-profile.json
     # Save all the keys in the collection
@@ -418,7 +418,7 @@ representation of the frame to be pretty printed.
 
 Let\'s try the same thing in Python
 
-``` {.python}
+```python
     err = dataset.create("friends.ds", "jack", jack_profile)
     if err != "":
         stop(err)
@@ -434,13 +434,13 @@ Let\'s try the same thing in Python
 
 We can list the frames in the collection using the *frames* verb.
 
-``` {.bash}
+```bash
     dataset frames friends.ds
 ```
 
 In Python
 
-``` {.python}
+```python
     frame_names = dataset.frames("friends.ds")
     print("\n".join(frame_names))
 ```
@@ -458,7 +458,7 @@ provided the order of the columns for the frame \"name-and-email\" as
 \"ID\", \"Display Name\", \"EMail\", and \"Catch Phrase\" we need to
 define our frame that way.
 
-``` {.bash}
+```bash
     dataset frame-delete friends.ds "name-and-email"
     dataset frame friends.ds "name-and-email" \
         "._Key=ID" ".name=Display Name" \
@@ -467,7 +467,7 @@ define our frame that way.
 
 In Python it look like
 
-``` {.python}
+```python
     err = dataset.frame_delete("friends.ds", "name-and-email")
     if err != "":
         stop(err)
@@ -485,13 +485,13 @@ In Python it look like
 Finally the last thing we need to be able to do is delete a frame.
 Delete frames work very similar to deleting a JSON record.
 
-``` {.bash}
+```bash
     dataset frame-delete friends.ds "name-and-email"
 ```
 
 Or in Python
 
-``` {.python}
+```python
     err = dataset.frame_delete("friends.ds", "name-and-email")
     if err != "":
           stop(err)

@@ -20,14 +20,14 @@ Usage
 An example we\'re assuming there is are JSON documents with a KEYS of
 \"r1\", \"r2\", and \"r3\". Our collection name is \"data.ds\"
 
-``` {.shell}
+```shell
     dataset list data.ds r1 r2 r3
 ```
 
 If \"r1\" was \'{\"one\":1}\', \"r2\" was \'{\"two\":2}\' and \"r3\" was
 \'{\"three\":3}\' then the output would be
 
-``` {.json}
+```json
     [{"one":1},{"two":2},{"three":3}]
 ```
 

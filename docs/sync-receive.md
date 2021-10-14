@@ -4,7 +4,7 @@ sync-receive
 Syntax
 ------
 
-```
+```shell
     sync-recieve COLLECTION FRAME_NAME CSV_FILENAME
 ```
 

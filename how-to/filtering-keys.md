@@ -16,7 +16,7 @@ Example
 NOTE: In the example below I've used __jsonrange__ and __jsoncols__ for iterating
 and filtering our objects. These are provided by [datatools](https://github.com/caltechlibrary/datatools/releases). See [filtering-keys.bash](filtering-keys.bash).
 
-```
+```shell
 #
 # Frames, filter for given name "Mojo"
 #

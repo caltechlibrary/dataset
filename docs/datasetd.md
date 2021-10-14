@@ -18,7 +18,7 @@ _datasetd_ can make one or more dataset collections visible over HTTP. The datas
 
 The "settings.json" file has the following structure
 
-```
+```json
     {
         "host": "localhost:8485",
         "collections": {
@@ -86,7 +86,7 @@ If I have a settings file for "recipes" based on the collection
 "recipes.ds" and want to make it read only I would make the attribute
 "read" set to true and if I want the option of listing the keys in the collection I would set that true also.
 
-```
+```json
 {
     "host": "localhost:8485",
     "collections": {
@@ -150,7 +150,7 @@ _datasetd_ provide documentation as plain text output via request
 to the service end points without parameters. Continuing with our
 "recipes" example. Try the following URLs with curl.
 
-```
+```shell
     curl http://localhost:8485
     curl http://localhost:8485/recipes
     curl http://localhost:8485/recipes/create

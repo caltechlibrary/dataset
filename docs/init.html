@@ -50,7 +50,7 @@ init
 <h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset init COLLECTION_NAME</code></pre>
+<pre class="shell"><code>    dataset init COLLECTION_NAME</code></pre>
 <h2 id="description">
 Description
 </h2>
@@ -63,7 +63,7 @@ Usage
 <p>
 The following example command create a dataset collection named “data.ds”.
 </p>
-<pre><code>    dataset init data.ds</code></pre>
+<pre class="shell"><code>    dataset init data.ds</code></pre>
 <p>
 NOTE: After each evocation of <code>dataset init</code> if all went well you will be shown an <code>OK</code> if everything went OK, otherwise an error message.
 </p>
@@ -77,5 +77,27 @@ NOTE: After each evocation of <code>dataset init</code> if all went well you wil
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

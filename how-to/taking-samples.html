@@ -56,11 +56,11 @@ If the sample size is greater then the results returned then the who results set
 <p>
 If you are doing Machine Leaning type of sampling (e.g. calculating a test and training set) then normally you create a <em>test</em> key list like this
 </p>
-<pre><code>    dataset -sample=&quot;$N&quot; keys</code></pre>
+<pre class="shell"><code>    dataset -sample=&quot;$N&quot; keys</code></pre>
 <p>
 where
 </p>
-<pre><code>    $N</code></pre>
+<pre class="shell"><code>    $N</code></pre>
 <p>
 holds the test sample size. After keylist is generated you can then create a training set by excluding the keys associated with the sample.
 </p>
@@ -74,5 +74,27 @@ holds the test sample size. After keylist is generated you can then create a tra
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

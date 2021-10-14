@@ -50,11 +50,11 @@ Windows Notes
 <p>
 Windows’ command prompt presents some challenges for working with JSON on the command line. A command line
 </p>
-<pre><code>dataset create T1.ds one &#39;{&quot;one&quot;:1}&#39;</code></pre>
+<pre class="shell"><code>    dataset create T1.ds one &#39;{&quot;one&quot;:1}&#39;</code></pre>
 <p>
 which would work in a POSIX shell fails. The command prompt makes the JSON expression look like <code>{one:1}</code> which is NOT JSON and also not a filename. As a result working with dataset at the Windows command prompt requires conforming to the command prompt’s expectation on quoting. This will work.
 </p>
-<pre><code>dataset create T1.ds one &quot;{&quot;&quot;&quot;one&quot;&quot;&quot;:1}</code></pre>
+<pre class="shell"><code>    dataset create T1.ds one &quot;{&quot;&quot;&quot;one&quot;&quot;&quot;:1}</code></pre>
 </section>
 
 <footer>
@@ -65,5 +65,27 @@ which would work in a POSIX shell fails. The command prompt makes the JSON expre
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

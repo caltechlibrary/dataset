@@ -4,7 +4,7 @@ read
 Syntax
 ------
 
-```
+```shell
     dataset read COLLECTION_NAME KEY
 ```
 

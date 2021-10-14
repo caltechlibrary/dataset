@@ -59,11 +59,18 @@ Example
 <p>
 The assumption is that we have <strong>datasetd</strong> running on port “8485” of “localhost” and a set of collections, “t1” and “t2”, defined in the “settings.json” used at launch.
 </p>
-<div id="cb1" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>    <span class="ot">[</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>      <span class="st">&quot;t1&quot;</span><span class="ot">,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>      <span class="st">&quot;t2&quot;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    <span class="ot">]</span></span></code></pre>
+<p>
+Use curl to fetch the collections array.
+</p>
+<pre class="shell"><code>    curl http://localhost:8485/collections</code></pre>
+<p>
+In my local setup I have two collections defined, “t1” and “t2” so the array returned looks like
+</p>
+<div id="cb2" class="sourceCode">
+<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="ot">[</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>      <span class="st">&quot;t1&quot;</span><span class="ot">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>      <span class="st">&quot;t2&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    <span class="ot">]</span></span></code></pre>
 </div>
 </section>
 
@@ -75,5 +82,27 @@ The assumption is that we have <strong>datasetd</strong> running on port “8485
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

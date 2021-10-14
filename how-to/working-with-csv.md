@@ -57,7 +57,7 @@ _characters.csv_.  Then look at the keys.
 Notice the assigned ids. We used the second column, the one with th 
 email heading to be our keys.
 
-```
+```shell
     ralph.rolf@zbs.example.org
     zowie@zbs.example.org
     captain.jack@zbs.example.org
@@ -85,7 +85,7 @@ we'll column one (the name column) as the key.
 
 Now our keys look a little different.
 
-```
+```shell
 ```
 
 Reading the records back we see we have the JSON same document structure.
@@ -99,7 +99,7 @@ Reading the records back we see we have the JSON same document structure.
 
 Our records look like...
 
-```
+```shell
     {"email":"captain.jack@zbs.example.org","name":"Jack Flanders"}
     {"email":"zowie@zbs.example.org","name":"Zowie"}
     {"email":"ralph.rolf@zbs.example.org","name":"Ralph Rolf"}
@@ -139,7 +139,7 @@ JSON document key.
 
 Now take a look at the records output
 
-```
+```json
     {"col1":"Zowie","col2":"zowie@zbs.example.org"}
     {"col1":"Ralph Rolf","col2":"ralph.rolf@zbs.example.org"}
     {"col1":"Mojo Sam","col2":"mojo.sam@zbs.example.org"}

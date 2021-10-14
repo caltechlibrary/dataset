@@ -4,7 +4,7 @@ path
 Syntax
 ------
 
-```
+```shell
     dataset path COLLETION_NAME KEY
 ```
 

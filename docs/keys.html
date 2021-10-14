@@ -50,7 +50,7 @@ keys
 <h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset keys COLLECTION_NAME</code></pre>
+<pre class="shell"><code>    dataset keys COLLECTION_NAME</code></pre>
 <h2 id="description">
 Description
 </h2>
@@ -70,7 +70,7 @@ Here are three examples usage. Notice the sorting is handled by the POSIX sort c
 Getting a “sample” of keys
 </h2>
 <p>
-The <em>dataset</em> command respects an option named <code>-sample N</code> where N is the size (number) of the keys to include in the sample. The sample is taken after any filters are applied but may be less than requested size if the the filtered results are few than the sample size. The basic process is to get a set of keys, randomly sort the keys, then return the top N number of those keys.
+The <strong>dataset</strong> command respects an option named <code>-sample N</code> where N is the size (number) of the keys to include in the sample. The sample is taken after any filters are applied but may be less than requested size if the the filtered results are few than the sample size. The basic process is to get a set of keys, randomly sort the keys, then return the top N number of those keys.
 </p>
 <p>
 Related topics: <a href="count.html">count</a>, <a href="clone">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="frame.html">frame</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-objects.html">frame-objects</a>
@@ -85,5 +85,27 @@ Related topics: <a href="count.html">count</a>, <a href="clone">clone</a>, <a hr
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

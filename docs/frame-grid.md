@@ -4,7 +4,7 @@ frame-grid
 USAGE
 -----
 
-```
+```shell
     frame-grid COLLECTION FRAME_NAME
 ```
 
@@ -26,7 +26,7 @@ If I have a collection named "photos.ds" and a previously
 defined frame name "captions-dates-locations" I can get that
 as a 2D JSON array with the following---
 
-```
+```shell
     dataset frame-grid -p photos.ds captions-dates-locations
 ```
 

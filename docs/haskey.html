@@ -50,7 +50,7 @@ haskey
 <h2 id="syntax">
 Syntax
 </h2>
-<pre><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR</code></pre>
+<pre class="shell"><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR</code></pre>
 <h2 id="description">
 Description
 </h2>
@@ -60,12 +60,12 @@ Checks if a given key is in the a collection. Returns “true” if found, “fa
 <h2 id="usage">
 Usage
 </h2>
-<pre><code>    dataset haskey people.ds &#39;0000-0003-0900-6903&#39;
+<pre class="shell"><code>    dataset haskey people.ds &#39;0000-0003-0900-6903&#39;
     dataset haskey people.ds r1</code></pre>
 <p>
 In python
 </p>
-<pre><code>    dataset.has_key(&#39;people.ds&#39;, &#39;0000-0003-0900-6903&#39;)
+<pre class="shell"><code>    dataset.has_key(&#39;people.ds&#39;, &#39;0000-0003-0900-6903&#39;)
     dataset.has_key(&#39;people.ds&#39;, &#39;r1&#39;)</code></pre>
 <p>
 Related topics: <a href="keys.html">keys</a>
@@ -80,5 +80,27 @@ Related topics: <a href="keys.html">keys</a>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

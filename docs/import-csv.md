@@ -4,7 +4,7 @@ import
 Syntax
 ------
 
-```
+```shell
     dataset import COLLECTION_NAME CSV_FILENAME ID_COL_NUMER
 ```
 

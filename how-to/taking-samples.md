@@ -13,13 +13,13 @@ If you are doing Machine Leaning type of sampling (e.g. calculating a
 test and training set) then normally you create a *test* key list like 
 this 
 
-```
+```shell
     dataset -sample="$N" keys
 ``` 
 
 where 
 
-```
+```shell
     $N
 ```
 
