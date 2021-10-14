@@ -5,14 +5,23 @@ REM
 REM It requires: go version 1.12.4 or better and the cli for git installed
 REM
 go version
-echo "Getting ready to build the dataset.exe"
+echo Getting ready to build the dataset.exe
 
+echo Using jq to extract version string from codemeta.json
+jq .version codemeta.json > version.txt
+SET /P DS_VERSION= < version.txt
+DEL version.txt
+echo Building version: %DS_VERSION%
+echo package datasdet > version.go
+echo.  >> version.go
+echo // Version of package >> version.go
+echo const Version = %DS_VERSION% >> version.go
 go build -o bin\dataset.exe "cmd\dataset\dataset.go" "cmd\dataset\assets.go"
 
-echo "Checking compile should see version number of dataset"
+echo Checking compile should see version number of dataset
 .\bin\dataset.exe -version
 
-echo "If OK, you can now copy the dataset.exe to %USERPROFILE%\go\bin"
-echo ""
-echo "      copy bin\dataset.exe %USERPROFILE%\go\bin
-echo ""
+echo If OK, you can now copy the dataset.exe to %USERPROFILE%\go\bin
+echo.
+echo       copy bin\dataset.exe %USERPROFILE%\go\bin
+echo.
