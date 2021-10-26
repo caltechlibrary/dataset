@@ -525,6 +525,7 @@ func InitDatasetAPI(settings string) error {
 func Shutdown(appName string) int {
 	exitCode := 0
 	pid := os.Getpid()
+	log.Printf(`Closing dataset collections %s pid: %d`, appName, pid)
 	for cName, c := range config.Collections {
 		if c.DS != nil {
 			log.Printf("Closing %s", cName)
@@ -534,7 +535,7 @@ func Shutdown(appName string) int {
 			exitCode = 1
 		}
 	}
-	log.Printf(`Shutdown down %s pid: %d exit code: %d `, appName, pid, exitCode)
+	log.Printf(`Shutdown completed %s pid: %d exit code: %d `, appName, pid, exitCode)
 	return exitCode
 }
 
