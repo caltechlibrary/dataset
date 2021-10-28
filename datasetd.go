@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 )
 
 const (
@@ -522,9 +523,10 @@ func InitDatasetAPI(settings string) error {
 
 // Shutdown shutdowns the dataset web service started with
 // RunDatasetAPI.
-func Shutdown(appName string) int {
+func Shutdown(appName string, sigName string) int {
 	exitCode := 0
 	pid := os.Getpid()
+	log.Printf(`Recieved %s`, sigName)
 	log.Printf(`Closing dataset collections %s pid: %d`, appName, pid)
 	for cName, c := range config.Collections {
 		if c.DS != nil {
@@ -551,10 +553,10 @@ Listening on http://%s
 Press ctl-c to terminate.
 `, appName, Version, config.Hostname)
 	processControl := make(chan os.Signal, 1)
-	signal.Notify(processControl, os.Interrupt)
+	signal.Notify(processControl, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 	go func() {
-		<-processControl
-		os.Exit(Shutdown(appName))
+		sig := <-processControl
+		os.Exit(Shutdown(appName, sig.String()))
 	}()
 	for cName, c := range config.Collections {
 		log.Printf("Opening collection %s", cName)
