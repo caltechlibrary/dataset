@@ -289,7 +289,7 @@ Try %s --help for usage details
 	}
 
 	/* Run API */
-	if err := dataset.RunDatasetAPI(appName); err != nil {
+	if err := dataset.RunDatasetAPI(appName, settings); err != nil {
 		fmt.Fprintf(os.Stderr, "RunDatasetAPI(%q) failed, %s\n", appName, err)
 	}
 }
