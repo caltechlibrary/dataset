@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 )
 
 const (
@@ -522,9 +523,11 @@ func InitDatasetAPI(settings string) error {
 
 // Shutdown shutdowns the dataset web service started with
 // RunDatasetAPI.
-func Shutdown(appName string) int {
+func Shutdown(appName string, sigName string) int {
 	exitCode := 0
 	pid := os.Getpid()
+	log.Printf(`Recieved %s`, sigName)
+	log.Printf(`Closing dataset collections %s pid: %d`, appName, pid)
 	for cName, c := range config.Collections {
 		if c.DS != nil {
 			log.Printf("Closing %s", cName)
@@ -534,13 +537,37 @@ func Shutdown(appName string) int {
 			exitCode = 1
 		}
 	}
-	log.Printf(`Shutdown down %s pid: %d exit code: %d `, appName, pid, exitCode)
+	log.Printf(`Shutdown completed %s pid: %d exit code: %d `, appName, pid, exitCode)
 	return exitCode
+}
+
+// Reload performs a Shutdown and an init after re-reading
+// in the settings.json file.
+func Reload(appName string, sigName string, settings string) error {
+	exitCode := Shutdown(appName, sigName)
+	if exitCode != 0 {
+		return fmt.Errorf("Reload failed, errors during shutdowning")
+	}
+	log.Printf("Restarting %s using %s", appName, settings)
+	if err := InitDatasetAPI(settings); err != nil {
+		return err
+	}
+	for cName, c := range config.Collections {
+		log.Printf("Opening collection %s", cName)
+		if c.DS == nil {
+			ds, err := Open(c.CName)
+			if err != nil {
+				return err
+			}
+			c.DS = ds
+		}
+	}
+	return nil
 }
 
 // RunDatasetAPI runs a dataset web service. It is the heart of
 // datasetd.
-func RunDatasetAPI(appName string) error {
+func RunDatasetAPI(appName string, settings string) error {
 	/* Setup web server */
 	log.Printf(`
 %s %s
@@ -550,10 +577,18 @@ Listening on http://%s
 Press ctl-c to terminate.
 `, appName, Version, config.Hostname)
 	processControl := make(chan os.Signal, 1)
-	signal.Notify(processControl, os.Interrupt)
+	signal.Notify(processControl, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
-		<-processControl
-		os.Exit(Shutdown(appName))
+		sig := <-processControl
+		switch sig {
+		case syscall.SIGHUP:
+			if err := Reload(appName, sig.String(), settings); err != nil {
+				log.Println(err)
+				os.Exit(1)
+			}
+		default:
+			os.Exit(Shutdown(appName, sig.String()))
+		}
 	}()
 	for cName, c := range config.Collections {
 		log.Printf("Opening collection %s", cName)

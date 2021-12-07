@@ -8,17 +8,18 @@ Bugs
 Next (prep for v2.x)
 --------------------
 
-- [ ] Provide a dataset service (datasetd)
-    - [ ] keys
-    - [ ] create
-    - [ ] read
-    - [ ] update
-    - [ ] delete
-- [ ] Evaluate the following end points for datasetd
-    - [ ] attach
-    - [ ] attachments
-    - [ ] retrieve (aka detach)
-    - [ ] prune
+- [ ] Add '/help' to end point for all end points to get documentation.
+- [x] Provide a dataset service (datasetd)
+    - [x] keys
+    - [x] create
+    - [x] read
+    - [x] update
+    - [x] delete
+- [x] Evaluate the following end points for datasetd
+    - [x] attach
+    - [x] attachments
+    - [x] retrieve (aka detach)
+    - [x] prune
 - [x] Add pid lock support for processes accessing dataset collections
 - [x] Document example Shell access to datasetd via cURL
 - [ ] Document dataesetd access from Python 3
@@ -27,7 +28,7 @@ Next (prep for v2.x)
 Someday, Maybe
 --------------
 
-- [ ] Drop Namaste from dataset
+- [x] Drop Namaste from dataset
 - [ ] Missing tests for AttachStream()
 - [ ] Auto-version attachments by patch, minor or major release per settings in collection.json
 - [ ] Add some additional metadata fields
