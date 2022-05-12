@@ -9,21 +9,17 @@ description: |
         shell level and _datasetd_ is a web service that works as a JSON
         API.
 
-grade: devel # must be 'stable' to release into candidate/stable channels
-confinement: devmode # use 'strict' once you have the right plugs and slots
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
 
 apps:
-  pkgassets:
-        command: bin/pkgassets
-        plugs:
-                - home
-
   dataset:
         command: bin/dataset
         plugs:
                 - home
   datasetd:
         command: bin/datasetd
+        daemon: simple
         plugs:
                 - home
 
@@ -34,4 +30,4 @@ parts:
     build-environment:
             - "CGO_ENABLED" : "0"
     source-type: git
-    source: https://github.com/caltechlibrary/mkpage
+    source: https://github.com/caltechlibrary/dataset

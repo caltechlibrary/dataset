@@ -29,7 +29,7 @@ endif
 
 PKGASSETS = ./bin/pkgassets$(EXT)
 
-build: $(PKGASSETS) version.go assets $(PROGRAMS) libdataset
+build: version.go $(PROGRAMS) libdataset
 
 
 $(PKGASSETS): cmd/pkgassets/pkgassets.go
@@ -60,9 +60,11 @@ uninstall: .FORCE
 	@echo "Removing programs in $(PREFIX)/bin"
 	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
 
-assets: cmd/dataset/assets.go
+# assets are Go program files based on documentation
+# wrapped into Go maps for use in the help system.
+assets: $(PKGASSETS) cmd/dataset/assets.go
 
-cmd/dataset/assets.go: .FORCE
+cmd/dataset/assets.go:
 	$(PKGASSETS) -o cmd/dataset/assets.go -p main -ext=".md" -strip-prefix="/" -strip-suffix=".md" Examples how-to Help docs
 	git add cmd/dataset/assets.go
 
