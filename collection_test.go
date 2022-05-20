@@ -19,22 +19,17 @@
 package dataset
 
 import (
-	"bytes"
-	"encoding/json"
+	"testing"
 )
 
-// EncodeJSON provides a common method for encoding data for use in Dataset.
-func EncodeJSON(obj map[string]interface{}) ([]byte, error) {
-	src, err := json.MarshalIndent(obj, "", "    ")
-	return src, err
+func TestCollection(t *testing.T) {
+	t.Errorf("TestCollection() not implemented.")
 }
 
-// DecodeJSON provides a common method for decoding data for use in Dataset.
-func DecodeJSON(src []byte, obj *map[string]interface{}) error {
-	decoder := json.NewDecoder(bytes.NewReader(src))
-	decoder.UseNumber()
-	if err := decoder.Decode(&obj); err != nil {
-		return err
-	}
-	return nil
+func TestComplexKeys(t *testing.T) {
+	t.Errorf("TestComplexKeys() not implemented.")
+}
+
+func TestCloneSample(t *testing.T) {
+	t.Errorf("TestCloneSample() not implemented.")
 }

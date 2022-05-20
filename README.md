@@ -4,39 +4,49 @@ Dataset Project
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-The Dataset Project provides tools for working with collections of JSON Object documents stored on the local file system.  Two tools are provided.
+The Dataset Project provides tools for working with collections of JSON Object documents stored on the local file system.  Two tools are provided, a command line interface (dataset) and a web service (datasetd).
 
 dataset command line tool
 -------------------------
 
-[dataset](doc/dataset.html) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) objects. Collections are stored on the file system.  JSON objects are stored in collections as plain UTF-8 text files.  This means the objects can be accessed with common [Unix](https://en.wikipedia.org/wiki/Unix) text processing tools as well as most programming languages.
+[dataset](doc/dataset.html) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) objects. Collections are stored on the file system in a pairtree directory structure.  JSON objects are stored in collections as plain UTF-8 text files.  This means the objects can be accessed with common [Unix](https://en.wikipedia.org/wiki/Unix) text processing tools as well as most programming languages.
 
 The _dataset_ command line tool supports common data management operations such as initialization of collections; document creation, reading, updating and deleting; listing keys of JSON objects in the collection; and associating non-JSON documents (attachments) with specific JSON documents in the collection.
 
 ### enhanced features include
 
 - aggregate objects into data [frames](docs/frame.html)
-- import, export and synchronize JSON objects to and from CSV files
 - generate sample sets of keys and objects
 
 See [Getting started with dataset](how-to/getting-started-with-dataset.html) for a tour and tutorial.
 
-dataset as a web service
-------------------------
+datasetd, dataset as a web service
+----------------------------------
 
-[datasetd](doc/datasetd) is a web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into other web applications or used by multiple processes.
+[datasetd](doc/datasetd.html) is a web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into other web applications or used by currently by multiple processes. It achieves thise by storing the dataset collection in a SQL databsase using JSON columns.
 
 Design choices
 --------------
 
 _dataset_ and _datasetd_ are intended to be simple tools for managing collections JSON object documents in a predictable structured way. 
 
-_dataset_ and _datasetd_ are guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on the Unix command line. _dataset_ is intended to be simple to use with minimal setup (e.g.  `dataset init mycollection.ds` creates a new collection called 'mycollection.ds'). 
-- _dataset_ and _datasetd_ store JSON object documents in collections
-    - collections are folder(s) containing
-        - collection.json metadata file describing the collection and keys
-        - a pairtree of JSON object documents
-        - non-JSON attachments can be associated with a JSON document and found in a semver (semantic version number) named sub directory
+_dataset_ is guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on the Unix command line. _dataset_ is intended to be simple to use with minimal setup (e.g.  `dataset init mycollection.ds` creates a new collection called 'mycollection.ds'). 
+- _dataset_ and _datasetd_ store JSON object documents in collections. The storage of the JSON documents differs. 
+    - dataset collections are defined in a directory containing a collection.json file
+    - collection.json metadata file describing the collection, e.g. storage type, name, description, if versioning is enabled
+    - collection objects are accessed by their key which is case insensitive
+    - collection names lowered case and usually have a `.ds` extension for easy identification
+    the directory must be lower casefolder contain
+
+_datatset_ stores JSON object documents in a pairtree
+    - the pairtree path is always lowercase
+    - a pairtree of JSON object documents
+    - non-JSON attachments can be associated with a JSON document and found in a directories organized by semver (semantic version number)
+    - versioned JSON documents are created sub directory encorprating a semver
+_datasetd_ stores JSON object documents in a table named for the collection
+    - objects are versioned into a collection history table by semver and key
+    - attachments are not supported
+    - can be exported to a collection using pairtree storage
 
 
 The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current implementation is in the Go language.
@@ -57,8 +67,7 @@ Features
         - [attach](docs/attach.html)
         - [retrieve](docs/retrieve.html)
         - [prune](docs/prune.html)
-- Import and export of [CSV](how-to/working-with-csv.html) files
-- The ability to reshape data by performing simple object [joins](docs/join.html)
+- Import/export to SQL based dataset collections
 - The ability to create data [frames](docs/frame.html) from while collections or based on keys lists
     - frames are defined using [dot paths](docs/dotpath.html) describing what is to be pulled out of a stored JSON objects
 
@@ -76,8 +85,11 @@ Features
         - [attach](docs/attach-endpoint.html)
         - [retrieve](docs/retrieve-endpoint.html)
         - [prune](docs/prune-endpoint.html)
+- Import/export of pairtree based dataset collections
+- The ability to create data [frames](docs/frame.html) from while collections or based on keys lists
+    - frames are defined using [dot paths](docs/dotpath.html) describing what is to be pulled out of a stored JSON objects
 
-Both _dataset_  and _datasetd_ maybe useful for general data science applications needing intermediate JSON object management but not a full blown database or repository system.
+Both _dataset_  and _datasetd_ maybe useful for general data science applications needing JSON object management or in implementing repository systems in research libraries and archives.
 
 
 Limitations of _dataset_ and _datasetd_
@@ -87,20 +99,19 @@ _dataset_ has many limitations, some are listed below
 
 - it is not a multi-process, multi-user data store
 - it is not a general purpose database system
-- it does not supply automatic version control on collections, objects or attachments
 - it stores all keys to lower case in order to deal with file systems that are not case sensitive
+- it stores collection names as lower case to deal with file systems that are not case sensitive
 - it does not have a built-in query language, search or sorting
 - it should NOT be used for sensitive or secret information
 
 _datasetd_ is a simple web service intended to run on "localhost:8485".
 
-- it is not a RESTful service
+- it is not a RESTful service but uses the path to describe operations
 - it does not include support for authentication
 - it does not support a query language, search or sorting
-- it does not support data frames
 - it does not support access control by users or roles
-- it does not provide auto key generation or versioning
-- it limits the size of JSON documents stored to less than 1 MiB
+- it does not provide auto key generation
+- it limits the size of JSON documents stored to the size supported by with host SQL JSON columns
 - it limits the size of attached files to less than 250 MiB
 - it does not support partial JSON record updates or retrieval
 - it does not provide an interactive Web UI for working with dataset collections
@@ -118,7 +129,6 @@ Read next ...
 - [Contributing](contributing.html)
 - [Code of conduct](code_of_conduct.html)
 - Explore _dataset_ and _datasetd_
-    - [A Shell Example](how-to/a-shell-example.html "command line example")
     - [Getting Started with Dataset](how-to/getting-started-with-dataset.html "Python examples as well as command line")
     - [How To](how-to/) guides
     - [Reference Documentation](docs/).

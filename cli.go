@@ -1,0 +1,46 @@
+package dataset
+
+import (
+	"flag"
+	"fmt"
+	"io"
+	"strings"
+)
+
+// DisplayLicense returns the license associated with dataset application.
+func DisplayLicense(out io.Writer, appName string, license string) {
+	fmt.Fprintf(out, strings.ReplaceAll(strings.ReplaceAll(license, "{app_name}", appName), "{version}", Version))
+}
+
+// DisplayVersion returns the of the dataset application.
+func DisplayVersion(out io.Writer, appName string) {
+	fmt.Fprintf(out, "%s %s\n", appName, Version)
+}
+
+// DisplayUsage displays a usage message.
+func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, description string, examples string, license string) {
+	// Convert {app_name} and {version} in description
+	if description != "" {
+		fmt.Fprintf(out, strings.ReplaceAll(description, "{app_name}", appName))
+	}
+	flagSet.SetOutput(out)
+	flagSet.PrintDefaults()
+
+	if examples != "" {
+		fmt.Fprintf(out, strings.ReplaceAll(examples, "{app_name}", appName))
+	}
+	if license != "" {
+		DisplayLicense(out, appName, license)
+	}
+}
+
+// DisplayWebHelp displays topic oriented help by attempting to open
+// an appropriate URL on the topic.
+func DisplayWebHelp(topic string) error {
+	return fmt.Errorf("%s help not implemented.")
+}
+
+/// RunCli implemented the functionlity used by the cli.
+func RunCli(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("RunCli() not implemented")
+}
