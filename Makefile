@@ -29,7 +29,7 @@ endif
 
 PKGASSETS = ./bin/pkgassets$(EXT)
 
-build: version.go $(PROGRAMS) libdataset
+build: version.go $(PROGRAMS)
 
 
 $(PKGASSETS): cmd/pkgassets/pkgassets.go

@@ -14,15 +14,18 @@ confinement: strict # use 'strict' once you have the right plugs and slots
 
 apps:
   dataset:
-        command: bin/dataset
-        plugs:
-                - home
+    command: bin/dataset
+    plugs:
+      - home
+      - removable-media
+      - network
   datasetd:
-        command: bin/datasetd
-        daemon: simple
-        plugs:
-                - home
-
+    command: bin/datasetd
+    daemon: simple
+    plugs:
+      - home
+      - network
+      - removable-media
 parts:
   dataset:
     plugin: go

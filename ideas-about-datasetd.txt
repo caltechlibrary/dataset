@@ -1,4 +1,5 @@
-Bottler will be much easier to implement is dataset has a web service implementation such that is can support asynchronous use via HTTP/HTTPS. The path structure should map to the verbs used in the command line tool. Assuming a hostname of "dataset.local" here's some examples of what that might look like. Our collection name will be called "Messages"
+Bottler will be much easier to implement if dataset had a web service implementation such that it can support asynchronous use via HTTP/HTTPS requests. The path structure should map to the verbs used in the command line tool. Assuming a hostname of "dataset.local" here's some examples of what that might look like. Our collection name will be called "Messages"
+ 
 
 1. Create a collection
 2. Create an object in a collection
@@ -19,4 +20,7 @@ curl https://dataset.local/delete/Messages/1
 If the dataset collection knew about Solr then the dataset daemon could also make an appropriate call to Solr to update the index.
 
 In addition a "dsclient" could be created similar to the Solr `bin/post` client so operations on a dataset collection could function similarly to Solr (e.g. for doing bulk imports or updates).
+
+Since datasetd as a web service may not make sense to store the JSON documents as plain text. It may make more sense is leveraging existing database engines. Postgres and MySQL 8 both support JSON columns. A web service version of dataset could use a single database with a simple table structure of key, object and timestamps (created, updated). Frames support could then be implemented as a related table and have the advantage of optimized sorting and filtering via the host database. This would also allow dataset size to be larger than would be convientent on disk.  What would be preserved is the access API. It would be helpful to be able to import/export to a traditional file system based dataset easily as well as to support versioned attachments.
+
 
