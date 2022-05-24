@@ -23,7 +23,7 @@ SUPPORTED VERBS
 - update, updates a document in the collection
 - delete, removes a document from the collection
 - list, returns a list of keys in the collection
-- codemeta, copies metadata from a codemeta file and updates the collections metadata
+- codemeta, copies metadata a codemeta file and updates the collections metadata
 - info, returns the metadata associated with collection
 - import, imports another collecting into the current one
 - export, exports the collection into another collection
@@ -35,6 +35,12 @@ SUPPORTED VERBS
 - frame will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
 - reframe will recreate a frame based on the current state of objects in the collection, if keys are provide with the reframe request then the objects in the frame will be replaces by objects associated with the new keys provided
 - delete-frame will remove a frame from the collection
+- has-frame will return true (exit 0) if frame exists, false (exit 1) if not
+- attachments will list any attachments for a JSON document
+- attach will add an attachment to a JSON document
+- retrieve will copy out the attachment to a JSON document 
+  into the current directory 
+- prune will remove an attachment from the JSON document
 
 You can get additional help 
 

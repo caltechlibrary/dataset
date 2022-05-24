@@ -1,12 +1,12 @@
 package dataset
 
 //
-// End point documentation for datasetd.go
+// documentation for end points support by dataset Daemon
 //
 
-// readmeDocument() provides a copy of docs/datasetd.md
-func readmeDocument() string {
-	return `
+var (
+	// EndPointREADME a copy of docs/datasetd.md
+	EndPointREADME = `
 Datasetd
 ========
 
@@ -188,10 +188,8 @@ end points support the GET method exclusively.
 - '/<COLLECTION_ID>/prune/<KEY>/<SEMVER>/<FILENAME>' removes a versioned attachment from a JSON document.
 
 `
-}
 
-func collectionsDocument() string {
-	return `
+	EndPointCollections = `
 Collections (end point)
 =======================
 
@@ -212,10 +210,8 @@ The assumption is that we have __datasetd__ running on port "8485" of "localhost
 ` + "```" + `
 
 `
-}
 
-func collectionDocument(collectionID string) string {
-	return `
+	EndPointCollection = `
 Collection (end point)
 =======================
 
@@ -342,10 +338,8 @@ The curl calls returns
 ` + "```" + `
 
 `
-}
 
-func keysDocument(collectionID string) string {
-	return `
+	EndPointKeys = `
 Keys (end point)
 ================
 
@@ -381,10 +375,8 @@ The document return looks some like
 For a "t1" containing the keys of "one", "two" and "three".
 
 `
-}
 
-func createDocument(collectionID string) string {
-	return `
+	EndPointDocument = `
 Create (end point)
 ==================
 
@@ -420,10 +412,7 @@ Posting using CURL is done like
 ` + "```" + `
 
 `
-}
-
-func readDocument(collectionID string) string {
-	return `
+	EndPointRead = `
 Read (end point)
 ================
 
@@ -478,10 +467,8 @@ An example JSON document (this example happens to have an attachment) returned.
 ` + "```" + `
 
 `
-}
 
-func updateDocument(collectionID string) string {
-	return `
+	EndPointUpdate = `
 Update (end point)
 ==================
 
@@ -521,10 +508,8 @@ Posting using CURL is done like
 ` + "```" + `
 
 `
-}
 
-func deleteDocument(collectionID string) string {
-	return `
+	EndPointDelete = `
 Delete (end point)
 ==================
 
@@ -551,10 +536,8 @@ Posting using CURL is done like
 ` + "```" + `
 
 `
-}
 
-func attachDocument(collectionID string) string {
-	return `
+	EndPointAttach = `
 Attach (end point)
 ==================
 
@@ -586,10 +569,8 @@ I didn't want to call it "a1.png" I could have provided a different
 name in the URL path.
 
 `
-}
 
-func retrieveDocument(collectionID string) string {
-	return `
+	EndPointRetrieve = `
 Retrieve (end point)
 ====================
 
@@ -617,10 +598,8 @@ This should trigger a download of the "a1.png" image file in the
 collection for document "one".
 
 `
-}
 
-func pruneDocument(collectionID string) string {
-	return `
+	EndPointPrune = `
 Prune (end point)
 =================
 
@@ -645,4 +624,210 @@ This will cause the attached file to be removed from the record
 and collection.
 
 `
-}
+
+	//
+	// datasetd provide collection access/management via a simple
+	// HTTP/HTTPS API
+	//
+
+	WEBDescription = `
+USAGE
+=====
+
+	{app_name} SETTINGS_FILENAME
+
+SYNPOSIS
+--------
+
+{app_name} is a web service for serving dataset collections
+via HTTP/HTTPS.
+
+DETAIL
+------
+
+{app_name} is a minimal web service typically run on localhost port 8485
+that exposes a dataset collection as a web service. It features a subset of functionality available with the dataset command line program. {app_name} does support multi-process/asynchronous update to a dataset collection. 
+
+{app_name} is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a stand alone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL style solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). {app_name} is a simple, miminal service.
+
+NOTE: You could run {app_name} with access control based on a set of set of URL paths by running {app_name} behind a full feature web server like Apache 2 or NginX but that is beyond the skope of this project.
+
+Configuration
+-------------
+
+{app_name} can make one or more dataset collections visible over HTTP/HTTPS. The dataset collections hosted need to be avialable on the same file system as where {app_name} is running. {app_name} is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line.  
+
+The "settings.json" file has the following structure
+
+` + "```" + `
+    {
+        "host": "localhost:8483",
+		"sql_type": "mysql",
+		"dsn": "DB_USER:DB_PASSWORD3@/DB_NAME"
+    }
+` + "```" + `
+
+The "host" is the URL listened to by the dataset daemon, the "sql_type" is
+usually "mysql" though could be "sqlite", the "dsn" is the data source name
+used to initialized the connection to the SQL engine. It is SQL engine
+specific. E.g. if "sql_type" is "sqlite" then the "dsn" might be "file:DB_NAME?cache=shared".
+
+Running datasetd
+----------------
+
+{app_name} runs as a HTTP/HTTPS service and as such can be exploit as other network based services can be.  It is recommend you only run {app_name} on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by {app_name} regardless of the file permissions they may in their account.  E.g. If all dataset collections are in a directory only allowed access to be the "web-data" user but another user on the system can run cURL then they can access the dataset collections based on the rights of the "web-data" user.  This is a typical situation for most web services and you need to be aware of it if you choose to run {app_name}. A way to minimize the problem would be to run {app_name} in a container restricted to the specific user.
+
+Supported Features
+------------------
+
+{app_name} provide a limitted subset of actions support by the standard datset command line tool. It only supports the following verbs
+
+1. init (create a new collection SQL based collection)
+2. keys (return a list of all keys in the collection)
+3. has-key (return true if has key false otherwise)
+4. create (create a new JSON document in the collection)
+5. read (read a JSON document from a collection)
+6. update (update a JSON document in the collection)
+7. delete (delete a JSON document in the collection)
+8. frames (list frames available)
+9. frame (define a frame)
+10. frame-def (show frame definition)
+11. frame-objects (return list of framed objects)
+12. refresh (refresh all the objects in a frame)
+13. reframe (update the definition and reload the frame)
+14. delete-frame (remove the frame)
+15. has-frame (returns true if frame exists, false otherwise)
+16. codemeta (imports a codemeta JSON file providing collection metadata)
+
+Each of theses "actions" can be restricted in the _collections table (
+) by setting the value to "false". If the
+attribute for the action is not specified in the JSON settings file
+then it is assumed to be "false".
+
+Working with datasetd
+---------------------
+
+E.g. if I have a settings file for "recipes" based on the collection
+"recipes.ds" and want to make it read only I would make the attribute
+"read" set to true and if I want the option of listing the keys in the collection I would set that true also.
+
+    {
+        "host": "localhost:8485",
+        "collections": {
+			"recipes": {
+            	"dataset": "recipes.ds",
+            	"keys": true,
+            	"read": true
+			}
+        }
+    }
+
+I would start {app_name} with the following command line.
+
+    datasetd settings.json
+
+This would display the start up message and log output of the service.
+
+In another shell session I could then use cURL to list the keys and read
+a record. In this example I assume that "waffles" is a JSON document
+in dataset collection "recipes.ds".
+
+    curl http://localhost:8485/recipies/read/waffles
+
+This would return the "waffles" JSON document or a 404 error if the 
+document was not found.
+
+Listing the keys for "recipes.ds" could be done with this cURL command.
+
+    curl http://localhost:8485/recipies/keys
+
+This would return a list of keys, one per line. You could show
+all JSON documents in the collection be retrieving a list of keys
+and iterating over them using cURL. Here's a simple example in Bash.
+
+    for KEY in $(curl http://localhost:8485/recipes/keys); do
+       curl "http://localhost/8485/recipe/read/${KEY}"
+    done
+
+Access Documentation
+--------------------
+
+{app_name} provide documentation as plain text output via request
+to the service end points without parameters. Continuing with our
+"recipes" example. Try the following URLs with cURL.
+
+    curl http://localhost:8485
+    curl http://localhost:8485/recipes
+    curl http://localhost:8485/recipes/read
+
+
+{app_name} is intended to be combined with other services like Solr 8.9.
+{app_name} only implements the simplest of object storage.
+
+`
+
+	examples = `
+
+EXAMPLE
+
+In this example we cover a short life cycle of a collection
+called "t1.ds". We need to create a "settings.json" file and
+an empty dataset collection. Once ready you can run the {app_name} 
+service to interact with the collection via cURL. 
+
+To create the dataset collection we use the "dataset" command and the
+"vi" text edit (use can use your favorite text editor instead of vi).
+
+    dataset init t1.ds
+	vi settings.json
+
+In the "setttings.json" file the JSON should look like.
+
+    {
+		"host": "localhost:8485",
+		"sql_type": "mysql",
+		"dsn": "DB_USER:DB_PASSWORD@/DB_NAME"
+	}
+
+Now we can run {app_name} and make the dataset collection available
+via HTTP.
+
+    datasetd settings.json
+
+You should now see the start up message and any log information display
+to the console. You should open a new shell sessions and try the following.
+
+We can now use cURL to post the document to the "/t1/create/one" end
+point. 
+
+    curl -X POST http://localhost:8485/t1/create/one \
+	    -d '{"one": 1}'
+
+Now we can list the keys available in our collection.
+
+    curl http://localhost:8485/t1/keys
+
+We should see "one" in the response. If so we can try reading it.
+
+    curl http://localhost:8485/t1/read/one
+
+That should display our JSON document. Let's try updating (replacing)
+it. 
+
+    curl -X POST http://localhost:8485/t1/update/one \
+	    -d '{"one": 1, "two": 2}'
+
+If you read it back you should see the updated record. Now lets try
+deleting it.
+
+	curl http://localhost:8485/t1/delete/one
+
+List the keys and you should see that "one" is not longer there.
+
+    curl http://localhost:8485/t1/keys
+
+In the shell session where {app_name} is running press "ctr-C"
+to terminate the service.
+
+`
+)

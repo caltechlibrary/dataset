@@ -4,21 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"strings"
 )
-
-// textProcessor takes the a topic document and replaces all the keys
-// (e.g. "{app_name}") the their value (e.g. "dataset") in the topic
-// test.
-func textProcessor(varMap map[string]string, topic string) string {
-	src := topic[:]
-	for key, val := range varMap {
-		if strings.Contains(src, key) {
-			src = strings.ReplaceAll(src, key, val)
-		}
-	}
-	return src
-}
 
 // DisplayLicense returns the license associated with dataset application.
 func DisplayLicense(out io.Writer, appName string, license string) {
@@ -26,7 +12,7 @@ func DisplayLicense(out io.Writer, appName string, license string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, textProcessor(m, license))
+	fmt.Fprintf(out, TextProcessor(m, license))
 }
 
 // DisplayVersion returns the of the dataset application.
@@ -35,29 +21,23 @@ func DisplayVersion(out io.Writer, appName string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, textProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprintf(out, TextProcessor(m, "{app_name} {version}\n"))
 }
 
 // DisplayUsage displays a usage message.
-func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, description string, examples string, license string) {
+func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	// Replacable text vars
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	if description != "" {
-		fmt.Fprintf(out, textProcessor(m, description))
-	}
+	fmt.Fprintf(out, TextProcessor(m, CLIDescription))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	if examples != "" {
-		fmt.Fprintf(out, textProcessor(m, examples))
-	}
-	if license != "" {
-		DisplayLicense(out, appName, textProcessor(m, license))
-	}
+	fmt.Fprintf(out, TextProcessor(m, CLIExamples))
+	DisplayLicense(out, appName, TextProcessor(m, License))
 }
 
 /// RunCLI implemented the functionlity used by the cli.
@@ -116,6 +96,8 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	case "check":
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "repair":
+		return fmt.Errorf("verb %q not implemented", verb)
+	case "codemeta":
 		return fmt.Errorf("verb %q not implemented", verb)
 	default:
 		return fmt.Errorf("verb %q not supported", verb)

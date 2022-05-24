@@ -24,7 +24,7 @@ var (
 USAGE
 =====
 
-	{app_name} [SETTINGS_FILENAME]
+	{app_name} SETTINGS_FILENAME
 
 SYNPOSIS
 --------
@@ -51,42 +51,34 @@ The "settings.json" file has the following structure
 
     {
         "host": "localhost:8483",
-        "collections": {
-            "COLLECTION_ID": {
-                "dataset": "PATH_TO_DATASET_COLLECTION",
-                "keys": true,
-                "create": true,
-                "read": true,
-                "update": true,
-                "delete": false
-            }
-        }
+		"sql_type": "mysql",
+		"dsn": "DB_USER:DB_PASSWORD3@/DB_NAME"
     }
 
-In the "collections" object the "COLLECTION_ID" is a string which will be used as the start of the path in the URL. The "dataset" attribute sets the path to the dataset collection made available at "COLLECTION_ID". For each
-collection you can allow the following sub-paths, "create", "read", "update", "delete" and "keys". These sub-paths correspond to their counter parts in the dataset command line tool. In this way would can have a
-dataset collection function as a drop box, a read only list or a simple JSON
-object storage service.
+The "host" is the URL listened to by the dataset daemon, the "sql_type" is
+usually "mysql" though could be "sqlite", the "dsn" is the data source name
+used to initialized the connection to the SQL engine. It is SQL engine
+specific. E.g. if "sql_type" is "sqlite" then the "dsn" might be "file:DB_NAME?cache=shared".
 
 Running datasetd
 ----------------
 
-{app_name} runs as a HTTP/HTTPS service and as such can be exploit as other network based services can be.  It is recommend you only run {app_name} on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by {app_name} regardless of the file permissions they may in their account.
-E.g. If all dataset collections are in a directory only allowed access to be the "web-data" user but another user on the system can run cURL then they can access the dataset collections based on the rights of the "web-data" user.  This is a typical situation for most web services and you need to be aware of it if you choose to run {app_name}.
+{app_name} runs as a HTTP/HTTPS service and as such can be exploit as other network based services can be.  It is recommend you only run {app_name} on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by {app_name} regardless of the file permissions they may in their account.  E.g. If all dataset collections are in a directory only allowed access to be the "web-data" user but another user on the system can run cURL then they can access the dataset collections based on the rights of the "web-data" user.  This is a typical situation for most web services and you need to be aware of it if you choose to run {app_name}. A way to minimize the problem would be to run {app_name} in a container restricted to the specific user.
 
 Supported Features
 ------------------
 
 {app_name} provide a limitted subset of actions support by the standard datset command line tool. It only supports the following verbs
 
+1. init (create a new collection)
 1. keys (return a list of all keys in the collection)
 2. create (create a new JSON document in the collection)
 3. read (read a JSON document from a collection)
 4. update (update a JSON document in the collection)
 5. delete (delete a JSON document in the collection)
 
-Each of theses "actions" can be restricted in the configuration (
-i.e. "settings.json" file) by setting the value to "false". If the
+Each of theses "actions" can be restricted in the _collections table (
+) by setting the value to "false". If the
 attribute for the action is not specified in the JSON settings file
 then it is assumed to be "false".
 
