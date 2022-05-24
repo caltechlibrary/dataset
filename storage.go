@@ -18,7 +18,7 @@ type StorageSystem interface {
 	//  }
 	// ```
 	//
-	Open(name string) (*StorageSystem, error)
+	Open(name string, dsnURI string) (*StorageSystem, error)
 
 	// Close closes the storage system freeing resources as needed.
 	//

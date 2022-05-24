@@ -9,16 +9,19 @@ type Storage struct {
 
 // Open opens the storage system and returns an storage struct and error
 // It is passed either a filename. For a Pairtree the would be the
-// path to collection.json and for a sql store file holding a DSN
+// path to collection.json and for a sql store file holding a DSN URI.
+// The DSN URI is formed from a protocal prefixed to the DSN. E.g.
+// for a SQLite connection to test.ds database the DSN URI might be
+// "sqlite:file:test.ds?cache=shared".
 //
 // ```
-//  store, err := c.Store.Open(c.Name, c.DSN)
+//  store, err := c.Store.Open(c.Name, c.DsnURI)
 //  if err != nil {
 //     ...
 //  }
 // ```
 //
-func Open(name string, dsn string) (*Storage, error) {
+func Open(name string, dsnURI string) (*Storage, error) {
 	return nil, fmt.Errorf("DEBUG Open not working")
 }
 

@@ -25,19 +25,19 @@ func DisplayVersion(out io.Writer, appName string) {
 }
 
 // DisplayUsage displays a usage message.
-func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
+func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, description string, examples string, license string) {
 	// Replacable text vars
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, TextProcessor(m, CLIDescription))
+	fmt.Fprintf(out, TextProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, TextProcessor(m, CLIExamples))
-	DisplayLicense(out, appName, TextProcessor(m, License))
+	fmt.Fprintf(out, TextProcessor(m, examples))
+	DisplayLicense(out, appName, TextProcessor(m, license))
 }
 
 /// RunCLI implemented the functionlity used by the cli.

@@ -1,10 +1,60 @@
 package dataset
 
-//
-// documentation for end points support by dataset Daemon
-//
-
 var (
+	//
+	// documentation for running Daemon
+	//
+	WebDescription = `
+USAGE
+
+   {app_name} SETTINGS_FILE
+
+This runs a {app_name} daemon providing a web service for interacting
+with collections of JSON documents. Most paths take the form of 
+The end points provided by the web service are formed in the following
+steps.
+
+  1. collection name
+  2. "rest"
+  3. "keys", "docs", "frames", "attachments"
+  4. "key", "frame_name", "key/attachment_name"
+
+The CRUD operations are mapped to the HTTP method per the REST conventions.
+
+`
+
+	WebExamples = `
+EXAMPLES
+
+Assuming the service is running on localhost:8485 and you have cURL
+installed you could do the following to access the web service
+implemented by {app_name}.
+
+	# list the collections avialable
+    curl -X GET http://localhost:8485/_collections  
+
+	# list the keys from my-stuff collection
+	curl -X GET http://localhost:8485/my-stuff/rest/keys 
+
+    # See if a key "1" exists in the my-stuff collection
+	curl -X GET http://localhost:8485/my-stuff/rest/keys/1
+
+	# read record "1" from my-stuff collection
+	curl -X GET http://localhost:8485/my-stuff/rest/docs/1 
+
+    # Add a codemeta.json to set the collection's metadata
+	curl -X POST http://locahost:8485/my-stuff/codemeta \\
+	   -F 'codemeta=@codemeta.json'           # 
+
+    # Get the metadata for a collection
+	curl -X GET http://localhost:8485/my-stuff/codemeta
+ 
+`
+
+	//
+	// documentation for end points support by dataset Daemon
+	//
+
 	// EndPointREADME a copy of docs/datasetd.md
 	EndPointREADME = `
 Datasetd
@@ -13,23 +63,24 @@ Datasetd
 Overview
 --------
 
-_datasetd_ is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. _datasetd_ does support multi-process/asynchronous update to a dataset collection.
+{app_name} is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. {app_name} does support multi-process/asynchronous update to a dataset collection.
 
-_datasetd_ is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). _datasetd_ is a simple, miminal service.
+{app_name} is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). {app_name} is a simple, miminal service.
 
-NOTE: You could run _datasetd_ could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on _datasetd_'s predictable URL paths. That would require a robust understanding of the front end web server, it's access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
+NOTE: You could run {app_name} could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on {app_name}'s predictable URL paths. That would require a robust understanding of the front end web server, it's access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
 
 Configuration
 -------------
 
-_datasetd_ can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where _datasetd_ is running. _datasetd_ is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
+{app_name} can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where {app_name} is running. {app_name} is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
 
 The "settings.json" file has the following structure
 
 ` + "```" + `
     {
         "host": "localhost:8485",
-        "dsn": "<DSN_FILENAME>"
+		"sql_type": "mysql",
+        "dsn": "<DSN_STRING>"
     }
 ` + "```" + `
 
@@ -37,38 +88,36 @@ The "settings.json" file has the following structure
 Running datasetd
 ----------------
 
-_datasetd_ runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP.  You should only run _datasetd_ on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by _datasetd_ regardless of the file permissions they may in their account.
+{app_name} runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP.  You should only run {app_name} on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by {app_name} regardless of the file permissions they may in their account.
 
-Example: If all dataset collections are in a directory only allowed access to be the "web-data" user but another users on the machine have access to curl they can access the dataset collections based on the rights of the "web-data" user by access the HTTP service.  This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run _datasetd_.
+Example: If all dataset collections are in a directory only allowed access to be the "web-data" user but another users on the machine have access to curl they can access the dataset collections based on the rights of the "web-data" user by access the HTTP service.  This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run {app_name}.
 
-_datasetd_ should NOT be used to store confidential, sensitive or secret information.
+{app_name} should NOT be used to store confidential, sensitive or secret information.
 
 
 Supported Features
 ------------------
 
-_datasetd_ provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
 
-1. keys (return a list of all keys in the collection)
-    - must be a GET request
-2. create (create a new JSON document in the collection)
-    - must be a POST request ended as JSON with a content type of "application/json"
-3. read (read a JSON document from a collection)
-    - must be a GET request
-4. update (update a JSON document in the collection)
-    - must be a POST request ended as JSON with a content type of "application/json"
-5. delete (delete a JSON document in the collection)
-    - must be a GET request
-6. collections (list as a JSON array of objects the collections avialable)
-    - must be a GET request
-7. attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB. The POST must be a multi-part encoded web form where the upload name is identified as "filename" in the form and the URL path identifies the name to use for the saved attachment.
-8. retrieve allows you to download an versioned attachment from a JSON document
-9. prune removes versioned attachments from a JSON document
+{app_name} provides a RESTful web service for accessing a collection's
+metdata, keys, documents, frames and attachments. The form of the path
+is generally '/rest/<COLLECTION_NAME>/<DOC_TYPE>/<ID>[/<NAME>]'. REST
+maps the CRUD operations to POST (create), GET (read), PUT (update),
+and DELETE (delete). There are four general types of objects in
+a dataset collection
+  
+  1. keys (point to a JSON document, these are unique identifiers)
+  2. docs are the JSON documents
+  3. frames hold data frames (aggregation's of an collection's content)
+  4. attachments hold files attached to JSON documents
 
-Each of theses "actions" can be restricted in the configuration (
-i.e. "settings.json" file) by setting the value to "false". If the
-attribute for the action is not specified in the JSON settings file
-then it is assumed to be "false".
+Additionally you can list all the collections available in the web service
+as well as collection level metadata (as a codemeta.json document).
+
+Collections can have their CRUD operations turned on or off based on
+the columns set in the "_collections" table of the database hosting
+the web service.
+
 
 Use case
 --------
@@ -92,7 +141,7 @@ If I have a settings file for "recipes" based on the collection
 }
 ` + "```" + `
 
-I would start _datasetd_ with the following command line.
+I would start {app_name} with the following command line.
 
 ` + "```" + `shell
     datasetd settings.json
@@ -139,7 +188,7 @@ Add a new JSON object to a collection.
 Online Documentation
 --------------------
 
-_datasetd_ provide documentation as plain text output via request
+{app_name} provide documentation as plain text output via request
 to the service end points without parameters. Continuing with our
 "recipes" example. Try the following URLs with curl.
 
@@ -158,9 +207,9 @@ to the service end points without parameters. Continuing with our
 End points
 ----------
 
-The following end points are supported by _datasetd_
+The following end points are supported by {app_name}
 
-- '/' returns documentation for _datasetd_
+- '/' returns documentation for {app_name}
 - '/collections' returns a list of available collections.
 
 The following end points are per colelction. They are available
@@ -193,14 +242,14 @@ end points support the GET method exclusively.
 Collections (end point)
 =======================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
-This provides a JSON list of collections available from the running __datasetd__ service.
+This provides a JSON list of collections available from the running _{app_name}_ service.
 
 Example
 =======
 
-The assumption is that we have __datasetd__ running on port "8485" of "localhost" and a set of collections, "t1" and "t2", defined in the "settings.json" used at launch.
+The assumption is that we have _{app_name}_ running on port "8485" of "localhost" and a set of collections, "t1" and "t2", defined in the "settings.json" used at launch.
 
 ` + "```" + `{.json}
     [
@@ -215,7 +264,7 @@ The assumption is that we have __datasetd__ running on port "8485" of "localhost
 Collection (end point)
 =======================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 This provides a metadata as JSON for a specific collection. This may including attributes like authorship, funding and contributions.
 
@@ -254,7 +303,7 @@ For an organization structure like
 Example
 =======
 
-The assumption is that we have __datasetd__ running on port "8485" of "localhost" and a collection named characters is defined in the "settings.json" used at launch.
+The assumption is that we have _{app_name}_ running on port "8485" of "localhost" and a collection named characters is defined in the "settings.json" used at launch.
 
 Retrieving metatadata
 
@@ -343,7 +392,7 @@ The curl calls returns
 Keys (end point)
 ================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 This end point lists keys available in a collection.
 
@@ -380,7 +429,7 @@ For a "t1" containing the keys of "one", "two" and "three".
 Create (end point)
 ==================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 Create a JSON document in the collection. Requires a unique key in the URL and the content most be JSON less than 1 MiB in size.
 
@@ -416,7 +465,7 @@ Posting using CURL is done like
 Read (end point)
 ================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 Retrieve a JSON document from a collection.
 
@@ -472,7 +521,7 @@ An example JSON document (this example happens to have an attachment) returned.
 Update (end point)
 ==================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 Update a JSON document in the collection. Requires a key to an existing
 JSON record in the URL and the content most be JSON less than 1 MiB in size.
@@ -513,7 +562,7 @@ Posting using CURL is done like
 Delete (end point)
 ==================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 Delete a JSON document in the collection. Requires the document key and collection name.
 
@@ -541,7 +590,7 @@ Posting using CURL is done like
 Attach (end point)
 ==================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 Attaches a document to a JSON Document using '<KEY>', '<SEMVER>' and '<FILENAME>'.
 
@@ -574,7 +623,7 @@ name in the URL path.
 Retrieve (end point)
 ====================
 
-Interacting with the __datasetd__ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the _{app_name}_ web service can be done with any web client. For documentation purposes I am assuming you are using [curl](https://curl.se/). This command line program is available on most POSIX systems including Linux, macOS and Windows.
 
 Retrieves an s attached document from a JSON record using '<KEY>', '<SEMVER>' and '<FILENAME>'.
 

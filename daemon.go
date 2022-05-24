@@ -1,6 +1,8 @@
 package dataset
 
-import ()
+import (
+	"fmt"
+)
 
 const (
 	// timestamp holds the Format of a MySQL time field
@@ -19,3 +21,11 @@ const (
 var (
 	config *Config
 )
+
+func OpenCollections(cfg *Config) error {
+	return fmt.Errorf("OpenCollections() not implemented")
+}
+
+func RunAPI(cfg *Config) error {
+	return fmt.Errorf("RunAPI() not implemented")
+}

@@ -17,6 +17,10 @@ import (
 type Config struct {
 	// Host holds the URL to listen to for the web API
 	Host string `json:"host,omitempty"`
+
+	// Type identifies the type of SQL storage, e.g. SQLite, MySQL
+	Type string `json:"sql_type,omitempty"`
+
 	// DSN points to a file containing a DSN string,
 	// e.g. /etc/datasetd/dsn.conf if none is provided then
 	// environment variables are checked using the EnvPrefix
@@ -46,6 +50,9 @@ func LoadConfig(fName string) (*Config, error) {
 	}
 	if config.Host == "" {
 		config.Host = "localhost:8485"
+	}
+	if config.Type == "" {
+		config.Type = "mysq"
 	}
 	if config.EnvName == "" {
 		config.EnvName = "DATASETD_DSN"

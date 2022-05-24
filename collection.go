@@ -51,14 +51,18 @@ type Collection struct {
 	Name string `json:"name"`
 
 	// StoreType can be either "pairtree" (default or if attribute is
-	// omitted) or "sqlstore".  If sqlstore the connection string, DSN,
+	// omitted) or "sqlstore".  If sqlstore the connection string, DSN URI,
 	// will determine the type of SQL database being accessed.
 	StoreType string `json:"storage_type,omitempty"`
 
-	// DSN holds the filename containing the DSN used to connect
-	// to the SQL database.  If blank the DSN value will be read from
-	// the environment via `os.Getenv("DSN")`.
-	DSN string `json:"dsn,omitempty"`
+	// DsnURI holds protocol plus dsn string. The protocol can be
+	// "sqlite:", "mysql:" and the dsn string would conform to the Golang
+	// database/sql driver for the SQL database.
+	//
+	// If blank the DSN value will be read from
+	// the environment via `os.Getenv("DATASETD_DSN_URI")`.
+	//
+	DsnURI string `json:"dsn_uri,omitempty"`
 
 	//
 	// General Metadata for collection.
@@ -74,63 +78,10 @@ type Collection struct {
 	// Version of collection being stored in semvar notation
 	Version string `json:"version,omitempty"`
 
-	// Contact info
-	Contact string `json:"contact,omitempty"`
-
-	// Author holds a list of PersonOrOrg
-	Author []*PersonOrOrg `json:"author,omitempty"`
-
-	// Contributors holds a list of PersonOrOrg
-	Contributor []*PersonOrOrg `json:"contributor,omitempty"`
-
-	// Funder holds a list of PersonOrOrg
-	Funder []*PersonOrOrg `json:"funder,omitempty"`
-
-	// DOI holds the digital object identifier if defined.
-	DOI string `json:"doi,omitempty"`
-
-	// License holds a pointer to the license information for
-	// the collection. E.g. CC0 URL
-	License string `json:"license,omitempty"`
-
-	// Annotation is a map to any addition metadata associated with
-	// the Collection's metadata.
-	Annotation map[string]interface{} `json:"annotation,omitempty"`
-
-	//
-	// ??Store points to the storage system used in the collection.
-	//
-
 	// PTStore the point to the pairtree implementation of storage
 	PTStore *ptstore.Storage `json:"-"`
 	// SQLStore points to a SQL database with JSON column support
 	SQLStore *sqlstore.Storage `json:"-"`
-}
-
-// PersonOrOrg holds a the description of a person or organizaion
-// associated with the dataset collection. e.g. author, contributor
-// or funder.
-type PersonOrOrg struct {
-	// Type is either "Person" or "Organization"
-	Type string `json:"@type,omitempty"`
-
-	// ID is either an ORCID or ROR
-	ID string `json:"@id,omitempty"`
-
-	// Name of an organization, empty if person
-	Name string `json:"name,omitempty"`
-
-	// Given name for a person, empty of organization
-	GivenName string `json:"givenName,omitempty"`
-
-	// Family name for a person, empty of organization
-	FamilyName string `json:"familyName,omitempty"`
-
-	// Affiliation holds the intitution affiliation of a person.
-	Affiliation []*PersonOrOrg `json:"affiliation,omitempty"`
-
-	// Annotation holds custom fields, e.g. a grant number of a funder
-	Annotation map[string]interface{} `json:"annotation,omitempty"`
 }
 
 //
@@ -140,7 +91,7 @@ type PersonOrOrg struct {
 // Open reads in a collection's metadata and returns
 // a new collection structure and error value. The collection
 // structure includes a storage object that conforms to the
-// StorageSystem interface (e.g. ptstore or sqlstore).
+// *StorageSystem interface (e.g. ptstore or sqlstore).
 //
 // ```
 //    var (
@@ -161,16 +112,17 @@ type PersonOrOrg struct {
 //       c *Collection
 //       err error
 //    )
-//    // a sql/database DSN
-//    dsn := ...
-//    c, err = dataset.Open(dsn, dataset.SQLSTORE)
+//    name := "my-stuff"
+//    // a sql/database dsn as URI (e.g. protocl + dsn)
+//    dsnURI := ...
+//    c, err = dataset.Open(name, dsnURI, dataset.SQLSTORE)
 //    if err != nil {
 //       // ... handle error
 //    }
 //    defer c.Close()
 // ```
 //
-func Open(name string, dsn string, storeType string) (*Collection, error) {
+func Open(name string, dsnURI string, storeType string) (*Collection, error) {
 	// NOTE: find the collection.json file then
 	// open the appropriate store.
 	src, err := ioutil.ReadFile(path.Join(name, "collection.json"))
@@ -182,13 +134,13 @@ func Open(name string, dsn string, storeType string) (*Collection, error) {
 		return nil, err
 	}
 	c.Name = name
-	c.DSN = dsn
+	c.DsnURI = dsnURI
 	c.StoreType = storeType
 	switch storeType {
 	case PTSTORE:
-		c.PTStore, err = ptstore.Open(c.Name)
+		c.PTStore, err = ptstore.Open(c.Name, c.DsnURI)
 	case SQLSTORE:
-		c.SQLStore, err = sqlstore.Open(c.Name, c.DSN)
+		c.SQLStore, err = sqlstore.Open(c.Name, c.DsnURI)
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
 	}
@@ -237,8 +189,8 @@ func (c *Collection) initPTStore() error {
 func (c *Collection) initSQLStore() error {
 	//
 	// NOTE: if the access value is left blank for  SQLstore then
-	// the DSN is assumed to be held in the environment and retrieved with
-	// `os.Getenv("DATASETD_DSN")`. That needs to get assigned to the
+	// the DSN URI is assumed to be held in the environment and retrieved with
+	// `os.Getenv("DATASETD_DSN_URI")`. That needs to get assigned to the
 	// running collection but NOT get written to disk in the
 	// collection.json file.
 	//
@@ -247,7 +199,7 @@ func (c *Collection) initSQLStore() error {
 
 // Init - creates a new collection and opens it. It takes a name
 // (e.g. directory holding the collection.json file), an access name
-// (e.g. a file holding a DSN) and the storage type.
+// (e.g. a file holding a DSN URI) and the storage type.
 //
 // For PTSTORE the access value can be left blank.
 //```
@@ -272,26 +224,29 @@ func (c *Collection) initSQLStore() error {
 //      err error
 //   )
 //   name := "my_collection"
-//   dsn := os.Getenv("DATASETD_DSN")
-//   c, err = dataset.Init(name, dsn, dataset.SQLSTORE)
+//   dsnURI := os.Getenv("DATASETD_DSN_URI")
+//   c, err = dataset.Init(name, dsnURI, dataset.SQLSTORE)
 //   if err != nil {
 //     // ... handle error
 //   }
 //   defer c.Close()
 //```
 //
-// NOTE: if the access value is left blank for  SQLstore then
-// the DSN is assumed to be held in the environment and retrieved with
-// `os.Getenv("DATASETD_DSN")`.
+// NOTE: if the dsnURI value is left blank for SQLstore then
+// the dsnURI is assumed to be held in the environment and retrieved with
+// `os.Getenv("DATASETD_DSN_URI")`. A URI is formed by prefix a DNS
+// (data source name) with a protocol, e.g. "sqlite:", "mysql:". Everything
+// after the protocal is assumed to form a valid DSN for the given Go
+// SQL driver.
 //
-func Init(name string, dsn string, storeType string) (*Collection, error) {
+func Init(name string, dsnURI string, storeType string) (*Collection, error) {
 	var err error
 	if storeType == "" {
 		storeType = PTSTORE
 	}
 	c := new(Collection)
 	c.Name = name
-	c.DSN = dsn
+	c.DsnURI = dsnURI
 	c.StoreType = storeType
 	switch storeType {
 	case PTSTORE:

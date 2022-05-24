@@ -18,7 +18,7 @@ type Storage struct {
 //  }
 // ```
 //
-func Open(name string) (*Storage, error) {
+func Open(name string, dsnURI string) (*Storage, error) {
 	return nil, fmt.Errorf("DEBUG Open not working")
 }
 

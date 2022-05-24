@@ -38,7 +38,7 @@ func TestPTStore(t *testing.T) {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	// NOTE: Pairtree doesn't use an DSN so it is empty
+	// NOTE: Pairtree doesn't use an DSN URI so it is empty
 	c, err := Init(cName, "", PTSTORE)
 	if err != nil {
 		t.Errorf("Failed to create %q, %s", cName, err)
@@ -132,13 +132,13 @@ func TestSQLStore(t *testing.T) {
 	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
 
 	cName := path.Join("T2.ds")
-	dsn := "file:testout/T2.db?cache=shared"
+	dsnURI := "sqlite:file:testout/T2.db?cache=shared"
 	// Clear stale test output
 	if _, err := os.Stat(path.Join("testout", cName)); err == nil {
 		os.RemoveAll(cName)
 	}
-	// NOTE: SQLStore requires a DSN so it is NOT empty
-	c, err := Init(cName, dsn, SQLSTORE)
+	// NOTE: SQLStore requires a DSN URI so it is NOT empty
+	c, err := Init(cName, dsnURI, SQLSTORE)
 	if err != nil {
 		t.Errorf("Failed to create %q, %s", cName, err)
 	}

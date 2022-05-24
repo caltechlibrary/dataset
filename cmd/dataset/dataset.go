@@ -54,7 +54,7 @@ func main() {
 	eout := os.Stderr
 
 	if showHelp {
-		dataset.DisplayUsage(out, appName, flagSet)
+		dataset.DisplayUsage(out, appName, flagSet, dataset.CLIDescription, dataset.CLIExamples, dataset.License)
 		os.Exit(0)
 	}
 	if showLicense {
