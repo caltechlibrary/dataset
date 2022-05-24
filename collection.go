@@ -188,7 +188,7 @@ func Open(name string, dsn string, storeType string) (*Collection, error) {
 	case PTSTORE:
 		c.PTStore, err = ptstore.Open(c.Name)
 	case SQLSTORE:
-		c.SQLStore, err = sqlstore.Open(c.DSN)
+		c.SQLStore, err = sqlstore.Open(c.Name, c.DSN)
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
 	}
@@ -219,7 +219,7 @@ func (c *Collection) Close() error {
 			return c.SQLStore.Close()
 		}
 	default:
-		return fmt.Errorf("%q not supported")
+		return fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return fmt.Errorf("nothing to close")
 }
@@ -328,7 +328,7 @@ func Init(name string, dsn string, storeType string) (*Collection, error) {
 //   c.ImportCodemeta("codemeta.json")
 // ```
 func ImportCodemeta(fName string) error {
-	return fmt.Errorf("ImportCodemeta(%q) is not implemented")
+	return fmt.Errorf("ImportCodemeta(%q) is not implemented", fName)
 }
 
 //
@@ -346,10 +346,10 @@ func ImportCodemeta(fName string) error {
 //   }
 // ```
 //
-func (c *Collection) Create(key string, obj *interface{}) error {
+func (c *Collection) Create(key string, obj map[string]interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON for %s, %s", err)
+		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
 	switch c.StoreType {
 	case PTSTORE:
@@ -378,7 +378,7 @@ func (c *Collection) Create(key string, obj *interface{}) error {
 //   }
 // ```
 //
-func (c *Collection) Read(key string, obj *interface{}) error {
+func (c *Collection) Read(key string, obj map[string]interface{}) error {
 	var (
 		src []byte
 		err error
@@ -407,10 +407,10 @@ func (c *Collection) Read(key string, obj *interface{}) error {
 //   }
 // ```
 //
-func (c *Collection) Update(key string, obj *interface{}) error {
+func (c *Collection) Update(key string, obj map[string]interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON for %s, %s", err)
+		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
 	switch c.StoreType {
 	case PTSTORE:
@@ -422,7 +422,7 @@ func (c *Collection) Update(key string, obj *interface{}) error {
 			return c.SQLStore.Update(key, src)
 		}
 	default:
-		return fmt.Errorf("%q not supported")
+		return fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return fmt.Errorf("%s not open", c.Name)
 }
@@ -447,7 +447,7 @@ func (c *Collection) Delete(key string) error {
 			return c.SQLStore.Delete(key)
 		}
 	default:
-		return fmt.Errorf("%q not supported")
+		return fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return fmt.Errorf("%s not open", c.Name)
 }
@@ -473,7 +473,7 @@ func (c *Collection) List() ([]string, error) {
 			return c.SQLStore.List()
 		}
 	default:
-		return nil, fmt.Errorf("%q not supported")
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return nil, fmt.Errorf("%s not open", c.Name)
 }

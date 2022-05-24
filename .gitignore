@@ -32,7 +32,7 @@ _testmain.go
 etc/*
 dist/*
 dataset/*
-testdata/*
+testout/*
 bin/*
 demos/*
 *.swp

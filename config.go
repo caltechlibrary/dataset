@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 // Config holds the specific settings for a collection.
@@ -20,12 +21,10 @@ type Config struct {
 	// e.g. /etc/datasetd/dsn.conf if none is provided then
 	// environment variables are checked using the EnvPrefix
 	DSN string `json:"dsn,omitemtpy"`
-	// EnvPrefix holds a prefix for environment variables needed to
-	// form a DSN if a DSN file isn't used. The default prefix
-	// is "DSD_" and the variables expected would look like
-	// "DSD_TYPE=mysql", "DSD_DB=...", "DSD_USER=...",
-	// "DSD_PASSWORD=...".
-	EnvPrefix string `json:"env_prefix,omitempty"`
+	// EnvName holds a prefix for environment variables needed to
+	// form a DSN if a DSN file isn't used. The default name is
+	// is "DATASETD_DSN" and the variables expected.
+	EnvName string `json:"env_prefix,omitempty"`
 }
 
 func (config *Config) String() string {
@@ -35,23 +34,24 @@ func (config *Config) String() string {
 
 // LoadConfig reads the JSON configuration file provided, validates it
 // and either returns a Config structure or error.
-func LoadConfig(fname string) (*Config, error) {
+func LoadConfig(fName string) (*Config, error) {
 	config := new(Config)
-	src, err := ioutil.ReadFile(fname)
+	src, err := ioutil.ReadFile(fName)
 	if err != nil {
 		return nil, err
 	}
 	// Since we should be OK, unmarshal in into active config
 	if err = json.Unmarshal(src, config); err != nil {
-		return nil, fmt.Errorf("Unmarshaling %q failed, %s", fname, err)
+		return nil, fmt.Errorf("Unmarshaling %q failed, %s", fName, err)
 	}
 	if config.Host == "" {
 		config.Host = "localhost:8485"
 	}
-	if config.DSN == "" {
+	if config.EnvName == "" {
+		config.EnvName = "DATASETD_DSN"
 	}
-	if config.EnvPrefix == "" {
-		config.EnvPrefix = "DSD_"
+	if config.DSN == "" {
+		config.DSN = os.Getenv(config.EnvName)
 	}
 	return config, nil
 }

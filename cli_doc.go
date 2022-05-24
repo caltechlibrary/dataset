@@ -1,11 +1,7 @@
 package dataset
 
-import (
-	"strings"
-)
-
 const (
-	usage = `
+	CLIDescription = `
 USAGE
 
    {app_name} [OPTIONS] VERB COLLECTION_NAME [PRAMETER ...]
@@ -42,7 +38,9 @@ SUPPORTED VERBS
 
 You can get additional help 
 
+`
 
+	CLIExamples = `
 EXAMPLES
 
    {app_name} help init
@@ -70,10 +68,3 @@ EXAMPLES
 
 `
 )
-
-func CliHelp(appName string, topic string) string {
-	switch topic {
-	default:
-		return strings.ReplaceAll(usage, "{app_name}", appName)
-	}
-}

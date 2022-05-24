@@ -39,34 +39,35 @@ func main() {
 	appName := path.Base(os.Args[0])
 
 	// Standard Options
-	flag.BoolVar(&showHelp, "h", false, "display help")
-	flag.BoolVar(&showHelp, "help", false, "display help")
-	flag.BoolVar(&showLicense, "license", false, "display license")
-	flag.BoolVar(&showVersion, "version", false, "display version")
+	flagSet := flag.NewFlagSet(appName, flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.BoolVar(&showLicense, "license", false, "display license")
+	flagSet.BoolVar(&showVersion, "version", false, "display version")
 
 	// We're ready to process args
-	flag.Parse()
-	args := flag.Args()
+	flagSet.Parse(os.Args)
+	args := flagSet.Args()
 
 	in := os.Stdin
 	out := os.Stdout
 	eout := os.Stderr
 
 	if showHelp {
-		fmt.Fprintf(out, "%s\n\n", dataset.CliHelp(appName, ""))
+		dataset.DisplayUsage(out, appName, flagSet, dataset.CliHelp(appName, ""))
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintf(out, "%s\n\n", dataset.License)
+		dataset.DisplayLicense(out, appName, dataset.License)
 		os.Exit(0)
 	}
 	if showVersion {
-		fmt.Fprintln(out, "%s %s\n\n", appName, dataset.Version)
+		dataset.DisplayVersion(out, appName)
 		os.Exit(0)
 	}
 
 	// Application Logic
-	err := dataset.RunCli(in, out, eout, args)
+	err := dataset.RunCLI(in, out, eout, args)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		os.Exit(1)

@@ -19,17 +19,206 @@
 package dataset
 
 import (
+	"fmt"
+	"os"
+	"path"
+	"sort"
 	"testing"
 )
 
-func TestCollection(t *testing.T) {
-	t.Errorf("TestCollection() not implemented.")
+// Test the Pairtree storage implementation
+func TestPTStore(t *testing.T) {
+	threeObjects := []map[string]interface{}{}
+	threeObjects = append(threeObjects, map[string]interface{}{"one": 1})
+	threeObjects = append(threeObjects, map[string]interface{}{"two": 2})
+	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
+
+	cName := path.Join("testout", "T1.ds")
+	// Clear stale test output
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	// NOTE: Pairtree doesn't use an DSN so it is empty
+	c, err := Init(cName, "", PTSTORE)
+	if err != nil {
+		t.Errorf("Failed to create %q, %s", cName, err)
+	}
+	if c == nil {
+		t.Errorf("Failed to create a collection object")
+		t.FailNow()
+	}
+	defer func() {
+		if err := c.Close(); err != nil {
+			t.Errorf("Failed to close collection %q, %s", cName, err)
+			t.FailNow()
+		}
+	}()
+	for i, obj1 := range threeObjects {
+		key := fmt.Sprintf("%d", i)
+		// See if I can create and read back the object
+		if err := c.Create(key, obj1); err != nil {
+			t.Errorf("Expected to create %q, %s", key, err)
+			t.FailNow()
+		} else {
+			obj2 := map[string]interface{}{}
+			if err := c.Read(key, obj2); err != nil {
+				t.Errorf("Expected to read %q, %s", key, err)
+				t.FailNow()
+			}
+			for k, v := range obj1 {
+				if v2, ok := obj2[k]; ok == false {
+					t.Errorf("Expected %q in obj2 %+v", k, obj2)
+				} else if v != v2 {
+					t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+				}
+			}
+
+		}
+		// Make sure you can't overwrite a previously created object
+		if err := c.Create(key, obj1); err == nil {
+			t.Errorf("Expected Create to fail %q should already exist", key)
+		}
+		obj1["id"] = key
+		if err := c.Update(key, obj1); err != nil {
+			t.Errorf("Expected Update to succeed %q, %s", key, err)
+		} else {
+			obj2 := map[string]interface{}{}
+			if err := c.Read(key, obj2); err != nil {
+				t.Errorf("Expected update then Read to success, %q, %s", key, err)
+			} else {
+				for k, v := range obj1 {
+					if v2, ok := obj2[k]; ok == false {
+						t.Errorf("Expected %q in obj2 %+v", k, obj2)
+					} else if v != v2 {
+						t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+					}
+				}
+			}
+		}
+	}
+	if keys, err := c.List(); err != nil {
+		t.Errorf("Expected to get a list of keys got error %s", err)
+		t.FailNow()
+	} else {
+		if len(keys) != 3 {
+			t.Errorf("Expected three keys for 3 objects got %+v", keys)
+		}
+		sort.Strings(keys)
+		for i := 0; i < 3; i++ {
+			expected := fmt.Sprintf("%d", i)
+			if keys[i] != expected {
+				t.Errorf("Expected key %s, got %s", expected, keys[i])
+			}
+		}
+	}
+	for i := 0; i < 2; i++ {
+		key := fmt.Sprintf("%d", i)
+		if err := c.Delete(key); err != nil {
+			t.Errorf("Expected to be able to delete %q, %s", key, err)
+		}
+	}
+	if keys, err := c.List(); err != nil {
+		t.Errorf("Expected to get keys back from List, %s", err)
+	} else if len(keys) != 1 {
+		t.Errorf("Expected one key left after delete, got %+v", keys)
+	}
 }
 
-func TestComplexKeys(t *testing.T) {
-	t.Errorf("TestComplexKeys() not implemented.")
-}
+// Test the SQL storage implementation
+func TestSQLStore(t *testing.T) {
+	threeObjects := []map[string]interface{}{}
+	threeObjects = append(threeObjects, map[string]interface{}{"one": 1})
+	threeObjects = append(threeObjects, map[string]interface{}{"two": 2})
+	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
 
-func TestCloneSample(t *testing.T) {
-	t.Errorf("TestCloneSample() not implemented.")
+	cName := path.Join("T2.ds")
+	dsn := "file:testout/T2.db?cache=shared"
+	// Clear stale test output
+	if _, err := os.Stat(path.Join("testout", cName)); err == nil {
+		os.RemoveAll(cName)
+	}
+	// NOTE: SQLStore requires a DSN so it is NOT empty
+	c, err := Init(cName, dsn, SQLSTORE)
+	if err != nil {
+		t.Errorf("Failed to create %q, %s", cName, err)
+	}
+	if c == nil {
+		t.Errorf("Failed to create a collection object")
+		t.FailNow()
+	}
+	defer func() {
+		if err := c.Close(); err != nil {
+			t.Errorf("Failed to close collection %q, %s", cName, err)
+			t.FailNow()
+		}
+	}()
+	for i, obj1 := range threeObjects {
+		key := fmt.Sprintf("%d", i)
+		// See if I can create and read back the object
+		if err := c.Create(key, obj1); err != nil {
+			t.Errorf("Expected to create %q, %s", key, err)
+			t.FailNow()
+		} else {
+			obj2 := map[string]interface{}{}
+			if err := c.Read(key, obj2); err != nil {
+				t.Errorf("Expected to read %q, %s", key, err)
+				t.FailNow()
+			}
+			for k, v := range obj1 {
+				if v2, ok := obj2[k]; ok == false {
+					t.Errorf("Expected %q in obj2 %+v", k, obj2)
+				} else if v != v2 {
+					t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+				}
+			}
+
+		}
+		// Make sure you can't overwrite a previously created object
+		if err := c.Create(key, obj1); err == nil {
+			t.Errorf("Expected Create to fail %q should already exist", key)
+		}
+		obj1["id"] = key
+		if err := c.Update(key, obj1); err != nil {
+			t.Errorf("Expected Update to succeed %q, %s", key, err)
+		} else {
+			obj2 := map[string]interface{}{}
+			if err := c.Read(key, obj2); err != nil {
+				t.Errorf("Expected update then Read to success, %q, %s", key, err)
+			} else {
+				for k, v := range obj1 {
+					if v2, ok := obj2[k]; ok == false {
+						t.Errorf("Expected %q in obj2 %+v", k, obj2)
+					} else if v != v2 {
+						t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+					}
+				}
+			}
+		}
+	}
+	if keys, err := c.List(); err != nil {
+		t.Errorf("Expected to get a list of keys got error %s", err)
+		t.FailNow()
+	} else {
+		if len(keys) != 3 {
+			t.Errorf("Expected three keys for 3 objects got %+v", keys)
+		}
+		sort.Strings(keys)
+		for i := 0; i < 3; i++ {
+			expected := fmt.Sprintf("%d", i)
+			if keys[i] != expected {
+				t.Errorf("Expected key %s, got %s", expected, keys[i])
+			}
+		}
+	}
+	for i := 0; i < 2; i++ {
+		key := fmt.Sprintf("%d", i)
+		if err := c.Delete(key); err != nil {
+			t.Errorf("Expected to be able to delete %q, %s", key, err)
+		}
+	}
+	if keys, err := c.List(); err != nil {
+		t.Errorf("Expected to get keys back from List, %s", err)
+	} else if len(keys) != 1 {
+		t.Errorf("Expected one key left after delete, got %+v", keys)
+	}
 }
