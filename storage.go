@@ -85,16 +85,17 @@ type StorageSystem interface {
 
 	List() ([]string, error)
 
-	// Frame
-	// FrameObjects
 	// Frames
+	// Frame
+	// FrameDef
+	// FrameObjects
 	// Refresh
 	// Reframe
 	// DeleteFrame
 	// HasFrame
 
-	// Attach
 	// Attachments
+	// Attach
 	// Retrieve
 	// Prune
 

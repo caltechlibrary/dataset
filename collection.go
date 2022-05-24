@@ -97,8 +97,14 @@ type Collection struct {
 	// the Collection's metadata.
 	Annotation map[string]interface{} `json:"annotation,omitempty"`
 
-	// Store points to the storage system used in the collection.
-	Store *StorageSystem `json:"-"`
+	//
+	// ??Store points to the storage system used in the collection.
+	//
+
+	// PTStore the point to the pairtree implementation of storage
+	PTStore *ptstore.Storage `json:"-"`
+	// SQLStore points to a SQL database with JSON column support
+	SQLStore *sqlstore.Storage `json:"-"`
 }
 
 // PersonOrOrg holds a the description of a person or organizaion
@@ -141,14 +147,30 @@ type PersonOrOrg struct {
 //       c *Collection
 //       err error
 //    )
-//    c, err = dataset.Open("collection.ds")
+//    c, err = dataset.Open("collection.ds", dataset.PTSTORE)
 //    if err != nil {
 //       // ... handle error
 //    }
 //    defer c.Close()
 // ```
 //
-func Open(name string) (*Collection, error) {
+// SQL store
+//
+// ```
+//    var (
+//       c *Collection
+//       err error
+//    )
+//    // a sql/database DSN
+//    dsn := ...
+//    c, err = dataset.Open(dsn, dataset.SQLSTORE)
+//    if err != nil {
+//       // ... handle error
+//    }
+//    defer c.Close()
+// ```
+//
+func Open(name string, dsn string, storeType string) (*Collection, error) {
 	// NOTE: find the collection.json file then
 	// open the appropriate store.
 	src, err := ioutil.ReadFile(path.Join(name, "collection.json"))
@@ -159,15 +181,68 @@ func Open(name string) (*Collection, error) {
 	if err := json.Unmarshal(src, &c); err != nil {
 		return nil, err
 	}
-	switch c.StoreType {
+	c.Name = name
+	c.DSN = dsn
+	c.StoreType = storeType
+	switch storeType {
 	case PTSTORE:
-		c.Store = new(ptstore.Storage)
+		c.PTStore, err = ptstore.Open(c.Name)
 	case SQLSTORE:
-		c.Store = new(sqlstore.Storage)
+		c.SQLStore, err = sqlstore.Open(c.DSN)
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
 	}
-	return c.Store.Open(c.Access)
+	return c, err
+}
+
+// Close closes a collection. For a pairtree that means flushing
+// keys to disk. for a SQL store it means closing a database connection.
+// Close is often called in conjunction with "defer" keyword.
+//
+// ```
+//    c, err := dataset.Open("my_collection.ds", dataset.PTSTORE)
+//    if err != nil { /* .. handle error ... */ }
+//    /* do some stuff with the collection */
+//    if err := c.Close(); err != nil {
+//       /* ... handle closing error ... */
+//    }
+// ```
+//
+func (c *Collection) Close() error {
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Close()
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Close()
+		}
+	default:
+		return fmt.Errorf("%q not supported")
+	}
+	return fmt.Errorf("nothing to close")
+}
+
+// initPTStore takes a *Collection and initializes a PTSTORE collection.
+// For pairtrees this means create the directory structure and writing
+// out the collection.json file, a skeleton codemeta.json and an empty
+// keys.json file.
+func (c *Collection) initPTStore() error {
+	return fmt.Errorf("InitPTStore() not implemented")
+}
+
+// InitSQLStore takes a *Collection and initializes the SQL database
+// tables for a collection.
+func (c *Collection) initSQLStore() error {
+	//
+	// NOTE: if the access value is left blank for  SQLstore then
+	// the DSN is assumed to be held in the environment and retrieved with
+	// `os.Getenv("DATASETD_DSN")`. That needs to get assigned to the
+	// running collection but NOT get written to disk in the
+	// collection.json file.
+	//
+	return fmt.Errorf("InitSQLStore() not implemented")
 }
 
 // Init - creates a new collection and opens it. It takes a name
@@ -180,7 +255,8 @@ func Open(name string) (*Collection, error) {
 //      c *Collection
 //      err error
 //   )
-//   c, err = dataset.Init("collection.ds", "", dataset.PTSTORE)
+//   name := "my_collection.ds"
+//   c, err = dataset.Init(name, "", dataset.PTSTORE)
 //   if err != nil {
 //     // ... handle error
 //   }
@@ -195,40 +271,36 @@ func Open(name string) (*Collection, error) {
 //      c *Collection
 //      err error
 //   )
-//   c, err = dataset.Init("collection.ds", "collection.dsn",
-//                         dataset.SQLSTORE)
+//   name := "my_collection"
+//   dsn := os.Getenv("DATASETD_DSN")
+//   c, err = dataset.Init(name, dsn, dataset.SQLSTORE)
 //   if err != nil {
 //     // ... handle error
 //   }
 //   defer c.Close()
 //```
+//
 // NOTE: if the access value is left blank for  SQLstore then
 // the DSN is assumed to be held in the environment and retrieved with
-// `os.Getenv("DSN")`.
+// `os.Getenv("DATASETD_DSN")`.
 //
-func Init(name string, access string, storageType string) (*Collection, error) {
-	var (
-		err   error
-		store *StorageSystem
-	)
-	if storageType == "" {
-		storageType = PTSTORE
+func Init(name string, dsn string, storeType string) (*Collection, error) {
+	var err error
+	if storeType == "" {
+		storeType = PTSTORE
 	}
 	c := new(Collection)
 	c.Name = name
-	switch storageType {
-	case SQLSTORE:
-		c.Store = new(sqlstore.Storage)
-		return nil, fmt.Errorf("%q not implemented", storageType)
+	c.DSN = dsn
+	c.StoreType = storeType
+	switch storeType {
 	case PTSTORE:
-		c.Access = name
-		c.StoreType = PTSTORE
-		c.Store = new(ptstore.Storage)
-		return nil, fmt.Errorf("%q not implemented", storageType)
+		err = c.initPTStore()
+	case SQLSTORE:
+		err = c.initSQLStore()
 	default:
-		return nil, fmt.Errorf("%q storage type not supported", storageType)
+		return nil, fmt.Errorf("%q storage type not supported", storeType)
 	}
-	c.Store, err = store.Open(c.Access)
 	return c, err
 }
 
@@ -245,12 +317,6 @@ func Init(name string, access string, storageType string) (*Collection, error) {
 //    }
 // ```
 //
-func (c *Collection) Close() error {
-	if c.Store == nil {
-		return nil
-	}
-	return c.Store.Close()
-}
 
 // ImportCodemeta imports codemeta citation information updating
 // the collections metadata. Collection must be open.
@@ -281,14 +347,23 @@ func ImportCodemeta(fName string) error {
 // ```
 //
 func (c *Collection) Create(key string, obj *interface{}) error {
-	if c.Store == nil {
-		return fmt.Errorf("%s not open", c.Name)
-	}
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", err)
 	}
-	return c.Store.Create(key, src)
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Create(key, src)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.PTStore.Create(key, src)
+		}
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return fmt.Errorf("%s not open", c.Name)
 }
 
 // Read retrieves an object from the collection, unmarshals it and
@@ -304,12 +379,20 @@ func (c *Collection) Create(key string, obj *interface{}) error {
 // ```
 //
 func (c *Collection) Read(key string, obj *interface{}) error {
-	if c.Store == nil {
-		return fmt.Errorf("%s not open", c.Name)
+	var (
+		src []byte
+		err error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.Read(key)
+	case SQLSTORE:
+		src, err = c.SQLStore.Read(key)
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
 	}
-	src, err := c.Store.Read(key)
 	if err != nil {
-		return fmt.Errorf("failed to read %s, %s", err)
+		return fmt.Errorf("failed to read %s, %s", key, err)
 	}
 	return json.Unmarshal(src, &obj)
 }
@@ -325,14 +408,23 @@ func (c *Collection) Read(key string, obj *interface{}) error {
 // ```
 //
 func (c *Collection) Update(key string, obj *interface{}) error {
-	if c.Store == nil {
-		return fmt.Errorf("%s not open", c.Name)
-	}
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", err)
 	}
-	return c.Store.Update(key, src)
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Update(key, src)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Update(key, src)
+		}
+	default:
+		return fmt.Errorf("%q not supported")
+	}
+	return fmt.Errorf("%s not open", c.Name)
 }
 
 // Delete removes an object frmo the collection
@@ -345,7 +437,19 @@ func (c *Collection) Update(key string, obj *interface{}) error {
 // ```
 //
 func (c *Collection) Delete(key string) error {
-	return c.Store.Delete(key)
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Delete(key)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Delete(key)
+		}
+	default:
+		return fmt.Errorf("%q not supported")
+	}
+	return fmt.Errorf("%s not open", c.Name)
 }
 
 // List returns a array of strings holding all the keys
@@ -359,5 +463,17 @@ func (c *Collection) Delete(key string) error {
 // ```
 //
 func (c *Collection) List() ([]string, error) {
-	return c.Store.List()
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.List()
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.List()
+		}
+	default:
+		return nil, fmt.Errorf("%q not supported")
+	}
+	return nil, fmt.Errorf("%s not open", c.Name)
 }

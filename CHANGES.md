@@ -1,3 +1,8 @@
+Release 2.x:
+
+This release is a rewrite of version 1 focusing on removing features and adding the concept of storage engines allowing better server support.
+
+
 Release 1.1.0:
 
 Added attachment support for __datasetd__.

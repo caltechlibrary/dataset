@@ -26,21 +26,11 @@
 
 Use [py_dataset](https://github.com/caltechlibrary/py_dataset).
 
-
-### Julia
-
 ### R
 
 + [Writing R Extensions](https://cran.r-project.org/doc/manuals/R-exts.html)
 
 ## Metadata for collections
 
-+_ ANVL/ERC are related to Namaste, these could be included in a collections-info.txt file that intern would then be expressed as codemeta.json, CATALOG.json and index.html
-    + ERC: is human editable in a simple text editor, fields could be supplied collectively or individually, simplifying further the curation of the metadata, ERC is similar to the expression of Namaste focusing on who, what, when, where and can be extended in a like manner
-+ THUMP would be an interesting query option to support in addition to a simple REST API for listing keys, returning lists of objects or full objects
-
-
-## Namaste support
-
-+ initial implementation is to replace metadata, but if we called out to an editor we could implement editable metadata (e.g. write data to tmp file, read in with a restricted editor like nano, red, rvi, then receive update)
+A dataset collection contains a codemeta.json file describing the collection as well as a list of keys in the collection.
 

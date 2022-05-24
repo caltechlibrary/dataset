@@ -23,7 +23,7 @@ See [Getting started with dataset](how-to/getting-started-with-dataset.html) for
 datasetd, dataset as a web service
 ----------------------------------
 
-[datasetd](doc/datasetd.html) is a web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into other web applications or used by currently by multiple processes. It achieves thise by storing the dataset collection in a SQL databsase using JSON columns.
+[datasetd](doc/datasetd.html) is a web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into other web applications or used by concurrently by multiple processes. It achieves this by storing the dataset collection in a SQL database using JSON columns.
 
 Design choices
 --------------
@@ -46,7 +46,7 @@ _datatset_ stores JSON object documents in a pairtree
 _datasetd_ stores JSON object documents in a table named for the collection
     - objects are versioned into a collection history table by semver and key
     - attachments are not supported
-    - can be exported to a collection using pairtree storage
+    - can be exported to a collection using pairtree storage (e.g. a zipfile will be generated holding a pairtree representation of the collection)
 
 
 The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current implementation is in the Go language.
@@ -56,7 +56,10 @@ Features
 --------
 
 [dataset](docs/dataset.html) supports 
-
+- Initialize a new dataset collection
+    - Define metadata about the collection using a codemeta.json file
+    - Define a keys file holding a list of allocated keys in the collection
+    - Creates a pairtree for object storage
 - Listing [Keys](docs/keys.html) in a collection
 - Object level actions
     - [create](docs/create.html)
@@ -64,12 +67,22 @@ Features
     - [update](docs/update.html)
     - [delete](docs/delete.html)
     - Documents as attachments
-        - [attach](docs/attach.html)
-        - [retrieve](docs/retrieve.html)
-        - [prune](docs/prune.html)
-- Import/export to SQL based dataset collections
+        - [attachments](docs/attacments.html) (list)
+        - [attach](docs/attach.html) (create/update)
+        - [retrieve](docs/retrieve.html) (read)
+        - [prune](docs/prune.html) (delete)
 - The ability to create data [frames](docs/frame.html) from while collections or based on keys lists
-    - frames are defined using [dot paths](docs/dotpath.html) describing what is to be pulled out of a stored JSON objects
+    - frames are defined using a list of keys and a lost [dot paths](docs/dotpath.html) describing
+      what is to be pulled out of a stored JSON objects and into the frame
+    - frame level actions
+        - frames, list the frame names in the collection
+        - frame, define a frame, does not overwrite an existing frame with the same name
+        - frame-def, show the frame definition (incase we need it for some reason)
+        - frame-objects, return a list of objects in the frame
+        - refreash, using the current frame definition reload all the objects in the frame
+        - reframe, replace the frame definition then reload the objects in the frame using the old frame key list
+        - has-frame, check to see if a frame exists
+        - delete-frame remove the frame
 
 [datasetd](docs/datasetd.html) supports
 

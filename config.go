@@ -1,43 +1,31 @@
 package dataset
 
 //
-// Service configuration management
+// Service configuration management used by datasetd. This just gets
+// us to the SQL database with the JSON columns, that database contains
+// the configuration for each collection in a table called _collections
+// where each collection is it's own table.
 //
-
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
-	"os"
 )
 
-// Config holds a configuration file structure used by EPrints Extended API
-// Configuration file is expected to be in JSON format.
+// Config holds the specific settings for a collection.
 type Config struct {
-	// Hostname for running service
-	Hostname string `json:"host" default:"localhost:8485"`
-
-	// Collections are defined by a COLLECTION_ID (string)
-	// that points at path to where the collection is saved on file system.
-	Collections map[string]*Settings `json:"collections,required"`
-
-	// Routes are mappings of collections to supported routes.
-	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, string, []string) (int, error) `json:"-"`
-}
-
-// Settings holds the specific settings for a collection.
-type Settings struct {
-	CName    string      `json:"dataset,required"`
-	Keys     bool        `json:"keys" default:"false"`
-	Create   bool        `json:"create" default:"false"`
-	Read     bool        `json:"read" default:"false"`
-	Update   bool        `json:"update" default:"false"`
-	Delete   bool        `json:"delete" default:"false"`
-	Attach   bool        `json:"attach" default:"false"`
-	Retrieve bool        `json:"retrieve" default:"false"`
-	Prune    bool        `json:"prune" default:"false"`
-	DS       *Collection `json:"-"`
+	// Host holds the URL to listen to for the web API
+	Host string `json:"host,omitempty"`
+	// DSN points to a file containing a DSN string,
+	// e.g. /etc/datasetd/dsn.conf if none is provided then
+	// environment variables are checked using the EnvPrefix
+	DSN string `json:"dsn,omitemtpy"`
+	// EnvPrefix holds a prefix for environment variables needed to
+	// form a DSN if a DSN file isn't used. The default prefix
+	// is "DSD_" and the variables expected would look like
+	// "DSD_TYPE=mysql", "DSD_DB=...", "DSD_USER=...",
+	// "DSD_PASSWORD=...".
+	EnvPrefix string `json:"env_prefix,omitempty"`
 }
 
 func (config *Config) String() string {
@@ -57,19 +45,13 @@ func LoadConfig(fname string) (*Config, error) {
 	if err = json.Unmarshal(src, config); err != nil {
 		return nil, fmt.Errorf("Unmarshaling %q failed, %s", fname, err)
 	}
-	if config.Hostname == "" {
-		config.Hostname = "localhost:8485"
+	if config.Host == "" {
+		config.Host = "localhost:8485"
 	}
-	if len(config.Collections) == 0 {
-		return nil, fmt.Errorf("No collections defined in %s", fname)
+	if config.DSN == "" {
 	}
-	for collectionID, settings := range config.Collections {
-		if settings.CName == "" {
-			return nil, fmt.Errorf("Settings for %q missing dataset path", collectionID)
-		}
-		if _, err := os.Stat(settings.CName); err != nil {
-			return nil, err
-		}
+	if config.EnvPrefix == "" {
+		config.EnvPrefix = "DSD_"
 	}
 	return config, nil
 }

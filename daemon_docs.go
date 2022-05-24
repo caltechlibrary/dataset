@@ -1,7 +1,5 @@
 package dataset
 
-import ()
-
 //
 // End point documentation for datasetd.go
 //
@@ -31,25 +29,10 @@ The "settings.json" file has the following structure
 ` + "```" + `
     {
         "host": "localhost:8485",
-        "collections": {
-            '<COLLECTION_ID>': {
-                "dataset": "<PATH_TO_DATASET_COLLECTION>",
-                "keys": true,
-                "create": true,
-                "read": true,
-                "update": true,
-                "delete": false,
-                "attach": false,
-                "retrieve": false,
-                "prune": false
-            }
-        }
+        "dsn": "<DSN_FILENAME>"
     }
 ` + "```" + `
 
-In the "collections" object the '<COLLECTION_ID>' is a string which will be used as the start of the path in the URL. The "dataset" attribute sets the path to the dataset collection made available at '<PATH_TO_DATASET_COLLECTION>'. For each collection you can allow the following sub-paths for JSON object interaction "keys", "create", "read", "update" and "delete". JSON document attachments are supported by "attach", "retrieve", "prune". If any of these attributes are missing from the settings they are assumed to be set to false.
-
-The sub-paths correspond to their counter parts in the dataset command line tool. By varying the settings of these you can support read only collections, drop off collections or function as a object store running behind a web application.
 
 Running datasetd
 ----------------
