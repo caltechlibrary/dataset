@@ -17,9 +17,6 @@ func TestLoadConfig(t *testing.T) {
 	if cfg.Host == "" {
 		t.Errorf("Expected Host to be set %+v", cfg)
 	}
-	if cfg.EnvName == "" {
-		t.Errorf("Expected EnvName to be set %+v", cfg)
-	}
 	if cfg.DSN == "" {
 		t.Errorf("Expected DSN to be set, %+v", cfg)
 	}

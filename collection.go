@@ -22,7 +22,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
+	"time"
 
 	// Dataset sub-modules
 	"github.com/caltechlibrary/dataset/ptstore"
@@ -41,8 +43,10 @@ const (
 	SQLSTORE = "sqlstore"
 )
 
-// Collection is the holds both metadata and associated metadata
+// Collection is the holds both operational metadata
 // for collection level operations on collections of JSON objects.
+// General metadata is stored in a codemeta.json file in the root
+// directory along side the collection.json file.
 type Collection struct {
 	// DatasetVersion of the collection
 	DatasetVersion string `json:"dataset,omitempty"`
@@ -60,23 +64,12 @@ type Collection struct {
 	// database/sql driver for the SQL database.
 	//
 	// If blank the DSN value will be read from
-	// the environment via `os.Getenv("DATASETD_DSN_URI")`.
+	// the environment via `os.Getenv("DATASET_DSN_URI")`.
 	//
 	DsnURI string `json:"dsn_uri,omitempty"`
 
-	//
-	// General Metadata for collection.
-	//
-
-	// Description describes what is in the collection.
-	Description string `json:"description,omitempty"`
-
-	// Created is the date/time the init command was run in
-	// RFC1123 format.
+	// Created
 	Created string `json:"created,omitempty"`
-
-	// Version of collection being stored in semvar notation
-	Version string `json:"version,omitempty"`
 
 	// PTStore the point to the pairtree implementation of storage
 	PTStore *ptstore.Storage `json:"-"`
@@ -88,41 +81,22 @@ type Collection struct {
 // Public interface for dataset
 //
 
-// Open reads in a collection's metadata and returns
-// a new collection structure and error value. The collection
-// structure includes a storage object that conforms to the
-// *StorageSystem interface (e.g. ptstore or sqlstore).
+// Open reads in a collection's operational metadata and returns
+// a new collection structure and error value.
 //
 // ```
 //    var (
 //       c *Collection
 //       err error
 //    )
-//    c, err = dataset.Open("collection.ds", dataset.PTSTORE)
+//    c, err = dataset.Open("collection.ds")
 //    if err != nil {
 //       // ... handle error
 //    }
 //    defer c.Close()
 // ```
 //
-// SQL store
-//
-// ```
-//    var (
-//       c *Collection
-//       err error
-//    )
-//    name := "my-stuff"
-//    // a sql/database dsn as URI (e.g. protocl + dsn)
-//    dsnURI := ...
-//    c, err = dataset.Open(name, dsnURI, dataset.SQLSTORE)
-//    if err != nil {
-//       // ... handle error
-//    }
-//    defer c.Close()
-// ```
-//
-func Open(name string, dsnURI string, storeType string) (*Collection, error) {
+func Open(name string) (*Collection, error) {
 	// NOTE: find the collection.json file then
 	// open the appropriate store.
 	src, err := ioutil.ReadFile(path.Join(name, "collection.json"))
@@ -134,9 +108,10 @@ func Open(name string, dsnURI string, storeType string) (*Collection, error) {
 		return nil, err
 	}
 	c.Name = name
-	c.DsnURI = dsnURI
-	c.StoreType = storeType
-	switch storeType {
+	if c.DsnURI == "" {
+		c.DsnURI = os.Getenv("DATASET_DSN_URI")
+	}
+	switch c.StoreType {
 	case PTSTORE:
 		c.PTStore, err = ptstore.Open(c.Name, c.DsnURI)
 	case SQLSTORE:
@@ -152,7 +127,7 @@ func Open(name string, dsnURI string, storeType string) (*Collection, error) {
 // Close is often called in conjunction with "defer" keyword.
 //
 // ```
-//    c, err := dataset.Open("my_collection.ds", dataset.PTSTORE)
+//    c, err := dataset.Open("my_collection.ds")
 //    if err != nil { /* .. handle error ... */ }
 //    /* do some stuff with the collection */
 //    if err := c.Close(); err != nil {
@@ -181,20 +156,79 @@ func (c *Collection) Close() error {
 // out the collection.json file, a skeleton codemeta.json and an empty
 // keys.json file.
 func (c *Collection) initPTStore() error {
-	return fmt.Errorf("InitPTStore() not implemented")
+	now := time.Now()
+	today := now.Format(datestamp)
+	c.DatasetVersion = Version
+	c.Created = now.UTC().Format(timestampUTC)
+	// Split see if c.Name path exists
+	if _, err := os.Stat(c.Name); os.IsNotExist(err) {
+		// Create directoriess if needed
+		if err := os.MkdirAll(c.Name, 0775); err != nil {
+			return fmt.Errorf("cannot create collect %q, %s", c.Name, err)
+		}
+	} else {
+		return fmt.Errorf("%q already exists", c.Name)
+	}
+	fullName := c.Name
+	basename := path.Base(c.Name)
+	colName := path.Join(c.Name, "collection.json")
+	c.Name = basename
+	src, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return fmt.Errorf("cannot encode %q, %s", colName, err)
+	}
+	c.Name = fullName
+	if err := ioutil.WriteFile(colName, src, 0664); err != nil {
+		return fmt.Errorf("failed to create %q %s", colName, err)
+	}
+	// Create a default codemeta.json file in the directory
+	//today := time.Now().Format(datestamp)
+	m := map[string]string{
+		"{today}":    today,
+		"{c_name}":   path.Base(c.Name),
+		"{app_name}": path.Base(os.Args[0]),
+		"{version}":  Version,
+	}
+	src = BytesProcessor(m, []byte(`{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareSourceCode",
+    "dateCreated": "{today}",
+    "name": "{c_name}",
+    "version": "0.0.0",
+    "releaseNotes": "This is an empty {app_name} {version} collection",
+    "developmentStatus": "concept",
+    "softwareRequirements": [
+        "https://github.com/caltechlibrary/dataset"
+    ]
+}`))
+	cmName := path.Join(c.Name, "codemeta.json")
+	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
+		return fmt.Errorf("failed to create %q, %s", cmName, err)
+	}
+	// Create the pairtree root
+	ptName := path.Join(c.Name, "pairtree")
+	if os.MkdirAll(ptName, 0775); err != nil {
+		return fmt.Errorf("failed to create pairtree root, %s", err)
+	}
+	return nil
 }
 
 // InitSQLStore takes a *Collection and initializes the SQL database
 // tables for a collection.
+// NOTE: A SQL store still has a dataset named directory containing
+// both the collection.json and codemeta.json file but it lacks a
+// pairtree since that is where the object will be stored. Any
+// attachments, if allowed, are stored in an S3 like bucket (e.g. via
+// minio).
 func (c *Collection) initSQLStore() error {
 	//
 	// NOTE: if the access value is left blank for  SQLstore then
 	// the DSN URI is assumed to be held in the environment and retrieved with
-	// `os.Getenv("DATASETD_DSN_URI")`. That needs to get assigned to the
+	// `os.Getenv("DATASET_DSN_URI")`. That needs to get assigned to the
 	// running collection but NOT get written to disk in the
 	// collection.json file.
 	//
-	return fmt.Errorf("InitSQLStore() not implemented")
+	return fmt.Errorf("initSQLStore() not implemented")
 }
 
 // Init - creates a new collection and opens it. It takes a name
@@ -224,7 +258,7 @@ func (c *Collection) initSQLStore() error {
 //      err error
 //   )
 //   name := "my_collection"
-//   dsnURI := os.Getenv("DATASETD_DSN_URI")
+//   dsnURI := os.Getenv("DATASET_DSN_URI")
 //   c, err = dataset.Init(name, dsnURI, dataset.SQLSTORE)
 //   if err != nil {
 //     // ... handle error
@@ -234,7 +268,7 @@ func (c *Collection) initSQLStore() error {
 //
 // NOTE: if the dsnURI value is left blank for SQLstore then
 // the dsnURI is assumed to be held in the environment and retrieved with
-// `os.Getenv("DATASETD_DSN_URI")`. A URI is formed by prefix a DNS
+// `os.Getenv("DATASET_DSN_URI")`. A URI is formed by prefix a DNS
 // (data source name) with a protocol, e.g. "sqlite:", "mysql:". Everything
 // after the protocal is assumed to form a valid DSN for the given Go
 // SQL driver.

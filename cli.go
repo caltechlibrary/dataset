@@ -4,7 +4,34 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 )
+
+var (
+	showHelp bool
+	appName  = path.Base(os.Args[0])
+)
+
+// DisplayHelp writes out help on a supported topic
+func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
+	m := map[string]string{
+		"{app_name}": appName,
+		"{version}":  Version,
+	}
+	switch topic {
+	case "usage":
+		fmt.Fprintf(out, StringProcessor(m, CLIDescription))
+	case "examples":
+		fmt.Fprintf(out, StringProcessor(m, CLIExamples))
+	case "create":
+		fmt.Fprint(out, StringProcessor(m, cliCreate))
+	default:
+		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
+	}
+}
 
 // DisplayLicense returns the license associated with dataset application.
 func DisplayLicense(out io.Writer, appName string, license string) {
@@ -12,7 +39,7 @@ func DisplayLicense(out io.Writer, appName string, license string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, TextProcessor(m, license))
+	fmt.Fprintf(out, StringProcessor(m, license))
 }
 
 // DisplayVersion returns the of the dataset application.
@@ -21,7 +48,7 @@ func DisplayVersion(out io.Writer, appName string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, TextProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
 }
 
 // DisplayUsage displays a usage message.
@@ -32,12 +59,90 @@ func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, descript
 		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, TextProcessor(m, description))
+	fmt.Fprintf(out, StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, TextProcessor(m, examples))
-	DisplayLicense(out, appName, TextProcessor(m, license))
+	fmt.Fprintf(out, StringProcessor(m, examples))
+	DisplayLicense(out, appName, StringProcessor(m, license))
+}
+
+func doInit(out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName     string
+		dsnURI    string
+		storeType string
+	)
+	flagSet := flag.NewFlagSet("init", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for init")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "init")
+		return nil
+	}
+	switch {
+	case len(args) == 3:
+		cName, dsnURI, storeType = args[0], args[1], args[3]
+	case len(args) == 2:
+		cName, dsnURI = args[0], args[1]
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME [DSN_URI] [COLLECTION_TYPE], got %s", strings.Join(args, " "))
+	}
+	c, err := Init(cName, dsnURI, storeType)
+	if err == nil {
+		defer c.Close()
+	}
+	return err
+}
+
+func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		key   string
+		src   []byte
+		input string
+		err   error
+	)
+	flagSet := flag.NewFlagSet("create", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for create")
+	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.StringVar(&input, "i", "-", "read JSON from file, use '-' for stdin")
+	flagSet.StringVar(&input, "input", "-", "read JSON from file, use '-' for stdin")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "create")
+	}
+	switch {
+	case len(args) == 3:
+		cName, key, src = args[0], args[1], []byte(args[2])
+	case len(args) == 2:
+		cName, key = args[0], args[1]
+		if input == "" || input == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(input)
+		}
+		if err != nil {
+			return fmt.Errorf("could not read JSON file, %s", err)
+		}
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC]")
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	obj := map[string]interface{}{}
+	if err := DecodeJSON(src, &obj); err != nil {
+		return err
+	}
+	if err := c.Create(key, obj); err != nil {
+		return err
+	}
+	return nil
 }
 
 /// RunCLI implemented the functionlity used by the cli.
@@ -48,11 +153,16 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	verb, args := args[0], args[1:]
 	switch verb {
 	case "help":
-		return fmt.Errorf("verb %q not implemented", verb)
+		if len(args) > 0 {
+			DisplayHelp(out, eout, args[0])
+			return nil
+		}
+		DisplayHelp(out, eout, "usage")
+		return nil
 	case "init":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doInit(out, eout, args)
 	case "create":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doCreate(in, out, eout, args)
 	case "read":
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "update":

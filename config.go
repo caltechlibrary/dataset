@@ -23,12 +23,8 @@ type Config struct {
 
 	// DSN points to a file containing a DSN string,
 	// e.g. /etc/datasetd/dsn.conf if none is provided then
-	// environment variables are checked using the EnvPrefix
+	// environment variables for DATASET_DSN_URI.
 	DSN string `json:"dsn,omitemtpy"`
-	// EnvName holds a prefix for environment variables needed to
-	// form a DSN if a DSN file isn't used. The default name is
-	// is "DATASETD_DSN" and the variables expected.
-	EnvName string `json:"env_prefix,omitempty"`
 }
 
 func (config *Config) String() string {
@@ -54,11 +50,8 @@ func LoadConfig(fName string) (*Config, error) {
 	if config.Type == "" {
 		config.Type = "mysq"
 	}
-	if config.EnvName == "" {
-		config.EnvName = "DATASETD_DSN"
-	}
 	if config.DSN == "" {
-		config.DSN = os.Getenv(config.EnvName)
+		config.DSN = os.Getenv("DATASET_DSN_URI")
 	}
 	return config, nil
 }

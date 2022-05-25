@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"os"
+	"path"
 	"testing"
 )
 
@@ -32,11 +33,30 @@ func TestRunCLI(t *testing.T) {
 	// Map IO for testing
 	in := bytes.NewBuffer(input)
 	out := bytes.NewBuffer(output)
+	// Cleanup stale test data
+	cName := path.Join("testout", "C1.ds")
+	if _, err := os.Stat(cName); err == nil {
+		if err := os.RemoveAll(cName); err != nil {
+			t.Errorf("cannot remove stale %q, %s", cName, err)
+			t.FailNow()
+		}
+	}
+
 	// Setup command line args
+
+	// Try intializing a collection
+
+	opt := make(map[string][]string)
+	opt["init"] = []string{
+		cName,
+	}
 
 	// Check if version, license, help returns anything
 	for _, arg := range []string{"help", "init", "create", "read", "update", "delete", "keys", "has-key", "frames", "frame", "frame-objects", "frame-def", "refresh", "reframe", "delete-frame", "attachments", "attach", "retrieve", "prune"} {
 		args := []string{arg}
+		if extra, ok := opt[arg]; ok {
+			args = append(args, extra...)
+		}
 		if err := RunCLI(in, out, os.Stderr, args); err != nil {
 			t.Errorf("unexpected error when running %q, %s", arg, err)
 		}
