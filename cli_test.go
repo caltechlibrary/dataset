@@ -26,7 +26,7 @@ func TestDisplay(t *testing.T) {
 	}
 
 }
-func TestRunCLI(t *testing.T) {
+func TestRunCLIOnCRUDL(t *testing.T) {
 	var (
 		input, output []byte
 	)
@@ -50,9 +50,34 @@ func TestRunCLI(t *testing.T) {
 	opt["init"] = []string{
 		cName,
 	}
+	opt["create"] = []string{
+		cName,
+		"1",
+		`{"one": 1}`,
+	}
+	opt["read"] = []string{
+		cName,
+		"1",
+	}
+	opt["update"] = []string{
+		cName,
+		"1",
+		`{"one": 1, "two": "2"}`,
+	}
+	opt["delete"] = []string{
+		cName,
+		"1",
+	}
+	opt["keys"] = []string{
+		cName,
+	}
+	opt["has-key"] = []string{
+		cName,
+		"1",
+	}
 
-	// Check if version, license, help returns anything
-	for _, arg := range []string{"help", "init", "create", "read", "update", "delete", "keys", "has-key", "frames", "frame", "frame-objects", "frame-def", "refresh", "reframe", "delete-frame", "attachments", "attach", "retrieve", "prune"} {
+	// Check if basic CRUDL operations work from cli.
+	for _, arg := range []string{"help", "init", "create", "read", "update", "delete", "keys", "has-key", "create", "keys", "has-key"} {
 		args := []string{arg}
 		if extra, ok := opt[arg]; ok {
 			args = append(args, extra...)
@@ -61,6 +86,13 @@ func TestRunCLI(t *testing.T) {
 			t.Errorf("unexpected error when running %q, %s", arg, err)
 		}
 	}
-	// FIXME: Run through command sequences
-	t.FailNow()
+}
+
+func TestCLIOnFrames(t *testing.T) {
+	// FIXME: Run through frame command sequences
+	t.Errorf("frame command tests not implemented")
+}
+
+func TestCLIOnAttachments(t *testing.T) {
+	t.Errorf("attachment command tests not implemented")
 }

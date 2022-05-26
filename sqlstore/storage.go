@@ -2,6 +2,7 @@ package sqlstore
 
 import (
 	"fmt"
+	"os"
 )
 
 type Storage struct {
@@ -91,15 +92,29 @@ func (store *Storage) Delete(string) error {
 // List returns all keys in a collection as a slice of strings.
 //
 //   var keys []string
-//   keys, _ = storage.List()
+//   keys, _ = storage.Keys()
 //   /* iterate over the keys retrieved */
 //   for _, key := range keys {
 //      ...
 //   }
 //
 
-func (store *Storage) List() ([]string, error) {
+func (store *Storage) Keys() ([]string, error) {
 	return nil, fmt.Errorf("Read() not implemented")
+}
+
+// HasKey will look up and make sure key is in collection.
+// Storage must be open or zero false will always be returned.
+//
+// ```
+//   key := "123"
+//   if store.HasKey(key) {
+//      ...
+//   }
+// ```
+func (store *Storage) HasKey(key string) bool {
+	fmt.Fprintf(os.Stderr, "HasKey() not implemented")
+	return false
 }
 
 // Frames

@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -28,6 +29,8 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 		fmt.Fprintf(out, StringProcessor(m, CLIExamples))
 	case "create":
 		fmt.Fprint(out, StringProcessor(m, cliCreate))
+	case "read":
+		fmt.Fprint(out, StringProcessor(m, cliRead))
 	default:
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -145,6 +148,191 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	return nil
 }
 
+func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		key   string
+	)
+	flagSet := flag.NewFlagSet("read", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "create")
+	}
+	switch {
+	case len(args) == 2:
+		cName, key = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY")
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	src := []byte{}
+	defer c.Close()
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.Read(key)
+	case SQLSTORE:
+		src, err = c.SQLStore.Read(key)
+	default:
+		return fmt.Errorf("%q storage not supportted", c.StoreType)
+	}
+	if err == nil {
+		fmt.Fprintf(out, "%s", src)
+	}
+	return err
+}
+
+func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		key   string
+		src   []byte
+		input string
+		err   error
+	)
+	flagSet := flag.NewFlagSet("update", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for create")
+	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.StringVar(&input, "i", "-", "read JSON from file, use '-' for stdin")
+	flagSet.StringVar(&input, "input", "-", "read JSON from file, use '-' for stdin")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "create")
+	}
+	switch {
+	case len(args) == 3:
+		cName, key, src = args[0], args[1], []byte(args[2])
+	case len(args) == 2:
+		cName, key = args[0], args[1]
+		if input == "" || input == "-" {
+			src, err = ioutil.ReadAll(in)
+		} else {
+			src, err = ioutil.ReadFile(input)
+		}
+		if err != nil {
+			return fmt.Errorf("could not read JSON file, %s", err)
+		}
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC]")
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	obj := map[string]interface{}{}
+	if err := DecodeJSON(src, &obj); err != nil {
+		return err
+	}
+	if err := c.Update(key, obj); err != nil {
+		return err
+	}
+	return nil
+}
+
+func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		key   string
+	)
+	flagSet := flag.NewFlagSet("delete", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "create")
+	}
+	switch {
+	case len(args) == 2:
+		cName, key = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY")
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	switch c.StoreType {
+	case PTSTORE:
+		err = c.PTStore.Delete(key)
+	case SQLSTORE:
+		err = c.SQLStore.Delete(key)
+	default:
+		return fmt.Errorf("%q storage not supportted", c.StoreType)
+	}
+	return err
+}
+
+func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+	)
+	flagSet := flag.NewFlagSet("keys", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "keys")
+	}
+	switch {
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME")
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	keys, err := c.Keys()
+	if err != nil {
+		return err
+	}
+	src, err := json.MarshalIndent(keys, "", "    ")
+	if err != nil {
+		return fmt.Errorf("failed to encode keys, %s", err)
+	}
+	fmt.Fprintf(out, "%s", src)
+	return nil
+}
+
+func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		key   string
+	)
+	flagSet := flag.NewFlagSet("has-key", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	if showHelp {
+		DisplayHelp(out, eout, "has-key")
+	}
+	switch {
+	case len(args) == 2:
+		cName, key = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY")
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	if c.HasKey(key) {
+		fmt.Fprintln(out, "true")
+	} else {
+		fmt.Fprintln(out, "false")
+	}
+	return nil
+}
+
 /// RunCLI implemented the functionlity used by the cli.
 func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if len(args) == 0 {
@@ -164,15 +352,15 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	case "create":
 		return doCreate(in, out, eout, args)
 	case "read":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doRead(in, out, eout, args)
 	case "update":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doUpdate(in, out, eout, args)
 	case "delete":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doDelete(in, out, eout, args)
 	case "keys":
-		return fmt.Errorf("verb %q not implemented", verb)
-	case "has-keys":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doKeys(in, out, eout, args)
+	case "has-key":
+		return doHasKey(in, out, eout, args)
 	case "frames":
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "frame":

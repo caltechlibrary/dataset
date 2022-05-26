@@ -96,7 +96,7 @@ func TestPTStore(t *testing.T) {
 			}
 		}
 	}
-	if keys, err := c.List(); err != nil {
+	if keys, err := c.Keys(); err != nil {
 		t.Errorf("Expected to get a list of keys got error %s", err)
 		t.FailNow()
 	} else {
@@ -117,7 +117,7 @@ func TestPTStore(t *testing.T) {
 			t.Errorf("Expected to be able to delete %q, %s", key, err)
 		}
 	}
-	if keys, err := c.List(); err != nil {
+	if keys, err := c.Keys(); err != nil {
 		t.Errorf("Expected to get keys back from List, %s", err)
 	} else if len(keys) != 1 {
 		t.Errorf("Expected one key left after delete, got %+v", keys)
@@ -195,7 +195,7 @@ func TestSQLStore(t *testing.T) {
 			}
 		}
 	}
-	if keys, err := c.List(); err != nil {
+	if keys, err := c.Keys(); err != nil {
 		t.Errorf("Expected to get a list of keys got error %s", err)
 		t.FailNow()
 	} else {
@@ -216,7 +216,7 @@ func TestSQLStore(t *testing.T) {
 			t.Errorf("Expected to be able to delete %q, %s", key, err)
 		}
 	}
-	if keys, err := c.List(); err != nil {
+	if keys, err := c.Keys(); err != nil {
 		t.Errorf("Expected to get keys back from List, %s", err)
 	} else if len(keys) != 1 {
 		t.Errorf("Expected one key left after delete, got %+v", keys)

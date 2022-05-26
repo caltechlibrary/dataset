@@ -73,7 +73,7 @@ type StorageSystem interface {
 	//
 	Delete(string) error
 
-	// List returns all keys in a collection as a slice of strings.
+	// Keys returns all keys in a collection as a slice of strings.
 	//
 	//   var keys []string
 	//   keys, _ = storage.List()
@@ -82,8 +82,11 @@ type StorageSystem interface {
 	//      ...
 	//   }
 	//
+	Keys() ([]string, error)
 
-	List() ([]string, error)
+	// HasKey returns true if collection is open and key exists,
+	// false otherwise.
+	HasKey(string) bool
 
 	// Frames
 	// Frame

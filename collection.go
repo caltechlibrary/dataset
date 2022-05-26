@@ -75,6 +75,14 @@ type Collection struct {
 	PTStore *ptstore.Storage `json:"-"`
 	// SQLStore points to a SQL database with JSON column support
 	SQLStore *sqlstore.Storage `json:"-"`
+
+	//
+	// Private varibles
+	//
+
+	// workPath holds the path the directory where the collection.json
+	// file is found.
+	workPath string `json:"-"`
 }
 
 //
@@ -107,15 +115,15 @@ func Open(name string) (*Collection, error) {
 	if err := json.Unmarshal(src, &c); err != nil {
 		return nil, err
 	}
-	c.Name = name
+	c.workPath = name
 	if c.DsnURI == "" {
 		c.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
 	switch c.StoreType {
 	case PTSTORE:
-		c.PTStore, err = ptstore.Open(c.Name, c.DsnURI)
+		c.PTStore, err = ptstore.Open(name, c.DsnURI)
 	case SQLSTORE:
-		c.SQLStore, err = sqlstore.Open(c.Name, c.DsnURI)
+		c.SQLStore, err = sqlstore.Open(name, c.DsnURI)
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
 	}
@@ -441,28 +449,55 @@ func (c *Collection) Delete(key string) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// List returns a array of strings holding all the keys
+// Keys returns a array of strings holding all the keys
 // in the collection.
 //
 // ```
-//   keys, err := c.List()
+//   keys, err := c.Keys()
 //   for _, key := range keys {
 //      ...
 //   }
 // ```
 //
-func (c *Collection) List() ([]string, error) {
+func (c *Collection) Keys() ([]string, error) {
 	switch c.StoreType {
 	case PTSTORE:
 		if c.PTStore != nil {
-			return c.PTStore.List()
+			return c.PTStore.Keys()
 		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
-			return c.SQLStore.List()
+			return c.SQLStore.Keys()
 		}
 	default:
 		return nil, fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return nil, fmt.Errorf("%s not open", c.Name)
+}
+
+// HasKey takes a collection and checks if a key exists. NOTE:
+// collection must be open otherwise false will always be returned.
+//
+// ```
+//   key := "123"
+//   if c.HasKey(key) {
+//      ...
+//   }
+// ```
+//
+func (c *Collection) HasKey(key string) bool {
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.HasKey(key)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.HasKey(key)
+		}
+	default:
+		return false
+	}
+	// If we got here the collection isn't open ...
+	return false
 }
