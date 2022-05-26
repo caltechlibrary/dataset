@@ -1,6 +1,40 @@
 Release 2.x:
 
-This release is a rewrite of version 1 focusing on removing features and adding the concept of storage engines allowing better server support.
+This release is a rewrite of version 1 focusing on removing features, adding useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.
+
+
+The dataset collections structures have changed
+
+- a dataset is a directory containing a collection.json and codemeta.json file
+- the collection.json no longer contains general metadata or maps to the keys and pairtree, it focuses on operational settings (e.g. storage type and access information)
+    - when running dataset as a web service on a shared user machine setup your database connection through the environment, e.g. set DATASET_DSN_URI value
+- a codemeta.json file is now used for holding collection level metadata as this has been adopted by some of the data science community
+- additional JSON configuration files may be used to manage the collection ddependent on storage engine
+
+
+Golang package changes:
+
+- The dataset v2 package has been substantially reorganized and simplified, most things have changed
+
+
+libdataset:
+
+- This has be dropped and is not long supported due to the challenges of cros compiling for all supported platforms
+- If libdataset is needed it will be its own project and repository
+
+CLI changes:
+
+- options have be restructured so that some come after the verb
+- help has been restructured to better support focusing the help text on the task needed
+- the command line version is single user, single process for pairtree storage
+- the command line can function as a client to web service implementation
+
+Web Service changes:
+
+- the web service does not support the pairtree implementation except for inport and export, it still uses a pairtree for storing attachments
+- the web service is now RESTful so the end points no longer map directly to the client syntax
+- the web service requires running a SQL database with JSON column support for storing JSON documents, currently this means SQLite3 and MySQL
+- Access to the SQL storage engine is through either the environment or a URI expressing a storage type as protocol and a data source name to making the connection
 
 
 Release 1.1.0:

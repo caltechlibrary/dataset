@@ -1,7 +1,7 @@
 
 # Compilation Notes
 
-On Unix-like systems (e.g. Darwin, Linux) building dataset and libdataset is generally as easy as running the GNU Make command. On Windows you need to take a more Window-ish approach and run `make.bat`.
+On Unix-like systems (e.g. Darwin, Linux, Windows with the Linux subsystem enabled) building dataset and datasetd is generally as easy as running the GNU Make command. On Windows without the Linux subsystem you need to take a more Window-ish approach and run `make.bat`.
 
 ## Windows 11
 

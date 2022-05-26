@@ -19,6 +19,7 @@
 package dataset
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -42,17 +43,21 @@ func TestPTStore(t *testing.T) {
 	c, err := Init(cName, "", PTSTORE)
 	if err != nil {
 		t.Errorf("Failed to create %q, %s", cName, err)
+		t.FailNow()
 	}
 	if c == nil {
 		t.Errorf("Failed to create a collection object")
 		t.FailNow()
 	}
-	defer func() {
-		if err := c.Close(); err != nil {
-			t.Errorf("Failed to close collection %q, %s", cName, err)
-			t.FailNow()
-		}
-	}()
+	if err := c.Close(); err != nil {
+		t.Errorf("Failed to close collection %q, %s", cName, err)
+		t.FailNow()
+	}
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("Failed to open a collection object")
+		t.FailNow()
+	}
 	for i, obj1 := range threeObjects {
 		key := fmt.Sprintf("%d", i)
 		// See if I can create and read back the object
@@ -68,11 +73,17 @@ func TestPTStore(t *testing.T) {
 			for k, v := range obj1 {
 				if v2, ok := obj2[k]; ok == false {
 					t.Errorf("Expected %q in obj2 %+v", k, obj2)
-				} else if v != v2 {
-					t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+				} else {
+					// NOTE: c.Read() will use json.Number types for
+					// integers and floats expressed in JSON. These
+					// needed to be converted appropriately for comparison.
+					x := fmt.Sprintf("%d", v)
+					y := v2.(json.Number).String()
+					if x != y {
+						t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
+					}
 				}
 			}
-
 		}
 		// Make sure you can't overwrite a previously created object
 		if err := c.Create(key, obj1); err == nil {
@@ -89,8 +100,21 @@ func TestPTStore(t *testing.T) {
 				for k, v := range obj1 {
 					if v2, ok := obj2[k]; ok == false {
 						t.Errorf("Expected %q in obj2 %+v", k, obj2)
-					} else if v != v2 {
-						t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+					} else {
+						switch v.(type) {
+						case string:
+							if v != v2 {
+								t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, v, v2, v)
+							}
+						case int:
+							x := fmt.Sprintf("%d", v)
+							y := v2.(json.Number).String()
+							if x != y {
+								t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
+							}
+						default:
+							//FIXME: Need to come up with a sensible way to compare values ...
+						}
 					}
 				}
 			}
@@ -167,11 +191,18 @@ func TestSQLStore(t *testing.T) {
 			for k, v := range obj1 {
 				if v2, ok := obj2[k]; ok == false {
 					t.Errorf("Expected %q in obj2 %+v", k, obj2)
-				} else if v != v2 {
-					t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
+				} else {
+					// NOTE: c.Read() will use json.Number types for
+					// integers and floats expressed in JSON. These
+					// needed to be converted appropriately for comparison.
+					x := fmt.Sprintf("%d", v)
+					y := v2.(json.Number).String()
+					if x != y {
+						t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
+					}
+					t.Errorf("Expected first value (%T) %+v to equal second value (%T) %+v", v, v, v2, v2)
 				}
 			}
-
 		}
 		// Make sure you can't overwrite a previously created object
 		if err := c.Create(key, obj1); err == nil {
@@ -220,5 +251,46 @@ func TestSQLStore(t *testing.T) {
 		t.Errorf("Expected to get keys back from List, %s", err)
 	} else if len(keys) != 1 {
 		t.Errorf("Expected one key left after delete, got %+v", keys)
+	}
+}
+
+func TestFredaExample(t *testing.T) {
+	// Create a collection "mystuff" inside the directory called demo
+	cName := path.Join("testout", "mystuff.ds")
+	if _, err := os.Stat(cName); err == nil {
+		// Clear stale data if needed.
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, "", PTSTORE)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+	// Create a JSON document
+	docName := "freda.json"
+	document := map[string]interface{}{
+		"name":  "freda",
+		"email": "freda@inverness.example.org",
+	}
+	if err := c.Create(docName, document); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Read a JSON document
+	if err := c.Read(docName, document); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Update a JSON document
+	document["email"] = "freda@zbs.example.org"
+	if err := c.Update(docName, document); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Delete a JSON document
+	if err := c.Delete(docName); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
 	}
 }

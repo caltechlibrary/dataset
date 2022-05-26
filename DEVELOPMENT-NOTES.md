@@ -9,7 +9,7 @@
 
 ## Recommend
 
-(recommended if compiling from source)
+(recommended if compiling from source and further development)
 
 - Bash
 - GNU Make

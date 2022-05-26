@@ -26,10 +26,6 @@
 
 Use [py_dataset](https://github.com/caltechlibrary/py_dataset).
 
-### R
-
-+ [Writing R Extensions](https://cran.r-project.org/doc/manuals/R-exts.html)
-
 ## Metadata for collections
 
 A dataset collection contains a codemeta.json file describing the collection as well as a list of keys in the collection.

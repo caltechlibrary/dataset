@@ -174,5 +174,5 @@ batch files to perform some of what Make under Linux and macOS would do.
 - clean.bat removes executables and temp files
 
 
-Compilation assumes [go](https://github.com/golang/go) v1.17.2
+Compilation assumes [go](https://github.com/golang/go) v1.18.2
 

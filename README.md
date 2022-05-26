@@ -4,12 +4,12 @@ Dataset Project
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-The Dataset Project provides tools for working with collections of JSON Object documents stored on the local file system.  Two tools are provided, a command line interface (dataset) and a web service (datasetd).
+The Dataset Project provides tools for working with collections of JSON Object documents stored on the local file system or via a dataset web service.  Two tools are provided, a command line interface (dataset) and a web service (datasetd).
 
 dataset command line tool
 -------------------------
 
-[dataset](doc/dataset.html) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) objects. Collections are stored on the file system in a pairtree directory structure.  JSON objects are stored in collections as plain UTF-8 text files.  This means the objects can be accessed with common [Unix](https://en.wikipedia.org/wiki/Unix) text processing tools as well as most programming languages.
+[dataset](doc/dataset.html) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) objects. Collections are stored on the file system in a pairtree directory structure or can be accessed via dataset's web service.  For collections storing data in a pairtree JSON objects are stored in collections as plain UTF-8 text files.  This means the objects can be accessed with common [Unix](https://en.wikipedia.org/wiki/Unix) text processing tools as well as most programming languages.
 
 The _dataset_ command line tool supports common data management operations such as initialization of collections; document creation, reading, updating and deleting; listing keys of JSON objects in the collection; and associating non-JSON documents (attachments) with specific JSON documents in the collection.
 
@@ -98,7 +98,7 @@ Features
         - [attach](docs/attach-endpoint.html)
         - [retrieve](docs/retrieve-endpoint.html)
         - [prune](docs/prune-endpoint.html)
-- Import/export of pairtree based dataset collections
+- A means of importing to or exporting from pairtree based dataset collections
 - The ability to create data [frames](docs/frame.html) from while collections or based on keys lists
     - frames are defined using [dot paths](docs/dotpath.html) describing what is to be pulled out of a stored JSON objects
 
@@ -110,16 +110,16 @@ Limitations of _dataset_ and _datasetd_
 
 _dataset_ has many limitations, some are listed below
 
-- it is not a multi-process, multi-user data store
+- the pairtree implementation it is not a multi-process, multi-user data store
 - it is not a general purpose database system
-- it stores all keys to lower case in order to deal with file systems that are not case sensitive
+- it stores all keys in lower case in order to deal with file systems that are not case sensitive, compatibility needed by pairtrees
 - it stores collection names as lower case to deal with file systems that are not case sensitive
 - it does not have a built-in query language, search or sorting
 - it should NOT be used for sensitive or secret information
 
 _datasetd_ is a simple web service intended to run on "localhost:8485".
 
-- it is not a RESTful service but uses the path to describe operations
+- it is a RESTful service
 - it does not include support for authentication
 - it does not support a query language, search or sorting
 - it does not support access control by users or roles

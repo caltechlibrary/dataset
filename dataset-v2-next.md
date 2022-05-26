@@ -9,9 +9,10 @@ Dataset next
 Ideas
 -----
 
-I've been using dataset for several years now. It has proven helpful. The strength of dataset appears to be in severl areas. A simple clear API of commands on the command line make it easy to pickup and make useful. Storing JSON Object documents in a pairtree makes it easy to integrated into a text friendly environment like that found on Unix systems.  The added ability to store non-JSON documents along side the JSON document as attachments he proven useful but could be refined to be more seemless (e.g. rather than passing an explicit version number you could increas the semver by passing a keyword like patch, minor, major which would then increment the semver appropriately).
+I've been using dataset for several years now. It has proven helpful. The strength of dataset appears to be in severl areas. A simple clear API of commands on the command line make it easy to pickup and use. Storing JSON Object documents in a pairtree makes it easy to integrated into a text friendly environment like that found on Unix systems.  The added ability to store non-JSON documents along side the JSON document as attachments he proven useful but could be refined to be more seemless (e.g. rather than passing an explicit version number you could increas the semver by passing a keyword like patch, minor, major which would then increment the semver appropriately).
 
-Dataset has a deliberate limitiations. Those limitations should be lossened with caution.  The metadata of a collcetion is described in a JSON document that needs to fit into memory. This includes a map of keys. Likewise various actions like frames are done by loading JSON documents into memory making choices and updating the in memory frame metadata before writing out all the frame in done JSON document. This limits it's performance. Evaluation involves opening a JSON document in the pairtree as well as updating a potentially large JSON frame document.  While working with data in a batch mode this generally isn't a problem beyond being slow. It does limit the total number of documents you can work with. That limitation doesn't apply in database systems. SQL engines with JSON column support offer a way to scale.
+Dataset has a deliberate limitiations. Those limitations should be lossened with caution.  The metadata of a collection is described by two JSON document. Operational metadata (e.g. type of collection storage) is held in a document named "collection.json", general metadata about a collection's purpose is held in a document named "codemeta.json" conforming to the codemeta standards and practice.  For dataset collections using a pairtree they need to include a key map and that needs to fit into memory. If collections that are using other storage (e.g. a SQL database for storage) they key map is omitted.  Likewise various frames (aggregations of a collections' content) are dependent on the specifics of the storage system used. Access to JSON documents, their attachments or frames are through a common programming API regardless of storage system choosen.  Beyond the collection's definition your code should not need to know that it is accessing a pairtree implementation or a SQL datastore implementation. Changing storage types allows for growing dataset collections beyond single user, single process interactions.
+
 
 Taking advantage of mature databases platforms like SQLite3 (for frame storage) and MySQL 8 for web service hosted dataset implementation could be a way to improve performance as well as allow improved concurrent usage. This is an expansion of the origin limitation of single process/user interacting with a dataset collections. If pursued it needs to be easily to import/export between filesystem/pairtree collections and SQL stored collections. There is a question of the cli supporting both types of storage or if there should be a clear split between pairtree storage and SQL storage with the cli handling pairtrees and the daemon handling SQL storage.
 
@@ -36,18 +37,18 @@ Proposals
 1. (braking change) datasetd should should store data in a SQL engine that support JSON columns, e.g. MySQL 8
   a. should improve performance and allow for better concurrent usage
   b. improve frames support
-  c. allow for fulltext search indexes to be defined on specific attributes
-2. Frames for a pairtree based dataset could be implemented using a SQLite3 db rather than a simple collection of JSON documents representing the frame. This should extend performance and make frames more flexible, this would also allow indexing attributes and search
+  c. facilitate integration with fulltext search engines, e.g. Lunr, Solr, Elasticsearch
+2. Frames for a pairtree based dataset could be implemented using a SQLite3 db rather than a simple collection of JSON documents representing the frame. This should extend performance and make frames more flexible, this would also allow indexing attributes and potentionally search and sorting
 3. Versioning of attachments needs to be more automatic. A set of four version keywords could make it easier.
   a. __set__ would set the initial version number (defaults to 0.0.0)
   b. __patch__ would increment the patch number in the semver, if versioning is enabled in the collection then update will assume patch increment
   c. __minor__ would increment the minor number and set patch to zero
   d. __major__ would increment the major number and set minor and patch to zer
-4. Version JSON documents as well as attachments
-5. Versioning of JSON documents and attachments should be global to the collection
+4. v2 should support versioning JSON documents in a manner like versioned attachments
+5. Versioning of JSON documents and attachments should be global to the collection, i.e. everything is versioned or nothing is versioned
 6. Dot notation needs to be brought inline with JSON dot notation practices used in the SQL engines with JSON column support, see [SQLite3](https://www.sqlite.org/json1.html), [MySQL 8](https://dev.mysql.com/doc/refman/8.0/en/json.html) and [Postgres 9](https://www.postgresql.org/docs/9.3/functions-json.html)
 7. Easy import/export to/from pairtree based dataset collections
-8. Drop libdataset
+8. Drop libdataset, it has been a time sync and constrainged dataset's evolution
 
 
 Leveraging SQL with JSON column support
@@ -104,10 +105,10 @@ The v1 series of dataset source code is rather organic. It needs to be structure
 - objects.go should hold the object level actions of dataset
 - pairtree.go should hold pairtree structure and methods
 - cli.go should hold the outer methods for implementing the dataset CLI
-- daemon.go should hold the wrapper that implements the datasetd daemon
+- webapi.go should hold the wrapper that implements the datasetd daemon
 - ptstore holds the code for the pairtree local disk implementation
   - ptstore/storage.go handle mapping objects and attachments to disk in the pairtree
-  - ptstore/frames.go should handling implementing SQLite3 frames for pairtree implementation
+  - ptstore/frames.go should handling implementing frames for pairtree implementation
   - ptstore/versioning.go should handle the version mapping on disk
   - ptstore/attachments.go should hold the attachment implementation
 - sqlstore holds the code hanlding a SQL engine storage using JSON columns
@@ -116,9 +117,13 @@ The v1 series of dataset source code is rather organic. It needs to be structure
   - sqlstore/storage.go should handle mapping objects into MySQL storage
   - sqlstore/versioning.go should handle the version mapping in MySQL tables
 - cmd/dataset/dataset.go is a light wrapper envoking run methods in cli
-- cmd/datasetd/datasetd.go is a light wrapper envoking the run methods in daemon.go
+- cmd/datasetd/datasetd.go is a light wrapper envoking the run methods in ebapi.go
 
 Questions
 ---------
 
-- Should datasetd resources be managed through its own client (e.g. datasetctl) or use the dataset cli?
+- Should datasetd resources be managed through its own client (e.g. datasetctl) or use the dataset cli? Yes.
+- Do all collections need a directory containing collection.json and codemeta.json? Yes.
+
+
+

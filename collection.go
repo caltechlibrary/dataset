@@ -156,7 +156,7 @@ func (c *Collection) Close() error {
 	default:
 		return fmt.Errorf("%q not supported", c.StoreType)
 	}
-	return fmt.Errorf("nothing to close")
+	return nil
 }
 
 // initPTStore takes a *Collection and initializes a PTSTORE collection.
@@ -203,7 +203,7 @@ func (c *Collection) initPTStore() error {
     "dateCreated": "{today}",
     "name": "{c_name}",
     "version": "0.0.0",
-    "releaseNotes": "This is an empty {app_name} {version} collection",
+    "releaseNotes": "This is a {app_name} {version} collection",
     "developmentStatus": "concept",
     "softwareRequirements": [
         "https://github.com/caltechlibrary/dataset"
@@ -298,7 +298,10 @@ func Init(name string, dsnURI string, storeType string) (*Collection, error) {
 	default:
 		return nil, fmt.Errorf("%q storage type not supported", storeType)
 	}
-	return c, err
+	if err != nil {
+		return nil, err
+	}
+	return Open(name)
 }
 
 // Close closes a collection, writing the updated keys to disc
@@ -391,7 +394,7 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to read %s, %s", key, err)
 	}
-	return json.Unmarshal(src, &obj)
+	return DecodeJSON(src, &obj)
 }
 
 // Update updates an existing JSON document.
