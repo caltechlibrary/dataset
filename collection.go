@@ -504,3 +504,20 @@ func (c *Collection) HasKey(key string) bool {
 	// If we got here the collection isn't open ...
 	return false
 }
+
+// Length returns the number of objects in a collection
+// NOTE: Returns a -1 (as int64) on error, e.g. collection not open
+// or Length not available for storage type.
+func (c *Collection) Length() int64 {
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Length()
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Length()
+		}
+	}
+	return int64(-1)
+}

@@ -15,6 +15,11 @@ The dataset collections structures have changed
 Golang package changes:
 
 - The dataset v2 package has been substantially reorganized and simplified, most things have changed
+    - Collection.DocPath() removed, doesn't make sense anymore
+    - Collection.Read() only takes two parameters, not three
+    - Collection.Keys() returns a list of keys and an err value
+    - Collection.KeyExists() was renamed Collection.HasKey()
+    - Collection.Length() returns an int64 rather than an int
 
 
 libdataset:

@@ -284,6 +284,12 @@ func (store *Storage) HasKey(key string) bool {
 	return ok
 }
 
+// Length returns the number of records (len(store.keys)) in the collection
+// Requires collection to be open.
+func (store *Storage) Length() int64 {
+	return int64(len(store.keys))
+}
+
 // Frames
 // Frame
 // FrameDef

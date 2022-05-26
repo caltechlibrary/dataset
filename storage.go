@@ -88,6 +88,9 @@ type StorageSystem interface {
 	// false otherwise.
 	HasKey(string) bool
 
+	// Length returns the number of records in the collection
+	Length() int64
+
 	// Frames
 	// Frame
 	// FrameDef

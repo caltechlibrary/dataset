@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 	"testing"
 )
 
@@ -293,4 +294,281 @@ func TestFredaExample(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+}
+
+//
+// Ported tests from v1
+//
+
+func TestCollection(t *testing.T) {
+	colName := "testdata/test_collection.ds"
+	// Remove any pre-existing test data
+	if _, err := os.Stat(colName); err == nil {
+		os.RemoveAll(colName)
+	}
+
+	// Create a new collection
+	c, err := Init(colName, "", PTSTORE)
+	if err != nil {
+		t.Errorf("error create() a collection %q", err)
+		t.FailNow()
+	}
+	// Make sure directories were create for col1
+	if fInfo, err := os.Stat(colName); err != nil {
+		t.Errorf("%s was not created, %s", colName, err)
+		t.FailNow()
+	} else if fInfo.IsDir() != true {
+		t.Errorf("%s is supposed to be a directory!", colName)
+		t.FailNow()
+	}
+	err = c.Close()
+	if err != nil {
+		t.Errorf("error Close() a collection %q", err)
+		t.FailNow()
+	}
+
+	// Now open the existing collection of colName
+	c, err = Open(colName)
+	if err != nil {
+		t.Errorf("error Open() a collection %q", err)
+		t.FailNow()
+	}
+
+	keys, _ := c.Keys()
+	if len(keys) > 0 {
+		t.Errorf("expected 0 keys, got %d", len(keys))
+	}
+	testData := []map[string]interface{}{}
+	src := `[
+		{
+			"id": "Kahlo-F",
+			"given_name":  "Freda",
+			"last_name": "Kahlo",
+			"email": "freda@arts.example.org"
+		},
+		{
+			"id": "Rivera-D",
+			"given_name": "Diego",
+			"family_name": "Rivera",
+			"email": "deigo@arts.example.org"
+		},
+		{
+			"id": "Dali-S",
+			"given_name": "Salvador",
+			"family_name": "Dali",
+			"email": "salvador@collectivo.example.org"
+		}
+]`
+	if err := json.Unmarshal([]byte(src), &testData); err != nil {
+		t.Errorf("Failed to marshal test data, %s", err)
+		t.FailNow()
+	}
+
+	for _, rec := range testData {
+		if k, ok := rec["id"]; ok == true {
+			id := k.(string)
+			err = c.Create(id, rec)
+			if err != nil {
+				t.Errorf("%q: collection.Create(), %s", c.Name, err)
+				t.FailNow()
+			}
+			if c.HasKey(id) == false {
+				t.Errorf("%q was not created in %q, no error valuye returned", id, c.Name)
+				t.FailNow()
+			}
+		}
+	}
+	keys, _ = c.Keys()
+	if len(keys) != 3 {
+		t.Errorf("expected 3 keys, got %+v", keys)
+		t.FailNow()
+	}
+
+	// Create an empty record, then read it again to compare
+	keyName := "Kahlo-F"
+	rec2 := map[string]interface{}{}
+	err = c.Read(keyName, rec2)
+	if err != nil {
+		t.Errorf("%q: Read(), %s", c.Name, err)
+		t.FailNow()
+	}
+	rec1 := testData[0]
+	for k, expected := range rec1 {
+		if val, ok := rec2[k]; ok == true {
+			if expected != val {
+				t.Errorf("%q: expected %s in record, got, %s", c.Name, expected, val)
+				t.FailNow()
+			}
+		} else {
+			t.Errorf("%q: Read() missing %s in %+v, %+v", c.Name, k, rec1, rec2)
+			t.FailNow()
+		}
+	}
+	// Should trigger update if a duplicate record
+	err = c.Create(keyName, rec2)
+	if err == nil {
+		t.Errorf("%q: Create not allow creationg on an existing record, %s --> %+v", c.Name, keyName, rec2)
+		t.FailNow()
+	}
+
+	rec3 := map[string]interface{}{}
+	if err := c.Read(keyName, rec3); err != nil {
+		t.Errorf("%q: Should have found freda in collection, %s", c.Name, err)
+		t.FailNow()
+	}
+	for k2, v2 := range rec2 {
+		if v3, ok := rec3[k2]; ok == true {
+			if v2 != v3 {
+				t.Errorf("Expected v2 %+v, got v3 %+v", v2, v3)
+			}
+		} else {
+			t.Errorf("missing key %s r3 in %+v <- r2: %+v \n", k2, rec3, rec2)
+		}
+	}
+
+	rec2["email"] = "freda@collectivo.example.org"
+	err = c.Update(keyName, rec2)
+	if err != nil {
+		t.Errorf("%s: Could not update %s, %s", c.Name, "freda", err)
+		t.FailNow()
+	}
+
+	rec4 := map[string]interface{}{}
+	if err := c.Read(keyName, rec4); err != nil {
+		t.Errorf("Should have found freda in collection, %s", err)
+		t.FailNow()
+	}
+	for k2, v2 := range rec2 {
+		if v4, ok := rec4[k2]; ok == true {
+			if v2 != v4 {
+				t.Errorf("Expected v2 %+v, got v4 %+v", v2, v4)
+			}
+		} else {
+			t.Errorf("missing key %s rec4 in %+v <- rec2: %+v \n", k2, rec4, rec2)
+		}
+	}
+
+	err = c.Delete(keyName)
+	if err != nil {
+		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
+		t.FailNow()
+	}
+	err = c.Read(keyName, rec2)
+	if err == nil {
+		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
+	}
+
+	/* FIXME: Do we need this really?
+	err = deleteCollection(colName)
+	if err != nil {
+		t.Errorf("Couldn't remove collection %s, %s", colName, err)
+	}
+	*/
+}
+
+func TestComplexKeys(t *testing.T) {
+	colName := "testdata/pairtree_layout/col2.ds"
+	// remove any stale test collection collection first...
+	if _, err := os.Stat(colName); err == nil {
+		os.RemoveAll(colName)
+	}
+
+	// Create a new collection
+	c, err := Init(colName, "", PTSTORE)
+	if err != nil {
+		t.Errorf("error Create() a collection %q", err)
+		t.FailNow()
+	}
+	testRecords := map[string]map[string]interface{}{
+		"agent:person:1": map[string]interface{}{
+			"name": "George",
+			"id":   25,
+		},
+		"agent:person:2": map[string]interface{}{
+			"name": "Carl",
+			"id":   2523,
+		},
+		"agent:person:3333": map[string]interface{}{
+			"name": "Mac",
+			"id":   2,
+		},
+		"agent:person:29994": map[string]interface{}{
+			"name": "Fred",
+			"id":   9925,
+		},
+		"agent:person:29": map[string]interface{}{
+			"name": "Mike",
+			"id":   81,
+		},
+		"agent:person:100": map[string]interface{}{
+			"name": "Tim",
+			"id":   8,
+		},
+		"agent:person:101": map[string]interface{}{
+			"name": "Kim",
+			"id":   101,
+		},
+	}
+
+	for k, v := range testRecords {
+		err := c.Create(k, v)
+		if err != nil {
+			t.Errorf("Can't create %s <-- %s : %s", k, v, err)
+		}
+	}
+}
+
+func TestCaseHandling(t *testing.T) {
+	// Setup a test collection and data
+	cName := path.Join("testdata", "test_case_handling.ds")
+	os.RemoveAll(cName)
+	c, err := Init(cName, "", PTSTORE)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o := map[string]interface{}{}
+	o["a"] = 1
+	err = c.Create("A", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o["b"] = 2
+	err = c.Create("B", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	o["c"] = 3
+	err = c.Create("C", o)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Get back a list of keys, should all be lowercase.const
+	keys, _ := c.Keys()
+	for _, key := range keys {
+		if key == strings.ToUpper(key) {
+			t.Errorf("Expected lower case %q, got %q", strings.ToLower(key), key)
+		}
+		/*FIXME: DocPath doesn't make sense
+		p, err := c.DocPath(strings.ToUpper(key))
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		// Check if p has the OS's separator.
+		if !strings.Contains(p, fmt.Sprintf("%c", filepath.Separator)) {
+			t.Errorf("Path seperator does not match host OS, %q <- %c", p, filepath.Separator)
+			t.FailNow()
+		}
+		*/
+	}
+	cnt := c.Length()
+	if cnt != 3 {
+		t.Errorf("Expected 3, got %d", cnt)
+		t.FailNow()
+	}
+	c.Close()
 }

@@ -117,6 +117,13 @@ func (store *Storage) HasKey(key string) bool {
 	return false
 }
 
+// Length returns the number of records (count of rows in collection).
+// Requires collection to be open.
+func (store *Storage) Length() int64 {
+	//FIXME: not emplimented.
+	return int64(-1)
+}
+
 // Frames
 // Frame
 // FrameDef
