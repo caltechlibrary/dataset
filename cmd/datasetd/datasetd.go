@@ -20,8 +20,8 @@ var (
 	showVersion bool
 	showLicense bool
 
-	description = dataset.WEBDescription
-	examples    = dataset.WEBExamples
+	description = dataset.WebDescription
+	examples    = dataset.WebExamples
 	license     = dataset.License
 )
 
