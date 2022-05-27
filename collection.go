@@ -24,7 +24,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 	"time"
 
 	// Dataset sub-modules
@@ -127,17 +126,19 @@ func Open(name string) (*Collection, error) {
 	return c, err
 }
 
-// Close closes a collection. For a pairtree that means flushing
-// keys to disk. for a SQL store it means closing a database connection.
+// Close closes a collection. For a pairtree that means flushing the
+// keymap to disk. For a SQL store it means closing a database connection.
 // Close is often called in conjunction with "defer" keyword.
 //
 // ```
 //    c, err := dataset.Open("my_collection.ds")
 //    if err != nil { /* .. handle error ... */ }
 //    /* do some stuff with the collection */
-//    if err := c.Close(); err != nil {
-//       /* ... handle closing error ... */
-//    }
+//    defer func() {
+//      if err := c.Close(); err != nil {
+//         /* ... handle closing error ... */
+//      }
+//    }()
 // ```
 //
 func (c *Collection) Close() error {
@@ -153,7 +154,6 @@ func (c *Collection) Close() error {
 	default:
 		return fmt.Errorf("%q not supported", c.StoreType)
 	}
-	return nil
 }
 
 // initPTStore takes a *Collection and initializes a PTSTORE collection.
@@ -168,7 +168,7 @@ func (c *Collection) initPTStore() error {
 	// Split see if c.Name path exists
 	if _, err := os.Stat(c.Name); os.IsNotExist(err) {
 		// Create directoriess if needed
-		if err := os.MkdirAll(c.Name, 0775); err != nil {
+		if err := os.MkdirAll(c.Name, 0770); err != nil {
 			return fmt.Errorf("cannot create collect %q, %s", c.Name, err)
 		}
 	} else {
@@ -183,7 +183,7 @@ func (c *Collection) initPTStore() error {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
 	c.Name = fullName
-	if err := ioutil.WriteFile(colName, src, 0664); err != nil {
+	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
 		return fmt.Errorf("failed to create %q %s", colName, err)
 	}
 	// Create a default codemeta.json file in the directory
@@ -212,7 +212,7 @@ func (c *Collection) initPTStore() error {
 	}
 	// Create the pairtree root
 	ptName := path.Join(c.Name, "pairtree")
-	if os.MkdirAll(ptName, 0775); err != nil {
+	if os.MkdirAll(ptName, 0770); err != nil {
 		return fmt.Errorf("failed to create pairtree root, %s", err)
 	}
 	return nil
@@ -249,7 +249,7 @@ func (c *Collection) initSQLStore() error {
 	// Split see if c.Name path exists
 	if _, err := os.Stat(c.Name); os.IsNotExist(err) {
 		// Create directoriess if needed
-		if err := os.MkdirAll(c.Name, 0775); err != nil {
+		if err := os.MkdirAll(c.Name, 0700); err != nil {
 			return fmt.Errorf("cannot create collect %q, %s", c.Name, err)
 		}
 	} else {
@@ -257,14 +257,14 @@ func (c *Collection) initSQLStore() error {
 	}
 	fullName := c.Name
 	basename := path.Base(c.Name)
-	colName := path.Join(c.Name, "collection.json")
+	colName := path.Join(fullName, "collection.json")
 	c.Name = basename
 	src, err := json.MarshalIndent(c, "", "    ")
 	if err != nil {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
 	c.Name = fullName
-	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
+	if err := ioutil.WriteFile(colName, src, 0600); err != nil {
 		return fmt.Errorf("failed to create %q %s", colName, err)
 	}
 
@@ -288,13 +288,12 @@ func (c *Collection) initSQLStore() error {
         "https://github.com/caltechlibrary/dataset"
     ]
 }`))
-	cmName := path.Join(c.Name, "codemeta.json")
+	cmName := path.Join(fullName, "codemeta.json")
 	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
 		return fmt.Errorf("failed to create %q, %s", cmName, err)
 	}
 	//NOTE: the collection's table needs to be created using the
 	// SQLStore's Init method..
-	fmt.Printf("DEBUG calling sqlInit(%q, %q)\n", basename, c.DsnURI)
 	c.SQLStore, err = sqlstore.Init(basename, c.DsnURI)
 	return err
 }
@@ -307,16 +306,24 @@ func (c *Collection) initSQLStore() error {
 // If a DSN URI is a non-empty string then it is the SQL storage engine
 // is used. The database and user access in the SQL engine needs be setup
 // before you can successfully intialized your dataset collection.
-// Currently three SQL database engines are support, SQLite3, MySQL 8,
-// Postgres 14. You select the SQL storage engine by forming a URI
-// consisting of a "protocol" (e.g. "sqlite", "mysql", "pg"), the
-// protocol delimiter "://" and a Go SQL supported DSN based on the
-// database driver implementation.
+// Currently three SQL database engines are support, SQLite3 or MySQL 8.
+// You select the SQL storage engine by forming a URI consisting of a
+// "protocol" (e.g. "sqlite", "mysql"), the protocol delimiter "://" and
+// a Go SQL supported DSN based on the database driver implementation.
 //
-// A MySQL DSN URI would look something like
-// `mysql://DB_USER:DB_PASSWD@/DB_NAME`, one for SQLite would look
-// like `sqlite://DB_NAME`, one for Postgres might look like
-// `pg://DB_USER:DB_PASSWD@/DB_NAME`.
+// A MySQL 8 DSN URI would look something like
+//
+//    `mysql://DB_USER:DB_PASSWD@PROTOCAL_EXPR/DB_NAME`
+//
+// The one for SQLite3
+//
+//     `sqlite://PATH_TO_DATABASE`
+//
+// NOTE: The DSN URI is stored in the collections.json.  The file should
+// NOT be world readable as that will expose your database password. You
+// can remove the DSN URI after initializing your collection but will then
+// need to provide the DATASET_DSN_URI envinronment variable so you can
+// open your database successfully.
 //
 // For PTSTORE the access value can be left blank.
 //
@@ -360,16 +367,8 @@ func Init(name string, dsnURI string) (*Collection, error) {
 	if dsnURI == "" {
 		c.StoreType = PTSTORE
 	} else {
-		protocol, _, ok := strings.Cut(dsnURI, "://")
-		if ok {
-			if (protocol == "pairtree") || (protocol == "ptstore") {
-				c.StoreType = PTSTORE
-			} else {
-				c.StoreType = SQLSTORE
-			}
-		}
+		c.StoreType = SQLSTORE
 	}
-	fmt.Printf("DEBUG c.Name %q, c.StoreType %q, c.DsnURI %q\n", c.Name, c.StoreType, c.DsnURI)
 	switch c.StoreType {
 	case PTSTORE:
 		err = c.initPTStore()
@@ -384,31 +383,35 @@ func Init(name string, dsnURI string) (*Collection, error) {
 	return Open(name)
 }
 
-// Close closes a collection, writing the updated keys to disc
-// Close removes the "lock.pid" file in the collection root.
-// Close is often called in conjunction with "defer" keyword.
-//
-// ```
-//    c, err := dataset.Open("my_collection.ds")
-//    if err != nil { /* .. handle error ... */ }
-//    /* do some stuff with the collection */
-//    if err := c.Close(); err != nil {
-//       /* ... handle closing error ... */
-//    }
-// ```
-//
+// Metadata returns a copy of the codemeta.json file content found
+// in the collection directory.
+func (c *Collection) Metadata() ([]byte, error) {
+	fName := path.Join(c.Name, "codemeta.json")
+	src, err := ioutil.ReadFile(fName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %q, %s", fName, err)
+	}
+	return src, nil
+}
 
-// ImportCodemeta imports codemeta citation information updating
-// the collections metadata. Collection must be open.
+// UpdateMetadata imports new codemeta citation information replacing
+// the previous version. Collection must be open.
 //
 // ```
 //   c, err := dataset.Open("my_collection.ds")
 //   if err != nil { /* ... handle error ... */ }
 //   defer c.Close()
-//   c.ImportCodemeta("codemeta.json")
+//   c.UpdateCodemeta("codemeta.json")
 // ```
-func ImportCodemeta(fName string) error {
-	return fmt.Errorf("ImportCodemeta(%q) is not implemented", fName)
+func (c *Collection) UpdateMetadata(fName string) error {
+	src, err := ioutil.ReadFile(fName)
+	if err != nil {
+		return fmt.Errorf("failed to read %q, %s", fName, err)
+	}
+	if err := ioutil.WriteFile(path.Join(c.Name, "codemeta.json"), src, 0664); err != nil {
+		return fmt.Errorf("failed to write %q, %s", path.Join(c.Name, "codemeta.json"), err)
+	}
+	return nil
 }
 
 //
@@ -558,8 +561,8 @@ func (c *Collection) Keys() ([]string, error) {
 	return nil, fmt.Errorf("%s not open", c.Name)
 }
 
-// HasKey takes a collection and checks if a key exists. NOTE:
-// collection must be open otherwise false will always be returned.
+// HasKey takes a collection and checks if a key exists.
+// NOTE: collection must be open otherwise false will always be returned.
 //
 // ```
 //   key := "123"
@@ -598,6 +601,7 @@ func (c *Collection) Length() int64 {
 		if c.SQLStore != nil {
 			return c.SQLStore.Length()
 		}
+	default:
+		return int64(-1)
 	}
-	return int64(-1)
 }

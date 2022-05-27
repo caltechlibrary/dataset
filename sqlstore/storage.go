@@ -8,9 +8,8 @@ import (
 	"strings"
 
 	// Database specific drivers
+	_ "github.com/glebarez/go-sqlite"
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/jackc/pgx"
-	_ "modernc.org/sqlite"
 )
 
 type Storage struct {
@@ -48,65 +47,92 @@ type Storage struct {
 // ```
 //
 func Open(name string, dsnURI string) (*Storage, error) {
-	var (
-		ok  bool
-		err error
-	)
+	var err error
 
 	// Check to see if the DSN coming from th environment
 	if dsnURI == "" {
 		dsnURI = os.Getenv("DATASET_DSN_URI")
 	}
-	store := new(Storage)
-	store.WorkPath = name
-	store.tableName = path.Base(store.WorkPath)
-	store.driverName, store.dsn, ok = strings.Cut(dsnURI, "://")
+	driverName, dsn, ok := strings.Cut(dsnURI, "://")
 	if !ok {
 		return nil, fmt.Errorf(`DSN URI is malformed, expected DRIVER_NAME://DSN, got %q`, dsnURI)
 	}
+
+	store := new(Storage)
+	store.WorkPath = name
+	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	store.driverName = driverName
+	store.dsn = dsn
 	// Validate the driver name as supported by sqlstore ...
 	switch store.driverName {
 	case "sqlite":
 	case "mysql":
-	case "pg":
 	default:
-		parts := strings.SplitN(dsnURI, "://", 2)
-		return nil, fmt.Errorf("%q database not supported", parts[0])
+		return nil, fmt.Errorf("%q database not supported", store.driverName)
 	}
 	store.db, err = sql.Open(store.driverName, store.dsn)
 	if err != nil {
 		return nil, err
+	}
+	if store.db == nil {
+		return nil, fmt.Errorf("%s opened and returned nil", store.driverName)
 	}
 	// NOTE: These need to be tuned are suggested in the documentation at
 	// https://pkg.go.dev/database/sql
 	store.db.SetConnMaxLifetime(0)
 	store.db.SetMaxIdleConns(50)
 	store.db.SetMaxOpenConns(50)
-
 	return store, err
 }
 
 // Init creates a table to hold the collection if it doesn't already
 // exist.
 func Init(name string, dsnURI string) (*Storage, error) {
-	store, err := Open(name, dsnURI)
-	if err != nil {
-		return nil, err
-	}
+	var err error
 
-	// NOTE: need to make sure that store.tableName exists.
-	// FIXME: This create statement is MySQL centric, needs to work
-	// or be modified for all the supported databases
-	stmt := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  key VARCHAR(255) DEFAULT NOT NULL PRIMARY KEY,
+	driverName, dsn, ok := strings.Cut(dsnURI, "://")
+	if !ok {
+		return nil, fmt.Errorf("could not parse DSN URI, got %q", dsnURI)
+	}
+	store := new(Storage)
+	store.WorkPath = name
+	store.dsn = dsn
+	store.driverName = driverName
+	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	// Validate we support this SQL driver and form create statement.
+	var stmt string
+	switch driverName {
+	case "sqlite":
+		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) PRIMARY KEY,
+  src JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated DATETIME DEFAULT CURRENT_TIMESTAMP
+)`, store.tableName)
+	case "mysql":
+		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) PRIMARY KEY,
   src JSON,
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`, store.tableName)
-
-	_, err = store.db.Exec(stmt)
+	default:
+		return nil, fmt.Errorf("%q database not supported", store.driverName)
+	}
+	// Open the DB
+	db, err := sql.Open(store.driverName, store.dsn)
 	if err != nil {
 		return nil, err
+	}
+	if db == nil {
+		return nil, fmt.Errorf("%s opened and returned nil", store.driverName)
+	}
+	store.db = db
+
+	// Create the collection table
+	_, err = store.db.Exec(stmt)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create table %q, %s", store.tableName, err)
 	}
 	return store, err
 }
@@ -125,12 +151,9 @@ func (store *Storage) Close() error {
 		return store.db.Close()
 	case "mysql":
 		return store.db.Close()
-	case "pg":
-		return store.db.Close()
 	default:
 		return fmt.Errorf("%q database not supported", store.driverName)
 	}
-	return nil
 }
 
 // Create stores a new JSON object in the collection
