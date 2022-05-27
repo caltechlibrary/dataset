@@ -15,7 +15,7 @@ The dataset collections structures have changed
 Golang package changes:
 
 - The dataset v2 package has been substantially reorganized and simplified, most things have changed
-    - Collection.Init() now takes three parameters, collection name, a DSN URI and storage type (e.g. dataset.PTSTORE, dataset.SQLSTORE)
+    - Collection.Init() now takes two parameters, collection name, an an optional DSN URI, if a DSN URI is provided it'll define the storage engine, e.g. a dataset.SQLSTORE)
     - Collection.DocPath() removed, doesn't make sense anymore
     - Collection.Read() only takes two parameters, not three
     - Collection.Keys() returns a list of keys and an err value
