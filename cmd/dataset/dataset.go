@@ -46,7 +46,7 @@ func main() {
 	flagSet.BoolVar(&showVersion, "version", false, "display version")
 
 	// We're ready to process args
-	flagSet.Parse(os.Args)
+	flagSet.Parse(os.Args[1:])
 	args := flagSet.Args()
 
 	in := os.Stdin

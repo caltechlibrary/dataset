@@ -1,11 +1,36 @@
 package sqlstore
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
+	"path"
+	"strings"
+
+	// Database specific drivers
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx"
+	_ "modernc.org/sqlite"
 )
 
 type Storage struct {
+	// WorkPath holds the path to where the collection definition is held.
+	WorkPath string
+
+	// TableName holds the table name associated with the collection.
+	// Usually the same as the "basename" in the WorkPath
+	tableName string
+
+	// dsn holds the SQL connection information needed to access
+	// the SQL stored collection, it is everything after the protocol
+	// in the DSN URI of the collection.
+	dsn string
+
+	// driverName
+	driverName string
+
+	// db database handle
+	db *sql.DB
 }
 
 // Open opens the storage system and returns an storage struct and error
@@ -23,7 +48,54 @@ type Storage struct {
 // ```
 //
 func Open(name string, dsnURI string) (*Storage, error) {
-	return nil, fmt.Errorf("DEBUG Open not working")
+	var err error
+
+	// Check to see if the DSN coming from th environment
+	if dsnURI == "" {
+		dsnURI = os.Getenv("DATASET_DSN_URI")
+	}
+	store := new(Storage)
+	store.WorkPath = name
+	store.tableName = path.Base(store.WorkPath)
+	switch {
+	case strings.HasPrefix(dsnURI, "sqlite:"):
+		store.driverName = "sqlite"
+		store.dsn = strings.TrimPrefix(dsnURI, "sqlite:")
+	case strings.HasPrefix(dsnURI, "mysql:"):
+		store.driverName = "mysql"
+		store.dsn = strings.TrimPrefix(dsnURI, "mysql:")
+	case strings.HasPrefix(dsnURI, "pg:"):
+		store.driverName = "pg"
+		store.dsn = strings.TrimPrefix(dsnURI, "pg:")
+	default:
+		parts := strings.Split(dsnURI, ":")
+		return nil, fmt.Errorf("%q database not supported", parts[0])
+	}
+	store.db, err = sql.Open(store.driverName, store.dsn)
+	if err != nil {
+		return nil, err
+	}
+	// NOTE: These need to be tuned are suggested in the documentation at
+	// https://pkg.go.dev/database/sql
+	store.db.SetConnMaxLifetime(0)
+	store.db.SetMaxIdleConns(50)
+	store.db.SetMaxOpenConns(50)
+
+	// NOTE: need to make sure that store.tableName exists.
+	// FIXME: This create statement is MySQL centric, needs to work
+	// or be modified for all the supported databases
+	stmt := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) DEFAULT NOT NULL PRIMARY KEY,
+  src JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)`, store.tableName)
+
+	_, err = store.db.Exec(stmt)
+	if err != nil {
+		return nil, err
+	}
+	return store, err
 }
 
 // Close closes the storage system freeing resources as needed.
@@ -35,7 +107,17 @@ func Open(name string, dsnURI string) (*Storage, error) {
 // ```
 //
 func (store *Storage) Close() error {
-	return fmt.Errorf("Close() not implemented")
+	switch store.driverName {
+	case "sqlite":
+		return store.db.Close()
+	case "mysql":
+		return store.db.Close()
+	case "pg":
+		return store.db.Close()
+	default:
+		return fmt.Errorf("%q database not supported", store.driverName)
+	}
+	return nil
 }
 
 // Create stores a new JSON object in the collection
@@ -46,8 +128,10 @@ func (store *Storage) Close() error {
 //      ...
 //   }
 //
-func (store *Storage) Create(string, []byte) error {
-	return fmt.Errorf("Create() not implemented")
+func (store *Storage) Create(key string, src []byte) error {
+	stmt := fmt.Sprintf(`INSERT INTO %q (key, src) VALUES (?, ?)`, store.tableName)
+	_, err := store.db.Exec(stmt, key, string(src))
+	return err
 }
 
 // Read retrieves takes a string as a key and returns the encoded
@@ -61,8 +145,26 @@ func (store *Storage) Create(string, []byte) error {
 //   if err := json.Unmarshal(src, &obj); err != nil {
 //      ...
 //   }
-func (store *Storage) Read(string) ([]byte, error) {
-	return nil, fmt.Errorf("Read() not implemented")
+func (store *Storage) Read(key string) ([]byte, error) {
+	stmt := fmt.Sprintf(`SELECT src FROM %s WHERE key = ? LIMIT 1`, store.tableName)
+	rows, err := store.db.Query(stmt, key)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var value string
+
+	if rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return []byte(value), nil
 }
 
 // Update takes a key and encoded JSON object and updates a
@@ -74,8 +176,10 @@ func (store *Storage) Read(string) ([]byte, error) {
 //      ...
 //   }
 //
-func (store *Storage) Update(string, []byte) error {
-	return fmt.Errorf("Read() not implemented")
+func (store *Storage) Update(key string, src []byte) error {
+	stmt := fmt.Sprintf(`REPLACE INTO %q (key, src) VALUES (?, ?)`, store.tableName)
+	_, err := store.db.Exec(stmt, key, string(src))
+	return err
 }
 
 // Delete removes a JSON document from the collection
@@ -85,8 +189,10 @@ func (store *Storage) Update(string, []byte) error {
 //      ...
 //   }
 //
-func (store *Storage) Delete(string) error {
-	return fmt.Errorf("Read() not implemented")
+func (store *Storage) Delete(key string) error {
+	stmt := fmt.Sprintf(`DELETE FROM %s WHERE key = ?`, store.tableName)
+	_, err := store.db.Exec(stmt, key)
+	return err
 }
 
 // List returns all keys in a collection as a slice of strings.
@@ -98,9 +204,31 @@ func (store *Storage) Delete(string) error {
 //      ...
 //   }
 //
-
 func (store *Storage) Keys() ([]string, error) {
-	return nil, fmt.Errorf("Read() not implemented")
+	stmt := fmt.Sprintf(`SELECT key FROM %s ORDER BY key`, store.tableName)
+	rows, err := store.db.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var (
+		value string
+		keys  []string
+	)
+	if rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+		if value != "" {
+			keys = append(keys, value)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return keys, nil
 }
 
 // HasKey will look up and make sure key is in collection.
@@ -113,15 +241,51 @@ func (store *Storage) Keys() ([]string, error) {
 //   }
 // ```
 func (store *Storage) HasKey(key string) bool {
-	fmt.Fprintf(os.Stderr, "HasKey() not implemented")
-	return false
+	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE key = ? LIMIT 1`, store.tableName)
+	rows, err := store.db.Query(stmt)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+
+	var (
+		value int
+	)
+	if rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return false
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return false
+	}
+	return value > 0
 }
 
 // Length returns the number of records (count of rows in collection).
 // Requires collection to be open.
 func (store *Storage) Length() int64 {
-	//FIXME: not emplimented.
-	return int64(-1)
+	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, store.tableName)
+	rows, err := store.db.Query(stmt)
+	if err != nil {
+		return int64(-1)
+	}
+	defer rows.Close()
+
+	var (
+		value int64
+	)
+	if rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return int64(-1)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return int64(-1)
+	}
+	return value
 }
 
 // Frames

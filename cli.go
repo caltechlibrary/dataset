@@ -27,10 +27,22 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 		fmt.Fprintf(out, StringProcessor(m, CLIDescription))
 	case "examples":
 		fmt.Fprintf(out, StringProcessor(m, CLIExamples))
+	case "init":
+		fmt.Fprintf(out, StringProcessor(m, cliInit))
 	case "create":
 		fmt.Fprint(out, StringProcessor(m, cliCreate))
 	case "read":
 		fmt.Fprint(out, StringProcessor(m, cliRead))
+	case "update":
+		fmt.Fprint(out, StringProcessor(m, cliUpdate))
+	case "delete":
+		fmt.Fprint(out, StringProcessor(m, cliDelete))
+	case "keys":
+		fmt.Fprint(out, StringProcessor(m, cliKeys))
+	case "has-key":
+		fmt.Fprint(out, StringProcessor(m, cliHasKey))
+	case "count":
+		fmt.Fprint(out, StringProcessor(m, cliCount))
 	default:
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -79,19 +91,34 @@ func doInit(out io.Writer, eout io.Writer, args []string) error {
 	flagSet := flag.NewFlagSet("init", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for init")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "init")
 		return nil
 	}
 	switch {
-	case len(args) == 3:
-		cName, dsnURI, storeType = args[0], args[1], args[3]
 	case len(args) == 2:
 		cName, dsnURI = args[0], args[1]
 	case len(args) == 1:
 		cName = args[0]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME [DSN_URI] [COLLECTION_TYPE], got %s", strings.Join(args, " "))
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME [DSN_URI], got %q", strings.Join(args, " "))
+	}
+	/*NOTE: excluding auto setting this inorder to prevent accidental
+	  environment contamination.
+		if dsnURI == "" {
+			dsnURI = os.Getenv("DATASET_DSN_URI")
+		}
+	*/
+	switch {
+	case strings.HasPrefix(dsnURI, "sqlite:"):
+		storeType = SQLSTORE
+	case strings.HasPrefix(dsnURI, "mysql:"):
+		storeType = SQLSTORE
+	case strings.HasPrefix(dsnURI, "pg:"):
+		storeType = SQLSTORE
+	default:
+		storeType = PTSTORE
 	}
 	c, err := Init(cName, dsnURI, storeType)
 	if err == nil {
@@ -114,6 +141,7 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.StringVar(&input, "i", "-", "read JSON from file, use '-' for stdin")
 	flagSet.StringVar(&input, "input", "-", "read JSON from file, use '-' for stdin")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "create")
 	}
@@ -122,7 +150,7 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		cName, key, src = args[0], args[1], []byte(args[2])
 	case len(args) == 2:
 		cName, key = args[0], args[1]
-		if input == "" || input == "-" {
+		if input == "-" {
 			src, err = ioutil.ReadAll(in)
 		} else {
 			src, err = ioutil.ReadFile(input)
@@ -131,7 +159,7 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC]")
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC], got %q", strings.Join(append([]string{appName, "create"}, args...), " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -157,6 +185,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "create")
 	}
@@ -164,7 +193,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY")
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -181,7 +210,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
 	}
 	if err == nil {
-		fmt.Fprintf(out, "%s", src)
+		fmt.Fprintf(out, "%s\n", src)
 	}
 	return err
 }
@@ -200,6 +229,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.StringVar(&input, "i", "-", "read JSON from file, use '-' for stdin")
 	flagSet.StringVar(&input, "input", "-", "read JSON from file, use '-' for stdin")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "create")
 	}
@@ -217,7 +247,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC]")
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC], got %q", strings.Join(args, " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -243,6 +273,7 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "create")
 	}
@@ -250,7 +281,7 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY")
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -276,6 +307,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "keys")
 	}
@@ -283,7 +315,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	case len(args) == 1:
 		cName = args[0]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME")
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -298,7 +330,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to encode keys, %s", err)
 	}
-	fmt.Fprintf(out, "%s", src)
+	fmt.Fprintf(out, "%s\n", src)
 	return nil
 }
 
@@ -311,6 +343,7 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
 	flagSet.Parse(args)
+	args = flagSet.Args()
 	if showHelp {
 		DisplayHelp(out, eout, "has-key")
 	}
@@ -318,7 +351,7 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY")
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -330,6 +363,34 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	} else {
 		fmt.Fprintln(out, "false")
 	}
+	return nil
+}
+
+func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+	)
+	flagSet := flag.NewFlagSet("count", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "count")
+	}
+	switch {
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	cnt := c.Length()
+	fmt.Fprintf(out, "%d\n", cnt)
 	return nil
 }
 
@@ -361,6 +422,8 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return doKeys(in, out, eout, args)
 	case "has-key":
 		return doHasKey(in, out, eout, args)
+	case "count":
+		return doCount(in, out, eout, args)
 	case "frames":
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "frame":

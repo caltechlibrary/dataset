@@ -221,22 +221,90 @@ func (c *Collection) initPTStore() error {
 	return nil
 }
 
+// initSQLStore initializes a new SQL based dataset storage system. It
+// presumes that the database and been create and an appropriate
+// database user has been created outside the dataset provided tooling.
+// It uses a DNS in URI form where the "protocol" element identifies
+// the type of SQL database, e.g. sqlite would use "sqlite:", MySQL
+// would use "mysql:". The rest of the URI is formed from a Go style
+// DSN (data source name). These are SQL system specific but usually
+// include things like db name, user, password to access the database.
+//
+// A collection using SQL database for storage is split into one table
+// per collection. There is a "_collection" table which holds collection
+// wide properties, e.g. collection name, create, read, update, delete
+// properties, versioning status, a copy of the codemeta.json document
+// in a JSON column, the name of the collection in a column,
+//
 // InitSQLStore takes a *Collection and initializes the SQL database
 // tables for a collection.
+//
 // NOTE: A SQL store still has a dataset named directory containing
 // both the collection.json and codemeta.json file but it lacks a
 // pairtree since that is where the object will be stored. Any
 // attachments, if allowed, are stored in an S3 like bucket (e.g. via
 // minio).
 func (c *Collection) initSQLStore() error {
-	//
+	now := time.Now()
+	today := now.Format(datestamp)
+	c.DatasetVersion = Version
+	c.Created = now.UTC().Format(timestampUTC)
+	// Split see if c.Name path exists
+	if _, err := os.Stat(c.Name); os.IsNotExist(err) {
+		// Create directoriess if needed
+		if err := os.MkdirAll(c.Name, 0775); err != nil {
+			return fmt.Errorf("cannot create collect %q, %s", c.Name, err)
+		}
+	} else {
+		return fmt.Errorf("%q already exists", c.Name)
+	}
+	fullName := c.Name
+	basename := path.Base(c.Name)
+	colName := path.Join(c.Name, "collection.json")
+	c.Name = basename
+	src, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return fmt.Errorf("cannot encode %q, %s", colName, err)
+	}
+	c.Name = fullName
+	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
+		return fmt.Errorf("failed to create %q %s", colName, err)
+	}
+
 	// NOTE: if the access value is left blank for  SQLstore then
-	// the DSN URI is assumed to be held in the environment and retrieved with
-	// `os.Getenv("DATASET_DSN_URI")`. That needs to get assigned to the
-	// running collection but NOT get written to disk in the
-	// collection.json file.
-	//
-	return fmt.Errorf("initSQLStore() not implemented")
+	// the DSN URI is assumed to be held in the environment and
+	// retrieved with `os.Getenv("DATASET_DSN_URI")`. That needs
+	// to get assigned to the running collection but NOT get
+	// written to disk in the collection.json file.
+	if c.DsnURI == "" {
+		c.DsnURI = os.Getenv("DATASET_DSN_URI")
+	}
+
+	// Create a default codemeta.json file in the directory
+	//today := time.Now().Format(datestamp)
+	m := map[string]string{
+		"{today}":    today,
+		"{c_name}":   path.Base(c.Name),
+		"{app_name}": path.Base(os.Args[0]),
+		"{version}":  Version,
+	}
+	src = BytesProcessor(m, []byte(`{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareSourceCode",
+    "dateCreated": "{today}",
+    "name": "{c_name}",
+    "version": "0.0.0",
+    "releaseNotes": "This is a {app_name} {version} collection",
+    "developmentStatus": "concept",
+    "softwareRequirements": [
+        "https://github.com/caltechlibrary/dataset"
+    ]
+}`))
+	cmName := path.Join(c.Name, "codemeta.json")
+	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
+		return fmt.Errorf("failed to create %q, %s", cmName, err)
+	}
+	return nil
 }
 
 // Init - creates a new collection and opens it. It takes a name
@@ -244,7 +312,8 @@ func (c *Collection) initSQLStore() error {
 // (e.g. a file holding a DSN URI) and the storage type.
 //
 // For PTSTORE the access value can be left blank.
-//```
+//
+// ```
 //   var (
 //      c *Collection
 //      err error
@@ -255,12 +324,12 @@ func (c *Collection) initSQLStore() error {
 //     // ... handle error
 //   }
 //   defer c.Close()
-//```
+// ```
 //
 // For a sqlstore collection we need to pass the "access" value. This
 // is the file containing a DNS or environment variables formating a DSN.
 //
-//```
+// ```
 //   var (
 //      c *Collection
 //      err error
@@ -272,7 +341,7 @@ func (c *Collection) initSQLStore() error {
 //     // ... handle error
 //   }
 //   defer c.Close()
-//```
+// ```
 //
 // NOTE: if the dsnURI value is left blank for SQLstore then
 // the dsnURI is assumed to be held in the environment and retrieved with
@@ -300,6 +369,9 @@ func Init(name string, dsnURI string, storeType string) (*Collection, error) {
 	}
 	if err != nil {
 		return nil, err
+	}
+	if c.DsnURI == "" {
+		c.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
 	return Open(name)
 }
