@@ -41,7 +41,7 @@ func TestPTStore(t *testing.T) {
 		os.RemoveAll(cName)
 	}
 	// NOTE: Pairtree doesn't use an DSN URI so it is empty
-	c, err := Init(cName, "", PTSTORE)
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("Failed to create %q, %s", cName, err)
 		t.FailNow()
@@ -156,14 +156,14 @@ func TestSQLStore(t *testing.T) {
 	threeObjects = append(threeObjects, map[string]interface{}{"two": 2})
 	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
 
-	cName := path.Join("T2.ds")
-	dsnURI := "sqlite:file:testout/T2.db?cache=shared"
+	cName := path.Join("SQL1.ds")
+	dsnURI := "sqlite://file:testout/SQL1.db"
 	// Clear stale test output
 	if _, err := os.Stat(path.Join("testout", cName)); err == nil {
 		os.RemoveAll(cName)
 	}
 	// NOTE: SQLStore requires a DSN URI so it is NOT empty
-	c, err := Init(cName, dsnURI, SQLSTORE)
+	c, err := Init(cName, dsnURI)
 	if err != nil {
 		t.Errorf("Failed to create %q, %s", cName, err)
 	}
@@ -262,7 +262,7 @@ func TestFredaExample(t *testing.T) {
 		// Clear stale data if needed.
 		os.RemoveAll(cName)
 	}
-	c, err := Init(cName, "", PTSTORE)
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -308,7 +308,7 @@ func TestCollection(t *testing.T) {
 	}
 
 	// Create a new collection
-	c, err := Init(colName, "", PTSTORE)
+	c, err := Init(colName, "")
 	if err != nil {
 		t.Errorf("error create() a collection %q", err)
 		t.FailNow()
@@ -474,7 +474,7 @@ func TestComplexKeys(t *testing.T) {
 	}
 
 	// Create a new collection
-	c, err := Init(colName, "", PTSTORE)
+	c, err := Init(colName, "")
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
@@ -522,7 +522,7 @@ func TestCaseHandling(t *testing.T) {
 	// Setup a test collection and data
 	cName := path.Join("testdata", "test_case_handling.ds")
 	os.RemoveAll(cName)
-	c, err := Init(cName, "", PTSTORE)
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()

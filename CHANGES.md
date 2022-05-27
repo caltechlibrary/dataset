@@ -7,7 +7,7 @@ The dataset collections structures have changed
 
 - a dataset is a directory containing a collection.json and codemeta.json file
 - the collection.json no longer contains general metadata or maps to the keys and pairtree, it focuses on operational settings (e.g. storage type and access information)
-    - when running dataset as a web service on a shared user machine setup your database connection through the environment, e.g. set DATASET_DSN_URI value
+    - when running dataset as a web service on a shared user machine setup your database connection through the environment, e.g. set DATASET_DSN_URI value (DSN URI is formed with a protocol named for the SQL driver, "://" and the DSN for that driver, e.g. "mysql://DB_USER:DB_PASSWD@/DB_NAME")
 - a codemeta.json file is now used for holding collection level metadata as this has been adopted by some of the data science community
 - additional JSON configuration files may be used to manage the collection ddependent on storage engine
 
@@ -15,11 +15,13 @@ The dataset collections structures have changed
 Golang package changes:
 
 - The dataset v2 package has been substantially reorganized and simplified, most things have changed
+    - Collection.Init() now takes three parameters, collection name, a DSN URI and storage type (e.g. dataset.PTSTORE, dataset.SQLSTORE)
     - Collection.DocPath() removed, doesn't make sense anymore
     - Collection.Read() only takes two parameters, not three
     - Collection.Keys() returns a list of keys and an err value
     - Collection.KeyExists() was renamed Collection.HasKey()
     - Collection.Length() returns an int64 rather than an int
+    - Collection.MetadataJSON() renamed Collection.Metadata()
 
 
 libdataset:

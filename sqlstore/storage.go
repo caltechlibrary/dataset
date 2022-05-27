@@ -38,7 +38,7 @@ type Storage struct {
 // path to collection.json and for a sql store file holding a DSN URI.
 // The DSN URI is formed from a protocal prefixed to the DSN. E.g.
 // for a SQLite connection to test.ds database the DSN URI might be
-// "sqlite:file:test.ds?cache=shared".
+// "sqlite://file:test.ds?cache=shared".
 //
 // ```
 //  store, err := c.Store.Open(c.Name, c.DsnURI)
@@ -48,7 +48,10 @@ type Storage struct {
 // ```
 //
 func Open(name string, dsnURI string) (*Storage, error) {
-	var err error
+	var (
+		ok  bool
+		err error
+	)
 
 	// Check to see if the DSN coming from th environment
 	if dsnURI == "" {
@@ -57,18 +60,17 @@ func Open(name string, dsnURI string) (*Storage, error) {
 	store := new(Storage)
 	store.WorkPath = name
 	store.tableName = path.Base(store.WorkPath)
-	switch {
-	case strings.HasPrefix(dsnURI, "sqlite:"):
-		store.driverName = "sqlite"
-		store.dsn = strings.TrimPrefix(dsnURI, "sqlite:")
-	case strings.HasPrefix(dsnURI, "mysql:"):
-		store.driverName = "mysql"
-		store.dsn = strings.TrimPrefix(dsnURI, "mysql:")
-	case strings.HasPrefix(dsnURI, "pg:"):
-		store.driverName = "pg"
-		store.dsn = strings.TrimPrefix(dsnURI, "pg:")
+	store.driverName, store.dsn, ok = strings.Cut(dsnURI, "://")
+	if !ok {
+		return nil, fmt.Errorf(`DSN URI is malformed, expected DRIVER_NAME://DSN, got %q`, dsnURI)
+	}
+	// Validate the driver name as supported by sqlstore ...
+	switch store.driverName {
+	case "sqlite":
+	case "mysql":
+	case "pg":
 	default:
-		parts := strings.Split(dsnURI, ":")
+		parts := strings.SplitN(dsnURI, "://", 2)
 		return nil, fmt.Errorf("%q database not supported", parts[0])
 	}
 	store.db, err = sql.Open(store.driverName, store.dsn)
@@ -80,6 +82,17 @@ func Open(name string, dsnURI string) (*Storage, error) {
 	store.db.SetConnMaxLifetime(0)
 	store.db.SetMaxIdleConns(50)
 	store.db.SetMaxOpenConns(50)
+
+	return store, err
+}
+
+// Init creates a table to hold the collection if it doesn't already
+// exist.
+func Init(name string, dsnURI string) (*Storage, error) {
+	store, err := Open(name, dsnURI)
+	if err != nil {
+		return nil, err
+	}
 
 	// NOTE: need to make sure that store.tableName exists.
 	// FIXME: This create statement is MySQL centric, needs to work

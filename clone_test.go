@@ -53,7 +53,7 @@ func TestCloneSample(t *testing.T) {
 		os.RemoveAll(testName)
 	}
 
-	c, err := Init(cName, "", PTSTORE)
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("Can't create %s, %s", cName, err)
 		t.FailNow()

@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	// Dataset sub-modules
@@ -60,12 +61,8 @@ type Collection struct {
 	StoreType string `json:"storage_type,omitempty"`
 
 	// DsnURI holds protocol plus dsn string. The protocol can be
-	// "sqlite:", "mysql:" and the dsn string would conform to the Golang
-	// database/sql driver for the SQL database.
-	//
-	// If blank the DSN value will be read from
-	// the environment via `os.Getenv("DATASET_DSN_URI")`.
-	//
+	// "sqlite://", "mysql://" and the dsn conforming to the Golang
+	// database/sql driver name in the database/sql package.
 	DsnURI string `json:"dsn_uri,omitempty"`
 
 	// Created
@@ -271,15 +268,6 @@ func (c *Collection) initSQLStore() error {
 		return fmt.Errorf("failed to create %q %s", colName, err)
 	}
 
-	// NOTE: if the access value is left blank for  SQLstore then
-	// the DSN URI is assumed to be held in the environment and
-	// retrieved with `os.Getenv("DATASET_DSN_URI")`. That needs
-	// to get assigned to the running collection but NOT get
-	// written to disk in the collection.json file.
-	if c.DsnURI == "" {
-		c.DsnURI = os.Getenv("DATASET_DSN_URI")
-	}
-
 	// Create a default codemeta.json file in the directory
 	//today := time.Now().Format(datestamp)
 	m := map[string]string{
@@ -304,12 +292,31 @@ func (c *Collection) initSQLStore() error {
 	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
 		return fmt.Errorf("failed to create %q, %s", cmName, err)
 	}
-	return nil
+	//NOTE: the collection's table needs to be created using the
+	// SQLStore's Init method..
+	fmt.Printf("DEBUG calling sqlInit(%q, %q)\n", basename, c.DsnURI)
+	c.SQLStore, err = sqlstore.Init(basename, c.DsnURI)
+	return err
 }
 
 // Init - creates a new collection and opens it. It takes a name
-// (e.g. directory holding the collection.json file), an access name
-// (e.g. a file holding a DSN URI) and the storage type.
+// (e.g. directory holding the collection.json and codemeta.josn files)
+// and an optional DSN in URI form. The default storage engine is a
+// pairtree (i.e. PTSTORE) but some SQL storage engines are supported.
+//
+// If a DSN URI is a non-empty string then it is the SQL storage engine
+// is used. The database and user access in the SQL engine needs be setup
+// before you can successfully intialized your dataset collection.
+// Currently three SQL database engines are support, SQLite3, MySQL 8,
+// Postgres 14. You select the SQL storage engine by forming a URI
+// consisting of a "protocol" (e.g. "sqlite", "mysql", "pg"), the
+// protocol delimiter "://" and a Go SQL supported DSN based on the
+// database driver implementation.
+//
+// A MySQL DSN URI would look something like
+// `mysql://DB_USER:DB_PASSWD@/DB_NAME`, one for SQLite would look
+// like `sqlite://DB_NAME`, one for Postgres might look like
+// `pg://DB_USER:DB_PASSWD@/DB_NAME`.
 //
 // For PTSTORE the access value can be left blank.
 //
@@ -319,7 +326,7 @@ func (c *Collection) initSQLStore() error {
 //      err error
 //   )
 //   name := "my_collection.ds"
-//   c, err = dataset.Init(name, "", dataset.PTSTORE)
+//   c, err = dataset.Init(name, "")
 //   if err != nil {
 //     // ... handle error
 //   }
@@ -336,42 +343,43 @@ func (c *Collection) initSQLStore() error {
 //   )
 //   name := "my_collection"
 //   dsnURI := os.Getenv("DATASET_DSN_URI")
-//   c, err = dataset.Init(name, dsnURI, dataset.SQLSTORE)
+//   c, err = dataset.Init(name, dsnURI)
 //   if err != nil {
 //     // ... handle error
 //   }
 //   defer c.Close()
 // ```
 //
-// NOTE: if the dsnURI value is left blank for SQLstore then
-// the dsnURI is assumed to be held in the environment and retrieved with
-// `os.Getenv("DATASET_DSN_URI")`. A URI is formed by prefix a DNS
-// (data source name) with a protocol, e.g. "sqlite:", "mysql:". Everything
-// after the protocal is assumed to form a valid DSN for the given Go
-// SQL driver.
-//
-func Init(name string, dsnURI string, storeType string) (*Collection, error) {
-	var err error
-	if storeType == "" {
-		storeType = PTSTORE
-	}
+func Init(name string, dsnURI string) (*Collection, error) {
+	var (
+		err error
+	)
 	c := new(Collection)
 	c.Name = name
 	c.DsnURI = dsnURI
-	c.StoreType = storeType
-	switch storeType {
+	if dsnURI == "" {
+		c.StoreType = PTSTORE
+	} else {
+		protocol, _, ok := strings.Cut(dsnURI, "://")
+		if ok {
+			if (protocol == "pairtree") || (protocol == "ptstore") {
+				c.StoreType = PTSTORE
+			} else {
+				c.StoreType = SQLSTORE
+			}
+		}
+	}
+	fmt.Printf("DEBUG c.Name %q, c.StoreType %q, c.DsnURI %q\n", c.Name, c.StoreType, c.DsnURI)
+	switch c.StoreType {
 	case PTSTORE:
 		err = c.initPTStore()
 	case SQLSTORE:
 		err = c.initSQLStore()
 	default:
-		return nil, fmt.Errorf("%q storage type not supported", storeType)
+		return nil, fmt.Errorf("%q storage type not supported", c.StoreType)
 	}
 	if err != nil {
 		return nil, err
-	}
-	if c.DsnURI == "" {
-		c.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
 	return Open(name)
 }
