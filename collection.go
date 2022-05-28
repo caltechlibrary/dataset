@@ -151,9 +151,8 @@ func (c *Collection) Close() error {
 		if c.SQLStore != nil {
 			return c.SQLStore.Close()
 		}
-	default:
-		return fmt.Errorf("%q not supported", c.StoreType)
 	}
+	return fmt.Errorf("%q not supported", c.StoreType)
 }
 
 // initPTStore takes a *Collection and initializes a PTSTORE collection.
@@ -441,7 +440,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
-			return c.PTStore.Create(key, src)
+			return c.SQLStore.Create(key, src)
 		}
 	default:
 		return fmt.Errorf("%q not supported", c.StoreType)
@@ -601,7 +600,6 @@ func (c *Collection) Length() int64 {
 		if c.SQLStore != nil {
 			return c.SQLStore.Length()
 		}
-	default:
-		return int64(-1)
 	}
+	return int64(-1)
 }

@@ -32,6 +32,58 @@ type Storage struct {
 	db *sql.DB
 }
 
+// Init creates a table to hold the collection if it doesn't already
+// exist.
+func Init(name string, dsnURI string) (*Storage, error) {
+	var err error
+
+	driverName, dsn, ok := strings.Cut(dsnURI, "://")
+	if !ok {
+		return nil, fmt.Errorf("could not parse DSN URI, got %q", dsnURI)
+	}
+	store := new(Storage)
+	store.WorkPath = name
+	store.dsn = dsn
+	store.driverName = driverName
+	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	// Validate we support this SQL driver and form create statement.
+	var stmt string
+	switch driverName {
+	case "sqlite":
+		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) PRIMARY KEY,
+  src JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated DATETIME DEFAULT CURRENT_TIMESTAMP
+)`, store.tableName)
+	case "mysql":
+		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) PRIMARY KEY,
+  src JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)`, store.tableName)
+	default:
+		return nil, fmt.Errorf("%q database not supported", store.driverName)
+	}
+	// Open the DB
+	db, err := sql.Open(store.driverName, store.dsn)
+	if err != nil {
+		return nil, err
+	}
+	if db == nil {
+		return nil, fmt.Errorf("%s opened and returned nil", store.driverName)
+	}
+	store.db = db
+
+	// Create the collection table
+	_, err = store.db.Exec(stmt)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create table %q, %s", store.tableName, err)
+	}
+	return store, err
+}
+
 // Open opens the storage system and returns an storage struct and error
 // It is passed either a filename. For a Pairtree the would be the
 // path to collection.json and for a sql store file holding a DSN URI.
@@ -82,58 +134,6 @@ func Open(name string, dsnURI string) (*Storage, error) {
 	store.db.SetConnMaxLifetime(0)
 	store.db.SetMaxIdleConns(50)
 	store.db.SetMaxOpenConns(50)
-	return store, err
-}
-
-// Init creates a table to hold the collection if it doesn't already
-// exist.
-func Init(name string, dsnURI string) (*Storage, error) {
-	var err error
-
-	driverName, dsn, ok := strings.Cut(dsnURI, "://")
-	if !ok {
-		return nil, fmt.Errorf("could not parse DSN URI, got %q", dsnURI)
-	}
-	store := new(Storage)
-	store.WorkPath = name
-	store.dsn = dsn
-	store.driverName = driverName
-	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
-	// Validate we support this SQL driver and form create statement.
-	var stmt string
-	switch driverName {
-	case "sqlite":
-		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  key VARCHAR(255) PRIMARY KEY,
-  src JSON,
-  created DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated DATETIME DEFAULT CURRENT_TIMESTAMP
-)`, store.tableName)
-	case "mysql":
-		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  key VARCHAR(255) PRIMARY KEY,
-  src JSON,
-  created DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-)`, store.tableName)
-	default:
-		return nil, fmt.Errorf("%q database not supported", store.driverName)
-	}
-	// Open the DB
-	db, err := sql.Open(store.driverName, store.dsn)
-	if err != nil {
-		return nil, err
-	}
-	if db == nil {
-		return nil, fmt.Errorf("%s opened and returned nil", store.driverName)
-	}
-	store.db = db
-
-	// Create the collection table
-	_, err = store.db.Exec(stmt)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create table %q, %s", store.tableName, err)
-	}
 	return store, err
 }
 

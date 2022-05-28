@@ -156,8 +156,8 @@ func TestSQLStore(t *testing.T) {
 	threeObjects = append(threeObjects, map[string]interface{}{"two": 2})
 	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
 
-	cName := path.Join("SQL1.ds")
-	dsnURI := "sqlite://file:testout/SQL1.db"
+	cName := path.Join("testout", "SQL1.ds")
+	dsnURI := "sqlite://testout/SQL1.ds/sql1.db"
 	// Clear stale test output
 	if _, err := os.Stat(path.Join("testout", cName)); err == nil {
 		os.RemoveAll(cName)
@@ -237,8 +237,9 @@ func TestSQLStore(t *testing.T) {
 		sort.Strings(keys)
 		for i := 0; i < 3; i++ {
 			expected := fmt.Sprintf("%d", i)
-			if keys[i] != expected {
-				t.Errorf("Expected key %s, got %s", expected, keys[i])
+			got := keys[i]
+			if expected != got {
+				t.Errorf("Expected key (%T) %s, got (%T) %s", expected, expected, got, got)
 			}
 		}
 	}
