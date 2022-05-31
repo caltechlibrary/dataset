@@ -24,12 +24,27 @@ import (
 )
 
 // EncodeJSON provides a common method for encoding data for use in Dataset.
+//
+// ```
+//     src, err := EncodeJSON(obj)
+//     if err != nil {
+//        ...
+//     }
+// ```
+//
 func EncodeJSON(obj map[string]interface{}) ([]byte, error) {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	return src, err
 }
 
 // DecodeJSON provides a common method for decoding data for use in Dataset.
+//
+// ```
+//    obj := map[string]interface{}{}
+//    if err := DecodeJSON(src, &obj); err != nil {
+//       ...
+//    }
+// ```
 func DecodeJSON(src []byte, obj *map[string]interface{}) error {
 	decoder := json.NewDecoder(bytes.NewReader(src))
 	decoder.UseNumber()
