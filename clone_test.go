@@ -6,38 +6,118 @@ import (
 	"testing"
 )
 
+func TestClone(t *testing.T) {
+	testRecords := map[string]map[string]interface{}{}
+	testRecords["character:1"] = map[string]interface{}{
+		"name": "Jack Flanders",
+	}
+	testRecords["character:2"] = map[string]interface{}{
+		"name": "Little Frieda",
+	}
+	testRecords["character:3"] = map[string]interface{}{
+		"name": "Mojo Sam the Yoodoo Man",
+	}
+	testRecords["character:4"] = map[string]interface{}{
+		"name": "Kasbah Kelly",
+	}
+	testRecords["character:5"] = map[string]interface{}{
+		"name": "Dr. Marlin Mazoola",
+	}
+	testRecords["character:6"] = map[string]interface{}{
+		"name": "Old Far-Seeing Art",
+	}
+	testRecords["character:7"] = map[string]interface{}{
+		"name": "Chief Wampum Stompum",
+	}
+	testRecords["character:8"] = map[string]interface{}{
+		"name": "The Madonna Vampira",
+	}
+	testRecords["character:9"] = map[string]interface{}{
+		"name": "Domenique",
+	}
+	testRecords["character:10"] = map[string]interface{}{
+		"name": "Claudine",
+	}
+
+	cName, dsnURI := path.Join("testout", "zbs1.ds"), ""
+	// cleanup stale data
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		t.Errorf("Failed to create seed collection %q, %s", cName, err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	// Populate our seed collection
+	for k, v := range testRecords {
+		if err := c.Create(k, v); err != nil {
+			t.Errorf("Could not create %q in %q (seed collection), %s", k, cName, err)
+		}
+	}
+	keys, err := c.Keys()
+	if err != nil {
+		t.Errorf("Could not get keys from %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	// Make clone collection
+	ncName, ncDsnURI := path.Join("testout", "zbs2.ds"), "sqlite://testout/zbs2.ds/collections.db"
+	if _, err := os.Stat(ncName); err == nil {
+		os.RemoveAll(ncName)
+	}
+	if err := c.Clone(ncName, ncDsnURI, keys[0:5], false); err != nil {
+		t.Errorf("clone failed, %q to %q, %s", cName, ncName, err)
+		t.FailNow()
+	}
+
+	// Make sure clone has records.
+	nc, err := Open(ncName)
+	if err != nil {
+		t.Errorf("failed to open clone %q, %s", ncName, err)
+		t.FailNow()
+	}
+	defer nc.Close()
+	for _, key := range keys[0:5] {
+		if c.HasKey(key) != nc.HasKey(key) {
+			t.Errorf("Expected %q in %q %t, got %q in %q %t", key, cName, c.HasKey(key), key, ncName, nc.HasKey(key))
+		}
+	}
+}
+
 func TestCloneSample(t *testing.T) {
-	testRecords := map[string]map[string]interface{}{
-		"character:1": map[string]interface{}{
-			"name": "Jack Flanders",
-		},
-		"character:2": map[string]interface{}{
-			"name": "Little Frieda",
-		},
-		"character:3": map[string]interface{}{
-			"name": "Mojo Sam the Yoodoo Man",
-		},
-		"character:4": map[string]interface{}{
-			"name": "Kasbah Kelly",
-		},
-		"character:5": map[string]interface{}{
-			"name": "Dr. Marlin Mazoola",
-		},
-		"character:6": map[string]interface{}{
-			"name": "Old Far-Seeing Art",
-		},
-		"character:7": map[string]interface{}{
-			"name": "Chief Wampum Stompum",
-		},
-		"character:8": map[string]interface{}{
-			"name": "The Madonna Vampira",
-		},
-		"character:9": map[string]interface{}{
-			"name": "Domenique",
-		},
-		"character:10": map[string]interface{}{
-			"name": "Claudine",
-		},
+	testRecords := map[string]map[string]interface{}{}
+	testRecords["character:1"] = map[string]interface{}{
+		"name": "Jack Flanders",
+	}
+	testRecords["character:2"] = map[string]interface{}{
+		"name": "Little Frieda",
+	}
+	testRecords["character:3"] = map[string]interface{}{
+		"name": "Mojo Sam the Yoodoo Man",
+	}
+	testRecords["character:4"] = map[string]interface{}{
+		"name": "Kasbah Kelly",
+	}
+	testRecords["character:5"] = map[string]interface{}{
+		"name": "Dr. Marlin Mazoola",
+	}
+	testRecords["character:6"] = map[string]interface{}{
+		"name": "Old Far-Seeing Art",
+	}
+	testRecords["character:7"] = map[string]interface{}{
+		"name": "Chief Wampum Stompum",
+	}
+	testRecords["character:8"] = map[string]interface{}{
+		"name": "The Madonna Vampira",
+	}
+	testRecords["character:9"] = map[string]interface{}{
+		"name": "Domenique",
+	}
+	testRecords["character:10"] = map[string]interface{}{
+		"name": "Claudine",
 	}
 	p := "testout"
 	cName := path.Join(p, "test_zbs_characters.ds")
@@ -73,7 +153,7 @@ func TestCloneSample(t *testing.T) {
 		t.Errorf("Expected keys in collection to clone, %s", err)
 		t.FailNow()
 	}
-	if err := c.CloneSample(trainingName, testName, keys, trainingSize, false); err != nil {
+	if err := c.CloneSample(trainingName, "", testName, "", keys, trainingSize, false); err != nil {
 		t.Errorf("Failed to create samples %s (%d) and %s, %s", trainingName, trainingSize, testName, err)
 	}
 	training, err := Open(trainingName)

@@ -118,11 +118,10 @@ func (store *Storage) Create(key string, src []byte) error {
 
 	// Generate the path to store document
 	dName := path.Join(store.WorkPath, "pairtree", ptPath)
-	if _, err := os.Stat(dName); err == nil {
-		return fmt.Errorf("%s exists in %s", key, store.WorkPath)
-	}
-	if err := os.MkdirAll(dName, 0775); err != nil {
-		return fmt.Errorf("Unable to create %q, %s", dName, err)
+	if _, err := os.Stat(dName); os.IsNotExist(err) {
+		if err := os.MkdirAll(dName, 0775); err != nil {
+			return fmt.Errorf("Unable to create %q, %s", dName, err)
+		}
 	}
 
 	// Save the document to the ptPath location

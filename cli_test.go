@@ -88,11 +88,19 @@ func TestRunCLIOnCRUDL(t *testing.T) {
 	}
 }
 
+func TestCloning(t *testing.T) {
+	t.Errorf("cli clone not implemented")
+}
+
+func TestSampleCloning(t *testing.T) {
+	t.Errorf("cli sample cloning not implemented")
+}
+
 func TestCLIOnFrames(t *testing.T) {
 	// FIXME: Run through frame command sequences
-	t.Errorf("frame command tests not implemented")
+	t.Errorf("cli frames commands not implemented")
 }
 
 func TestCLIOnAttachments(t *testing.T) {
-	t.Errorf("attachment command tests not implemented")
+	t.Errorf("cli attachment command not implemented")
 }

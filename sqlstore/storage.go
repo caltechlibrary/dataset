@@ -204,7 +204,6 @@ func (store *Storage) Read(key string) ([]byte, error) {
 }
 
 // Update takes a key and encoded JSON object and updates a
-// JSON document in the collection.
 //
 //   key := "123"
 //   src := []byte(`{"one": 1, "two": 2}`)
@@ -252,7 +251,7 @@ func (store *Storage) Keys() ([]string, error) {
 		value string
 		keys  []string
 	)
-	if rows.Next() {
+	for rows.Next() {
 		err := rows.Scan(&value)
 		if err != nil {
 			return nil, err
@@ -277,17 +276,17 @@ func (store *Storage) Keys() ([]string, error) {
 //   }
 // ```
 func (store *Storage) HasKey(key string) bool {
-	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE key = ? LIMIT 1`, store.tableName)
-	rows, err := store.db.Query(stmt)
+	stmt := fmt.Sprintf(`SELECT key FROM %s WHERE key = ? LIMIT 1`, store.tableName)
+	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return false
 	}
 	defer rows.Close()
 
 	var (
-		value int
+		value string
 	)
-	if rows.Next() {
+	for rows.Next() {
 		err := rows.Scan(&value)
 		if err != nil {
 			return false
@@ -296,7 +295,7 @@ func (store *Storage) HasKey(key string) bool {
 	if err := rows.Err(); err != nil {
 		return false
 	}
-	return value > 0
+	return key == value
 }
 
 // Length returns the number of records (count of rows in collection).

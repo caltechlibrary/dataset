@@ -103,7 +103,6 @@ func doInit(out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME [DSN_URI], got %q", strings.Join(args, " "))
 	}
-	fmt.Printf("DEBUG cName %q, dsnURI %q\n", cName, dsnURI)
 	c, err := Init(cName, dsnURI)
 	if err == nil {
 		defer c.Close()

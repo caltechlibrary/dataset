@@ -114,7 +114,7 @@ func TestPTStore(t *testing.T) {
 								t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
 							}
 						default:
-							//FIXME: Need to come up with a sensible way to compare values ...
+							t.Errorf("value was unexpected type %T -> %+v", v, v)
 						}
 					}
 				}
@@ -157,9 +157,9 @@ func TestSQLStore(t *testing.T) {
 	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
 
 	cName := path.Join("testout", "SQL1.ds")
-	dsnURI := "sqlite://testout/SQL1.ds/sql1.db"
+	dsnURI := "sqlite://" + path.Join(cName, "sql1.db")
 	// Clear stale test output
-	if _, err := os.Stat(path.Join("testout", cName)); err == nil {
+	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
 	// NOTE: SQLStore requires a DSN URI so it is NOT empty
@@ -183,25 +183,24 @@ func TestSQLStore(t *testing.T) {
 		if err := c.Create(key, obj1); err != nil {
 			t.Errorf("Expected to create %q, %s", key, err)
 			t.FailNow()
-		} else {
-			obj2 := map[string]interface{}{}
-			if err := c.Read(key, obj2); err != nil {
-				t.Errorf("Expected to read %q, %s", key, err)
-				t.FailNow()
-			}
-			for k, v := range obj1 {
-				if v2, ok := obj2[k]; ok == false {
-					t.Errorf("Expected %q in obj2 %+v", k, obj2)
-				} else {
-					// NOTE: c.Read() will use json.Number types for
-					// integers and floats expressed in JSON. These
-					// needed to be converted appropriately for comparison.
-					x := fmt.Sprintf("%d", v)
-					y := v2.(json.Number).String()
-					if x != y {
-						t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
-					}
-					t.Errorf("Expected first value (%T) %+v to equal second value (%T) %+v", v, v, v2, v2)
+		}
+		// See if we can read the object just created
+		obj2 := map[string]interface{}{}
+		if err := c.Read(key, obj2); err != nil {
+			t.Errorf("Expected to read %q, %s", key, err)
+			t.FailNow()
+		}
+		for k, v := range obj1 {
+			if v2, ok := obj2[k]; ok == false {
+				t.Errorf("Expected %q in obj2 %+v", k, obj2)
+			} else {
+				// NOTE: c.Read() will use json.Number types for
+				// integers and floats expressed in JSON. These
+				// needed to be converted appropriately for comparison.
+				x := fmt.Sprintf("%d", v)
+				y := v2.(json.Number).String()
+				if x != y {
+					t.Errorf("Expected value (%T) %q,  got (%T) %q", v, x, v2, y)
 				}
 			}
 		}
@@ -209,50 +208,78 @@ func TestSQLStore(t *testing.T) {
 		if err := c.Create(key, obj1); err == nil {
 			t.Errorf("Expected Create to fail %q should already exist", key)
 		}
+		// Update the object
 		obj1["id"] = key
 		if err := c.Update(key, obj1); err != nil {
 			t.Errorf("Expected Update to succeed %q, %s", key, err)
-		} else {
-			obj2 := map[string]interface{}{}
-			if err := c.Read(key, obj2); err != nil {
-				t.Errorf("Expected update then Read to success, %q, %s", key, err)
+		}
+		// Now read back the updated record and check
+		if err := c.Read(key, obj2); err != nil {
+			t.Errorf("Expected update then Read to success, %q, %s", key, err)
+		}
+		// Check the attributes of the records
+		for k, v := range obj1 {
+			if v2, ok := obj2[k]; ok == false {
+				t.Errorf("Expected %q in obj2 %+v", k, obj2)
 			} else {
-				for k, v := range obj1 {
-					if v2, ok := obj2[k]; ok == false {
-						t.Errorf("Expected %q in obj2 %+v", k, obj2)
-					} else if v != v2 {
-						t.Errorf("Expected value 1 %+v to equal value 2 %+v", v, v2)
-					}
+				x, y := "", ""
+				switch v.(type) {
+				case int:
+					x = fmt.Sprintf("%d", v)
+				case string:
+					x = v.(string)
+				}
+				switch v2.(type) {
+				case json.Number:
+					y = v2.(json.Number).String()
+				case string:
+					y = v2.(string)
+				}
+				if x != y {
+					t.Errorf("Expected (%T) %+v, got (%T) %+v", v, v, v2, v2)
 				}
 			}
 		}
 	}
-	if keys, err := c.Keys(); err != nil {
+	// Should have three records in collection.
+	cnt := c.Length()
+	if cnt != 3 {
+		t.Errorf("Expect 3 records, got %d", cnt)
+	}
+	// Now check the keys stored
+	keys, err := c.Keys()
+	if err != nil {
 		t.Errorf("Expected to get a list of keys got error %s", err)
 		t.FailNow()
-	} else {
-		if len(keys) != 3 {
-			t.Errorf("Expected three keys for 3 objects got %+v", keys)
-		}
-		sort.Strings(keys)
-		for i := 0; i < 3; i++ {
-			expected := fmt.Sprintf("%d", i)
-			got := keys[i]
-			if expected != got {
-				t.Errorf("Expected key (%T) %s, got (%T) %s", expected, expected, got, got)
-			}
+	}
+	k := int(cnt)
+	l := len(keys)
+	if k != l {
+		t.Errorf("Expected three keys for (%T) %d objects got (%T) %d -> %+v", k, k, l, l, keys)
+	}
+	sort.Strings(keys)
+	for i := 0; i < 3 && i < len(keys); i++ {
+		expected := fmt.Sprintf("%d", i)
+		got := keys[i]
+		if expected != got {
+			t.Errorf("Expected key (%T) %s, got (%T) %s", expected, expected, got, got)
 		}
 	}
+	// Test deletes
 	for i := 0; i < 2; i++ {
 		key := fmt.Sprintf("%d", i)
 		if err := c.Delete(key); err != nil {
 			t.Errorf("Expected to be able to delete %q, %s", key, err)
 		}
 	}
-	if keys, err := c.Keys(); err != nil {
+	keys, err = c.Keys()
+	if err != nil {
 		t.Errorf("Expected to get keys back from List, %s", err)
-	} else if len(keys) != 1 {
+		t.FailNow()
+	}
+	if len(keys) != 1 {
 		t.Errorf("Expected one key left after delete, got %+v", keys)
+		t.FailNow()
 	}
 }
 
@@ -468,53 +495,57 @@ func TestCollection(t *testing.T) {
 }
 
 func TestComplexKeys(t *testing.T) {
-	colName := "testdata/pairtree_layout/col2.ds"
+	cName := path.Join("testout", "complex_keys.ds")
 	// remove any stale test collection collection first...
-	if _, err := os.Stat(colName); err == nil {
-		os.RemoveAll(colName)
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
 	}
 
 	// Create a new collection
-	c, err := Init(colName, "")
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
 	}
-	testRecords := map[string]map[string]interface{}{
-		"agent:person:1": map[string]interface{}{
-			"name": "George",
-			"id":   25,
-		},
-		"agent:person:2": map[string]interface{}{
-			"name": "Carl",
-			"id":   2523,
-		},
-		"agent:person:3333": map[string]interface{}{
-			"name": "Mac",
-			"id":   2,
-		},
-		"agent:person:29994": map[string]interface{}{
-			"name": "Fred",
-			"id":   9925,
-		},
-		"agent:person:29": map[string]interface{}{
-			"name": "Mike",
-			"id":   81,
-		},
-		"agent:person:100": map[string]interface{}{
-			"name": "Tim",
-			"id":   8,
-		},
-		"agent:person:101": map[string]interface{}{
-			"name": "Kim",
-			"id":   101,
-		},
+	defer c.Close()
+	cnt := c.Length()
+	if cnt > 0 {
+		t.Errorf("expected 0 objects, got %d", cnt)
+	}
+	testRecords := map[string]map[string]interface{}{}
+	testRecords["agent:person:1"] = map[string]interface{}{
+		"name": "George",
+		"id":   25,
+	}
+	testRecords["agent:person:2"] = map[string]interface{}{
+		"name": "Carl",
+		"id":   2523,
+	}
+	testRecords["agent:person:3333"] = map[string]interface{}{
+		"name": "Mac",
+		"id":   2,
+	}
+	testRecords["agent:person:29994"] = map[string]interface{}{
+		"name": "Fred",
+		"id":   9925,
+	}
+
+	testRecords["agent:person:29"] = map[string]interface{}{
+		"name": "Mike",
+		"id":   81,
+	}
+	testRecords["agent:person:100"] = map[string]interface{}{
+		"name": "Tim",
+		"id":   8,
+	}
+	testRecords["agent:person:101"] = map[string]interface{}{
+		"name": "Kim",
+		"id":   101,
 	}
 
 	for k, v := range testRecords {
-		err := c.Create(k, v)
-		if err != nil {
-			t.Errorf("Can't create %s <-- %s : %s", k, v, err)
+		if err := c.Create(k, v); err != nil {
+			t.Errorf("Can't create (%T) %s <-- (%T) %+v : %s", k, k, v, v, err)
 		}
 	}
 }
