@@ -7,38 +7,37 @@ The dataset collections structures have changed
 
 - a dataset is a directory containing a collection.json and codemeta.json file
 - the collection.json no longer contains general metadata or maps to the keys and pairtree, it focuses on operational settings (e.g. storage type and access information)
-    - when running dataset as a web service on a shared user machine setup your database connection through the environment, e.g. set DATASET_DSN_URI value (DSN URI is formed with a protocol named for the SQL driver, "://" and the DSN for that driver, e.g. "mysql://DB_USER:DB_PASSWD@/DB_NAME")
+    - when running dataset as a web service or on a shared user machine you can setup the database connection through the environment. I.e. set DATASET_DSN_URI value (DSN URI is formed with a protocol named for the SQL driver, a "://" and the DSN for that driver, e.g. "mysql://DB_USER:DB_PASSWD@/DB_NAME")
 - a codemeta.json file is now used for holding collection level metadata as this has been adopted by some of the data science community
-- additional JSON configuration files may be used to manage the collection ddependent on storage engine
+- additional JSON configuration files may be used to manage the collection dependent on storage engine
 
 
 Golang package changes:
 
 - The dataset v2 package has been substantially reorganized and simplified, most things have changed
     - Collection.Init() now takes two parameters, collection name, an an optional DSN URI, if a DSN URI is provided it'll define the storage engine, e.g. a dataset.SQLSTORE)
-    - Collection.DocPath() removed, doesn't make sense anymore
+    - Collection.DocPath() removed, doesn't make sense anymore since JSON may be stored in a SQL table
     - Collection.Read() only takes two parameters, not three
-    - Collection.Keys() returns a list of keys and an err value
-    - Collection.KeyExists() was renamed Collection.HasKey()
+    - Collection.Keys() returns a list of keys and an error value
+    - Collection.KeyExists() was renamed Collection.HasKey() to be more idiomatic in Go
     - Collection.Length() returns an int64 rather than an int
-    - Collection.MetadataJSON() renamed Collection.Metadata()
+    - Collection.MetadataJSON() renamed Collection.Metadata() returns the codemeta JSON for the collection
 
 
 libdataset:
 
-- This has be dropped and is not long supported due to the challenges of cros compiling for all supported platforms
-- If libdataset is needed it will be its own project and repository
+- This has be dropped for now and is no longer supported due to the challenges in cross compiling for all supported platforms
 
 CLI changes:
 
 - options have be restructured so that some come after the verb
 - help has been restructured to better support focusing the help text on the task needed
-- the command line version is single user, single process for pairtree storage
-- the command line can function as a client to web service implementation
+- the command line version is single user, single process for pairtree storage but can also use a SQL database with JSON column support for storage of JSON objects
+
 
 Web Service changes:
 
-- the web service does not support the pairtree implementation except for inport and export, it still uses a pairtree for storing attachments
+- the web service does not support the pairtree implementation except export, it still uses a pairtree for storing attachments
 - the web service is now RESTful so the end points no longer map directly to the client syntax
 - the web service requires running a SQL database with JSON column support for storing JSON documents, currently this means SQLite3 and MySQL
 - Access to the SQL storage engine is through either the environment or a URI expressing a storage type as protocol and a data source name to making the connection
@@ -83,7 +82,7 @@ Added "MetadataUpdate()" function to update a collection's metadata.
 
 Depreciated dependency on namaste package and Namaste support in command line tools. Removed "collections.go and collections_test.go" from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection's metadata are now depreciated.
 
-The dataset.Init() now places a lock file in the collection directory and leves the collection in an "Open" state, it should be explicitly closed.
+The dataset.Init() now places a lock file in the collection directory and leaves the collection in an "Open" state, it should be explicitly closed after Init is called.
 
 E.g. 
 

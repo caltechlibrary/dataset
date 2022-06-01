@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -64,9 +65,9 @@ func (sv *Semver) ToJSON() []byte {
 	return src
 }
 
-// ParseSemver takes a byte slice and returns a version struct,
+// Parse takes a byte slice and returns a version struct,
 // and an error value.
-func ParseSemver(src []byte) (*Semver, error) {
+func Parse(src []byte) (*Semver, error) {
 	var (
 		i   int
 		err error
@@ -144,4 +145,70 @@ func (sv *Semver) IncMajor() error {
 	sv.Minor = "0"
 	sv.Major = fmt.Sprintf("%d", i)
 	return nil
+}
+
+// Less compares two semvers and if semver "a" is less than semver "b"
+// returns true false otherwise.
+func Less(a *Semver, b *Semver) bool {
+	// Compare Major value
+	x, err := strconv.ParseInt(a.Major, 10, 64)
+	if err != nil {
+		return false
+	}
+	y, err := strconv.ParseInt(b.Major, 10, 64)
+	if err != nil {
+		return false
+	}
+	if x != y {
+		return x < y
+	}
+	// Compare Minor value
+	x, err = strconv.ParseInt(a.Minor, 10, 64)
+	if err != nil {
+		return false
+	}
+	y, err = strconv.ParseInt(b.Minor, 10, 64)
+	if err != nil {
+		return false
+	}
+	if x != y {
+		return x < y
+	}
+	// Compare Patch
+	x, err = strconv.ParseInt(a.Patch, 10, 64)
+	if err != nil {
+		return false
+	}
+	y, err = strconv.ParseInt(b.Patch, 10, 64)
+	if err != nil {
+		return false
+	}
+	return x < y
+}
+
+// Sort semvers takes a slice of Semver, sorts them in ascending order.
+func Sort(values []*Semver) {
+	sort.Slice(values, func(i, j int) bool {
+		return Less(values[i], values[j])
+	})
+}
+
+// SortedStrings takes a list of strings which contain semvers
+// convers the strings to a list of Semver structures, sorts the list
+// and returns a new the list of strings and an error value
+func SortedStrings(semvers []string) ([]string, error) {
+	l := []*Semver{}
+	for _, sv := range semvers {
+		val, err := Parse([]byte(sv))
+		if err != nil {
+			return nil, err
+		}
+		l = append(l, val)
+	}
+	Sort(l)
+	out := []string{}
+	for i := 0; i < len(l); i++ {
+		out = append(out, l[i].String())
+	}
+	return out, nil
 }

@@ -72,6 +72,16 @@ type Collection struct {
 	// SQLStore points to a SQL database with JSON column support
 	SQLStore *sqlstore.Storage `json:"-"`
 
+	// Versioning holds the type of versioning implemented in the collection.
+	// It can be set to an empty string (the default) which means no versioning.
+	// It can be set to "patch" which means objects and attachments are versioned by
+	// a semver patch value (e.g. 0.0.X where X is incremented), "minor" where
+	// the semver minor value is incremented (e.g. e.g. 0.X.0 where X is incremented),
+	// or "major" where the semver major value is incremented (e.g. X.0.0 where X is
+	// incremented). Versioning affects storage of JSON objects and their attachments
+	// across the whole collection.
+	Versioning string `json:"versioning,omitempty"`
+
 	//
 	// Private varibles
 	//

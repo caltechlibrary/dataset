@@ -10,7 +10,23 @@ import (
 	"strings"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/semver"
 	"github.com/caltechlibrary/pairtree"
+)
+
+const (
+	// vDelimiter is the delimited used in versioning to indicate a version number
+	// of a JSON document object or attachment.
+	vDelimiter = "^"
+
+	// None means versioning is turned off for collection
+	None = iota
+	// Major means increment the major semver value on creation or update
+	Major
+	// Minor means increment the minor semver value on creation or update
+	Minor
+	// Patach means increment the patch semver value on creation or update
+	Patch
 )
 
 type Storage struct {
@@ -27,6 +43,12 @@ type Storage struct {
 
 	// keys holds a sorted list of keys from the map
 	keys []string
+
+	// Versioning holds the type of versioning active for the stored
+	// collection. The options are None (no versioning, the default),
+	// Major (major value in semver is incremented), Minor (minor value
+	// in semver is incremented) and Patch (patch value in semver is incremented)
+	Versioning int
 }
 
 // Open opens the storage system and returns an storage struct and error
@@ -60,8 +82,24 @@ func Open(name string, dsnURI string) (*Storage, error) {
 		}
 		sort.Strings(store.keys)
 	}
-	// FIXME: Frames need implementation
 	return store, nil
+}
+
+// SetVersioning sets the type of versioning associated with the stored collection.
+func (store *Storage) SetVersioning(setting int) error {
+	switch setting {
+	case None:
+		store.Versioning = setting
+	case Major:
+		store.Versioning = setting
+	case Minor:
+		store.Versioning = setting
+	case Patch:
+		store.Versioning = setting
+	default:
+		return fmt.Errorf("Unknown/unsupported version type")
+	}
+	return nil
 }
 
 // Close closes the storage system freeing resources as needed.
@@ -80,7 +118,6 @@ func (store *Storage) Close() error {
 	if err := ioutil.WriteFile(store.keyMapName, src, 0664); err != nil {
 		return fmt.Errorf("failed to write kep map for %q, %s", store.WorkPath, err)
 	}
-	//FIXME: Implement frames save
 	return nil
 }
 
@@ -132,6 +169,25 @@ func (store *Storage) Create(key string, src []byte) error {
 	// Update keyMap
 	store.keyMap[key] = ptKey
 
+	// Save versioned copy if needed
+	switch store.Versioning {
+	case Major:
+		fName = path.Join(dName, fmt.Sprintf("%s%s1.0.0.json", key, vDelimiter))
+		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+			return fmt.Errorf("failed to write %q, %s", fName, err)
+		}
+	case Minor:
+		fName = path.Join(dName, fmt.Sprintf("%s%s0.1.0.json", key, vDelimiter))
+		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+			return fmt.Errorf("failed to write %q, %s", fName, err)
+		}
+	case Patch:
+		fName = path.Join(dName, fmt.Sprintf("%s%s0.0.1.json", key, vDelimiter))
+		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+			return fmt.Errorf("failed to write %q, %s", fName, err)
+		}
+	}
+
 	// Insert into store's keys list and re-sort
 	store.keys = append(store.keys, key)
 	sort.Strings(store.keys)
@@ -148,7 +204,8 @@ func (store *Storage) Create(key string, src []byte) error {
 }
 
 // Read retrieves takes a string as a key and returns the encoded
-// JSON document from the collection
+// JSON document from the collection. If versioning is enabled this is always the "current"
+// version of the object. Use Versions() and ReadVersion() for versioned copies.
 //
 //   src, err := store.Read("123")
 //   if err != nil {
@@ -198,8 +255,32 @@ func (store *Storage) Update(key string, src []byte) error {
 
 	// Save the document to the ptPath location
 	fName := path.Join(store.WorkPath, "pairtree", ptPath, fmt.Sprintf("%s.json", key))
+	dName := path.Join(store.WorkPath, "pairtree", ptPath)
 	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
 		return fmt.Errorf("failed to write %q, %s", fName, err)
+	}
+
+	// Save versioned copy if needed
+	switch store.Versioning {
+	case Major:
+		version, err := semver.Increment(store.LastVersion(key), semver.Major)
+		if err != nil {
+			return fmt.Errorf("failed to retreive versions, %s", err)
+		}
+		fName = path.Join(dName, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
+		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+			return fmt.Errorf("failed to write %q, %s", fName, err)
+		}
+	case Minor:
+		fName = path.Join(dName, fmt.Sprintf("%s%s0.1.0.json", key, vDelimiter))
+		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+			return fmt.Errorf("failed to write %q, %s", fName, err)
+		}
+	case Patch:
+		fName = path.Join(dName, fmt.Sprintf("%s%s0.0.1.json", key, vDelimiter))
+		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+			return fmt.Errorf("failed to write %q, %s", fName, err)
+		}
 	}
 	return nil
 }
@@ -248,6 +329,35 @@ func (store *Storage) Delete(key string) error {
 		}
 	}
 	return nil
+}
+
+// Versions retrieves a list of version available for a JSON document
+func (store *Storage) Versions(key string) ([]string, error) {
+	// NOTE: Keys are always normalized to lower case due to
+	// naming issues in case insensitive file systems.
+	key = strings.ToLower(key)
+	ptPath, ok := store.keyMap[key]
+	if !ok {
+		return nil, fmt.Errorf("%q not found in %q", key, store.WorkPath)
+	}
+	// Normalize the disk path if necessary
+	if !os.IsPathSeparator('/') {
+		ptPath = path.Join(strings.Split(ptPath, "/")...)
+	}
+	dName := path.Join(store.WorkPath, "pairtree", ptPath)
+	files, err := os.ReadDir(dName)
+	if err != nil {
+		return nil, fmt.Errorf("documents not found")
+	}
+	versions := []string{}
+	for _, file := range files {
+		fName := path.Base(file.Name())
+		if strings.HasPrefix(fName, key+vDelimiter) {
+			versions = append(versions, strings.TrimSuffix(strings.TrimPrefix(fName, key+vDelimiter), ".json"))
+		}
+	}
+	sort.Strings(versions)
+	return versions, nil
 }
 
 // List returns all keys in a collection as a slice of strings.

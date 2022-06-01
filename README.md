@@ -23,7 +23,7 @@ See [Getting started with dataset](how-to/getting-started-with-dataset.html) for
 datasetd, dataset as a web service
 ----------------------------------
 
-[datasetd](doc/datasetd.html) is a web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into other web applications or used by concurrently by multiple processes. It achieves this by storing the dataset collection in a SQL database using JSON columns.
+[datasetd](doc/datasetd.html) is a web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into web applications or used concurrently by multiple processes. It achieves this by storing the dataset collection in a SQL database using JSON columns.
 
 Design choices
 --------------
@@ -36,17 +36,17 @@ _dataset_ is guided by the idea that you should be able to work with JSON docume
     - collection.json metadata file describing the collection, e.g. storage type, name, description, if versioning is enabled
     - collection objects are accessed by their key which is case insensitive
     - collection names lowered case and usually have a `.ds` extension for easy identification
-    the directory must be lower casefolder contain
+    the directory must be lower case folder contain
 
 _datatset_ stores JSON object documents in a pairtree
     - the pairtree path is always lowercase
     - a pairtree of JSON object documents
     - non-JSON attachments can be associated with a JSON document and found in a directories organized by semver (semantic version number)
-    - versioned JSON documents are created sub directory encorprating a semver
+    - versioned JSON documents are created sub directory incorporating a semver
 _datasetd_ stores JSON object documents in a table named for the collection
     - objects are versioned into a collection history table by semver and key
     - attachments are not supported
-    - can be exported to a collection using pairtree storage (e.g. a zipfile will be generated holding a pairtree representation of the collection)
+    - can be exported to a collection using pairtree storage (e.g. a zip file will be generated holding a pairtree representation of the collection)
 
 
 The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current implementation is in the Go language.
@@ -77,9 +77,9 @@ Features
     - frame level actions
         - frames, list the frame names in the collection
         - frame, define a frame, does not overwrite an existing frame with the same name
-        - frame-def, show the frame definition (incase we need it for some reason)
+        - frame-def, show the frame definition (in case we need it for some reason)
         - frame-objects, return a list of objects in the frame
-        - refreash, using the current frame definition reload all the objects in the frame
+        - refresh, using the current frame definition reload all the objects in the frame
         - reframe, replace the frame definition then reload the objects in the frame using the old frame key list
         - has-frame, check to see if a frame exists
         - delete-frame remove the frame
