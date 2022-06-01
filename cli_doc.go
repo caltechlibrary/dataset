@@ -32,15 +32,18 @@ SUPPORTED VERBS
 - retrieve, creates a copy local of an attachement in a JSON record
 - prune, removes and attachment from a JSON record
 - frames, lists the frames defined in a collection
-- frame will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
-- reframe will recreate a frame based on the current state of objects in the collection, if keys are provide with the reframe request then the objects in the frame will be replaces by objects associated with the new keys provided
-- delete-frame will remove a frame from the collection
-- has-frame will return true (exit 0) if frame exists, false (exit 1) if not
-- attachments will list any attachments for a JSON document
-- attach will add an attachment to a JSON document
-- retrieve will copy out the attachment to a JSON document 
+- frame, will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
+- reframe, will recreate a frame based on the current state of objects in the collection, if keys are provide with the reframe request then the objects in the frame will be replaces by objects associated with the new keys provided
+- delete-frame, will remove a frame from the collection
+- has-frame, will return true (exit 0) if frame exists, false (exit 1) if not
+- attachments, will list any attachments for a JSON document
+- attach, will add an attachment to a JSON document
+- retrieve, will copy out the attachment to a JSON document 
   into the current directory 
-- prune will remove an attachment from the JSON document
+- prune, will remove an attachment from the JSON document
+- versions, will list the versions known for a JSON document if versioning is enabled for collection
+- read-version, will return a specific version of a JSON document if versioning is enabled for collection
+- versioning,  will set the versioning of a collection, can be "none", "major", "minor", or "patch"
 
 You can get additional help 
 
@@ -356,7 +359,7 @@ Syntax
 ------
 
 ` + "```" + `shell
-    dataset init COLLECTION_NAME
+    {app_name} init COLLECTION_NAME
 ` + "```" + `
 
 Description
@@ -372,12 +375,41 @@ The following example command create a dataset collection
 named "data.ds".
 
 ` + "```" + `shell
-    dataset init data.ds
+    {app_name} init data.ds
 ` + "```" + `
 
-NOTE: After each evocation of ` + "`dataset init`" + ` if all went well 
+NOTE: After each evocation of ` + "`{app_name} init`" + ` if all went well 
 you will be shown an ` + "`OK`" + ` if everything went OK, otherwise
 an error message. 
+
+`
+
+	cliVersioning = `
+versioning
+==========
+
+Collections can support a simplistic form of versioning for JSON documents
+and their attachments.  It is a collection wide setting and if enabled
+JSON documents and attachments will associated with a semver (symantic
+version number). The implementation details are based on the storage engine.
+
+The versioning can be set to increment on the patch, minor or major 
+semver values creating or updating a JSON document or attachment.  The 
+value before creation is assumed to be "0.0.0". 
+
+To return a list of JSON documents versions stored use the "versions"
+verb. This will return a list of version numbers available for a given
+key. To read a specific version of a JSON document use the "read-version"
+verb which takes a key and a semver version string.
+create a copy of the JSON document or attachment using a semver 
+then and
+
+` + "```" + `shell
+  # List versions in the data.ds collection for key "123"
+  {app_name} versions data.ds 123
+  # To read a specific vesion, e.g. 0.0.3
+  {app_name} version data.ds 123 0.0.3
+` + "```" + `
 
 `
 )

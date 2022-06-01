@@ -53,6 +53,13 @@ type StorageSystem interface {
 	//   }
 	Read(string) ([]byte, error)
 
+	// Versions returns a list of semver formatted version strings avialable for an JSON object
+	Versions(string) ([]string, error)
+
+	// ReadVersion takes a key and semver version string and return that version of the
+	// JSON object.
+	ReadVersion(string, string) ([]byte, error)
+
 	// Update takes a key and encoded JSON object and updates a
 	// JSON document in the collection.
 	//
@@ -64,7 +71,7 @@ type StorageSystem interface {
 	//
 	Update(string, []byte) error
 
-	// Delete removes a JSON document from the collection
+	// Delete removes all versions and attachments of a JSON document.
 	//
 	//   key := "123"
 	//   if err := storage.Delete(key); err != nil {
@@ -90,25 +97,4 @@ type StorageSystem interface {
 
 	// Length returns the number of records in the collection
 	Length() int64
-
-	// Frames
-	// Frame
-	// FrameDef
-	// FrameObjects
-	// Refresh
-	// Reframe
-	// DeleteFrame
-	// HasFrame
-
-	// Attachments
-	// Attach
-	// Retrieve
-	// Prune
-
-	// Sample
-	// Clone
-	// CloneSample
-
-	// Check
-	// Repair
 }

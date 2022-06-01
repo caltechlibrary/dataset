@@ -43,6 +43,12 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 		fmt.Fprint(out, StringProcessor(m, cliHasKey))
 	case "count":
 		fmt.Fprint(out, StringProcessor(m, cliCount))
+	case "versioning":
+		fmt.Fprint(out, StringProcessor(m, cliVersioning))
+	case "versions":
+		fmt.Fprint(out, StringProcessor(m, cliVersioning))
+	case "read-version":
+		fmt.Fprint(out, StringProcessor(m, cliVersioning))
 	default:
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -106,6 +112,107 @@ func doInit(out io.Writer, eout io.Writer, args []string) error {
 	c, err := Init(cName, dsnURI)
 	if err == nil {
 		defer c.Close()
+	}
+	return err
+}
+
+func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName      string
+		versioning string
+	)
+	flagSet := flag.NewFlagSet("versioning", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for create")
+	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "versioning")
+	}
+	switch {
+	case len(args) == 2:
+		cName, versioning = args[0], strings.ToLower(strings.TrimSpace(args[1]))
+	default:
+		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME VERSIONING_SETTING, got %q", strings.Join(append([]string{appName, "versioning"}, args...), " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	return c.SetVersioning(versioning)
+}
+
+func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		key   string
+	)
+	flagSet := flag.NewFlagSet("versions", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for create")
+	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "versioning")
+	}
+	switch {
+	case len(args) == 2:
+		cName, key = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(append([]string{appName, "versions"}, args...), " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	versions, err := c.Versions(key)
+	if err != nil {
+		return fmt.Errorf("version errors for %q, %s", key, err)
+	}
+	for _, val := range versions {
+		fmt.Fprintf(out, "%s\n", val)
+	}
+	return nil
+}
+
+func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName   string
+		key     string
+		version string
+		src     []byte
+	)
+	flagSet := flag.NewFlagSet("read-version", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for create")
+	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "versioning")
+	}
+	switch {
+	case len(args) == 3:
+		cName, key, version = args[0], args[1], args[2]
+	default:
+		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME KEY VERSION, got %q", strings.Join(append([]string{appName, "read-version"}, args...), " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.ReadVersion(key, version)
+	case SQLSTORE:
+		src, err = c.SQLStore.ReadVersion(key, version)
+	default:
+		return fmt.Errorf("%q storage not supported", c.StoreType)
+	}
+	if err == nil {
+		fmt.Fprintf(out, "%s\n", src)
 	}
 	return err
 }
@@ -221,7 +328,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		cName, key, src = args[0], args[1], []byte(args[2])
 	case len(args) == 2:
 		cName, key = args[0], args[1]
-		if input == "" || input == "-" {
+		if input == "-" {
 			src, err = ioutil.ReadAll(in)
 		} else {
 			src, err = ioutil.ReadFile(input)
@@ -443,6 +550,12 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "codemeta":
 		return fmt.Errorf("verb %q not implemented", verb)
+	case "versioning":
+		return doVersioning(in, out, eout, args)
+	case "versions":
+		return doVersions(in, out, eout, args)
+	case "read-version":
+		return doReadVersion(in, out, eout, args)
 	default:
 		return fmt.Errorf("verb %q not supported", verb)
 	}

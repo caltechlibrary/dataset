@@ -17,10 +17,14 @@ Next (prep for v2.x)
         - add an new object to the collection if key does not exist, return false if object already exists or unable to create the new object
     - [ ] read
         - return the object with nil error in the collection with the provided key, nil object and error value if not found
+    - [ ] read-version
+        - return the object with nil error in the collection with the provided key and version, nil object and error value if not found
     - [ ] update
         - replace the object in the collection for given key, return false is object does not to replace or replacement fails
     - [ ] delete
         - delete the object in the collection for given key, return true if deletion was successful, false if the object was not deleted (e.g. key not found or the collection is read only)
+    - [x] versioning
+        - set the versioning on a collection, the following strings enable versioning "major", "minor", "patch". Any other value disables versioning on the collection
     - [ ] frames
         - list the names of the frames currently defined in the collection
     - [ ] frame
@@ -40,26 +44,22 @@ Next (prep for v2.x)
     - [ ] attachments
     - [ ] retrieve (aka detach)
     - [ ] prune
-    - [ ] import dataset
-    - [ ] export dataset
 - [ ] Verbs support by cli only
     - [ ] sample
     - [ ] clone
     - [ ] clone-sample
     - [ ] check
     - [ ] repair
-    - [ ] import dataset
-    - [ ] export dataset
-- [x] Document example Shell access to datasetd via cURL
 - [ ] Document example Python 3 http client support for web API
+- [x] Document example Shell access to datasetd via cURL
+- [x] take KeyMap out of collection.json so collection.json is smaller
+    - support for segmented key maps (to limit memory consumption for very large collections)
+- [x] Auto-version attachments by patch, minor or major release per settings in collection.json using keywords of patch, minor, major
 
 Someday, Maybe
 --------------
 
-- [ ] take KeyMap out of collection.json so collection.json is smaller
-    - support for segmented key maps (to limit memory consumption for very large collections)
 - [ ] Missing tests for AttachStream()
-- [ ] Auto-version attachments by patch, minor or major release per settings in collection.json using keywords of patch, minor, major
 - [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
 - [ ] Memory consumption is high for attaching, figure out how to improve memory usage
     - Currently the attachment process generates the tar ball in memory rather than a tmp file on disc

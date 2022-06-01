@@ -10,15 +10,11 @@ import (
 	"strings"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/semver"
 	"github.com/caltechlibrary/pairtree"
-	"github.com/caltechlibrary/semver"
 )
 
 const (
-	// vDelimiter is the delimited used in versioning to indicate a version number
-	// of a JSON document object or attachment.
-	vDelimiter = "^"
-
 	// None means versioning is turned off for collection
 	None = iota
 	// Major means increment the major semver value on creation or update
@@ -27,6 +23,10 @@ const (
 	Minor
 	// Patach means increment the patch semver value on creation or update
 	Patch
+
+	// vDelimiter is the delimited used in versioning to indicate a version number
+	// of a JSON document object or attachment.
+	vDelimiter = "^"
 )
 
 type Storage struct {
@@ -262,6 +262,7 @@ func (store *Storage) Update(key string, src []byte) error {
 
 	// Save versioned copy if needed
 	if store.Versioning != None {
+		fmt.Printf("DEBUG store.Versioning -> %d\n", store.Versioning)
 		if err := store.saveNewVersion(key, src, dName); err != nil {
 			return fmt.Errorf("version save error %q in %q, %s", key, store.WorkPath, err)
 		}
@@ -292,7 +293,7 @@ func (store *Storage) saveNewVersion(key string, src []byte, dName string) error
 	case Minor:
 		sv.IncMinor()
 	default:
-		sv.InPatch()
+		sv.IncPatch()
 	}
 	version := sv.String()
 	fName := path.Join(dName, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
@@ -302,14 +303,17 @@ func (store *Storage) saveNewVersion(key string, src []byte, dName string) error
 	return nil
 }
 
-// Delete removes a JSON document, including all versions of the JSON document and
-// any attachments from the collection.
+// Delete removes all versions of JSON document and attachment indicated by the
+// key provided.
 //
 //   key := "123"
 //   if err := store.Delete(key); err != nil {
 //      ...
 //   }
 //
+// NOTE: If you're versioning your collection then you never really want to delete.
+// An approach could be to use update using an empty JSON document to indicate
+// the document is retired those avoiding the deletion problem of versioned content.
 func (store *Storage) Delete(key string) error {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
@@ -349,7 +353,7 @@ func (store *Storage) Delete(key string) error {
 	return nil
 }
 
-// Versions retrieves a list of version available for a JSON document
+// Versions retrieves a list of semver version strings available for a JSON document
 func (store *Storage) Versions(key string) ([]string, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
@@ -365,7 +369,7 @@ func (store *Storage) Versions(key string) ([]string, error) {
 	dName := path.Join(store.WorkPath, "pairtree", ptPath)
 	files, err := os.ReadDir(dName)
 	if err != nil {
-		return nil, fmt.Errorf("documents not found")
+		return nil, fmt.Errorf("documents not found, %s", err)
 	}
 	versions := []string{}
 	for _, file := range files {
@@ -374,8 +378,29 @@ func (store *Storage) Versions(key string) ([]string, error) {
 			versions = append(versions, strings.TrimSuffix(strings.TrimPrefix(fName, key+vDelimiter), ".json"))
 		}
 	}
-	versions, err := semver.SortedStrings(versions)
+	versions = semver.SortStrings(versions)
 	return versions, nil
+}
+
+// ReadVersion retrieves a specific version of a JSON document stored in a collection.
+func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
+	// NOTE: Keys are always normalized to lower case due to
+	// naming issues in case insensitive file systems.
+	key = strings.ToLower(key)
+	ptPath, ok := store.keyMap[key]
+	if !ok {
+		return nil, fmt.Errorf("%q not found in %q", key, store.WorkPath)
+	}
+	// Normalize the disk path if necessary
+	if !os.IsPathSeparator('/') {
+		ptPath = path.Join(strings.Split(ptPath, "/")...)
+	}
+	fName := path.Join(store.WorkPath, "pairtree", ptPath, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
+	src, err := ioutil.ReadFile(fName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %q (v%s) in %q, %s", key, version, store.WorkPath, err)
+	}
+	return src, nil
 }
 
 // List returns all keys in a collection as a slice of strings.

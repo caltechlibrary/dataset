@@ -128,6 +128,16 @@ func Open(name string) (*Collection, error) {
 	switch c.StoreType {
 	case PTSTORE:
 		c.PTStore, err = ptstore.Open(name, c.DsnURI)
+		switch c.Versioning {
+		case "major":
+			c.PTStore.SetVersioning(ptstore.Major)
+		case "minor":
+			c.PTStore.SetVersioning(ptstore.Minor)
+		case "patch":
+			c.PTStore.SetVersioning(ptstore.Patch)
+		default:
+			c.PTStore.SetVersioning(ptstore.None)
+		}
 	case SQLSTORE:
 		c.SQLStore, err = sqlstore.Open(name, c.DsnURI)
 	default:
@@ -163,6 +173,31 @@ func (c *Collection) Close() error {
 		}
 	}
 	return fmt.Errorf("%q not supported", c.StoreType)
+}
+
+// SetVersioning sets the versioning on a collection. The version string
+// can be "major", "minor", "patch". Any other value (e.g. "", "off", "none")
+// will turn off versioning for the collection.
+func (c *Collection) SetVersioning(versioning string) error {
+	switch versioning {
+	case "major":
+		c.Versioning = versioning
+	case "minor":
+		c.Versioning = versioning
+	case "patch":
+		c.Versioning = versioning
+	default:
+		c.Versioning = ""
+	}
+	colName := path.Join(c.workPath, "collection.json")
+	src, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return fmt.Errorf("cannot encode %q, %s", colName, err)
+	}
+	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
+		return fmt.Errorf("failed to create %q %s", colName, err)
+	}
+	return nil
 }
 
 // initPTStore takes a *Collection and initializes a PTSTORE collection.
@@ -489,6 +524,65 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 	return DecodeJSON(src, &obj)
 }
 
+// Versions retrieves a list of versions available for a JSON document if
+// versioning is enabled for the collection.
+//
+// ```
+//   key, version := "123", "0.0.1"
+//   if versions, err := Versions(key); err != nil {
+//      ...
+//   }
+// ```
+//
+func (c *Collection) Versions(key string) ([]string, error) {
+	var (
+		versions []string
+		err      error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		versions, err = c.PTStore.Versions(key)
+	case SQLSTORE:
+		versions, err = c.SQLStore.Versions(key)
+	default:
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %s, %s", key, err)
+	}
+	return versions, err
+}
+
+// ReadVersion retrieves a specific vesion from the collection for the given object.
+//
+// ```
+//   key, version := "123", "0.0.1"
+//   var obj map[string]interface{}
+//
+//   if err := ReadVersion(key, version, &obj); err != nil {
+//      ...
+//   }
+// ```
+//
+func (c *Collection) ReadVersion(key string, version string, obj map[string]interface{}) error {
+	var (
+		src []byte
+		err error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.ReadVersion(key, version)
+	case SQLSTORE:
+		src, err = c.SQLStore.ReadVersion(key, version)
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to read %s, %s", key, err)
+	}
+	return DecodeJSON(src, &obj)
+}
+
 // Update updates an existing JSON document.
 //
 // ```
@@ -519,7 +613,7 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// Delete removes an object frmo the collection
+// Delete removes an object from the collection (this includes all versions and all attachments)
 //
 // ```
 //   key := "123"

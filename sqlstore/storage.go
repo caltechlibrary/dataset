@@ -203,6 +203,16 @@ func (store *Storage) Read(key string) ([]byte, error) {
 	return []byte(value), nil
 }
 
+// Versions return a list of semver strings for a versioned object.
+func (store *Storage) Versions(key string) ([]string, error) {
+	return nil, fmt.Errorf("Versions() not implemented")
+}
+
+// ReadVersion returns a specific version of a JSON object.
+func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
+	return nil, fmt.Errorf("ReadVersion() not implemented.")
+}
+
 // Update takes a key and encoded JSON object and updates a
 //
 //   key := "123"
