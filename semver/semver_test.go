@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2021, Caltech
+// Copyright (c) 2022, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@ import (
 )
 
 func TestSemver(t *testing.T) {
-	expected := "v1.1.1"
+	expected := "1.1.1"
 	v, err := Parse([]byte(expected))
 	if err != nil {
 		t.Errorf("%s", err)
@@ -35,7 +35,7 @@ func TestSemver(t *testing.T) {
 		t.Errorf("expected %q, got %q", expected, result)
 	}
 
-	expected = "v1.1"
+	expected = "1.1"
 	v, err = Parse([]byte(expected))
 	if err != nil {
 		t.Errorf("%s", err)
@@ -46,7 +46,7 @@ func TestSemver(t *testing.T) {
 		t.Errorf("expected %q, got %q", expected, result)
 	}
 
-	expected = "vA1.2.3"
+	expected = "A1.2.3"
 	v, err = Parse([]byte(expected))
 	if err == nil {
 		t.Errorf("expected an error, returns %s", v.ToJSON())
@@ -60,7 +60,7 @@ func TestIncrement(t *testing.T) {
 		t.Errorf("Failed to parse %q, got %s", b, err)
 		t.FailNow()
 	}
-	expected := "v0.0.1"
+	expected := "0.0.1"
 	if err = version.IncPatch(); err != nil {
 		t.Errorf("Error, increment patch version, %q, %s", version.String(), err)
 		t.FailNow()
@@ -75,7 +75,7 @@ func TestIncrement(t *testing.T) {
 		t.Errorf("Error, increment minor version, %q, %s", version.String(), err)
 		t.FailNow()
 	}
-	expected = "v0.1.0"
+	expected = "0.1.0"
 	s = version.String()
 	if strings.Compare(s, expected) != 0 {
 		t.Errorf("Expected %q, got %q", expected, s)
@@ -85,7 +85,7 @@ func TestIncrement(t *testing.T) {
 		t.Errorf("Error, increment major version, %q, %s", version.String(), err)
 		t.FailNow()
 	}
-	expected = "v1.0.0"
+	expected = "1.0.0"
 	s = version.String()
 	if strings.Compare(s, expected) != 0 {
 		t.Errorf("Expected %q, got %q", expected, s)
@@ -134,28 +134,24 @@ func TestSorting(t *testing.T) {
 		"11.11.11",
 	}
 	expectedStrings := []string{
-		"v0.0.0",
-		"v0.1.0",
-		"v0.1.1",
-		"v0.9.9",
-		"v0.101.1",
-		"v1.0.1",
-		"v1.1.0",
-		"v1.1.1",
-		"v1.1.1",
-		"v1.9.1",
-		"v9.5.3",
-		"v10.9.1",
-		"v10.10.10",
-		"v11.11.11",
-		"v12.1.11",
-		"v111.111.111",
+		"0.0.0",
+		"0.1.0",
+		"0.1.1",
+		"0.9.9",
+		"0.101.1",
+		"1.0.1",
+		"1.1.0",
+		"1.1.1",
+		"1.1.1",
+		"1.9.1",
+		"9.5.3",
+		"10.9.1",
+		"10.10.10",
+		"11.11.11",
+		"12.1.11",
+		"111.111.111",
 	}
-	gotStrings, err := SortedStrings(inStrings)
-	if err != nil {
-		t.Errorf("Error sorting semver strings, %+v, %s", inStrings, err)
-		t.FailNow()
-	}
+	gotStrings := SortStrings(inStrings)
 	for i := 0; i < len(expectedStrings); i++ {
 		expectedVersion := expectedStrings[i]
 		gotVersion := gotStrings[i]

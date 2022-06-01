@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/semver"
 	"github.com/caltechlibrary/pairtree"
+	"github.com/caltechlibrary/semver"
 )
 
 const (
@@ -261,31 +261,49 @@ func (store *Storage) Update(key string, src []byte) error {
 	}
 
 	// Save versioned copy if needed
-	switch store.Versioning {
-	case Major:
-		version, err := semver.Increment(store.LastVersion(key), semver.Major)
-		if err != nil {
-			return fmt.Errorf("failed to retreive versions, %s", err)
-		}
-		fName = path.Join(dName, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
-		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
-			return fmt.Errorf("failed to write %q, %s", fName, err)
-		}
-	case Minor:
-		fName = path.Join(dName, fmt.Sprintf("%s%s0.1.0.json", key, vDelimiter))
-		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
-			return fmt.Errorf("failed to write %q, %s", fName, err)
-		}
-	case Patch:
-		fName = path.Join(dName, fmt.Sprintf("%s%s0.0.1.json", key, vDelimiter))
-		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
-			return fmt.Errorf("failed to write %q, %s", fName, err)
+	if store.Versioning != None {
+		if err := store.saveNewVersion(key, src, dName); err != nil {
+			return fmt.Errorf("version save error %q in %q, %s", key, store.WorkPath, err)
 		}
 	}
 	return nil
 }
 
-// Delete removes a JSON document and any attachments from the collection
+// saveNewVersions (private) if versioning is enabled the JSON document is saved
+// with a version number in filename along side the current version.
+func (store *Storage) saveNewVersion(key string, src []byte, dName string) error {
+	// Figure out the next version number in sequence
+	l, err := store.Versions(key)
+	if err != nil {
+		return err
+	}
+	versions := []*semver.Semver{}
+	for _, val := range l {
+		sv, err := semver.Parse([]byte(val))
+		if err == nil {
+			versions = append(versions, sv)
+		}
+	}
+	semver.Sort(versions)
+	sv := versions[len(versions)-1]
+	switch store.Versioning {
+	case Major:
+		sv.IncMajor()
+	case Minor:
+		sv.IncMinor()
+	default:
+		sv.InPatch()
+	}
+	version := sv.String()
+	fName := path.Join(dName, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
+	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+		return fmt.Errorf("failed to write %q, %s", fName, err)
+	}
+	return nil
+}
+
+// Delete removes a JSON document, including all versions of the JSON document and
+// any attachments from the collection.
 //
 //   key := "123"
 //   if err := store.Delete(key); err != nil {
@@ -356,7 +374,7 @@ func (store *Storage) Versions(key string) ([]string, error) {
 			versions = append(versions, strings.TrimSuffix(strings.TrimPrefix(fName, key+vDelimiter), ".json"))
 		}
 	}
-	sort.Strings(versions)
+	versions, err := semver.SortedStrings(versions)
 	return versions, nil
 }
 

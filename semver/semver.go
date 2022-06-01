@@ -51,12 +51,12 @@ type Semver struct {
 
 func (sv *Semver) String() string {
 	if sv.Patch == "" {
-		return "v" + sv.Major + "." + sv.Minor
+		return sv.Major + "." + sv.Minor
 	}
 	if sv.Suffix == "" {
-		return "v" + sv.Major + "." + sv.Minor + "." + sv.Patch
+		return sv.Major + "." + sv.Minor + "." + sv.Patch
 	}
-	return "v" + sv.Major + "." + sv.Minor + "." + sv.Patch + sv.Suffix
+	return sv.Major + "." + sv.Minor + "." + sv.Patch + sv.Suffix
 }
 
 // ToJSON takes a version struct and returns JSON as byte slice
@@ -193,22 +193,24 @@ func Sort(values []*Semver) {
 	})
 }
 
-// SortedStrings takes a list of strings which contain semvers
+// SortStrings takes a list of strings which contain semvers
 // convers the strings to a list of Semver structures, sorts the list
 // and returns a new the list of strings and an error value
-func SortedStrings(semvers []string) ([]string, error) {
+//
+// NOTE: Any unparsable semver values passed are skipped and
+// not returned in the sortes list of strings.
+func SortStrings(values []string) []string {
 	l := []*Semver{}
-	for _, sv := range semvers {
-		val, err := Parse([]byte(sv))
-		if err != nil {
-			return nil, err
+	for _, val := range values {
+		sv, err := Parse([]byte(val))
+		if err == nil {
+			l = append(l, sv)
 		}
-		l = append(l, val)
 	}
 	Sort(l)
 	out := []string{}
 	for i := 0; i < len(l); i++ {
 		out = append(out, l[i].String())
 	}
-	return out, nil
+	return out
 }
