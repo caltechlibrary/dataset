@@ -102,6 +102,18 @@ func (store *Storage) SetVersioning(setting int) error {
 	return nil
 }
 
+// writeKeyMap writes the keymap.json file
+func (store *Storage) writeKeyMap() error {
+	src, err := json.Marshal(store.keyMap)
+	if err != nil {
+		return fmt.Errorf("could not encode key map for %q, %s", store.WorkPath, err)
+	}
+	if err := ioutil.WriteFile(store.keyMapName, src, 0664); err != nil {
+		return fmt.Errorf("failed to write kep map for %q, %s", store.WorkPath, err)
+	}
+	return nil
+}
+
 // Close closes the storage system freeing resources as needed.
 //
 // ```
@@ -111,14 +123,7 @@ func (store *Storage) SetVersioning(setting int) error {
 // ```
 //
 func (store *Storage) Close() error {
-	src, err := json.Marshal(store.keyMap)
-	if err != nil {
-		return fmt.Errorf("could not encode key map for %q, %s", store.WorkPath, err)
-	}
-	if err := ioutil.WriteFile(store.keyMapName, src, 0664); err != nil {
-		return fmt.Errorf("failed to write kep map for %q, %s", store.WorkPath, err)
-	}
-	return nil
+	return store.writeKeyMap()
 }
 
 // Create stores a new JSON object in the collection
@@ -150,6 +155,7 @@ func (store *Storage) Create(key string, src []byte) error {
 		pairtree.Set(os.PathSeparator)
 		ptPath = pairtree.Encode(key)
 	}
+	fmt.Printf("DEBUG key %q, ptKey %q, ptPath %q\n", key, ptKey, ptPath)
 	// Return the seperator to the original state
 	pairtree.Set(sep)
 
@@ -166,8 +172,17 @@ func (store *Storage) Create(key string, src []byte) error {
 	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
 		return fmt.Errorf("failed to write %q, %s", fName, err)
 	}
-	// Update keyMap
+	// Update the keyMap
 	store.keyMap[key] = ptKey
+
+	// Insert into store's keys list and re-sort
+	store.keys = append(store.keys, key)
+	sort.Strings(store.keys)
+
+	// Save the metadata for the updated key map
+	if err := store.writeKeyMap(); err != nil {
+		return fmt.Errorf("unable to write keymap file, %s", err)
+	}
 
 	// Save versioned copy if needed
 	switch store.Versioning {
@@ -186,19 +201,6 @@ func (store *Storage) Create(key string, src []byte) error {
 		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
 			return fmt.Errorf("failed to write %q, %s", fName, err)
 		}
-	}
-
-	// Insert into store's keys list and re-sort
-	store.keys = append(store.keys, key)
-	sort.Strings(store.keys)
-
-	// Save the metadata for the updated key map
-	src, err := json.Marshal(store.keyMap)
-	if err != nil {
-		return fmt.Errorf("unable to encode key map for %q in %q, %s", key, store.WorkPath, err)
-	}
-	if err := ioutil.WriteFile(store.keyMapName, src, 0664); err != nil {
-		return fmt.Errorf("failed to write %q, %s", store.keyMapName, err)
 	}
 	return nil
 }
@@ -262,7 +264,6 @@ func (store *Storage) Update(key string, src []byte) error {
 
 	// Save versioned copy if needed
 	if store.Versioning != None {
-		fmt.Printf("DEBUG store.Versioning -> %d\n", store.Versioning)
 		if err := store.saveNewVersion(key, src, dName); err != nil {
 			return fmt.Errorf("version save error %q in %q, %s", key, store.WorkPath, err)
 		}
@@ -329,15 +330,6 @@ func (store *Storage) Delete(key string) error {
 		return fmt.Errorf("failed to delete %q in %q, %s", key, store.WorkPath, err)
 	}
 	delete(store.keyMap, key)
-	// Save the metadata for the updated key map
-	src, err := json.Marshal(store.keyMap)
-	if err != nil {
-		return fmt.Errorf("unable to encode key map for %q in %q, %s", key, store.WorkPath, err)
-	}
-	if err := ioutil.WriteFile(store.keyMapName, src, 0664); err != nil {
-		return fmt.Errorf("failed to write %q, %s", store.keyMapName, err)
-	}
-
 	// Remove key from store.keys, could be more efficient ...
 	l := len(store.keys) - 1
 	for i, val := range store.keys {
@@ -350,6 +342,12 @@ func (store *Storage) Delete(key string) error {
 			break
 		}
 	}
+
+	// Save the metadata for the updated key map
+	if err := store.writeKeyMap(); err != nil {
+		return fmt.Errorf("unable to encode key map for %q in %q, %s", key, store.WorkPath, err)
+	}
+
 	return nil
 }
 
