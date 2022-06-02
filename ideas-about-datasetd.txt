@@ -1,5 +1,9 @@
-Bottler will be much easier to implement if dataset had a web service supporting reliable asynchronous use. The survice should be RESTful and use a
-simple path structure organized around the JSON objects, their attachments and frames. . Assuming a hostname of "dataset.local" here's some examples of what that might look like. Our collection name will be called "Messages"
+Bottler will be much easier to implement if dataset had a web service
+supporting reliable asynchronous use. The survice should be RESTful and
+use a simple path structure organized around the JSON objects, their
+attachments and frames. . Assuming a hostname of "dataset.local" here's
+some examples of what that might look like. Our collection name will be
+called "Messages"
  
 
 1. Create a collection called Messages
@@ -18,12 +22,30 @@ curl -X PUT -H 'Content-Type:application/json' https://dataset.local/rest/Messag
 curl https://dataset.local/delete/Messages/1
 ```
 
-NOTE: the service supports exchanging JSON content and you must specific that in the content type header, "application/json". The exception would be for attachments, they will have their own mime types or references as "octect/binary-stream".  If you request an end point using "text/plain" then a plain text page with documentation will be returned for the end point or it's parent.
+NOTE: the service supports exchanging JSON content and you must specific
+that in the content type header, "application/json". The exception would
+be for attachments, they will have their own mime types or references as
+"octect/binary-stream".  If you request an end point using "text/plain"
+then a plain text page with documentation will be returned for the end
+point or it's parent.
 
-IDEA: If the dataset collection knew about Solr then the dataset web service could also make an appropriate call to Solr to update the index.
+IDEA: If the dataset collection knew about Solr then the dataset web
+service could also make an appropriate call to Solr to update the index.
 
-In addition a dataset client could be created similar to the Solr `bin/post` client so operations on a dataset collection could function similarly to Solr (e.g. for doing bulk imports or updates).
+In addition a dataset client could be created similar to the Solr
+`bin/post` client so operations on a dataset collection could function
+similarly to Solr (e.g. for doing bulk imports or updates).
 
-IDEA: The datasetd as a web service is not restricted to storing JSON documents in a pairtree on disk. It may make more sense is leveraging existing database engines. Postgres and MySQL 8 both support JSON columns. A web service version of dataset could use a single database with a simple table structure of key, object and timestamps (created, updated). Frames support could then be implemented as a related table and have the advantage of optimized sorting and filtering via the host database. This would also allow dataset size to be larger than would be convientent on disk.  What would be preserved is the access API. It would be helpful to be able to import/export to a traditional file system based dataset easily as well as to support versioned attachments.
+IDEA: The datasetd as a web service is not restricted to storing JSON
+documents in a pairtree on disk. It may make more sense is leveraging
+existing database engines. Postgres and MySQL 8 both support JSON columns.
+A web service version of dataset could use a single database with a simple
+table structure of key, object and timestamps (created, updated). Frames
+support could then be implemented as a related table and have the advantage
+of optimized sorting and filtering via the host database. This would also
+allow dataset size to be larger than would be convientent on disk.  What
+would be preserved is the access API. It would be helpful to be able to
+import/export to a traditional file system based dataset easily as well as
+to support versioned attachments.
 
 

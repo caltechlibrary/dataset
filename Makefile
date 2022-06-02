@@ -62,6 +62,9 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
 test: clean build
+	cd pairtree && go test
+	cd ptstore && go test
+	cd sqlstore && go test
 	go test
 	bash test_cmd.bash
 

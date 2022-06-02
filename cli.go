@@ -484,6 +484,56 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	return nil
 }
 
+func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		srcName   string
+		dstName   string
+		dstDsnURI string
+		keysName  string
+		verbose   bool
+		src       []byte
+		err       error
+	)
+	flagSet := flag.NewFlagSet("clone", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "clone")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, dstName, dstDsnURI = args[0], args[1], ""
+	case len(args) == 3:
+		srcName, dstName, dstDsnURI = args[0], args[1], args[2]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME DEST_COLLECTION_NAME [DEST_DSN_URI], got %q", strings.Join(args, " "))
+	}
+	if keysName == "-" {
+		src, err = ioutil.ReadAll(in)
+		if err != nil {
+			return fmt.Errorf("failed to read keys from stdin, %s", err)
+		}
+	} else {
+		src, err = ioutil.ReadFile(keysName)
+		if err != nil {
+			return fmt.Errorf("failed to read keys from %q, %s", keysName, err)
+		}
+	}
+	keys := strings.Split(fmt.Sprintf("%s", src), "\n")
+	source, err := Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	if err := source.Clone(dstName, dstDsnURI, keys, verbose); err != nil {
+		return fmt.Errorf("clone failed %s", err)
+	}
+	return nil
+}
+
 /// RunCLI implemented the functionlity used by the cli.
 func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if len(args) == 0 {
@@ -541,7 +591,7 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	case "sample":
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "clone":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doClone(in, out, eout, args)
 	case "clone-sample":
 		return fmt.Errorf("verb %q not implemented", verb)
 	case "check":

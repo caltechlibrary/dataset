@@ -3,9 +3,9 @@
 
 ## Requirements
 
-(needed if compiling from source)
+(when compiling from source)
 
-+ Golang 1.18.2 or better
+- Golang 1.18.2 or better
 
 ## Recommend
 
@@ -20,11 +20,11 @@
 
 ## Using the _dataset_ package
 
-+ create/initialize collection
-+ create a JSON document in a collection
-+ read a JSON document
-+ update a JSON document
-+ delete a JSON document
+- create/initialize collection
+- create a JSON document in a collection
+- read a JSON document
+- update a JSON document
+- delete a JSON document
 
 ```go
     package main
@@ -36,31 +36,31 @@
     
     func main() {
         // Create a collection "mystuff" inside the directory called demo
-        collection, err := dataset.InitCollection("demo/mystuff.ds", dataset.PTSTORE)
+        collection, err := dataset.InitCollection("demo/mystuff.ds", "")
         if err != nil {
             log.Fatalf("%s", err)
         }
         defer collection.Close()
         // Create a JSON document
-        docName := "freda.json"
+        key := "freda"
         document := map[string]interface{}{
             "name":  "freda",
             "email": "freda@inverness.example.org",
         }
-        if err := collection.Create(docName, document); err != nil {
+        if err := collection.Create(key, document); err != nil {
             log.Fatalf("%s", err)
         }
         // Read a JSON document
-        if err := collection.Read(docName, document); err != nil {
+        if err := collection.Read(key, document); err != nil {
             log.Fatalf("%s", err)
         }
         // Update a JSON document
         document["email"] = "freda@zbs.example.org"
-        if err := collection.Update(docName, document); err != nil {
+        if err := collection.Update(key, document); err != nil {
             log.Fatalf("%s", err)
         }
         // Delete a JSON document
-        if err := collection.Delete(docName); err != nil {
+        if err := collection.Delete(key); err != nil {
             log.Fatalf("%s", err)
         }
     }
@@ -74,6 +74,6 @@ packages.
 
 ## Caltech Library packages
 
-+ [github.com/caltechlibrary/dotpath](https://github.com/caltechlibrary/dotpath)
-    + provides dot path style notation to reach into JSON objects
+- [github.com/caltechlibrary/dotpath](https://github.com/caltechlibrary/dotpath)
+  - provides dot path style notation to reach into JSON objects
 

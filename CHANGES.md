@@ -1,19 +1,20 @@
-Release 2.x:
+Release 2.0.0:
 
 This release is a rewrite of version 1 focusing on removing features, adding useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.
 
 
-The dataset collections structures have changed
+The dataset collection's structure has changed.
 
 - a dataset is a directory containing a collection.json and codemeta.json file
 - the collection.json no longer contains general metadata or maps to the keys and pairtree, it focuses on operational settings (e.g. storage type and access information)
     - when running dataset as a web service or on a shared user machine you can setup the database connection through the environment. I.e. set DATASET_DSN_URI value (DSN URI is formed with a protocol named for the SQL driver, a "://" and the DSN for that driver, e.g. "mysql://DB_USER:DB_PASSWD@/DB_NAME")
-- a codemeta.json file is now used for holding collection level metadata as this has been adopted by some of the data science community
+- a codemeta.json file is now used for holding general collection level metadata. [codemeta](https://codemeta.github.io/) has been adopted by the data science community for describing data and software
 - additional JSON configuration files may be used to manage the collection dependent on storage engine
 
 
 Golang package changes:
 
+- Minimum Go version is now 1.18.2
 - The dataset v2 package has been substantially reorganized and simplified, most things have changed
     - Collection.Init() now takes two parameters, collection name, an an optional DSN URI, if a DSN URI is provided it'll define the storage engine, e.g. a dataset.SQLSTORE)
     - Collection.DocPath() removed, doesn't make sense anymore since JSON may be stored in a SQL table
@@ -26,13 +27,13 @@ Golang package changes:
 
 libdataset:
 
-- This has be dropped for now and is no longer supported due to the challenges in cross compiling for all supported platforms
+- The C shared library implementation has been dropped for now do to the challenges of easily crosscompiling releases
 
 CLI changes:
 
 - options have be restructured so that some come after the verb
 - help has been restructured to better support focusing the help text on the task needed
-- the command line version is single user, single process for pairtree storage but can also use a SQL database with JSON column support for storage of JSON objects
+- the command line version is single user, single process and be default assumes pairtree storage. It can also access SQL databases for storing JSON objects. Currently this is being tested with SQLite3 and MySQL 8
 
 
 Web Service changes:

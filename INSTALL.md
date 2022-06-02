@@ -1,9 +1,15 @@
 Installation
 ============
 
-__dataset__ is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents into a collection by unique filename. 
+__dataset__ is a set of command line programs run from a shell like Bash.
+It is designed for single user, single process management of a JSON
+object documents as a collection where JSON documents are referenced
+by a unique identifier or key.  __datasetd__ is a web service which
+serves a similar purpose but is intended for supporting multi-user
+and multi-processes.
 
-This is generalized instructions for a release.  For deployment suggestions see NOTES.md
+This is generalized instructions for a release.  For deployment suggestions 
+see NOTES.md
 
 Compiled version
 ----------------
@@ -14,7 +20,8 @@ Windows (Intel) and Raspberry Pi (ARM).
 VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v1.0.2)
 
 
-For all the released version go to the project page on GitHub and click latest release
+For all the released version go to the project page on GitHub and click
+latest release
 
 >    https://github.com/caltechlibrary/dataset/releases/latest
 
@@ -48,8 +55,8 @@ The basic recipe
 4. Make sure the new location in in our path
 5. Test
 
-Here's an example of the commands run in the Terminal App after downloading the 
-zip file.
+Here's an example of the commands run in the Terminal App after
+downloading the zip file.
 
 ```shell
     cd Downloads/
@@ -67,8 +74,8 @@ zip file.
 3. Copy the executable to the "bin" directory in your "HOME" directory (or a folder in your path)
 4. Test
 
-Here's an example of the commands run in from the Bash shell on Windows 10 after
-downloading the zip file.
+Here's an example of the commands run in from the Bash shell on Windows 10
+after downloading the zip file.
 
 ```shell
     cd Downloads/
@@ -102,7 +109,9 @@ downloading the zip file.
 
 ### Raspberry Pi OS
 
-Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit Raspberry Pi OS.
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7
+support). Testing is done on Raspberry Pi 4 B devices using 32bit
+Raspberry Pi OS.
 
 1. Download the zip file
 2. Unzip the zip file
@@ -124,15 +133,7 @@ downloading the zip file.
 
 ## Compiling from source
 
-_dataset_ is "go get-able".  Use the "go get" command to download the dependent packages
-as well as _dataset_'s source code. 
-
-
-```shell
-    go get -u github.com/caltechlibrary/dataset/...
-```
-
-Or clone the repository and then compile
+Clone the repository and then compile.
 
 ```shell
     cd
@@ -143,27 +144,14 @@ Or clone the repository and then compile
     make install
 ```
 
-Building just the `libdataset` shared library requires the following sequence.
-
-```
-    cd
-    git clone https://github.com/caltechlibrary/dataset
-    cd dataset
-    make
-    cd libdataset
-    make test
-    make release
-```
-
-You should now have a "dist" directory in the root of the repository with a
-Zip file for the "libdataset" shared library.
-
 ### Windows compilation
 
 The tool chain to compile on Windows make several assumptions.
 
-1. You're using Anaconda shell and have the C tool chain installed for cgo to work
-2. You have Stephen Dolan's jq command available (so the version.go file can be regenerated)
+1. You're using Anaconda shell and have the C tool chain installed for
+   cgo to work
+2. You have Stephen Dolan's jq command available (so the version.go file
+   can be regenerated)
 3. You have the latest go installed
 
 Since I don't assume a POSIX shell environment on windows I have made

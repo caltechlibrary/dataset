@@ -1,6 +1,8 @@
 package dataset
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -189,6 +191,84 @@ func TestCloneSample(t *testing.T) {
 			}
 		default:
 			t.Errorf("Could not find %s in %s or %s", key, trainingName, testName)
+		}
+	}
+}
+
+// TestCloneLongKeys added test case
+func TestCloneLongKeys(t *testing.T) {
+	// Create a source dataset
+	cName := path.Join("testout", "src1.ds")
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	source, err := Init(cName, "")
+	if err != nil {
+		t.Errorf("Can't create source dataset, %s", err)
+		t.FailNow()
+	}
+	defer source.Close()
+
+	// Setup a collection to clone
+	src := []byte(`[
+	{ "one": 1 },
+	{ "two": 2 },
+	{ "three": 3 },
+	{ "four": 4 }
+]`)
+	testData := []map[string]interface{}{}
+	err = json.Unmarshal(src, &testData)
+	if err != nil {
+		t.Errorf("Can't create testdata")
+		t.FailNow()
+	}
+	for i, obj := range testData {
+		key := fmt.Sprintf("%+08d", i)
+		if err := source.Create(key, obj); err != nil {
+			t.Errorf("failed to create JSON doc for %q in %q, %s", key, cName, err)
+			t.FailNow()
+		}
+	}
+	if source.Length() != 4 {
+		t.Errorf("Expected 4 documents in our source repository")
+		t.FailNow()
+	}
+	keys, err := source.Keys()
+	if err != nil {
+		t.Errorf("can't retrieve source keys, %s", err)
+		t.FailNow()
+	}
+	// Clone connection
+	tName := path.Join("testout", "dst1.ds")
+	if _, err := os.Stat(tName); err == nil {
+		os.RemoveAll(tName)
+	}
+	err = source.Clone(tName, "", keys, false)
+	if err != nil {
+		t.Errorf(`expected source.Clone(%q, "") to succeed, %s`, tName, err)
+		t.FailNow()
+	}
+	// Open cloned repository
+	dest, err := Open(tName)
+	if err != nil {
+		t.Errorf(`failed to open clone %q, %s`, tName, err)
+		t.FailNow()
+	}
+	// Check if they got copied successful
+
+	for _, key := range keys {
+		if !dest.HasKey(key) {
+			t.Errorf("Expected %q to have key %q, missing", tName, key)
+		} else {
+			obj := map[string]interface{}{}
+			if err := dest.Read(key, obj); err != nil {
+				t.Errorf("Expected dest.Read(%q, obj) to succeed, %s", key, err)
+				t.FailNow()
+			}
+			if len(obj) == 0 {
+				t.Errorf("Expected object %q to have content", key)
+				t.FailNow()
+			}
 		}
 	}
 }

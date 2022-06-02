@@ -27,7 +27,6 @@ import (
 	"time"
 
 	// Dataset sub-modules
-	"github.com/caltechlibrary/dataset/pairtree"
 	"github.com/caltechlibrary/dataset/ptstore"
 	"github.com/caltechlibrary/dataset/sqlstore"
 )
