@@ -2,14 +2,32 @@ package sqlstore
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 
+	// Caltech Library Packages
+	"github.com/caltechlibrary/dataset/semver"
+
 	// Database specific drivers
 	_ "github.com/glebarez/go-sqlite"
 	_ "github.com/go-sql-driver/mysql"
+)
+
+const (
+	// None means versioning is turned off for collection
+	None = iota
+	// Major means increment the major semver value on creation or update
+	Major
+	// Minor means increment the minor semver value on creation or update
+	Minor
+	// Patach means increment the patch semver value on creation or update
+	Patch
+
+	versionPrefix = "_v_"
 )
 
 type Storage struct {
@@ -30,6 +48,9 @@ type Storage struct {
 
 	// db database handle
 	db *sql.DB
+
+	// versioning
+	Versioning int
 }
 
 // Init creates a table to hold the collection if it doesn't already
@@ -84,6 +105,146 @@ func Init(name string, dsnURI string) (*Storage, error) {
 	return store, err
 }
 
+// saveNewVersion saves an object to the version table for collection
+func (store *Storage) saveNewVersion(key string, src []byte) error {
+	// Figure out the next version number in sequence
+	var (
+		sv *semver.Semver
+	)
+	l, err := store.Versions(key)
+	if err != nil {
+		return err
+	}
+	if len(l) > 0 {
+		versions := []*semver.Semver{}
+		for _, val := range l {
+			sv, err := semver.Parse([]byte(val))
+			if err == nil {
+				versions = append(versions, sv)
+			}
+		}
+		semver.Sort(versions)
+		sv = versions[len(versions)-1]
+	} else {
+		sv, _ = semver.Parse([]byte("0.0.0"))
+	}
+	switch store.Versioning {
+	case Major:
+		sv.IncMajor()
+	case Minor:
+		sv.IncMinor()
+	default:
+		sv.IncPatch()
+	}
+	version := sv.String()
+	versionTable := versionPrefix + store.tableName
+	stmt := fmt.Sprintf(`INSERT INTO %s (key, version, src) VALUES (?, ?, ?)`, versionTable)
+	_, err = store.db.Exec(stmt, key, version, string(src))
+	if err != nil {
+		return fmt.Errorf(`failed to save version %q for %q in %q, %s`, key, version, store.WorkPath, err)
+	}
+	return nil
+}
+
+// saveVersioning() is a help function to store current versioning settings.
+func (store *Storage) saveVersioning() error {
+	versioningName := path.Join(store.WorkPath, "versioning.json")
+	src := []byte(fmt.Sprintf(`{"versioning": %d}`, store.Versioning))
+	if _, err := os.Stat(store.WorkPath); os.IsNotExist(err) {
+		os.MkdirAll(store.WorkPath, 775)
+	}
+	if err := ioutil.WriteFile(versioningName, src, 0664); err != nil {
+		return err
+	}
+	return nil
+}
+
+// getVersioning() reads the versioning information for collection
+// and returns the integer value it finds.
+func (store *Storage) getVersioning() error {
+	versioningName := path.Join(store.WorkPath, "versioning.json")
+	if _, err := os.Stat(versioningName); os.IsNotExist(err) {
+		store.Versioning = None
+		return nil
+	}
+	src, err := ioutil.ReadFile(versioningName)
+	if err != nil {
+		return err
+	}
+	m := map[string]int{}
+	if err := json.Unmarshal(src, &m); err != nil {
+		return err
+	}
+	if val, ok := m["versioning"]; ok {
+		switch val {
+		case None:
+			store.Versioning = None
+		case Major:
+			store.Versioning = Major
+		case Minor:
+			store.Versioning = Minor
+		case Patch:
+			store.Versioning = Patch
+		default:
+			store.Versioning = None
+			return fmt.Errorf("Unknown/unsupported version type")
+		}
+	}
+	return nil
+}
+
+// SetVersioning sets versioning to Major, Minor, Patch or None
+// If versioning is set to Major, Minor or Patch a table in the
+// open SQL storage engine will be created.
+func (store *Storage) SetVersioning(setting int) error {
+	switch setting {
+	case None:
+		store.Versioning = None
+	case Major:
+		store.Versioning = setting
+	case Minor:
+		store.Versioning = setting
+	case Patch:
+		store.Versioning = setting
+	default:
+		return fmt.Errorf("Unknown/unsupported version type")
+	}
+	if store.Versioning != None {
+		var (
+			stmt         string
+			versionTable = versionPrefix + store.tableName
+		)
+		switch store.driverName {
+		case "sqlite":
+			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) NOT NULL,
+  version VARCHAR(255) NOT NULL,
+  src JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (key, version)
+)`, versionTable)
+		case "mysql":
+			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  key VARCHAR(255) NOT NULL,
+  version VARCHAR(255) NOT NULL,
+  src JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (key, version)
+)`, versionTable)
+		default:
+			return fmt.Errorf("%q database not supported", store.driverName)
+		}
+		// Create the collection table
+		if _, err := store.db.Exec(stmt); err != nil {
+			return fmt.Errorf("Failed to create version table %q, %s", versionTable, err)
+		}
+	}
+	if err := store.saveVersioning(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Open opens the storage system and returns an storage struct and error
 // It is passed either a filename. For a Pairtree the would be the
 // path to collection.json and for a sql store file holding a DSN URI.
@@ -134,6 +295,10 @@ func Open(name string, dsnURI string) (*Storage, error) {
 	store.db.SetConnMaxLifetime(0)
 	store.db.SetMaxIdleConns(50)
 	store.db.SetMaxOpenConns(50)
+
+	if err := store.getVersioning(); err != nil {
+		return store, err
+	}
 	return store, err
 }
 
@@ -167,7 +332,13 @@ func (store *Storage) Close() error {
 func (store *Storage) Create(key string, src []byte) error {
 	stmt := fmt.Sprintf(`INSERT INTO %q (key, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
-	return err
+	if err != nil {
+		return err
+	}
+	if store.Versioning != None {
+		return store.saveNewVersion(key, src)
+	}
+	return nil
 }
 
 // Read retrieves takes a string as a key and returns the encoded
@@ -205,12 +376,43 @@ func (store *Storage) Read(key string) ([]byte, error) {
 
 // Versions return a list of semver strings for a versioned object.
 func (store *Storage) Versions(key string) ([]string, error) {
-	return nil, fmt.Errorf("Versions() not implemented")
+	stmt := fmt.Sprintf(`SELECT version FROM %s WHERE key = ?`, versionPrefix+store.tableName)
+	rows, err := store.db.Query(stmt, key)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	values := []string{}
+	value := ""
+	for rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, value)
+	}
+	values = semver.SortStrings(values)
+	return values, nil
 }
 
 // ReadVersion returns a specific version of a JSON object.
 func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
-	return nil, fmt.Errorf("ReadVersion() not implemented.")
+	stmt := fmt.Sprintf(`SELECT src FROM %s WHERE key = ? AND version = ?`, versionPrefix+store.tableName)
+	rows, err := store.db.Query(stmt, key, version)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	value := ""
+	if rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return []byte(value), nil
 }
 
 // Update takes a key and encoded JSON object and updates a
@@ -224,6 +426,12 @@ func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 func (store *Storage) Update(key string, src []byte) error {
 	stmt := fmt.Sprintf(`REPLACE INTO %q (key, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
+	if err != nil {
+		return err
+	}
+	if store.Versioning != None {
+		return store.saveNewVersion(key, src)
+	}
 	return err
 }
 
@@ -237,6 +445,8 @@ func (store *Storage) Update(key string, src []byte) error {
 func (store *Storage) Delete(key string) error {
 	stmt := fmt.Sprintf(`DELETE FROM %s WHERE key = ?`, store.tableName)
 	_, err := store.db.Exec(stmt, key)
+	// FIXME: Remove attachments
+	// FIXME: remove versions
 	return err
 }
 
