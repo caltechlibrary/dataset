@@ -155,7 +155,6 @@ func (store *Storage) Create(key string, src []byte) error {
 		pairtree.Set(os.PathSeparator)
 		ptPath = pairtree.Encode(key)
 	}
-	fmt.Printf("DEBUG key %q, ptKey %q, ptPath %q\n", key, ptKey, ptPath)
 	// Return the seperator to the original state
 	pairtree.Set(sep)
 
