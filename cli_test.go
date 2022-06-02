@@ -174,13 +174,181 @@ func TestCloning(t *testing.T) {
 }
 
 func TestSampleCloning(t *testing.T) {
-	t.Errorf("cli sample cloning not implemented")
+	srcName := path.Join("testout", "zbs_characters.ds")
+	trainingName := path.Join("testout", "zbs_training.ds")
+	trainingDsnURI := "sqlite://testout/zbs_training.ds/collection.db"
+	testName := path.Join("testout", "zbs_test.ds")
+	testDsnURI := "sqlite://testout/zbs_test.ds/collection.db"
+	if _, err := os.Stat(srcName); err == nil {
+		os.RemoveAll(srcName)
+	}
+	if _, err := os.Stat(trainingName); err == nil {
+		os.RemoveAll(trainingName)
+	}
+	if _, err := os.Stat(testName); err == nil {
+		os.RemoveAll(testName)
+	}
+
+	testRecords := map[string]map[string]interface{}{}
+	testRecords["character:1"] = map[string]interface{}{
+		"name": "Jack Flanders",
+	}
+	testRecords["character:2"] = map[string]interface{}{
+		"name": "Little Frieda",
+	}
+	testRecords["character:3"] = map[string]interface{}{
+		"name": "Mojo Sam the Yoodoo Man",
+	}
+	testRecords["character:4"] = map[string]interface{}{
+		"name": "Kasbah Kelly",
+	}
+	testRecords["character:5"] = map[string]interface{}{
+		"name": "Dr. Marlin Mazoola",
+	}
+	testRecords["character:6"] = map[string]interface{}{
+		"name": "Old Far-Seeing Art",
+	}
+	testRecords["character:7"] = map[string]interface{}{
+		"name": "Chief Wampum Stompum",
+	}
+	testRecords["character:8"] = map[string]interface{}{
+		"name": "The Madonna Vampira",
+	}
+	testRecords["character:9"] = map[string]interface{}{
+		"name": "Domenique",
+	}
+	testRecords["character:10"] = map[string]interface{}{
+		"name": "Claudine",
+	}
+	var (
+		input, output []byte
+	)
+	// Map IO for testing
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+	args := []string{"init", srcName}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	// Add our records
+	for k, v := range testRecords {
+		args = []string{"create", srcName, k}
+		src, err := json.MarshalIndent(v, "", "    ")
+		if err != nil {
+			t.Errorf("Can't marshal %q -> %+v", k, v)
+			continue
+		}
+		in = bytes.NewBuffer(src)
+		if err := RunCLI(in, out, os.Stderr, args); err != nil {
+			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		}
+	}
+	args = []string{"clone-sample", srcName, trainingName, trainingDsnURI, testName, testDsnURI}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
 }
 
 func TestCLIOnFrames(t *testing.T) {
-	t.Errorf("cli frames commands not implemented")
+	srcName := path.Join("testout", "zbs_frames.ds")
+	if _, err := os.Stat(srcName); err == nil {
+		os.RemoveAll(srcName)
+	}
+
+	testRecords := map[string]map[string]interface{}{}
+	testRecords["character:1"] = map[string]interface{}{
+		"name": "Jack Flanders",
+		"one":  1,
+	}
+	testRecords["character:2"] = map[string]interface{}{
+		"name": "Little Frieda",
+		"one":  2,
+	}
+	testRecords["character:3"] = map[string]interface{}{
+		"name": "Mojo Sam the Yoodoo Man",
+		"one":  3,
+	}
+	testRecords["character:4"] = map[string]interface{}{
+		"name": "Kasbah Kelly",
+		"one":  4,
+	}
+	testRecords["character:5"] = map[string]interface{}{
+		"name": "Dr. Marlin Mazoola",
+		"one":  3,
+	}
+	testRecords["character:6"] = map[string]interface{}{
+		"name": "Old Far-Seeing Art",
+		"one":  2,
+	}
+	testRecords["character:7"] = map[string]interface{}{
+		"name": "Chief Wampum Stompum",
+		"one":  1,
+	}
+	testRecords["character:8"] = map[string]interface{}{
+		"name": "The Madonna Vampira",
+		"one":  0,
+	}
+	testRecords["character:9"] = map[string]interface{}{
+		"name": "Domenique",
+		"one":  1,
+	}
+	testRecords["character:10"] = map[string]interface{}{
+		"name": "Claudine",
+		"one":  1,
+	}
+	var (
+		input, output []byte
+	)
+	// Map IO for testing
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+	args := []string{"init", srcName}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	// Add our records
+	for k, v := range testRecords {
+		args = []string{"create", srcName, k}
+		src, err := json.MarshalIndent(v, "", "    ")
+		if err != nil {
+			t.Errorf("Can't marshal %q -> %+v", k, v)
+			continue
+		}
+		in = bytes.NewBuffer(src)
+		if err := RunCLI(in, out, os.Stderr, args); err != nil {
+			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		}
+	}
+	args = []string{"frame", srcName, "one-data", ".one"}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
 }
 
 func TestCLIOnAttachments(t *testing.T) {
+	var (
+		input, output []byte
+	)
 	t.Errorf("cli attachment command not implemented")
+	input = []byte(`{
+	"one": 1,
+	"two": 2,
+	"three": 3
+}`)
+	// Map IO for testing
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+	cName := path.Join("testout", "attached.ds")
+	args := []string{"init", cName}
+	if err := RunCLI(os.Stdin, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	args = []string{"create", cName, "uno"}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	args = []string{"attach", cName, "uno", "README.md"}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
 }

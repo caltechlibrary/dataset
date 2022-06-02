@@ -323,13 +323,6 @@ Usage
     {app_name} haskey people.ds r1
 ` + "```" + `
 
-In python
-
-` + "```" + `shell
-    {app_name}.has_key('people.ds', '0000-0003-0900-6903')
-    {app_name}.has_key('people.ds', 'r1')
-` + "```" + `
-
 `
 
 	cliCount = `
@@ -428,6 +421,433 @@ then and
   # To read a specific vesion, e.g. 0.0.3
   {app_name} version data.ds 123 0.0.3
 ` + "```" + `
+
+`
+
+	cliClone = `
+clone
+=====
+
+Clone a collection from a list of keys into a new collection.
+
+In this example we create a list of keys using the ` + "`-sample`" + ` option
+and then clone those keys into a new collection called *sample.ds*.
+
+` + "```" + `shell
+    {app_name} keys -sample=3 mycollection.ds > sample.keys
+    {app_name} clone -i sample.keys mycollection.ds sample.ds
+` + "```" + `
+
+Related topics: [clone-sample](clone-sample.html)
+
+`
+
+	cliCloneSample = `
+clone-sample
+============
+
+Clone a collection into a sample size based training collection 
+and test collection.
+
+In this example we create a training and testing collections 
+based on a training sample size of 1000.
+
+` + "```" + `shell
+    {app_name} clone-sample -size=1000 mycollection.ds training.ds test.ds
+` + "```" + `
+
+`
+
+	cliFrames = `
+frames
+======
+
+Lists the frames available in a collection. In this example our
+collection name is ` + "`pubs.ds`" + `.
+
+` + "```" + `shell
+   {app_name} frames pubs.ds
+` + "```" + `
+
+`
+
+	cliFrame = `
+frame
+=====
+
+This command will define a data frame or return the contents and
+metadata of a defined frame. To define a new frame you need to provide a
+collection name, a frame name followed by a list of dotpath/label pairs.
+The labels are used as object attribute names and the dot paths as the
+source of data. You also need a list of keys.\
+By default the keys are read from standard input. With options you can
+include a specific file or even indicate to use all the keys in a
+collection. In this example we are creating a frame called
+\"title-authors-year\" based on the titles, authors and publication year
+from a dataset collection called ` + "`pubs.ds`" + `. Note the labels of
+\"Title\", \"Authors\", \"PubYear\" are on the right side the an equal
+sign and the dot paths to the left.
+
+` + "```" + `shell
+    {app_name} keys pubs.ds |\
+        {app_name} frame pubs.ds "title-authors-year" \
+                ".title=Title" \
+                ".authors=Authors" \
+                ".publication_year=PubYear"
+` + "```" + `
+
+The objects in the frame\'s object list will look like
+
+` + "```" + `json
+    {
+        "Title": ...,
+        "Authors": ...,
+        "PubYear": ...,
+    }
+` + "```" + `
+
+This allows you to create convenient names for otherwise deep dot paths.
+
+`
+
+	cliFrameObjects = `
+frame-objects
+=============
+
+Usage
+-----
+
+` + "```" + `shell
+    frame-objects COLLECTION FRAME_NAME
+` + "```" + `
+
+Returns the object list of a frame.
+
+OPTIONS
+-------
+
+-p, -pretty
+: pretty print JSON output
+
+Example
+-------
+
+If I want to get a list of objects (JSON array of objects) 
+for a frame named "captions-dates-locations" from my collection
+called "photos.ds" I would do the following (will be using the
+` + "`-p`" + ` option to pretty print the results)
+
+` + "```" + `shell
+    {app_name} frame-objects -p photos.ds captions-dates-locations
+` + "```" + `
+
+`
+
+	cliReframe = `
+reframe
+=======
+
+This command replace the current keys and object list in a frame based
+on the keys provided.
+
+In the following example the frame name is \"f1\", the collection is
+\"examples.ds\". The first example is reframing an existing frame using
+existing keys coming from standard input, the second example performs
+the same thing but is taking a filename to retrieve the list of keys.
+
+` + "```" + `shell
+    cat f1-updated.keys | {app_name} reframe example.ds f1
+    {app_name} reframe example.ds f1 f1-updated.keys
+` + "```" + `
+
+`
+
+	cliRefresh = `
+refresh
+=======
+
+This command will update an object list in a frame based on the current
+state of the collection. If any keys have been deleted from the
+collection then the object associated with those keys in the frame will
+also be removed.
+
+In the following example the frame name is \"f1\", the collection is
+\"examples.ds\". The example is refreshing the object list.
+
+` + "```" + `shell
+    {app_name} refresh example.ds f1
+` + "```" + `
+
+`
+
+	cliDeleteFrame = `
+delete-frame
+============
+
+This is used to removed a frame from a collection.
+
+` + "```" + `shell
+    {app_name} delete-frame example.ds f1
+` + "```" + `
+
+delete frame f1 from collection called example.ds
+
+`
+
+	cliAttachments = `
+attachments
+===========
+
+Syntax
+------
+
+` + "```" + `shell
+    {app_name} attachments COLLECTION_NAME KEY
+` + "```" + `
+
+Description
+-----------
+
+List the files attached to the JSON record matching the KEY
+in the collection.
+
+Usage
+-----
+
+List all the attachments for _k1_ in collection "stats.ds".
+
+` + "```" + `shell
+    {app_name} attachments stats.ds k1
+` + "```" + `
+
+`
+
+	cliAttach = `
+attach
+======
+
+Syntax
+------
+
+` + "```" + `shell
+    {app_name} attach COLLECTION_NAME KEY [SEMVER] FILENAME(S)
+` + "```" + `
+
+Description
+-----------
+
+Attach a file to a JSON record. Attachments are stored in a tar ball
+related to the JSON record key.
+
+Usage
+-----
+
+Attaching a file named *start.xlsx* to the JSON record with id _t1_ in 
+collection "stats.ds"
+
+` + "```" + `shell
+    {app_name} attach stats.ds t1 start.xlsx
+` + "```" + `
+
+Attaching the file as version v0.0.1
+
+` + "```" + `shell
+    {app_name} attach stats.ds t1 v0.0.1 start.xlsx
+` + "```" + `
+
+`
+
+	cliRetrieve = `
+retrieve
+========
+
+Syntax
+------
+
+` + "```" + `shell
+    {app_name} retrieve COLLECTION_NAME KEY [SEMVER]
+    {app_name} retrieve COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
+` + "```" + `
+
+Description
+-----------
+
+__retrieve__ writes out (to local disc) the items that have been 
+attached to a JSON record in the collection with the matching KEY
+
+Usage
+-----
+
+Write out all the attached files for k1 in collection named 
+"publications.ds"
+
+` + "```" + `shell
+    {app_name} retrieve publications.ds k1
+` + "```" + `
+
+Write out only the *stats.xlsx* file attached to k1
+
+` + "```" + `shell
+    {app_name} retrieve publications.ds k1 stats.xlsx
+` + "```" + `
+
+Write out only the v0.0.1 *stats.xlsx* file attached to k1
+
+` + "```" + `shell
+    {app_name} retrieve publications.ds k1 v0.0.1 stats.xlsx
+` + "```" + `
+
+`
+
+	cliPrune = `
+prune
+=====
+
+Syntax
+------
+
+` + "```" + `shell
+    {app_name} prune COLLECTION_NAME KEY [SEMVER]
+    {app_name} prune COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
+` + "```" + `
+
+Description
+-----------
+
+prune removes all or specific attachments to a JSON document. If only
+the key is supplied then all attachments are removed if an attachment
+name is supplied then only the specific attachment is removed.
+
+Usage
+-----
+
+In the following examples _r1_ is the KEY, *stats.xlsx* is the 
+attached file. In the first example only *stats.xlsx* is removed in
+the second all attachments are removed. Our collection name is "data.ds"
+
+
+` + "```" + `shell
+    {app_name} prune data.ds k1 v0.0.1 stats.xlsx
+    {app_name} prune data.ds k1 stats.xlsx
+    {app_name} prune data.ds k1
+` + "```" + `
+
+`
+	cliSample = `
+sample
+======
+
+{app_name} supports the concept of generating a random sample
+of keys from a collection. To do this you need to use the ` + "`sample`" + `
+verb. ` + "`sample`" + ` expects the collection name followed by an
+a positive integer value "N". It returns a randomly selected number of
+keys.  If N is greater than the collection then all keys are returned
+for the collection.
+
+` + "```" + `shell
+    {app_name} sample data.ds 100
+` + "```" + `
+
+`
+
+	cliFrameDef = `
+frame-def
+=========
+
+{app_name} supports the concept of frames and the "frame-def" verb
+lets you review the definition of an existing frame.
+
+` + "```" + `shell
+    {app_name} frame-def data.ds myframe
+` + "```" + `shell
+
+`
+
+	cliHasFrame = `
+has-frame
+=========
+
+{app_name} supports the concept of frames and the "has-frame" verb
+lets you check if a frame exists.
+
+` + "```" + `shell
+    {app_name} has-frame data.ds myframe
+` + "```" + `shell
+
+`
+
+	cliCheck = `
+check
+=====
+
+syntax
+------
+
+` + "```" + `shell
+    dataset check COLLECTION_NAME [COLLECTION_NAME ...]
+` + "```" + `
+
+Description
+-----------
+
+Check reviews one or more collections and reports if any problems 
+are identified based on the ` + "`collection.json`" + ` file found in the 
+folder holding the collection's pairtree. 
+
+Usage
+-----
+
+If multiple instances of dataset write (e.g. create or update) to 
+a collection then it is possible that the JSON file ` + "`collection.json`" + `
+will become inaccurate.
+
+` + "```" + `shell
+    dataset check MyRecordCollection.ds
+    dataset check MyBrokenCollection.ds MyRecordCollection.ds
+` + "```" + `
+
+`
+
+	cliRepair = `
+repair
+======
+
+Syntax
+------
+
+` + "```" + `shell
+    dataset repair COLLECTION_NAME
+` + "```" + `
+
+Description
+-----------
+
+_repair_ trys to repair a collection correcting as best it can 
+the ` + "`collection.json`" + ` file defining where things are to be found.
+
+Usage
+-----
+
+Our collection name is "MyCollectiond.ds".
+
+` + "```" + `shell
+   dataset repair MyCollection.ds
+` + "```" + `
+
+`
+
+	cliCodemeta = `
+codemeta
+========
+
+The command imports a codemeta.json file into the collection replacing
+it's existing metadata.
+
+` + "```" + `shell
+   {app_name} codemeta data.ds ./codemeta.json
+` + "```" + `
+
+Without the codemeta filename it returns the existing codemeta values.
 
 `
 )

@@ -67,6 +67,42 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 		fmt.Fprint(out, StringProcessor(m, cliVersioning))
 	case "read-version":
 		fmt.Fprint(out, StringProcessor(m, cliVersioning))
+	case "sample":
+		fmt.Fprint(out, StringProcessor(m, cliSample))
+	case "clone":
+		fmt.Fprint(out, StringProcessor(m, cliClone))
+	case "clone-sample":
+		fmt.Fprint(out, StringProcessor(m, cliCloneSample))
+	case "frames":
+		fmt.Fprint(out, StringProcessor(m, cliFrames))
+	case "frame":
+		fmt.Fprint(out, StringProcessor(m, cliFrame))
+	case "frame-def":
+		fmt.Fprint(out, StringProcessor(m, cliFrameDef))
+	case "frame-objects":
+		fmt.Fprint(out, StringProcessor(m, cliFrameObjects))
+	case "reframe":
+		fmt.Fprint(out, StringProcessor(m, cliReframe))
+	case "refresh":
+		fmt.Fprint(out, StringProcessor(m, cliRefresh))
+	case "has-frame":
+		fmt.Fprint(out, StringProcessor(m, cliHasFrame))
+	case "delete-frame":
+		fmt.Fprint(out, StringProcessor(m, cliDeleteFrame))
+	case "attachments":
+		fmt.Fprint(out, StringProcessor(m, cliAttachments))
+	case "attach":
+		fmt.Fprint(out, StringProcessor(m, cliAttach))
+	case "retrieve":
+		fmt.Fprint(out, StringProcessor(m, cliRetrieve))
+	case "prune":
+		fmt.Fprint(out, StringProcessor(m, cliPrune))
+	case "check":
+		fmt.Fprint(out, StringProcessor(m, cliCheck))
+	case "repair":
+		fmt.Fprint(out, StringProcessor(m, cliRepair))
+	case "codemeta":
+		fmt.Fprint(out, StringProcessor(m, cliCodemeta))
 	default:
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -552,6 +588,91 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	return nil
 }
 
+// doFrames
+func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doFrames() not implemented")
+}
+
+// doFrame
+func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doFrame() not implemented")
+}
+
+// doFrameDef
+func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doFrameDef() not implemented")
+}
+
+// doFrameObjects
+func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doFrameObjects() not implemented")
+}
+
+// doRefresh
+func doRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doRefresh() not implemented")
+}
+
+// doReframe
+func doReframe(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doReframe() not implemented")
+}
+
+// doDeleteFrame
+func doDeleteFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doDeleteFrame() not implemented")
+}
+
+// doHasFrame
+func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doHasFrame() not implemented")
+}
+
+// doAttachments
+func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doAttachments() not implemented")
+}
+
+// doAttach
+func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doAttach() not implemented")
+}
+
+// doRetrieve
+func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doRetrieve() not implemented")
+}
+
+// doPrune
+func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doPrune() not implemented")
+}
+
+// doSample
+func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doSample() not implemented")
+}
+
+// doCloneSample
+func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doCloneSample() not implemented")
+}
+
+// doCheck
+func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doCheck() not implemented")
+}
+
+// doRepair
+func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doRepair() not implemented")
+}
+
+// doCodemeta
+func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	return fmt.Errorf("doCodemeta() not implemented")
+}
+
 /// RunCLI implemented the functionlity used by the cli.
 func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if len(args) == 0 {
@@ -583,41 +704,41 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	case "count":
 		return doCount(in, out, eout, args)
 	case "frames":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doFrames(in, out, eout, args)
 	case "frame":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doFrame(in, out, eout, args)
 	case "frame-def":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doFrameDef(in, out, eout, args)
 	case "frame-objects":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doFrameObjects(in, out, eout, args)
 	case "refresh":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doRefresh(in, out, eout, args)
 	case "reframe":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doReframe(in, out, eout, args)
 	case "delete-frame":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doDeleteFrame(in, out, eout, args)
 	case "has-frame":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doHasFrame(in, out, eout, args)
 	case "attachments":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doAttachments(in, out, eout, args)
 	case "attach":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doAttach(in, out, eout, args)
 	case "retrieve":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doRetrieve(in, out, eout, args)
 	case "prune":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doPrune(in, out, eout, args)
 	case "sample":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doSample(in, out, eout, args)
 	case "clone":
 		return doClone(in, out, eout, args)
 	case "clone-sample":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doCloneSample(in, out, eout, args)
 	case "check":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doCheck(in, out, eout, args)
 	case "repair":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doRepair(in, out, eout, args)
 	case "codemeta":
-		return fmt.Errorf("verb %q not implemented", verb)
+		return doCodemeta(in, out, eout, args)
 	case "versioning":
 		return doVersioning(in, out, eout, args)
 	case "versions":
