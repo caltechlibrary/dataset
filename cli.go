@@ -647,8 +647,10 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 			labels = append(labels, parts[1])
 		} else {
 			dotPaths = append(dotPaths, arg)
+			labels = append(labels, arg)
 		}
 	}
+
 	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)

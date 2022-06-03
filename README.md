@@ -5,21 +5,25 @@ Dataset Project
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 The Dataset Project provides tools for working with collections of
-JSON Object documents stored on the local file system or via a dataset
-web service.  Two tools are provided, a command line interface (dataset)
-and a web service (datasetd).
+JSON documents stored on the local file system, in a SQL database
+supporting JSON columns. The two tools are provided by the project
+include a command line interface (dataset) and a
+[RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer)
+web service (datasetd).
 
-dataset command line tool
--------------------------
+dataset, a command line tool
+----------------------------
 
 [dataset](doc/dataset.html) is a command line tool for working with
-collections of [JSON](https://en.wikipedia.org/wiki/JSON) objects.
-Collections are stored on the file system in a pairtree directory structure 
-or can be accessed via dataset's web service.  For collections storing data 
-in a pairtree JSON objects are stored in collections as plain UTF-8 text
-files.  This means the objects can be accessed with common
-[Unix](https://en.wikipedia.org/wiki/Unix) text processing tools as well
-as most programming languages.
+collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents.
+Collections can be stored on the file system in a pairtree directory
+structure or stored in a SQL database that supports JSON columns
+(currently SQLite3 or MySQL 8 are supported).  Collections using the
+file system store the JSON documents in a
+[pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01).
+The JSON documents are plain UTF-8 source. This means the objects can be
+accessed with common [Unix](https://en.wikipedia.org/wiki/Unix)
+text processing tools as well as most programming languages.
 
 The _dataset_ command line tool supports common data management operations
 such as initialization of collections; document creation, reading,
@@ -31,13 +35,16 @@ documents in the collection.
 
 - aggregate objects into data [frames](docs/frame.html)
 - generate sample sets of keys and objects
+- clone a collection
+- clone a collection into training and test samples
 
 See [Getting started with dataset](how-to/getting-started-with-dataset.html) for a tour and tutorial.
+
 
 datasetd, dataset as a web service
 ----------------------------------
 
-[datasetd](doc/datasetd.html) is a web service implementation of the
+[datasetd](doc/datasetd.html) is a RESTful web service implementation of the
 _dataset_ command line program. It features a sub-set of capability found
 in the command line tool. This allows dataset collections to be integrated
 safely into web applications or used concurrently by multiple processes.
@@ -57,29 +64,35 @@ setup (e.g.  `dataset init mycollection.ds` creates a new collection
 called 'mycollection.ds'). 
 
 - _dataset_ and _datasetd_ store JSON object documents in collections.
-  The storage of the JSON documents differs. 
-  - dataset collections are defined in a directory containing a
-    collection.json file
+  - Storage of the JSON documents may be either in a pairtree on disk
+    or in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)
+  - dataset collections are made up of a directory containing a
+    collection.json and codemeta.json files.
   - collection.json metadata file describing the collection, 
     e.g. storage type, name, description, if versioning is enabled
-  - collection objects are accessed by their key which is case insensitive
-  - collection names lowered case and usually have a `.ds` extension
-    for easy identification the directory must be lower case folder
-    contain
+  - codemeta.json is a [codemeta](https://codemeta.github.io) file describing the nature of the collection, e.g. authors, description, funding
+  - collection objects are accessed by their key, a unique identifier made of lower case alpha numeric characters
+  - collection names are usually lowered case and usually have a `.ds`
+    extension for easy identification
 
-_datatset_ stores JSON object documents in a pairtree
-  - the pairtree path is always lowercase
-  - a pairtree of JSON object documents
-  - non-JSON attachments can be associated with a JSON document and
-    found in a directories organized by semver (semantic version number)
-  - versioned JSON documents are created sub directory incorporating a
-    semver
-_datasetd_ stores JSON object documents in a table named for the collection
-  - objects are versioned into a collection history table by semver and key
-    - attachments are not supported
-    - can be exported to a collection using pairtree storage (e.g. a zip
-      file will be generated holding a pairtree representation of the
-      collection)
+_datatset_ collection storage options
+  - [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) is the default disk organization of a dataset collection
+    - the pairtree path is always lowercase
+    - non-JSON attachments can be associated with a JSON document and
+      found in a directories organized by semver (semantic version number)
+    - versioned JSON documents are created along side the current JSON ducment but are named using both their key and semver
+  - SQL store stores JSON documents in a JSON column
+    - SQLite3 and MySQL 8 are the current SQL databases support
+    - A "DSN URI" is used to identify and gain access to the SQL database
+    - The DSN URI maybe passed through the environment
+
+_datasetd_ is a web service
+  - is intended as a back end web service run on localhost
+    - by default it runs on localhost port 8485
+    - supports collections that use the SQL storage engine
+  - **should never be used as a public facing web service**
+    - there are no user level access mechanisms
+    - anyone with access to the web service end point has access to the dataset collection content
 
 
 The choice of plain UTF-8 is intended to help future proof reading dataset
@@ -100,17 +113,22 @@ Features
   - Define metadata about the collection using a codemeta.json file
   - Define a keys file holding a list of allocated keys in the collection
   - Creates a pairtree for object storage
+- Codemeta file support for describing the collection contents
+- Simple JSON object versioning
 - Listing [Keys](docs/keys.html) in a collection
 - Object level actions
   - [create](docs/create.html)
   - [read](docs/read.html)
   - [update](docs/update.html)
   - [delete](docs/delete.html)
+  - [keys](docs/keys.html)
+  - [sample](docs/sample.html)
+  - [has-key](docs/has-key.html)
   - Documents as attachments
     - [attachments](docs/attacments.html) (list)
-      - [attach](docs/attach.html) (create/update)
-      - [retrieve](docs/retrieve.html) (read)
-      - [prune](docs/prune.html) (delete)
+    - [attach](docs/attach.html) (create/update)
+    - [retrieve](docs/retrieve.html) (read)
+    - [prune](docs/prune.html) (delete)
 - The ability to create data [frames](docs/frame.html) from while
   collections or based on keys lists
   - frames are defined using a list of keys and a lost
@@ -118,17 +136,18 @@ Features
     of a stored JSON objects and into the frame
   - frame level actions
     - frames, list the frame names in the collection
-      - frame, define a frame, does not overwrite an existing frame with
-        the same name
-      - frame-def, show the frame definition (in case we need it for some
-        reason)
-      - frame-objects, return a list of objects in the frame
-      - refresh, using the current frame definition reload all the objects
-        in the frame
-        - reframe, replace the frame definition then reload the objects in
-          the frame using the old frame key list
-      - has-frame, check to see if a frame exists
-      - delete-frame remove the frame
+    - frame, define a frame, does not overwrite an existing frame with
+      the same name
+    - frame-def, show the frame definition (in case we need it for some
+      reason)
+    - frame-keys, return a list of keys in the frame
+    - frame-objects, return a list of objects in the frame
+    - refresh, using the current frame definition reload all the objects
+      in the frame given a key list
+    - reframe, replace the frame definition then reload the objects in
+      the frame using the existing key list
+    - has-frame, check to see if a frame exists
+    - delete-frame remove the frame
 
 [datasetd](docs/datasetd.html) supports
 
@@ -158,7 +177,7 @@ systems in research libraries and archives.
 
 
 Limitations of _dataset_ and _datasetd_
--------------------------------------------
+---------------------------------------
 
 _dataset_ has many limitations, some are listed below
 
@@ -174,7 +193,6 @@ _dataset_ has many limitations, some are listed below
 
 _datasetd_ is a simple web service intended to run on "localhost:8485".
 
-- it is a RESTful service
 - it does not include support for authentication
 - it does not support a query language, search or sorting
 - it does not support access control by users or roles

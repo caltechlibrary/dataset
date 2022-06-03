@@ -30,7 +30,7 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dotpath"
+	"github.com/caltechlibrary/dataset/dotpath"
 )
 
 //

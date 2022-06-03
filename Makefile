@@ -68,7 +68,6 @@ test: clean build
 	cd ptstore && go test
 	cd sqlstore && go test
 	go test
-	bash test_cmd.bash
 
 cleanweb:
 	@if [ -f index.html ]; then rm *.html; fi
