@@ -28,9 +28,9 @@ import (
 func TestLoadConfig(t *testing.T) {
 	dName := "testout"
 	if _, err := os.Stat(dName); os.IsNotExist(err) {
-		os.MkdirAll(dName, 775)
+		os.MkdirAll(dName, 0775)
 	}
-	fName := path.Join("testout", "settings.json")
+	fName := path.Join(dName, "settings.json")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}

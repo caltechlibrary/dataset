@@ -29,7 +29,7 @@ import (
 	"testing"
 
 	// The main dataset package
-	_ "github.com/caltechlibrary/dataset"
+	ds "github.com/caltechlibrary/dataset"
 )
 
 func TestDisplay(t *testing.T) {
@@ -123,7 +123,7 @@ func TestCloning(t *testing.T) {
 	}
 
 	// Populate our source repository
-	source, err := Init(srcName, "")
+	source, err := ds.Init(srcName, "")
 	if err != nil {
 		t.Errorf("unable to create source %q, %s", srcName, err)
 		t.FailNow()

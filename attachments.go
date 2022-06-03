@@ -20,6 +20,7 @@ package dataset
 
 import (
 	"fmt"
+	"io"
 )
 
 // Attachment is a structure for holding non-JSON content metadata
@@ -76,7 +77,7 @@ func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reade
 // AttachFile is for attaching a single non-JSON document to a
 // dataset record. It will replace ANY existing attached content
 // with the same semver and basename.
-func (c *Collection) AttachFile(keyName string, semver string, fullName string) error {
+func (c *Collection) AttachFile(keyName string, fullName string) error {
 	return fmt.Errorf("AttachFile() not implemented")
 }
 
