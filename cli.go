@@ -23,9 +23,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -79,6 +79,8 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 		fmt.Fprint(out, StringProcessor(m, cliFrame))
 	case "frame-def":
 		fmt.Fprint(out, StringProcessor(m, cliFrameDef))
+	case "frame-keys":
+		fmt.Fprint(out, StringProcessor(m, cliFrameKeys))
 	case "frame-objects":
 		fmt.Fprint(out, StringProcessor(m, cliFrameObjects))
 	case "reframe":
@@ -199,12 +201,14 @@ func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 
 func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName string
-		key   string
+		cName  string
+		key    string
+		output string
 	)
 	flagSet := flag.NewFlagSet("versions", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
 	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.StringVar(&output, "o", "-", "write output to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -225,10 +229,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	if err != nil {
 		return fmt.Errorf("version errors for %q, %s", key, err)
 	}
-	for _, val := range versions {
-		fmt.Fprintf(out, "%s\n", val)
-	}
-	return nil
+	return WriteSource(output, out, []byte(strings.Join(versions, "\n")))
 }
 
 func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -237,10 +238,12 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		key     string
 		version string
 		src     []byte
+		output  string
 	)
 	flagSet := flag.NewFlagSet("read-version", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
 	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -266,7 +269,7 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		return fmt.Errorf("%q storage not supported", c.StoreType)
 	}
 	if err == nil {
-		fmt.Fprintf(out, "%s\n", src)
+		return WriteSource(output, out, src)
 	}
 	return err
 }
@@ -294,11 +297,8 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		cName, key, src = args[0], args[1], []byte(args[2])
 	case len(args) == 2:
 		cName, key = args[0], args[1]
-		if input == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(input)
-		}
+		// Read the JSON object from a file or standard input
+		src, err = ReadSource(input, in)
 		if err != nil {
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
@@ -322,12 +322,14 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 
 func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName string
-		key   string
+		cName  string
+		key    string
+		output string
 	)
 	flagSet := flag.NewFlagSet("read", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -343,8 +345,8 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if err != nil {
 		return err
 	}
-	src := []byte{}
 	defer c.Close()
+	src := []byte{}
 	switch c.StoreType {
 	case PTSTORE:
 		src, err = c.PTStore.Read(key)
@@ -354,7 +356,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
 	}
 	if err == nil {
-		fmt.Fprintf(out, "%s\n", src)
+		return WriteSource(output, out, src)
 	}
 	return err
 }
@@ -382,11 +384,8 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		cName, key, src = args[0], args[1], []byte(args[2])
 	case len(args) == 2:
 		cName, key = args[0], args[1]
-		if input == "-" {
-			src, err = ioutil.ReadAll(in)
-		} else {
-			src, err = ioutil.ReadFile(input)
-		}
+		// Read JSON source
+		src, err = ReadSource(input, in)
 		if err != nil {
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
@@ -445,11 +444,13 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 
 func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName string
+		cName  string
+		output string
 	)
 	flagSet := flag.NewFlagSet("keys", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -470,12 +471,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if err != nil {
 		return err
 	}
-	src, err := json.MarshalIndent(keys, "", "    ")
-	if err != nil {
-		return fmt.Errorf("failed to encode keys, %s", err)
-	}
-	fmt.Fprintf(out, "%s\n", src)
-	return nil
+	return WriteKeys(output, out, keys)
 }
 
 func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -545,7 +541,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		dstDsnURI string
 		keysName  string
 		verbose   bool
-		src       []byte
+		keys      []string
 		err       error
 	)
 	flagSet := flag.NewFlagSet("clone", flag.ContinueOnError)
@@ -566,22 +562,15 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME DEST_COLLECTION_NAME [DEST_DSN_URI], got %q", strings.Join(args, " "))
 	}
-	if keysName == "-" {
-		src, err = ioutil.ReadAll(in)
-		if err != nil {
-			return fmt.Errorf("failed to read keys from stdin, %s", err)
-		}
-	} else {
-		src, err = ioutil.ReadFile(keysName)
-		if err != nil {
-			return fmt.Errorf("failed to read keys from %q, %s", keysName, err)
-		}
+	keys, err = ReadKeys(keysName, in)
+	if err != nil {
+		return err
 	}
-	keys := strings.Split(fmt.Sprintf("%s", src), "\n")
 	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
+	defer source.Close()
 	if err := source.Clone(dstName, dstDsnURI, keys, verbose); err != nil {
 		return fmt.Errorf("clone failed %s", err)
 	}
@@ -590,22 +579,199 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 
 // doFrames
 func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doFrames() not implemented")
+	var (
+		srcName string
+		err     error
+		output  string
+	)
+	flagSet := flag.NewFlagSet("frames", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "frames")
+	}
+	switch {
+	case len(args) == 1:
+		srcName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	frames := source.Frames()
+	return WriteSource(output, out, []byte(strings.Join(frames, "\n")))
 }
 
 // doFrame
 func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doFrame() not implemented")
+	var (
+		srcName   string
+		frameName string
+		keysName  string
+		keys      []string
+		dotPaths  []string
+		labels    []string
+		verbose   bool
+		err       error
+	)
+	flagSet := flag.NewFlagSet("frame", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "frame")
+	}
+	switch {
+	case len(args) >= 3:
+		srcName, frameName, args = args[0], args[1], args[2:]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME DOT_PATH [DOT_PATH...] got %q", strings.Join(args, " "))
+	}
+	keys, err = ReadKeys(keysName, in)
+	if err != nil {
+		return err
+	}
+	for _, arg := range args {
+		if strings.Contains(arg, "=") {
+			parts := strings.SplitN(arg, "=", 2)
+			dotPaths = append(dotPaths, parts[0])
+			labels = append(labels, parts[1])
+		} else {
+			dotPaths = append(dotPaths, arg)
+		}
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	frame, err := source.FrameCreate(frameName, keys, dotPaths, labels, verbose)
+	if err != nil {
+		return err
+	}
+	if frame == nil {
+		return fmt.Errorf("failed to create frame %q for %q", frameName, source.Name)
+	}
+	return nil
 }
 
 // doFrameDef
 func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doFrameDef() not implemented")
+	var (
+		srcName   string
+		frameName string
+		err       error
+		output    string
+	)
+	flagSet := flag.NewFlagSet("frame-def", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "frame-def")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	m, err := source.FrameDef(frameName)
+	if err != nil {
+		return err
+	}
+	src, err := json.MarshalIndent(m, "", "    ")
+	if err != nil {
+		return err
+	}
+	return WriteSource(output, out, src)
 }
 
 // doFrameObjects
 func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doFrameObjects() not implemented")
+	var (
+		srcName   string
+		frameName string
+		output    string
+		err       error
+	)
+	flagSet := flag.NewFlagSet("frame-objects", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write output to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "frame-objects")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	objects, err := source.FrameObjects(frameName)
+	if err != nil {
+		return err
+	}
+	src, err := json.MarshalIndent(objects, "", "    ")
+	if err != nil {
+		return err
+	}
+	return WriteSource(output, out, src)
+}
+
+// doFrameKeys
+func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		srcName   string
+		frameName string
+		err       error
+		output    string
+	)
+	flagSet := flag.NewFlagSet("frame-keys", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "frame-keys")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	keys := source.FrameKeys(frameName)
+	return WriteKeys(output, out, keys)
 }
 
 // doRefresh
@@ -650,12 +816,91 @@ func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 
 // doSample
 func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doSample() not implemented")
+	var (
+		srcName string
+		size    string
+		err     error
+		keys    []string
+		output  string
+	)
+	flagSet := flag.NewFlagSet("clone-sample", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "clone-sample")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, size = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME SIZE_OF_SAMPLE_KEYS, got %q", strings.Join(args, " "))
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	i, err := strconv.Atoi(size)
+	if err != nil {
+		return fmt.Errorf("size %q doesn't make sense, %s", size, err)
+	}
+	keys, err = source.Sample(i)
+	if err != nil {
+		return fmt.Errorf("sampling keys failed, %s", err)
+	}
+	return WriteKeys(output, out, keys)
 }
 
 // doCloneSample
 func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doCloneSample() not implemented")
+	var (
+		srcName        string
+		trainingName   string
+		trainingDsnURI string
+		testName       string
+		testDsnURI     string
+		keysName       string
+		sampleSize     int
+		verbose        bool
+		keys           []string
+		err            error
+	)
+	flagSet := flag.NewFlagSet("clone-sample", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
+	flagSet.IntVar(&sampleSize, "size", 0, "sample size for training set")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "clone-sample")
+	}
+	switch {
+	case len(args) == 5:
+		srcName, trainingName, trainingDsnURI, testName, testDsnURI = args[0], args[1], args[2], args[3], args[4]
+	case len(args) == 4:
+		srcName, trainingName, trainingDsnURI, testName, testDsnURI = args[0], args[1], args[2], args[3], ""
+	case len(args) == 3:
+		srcName, trainingName, trainingDsnURI, testName, testDsnURI = args[0], args[1], args[2], "", ""
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME TRAINING_COLLECTION TRAINING_DSN_URI [DEST_COLLECTION_NAME [TEST_DSN_URI]], got %q", strings.Join(args, " "))
+	}
+	source, err := Open(srcName)
+	if err != nil {
+		return err
+	}
+	keys, err = ReadKeys(keysName, in)
+	if err != nil {
+		return err
+	}
+	if err := source.CloneSample(trainingName, trainingDsnURI, testName, testDsnURI, keys, sampleSize, verbose); err != nil {
+		return fmt.Errorf("clone-sample failed %s", err)
+	}
+	return nil
 }
 
 // doCheck
@@ -709,6 +954,8 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return doFrame(in, out, eout, args)
 	case "frame-def":
 		return doFrameDef(in, out, eout, args)
+	case "frame-keys":
+		return doFrameKeys(in, out, eout, args)
 	case "frame-objects":
 		return doFrameObjects(in, out, eout, args)
 	case "refresh":

@@ -63,6 +63,7 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 
 test: clean build
 	cd semver && go test
+	cd dotpath && go test
 	cd pairtree && go test
 	cd ptstore && go test
 	cd sqlstore && go test

@@ -115,27 +115,25 @@ func (c *Collection) Clone(cloneName string, cloneDsnURI string, keys []string, 
 // ```
 //
 func (c *Collection) CloneSample(trainingName string, trainingDsnURI string, testName string, testDsnURI string, keys []string, sampleSize int, verbose bool) error {
+	var err error
 	if sampleSize < 1 {
 		return fmt.Errorf("sample size should be greater than zero")
 	}
-	// Copy the keys provided
-	var err error
-	workKeys := keys[:]
 	if len(keys) == 0 {
-		workKeys, err = c.Keys()
-		if err != nil {
-			return fmt.Errorf("Can't read keys from %q, %s", c.Name, err)
+		keys, err = c.Keys()
+		if err != nil || len(keys) == 0 {
+			return fmt.Errorf("failed to get keys from %q, %s", c.Name, err)
 		}
 	}
 	// so a random sort on the work key list
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	random.Shuffle(len(workKeys), func(i, j int) {
+	random.Shuffle(len(keys), func(i, j int) {
 		keys[i], keys[j] = keys[j], keys[i]
 	})
 
 	// Split randomly sorted into two key lists
-	trainingKeys := workKeys[0:sampleSize]
-	testKeys := workKeys[sampleSize:]
+	trainingKeys := keys[0:sampleSize]
+	testKeys := keys[sampleSize:]
 
 	// Clone into respective collections
 	if err := c.Clone(trainingName, trainingDsnURI, trainingKeys, verbose); err != nil {

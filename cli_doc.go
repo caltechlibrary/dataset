@@ -63,7 +63,14 @@ SUPPORTED VERBS
 - read-version, will return a specific version of a JSON document if versioning is enabled for collection
 - versioning,  will set the versioning of a collection, can be "none", "major", "minor", or "patch"
 
-You can get additional help 
+A word about "keys". {app_name} uses the concept of key/values for
+storing JSON documents where the key is a unique identifier and the
+value is the object to be stored.  Keys must be lower case 
+alpha numeric only.  Depending on storage engines there are issues
+for keys with punctation or that rely on case sensitivity. E.g. 
+The pairtree storage engine relies on the host file system. File
+systems are notorious for being picky about non-alpha numeric
+characters and some are not case sensistive.
 
 `
 
@@ -848,6 +855,20 @@ it's existing metadata.
 ` + "```" + `
 
 Without the codemeta filename it returns the existing codemeta values.
+
+`
+
+	cliFrameKeys = `
+frame-keys
+==========
+
+This returnes a list of keys assocaited with the frame. Keys are
+returned one per line.
+
+
+` + "```" + `shell
+    {app_name} frame-keys data.ds
+` + "```" + `
 
 `
 )

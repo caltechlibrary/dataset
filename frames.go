@@ -300,6 +300,21 @@ func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 	return c.getFrame(name)
 }
 
+// FrameDef retrieves the frame definition returns a
+// a map string interface.
+func (c *Collection) FrameDef(name string) (map[string]interface{}, error) {
+	frame, err := c.FrameRead(name)
+	if err != nil {
+		return nil, err
+	}
+	m := map[string]interface{}{
+		"name":      frame.Name,
+		"dot_paths": frame.DotPaths,
+		"labels":    frame.Labels,
+	}
+	return m, nil
+}
+
 // FrameRefresh updates a DataFrames' object list based on the
 // existing keys in the frame. It doesn't change the order of objects.
 // NOTE: If an object is missing in the collection it gets pruned from

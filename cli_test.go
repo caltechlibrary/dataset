@@ -231,7 +231,9 @@ func TestSampleCloning(t *testing.T) {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
 	// Add our records
+	keys := []string{}
 	for k, v := range testRecords {
+		keys = append(keys, k)
 		args = []string{"create", srcName, k}
 		src, err := json.MarshalIndent(v, "", "    ")
 		if err != nil {
@@ -243,7 +245,10 @@ func TestSampleCloning(t *testing.T) {
 			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 		}
 	}
-	args = []string{"clone-sample", srcName, trainingName, trainingDsnURI, testName, testDsnURI}
+	// The keys will be read from the "in" for clone-sample.
+	src := []byte(strings.Join(keys, "\n"))
+	in = bytes.NewBuffer(src)
+	args = []string{"clone-sample", "-size", "10", srcName, trainingName, trainingDsnURI, testName, testDsnURI}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
@@ -307,7 +312,9 @@ func TestCLIOnFrames(t *testing.T) {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
 	// Add our records
+	keys := []string{}
 	for k, v := range testRecords {
+		keys = append(keys, k)
 		args = []string{"create", srcName, k}
 		src, err := json.MarshalIndent(v, "", "    ")
 		if err != nil {
@@ -320,16 +327,73 @@ func TestCLIOnFrames(t *testing.T) {
 		}
 	}
 	args = []string{"frame", srcName, "one-data", ".one"}
+	input = []byte(strings.Join(keys, "\n"))
+	in = bytes.NewBuffer(input)
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
+
+	// List frames
+	args = []string{"frames", srcName}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	expectedS := "one-data"
+	gotS := strings.TrimSpace(fmt.Sprintf("%s", output))
+	if gotS != "one-data" {
+		t.Errorf("Expected %q, got %q", expectedS, gotS)
+	}
+
+	// get keys from frame
+	args = []string{"frame-keys", srcName, "uno"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	okeys := strings.Split(fmt.Sprintf("%s", output), "\n")
+	if len(okeys) == 0 {
+		t.Errorf("failed to read keys from frame-keys")
+	}
+
+	// get definition from frame
+	args = []string{"frame-def", srcName, "uno"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	if len(output) == 0 {
+		t.Errorf("Failed to get frame definition")
+	} else {
+		fmt.Printf("DEBUG frame-def -> %q\n", output)
+	}
+
+	// get objects in frame
+	args = []string{"frame-objects", srcName, "uno"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	if len(output) == 0 {
+		t.Errorf("Failed to get frame objects")
+	} else {
+		fmt.Printf("DEBUG frame-objects -> %q\n", output)
+	}
+
+	// refresh frame
+	// reframe
+	// delete frame
+
 }
 
 func TestCLIOnAttachments(t *testing.T) {
 	var (
 		input, output []byte
 	)
-	t.Errorf("cli attachment command not implemented")
 	input = []byte(`{
 	"one": 1,
 	"two": 2,
@@ -348,6 +412,18 @@ func TestCLIOnAttachments(t *testing.T) {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
 	args = []string{"attach", cName, "uno", "README.md"}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	args = []string{"attachments", cName, "uno"}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	args = []string{"retreive", cName, "uno", "README.md"}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	args = []string{"prune", cName, "uno"}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}

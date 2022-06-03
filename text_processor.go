@@ -20,6 +20,9 @@ package dataset
 
 import (
 	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"strings"
 )
 
@@ -47,4 +50,71 @@ func BytesProcessor(varMap map[string]string, text []byte) []byte {
 		}
 	}
 	return src
+}
+
+// ReadSource reads the source text from a filename or
+// io.Reader (e.g. standard input) as fallback.
+//
+// ```
+// src, err := ReadSource(inputName, os.Stdin)
+// if err != nil {
+//    ...
+// }
+// ```
+//
+func ReadSource(fName string, in io.Reader) ([]byte, error) {
+	var (
+		src []byte
+		err error
+	)
+	if fName == "" || fName == "-" {
+		src, err = ioutil.ReadAll(in)
+	} else {
+		src, err = ioutil.ReadFile(fName)
+	}
+	return src, err
+}
+
+// WriteSource writes a source text to a file or to the io.Writer
+// of filename not set.
+func WriteSource(fName string, out io.Writer, src []byte) error {
+	if fName == "" || fName == "-" {
+		_, err := out.Write(src)
+		return err
+	}
+	return ioutil.WriteFile(fName, src, 0664)
+}
+
+// ReadKeys reads a list of keys given filename or an io.Reader
+// (e.g. standard input) as fallback. The key file should be formatted
+// one key per line with a line delimited of "\n".
+//
+// ```
+//   keys, err := dataset.ReadKeys(keysFilename, os.Stdin)
+//   if err != nil {
+//   }
+// ```
+//
+func ReadKeys(keysName string, in io.Reader) ([]string, error) {
+	src, err := ReadSource(keysName, in)
+	if err != nil {
+		return nil, err
+	}
+	keys := strings.Split(fmt.Sprintf("%s", src), "\n")
+	return keys, nil
+}
+
+// WriteKeys writes a list of keys to given filename or to io.Writer
+// as fallback. The key file is formatted as one key per line using
+// "\n" as a separator.
+//
+// ```
+//   keys := ...
+//   if err := WriteKeys(out, keyFilename, keys); err != nil {
+//      ...
+//   }
+// ```
+//
+func WriteKeys(keyFilename string, out io.Writer, keys []string) error {
+	return WriteSource(keyFilename, out, []byte(strings.Join(keys, "\n")))
 }

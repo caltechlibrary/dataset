@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path"
 	"time"
@@ -140,6 +141,16 @@ func Open(name string) (*Collection, error) {
 		}
 	case SQLSTORE:
 		c.SQLStore, err = sqlstore.Open(name, c.DsnURI)
+		switch c.Versioning {
+		case "major":
+			c.SQLStore.SetVersioning(ptstore.Major)
+		case "minor":
+			c.SQLStore.SetVersioning(ptstore.Minor)
+		case "patch":
+			c.SQLStore.SetVersioning(ptstore.Patch)
+		default:
+			c.SQLStore.SetVersioning(ptstore.None)
+		}
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
 	}
@@ -662,6 +673,41 @@ func (c *Collection) Keys() ([]string, error) {
 		return nil, fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return nil, fmt.Errorf("%s not open", c.Name)
+}
+
+// Sample takes a sample size and returns a list of
+// randomly selected keys and an error. Sample size most
+// be greater than zero and less or equal to the number of keys
+// in the collection.
+func (c *Collection) Sample(size int) ([]string, error) {
+	var (
+		keys []string
+		err  error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			keys, err = c.PTStore.Keys()
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			keys, err = c.SQLStore.Keys()
+		}
+	default:
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if size < 1 || size >= len(keys) {
+		return nil, fmt.Errorf("sample size must be greater than zero and less than the or equal to number of available keys")
+	}
+	// so a random sort on the work key list
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+	random.Shuffle(len(keys), func(i, j int) {
+		keys[i], keys[j] = keys[j], keys[i]
+	})
+	return keys[0:size], nil
 }
 
 // HasKey takes a collection and checks if a key exists.
