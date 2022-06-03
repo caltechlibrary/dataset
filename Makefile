@@ -67,6 +67,9 @@ test: clean build
 	cd pairtree && go test
 	cd ptstore && go test
 	cd sqlstore && go test
+	cd texts && go test
+	cd api && go test
+	cd cli && go test
 	go test
 
 cleanweb:
@@ -76,6 +79,14 @@ clean:
 	@if [ -d bin ]; then rm -fR bin; fi
 	@if [ -d dist ]; then rm -fR dist; fi
 	@if [ -d testout ]; then rm -fR testout; fi
+	@if [ -d semver/testout ]; then rm -fR semver/testout; fi
+	@if [ -d dotpath/testout ]; then rm -fR dotpath/testout; fi
+	@if [ -d pairtree/testout ]; then rm -fR pairtree/testout; fi
+	@if [ -d ptstore/testout ]; then rm -fR ptstore/testout; fi
+	@if [ -d sqlstore/testout ]; then rm -fR sqlstore/testout; fi
+	@if [ -d texts/testout ]; then rm -fR texts/testout; fi
+	@if [ -d api/testout ]; then rm -fR api/testout; fi
+	@if [ -d cli/testout ]; then rm -fR cli/testout; fi
 
 dist/linux-amd64:
 	@mkdir -p dist/bin

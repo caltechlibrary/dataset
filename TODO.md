@@ -9,29 +9,31 @@ Next (prep for v2.x)
 --------------------
 
 - [ ] Common dataset verbs (dataset/datasetd)
-    - [ ] keys
+    - [cli] keys
         - list the keys in a collection
-    - [ ] has-key
+    - [cli] has-key
         - return "true "(w/OS exit 0 in CLI) if key is in collection,
           "false" otherwise (w/OS exit 1 in CLI)
-    - [ ] create
+    - [cli] sample
+        - return a sample of keys from a collection
+    - [cli] create
         - add an new object to the collection if key does not exist,
           return false if object already exists or unable to create
           the new object
-    - [ ] read
+    - [cli] read
         - return the object with nil error in the collection with the
           provided key, nil object and error value if not found
-    - [ ] read-version
+    - [cli] read-version
         - return the object with nil error in the collection with the
           provided key and version, nil object and error value if not found
-    - [ ] update
+    - [cli] update
         - replace the object in the collection for given key, return false
           is object does not to replace or replacement fails
-    - [ ] delete
+    - [cli] delete
         - delete the object in the collection for given key, return true
           if deletion was successful, false if the object was not deleted
           (e.g. key not found or the collection is read only)
-    - [x] versioning
+    - [cli] versioning
         - set the versioning on a collection, the following strings enable
           versioning "major", "minor", "patch". Any other value disables
           versioning on the collection
@@ -59,9 +61,9 @@ Next (prep for v2.x)
     - [ ] retrieve (aka detach)
     - [ ] prune
 - [ ] Verbs support by cli only
-    - [ ] sample
-    - [ ] clone
-    - [ ] clone-sample
+    - [cli] sample
+    - [cli] clone
+    - [cli] clone-sample
     - [ ] check
     - [ ] repair
 - [ ] Document example Python 3 http client support for web API

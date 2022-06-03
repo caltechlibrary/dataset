@@ -22,7 +22,7 @@ const (
 
 	// License is a formatted from for dataset package based command line tools
 	License = `
-%s %s
+{app_name} {version}
 
 Copyright (c) 2022, Caltech
 All rights not granted herein are expressly reserved by Caltech.

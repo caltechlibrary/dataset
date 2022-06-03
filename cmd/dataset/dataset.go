@@ -25,7 +25,7 @@ import (
 	"path"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/cli"
 )
 
 var (
@@ -54,20 +54,20 @@ func main() {
 	eout := os.Stderr
 
 	if showHelp {
-		dataset.DisplayUsage(out, appName, flagSet, dataset.CLIDescription, dataset.CLIExamples, dataset.License)
+		cli.DisplayUsage(out, appName, flagSet, cli.CLIDescription, cli.CLIExamples, cli.License)
 		os.Exit(0)
 	}
 	if showLicense {
-		dataset.DisplayLicense(out, appName, dataset.License)
+		cli.DisplayLicense(out, appName, cli.License)
 		os.Exit(0)
 	}
 	if showVersion {
-		dataset.DisplayVersion(out, appName)
+		cli.DisplayVersion(out, appName)
 		os.Exit(0)
 	}
 
 	// Application Logic
-	err := dataset.RunCLI(in, out, eout, args)
+	err := cli.RunCLI(in, out, eout, args)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		os.Exit(1)

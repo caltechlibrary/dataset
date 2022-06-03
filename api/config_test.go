@@ -1,5 +1,5 @@
 //
-// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
+// api is a submodule of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -16,15 +16,33 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-package dataset
+package api
 
 import (
+	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 )
 
 func TestLoadConfig(t *testing.T) {
-	fName := path.Join("testdata", "test-settings.json")
+	dName := "testout"
+	if _, err := os.Stat(dName); os.IsNotExist(err) {
+		os.MkdirAll(dName, 775)
+	}
+	fName := path.Join("testout", "settings.json")
+	if _, err := os.Stat(fName); err == nil {
+		os.RemoveAll(fName)
+	}
+	// Write out sample test settings.json
+	src := []byte(`{
+    "dsn": "DB_USER:DB_PASSWORD@/DB_NAME"
+}`)
+	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+		t.Errorf("Failed to generate %q, %s", fName, err)
+		t.FailNow()
+	}
+
 	cfg, err := LoadConfig(fName)
 	if err != nil {
 		t.Errorf("LoadConfig(%q) failed, %s", fName, err)

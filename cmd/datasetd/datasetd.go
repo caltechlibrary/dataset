@@ -30,7 +30,8 @@ import (
 	"path"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/api"
+	"github.com/caltechlibrary/dataset/cli"
 )
 
 var (
@@ -38,9 +39,9 @@ var (
 	showVersion bool
 	showLicense bool
 
-	description = dataset.WebDescription
-	examples    = dataset.WebExamples
-	license     = dataset.License
+	description = api.WebDescription
+	examples    = api.WebExamples
+	license     = api.License
 )
 
 func main() {
@@ -55,17 +56,17 @@ func main() {
 	args := flagSet.Args()
 
 	if showHelp {
-		dataset.DisplayUsage(os.Stdout, appName, flagSet, description, examples, license)
+		cli.DisplayUsage(os.Stdout, appName, flagSet, description, examples, license)
 		os.Exit(0)
 	}
 
 	if showLicense {
-		dataset.DisplayLicense(os.Stdout, appName, license)
+		cli.DisplayLicense(os.Stdout, appName, license)
 		os.Exit(0)
 	}
 
 	if showVersion {
-		dataset.DisplayVersion(os.Stdout, appName)
+		cli.DisplayVersion(os.Stdout, appName)
 		os.Exit(0)
 	}
 
@@ -82,20 +83,20 @@ Try %s --help for usage details
 		os.Exit(1)
 	}
 
-	cfg, err := dataset.LoadConfig(settings)
+	cfg, err := api.LoadConfig(settings)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Cound not read configuration %q, %s", settings, err)
 		os.Exit(1)
 	}
 
 	/* Open SQL database holding collections */
-	if err := dataset.OpenCollections(cfg); err != nil {
+	if err := api.OpenCollections(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "OpenCollections(%q) failed, %s\n", settings, err)
 		os.Exit(1)
 	}
 
 	/* Run API */
-	if err := dataset.RunAPI(cfg); err != nil {
+	if err := api.RunAPI(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "RunWebAPI(%q) failed, %s\n", settings, err)
 		os.Exit(1)
 	}

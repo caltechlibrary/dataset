@@ -32,6 +32,7 @@ _testmain.go
 etc/*
 dist/*
 dataset/*
+testout
 testout/*
 bin/*
 demos/*

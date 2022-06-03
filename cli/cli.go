@@ -1,5 +1,5 @@
 //
-// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
+// cli is a sub module of dataset.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -16,7 +16,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-package dataset
+package cli
 
 import (
 	"encoding/json"
@@ -27,6 +27,10 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	// dataset submodule
+	ds "github.com/caltechlibrary/dataset"
+	"github.com/caltechlibrary/dataset/texts"
 )
 
 var (
@@ -42,69 +46,69 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 	}
 	switch topic {
 	case "usage":
-		fmt.Fprintf(out, StringProcessor(m, CLIDescription))
+		fmt.Fprintf(out, texts.StringProcessor(m, CLIDescription))
 	case "examples":
-		fmt.Fprintf(out, StringProcessor(m, CLIExamples))
+		fmt.Fprintf(out, texts.StringProcessor(m, CLIExamples))
 	case "init":
-		fmt.Fprintf(out, StringProcessor(m, cliInit))
+		fmt.Fprintf(out, texts.StringProcessor(m, cliInit))
 	case "create":
-		fmt.Fprint(out, StringProcessor(m, cliCreate))
+		fmt.Fprint(out, texts.StringProcessor(m, cliCreate))
 	case "read":
-		fmt.Fprint(out, StringProcessor(m, cliRead))
+		fmt.Fprint(out, texts.StringProcessor(m, cliRead))
 	case "update":
-		fmt.Fprint(out, StringProcessor(m, cliUpdate))
+		fmt.Fprint(out, texts.StringProcessor(m, cliUpdate))
 	case "delete":
-		fmt.Fprint(out, StringProcessor(m, cliDelete))
+		fmt.Fprint(out, texts.StringProcessor(m, cliDelete))
 	case "keys":
-		fmt.Fprint(out, StringProcessor(m, cliKeys))
+		fmt.Fprint(out, texts.StringProcessor(m, cliKeys))
 	case "has-key":
-		fmt.Fprint(out, StringProcessor(m, cliHasKey))
+		fmt.Fprint(out, texts.StringProcessor(m, cliHasKey))
 	case "count":
-		fmt.Fprint(out, StringProcessor(m, cliCount))
+		fmt.Fprint(out, texts.StringProcessor(m, cliCount))
 	case "versioning":
-		fmt.Fprint(out, StringProcessor(m, cliVersioning))
+		fmt.Fprint(out, texts.StringProcessor(m, cliVersioning))
 	case "versions":
-		fmt.Fprint(out, StringProcessor(m, cliVersioning))
+		fmt.Fprint(out, texts.StringProcessor(m, cliVersioning))
 	case "read-version":
-		fmt.Fprint(out, StringProcessor(m, cliVersioning))
+		fmt.Fprint(out, texts.StringProcessor(m, cliVersioning))
 	case "sample":
-		fmt.Fprint(out, StringProcessor(m, cliSample))
+		fmt.Fprint(out, texts.StringProcessor(m, cliSample))
 	case "clone":
-		fmt.Fprint(out, StringProcessor(m, cliClone))
+		fmt.Fprint(out, texts.StringProcessor(m, cliClone))
 	case "clone-sample":
-		fmt.Fprint(out, StringProcessor(m, cliCloneSample))
+		fmt.Fprint(out, texts.StringProcessor(m, cliCloneSample))
 	case "frames":
-		fmt.Fprint(out, StringProcessor(m, cliFrames))
+		fmt.Fprint(out, texts.StringProcessor(m, cliFrames))
 	case "frame":
-		fmt.Fprint(out, StringProcessor(m, cliFrame))
+		fmt.Fprint(out, texts.StringProcessor(m, cliFrame))
 	case "frame-def":
-		fmt.Fprint(out, StringProcessor(m, cliFrameDef))
+		fmt.Fprint(out, texts.StringProcessor(m, cliFrameDef))
 	case "frame-keys":
-		fmt.Fprint(out, StringProcessor(m, cliFrameKeys))
+		fmt.Fprint(out, texts.StringProcessor(m, cliFrameKeys))
 	case "frame-objects":
-		fmt.Fprint(out, StringProcessor(m, cliFrameObjects))
+		fmt.Fprint(out, texts.StringProcessor(m, cliFrameObjects))
 	case "reframe":
-		fmt.Fprint(out, StringProcessor(m, cliReframe))
+		fmt.Fprint(out, texts.StringProcessor(m, cliReframe))
 	case "refresh":
-		fmt.Fprint(out, StringProcessor(m, cliRefresh))
+		fmt.Fprint(out, texts.StringProcessor(m, cliRefresh))
 	case "has-frame":
-		fmt.Fprint(out, StringProcessor(m, cliHasFrame))
+		fmt.Fprint(out, texts.StringProcessor(m, cliHasFrame))
 	case "delete-frame":
-		fmt.Fprint(out, StringProcessor(m, cliDeleteFrame))
+		fmt.Fprint(out, texts.StringProcessor(m, cliDeleteFrame))
 	case "attachments":
-		fmt.Fprint(out, StringProcessor(m, cliAttachments))
+		fmt.Fprint(out, texts.StringProcessor(m, cliAttachments))
 	case "attach":
-		fmt.Fprint(out, StringProcessor(m, cliAttach))
+		fmt.Fprint(out, texts.StringProcessor(m, cliAttach))
 	case "retrieve":
-		fmt.Fprint(out, StringProcessor(m, cliRetrieve))
+		fmt.Fprint(out, texts.StringProcessor(m, cliRetrieve))
 	case "prune":
-		fmt.Fprint(out, StringProcessor(m, cliPrune))
+		fmt.Fprint(out, texts.StringProcessor(m, cliPrune))
 	case "check":
-		fmt.Fprint(out, StringProcessor(m, cliCheck))
+		fmt.Fprint(out, texts.StringProcessor(m, cliCheck))
 	case "repair":
-		fmt.Fprint(out, StringProcessor(m, cliRepair))
+		fmt.Fprint(out, texts.StringProcessor(m, cliRepair))
 	case "codemeta":
-		fmt.Fprint(out, StringProcessor(m, cliCodemeta))
+		fmt.Fprint(out, texts.StringProcessor(m, cliCodemeta))
 	default:
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -116,7 +120,7 @@ func DisplayLicense(out io.Writer, appName string, license string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, StringProcessor(m, license))
+	fmt.Fprintf(out, texts.StringProcessor(m, license))
 }
 
 // DisplayVersion returns the of the dataset application.
@@ -125,7 +129,7 @@ func DisplayVersion(out io.Writer, appName string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprintf(out, texts.StringProcessor(m, "{app_name} {version}\n"))
 }
 
 // DisplayUsage displays a usage message.
@@ -136,12 +140,12 @@ func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, descript
 		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, StringProcessor(m, description))
+	fmt.Fprintf(out, texts.StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, StringProcessor(m, examples))
-	DisplayLicense(out, appName, StringProcessor(m, license))
+	fmt.Fprintf(out, texts.StringProcessor(m, examples))
+	DisplayLicense(out, appName, texts.StringProcessor(m, license))
 }
 
 func doInit(out io.Writer, eout io.Writer, args []string) error {
@@ -165,7 +169,7 @@ func doInit(out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME [DSN_URI], got %q", strings.Join(args, " "))
 	}
-	c, err := Init(cName, dsnURI)
+	c, err := ds.Init(cName, dsnURI)
 	if err == nil {
 		defer c.Close()
 	}
@@ -191,7 +195,7 @@ func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	default:
 		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME VERSIONING_SETTING, got %q", strings.Join(append([]string{appName, "versioning"}, args...), " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
@@ -220,7 +224,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(append([]string{appName, "versions"}, args...), " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
@@ -229,7 +233,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	if err != nil {
 		return fmt.Errorf("version errors for %q, %s", key, err)
 	}
-	return WriteSource(output, out, []byte(strings.Join(versions, "\n")))
+	return texts.WriteSource(output, out, []byte(strings.Join(versions, "\n")))
 }
 
 func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -255,21 +259,21 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME KEY VERSION, got %q", strings.Join(append([]string{appName, "read-version"}, args...), " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	switch c.StoreType {
-	case PTSTORE:
+	case ds.PTSTORE:
 		src, err = c.PTStore.ReadVersion(key, version)
-	case SQLSTORE:
+	case ds.SQLSTORE:
 		src, err = c.SQLStore.ReadVersion(key, version)
 	default:
 		return fmt.Errorf("%q storage not supported", c.StoreType)
 	}
 	if err == nil {
-		return WriteSource(output, out, src)
+		return texts.WriteSource(output, out, src)
 	}
 	return err
 }
@@ -298,20 +302,20 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 		// Read the JSON object from a file or standard input
-		src, err = ReadSource(input, in)
+		src, err = texts.ReadSource(input, in)
 		if err != nil {
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC], got %q", strings.Join(append([]string{appName, "create"}, args...), " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	obj := map[string]interface{}{}
-	if err := DecodeJSON(src, &obj); err != nil {
+	if err := ds.DecodeJSON(src, &obj); err != nil {
 		return err
 	}
 	if err := c.Create(key, obj); err != nil {
@@ -341,22 +345,22 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	src := []byte{}
 	switch c.StoreType {
-	case PTSTORE:
+	case ds.PTSTORE:
 		src, err = c.PTStore.Read(key)
-	case SQLSTORE:
+	case ds.SQLSTORE:
 		src, err = c.SQLStore.Read(key)
 	default:
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
 	}
 	if err == nil {
-		return WriteSource(output, out, src)
+		return texts.WriteSource(output, out, src)
 	}
 	return err
 }
@@ -385,20 +389,20 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 		// Read JSON source
-		src, err = ReadSource(input, in)
+		src, err = texts.ReadSource(input, in)
 		if err != nil {
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC], got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	obj := map[string]interface{}{}
-	if err := DecodeJSON(src, &obj); err != nil {
+	if err := ds.DecodeJSON(src, &obj); err != nil {
 		return err
 	}
 	if err := c.Update(key, obj); err != nil {
@@ -426,15 +430,15 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	switch c.StoreType {
-	case PTSTORE:
+	case ds.PTSTORE:
 		err = c.PTStore.Delete(key)
-	case SQLSTORE:
+	case ds.SQLSTORE:
 		err = c.SQLStore.Delete(key)
 	default:
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
@@ -462,7 +466,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
@@ -471,7 +475,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if err != nil {
 		return err
 	}
-	return WriteKeys(output, out, keys)
+	return texts.WriteKeys(output, out, keys)
 }
 
 func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -493,7 +497,7 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
@@ -524,7 +528,7 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
+	c, err := ds.Open(cName)
 	if err != nil {
 		return err
 	}
@@ -562,11 +566,11 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME DEST_COLLECTION_NAME [DEST_DSN_URI], got %q", strings.Join(args, " "))
 	}
-	keys, err = ReadKeys(keysName, in)
+	keys, err = texts.ReadKeys(keysName, in)
 	if err != nil {
 		return err
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -599,13 +603,13 @@ func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
 	defer source.Close()
 	frames := source.Frames()
-	return WriteSource(output, out, []byte(strings.Join(frames, "\n")))
+	return texts.WriteSource(output, out, []byte(strings.Join(frames, "\n")))
 }
 
 // doFrame
@@ -636,7 +640,7 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME DOT_PATH [DOT_PATH...] got %q", strings.Join(args, " "))
 	}
-	keys, err = ReadKeys(keysName, in)
+	keys, err = texts.ReadKeys(keysName, in)
 	if err != nil {
 		return err
 	}
@@ -651,7 +655,7 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		}
 	}
 
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -689,7 +693,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -702,7 +706,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	if err != nil {
 		return err
 	}
-	return WriteSource(output, out, src)
+	return texts.WriteSource(output, out, src)
 }
 
 // doFrameObjects
@@ -728,7 +732,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -741,7 +745,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	if err != nil {
 		return err
 	}
-	return WriteSource(output, out, src)
+	return texts.WriteSource(output, out, src)
 }
 
 // doFrameKeys
@@ -767,13 +771,13 @@ func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
 	defer source.Close()
 	keys := source.FrameKeys(frameName)
-	return WriteKeys(output, out, keys)
+	return texts.WriteKeys(output, out, keys)
 }
 
 // doRefresh
@@ -840,7 +844,7 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME SIZE_OF_SAMPLE_KEYS, got %q", strings.Join(args, " "))
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return err
 	}
@@ -853,7 +857,7 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	if err != nil {
 		return fmt.Errorf("sampling keys failed, %s", err)
 	}
-	return WriteKeys(output, out, keys)
+	return texts.WriteKeys(output, out, keys)
 }
 
 // doCloneSample
@@ -891,11 +895,11 @@ func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME TRAINING_COLLECTION TRAINING_DSN_URI [DEST_COLLECTION_NAME [TEST_DSN_URI]], got %q", strings.Join(args, " "))
 	}
-	source, err := Open(srcName)
+	source, err := ds.Open(srcName)
 	if err != nil {
 		return err
 	}
-	keys, err = ReadKeys(keysName, in)
+	keys, err = texts.ReadKeys(keysName, in)
 	if err != nil {
 		return err
 	}
@@ -923,7 +927,8 @@ func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 /// RunCLI implemented the functionlity used by the cli.
 func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("Missing parameters")
+		DisplayHelp(out, eout, "usage")
+		return fmt.Errorf(` `)
 	}
 	verb, args := args[0], args[1:]
 	switch verb {

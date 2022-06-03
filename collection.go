@@ -30,6 +30,7 @@ import (
 	// Dataset sub-modules
 	"github.com/caltechlibrary/dataset/ptstore"
 	"github.com/caltechlibrary/dataset/sqlstore"
+	"github.com/caltechlibrary/dataset/texts"
 )
 
 const (
@@ -249,7 +250,7 @@ func (c *Collection) initPTStore() error {
 		"{app_name}": path.Base(os.Args[0]),
 		"{version}":  Version,
 	}
-	src = BytesProcessor(m, []byte(`{
+	src = texts.BytesProcessor(m, []byte(`{
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
     "dateCreated": "{today}",
@@ -331,7 +332,7 @@ func (c *Collection) initSQLStore() error {
 		"{app_name}": path.Base(os.Args[0]),
 		"{version}":  Version,
 	}
-	src = BytesProcessor(m, []byte(`{
+	src = texts.BytesProcessor(m, []byte(`{
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
     "dateCreated": "{today}",
