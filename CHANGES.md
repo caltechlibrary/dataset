@@ -21,13 +21,15 @@ Golang package changes:
     - Collection.Read() only takes two parameters, not three
     - Collection.Keys() returns a list of keys and an error value
     - Collection.KeyExists() was renamed Collection.HasKey() to be more idiomatic in Go
+    - Collection.FrameExists() was renamed Collection.HasFrame() to be more idiomatic in Go
     - Collection.Length() returns an int64 rather than an int
     - Collection.MetadataJSON() renamed Collection.Metadata() returns the codemeta JSON for the collection
+    - Collection.UpdateMetatada() has been added, takes the name of a codemeta.json to replace the existing codemeta content for the collection.
 
 
 libdataset:
 
-- The C shared library implementation has been dropped for now do to the challenges of easily crosscompiling releases
+- The C shared library implementation has been dropped for now do to the challenges of easily cross compiling releases
 
 CLI changes:
 
@@ -81,7 +83,7 @@ Added "MetadataUpdate()" function to update a collection's metadata.
     ...
 ```
 
-Depreciated dependency on namaste package and Namaste support in command line tools. Removed "collections.go and collections_test.go" from repository (redundent code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection's metadata are now depreciated.
+Depreciated dependency on namaste package and Namaste support in command line tools. Removed "collections.go and collections_test.go" from repository (redundant code). Updated libdataset/libdataset.go to hold functions that were needed for the C-Shared library from collections.go. The Namaste fields in the collection's metadata are now depreciated.
 
 The dataset.Init() now places a lock file in the collection directory and leaves the collection in an "Open" state, it should be explicitly closed after Init is called.
 
@@ -95,7 +97,7 @@ E.g.
 
 Removed "set_*" for collection metadata fields from libdataset.go. These should be set using the dataset command line tool only.
 
-The dataset.Analzyer() and dataset.Repair() commands expect the dataset collections to be closed before being called. E.g..
+The dataset.Analyzer() and dataset.Repair() commands expect the dataset collections to be closed before being called. E.g..
 
 ```
     c, err := dataset.Open("MyData.ds")

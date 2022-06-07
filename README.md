@@ -80,7 +80,7 @@ _datatset_ collection storage options
     - the pairtree path is always lowercase
     - non-JSON attachments can be associated with a JSON document and
       found in a directories organized by semver (semantic version number)
-    - versioned JSON documents are created along side the current JSON ducment but are named using both their key and semver
+    - versioned JSON documents are created along side the current JSON document but are named using both their key and semver
   - SQL store stores JSON documents in a JSON column
     - SQLite3 and MySQL 8 are the current SQL databases support
     - A "DSN URI" is used to identify and gain access to the SQL database
@@ -185,7 +185,7 @@ _dataset_ has many limitations, some are listed below
   data store
 - it is not a general purpose database system
 - it stores all keys in lower case in order to deal with file systems
-  that are not case sensitive, compatibility needed by pairtrees
+  that are not case sensitive, compatibility needed by a pairtree
 - it stores collection names as lower case to deal with file systems that
   are not case sensitive
 - it does not have a built-in query language, search or sorting

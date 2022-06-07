@@ -16,49 +16,76 @@ JSON Object documents in a pairtree makes it easy to integrated into a
 text friendly environment like that found on Unix systems.  The added
 ability to store non-JSON documents along side the JSON document as
 attachments he proven useful but could be refined to be more seemless
-(e.g. rather than passing an explicit version number you could increas
-the semver by passing a keyword like patch, minor, major which would then
-increment the semver appropriately).
+(e.g. you pass a semver when you attach a document).
 
-Dataset has a deliberate limitiations. Those limitations should be lossened 
-with caution.  The metadata of a collection is described by two JSON
-document. Operational metadata (e.g. type of collection storage) is held
-in a document named "collection.json", general metadata about a
-collection's purpose is held in a document named "codemeta.json" conforming 
-to the codemeta standards and practice.  For dataset collections using a
-pairtree they need to include a key map and that needs to fit into memory.
-If collections that are using other storage (e.g. a SQL database for
-storage) they key map is omitted.  Likewise various frames (aggregations
-of a collections' content) are dependent on the specifics of the storage
-system used. Access to JSON documents, their attachments or frames are
-through a common programming API regardless of storage system choosen. 
-Beyond the collection's definition your code should not need to know that
-it is accessing a pairtree implementation or a SQL datastore implementation.
-Changing storage types allows for growing dataset collections beyond single 
-user, single process interactions.
+Dataset has a deliberate limitiations. While most of the limitations were
+deliberate it is time to consider loosing some. This should be done with
+a degree of caution. An eye needs to be kept to several areas,
+simplification of code and operation, reduction of complexity, elimination
+of unused "features". With the introduction of Go 1.18 some of this can
+be achieved through a better organization of code, some by applying
+lessons learned of the last several years and some by reorganizing the
+underlying persistenent structure of the collections themselves (e.g.
+simply of augment the JSON documents about the collections, use
+alternative means of storing JSON documents like a SQL database supporting
+JSON columns). 
 
+The metadata of a collection can be described by two JSON document.
+Operational metadata (e.g. type of collection storage) is held
+in a document named "collection.json". General metadata about a
+collection's purpose is held in a document named "codemeta.json". 
+The "codemeta.json" document should reflect the codemeta's project
+for describing software and data. This has been adopted in the data
+science community. 
 
-Taking advantage of mature databases platforms like SQLite3 (for frame
-storage) and MySQL 8 for web service hosted dataset implementation could
-be a way to improve performance as well as allow improved concurrent usage.
-This is an expansion of the origin limitation of single process/user
-interacting with a dataset collections. If pursued it needs to be easily
-to import/export between filesystem/pairtree collections and SQL stored
-collections. There is a question of the cli supporting both types of
-storage or if there should be a clear split between pairtree storage and
-SQL storage with the cli handling pairtrees and the daemon handling SQL
-storage.
+Looking at storage options. While a pairtree is well suited for
+integration into the text processing environment of Unix it is not
+performant when dealing with large numbers of objects and concurrent
+access. To meet the needs of scaling out a collection other options
+can easily be explored. First SQL databases often support JSON columns.
+This includes two commonly used in Caltech Library, i.e. MySQL 8 and
+SQLite 3.  If a dataset collection is to be accessed via a web service
+then using a SQL store gives us an implementation that solves concurrent
+access and updates to JSON metadata. This is desirable. 
 
-In the v1 series of dataset frames were introduced but calculating the
-frame is generally slow for larger datasets. This is partiailly the
-overhead of storing records as individual documents. A faster
-implementation of frames could leverage SQL storage supporting JSON
-columns. This would be true for both storage and for updates as the frame
-elements could be manimulated individually rather than having to read
-the whole frame set into memory, make the updates and write them out
-again. If the frame set is a table filtering could be done as a join on
-the primary object table with the frame rows storing the key and extracted
-values.
+Dataset have supported a form of versioning attachments for some time.
+It's has not supported versioning of JSON objects, that is desirable.
+Likewise the JSON support for attachments has been achieved by explicitly
+passing a semver string when attaching a document. This is not ideal.
+The versioning process should be automatic but retaining a semver style
+version string raises a question, what is the increment value to change?
+Should you increment by major version, minor version or patch level?
+There is no "right" answer for the likely use cases for dataset. The
+incremented level could be set collection wide, e.g. "my_collection.ds"
+might increment patch level with each update, "your_collection.ds" might
+increment the major level. That needs to be explored. Also versioning
+should be across the collection meaning both the JSON documents and attachments should be versioning consistently or not versioned at all.
+
+Dataset frames has proved very helpful. Where possible code should be
+simplified and frames should be available regardless of JSON document
+storage type. As we continue to use frames in growing collections
+performance will need to be improved. In practice the group object
+list or keys associated with a frame or the primary data used from
+the frame. The internals could be changed to improve performance.
+They don't need necessarily be stored as plain text on disk. The code
+for frames needs to be reviewed and positioned for possible evolution
+as demands evolve on frames.
+
+Before frames were implemented data grids were tried. For practical
+usage frames replaced grids. The data grids code can be removed from
+dataset. The few places where they are used in our feeds processing
+are scheduled to be rewritten to use frames. It is a good time to
+prune this "feature".
+
+Importing and exporting to CSV is a canidate for removal. On the one
+hand CSV support in Go is very good but also somewhat strict. Most
+of the time when we use CSV import or export we're doing so from a 
+Python program. Python also support CSV files reasonably well. It
+is easy to implementing a table to object conversion in Python. How
+much does Go bring to the table beyond Python? Does this need to be
+"built-in" to dataset or should it be left to scripting a dataset
+service or resource? 
+
 
 There are generally two practices in using dataset in Caltech Library. The
 command line is used interactively or Python is used to programatically
@@ -68,13 +95,14 @@ this has worked well it also has been a challenge to maintain requiring
 acccess to each platform we support.  I don't think this is sustatinable.
 Since the introduction of datasetd (the web service implementation of
 dataset) py_dataset could be rewritten to use the web service
-implementation of dataset (i.e. datasetd). This would allow
-dataset/datasetd to support any platform where Go canbe cross compile
-and would help if dataset is distributed as a snap. For that to be
-practable the web implementation would need to support all the frame
-interactions and may need to support attachments as well.
+implementation of dataset (i.e. datasetd) and this would fit most of our
+use cases now and planned in the near future.
 
-Another area of cruft is the integrated help system. It makes more sense
+Dropping libdataset support would allow dataset/datasetd to support all
+platforms where Go can be cross compile without having access to that
+specific system. It would make snap installs easier.
+
+A large area of cruft is the integrated help system. It makes more sense
 to focus that on GitHub, godoc and possible publish to a site like
 readthedocs.io from the GitHub repository.
 

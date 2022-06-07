@@ -159,7 +159,7 @@ batch files to perform some of what Make under Linux and macOS would do.
 
 - make.bat builds our application and depends on go and jq commands
 - release.bat builds a release, will prompt for version
-- clean.bat removes executables and temp files
+- clean.bat removes executable and temp files
 
 
 Compilation assumes [go](https://github.com/golang/go) v1.18.2

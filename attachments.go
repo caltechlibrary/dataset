@@ -215,16 +215,19 @@ func (c *Collection) AttachmentVersions(key string, filename string) ([]string, 
 // the document attached is automatically versioned per collection
 // versioning setting.
 //
-//    Example: attach the file "helloworld.txt" to JSON document "123"
+//    Example: attach the file "report.pdf" to JSON document "123"
 //    in an open collection.
 //
 // ```
-//    filename := "helloworld.txt"
-//    key := "123"
+//    key, filename := "123", "report.pdf"
 //    buf, err := os.Open(filename)
-//    if err != nil { ... }
+//    if err != nil {
+//       ...
+//    }
 //    err := c.AttachStream(key, filename, buf)
-//    if err != nil { ... }
+//    if err != nil {
+//       ...
+//    }
 //    buf.Close()
 // ```
 //
@@ -250,7 +253,6 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 		if _, err := io.Copy(out, buf); err != nil {
 			return fmt.Errorf("failed to write %q, %q to stream, %s", key, filename, err)
 		}
-		return nil
 	} else {
 		// Get version
 		version := "0.0.0"
@@ -286,7 +288,6 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 		if err := os.Symlink(linkTo, target); err != nil {
 			return fmt.Errorf("failed to link attachment %q, %q, %q, %s", key, filename, version, err)
 		}
-		return nil
 	}
 	return nil
 }
@@ -295,18 +296,19 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 // (via an io.Reader) to a specific version of a file. If attached
 // file exists it is replaced.
 //
-//    Example: attach the file "helloworld.txt", version "1.2.3" to
-//    JSON document "123"
-//    in an open collection.
+//    Example: attach the file "report.pdf", version "0.0.3" to
+//    JSON document "123" in an open collection.
 //
 // ```
-//    filename := "helloworld.txt"
-//    key := "123"
-//    version := "1.2.3"
+//    key, filename, version := "123", "helloworld.txt", "0.0.3"
 //    buf, err := os.Open(filename)
-//    if err != nil { ... }
+//    if err != nil {
+//       ...
+//    }
 //    err := c.AttachVersionStream(key, filename, version, buf)
-//    if err != nil { ... }
+//    if err != nil {
+//       ...
+//    }
 //    buf.Close()
 // ```
 //
@@ -330,8 +332,18 @@ func (c *Collection) AttachVersionStream(key string, filename string, version st
 	return nil
 }
 
-// AttachmentPath takes a key, semver and filename and returns the path
-// to the attached file (if found).
+// AttachmentPath takes a key and filename and returns the path file
+// system path to the attached file (if found). For versioned collections
+// this is the path the symbolic link for the "current" version.
+//
+// ```
+//   key, filename := "123", "report.pdf"
+//   docPath, err := c.AttachmentPath(key, filename)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) AttachmentPath(key string, filename string) (string, error) {
 	aDir, err := attachmentDir(c, key)
 	if err != nil {
@@ -345,8 +357,17 @@ func (c *Collection) AttachmentPath(key string, filename string) (string, error)
 	return aPath, nil
 }
 
-// AttachmentVersionPath takes a key, semver and filename and returns
-// the path to the attached file (if found).
+// AttachmentVersionPath takes a key, filename and semver returning
+// the path to the attached versioned file (if found).
+//
+// ```
+//   key, filename, version := "123", "report.pdf", "0.0.3"
+//   docPath, err := c.AttachmentVersionPath(key, filename, version)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) AttachmentVersionPath(key string, filename string, version string) (string, error) {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -361,14 +382,18 @@ func (c *Collection) AttachmentVersionPath(key string, filename string, version 
 }
 
 // RetrieveStream takes a key and filename then returns an io.Reader,
-// and error.
+// and error. If the collection is versioned then the stream is for the
+// "current" version of the attached file.
 //
 // ```
-//   key, filename := "123", "helloworld.txt"
-//   buf, err := c.Retrieve(key, filename)
-//   if err != nil { ... }
-//   defer buf.Close()
-//   fmt.Printf("%s\n", buf)
+//   key, filename := "123", "report.pdf"
+//   src := []byte{}
+//   buf := bytes.NewBuffer(src)
+//   err := c.Retrieve(key, filename, buf)
+//   if err != nil {
+//      ...
+//   }
+//   ioutil.WriteFile(filename, src, 0664)
 // ```
 //
 func (c *Collection) RetrieveStream(key string, filename string, buf io.Writer) error {
@@ -392,11 +417,14 @@ func (c *Collection) RetrieveStream(key string, filename string, buf io.Writer) 
 // returns an io.Reader and error.
 //
 // ```
-//   key, filename, version := "123", "helloworld.txt", "1.2.3"
-//   err := c.RetrieveVersion(key, filename, version, out)
-//   if err != nil { ... }
-//   defer buf.Close()
-//   fmt.Printf("%s\n", buf)
+//   key, filename, version := "123", "helloworld.txt", "0.0.3"
+//   src := []byte{}
+//   buf := bytes.NewBuffer(src)
+//   err := c.RetrieveVersion(key, filename, version, buf)
+//   if err != nil {
+//      ...
+//   }
+//   ioutil.WriteFile(filename + "_" + version, src, 0664)
 // ```
 //
 func (c *Collection) RetrieveVersionStream(key string, filename string, version string, buf io.Writer) error {
@@ -416,8 +444,18 @@ func (c *Collection) RetrieveVersionStream(key string, filename string, version 
 	return nil
 }
 
-// Prune a non-JSON document with filename (including all versions) from
-// a JSON document in the collection.
+// Prune removes a an attached document from the JSON record given a key and
+// filename. NOTE: In versioned collections this include removing all
+// versions of the attached document.
+//
+// ```
+//   key, filename := "123", "report.pdf"
+//   err := c.Prune(key, filename)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) Prune(key string, filename string) error {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -441,7 +479,16 @@ func (c *Collection) Prune(key string, filename string) error {
 	return nil
 }
 
-// PruneVersion a non-JSON document from a JSON document version in the collection.
+// PruneVersion removes an attached version of a document.
+//
+// ```
+//   key, filename, version := "123", "report.pdf, "0.0.3"
+//   err := c.PruneVersion(key, filename, version)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) PruneVersion(key string, filename string, version string) error {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -451,7 +498,17 @@ func (c *Collection) PruneVersion(key string, filename string, version string) e
 	return os.RemoveAll(vPath)
 }
 
-// PruneAll removes all non-JSON attached documents (including all versions) from a JSON document record.
+// PruneAll removes attachments from a JSON record in the collection.
+// When the collection is versioned it removes all versions of all too.
+//
+// ```
+//   key := "123"
+//   err := c.PruneAll(key)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) PruneAll(key string) error {
 	if c == nil {
 		return fmt.Errorf("collection isn't open")
@@ -467,6 +524,18 @@ func (c *Collection) PruneAll(key string) error {
 //
 
 // AttachFile attaches a file to a JSON document in the collection.
+// If the repository is versioned then the version of the attachment
+// is incremented each time you attach the same filename. This includes
+// updating the symbolic link for the "current" version of the file.
+//
+// ```
+//   key, filename := "123", "report.pdf"
+//   err := c.AttachFile(key, filename)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) AttachFile(key string, filename string) error {
 	buf, err := os.Open(filename)
 	if err != nil {
@@ -477,6 +546,18 @@ func (c *Collection) AttachFile(key string, filename string) error {
 }
 
 // AttachVersionFile attaches a file to a JSON document in the collection.
+// This does NOT increment the version number of attachment(s). It is used
+// to explicitly replace a attached version of a file. It does not update
+// the symbolic link to the "current" attachment.
+//
+// ```
+//   key, filename, version := "123", "report.pdf", "0.0.3"
+//   err := c.AttachVersionFile(key, filename, version)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (c *Collection) AttachVersionFile(key string, filename string, version string) error {
 	buf, err := os.Open(filename)
 	if err != nil {
@@ -488,6 +569,19 @@ func (c *Collection) AttachVersionFile(key string, filename string, version stri
 
 // RetrieveFile retrieves a file attached to a JSON document in the
 // collection.
+//
+// ```
+//    key, filename := "123", "report.pdf"
+//    src, err := c.RetrieveFile(key, filename)
+//    if err != nil {
+//       ...
+//    }
+//    err = ioutil.WriteFile(filename, src, 0664)
+//    if err != nil {
+//       ...
+//    }
+// ```
+//
 func (c *Collection) RetrieveFile(key string, filename string) ([]byte, error) {
 	src := []byte{}
 	buf := bytes.NewBuffer(src)
@@ -498,8 +592,21 @@ func (c *Collection) RetrieveFile(key string, filename string) ([]byte, error) {
 	return src, nil
 }
 
-// RetrieveVersionFile retrieves a file version attached to a JSON document in the
-// collection.
+// RetrieveVersionFile retrieves a file version attached to a JSON
+// document in the collection.
+//
+// ```
+//    key, filename, version := "123", "report.pdf", "0.0.3"
+//    src, err := c.RetrieveVersionFile(key, filename, version)
+//    if err != nil  {
+//       ...
+//    }
+//    err = ioutil.WriteFile(filename + "_" + version, src, 0664)
+//    if err != nil {
+//       ...
+//    }
+// ```
+//
 func (c *Collection) RetrieveVersionFile(key string, filename string, version string) ([]byte, error) {
 	src := []byte{}
 	buf := bytes.NewBuffer(src)

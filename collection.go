@@ -102,7 +102,7 @@ type Collection struct {
 //
 // ```
 //    var (
-//       c *Collection
+//       c *dataset.Collection
 //       err error
 //    )
 //    c, err = dataset.Open("collection.ds")
@@ -373,7 +373,7 @@ func (c *Collection) initSQLStore() error {
 //
 // The one for SQLite3
 //
-//     `sqlite://PATH_TO_DATABASE`
+//    `sqlite://PATH_TO_DATABASE`
 //
 // NOTE: The DSN URI is stored in the collections.json.  The file should
 // NOT be world readable as that will expose your database password. You
@@ -404,8 +404,8 @@ func (c *Collection) initSQLStore() error {
 //      c *Collection
 //      err error
 //   )
-//   name := "my_collection"
-//   dsnURI := os.Getenv("DATASET_DSN_URI")
+//   name := "my_collection.ds"
+//   dsnURI := "sqlite://my_collection.ds/collection.db"
 //   c, err = dataset.Init(name, dsnURI)
 //   if err != nil {
 //     // ... handle error
@@ -440,7 +440,22 @@ func Init(name string, dsnURI string) (*Collection, error) {
 }
 
 // Metadata returns a copy of the codemeta.json file content found
-// in the collection directory.
+// in the collection directory. The collection must be previous open.
+//
+// ```
+//   name := "my_collection.ds"
+//   c, err := dataset.Open(name)
+//   if err != nil {
+//      ...
+//   }
+//   defer c.Close()
+//   src, err := c.Metadata()
+//   if err != nil {
+//      ...
+//   }
+//   ioutil.WriteFile("codemeta.json", src, 664)
+// ```
+//
 func (c *Collection) Metadata() ([]byte, error) {
 	fName := path.Join(c.Name, "codemeta.json")
 	src, err := ioutil.ReadFile(fName)
@@ -454,10 +469,14 @@ func (c *Collection) Metadata() ([]byte, error) {
 // the previous version. Collection must be open.
 //
 // ```
-//   c, err := dataset.Open("my_collection.ds")
-//   if err != nil { /* ... handle error ... */ }
+//   name := "my_collection.ds"
+//   codemetaFilename := "../codemeta.json"
+//   c, err := dataset.Open(name)
+//   if err != nil {
+//      ...
+//   }
 //   defer c.Close()
-//   c.UpdateCodemeta("codemeta.json")
+//   c.UpdateMetadata(codemetaFilename)
 // ```
 func (c *Collection) UpdateMetadata(fName string) error {
 	src, err := ioutil.ReadFile(fName)
@@ -568,9 +587,9 @@ func (c *Collection) Versions(key string) ([]string, error) {
 // ReadVersion retrieves a specific vesion from the collection for the given object.
 //
 // ```
-//   key, version := "123", "0.0.1"
 //   var obj map[string]interface{}
 //
+//   key, version := "123", "0.0.1"
 //   if err := ReadVersion(key, version, &obj); err != nil {
 //      ...
 //   }
@@ -595,7 +614,9 @@ func (c *Collection) ReadVersion(key string, version string, obj map[string]inte
 	return DecodeJSON(src, &obj)
 }
 
-// Update updates an existing JSON document.
+// Update replaces a JSON document in the collection with a new one.
+// If the collection is versioned then it creates a new versioned copy
+// and updates the "current" version to use it.
 //
 // ```
 //   key := "123"
@@ -625,7 +646,9 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// Delete removes an object from the collection (this includes all versions and all attachments)
+// Delete removes an object from the collection. If the collection is
+// versioned then all versions are deleted. Any attachments to the
+// JSON document are also deleted including any versioned attachments.
 //
 // ```
 //   key := "123"
@@ -679,7 +702,13 @@ func (c *Collection) Keys() ([]string, error) {
 // Sample takes a sample size and returns a list of
 // randomly selected keys and an error. Sample size most
 // be greater than zero and less or equal to the number of keys
-// in the collection.
+// in the collection. Collection needs to be previously opened.
+//
+// ```
+//   smapleSize := 1000
+//   keys, err := c.Sample(sampleSize)
+// ```
+//
 func (c *Collection) Sample(size int) ([]string, error) {
 	var (
 		keys []string
@@ -741,6 +770,12 @@ func (c *Collection) HasKey(key string) bool {
 // Length returns the number of objects in a collection
 // NOTE: Returns a -1 (as int64) on error, e.g. collection not open
 // or Length not available for storage type.
+//
+// ```
+//    var x int64
+//    x = c.Length()
+// ```
+//
 func (c *Collection) Length() int64 {
 	switch c.StoreType {
 	case PTSTORE:
