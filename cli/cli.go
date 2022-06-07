@@ -802,7 +802,37 @@ func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 
 // doAttachments
 func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doAttachments() not implemented")
+	var (
+		srcName string
+		key     string
+		err     error
+		output  string
+	)
+	flagSet := flag.NewFlagSet("attachments", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "attachments")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, key = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	attachments, err := source.Attachments(key)
+	if err != nil {
+		return fmt.Errorf("failed to get attachments %q, %q, %s", srcName, key, err)
+	}
+	return texts.WriteKeys(output, out, attachments)
 }
 
 // doAttach

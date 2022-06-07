@@ -329,7 +329,7 @@ func TestFredaExample(t *testing.T) {
 //
 
 func TestCollection(t *testing.T) {
-	colName := "testdata/test_collection.ds"
+	colName := "testout/test_collection.ds"
 	// Remove any pre-existing test data
 	if _, err := os.Stat(colName); err == nil {
 		os.RemoveAll(colName)
@@ -552,7 +552,7 @@ func TestComplexKeys(t *testing.T) {
 
 func TestCaseHandling(t *testing.T) {
 	// Setup a test collection and data
-	cName := path.Join("testdata", "test_case_handling.ds")
+	cName := path.Join("testout", "test_case_handling.ds")
 	os.RemoveAll(cName)
 	c, err := Init(cName, "")
 	if err != nil {

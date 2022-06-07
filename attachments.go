@@ -19,16 +19,52 @@
 package dataset
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"os"
+	"path"
+	"strings"
+
+	// Caltech Library Packages
+	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dataset/semver"
 )
+
+//
+// Overview:
+//
+// As of v2 dataset attachments are held in a pairtree of their own.
+// The reason is that SQL database support for directly storing
+// binary blobs is limited so the file system remains a simple
+// solution to storing attachments.
+//
+// Attachments can support versioned and unversioned collections.
+// If the collection is unversioned then the attachment is placed
+// in the pairtree directory formed by the collection's working path,
+// "attachments", pairtree encoded JSON object key, filename.
+// If the collection is versioned then the attachment is placed
+// in the pairtree directory formed by the collection's working path,
+// "attachments", pairtree encoded JSON object key, directory named
+// for the filename being attached with the specific version of the
+// file stored as a semver style version number.  The "current"
+// semver is linked back to the unversioned directory as the filename.
+//
+// NOTE: the AttachVersionStream() func does not managed the symbolic
+// link for the current version. That is managed by AttachStream() which
+// handles but use case for attach an unversioned file or a versioned file.
+//
+// NOTE: The attachments methods do not lock. For the web service
+// implementation of dataset (i.e. datasetd) the service must providing
+// the necessary locking to avoid competing writes and deletes.
+//
 
 // Attachment is a structure for holding non-JSON content metadata
 // you wish to store alongside a JSON document in a collection
-// Attachments themselves reside in a pairtree of the collection
-// (even when using a SQL store for the JSON document). They are
-// stored in the object's expected pairtree location in a sub-directory
-// called "_".
+// Attachments reside in a their own pairtree of the collection directory.
+// (even when using a SQL store for the JSON document). The attachment
+// metadata is read as needed from disk where the collection folder
+// resides.
 type Attachment struct {
 	// Name is the filename and path to be used inside the generated tar file
 	Name string `json:"name"`
@@ -47,15 +83,15 @@ type Attachment struct {
 	// You should have one checksum per attached version.
 	Checksums map[string]string `json:"checksums"`
 
-	// HRef points at last attached version of the attached document, e.g. v0.0.0/photo.png
+	// HRef points at last attached version of the attached document
 	// If you moved an object out of the pairtree it should be a URL.
 	HRef string `json:"href"`
 
 	// VersionHRefs is a map to all versions of the attached document
 	// {
-	//    "v0.0.0": "... /photo.png",
-	//    "v0.0.1": "... /photo.png",
-	//    "v0.0.2": "... /photo.png"
+	//    "0.0.0": "... /photo.png",
+	//    "0.0.1": "... /photo.png",
+	//    "0.0.2": "... /photo.png"
 	// }
 	VersionHRefs map[string]string `json:"version_hrefs"`
 
@@ -69,52 +105,407 @@ type Attachment struct {
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// AttachStream is for attaching open a non-JSON file buffer (via an io.Reader).
-func (c *Collection) AttachStream(keyName, semver, fullName string, buf io.Reader) error {
-	return fmt.Errorf("AttachStream() not implemented")
+//
+// Private helper functions
+//
+
+// attachmentDir calculates a filepath's dir based on a collection
+// and key.
+func attachmentDir(c *Collection, key string) (string, error) {
+	if c == nil {
+		return "", fmt.Errorf("collection isn't open")
+	}
+	workPath := c.workPath
+	pairPath := pairtree.Encode(key)
+	return path.Join(workPath, "attachments", pairPath), nil
 }
 
-// AttachFile is for attaching a single non-JSON document to a
-// dataset record. It will replace ANY existing attached content
-// with the same semver and basename.
-func (c *Collection) AttachFile(keyName string, fullName string) error {
-	return fmt.Errorf("AttachFile() not implemented")
+// attachmentVersionDir calculates a filepath's dir based on a
+// collection, key, version
+func attachmentVersionDir(c *Collection, key string, filename string) (string, error) {
+	if c == nil || c.workPath == "" {
+		return "", fmt.Errorf("collection isn't open")
+	}
+	workPath := c.workPath
+	pairPath := pairtree.Encode(key)
+	return path.Join(workPath, "attachments", pairPath, "_", path.Base(filename)), nil
 }
 
-// AttachFileAs is for attaching a single non-JSON document to a
-// dataset record with a specific attachment name. It will replace ANY
-// existing attached content with the same semver and destintation name.
-func (c *Collection) AttachFileAs(keyName string, semver string, dstName string, srcName string) error {
-	return fmt.Errorf("AttachFileAs() not implemented")
+// Attachments returns a list of filenames for a key name in the collection
+//
+//   Example: "c" is a dataset collection previously opened,
+//   "key" is a string.  The "key" is for a JSON document in
+//   the collection. It returns an slice of filenames and err.
+//
+// ```
+//   filenames, err := c.Attachments(key)
+//   if err != nil {
+//      ...
+//   }
+//   // Print the names of the files attached to the JSON document
+//   // referred to by "key".
+//   for i, filename := ranges {
+//      fmt.Printf("key: %q, filename: %q", key, filename)
+//   }
+// ```
+//
+func (c *Collection) Attachments(key string) ([]string, error) {
+	aPath, err := attachmentDir(c, key)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := os.Stat(aPath); os.IsNotExist(err) {
+		return []string{}, nil
+	}
+	attachments := []string{}
+	dir, err := os.ReadDir(aPath)
+	if err != nil {
+		return nil, err
+	}
+	for _, entry := range dir {
+		if entry != nil {
+			filename := path.Base(entry.Name())
+			if !entry.IsDir() {
+				attachments = append(attachments, filename)
+			}
+		}
+	}
+	return attachments, nil
 }
 
-// AttachFiles attaches non-JSON documents to a JSON document in the collection.
-// Attachments are stored in a tar file, if tar file exits then attachment(s)
-// are appended to tar file.
-func (c *Collection) AttachFiles(keyName string, fNames ...string) error {
-	return fmt.Errorf("AttachFiles() not implemented")
+// AttachmentVersions returns a list of versions for an attached file
+// to a JSON document in the collection.
+//
+//    Example: retrieve a list of versions of an attached file.
+//    "key" is a key in the collection, filename is name of an
+//    attached file for the JSON document referred to by key.
+//
+// ```
+//   versions, err := c.AttachmentVersions(key, filename)
+//   if err != nil {
+//      ...
+//   }
+//   for i, version := range versions {
+//      fmt.Printf("key: %q, filename: %q, version: %q", key, filename, version)
+//   }
+// ```
+//
+func (c *Collection) AttachmentVersions(key string, filename string) ([]string, error) {
+	aPath, err := attachmentVersionDir(c, key, filename)
+	if err != nil {
+		return nil, err
+	}
+	names, err := os.ReadDir(aPath)
+	if err != nil {
+		return nil, err
+	}
+	versions := []string{}
+	for _, entry := range names {
+		version := entry.Name()
+		if entry.IsDir() == false {
+			versions = append(versions, path.Base(version))
+		}
+	}
+	return versions, nil
 }
 
-// Attachments returns a list of files and size attached for a key name in the collection
-func (c *Collection) Attachments(keyName string) ([]string, error) {
-	return nil, fmt.Errorf("Attachments() not implemented")
+// AttachStream is for attaching a non-JSON file via a io buffer.
+// It requires the JSON document key, the filename and a io.Reader.
+// It does not close the reader. If the collection is versioned then
+// the document attached is automatically versioned per collection
+// versioning setting.
+//
+//    Example: attach the file "helloworld.txt" to JSON document "123"
+//    in an open collection.
+//
+// ```
+//    filename := "helloworld.txt"
+//    key := "123"
+//    buf, err := os.Open(filename)
+//    if err != nil { ... }
+//    err := c.AttachStream(key, filename, buf)
+//    if err != nil { ... }
+//    buf.Close()
+// ```
+//
+func (c *Collection) AttachStream(key string, filename string, buf io.Reader) error {
+	aDir, err := attachmentDir(c, key)
+	if err != nil {
+		return fmt.Errorf("Can't figure out attachment path for %q, %q, %s", key, filename, err)
+	}
+
+	// Create the attachment path if neccessary
+	if _, err := os.Stat(aDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(aDir, 0775); err != nil {
+			return err
+		}
+	}
+	if c.Versioning == "" || c.Versioning == "none" {
+		attachmentFilename := path.Join(aDir, path.Base(filename))
+		out, err := os.Create(attachmentFilename)
+		if err != nil {
+			return fmt.Errorf("failed to create %q, %q, %s", key, filename, err)
+		}
+		defer out.Close()
+		if _, err := io.Copy(out, buf); err != nil {
+			return fmt.Errorf("failed to write %q, %q to stream, %s", key, filename, err)
+		}
+		return nil
+	} else {
+		// Get version
+		version := "0.0.0"
+		versions, err := c.AttachmentVersions(key, filename)
+		if err == nil && len(versions) > 0 {
+			version = versions[len(versions)-1]
+		}
+		sv, err := semver.Parse([]byte(version))
+		switch c.Versioning {
+		case "major":
+			sv.IncMajor()
+		case "minor":
+			sv.IncMinor()
+		case "patch":
+			sv.IncPatch()
+		}
+		version = strings.TrimPrefix(sv.String(), "v")
+		vDir, err := attachmentVersionDir(c, key, path.Base(filename))
+		if _, err := os.Stat(vDir); os.IsNotExist(err) {
+			os.MkdirAll(vDir, 0775)
+		}
+		// "old" name
+		linkTo := path.Join("_", path.Base(filename), version)
+		// "new" name
+		target := path.Join(aDir, path.Base(filename))
+		err = c.AttachVersionStream(key, filename, version, buf)
+		// NOTE: A link is used to the versioned file to save space
+		// If a link exists we need to remove it, then create a new
+		// link.
+		if _, err := os.Lstat(target); err == nil {
+			os.Remove(target)
+		}
+		if err := os.Symlink(linkTo, target); err != nil {
+			return fmt.Errorf("failed to link attachment %q, %q, %q, %s", key, filename, version, err)
+		}
+		return nil
+	}
+	return nil
+}
+
+// AttachVersionStream is for attaching open a non-JSON file buffer
+// (via an io.Reader) to a specific version of a file. If attached
+// file exists it is replaced.
+//
+//    Example: attach the file "helloworld.txt", version "1.2.3" to
+//    JSON document "123"
+//    in an open collection.
+//
+// ```
+//    filename := "helloworld.txt"
+//    key := "123"
+//    version := "1.2.3"
+//    buf, err := os.Open(filename)
+//    if err != nil { ... }
+//    err := c.AttachVersionStream(key, filename, version, buf)
+//    if err != nil { ... }
+//    buf.Close()
+// ```
+//
+func (c *Collection) AttachVersionStream(key string, filename string, version string, buf io.Reader) error {
+	vDir, err := attachmentVersionDir(c, key, filename)
+	if err != nil {
+		return fmt.Errorf("failed to calculate version path, %s", err)
+	}
+	if _, err := os.Stat(vDir); os.IsNotExist(err) {
+		os.MkdirAll(vDir, 0775)
+	}
+	vPath := path.Join(vDir, version)
+	out, err := os.Create(vPath)
+	if err != nil {
+		return fmt.Errorf("failed to create versioned attachment, %q, %q, %q, %s", key, filename, version, err)
+	}
+	defer out.Close()
+	if _, err := io.Copy(out, buf); err != nil {
+		return fmt.Errorf("failed to write %q, %q, %q to output stream, %s", key, filename, version, err)
+	}
+	return nil
 }
 
 // AttachmentPath takes a key, semver and filename and returns the path
 // to the attached file (if found).
-func (c *Collection) AttachmentPath(keyName string, semver string, filename string) (string, error) {
-	return "", fmt.Errorf("AttachmentPath() not implemented")
+func (c *Collection) AttachmentPath(key string, filename string) (string, error) {
+	aDir, err := attachmentDir(c, key)
+	if err != nil {
+		return "", err
+	}
+	aPath := path.Join(aDir, path.Base(filename))
+	if _, err := os.Lstat(aPath); err != nil {
+		return "", err
+
+	}
+	return aPath, nil
 }
 
-// GetAttachedFiles returns an error if encountered, a side effect
-// is the file(s) are written to the current work directory
-// If no filterNames provided then return all attachments are written out
-// An error value is always returned.
-func (c *Collection) GetAttachedFiles(keyName string, fNames ...string) error {
-	return fmt.Errorf("GetAttachedFiles() not implemented")
+// AttachmentVersionPath takes a key, semver and filename and returns
+// the path to the attached file (if found).
+func (c *Collection) AttachmentVersionPath(key string, filename string, version string) (string, error) {
+	vDir, err := attachmentVersionDir(c, key, filename)
+	if err != nil {
+		return "", err
+	}
+	vPath := path.Join(vDir, version)
+	if _, err := os.Stat(vPath); err != nil {
+		return "", err
+
+	}
+	return vPath, nil
 }
 
-// Prune a non-JSON document from a JSON document in the collection.
-func (c *Collection) Prune(keyName string, fNames ...string) error {
-	return fmt.Errorf("Prune() not implemented")
+// RetrieveStream takes a key and filename then returns an io.Reader,
+// and error.
+//
+// ```
+//   key, filename := "123", "helloworld.txt"
+//   buf, err := c.Retrieve(key, filename)
+//   if err != nil { ... }
+//   defer buf.Close()
+//   fmt.Printf("%s\n", buf)
+// ```
+//
+func (c *Collection) RetrieveStream(key string, filename string, buf io.Writer) error {
+	aDir, err := attachmentDir(c, key)
+	if err != nil {
+		return err
+	}
+	aPath := path.Join(aDir, path.Base(filename))
+	in, err := os.Open(aPath)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	if _, err := io.Copy(buf, in); err != nil {
+		return err
+	}
+	return err
+}
+
+// RetrieveVersionStream takes a key, filename and version then
+// returns an io.Reader and error.
+//
+// ```
+//   key, filename, version := "123", "helloworld.txt", "1.2.3"
+//   err := c.RetrieveVersion(key, filename, version, out)
+//   if err != nil { ... }
+//   defer buf.Close()
+//   fmt.Printf("%s\n", buf)
+// ```
+//
+func (c *Collection) RetrieveVersionStream(key string, filename string, version string, buf io.Writer) error {
+	vDir, err := attachmentVersionDir(c, key, filename)
+	if err != nil {
+		return err
+	}
+	vPath := path.Join(vDir, version)
+	in, err := os.Open(vPath)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	if _, err := io.Copy(buf, in); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Prune a non-JSON document with filename (including all versions) from
+// a JSON document in the collection.
+func (c *Collection) Prune(key string, filename string) error {
+	vDir, err := attachmentVersionDir(c, key, filename)
+	if err != nil {
+		return err
+	}
+	if _, err := os.Stat(vDir); err == nil {
+		if err := os.RemoveAll(vDir); err != nil {
+			return err
+		}
+	}
+	aDir, err := attachmentDir(c, key)
+	if err != nil {
+		return err
+	}
+	aPath := path.Join(aDir, path.Base(filename))
+	if _, err := os.Lstat(aPath); err == nil {
+		if err := os.RemoveAll(aPath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// PruneVersion a non-JSON document from a JSON document version in the collection.
+func (c *Collection) PruneVersion(key string, filename string, version string) error {
+	vDir, err := attachmentVersionDir(c, key, filename)
+	if err != nil {
+		return err
+	}
+	vPath := path.Join(vDir, version)
+	return os.RemoveAll(vPath)
+}
+
+// PruneAll removes all non-JSON attached documents (including all versions) from a JSON document record.
+func (c *Collection) PruneAll(key string) error {
+	if c == nil {
+		return fmt.Errorf("collection isn't open")
+	}
+	workPath := c.workPath
+	pairPath := pairtree.Encode(key)
+	vDir := path.Join(workPath, "attachments", pairPath)
+	return os.RemoveAll(vDir)
+}
+
+//
+// Convenience functions.
+//
+
+// AttachFile attaches a file to a JSON document in the collection.
+func (c *Collection) AttachFile(key string, filename string) error {
+	buf, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer buf.Close()
+	return c.AttachStream(key, filename, buf)
+}
+
+// AttachVersionFile attaches a file to a JSON document in the collection.
+func (c *Collection) AttachVersionFile(key string, filename string, version string) error {
+	buf, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer buf.Close()
+	return c.AttachVersionStream(key, filename, version, buf)
+}
+
+// RetrieveFile retrieves a file attached to a JSON document in the
+// collection.
+func (c *Collection) RetrieveFile(key string, filename string) ([]byte, error) {
+	src := []byte{}
+	buf := bytes.NewBuffer(src)
+	err := c.RetrieveStream(key, filename, buf)
+	if err != nil {
+		return nil, err
+	}
+	return src, nil
+}
+
+// RetrieveVersionFile retrieves a file version attached to a JSON document in the
+// collection.
+func (c *Collection) RetrieveVersionFile(key string, filename string, version string) ([]byte, error) {
+	src := []byte{}
+	buf := bytes.NewBuffer(src)
+	err := c.RetrieveVersionStream(key, filename, version, buf)
+	if err != nil {
+		return nil, err
+	}
+	return src, nil
 }

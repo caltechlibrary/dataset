@@ -27,11 +27,190 @@ import (
 	"path"
 	"strings"
 	"testing"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/pairtree"
 )
 
 func TestAttachments(t *testing.T) {
-	cName := path.Join("testout", "col3.ds")
-	dsnURI := "sqlite://testout/col3.ds/collection.db"
+	cName := path.Join("testout", "attachment_test.ds")
+	dsnURI := "sqlite://testout/attachment_test.ds/collection.db"
+	os.RemoveAll(cName)
+
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		t.Errorf("Can't create collection %q (%s)", cName, err)
+		t.FailNow()
+	}
+	c.Close()
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("Can't open collection %q (%s)", cName, err)
+		t.FailNow()
+	}
+
+	// Create some temp text files to attach.
+	key := "freda"
+	version := "0.0.1"
+	filename := path.Join("testout", "helloworld.txt")
+	src := []byte("Hello World")
+	size := int64(len(src))
+	if size != int64(11) {
+		t.Errorf("Expected 'Hello World' to be size 11, got %d", size)
+	}
+	expectedChecksum := "b10a8db164e0754105b7a99be72e3fe5"
+	checksum := fmt.Sprintf("%x", md5.Sum(src))
+	if strings.Compare(checksum, expectedChecksum) != 0 {
+		t.Errorf("Expected a checksum %s, got %q", expectedChecksum, checksum)
+	}
+	if err := ioutil.WriteFile(filename, src, 0664); err != nil {
+		t.Errorf("Can't create test helloworld.txt, %s", err)
+		t.FailNow()
+	}
+
+	motto := []byte("Wowie Zowie!")
+	data := &Attachment{
+		Name: "impressed.txt",
+		Size: int64(len(motto)),
+		Checksums: map[string]string{
+			version: fmt.Sprintf("%x", md5.Sum(motto)),
+		},
+	}
+	if _, err := json.MarshalIndent(data, "", "    "); err != nil {
+		t.Errorf("marshal error %s", err)
+		t.FailNow()
+	}
+	if err := ioutil.WriteFile(path.Join("testout", data.Name), motto, 0664); err != nil {
+		t.Errorf("Can't create test %q, %s", data.Name, err)
+		t.FailNow()
+	}
+
+	record := map[string]interface{}{
+		"name":  "freda",
+		"motto": "it's all about what you sense when you've have sense to sense it",
+	}
+	if err := c.Create(key, record); err != nil {
+		t.Errorf("failed to create %s in %s, %s", key, c.Name, err)
+		t.FailNow()
+	}
+
+	//NOTE: Need to open the file as io.Reader. We use stream
+	// buffers to limit the in-memory demands of copying the file.
+	for _, filename := range []string{"helloworld.txt", "impressed.txt"} {
+		filename = path.Join("testout", filename)
+		buf, err := os.Open(filename)
+		if err != nil {
+			t.Errorf("failed to open test file %q as stream, %s", filename, err)
+			t.FailNow()
+		}
+		if err := c.AttachStream(key, filename, buf); err != nil {
+			buf.Close()
+			t.Errorf("failed to add attachment to %q, %q, %s", key, filename, err)
+			t.FailNow()
+		}
+
+		fPath, err := c.AttachmentPath(key, path.Base(filename))
+		if err != nil {
+			t.Errorf("Should be able to get a path to attachment %q, %s", filename, err)
+			t.FailNow()
+		}
+		if fInfo, err := os.Lstat(fPath); os.IsNotExist(err) {
+			t.Errorf("Attachment not created %q", filename)
+			t.FailNow()
+		} else if err != nil {
+			t.Errorf("Stat error for %q, %s", fPath, err)
+			t.FailNow()
+		} else if fInfo.Size() == 0 {
+			t.Errorf("Empty attachment, %q --> %q", filename, fPath)
+			t.FailNow()
+		}
+	}
+
+	filenames, err := c.Attachments(key)
+	if err != nil {
+		t.Errorf("can't list attachments for %s in %s, %s", key, c.Name, err)
+		t.FailNow()
+	}
+	if len(filenames) != 2 {
+		t.Errorf("Expected two file unversioned attachments, %+v", filenames)
+		t.FailNow()
+	}
+	for _, filename := range filenames {
+		if !(filename == "helloworld.txt" || filename == "impressed.txt") {
+			t.Errorf("Unexpected filename in list, %s", filename)
+			t.FailNow()
+		}
+		fPath, err := c.AttachmentPath(key, filename)
+		if err != nil {
+			t.Errorf("expected path c.AttachmentPath(%q, %q), %s", key, filename, err)
+			continue
+		}
+		pairPath := pairtree.Encode(key)
+		expectedPath := path.Join("testout", "attachment_test.ds", "attachments", pairPath, filename)
+		if fPath != expectedPath {
+			t.Errorf("expected %q, got %q", expectedPath, pairPath)
+			t.FailNow()
+		}
+		if fInfo, err := os.Lstat(fPath); err != nil {
+			t.Errorf("Expected os.Stat(%q) for %q, %q, %q, %s", fPath, key, filename, version, err)
+			continue
+		} else {
+			sName := fInfo.Name()
+			size := fInfo.Size()
+			if sName != filename {
+				t.Errorf("expected %q, got %q for os.Stat(%q)", filename, sName, fPath)
+			}
+			if size == 0 {
+				t.Errorf("expected size > 0, got %d for os.Stat(%q)", size, fPath)
+			}
+		}
+	}
+	key = "freda"
+	if err := c.Prune(key, "helloworld.txt"); err != nil {
+		t.Errorf("Delete helloworld.txt attachment, %s", err)
+		t.FailNow()
+	}
+	names, err := c.Attachments(key)
+	if err != nil {
+		t.Errorf("c.Attachments(%q) error, %s", key, err)
+		t.FailNow()
+	}
+	if len(names) != 1 {
+		t.Errorf("expected on attach in list, got %d, %+v", len(names), names)
+	}
+	if err := c.Prune("freda", "impressed.txt"); err != nil {
+		t.Errorf("Delete impressed.txt attachment, %s", err)
+		t.FailNow()
+	}
+	names, err = c.Attachments(key)
+	if err != nil {
+		t.Errorf("c.Attachments(%q) expected, %s", key, err)
+		t.FailNow()
+	}
+	if len(names) != 0 {
+		t.Errorf("expected on attach in list, got %d, %+v", len(names), names)
+	}
+
+	if err := c.PruneAll("freda"); err != nil {
+		t.Errorf("Delete all attachmemts, %s", err)
+		t.FailNow()
+	}
+
+	// Make sure files have been removed from collection
+	docDir := path.Join("testout", "attachment_test.ds", "attachments", "fr", "ed", "a", "_")
+	for _, filename := range []string{"impressed.txt", "helloworld.txt"} {
+		aPath := path.Join(docDir, filename)
+		if _, err := os.Stat(aPath); err == nil {
+			t.Errorf("Should have deleted %s", aPath)
+			t.FailNow()
+		}
+	}
+
+}
+
+func TestVersionedAttachments(t *testing.T) {
+	cName := path.Join("testout", "v_attachment_test.ds")
+	dsnURI := "sqlite://testout/v_attachment_test.ds/collection.db"
 	os.RemoveAll(cName)
 
 	c, err := Init(cName, dsnURI)
@@ -48,23 +227,24 @@ func TestAttachments(t *testing.T) {
 	}
 
 	// Create some temp text files to attach.
-	keyName := "freda"
-	buf := []byte("Hello World")
-	size := int64(len(buf))
+	key := "freda"
+	version := "0.0.1"
+	filename := path.Join("testout", "helloworld.txt")
+	src := []byte("Hello World")
+	size := int64(len(src))
 	if size != int64(11) {
 		t.Errorf("Expected 'Hello World' to be size 11, got %d", size)
 	}
 	expectedChecksum := "b10a8db164e0754105b7a99be72e3fe5"
-	checksum := fmt.Sprintf("%x", md5.Sum(buf))
+	checksum := fmt.Sprintf("%x", md5.Sum(src))
 	if strings.Compare(checksum, expectedChecksum) != 0 {
 		t.Errorf("Expected a checksum %s, got %q", expectedChecksum, checksum)
 	}
-	if err := ioutil.WriteFile(path.Join("testout", "helloworld.txt"), buf, 0777); err != nil {
+	if err := ioutil.WriteFile(filename, src, 0664); err != nil {
 		t.Errorf("Can't create test helloworld.txt, %s", err)
 		t.FailNow()
 	}
 
-	version := "0.0.1"
 	motto := []byte("Wowie Zowie!")
 	data := &Attachment{
 		Name: "impressed.txt",
@@ -77,7 +257,7 @@ func TestAttachments(t *testing.T) {
 		t.Errorf("marshal error %s", err)
 		t.FailNow()
 	}
-	if err := ioutil.WriteFile(path.Join("testout", data.Name), motto, 0777); err != nil {
+	if err := ioutil.WriteFile(path.Join("testout", data.Name), motto, 0664); err != nil {
 		t.Errorf("Can't create test %q, %s", data.Name, err)
 		t.FailNow()
 	}
@@ -86,61 +266,79 @@ func TestAttachments(t *testing.T) {
 		"name":  "freda",
 		"motto": "it's all about what you sense when you've have sense to sense it",
 	}
-	if err := c.Create(keyName, record); err != nil {
-		t.Errorf("failed to create %s in %s, %s", keyName, c.Name, err)
+	if err := c.Create(key, record); err != nil {
+		t.Errorf("failed to create %s in %s, %s", key, c.Name, err)
 		t.FailNow()
 	}
-	if err := c.AttachFile(keyName, path.Join("testout", "helloworld.txt")); err != nil {
-		t.Errorf("failed to add attachments to %s, %s", path.Join("testout", "helloworld.txt"), err)
-		t.FailNow()
-	}
-	fPath, err := c.AttachmentPath(keyName, "helloworld.txt")
-	if err != nil {
-		t.Errorf("Should be able to get a path to attachment, %s", err)
-		t.FailNow()
-	}
-	if fInfo, err := os.Stat(fPath); os.IsNotExist(err) {
-		t.Errorf("Attachment not created %q", path.Join("testout", "helloworld.txt"))
-		t.FailNow()
-	} else if err != nil {
-		t.Errorf("Stat error for %q, %s", fPath, err)
-		t.FailNow()
-	} else if fInfo.Size() == 0 {
-		t.Errorf("Empty attachment, %q --> %q", fPath)
-		t.FailNow()
-	}
-	if err := c.AttachFile(keyName, path.Join("testout", data.Name)); err != nil {
-		t.Errorf("failed to add attachments to %s, %s", c.Name, err)
-		t.FailNow()
-	}
-	if files, err := c.Attachments(keyName); err != nil {
-		t.Errorf("can't list attachments for %s in %s, %s", keyName, c.Name, err)
-		t.FailNow()
-	} else {
-		if len(files) != 2 {
-			t.Errorf("Expected one file attached, %+v", files)
+
+	//NOTE: Need to open the file as io.Reader. We use stream
+	// buffers to limit the in-memory demands of copying the file.
+	for _, filename := range []string{"helloworld.txt", "impressed.txt"} {
+		filename = path.Join("testout", filename)
+		buf, err := os.Open(filename)
+		if err != nil {
+			t.Errorf("failed to open test file %q as stream, %s", filename, err)
 			t.FailNow()
 		}
-		if files[0] != "helloworld.txt 11" {
-			t.Errorf("Expected files[0] to be helloworld.txt, got %+v", files)
+		if err := c.AttachStream(key, filename, buf); err != nil {
+			buf.Close()
+			t.Errorf("failed to add attachment to %q, %q, %s", key, filename, err)
 			t.FailNow()
 		}
-		if files[1] != "impressed.txt 12" {
-			t.Errorf("Expected files[1] to be impressed.txt, got %+v", files)
+
+		fPath, err := c.AttachmentPath(key, path.Base(filename))
+		if err != nil {
+			t.Errorf("Should be able to get a path to attachment %q, %s", filename, err)
+			t.FailNow()
+		}
+		if fInfo, err := os.Lstat(fPath); os.IsNotExist(err) {
+			t.Errorf("Attachment not created %q", filename)
+			t.FailNow()
+		} else if err != nil {
+			t.Errorf("Stat error for %q, %s", fPath, err)
+			t.FailNow()
+		} else if fInfo.Size() == 0 {
+			t.Errorf("Empty attachment, %q --> %q", filename, fPath)
 			t.FailNow()
 		}
 	}
 
-	if files, err := c.Attachments(keyName); err != nil {
-		t.Errorf("Attachments (2) expected, %+v %s", files, err)
+	if filenames, err := c.Attachments(key); err != nil {
+		t.Errorf("can't list attachments for %s in %s, %s", key, c.Name, err)
 		t.FailNow()
 	} else {
-		if len(files) != 2 {
-			t.Errorf("Should have two files attached")
+		if len(filenames) != 2 {
+			t.Errorf("Expected one file attached, %+v", filenames)
+			t.FailNow()
 		}
-		for _, s := range files {
-			if !(strings.HasPrefix(s, "helloworld.txt") || strings.HasPrefix(s, "impressed.txt")) {
-				t.Errorf("Unexpected file in list, %s", s)
+		for _, filename := range filenames {
+			if !(filename == "helloworld.txt" || filename == "impressed.txt") {
+				t.Errorf("Unexpected filename in list, %s", filename)
+			} else {
+				versions, err := c.AttachmentVersions(key, filename)
+				if err != nil {
+					t.Errorf("Expected c.AttachmentVersions(%q, %q), %s", key, filename, err)
+				}
+				for _, version := range versions {
+					fPath, err := c.AttachmentVersionPath(key, filename, version)
+					if err != nil {
+						t.Errorf("expected path c.AttachmentVersionPath(%q, %q), %s", key, filename, err)
+						continue
+					}
+					if fInfo, err := os.Stat(fPath); err != nil {
+						t.Errorf("Expected os.Stat(%q) for %q, %q, %q, %s", fPath, key, filename, version, err)
+						continue
+					} else {
+						sName := fInfo.Name()
+						size := fInfo.Size()
+						if sName != version {
+							t.Errorf("expected %q, got %q for os.Stat(%q)", filename, sName, fPath)
+						}
+						if size == 0 {
+							t.Errorf("expected size > 0, got %d for os.Stat(%q)", size, fPath)
+						}
+					}
+				}
 			}
 		}
 	}
@@ -157,90 +355,129 @@ func TestAttachments(t *testing.T) {
 		}
 	}
 
-	if err := c.Prune("freda"); err != nil {
+	if err := c.PruneAll("freda"); err != nil {
 		t.Errorf("Delete all attachmemts, %s", err)
 		t.FailNow()
 	}
 	// Make sure files have been removed from collection
-	docDir := path.Join("testout", "col3.ds", "attached", "fr", "ed", "a", version)
-	for _, fName := range []string{"impressed.txt", "helloworld.txt"} {
-		if _, err := os.Stat(path.Join(docDir, fName)); os.IsNotExist(err) == false {
-			t.Errorf("Should have deleted %s, %s", path.Join(docDir, fName), err)
+	docDir := path.Join("testout", "v_attachment_test.ds", "attachments", "fr", "ed", "a", "_")
+	for _, filename := range []string{"impressed.txt", "helloworld.txt"} {
+		aPath := path.Join(docDir, filename)
+		if _, err := os.Stat(aPath); err == nil {
+			t.Errorf("Should have deleted %s", aPath)
 			t.FailNow()
 		}
 	}
 
 	//
-	// Now lets tests multiple versions of an attachment
+	// Now lets tests multiple versions of an attachment using both
+	// AttachFile and AttachVersionStream.
 	//
-	keyName = "freda"
-	version = "0.0.1"
-	motto = []byte("Wowie Zowie")
-	fName := path.Join("testout", "motto.txt")
-	if err := ioutil.WriteFile(fName, motto, 0777); err != nil {
-		t.Errorf("Can't write test data %s, %s", fName, err)
+	key = "freda"
+	filename = path.Join("testout", "motto.txt")
+	motto = []byte("Wowie Zowie version 0.0.1\n")
+	if err := ioutil.WriteFile(filename, motto, 0664); err != nil {
+		t.Errorf("Can't write test data %s, %s", filename, err)
 		t.FailNow()
 	}
-	if err := c.AttachFile(keyName, fName); err != nil {
-		t.Errorf("Can't attach %s %s, %s", fName, err)
+
+	// Make first version of attachment
+	if err := c.AttachFile(key, filename); err != nil {
+		t.Errorf("Can't attach %s %s, %s", key, filename, err)
 		t.FailNow()
 	}
-	version = "v0.0.2"
-	motto = []byte("Wowie Zowie!!")
-	size = int64(len(motto))
-	checksum = fmt.Sprintf("%x", md5.Sum(motto))
-	fName = path.Join("testout", "motto.txt")
-	if err := ioutil.WriteFile(fName, motto, 0777); err != nil {
-		t.Errorf("Can't write test data %s, %s", fName, err)
+	names, err := c.Attachments(key)
+	if err != nil {
+		t.Errorf("Should see attachments for %q, %s", key, err)
 		t.FailNow()
 	}
 	// Check to make sure first version is correct
-	if files, err := c.Attachments(keyName); err != nil {
-		t.Errorf("Attachments (1) expected, %+v %s", files, err)
-		t.FailNow()
-	} else if len(files) != 1 {
-		t.Errorf("Attachments (1) expected, %+v", files)
-		t.FailNow()
-	}
-	if err := c.AttachFile(keyName, fName); err != nil {
-		t.Errorf("Can't attach %s %s, %s", version, fName, err)
-		t.FailNow()
-	}
-	// We should stil have one attachment
-	if files, err := c.Attachments(keyName); err != nil {
-		t.Errorf("Attachments (1) expected, %+v %s", files, err)
-		t.FailNow()
-	} else if len(files) != 1 {
-		t.Errorf("Attachments (1) expected, %+v", files)
-		t.FailNow()
-	}
-	// Check JSON object
-	jsonObject := map[string]interface{}{}
-	err = c.Read(keyName, jsonObject)
+	versions, err := c.AttachmentVersions(key, path.Base(filename))
 	if err != nil {
-		t.Errorf("Should be able to read %s, %s", keyName, err)
+		t.Errorf("c.AttachmentVersions(%q, %q), one expected, %+v %s", key, filename, versions, err)
 		t.FailNow()
 	}
-	// Make sure we have two semver items in Sizes, Checksums and
-	// VersionHRefs
-	attachmentList, err := c.Attachments(keyName)
+	if len(versions) != 1 {
+		t.Errorf("Attachments versions (1) expected, %+v", versions)
+		t.FailNow()
+	}
+
+	motto = []byte("Wowie Zowie!! version 0.0.2\n")
+	if err := ioutil.WriteFile(filename, motto, 0664); err != nil {
+		t.Errorf("Can't write test data %s, %s", filename, err)
+	}
+
+	// Make second version of attachment, 0.0.2.
+	if err := c.AttachFile(key, filename); err != nil {
+		t.Errorf("Can't attach %s %s, %s", key, filename, err)
+	}
+
+	// Check to make sure first version is correct
+	versions, err = c.AttachmentVersions(key, path.Base(filename))
 	if err != nil {
-		t.Errorf("Should be able to get attachment list %s", keyName)
+		t.Errorf("c.AttachmentVersions(%q, %q), one expected, %+v %s", key, filename, versions, err)
+	}
+	if len(versions) != 2 {
+		t.Errorf("Attachments versions (2) expected, %+v", versions)
+	}
+
+	version = "0.0.1"
+	motto = []byte("Wowie Zowie! version 0.0.1-rc2\n")
+	if err := ioutil.WriteFile(filename, motto, 0664); err != nil {
+		t.Errorf("Can't write test data %s, %s", filename, err)
 		t.FailNow()
 	}
-	for _, fName := range attachmentList {
-		meta, err := c.AttachmentInfo(keyName, fName)
-		if meta.Checksum == "" {
-			t.Errorf("Expected a checksum for %q, %q", keyName, fName)
-			t.FailNow()
-		}
-		if meta.Sizes == 0 {
-			t.Errorf("Expected file size > 0 for %q, %q", keyName, fName)
-			t.FailNow()
-		}
-		if meta.VersionHRefs == "" {
-			t.Errorf("Expected VersionHRefs for %q, %q", keyName, fName)
-			t.FailNow()
-		}
+	if err := c.AttachVersionFile(key, filename, version); err != nil {
+		t.Errorf("Can't attach %q %q %q, %s", key, filename, version, err)
+	}
+
+	// We should still have one attachment
+	names, err = c.Attachments(key)
+	if err != nil {
+		t.Errorf("c.Attachments(%q) one expected, %+v %s", key, names, err)
+	}
+	if len(names) != 1 {
+		t.Errorf("Attachments (1) expected, %+v", names)
+	}
+	versions, err = c.AttachmentVersions(key, filename)
+	if err != nil {
+		t.Errorf("c.AttachmentVersions(%q, %q), three expected, %+v %s", key, filename, versions, err)
+	}
+	if len(versions) != 2 {
+		t.Errorf("Attachments versions (2) expected, %+v", versions)
+	}
+	// The maximum version should remain 0.0.2
+	expectedVersion := "0.0.2"
+	gotVersion := versions[len(versions)-1]
+	if expectedVersion != gotVersion {
+		t.Errorf("expected version no %q, got %q", expectedVersion, gotVersion)
+	}
+
+	// Now add a third version via AttachFile()
+	motto = []byte("Wowie Zowie!!! this is verion 3\n")
+	if err := ioutil.WriteFile(filename, motto, 0664); err != nil {
+		t.Errorf("Can't write test data %s, %s", filename, err)
+	}
+	if err := c.AttachFile(key, filename); err != nil {
+		t.Errorf("Can't attach %s %s, %s", key, filename, err)
+	}
+	names, err = c.Attachments(key)
+	if err != nil {
+		t.Errorf("c.Attachments(%q) one expected, %+v %s", key, names, err)
+	}
+	if len(names) != 1 {
+		t.Errorf("Attachments (1) expected, %+v", names)
+	}
+	versions, err = c.AttachmentVersions(key, filename)
+	if err != nil {
+		t.Errorf("c.AttachmentVersions(%q, %q), three expected, %+v %s", key, filename, versions, err)
+	}
+	if len(versions) != 3 {
+		t.Errorf("Attachments versions (3) expected, %+v", versions)
+	}
+	expectedVersion = "0.0.3"
+	gotVersion = versions[len(versions)-1]
+	if expectedVersion != versions[len(versions)-1] {
+		t.Errorf("expected version no %q, got %q", expectedVersion, versions[len(versions)-1])
 	}
 }
