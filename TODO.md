@@ -9,61 +9,61 @@ Next (prep for v2.x)
 --------------------
 
 - [ ] Common dataset verbs (dataset/datasetd)
-    - [cli] keys
+    - [pkg,cli] keys
         - list the keys in a collection
-    - [cli] has-key
+    - [pkg,cli] has-key
         - return "true "(w/OS exit 0 in CLI) if key is in collection,
           "false" otherwise (w/OS exit 1 in CLI)
-    - [cli] sample
+    - [pkg,cli] sample
         - return a sample of keys from a collection
-    - [cli] create
+    - [pkg,cli] create
         - add an new object to the collection if key does not exist,
           return false if object already exists or unable to create
           the new object
-    - [cli] read
+    - [pkg,cli] read
         - return the object with nil error in the collection with the
           provided key, nil object and error value if not found
-    - [cli] read-version
+    - [pkg,cli] read-version
         - return the object with nil error in the collection with the
           provided key and version, nil object and error value if not found
-    - [cli] update
+    - [pkg,cli] update
         - replace the object in the collection for given key, return false
           is object does not to replace or replacement fails
-    - [cli] delete
+    - [pkg,cli] delete
         - delete the object in the collection for given key, return true
           if deletion was successful, false if the object was not deleted
           (e.g. key not found or the collection is read only)
-    - [cli] versioning
+    - [pkg,cli] versioning
         - set the versioning on a collection, the following strings enable
           versioning "major", "minor", "patch". Any other value disables
           versioning on the collection
-    - [ ] frames
+    - [pkg,] frames
         - list the names of the frames currently defined in the collection
-    - [ ] frame
+    - [pkg, ] frame
         - define a new frame in the collection, if frame exists replace it
-    - [ ] frame-meta
+    - [pkg, ] frame-meta
         - return the frame definition and metadata about the frame (e.g.
           how many objects and attributes)
-    - [ ] frame-objects
+    - [pkg, ] frame-objects
         - return the frame's list of objects
-    - [ ] refresh
+    - [pkg, ] refresh
         - update all the objects in the frame based on current state of
           the collection
-    - [ ] reframe
+    - [pkg, ] reframe
         - replace the frame definition but using the existing frame's keys
           refresh the frame with the new object describe
-    - [ ] delete-frame
-    - [ ] has-frame
-- [ ] Evaluate the following end points for datasetd, how to we manage
+    - [pkg, ] delete-frame
+    - [pkg, ] has-frame
+- [pkg, ] Evaluate the following end points for datasetd, how to we manage
       concurent update of attachments from multiple client requests?
-    - [ ] attach
-    - [ ] attachments
-    - [ ] retrieve (aka detach)
-    - [ ] prune
-- [ ] Verbs support by cli only
-    - [cli] sample
-    - [cli] clone
-    - [cli] clone-sample
+    - [pkg, ] attach
+    - [pkg, ] attachments
+    - [pkg, ] retrieve (aka detach)
+    - [pkg, ] prune
+- [pkg, ] Verbs support by cli only
+    - [pkg,cli] sample
+    - [pkg,cli] clone
+    - [pkg,cli] clone-sample
     - [ ] check
     - [ ] repair
 - [ ] Document example Python 3 http client support for web API

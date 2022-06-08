@@ -36,7 +36,7 @@ func TestLoadConfig(t *testing.T) {
 	}
 	// Write out sample test settings.json
 	src := []byte(`{
-    "dsn": "DB_USER:DB_PASSWORD@/DB_NAME"
+    "dsn_uri": "DB_USER:DB_PASSWORD@/DB_NAME"
 }`)
 	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
 		t.Errorf("Failed to generate %q, %s", fName, err)
@@ -53,7 +53,7 @@ func TestLoadConfig(t *testing.T) {
 	if cfg.Host == "" {
 		t.Errorf("Expected Host to be set %+v", cfg)
 	}
-	if cfg.DSN == "" {
-		t.Errorf("Expected DSN to be set, %+v", cfg)
+	if cfg.DsnURI == "" {
+		t.Errorf("Expected DSN URI to be set, %+v", cfg)
 	}
 }

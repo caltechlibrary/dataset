@@ -39,10 +39,11 @@ type Config struct {
 	// Type identifies the type of SQL storage, e.g. SQLite, MySQL
 	Type string `json:"sql_type,omitempty"`
 
-	// DSN points to a file containing a DSN string,
-	// e.g. /etc/datasetd/dsn.conf if none is provided then
-	// environment variables for DATASET_DSN_URI.
-	DSN string `json:"dsn,omitemtpy"`
+	// Dsn URI describes how to connection to a SQL storage engine.
+	// e.g. "sqlite://my_collection.ds/collection.db".
+	// The Dsn URI may be past in from the environment via the
+	// variable DATASET_DSN_URI.
+	DsnURI string `json:"dsn_uri,omitemtpy"`
 }
 
 func (config *Config) String() string {
@@ -51,7 +52,17 @@ func (config *Config) String() string {
 }
 
 // LoadConfig reads the JSON configuration file provided, validates it
-// and either returns a Config structure or error.
+// and either returns a Config structure or error. NOTE: if the dsn string
+// isn't specified
+//
+// ```
+//    settings := "settings.json"
+//    cfg, err := api.Config(settings)
+//    if err != nil {
+//       ...
+//    }
+// ```
+//
 func LoadConfig(fName string) (*Config, error) {
 	config := new(Config)
 	src, err := ioutil.ReadFile(fName)
@@ -68,8 +79,8 @@ func LoadConfig(fName string) (*Config, error) {
 	if config.Type == "" {
 		config.Type = "mysq"
 	}
-	if config.DSN == "" {
-		config.DSN = os.Getenv("DATASET_DSN_URI")
+	if config.DsnURI == "" {
+		config.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
 	return config, nil
 }

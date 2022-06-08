@@ -27,8 +27,8 @@ import (
 	"strings"
 )
 
-// JSONDecode decodes JSON using the json.Number instead of float64 for numeric values.
-func JSONDecode(buf []byte) (interface{}, error) {
+// decodeBuf decodes JSON using the json.Number instead of float64 for numeric values.
+func decodeBuf(buf []byte) (interface{}, error) {
 	var result interface{}
 	d := json.NewDecoder(bytes.NewReader(buf))
 	d.UseNumber()
@@ -40,7 +40,7 @@ func JSONDecode(buf []byte) (interface{}, error) {
 
 // EvalJSON takes a dot path plus JSON encoded as byte array and returns the value in the dot path or error
 func EvalJSON(p string, src []byte) (interface{}, error) {
-	data, err := JSONDecode(src)
+	data, err := decodeBuf(src)
 	if err != nil {
 		return nil, err
 	}

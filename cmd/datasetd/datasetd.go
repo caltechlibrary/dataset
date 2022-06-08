@@ -89,12 +89,6 @@ Try %s --help for usage details
 		os.Exit(1)
 	}
 
-	/* Open SQL database holding collections */
-	if err := api.OpenCollections(cfg); err != nil {
-		fmt.Fprintf(os.Stderr, "OpenCollections(%q) failed, %s\n", settings, err)
-		os.Exit(1)
-	}
-
 	/* Run API */
 	if err := api.RunAPI(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "RunWebAPI(%q) failed, %s\n", settings, err)

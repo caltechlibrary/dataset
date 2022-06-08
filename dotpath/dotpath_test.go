@@ -49,9 +49,9 @@ func TestFindForMaps(t *testing.T) {
 		t.Errorf(`Expected []string{"name"}, got %+v <-- %s`, keys, err)
 		t.FailNow()
 	}
-	data, err := JSONDecode(src)
+	data, err := decodeBuf(src)
 	if err != nil {
-		t.Errorf("JSONDecode error for %q, %s", src, err)
+		t.Errorf("decodeBuf error for %q, %s", src, err)
 		t.FailNow()
 	}
 
@@ -127,7 +127,7 @@ func TestFindInArray(t *testing.T) {
 	src := []byte(`[1,2,3]`)
 	p := `[1]`
 	var data interface{}
-	data, err := JSONDecode(src)
+	data, err := decodeBuf(src)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -148,7 +148,7 @@ func TestEval(t *testing.T) {
 	// Check to see if we can fit value of dot when it is a string.
 	p := "."
 	src = []byte(`"Hello World"`)
-	if data, err := JSONDecode(src); err != nil {
+	if data, err := decodeBuf(src); err != nil {
 		t.Errorf("Can't decode string %q, error %s", src, err)
 		t.FailNow()
 	} else {
@@ -173,7 +173,7 @@ func TestEval(t *testing.T) {
 	// Decode a Number
 	p = "."
 	src = []byte(`1`)
-	if data, err := JSONDecode(src); err != nil {
+	if data, err := decodeBuf(src); err != nil {
 		t.Errorf("Can't decode string %q, error %s", src, err)
 		t.FailNow()
 	} else {
@@ -198,7 +198,7 @@ func TestEval(t *testing.T) {
 	// Decode an Object
 	p = "."
 	src = []byte(`{"greeting": "Hello World"}`)
-	if data, err := JSONDecode(src); err != nil {
+	if data, err := decodeBuf(src); err != nil {
 		t.Errorf("Can't decode string %q, error %s", src, err)
 		t.FailNow()
 	} else {
@@ -224,7 +224,7 @@ func TestEval(t *testing.T) {
 	// Decode an Array
 	p = "."
 	src = []byte(`[1,2,3]`)
-	if data, err := JSONDecode(src); err != nil {
+	if data, err := decodeBuf(src); err != nil {
 		t.Errorf("Can't decode string %q, error %s", src, err)
 		t.FailNow()
 	} else {
@@ -284,9 +284,9 @@ func TestEval(t *testing.T) {
 }`)
 
 	data := map[string]interface{}{}
-	blob, err := JSONDecode(src)
+	blob, err := decodeBuf(src)
 	if err != nil {
-		t.Errorf("JSONDecode error for %q, %s", src, err)
+		t.Errorf("decodeBuf error for %q, %s", src, err)
 		t.FailNow()
 	}
 	data = blob.(map[string]interface{})

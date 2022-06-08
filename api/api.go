@@ -36,10 +36,20 @@ var (
 	config *Config
 )
 
-func OpenCollections(cfg *Config) error {
-	return fmt.Errorf("OpenCollections() not implemented")
-}
-
+// RunAPI takes a JSON configuration file and opens
+// all the collections to be used by web service.
+//
+// ```
+//   configFile := "settings.json"
+//   cfg, err := api.LoadConfig(configFile)
+//   if err != nil {
+//      ...
+//   }
+//   if err := api.RunAPI(cfg); err != nil {
+//      ...
+//   }
+// ```
+//
 func RunAPI(cfg *Config) error {
 	return fmt.Errorf("RunAPI() not implemented")
 }

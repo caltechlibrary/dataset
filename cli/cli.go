@@ -23,6 +23,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -36,6 +37,78 @@ import (
 var (
 	showHelp bool
 	appName  = path.Base(os.Args[0])
+
+	helpDocs = map[string]string{
+		"usage":         CLIDescription,
+		"examples":      CLIExamples,
+		"init":          cliInit,
+		"create":        cliCreate,
+		"read":          cliRead,
+		"update":        cliUpdate,
+		"delete":        cliDelete,
+		"keys":          cliKeys,
+		"haskey":        cliHasKey,
+		"has-key":       cliHasKey,
+		"count":         cliCount,
+		"versioning":    cliVersioning,
+		"versions":      cliVersioning,
+		"read-version":  cliVersioning,
+		"sample":        cliSample,
+		"clone":         cliClone,
+		"clone-sample":  cliCloneSample,
+		"frames":        cliFrames,
+		"frame":         cliFrame,
+		"frame-def":     cliFrameDef,
+		"frame-keys":    cliFrameKeys,
+		"frame-objects": cliFrameObjects,
+		"reframe":       cliReframe,
+		"refresh":       cliRefresh,
+		"hasframe":      cliHasFrame,
+		"has-frame":     cliHasFrame,
+		"delete-frame":  cliDeleteFrame,
+		"attachments":   cliAttachments,
+		"attach":        cliAttach,
+		"retrieve":      cliRetrieve,
+		"prune":         cliPrune,
+		"check":         cliCheck,
+		"repair":        cliRepair,
+		"codemeta":      cliCodemeta,
+	}
+
+	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
+		"init":          doInit,
+		"create":        doCreate,
+		"read":          doRead,
+		"update":        doUpdate,
+		"delete":        doDelete,
+		"keys":          doKeys,
+		"haskey":        doHasKey,
+		"has-key":       doHasKey,
+		"count":         doCount,
+		"frames":        doFrames,
+		"frame":         doFrame,
+		"frame-def":     doFrameDef,
+		"frame-keys":    doFrameKeys,
+		"frame-objects": doFrameObjects,
+		"refresh":       doRefresh,
+		"reframe":       doReframe,
+		"delete-frame":  doDeleteFrame,
+		"hasframe":      doHasFrame,
+		"has-frame":     doHasFrame,
+		"attachments":   doAttachments,
+		"attach":        doAttach,
+		"retrieve":      doRetrieve,
+		"prune":         doPrune,
+		"sample":        doSample,
+		"clone":         doClone,
+		"clone-sample":  doCloneSample,
+		"check":         doCheck,
+		"repair":        doRepair,
+		"codemeta":      doCodemeta,
+		"versioning":    doVersioning,
+		"versions":      doVersions,
+		"read-version":  doReadVersion,
+	}
 )
 
 // DisplayHelp writes out help on a supported topic
@@ -44,72 +117,9 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	switch topic {
-	case "usage":
-		fmt.Fprintf(out, texts.StringProcessor(m, CLIDescription))
-	case "examples":
-		fmt.Fprintf(out, texts.StringProcessor(m, CLIExamples))
-	case "init":
-		fmt.Fprintf(out, texts.StringProcessor(m, cliInit))
-	case "create":
-		fmt.Fprint(out, texts.StringProcessor(m, cliCreate))
-	case "read":
-		fmt.Fprint(out, texts.StringProcessor(m, cliRead))
-	case "update":
-		fmt.Fprint(out, texts.StringProcessor(m, cliUpdate))
-	case "delete":
-		fmt.Fprint(out, texts.StringProcessor(m, cliDelete))
-	case "keys":
-		fmt.Fprint(out, texts.StringProcessor(m, cliKeys))
-	case "has-key":
-		fmt.Fprint(out, texts.StringProcessor(m, cliHasKey))
-	case "count":
-		fmt.Fprint(out, texts.StringProcessor(m, cliCount))
-	case "versioning":
-		fmt.Fprint(out, texts.StringProcessor(m, cliVersioning))
-	case "versions":
-		fmt.Fprint(out, texts.StringProcessor(m, cliVersioning))
-	case "read-version":
-		fmt.Fprint(out, texts.StringProcessor(m, cliVersioning))
-	case "sample":
-		fmt.Fprint(out, texts.StringProcessor(m, cliSample))
-	case "clone":
-		fmt.Fprint(out, texts.StringProcessor(m, cliClone))
-	case "clone-sample":
-		fmt.Fprint(out, texts.StringProcessor(m, cliCloneSample))
-	case "frames":
-		fmt.Fprint(out, texts.StringProcessor(m, cliFrames))
-	case "frame":
-		fmt.Fprint(out, texts.StringProcessor(m, cliFrame))
-	case "frame-def":
-		fmt.Fprint(out, texts.StringProcessor(m, cliFrameDef))
-	case "frame-keys":
-		fmt.Fprint(out, texts.StringProcessor(m, cliFrameKeys))
-	case "frame-objects":
-		fmt.Fprint(out, texts.StringProcessor(m, cliFrameObjects))
-	case "reframe":
-		fmt.Fprint(out, texts.StringProcessor(m, cliReframe))
-	case "refresh":
-		fmt.Fprint(out, texts.StringProcessor(m, cliRefresh))
-	case "has-frame":
-		fmt.Fprint(out, texts.StringProcessor(m, cliHasFrame))
-	case "delete-frame":
-		fmt.Fprint(out, texts.StringProcessor(m, cliDeleteFrame))
-	case "attachments":
-		fmt.Fprint(out, texts.StringProcessor(m, cliAttachments))
-	case "attach":
-		fmt.Fprint(out, texts.StringProcessor(m, cliAttach))
-	case "retrieve":
-		fmt.Fprint(out, texts.StringProcessor(m, cliRetrieve))
-	case "prune":
-		fmt.Fprint(out, texts.StringProcessor(m, cliPrune))
-	case "check":
-		fmt.Fprint(out, texts.StringProcessor(m, cliCheck))
-	case "repair":
-		fmt.Fprint(out, texts.StringProcessor(m, cliRepair))
-	case "codemeta":
-		fmt.Fprint(out, texts.StringProcessor(m, cliCodemeta))
-	default:
+	if text, ok := helpDocs[topic]; ok {
+		fmt.Fprintf(out, texts.StringProcessor(m, text))
+	} else {
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
 }
@@ -148,7 +158,7 @@ func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, descript
 	DisplayLicense(out, appName, texts.StringProcessor(m, license))
 }
 
-func doInit(out io.Writer, eout io.Writer, args []string) error {
+func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		cName  string
 		dsnURI string
@@ -782,22 +792,135 @@ func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 
 // doRefresh
 func doRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doRefresh() not implemented")
+	var (
+		srcName   string
+		frameName string
+		err       error
+		verbose   bool
+	)
+	flagSet := flag.NewFlagSet("refresh", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "refresh")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	return source.FrameRefresh(frameName, verbose)
 }
 
 // doReframe
 func doReframe(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doReframe() not implemented")
+	var (
+		srcName   string
+		frameName string
+		err       error
+		input     string
+		verbose   bool
+		keys      []string
+	)
+	flagSet := flag.NewFlagSet("reframe", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&input, "i", "-", "read keys from a file")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "reframe")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	keys, err = texts.ReadKeys(input, in)
+	if err != nil {
+		return err
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	return source.FrameReframe(frameName, keys, verbose)
 }
 
 // doDeleteFrame
 func doDeleteFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doDeleteFrame() not implemented")
+	var (
+		srcName   string
+		frameName string
+		err       error
+	)
+	flagSet := flag.NewFlagSet("delete-frame", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "delete-frame")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	return source.FrameDelete(frameName)
 }
 
 // doHasFrame
 func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doHasFrame() not implemented")
+	var (
+		srcName   string
+		frameName string
+		err       error
+	)
+	flagSet := flag.NewFlagSet("has-frame", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "has-frame")
+	}
+	switch {
+	case len(args) == 2:
+		srcName, frameName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	if source.HasFrame(frameName) {
+		fmt.Fprintf(out, "true\n")
+	} else {
+		fmt.Fprintf(out, "false\n")
+		return fmt.Errorf(" ")
+	}
+	return nil
 }
 
 // doAttachments
@@ -837,17 +960,123 @@ func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 
 // doAttach
 func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doAttach() not implemented")
+	var (
+		srcName   string
+		filenames []string
+		key       string
+		err       error
+		output    string
+	)
+	flagSet := flag.NewFlagSet("attach", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "attach")
+	}
+	switch {
+	case len(args) == 3:
+		srcName, key, filenames = args[0], args[1], args[2:]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAME[FILENAME ...], got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	for _, filename := range filenames {
+		err := source.AttachFile(key, filename)
+		if err != nil {
+			fmt.Fprintf(eout, "failed to attach %q to %q, %s", filename, key, err)
+		}
+	}
+	return nil
 }
 
 // doRetrieve
 func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doRetrieve() not implemented")
+	var (
+		srcName   string
+		filenames []string
+		key       string
+		err       error
+		output    string
+	)
+	flagSet := flag.NewFlagSet("retrieve", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "retrieve")
+	}
+	switch {
+	case len(args) == 3:
+		srcName, key, filenames = args[0], args[1], args[2:]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAME[FILENAME ...], got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	for _, filename := range filenames {
+		src, err := source.RetrieveFile(key, filename)
+		if err != nil {
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "failed to retrieve %q from %q, %s", filename, key, err)
+		}
+		if err := ioutil.WriteFile(filename, src, 0664); err != nil {
+			fmt.Fprintf(eout, "failed to write %q from %q, %s", filename, key, err)
+		}
+	}
+	return nil
 }
 
 // doPrune
 func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doPrune() not implemented")
+	var (
+		srcName   string
+		filenames []string
+		key       string
+		err       error
+		output    string
+	)
+	flagSet := flag.NewFlagSet("retrieve", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "retrieve")
+	}
+	switch {
+	case len(args) == 3:
+		srcName, key, filenames = args[0], args[1], args[2:]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAME[FILENAME ...], got %q", strings.Join(args, " "))
+	}
+	source, err := ds.Open(srcName)
+	if err != nil {
+		return fmt.Errorf("failed to open %q, %s", srcName, err)
+	}
+	defer source.Close()
+	for _, filename := range filenames {
+		err := source.Prune(key, filename)
+		if err != nil {
+		}
+		if err != nil {
+			fmt.Fprintf(eout, "failed to prune %q from %q, %s", filename, key, err)
+		}
+	}
+	return nil
 }
 
 // doSample
@@ -956,80 +1185,23 @@ func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 
 /// RunCLI implemented the functionlity used by the cli.
 func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var err error
+
 	if len(args) == 0 {
 		DisplayHelp(out, eout, "usage")
 		return fmt.Errorf(` `)
 	}
 	verb, args := args[0], args[1:]
-	switch verb {
-	case "help":
+	if verb == "help" {
 		if len(args) > 0 {
 			DisplayHelp(out, eout, args[0])
 			return nil
 		}
 		DisplayHelp(out, eout, "usage")
-		return nil
-	case "init":
-		return doInit(out, eout, args)
-	case "create":
-		return doCreate(in, out, eout, args)
-	case "read":
-		return doRead(in, out, eout, args)
-	case "update":
-		return doUpdate(in, out, eout, args)
-	case "delete":
-		return doDelete(in, out, eout, args)
-	case "keys":
-		return doKeys(in, out, eout, args)
-	case "has-key":
-		return doHasKey(in, out, eout, args)
-	case "count":
-		return doCount(in, out, eout, args)
-	case "frames":
-		return doFrames(in, out, eout, args)
-	case "frame":
-		return doFrame(in, out, eout, args)
-	case "frame-def":
-		return doFrameDef(in, out, eout, args)
-	case "frame-keys":
-		return doFrameKeys(in, out, eout, args)
-	case "frame-objects":
-		return doFrameObjects(in, out, eout, args)
-	case "refresh":
-		return doRefresh(in, out, eout, args)
-	case "reframe":
-		return doReframe(in, out, eout, args)
-	case "delete-frame":
-		return doDeleteFrame(in, out, eout, args)
-	case "has-frame":
-		return doHasFrame(in, out, eout, args)
-	case "attachments":
-		return doAttachments(in, out, eout, args)
-	case "attach":
-		return doAttach(in, out, eout, args)
-	case "retrieve":
-		return doRetrieve(in, out, eout, args)
-	case "prune":
-		return doPrune(in, out, eout, args)
-	case "sample":
-		return doSample(in, out, eout, args)
-	case "clone":
-		return doClone(in, out, eout, args)
-	case "clone-sample":
-		return doCloneSample(in, out, eout, args)
-	case "check":
-		return doCheck(in, out, eout, args)
-	case "repair":
-		return doRepair(in, out, eout, args)
-	case "codemeta":
-		return doCodemeta(in, out, eout, args)
-	case "versioning":
-		return doVersioning(in, out, eout, args)
-	case "versions":
-		return doVersions(in, out, eout, args)
-	case "read-version":
-		return doReadVersion(in, out, eout, args)
-	default:
+	} else if fn, ok := verbs[verb]; ok {
+		err = fn(in, eout, eout, args)
+	} else {
 		return fmt.Errorf("verb %q not supported", verb)
 	}
+	return err
 }

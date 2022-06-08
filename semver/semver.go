@@ -49,6 +49,16 @@ type Semver struct {
 	// Timestamp (optional, a timestamp in form of YYYY-MM-DD HH:MM:SS)
 }
 
+// Return a *Semver as a encoded semver string.
+//
+// ```
+//   sv := new(semver.Semver)
+//   sv.Major = "1"
+//   sv.Minor = "0"
+//   sv.Patch = "3"
+//   fmt.Printf("display semver 1.0.3 -> %q\n", sv.String())
+// ```
+//
 func (sv *Semver) String() string {
 	if sv.Patch == "" {
 		return sv.Major + "." + sv.Minor
@@ -60,6 +70,15 @@ func (sv *Semver) String() string {
 }
 
 // ToJSON takes a version struct and returns JSON as byte slice
+//
+// ```
+//   sv := new(semver.Semver)
+//   sv.Major = "1"
+//   sv.Minor = "0"
+//   sv.Patch = "3"
+//   fmt.Printf("JSON semver -> %s\n", sv.ToJSON())
+// ```
+//
 func (sv *Semver) ToJSON() []byte {
 	src, _ := json.Marshal(sv)
 	return src
@@ -67,6 +86,15 @@ func (sv *Semver) ToJSON() []byte {
 
 // Parse takes a byte slice and returns a version struct,
 // and an error value.
+//
+// ```
+//   version := []byte("1.0.3")
+//   sv, err := semver.Parse(version)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func Parse(src []byte) (*Semver, error) {
 	var (
 		i   int
@@ -110,6 +138,17 @@ func Parse(src []byte) (*Semver, error) {
 
 // IncPatch increments the patch level if it is numeric
 // or returns an error.
+//
+// ```
+//   version := []byte("1.0.3")
+//   sv, err := semver.Parse(version)
+//   if err != nil {
+//      ...
+//   }
+//   sv.IncPatch()
+//   fmt.Printf("display 1.0.4 -> %q\n", sv.String())
+// ```
+//
 func (sv *Semver) IncPatch() error {
 	i, err := strconv.Atoi(sv.Patch)
 	if err != nil {
@@ -122,6 +161,17 @@ func (sv *Semver) IncPatch() error {
 
 // IncMinor increments a minor version number and zeros the
 // patch level or returns an error. Returns an error if increment fails.
+//
+// ```
+//   version := []byte("1.0.3")
+//   sv, err := semver.Parse(version)
+//   if err != nil {
+//      ...
+//   }
+//   sv.IncMinor()
+//   fmt.Printf("display 1.1.0 -> %q\n", sv.String())
+// ```
+//
 func (sv *Semver) IncMinor() error {
 	i, err := strconv.Atoi(sv.Minor)
 	if err != nil {
@@ -135,6 +185,17 @@ func (sv *Semver) IncMinor() error {
 
 // IncMajor increments a major version number, zeros minor
 // and patch values. Returns an error if increment fails.
+//
+// ```
+//   version := []byte("1.0.3")
+//   sv, err := semver.Parse(version)
+//   if err != nil {
+//      ...
+//   }
+//   sv.IncMajor()
+//   fmt.Printf("display 2.0.0 -> %q\n", sv.String())
+// ```
+//
 func (sv *Semver) IncMajor() error {
 	i, err := strconv.Atoi(sv.Major)
 	if err != nil {
@@ -149,6 +210,21 @@ func (sv *Semver) IncMajor() error {
 
 // Less compares two semvers and if semver "a" is less than semver "b"
 // returns true false otherwise.
+//
+// ```
+//   versionA, versionB := "1.0.3", "1.4.2"
+//   svA, err := semver.Parse(versionA)
+//   ...
+//   svB, err := semver.Parse(versionB)
+//   ...
+//   if semver.Less(a, b) {
+//      fmt.Printf("%q is less than %q\n", versionA, versionB)
+//   } else if versionA == versionB {
+//      fmt.Printf("%q is equal to %q\n", versionA, versionB)
+//   } else {
+//      fmt.Printf("%q is greater than %q\n", versionA, versionB)
+//   }
+// ```
 func Less(a *Semver, b *Semver) bool {
 	// Compare Major value
 	x, err := strconv.ParseInt(a.Major, 10, 64)
@@ -187,6 +263,13 @@ func Less(a *Semver, b *Semver) bool {
 }
 
 // Sort semvers takes a slice of Semver, sorts them in ascending order.
+//
+// ```
+//   versionA, versionB, vesionC := "1.0.3", "9.2.1", "0.3.6"
+//   svList := []*semver.Semver{}
+//   sv, _ := semver.Parse(versionA)
+//   svA, _ := semver.Parse(versionA)
+// ```
 func Sort(values []*Semver) {
 	sort.Slice(values, func(i, j int) bool {
 		return Less(values[i], values[j])

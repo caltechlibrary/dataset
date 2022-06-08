@@ -226,6 +226,7 @@ func (store *Storage) Create(key string, src []byte) error {
 // JSON document from the collection. If versioning is enabled this is always the "current"
 // version of the object. Use Versions() and ReadVersion() for versioned copies.
 //
+// ```
 //   src, err := store.Read("123")
 //   if err != nil {
 //      ...
@@ -234,6 +235,8 @@ func (store *Storage) Create(key string, src []byte) error {
 //   if err := json.Unmarshal(src, &obj); err != nil {
 //      ...
 //   }
+// ```
+//
 func (store *Storage) Read(key string) ([]byte, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
@@ -257,11 +260,13 @@ func (store *Storage) Read(key string) ([]byte, error) {
 // Update takes a key and encoded JSON object and updates a
 // JSON document in the collection.
 //
+// ```
 //   key := "123"
 //   src := []byte(`{"one": 1, "two": 2}`)
 //   if err := store.Update(key, src); err != nil {
 //      ...
 //   }
+// ```
 //
 func (store *Storage) Update(key string, src []byte) error {
 	// NOTE: Keys are always normalized to lower case due to
@@ -332,6 +337,14 @@ func (store *Storage) saveNewVersion(key string, src []byte, dName string) error
 // NOTE: If you're versioning your collection then you never really want to delete.
 // An approach could be to use update using an empty JSON document to indicate
 // the document is retired those avoiding the deletion problem of versioned content.
+//
+// ```
+//   key := "123"
+//   if err := store.Delete(key); err != nil {
+//      ...
+//   }
+// ```
+//
 func (store *Storage) Delete(key string) error {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
@@ -368,7 +381,20 @@ func (store *Storage) Delete(key string) error {
 	return nil
 }
 
-// Versions retrieves a list of semver version strings available for a JSON document
+// Versions retrieves a list of semver version strings available
+// for a JSON document.
+//
+// ```
+//    key := "123"
+//    versions, err := store.Versions(key)
+//    if err != nil {
+//       ...
+//    }
+//    for _, version := range versions {
+//         // do something with version string.
+//    }
+// ```
+//
 func (store *Storage) Versions(key string) ([]string, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
@@ -397,7 +423,17 @@ func (store *Storage) Versions(key string) ([]string, error) {
 	return versions, nil
 }
 
-// ReadVersion retrieves a specific version of a JSON document stored in a collection.
+// ReadVersion retrieves a specific version of a JSON document stored
+// in a collection.
+//
+// ```
+//   key, version := "123", "0.0.1"
+//   src, err := store.ReadVersion(key, version)
+//   if err != nil {
+//      ...
+//   }
+// ```
+//
 func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
@@ -420,12 +456,14 @@ func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 
 // List returns all keys in a collection as a slice of strings.
 //
+// ```
 //   var keys []string
 //   keys, _ = store.Keys()
 //   /* iterate over the keys retrieved */
 //   for _, key := range keys {
 //      ...
 //   }
+// ```
 //
 // NOTE: the error will always be nil, this func signature needs to match
 // the other storage engines.
@@ -442,6 +480,7 @@ func (store *Storage) Keys() ([]string, error) {
 //      ...
 //   }
 // ```
+//
 func (store *Storage) HasKey(key string) bool {
 	key = strings.ToLower(key)
 	ok := false
@@ -453,27 +492,13 @@ func (store *Storage) HasKey(key string) bool {
 
 // Length returns the number of records (len(store.keys)) in the collection
 // Requires collection to be open.
+//
+// ```
+//  var x int64
+//
+//  x = store.Length()
+// ```
+//
 func (store *Storage) Length() int64 {
 	return int64(len(store.keys))
 }
-
-// Frames
-// Frame
-// FrameDef
-// FrameObjects
-// Refresh
-// Reframe
-// DeleteFrame
-// HasFrame
-
-// Attachments
-// Attach
-// Retrieve
-// Prune
-
-// Sample
-// Clone
-// CloneSample
-
-// Check
-// Repair
