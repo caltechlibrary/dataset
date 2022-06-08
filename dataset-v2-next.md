@@ -18,17 +18,46 @@ ability to store non-JSON documents along side the JSON document as
 attachments he proven useful but could be refined to be more seemless
 (e.g. you pass a semver when you attach a document).
 
-Dataset has a deliberate limitiations. While most of the limitations were
+Dataset has concieved with deliberate limitiations. This in part because
+the because the options available at the time (e.g. MySQL, Postgres, 
+MongDB, CouchDB, Redis) all imposed a high level of complexity to do
+conceptually simple things. While many of the limitations were
 deliberate it is time to consider loosing some. This should be done with
-a degree of caution. An eye needs to be kept to several areas,
-simplification of code and operation, reduction of complexity, elimination
-of unused "features". With the introduction of Go 1.18 some of this can
-be achieved through a better organization of code, some by applying
-lessons learned of the last several years and some by reorganizing the
-underlying persistenent structure of the collections themselves (e.g.
-simply of augment the JSON documents about the collections, use
-alternative means of storing JSON documents like a SQL database supporting
-JSON columns). 
+a degree of caution.
+
+In the intervening years since starting the dataset project the NoSQL
+and SQL database engines have started to converge in capabilities. This
+is particularly true from the SQL engine side. SQLite 3, MySQL 8, and
+Postgres 14 all have mature support for storing JSON objects in a
+column. This provides an opportunity for dataset itself. It can use
+those engines for storing hetrogenious collections fo JSON objects. The
+use case where this is particularly helpful is when running multi-user,
+multi-proccess support for interacting with a dataset collection.
+If dataset provides a web service the SQL engines can be used to store
+the objects. This allows for large dataset collections and well as
+concurrent interactions. The SQL engines provide the necessary record
+locking to avoid curruption on concurrent writes.
+
+In developing a version 2 of dataset an eye needs to be kept to several
+areas --
+
+1. reduction of complexity
+    a. simplification of codebase
+    b. simplification of operation
+3. learn from other systems 
+    a. align with good data practices
+    b. adopt standards, e.g. codemeta for general metadata
+3. elimination of unused "features"
+
+With the introduction of Go 1.18 some of this can be achieved through
+a better organization of code, some by applying lessons learned of the
+last several years and some by reorganizing the underlying persistenent
+structure of the collections themselves (e.g. simply of augment the JSON
+documents about the collections, use alternative means of storing JSON
+documents like a SQL database supporting JSON columns). 
+
+Proposed updates
+----------------
 
 The metadata of a collection can be described by two JSON document.
 Operational metadata (e.g. type of collection storage) is held
@@ -48,10 +77,10 @@ SQLite 3.  If a dataset collection is to be accessed via a web service
 then using a SQL store gives us an implementation that solves concurrent
 access and updates to JSON metadata. This is desirable. 
 
-Dataset have supported a form of versioning attachments for some time.
+Dataset has supported a form of versioning attachments for some time.
 It's has not supported versioning of JSON objects, that is desirable.
 Likewise the JSON support for attachments has been achieved by explicitly
-passing a semver string when attaching a document. This is not ideal.
+passing a semver strings when attaching a document. This is not ideal.
 The versioning process should be automatic but retaining a semver style
 version string raises a question, what is the increment value to change?
 Should you increment by major version, minor version or patch level?
@@ -61,46 +90,54 @@ might increment patch level with each update, "your_collection.ds" might
 increment the major level. That needs to be explored. Also versioning
 should be across the collection meaning both the JSON documents and attachments should be versioning consistently or not versioned at all.
 
-Dataset frames has proved very helpful. Where possible code should be
+Dataset frames have proved very helpful. Where possible code should be
 simplified and frames should be available regardless of JSON document
 storage type. As we continue to use frames in growing collections
-performance will need to be improved. In practice the group object
-list or keys associated with a frame or the primary data used from
-the frame. The internals could be changed to improve performance.
-They don't need necessarily be stored as plain text on disk. The code
+performance will need to be improved. In practice the object
+list or keys associated with a frame are used not the direct
+representation of the frame in memory. This is an area suited to
+refinement. The internals could be changed to improve performance as
+long as the access to the keys/objects in the frame remains consistent. 
+E.g. Frames don't have to be stored as plain text on disk. The code
 for frames needs to be reviewed and positioned for possible evolution
-as demands evolve on frames.
+as needs evolve with frame usage.
 
-Before frames were implemented data grids were tried. For practical
+Before frames were implemented data grids were tried. In practical
 usage frames replaced grids. The data grids code can be removed from
 dataset. The few places where they are used in our feeds processing
-are scheduled to be rewritten to use frames. It is a good time to
-prune this "feature".
+are scheduled to be rewritten to use regular frames. It is a good time
+to prune this "feature".
 
-Importing and exporting to CSV is a canidate for removal. On the one
-hand CSV support in Go is very good but also somewhat strict. Most
-of the time when we use CSV import or export we're doing so from a 
-Python program. Python also support CSV files reasonably well. It
-is easy to implementing a table to object conversion in Python. How
-much does Go bring to the table beyond Python? Does this need to be
-"built-in" to dataset or should it be left to scripting a dataset
-service or resource? 
+Importing, syncing and exporting to CSV is a canidate for a rethink.
+While it makes it easy to get started with dataset syncronization between 
+a CSV representation and a dataset collection is complex. While 
+CSV support in Go is very good but so are the Python libraries for
+working with CSV files. Processing objects in a collection is more
+commonly done in a script (e.g. Python using py_dataset) then directly
+in Go. It may make more sense to either simplify or drop support for
+CSV for the version 1 level integration. How much does Go bring to the
+table beyond Python? Does this need to be "built-in" to dataset or
+should it be left to scripting a dataset service or resource? Does
+import/export support of CSV files make dataset easier to use beyond
+the library? If so does that extend to SQL tables in general?
 
 
 There are generally two practices in using dataset in Caltech Library. The
-command line is used interactively or Python is used to programatically
-interact with collections (e.g. like in reporting or the feeds project).
+command line is used interactively or Python is used programatically
+process collections (e.g. like in reporting or the feeds project).
 Python has been support via a C shared library called libdataset.  While
 this has worked well it also has been a challenge to maintain requiring
-acccess to each platform we support.  I don't think this is sustatinable.
+acccess to each platform we support.  I don't think this is sustainable.
 Since the introduction of datasetd (the web service implementation of
 dataset) py_dataset could be rewritten to use the web service
 implementation of dataset (i.e. datasetd) and this would fit most of our
-use cases now and planned in the near future.
+use cases now and planned in the near future. It would avoid some
+hard edge cases we've run across where the Go run time and Python run
+need to be kept in sync.
 
-Dropping libdataset support would allow dataset/datasetd to support all
-platforms where Go can be cross compile without having access to that
-specific system. It would make snap installs easier.
+Dropping libdataset support would allow dataset/datasetd to be cross
+compiled for all supported platforms using only the Go tool chain.
+It would make supporting snap installs easier.
 
 A large area of cruft is the integrated help system. It makes more sense
 to focus that on GitHub, godoc and possible publish to a site like
@@ -118,18 +155,18 @@ Goals
 Proposals
 ---------
 
+In moving to version 2 there will be breaking changes.
+
 1. (braking change) datasetd should should store data in a SQL engine
   that support JSON columns, e.g. MySQL 8
   a. should improve performance and allow for better concurrent usage
   b. improve frames support
   c. facilitate integration with fulltext search engines, e.g. Lunr,
      Solr, Elasticsearch
-2. Frames for a pairtree based dataset could be implemented using a
-   SQLite3 db rather than a simple collection of JSON documents
-   representing the frame. This should extend performance and make
-   frames more flexible, this would also allow indexing attributes and
-   potentionally search and sorting
-3. Versioning of attachments needs to be more automatic. A set of four
+2. Cleanup frames and clarify their behavior, position the code for
+   persisting frames efficiently. (e.g. frames implemented using SQLite
+   3 database and tables)
+3. Versioning of attachments needs to be automatic. A set of four
    version keywords could make it easier.
   a. __set__ would set the initial version number (defaults to 0.0.0)
   b. __patch__ would increment the patch number in the semver, if
@@ -138,19 +175,18 @@ Proposals
   c. __minor__ would increment the minor number and set patch to zero
   d. __major__ would increment the major number and set minor and patch
      to zer
-4. v2 should support versioning JSON documents in a manner like versioned
-   attachments
+4. JSON objects should be versioned if the collection is versioned.
 5. Versioning of JSON documents and attachments should be global to the
    collection, i.e. everything is versioned or nothing is versioned
-6. Dot notation needs to be brought inline with JSON dot notation practices 
-   used in the SQL engines with JSON column support, see
-   [SQLite3](https://www.sqlite.org/json1.html), 
-   [MySQL 8](https://dev.mysql.com/doc/refman/8.0/en/json.html) and
-   [Postgres 9](https://www.postgresql.org/docs/9.3/functions-json.html)
+6. Dot notation needs reviewed. Look at how SQL databases are interacting with JSON columns. Is there a convergence in notation?
+   a. [SQLite3](https://www.sqlite.org/json1.html), 
+   b. [MySQL 8](https://dev.mysql.com/doc/refman/8.0/en/json.html) and
+   c. [Postgres 9](https://www.postgresql.org/docs/9.3/functions-json.html)
 7. Easy import/export to/from pairtree based dataset collections
 8. Drop libdataset, it has been a time sync and constrainged dataset's
    evolution
-
+9. Automated migration from version 1 to version 2 databases
+   (via check/repair)
 
 Leveraging SQL with JSON column support
 ---------------------------------------
@@ -187,15 +223,14 @@ as tables. This would allow for easier collection migration and replication.
 
 The column structure of a SQL based collection could be
 
-- `_Key VARCHAR(255) NOT NULL PRIMARY KEY`
+- `Key VARCHAR(255) NOT NULL PRIMARY KEY`
 - `Object JSON`
-- `Version VARCHAR DEFAULT 0.0.0`
 - `Created DATETIME DEFAULT CURRENT_TIMESTAMP`
 - `Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
 
 The column structure for a SQL base frame set could be
 
-- `_Key VARCHAR(255) NOT NULL PRIMARY KEY`
+- `Key VARCHAR(255) NOT NULL PRIMARY KEY`
 - `Extract JSON` (the extracted attributes exposed by the frame)
 - `Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
 
@@ -205,33 +240,29 @@ atrtibutes.
 Stored procedures or triggers could implement the JSON document versioning
 via a copy to a history table. The latest version would be saved in the
 primary table, versions would be stored in the history table where `_Key`
-becomes `_Key` combined with `Version`
+becomes `Key` combined with `Version`
 
-In a pairtree implementation JSON documents would be in semver directory
-like attachments. They could share the same versioning mechanism but be
-in serpate directories, e.g. `_attachments`, `_objects`.
+In a pairtree implementation JSON documents could use the same 
+semver settings as attachment. Need to think about how this is
+organized on disk. Also attachments should not be stored in a SQL 
+engine (we have big attachments). The could be stored in their own
+pairtree. Using versioning on JSON documents and attachments should
+function the same way but the implementation may need to very.
 
-Attachments can be large. A decision needs to be made if attachments make
-sense in a MySQL based collection or if datasetd will need to handle
-concurrency and atomicity of attachment actions. E.g. a pairtree could
-continue to be used but we need a means of preventing two actions (e.g.
-attach, replace, removing) from colliding. Ideas might be to require
-versioning on attachments and lock the versioned directory on attach,
-replace and remove.
 
 Code organization
 -----------------
 
 The v1 series of dataset source code is rather organic. It needs to be
-structured so that it is easier to read, understand and curate.
+structured so that it is easier to read, understand and curate. In
+Go version 1.18 we can keep all the packages in the same repository.
+This means code for pairtree, semver, etc. can be maintained in the
+same repository easily now. This beings us an opportunity to refine
+things.
 
-- semver.go models semver behaviors
-- dotpath.go models dotpaths and JSON object behaviors
-- collection.go should hold the collection level actions and datastructure
-- objects.go should hold the object level actions of dataset
-- pairtree.go should hold pairtree structure and methods
-- cli.go should hold the outer methods for implementing the dataset CLI
-- webapi.go should hold the wrapper that implements the datasetd daemon
+- collection.go should hold the general collection level actions and collection level data structures
+- frames.go should hold the frames implementation indepent of the JSON store being used
+- attachments.go should hold the attachments implementation indepent of the JSON store being used
 - ptstore holds the code for the pairtree local disk implementation
   - ptstore/storage.go handle mapping objects and attachments to disk in the pairtree
   - ptstore/frames.go should handling implementing frames for pairtree implementation
@@ -242,16 +273,13 @@ structured so that it is easier to read, understand and curate.
   - sqlstore/frames.go should hold the SQL implementation of frames
   - sqlstore/storage.go should handle mapping objects into MySQL storage
   - sqlstore/versioning.go should handle the version mapping in MySQL tables
+- semver/semver.go models semver behaviors
+- dotpath/dotpath.go models dotpaths and JSON object behaviors
+- pairtree/pairtree.go should hold pairtree structure and methods
+- cli/cli.go should hold the outer methods for implementing the dataset CLI
+  - base assumption, single user, single process
+- api/api.go should hold the wrapper that implements the datasetd daemon
+  - base assumption, multi user, multi process
 - cmd/dataset/dataset.go is a light wrapper envoking run methods in cli
 - cmd/datasetd/datasetd.go is a light wrapper envoking the run methods in ebapi.go
-
-Questions
----------
-
-- Should datasetd resources be managed through its own client (e.g.
-  datasetctl) or use the dataset cli? Yes.
-- Do all collections need a directory containing collection.json and
-  codemeta.json? Yes.
-
-
 

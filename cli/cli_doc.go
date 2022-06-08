@@ -59,7 +59,8 @@ SUPPORTED VERBS
 - prune, removes and attachment from a JSON record
 - frames, lists the frames defined in a collection
 - frame, will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
-- reframe, will recreate a frame based on the current state of objects in the collection, if keys are provide with the reframe request then the objects in the frame will be replaces by objects associated with the new keys provided
+- reframe, will recreate a frame using its existing definition but replacing objects based on a new set of keys provided
+- refresh, will update all objects currently in the frame based on the current state of the collection. Any keys deleted in the collection will be delete from the frame.
 - delete-frame, will remove a frame from the collection
 - has-frame, will return true (exit 0) if frame exists, false (exit 1) if not
 - attachments, will list any attachments for a JSON document
@@ -562,8 +563,8 @@ called "photos.ds" I would do the following (will be using the
 reframe
 =======
 
-This command replace the current keys and object list in a frame based
-on the keys provided.
+This command replace the current keys/object list in a frame based
+on the frame's current definition.
 
 In the following example the frame name is \"f1\", the collection is
 \"examples.ds\". The first example is reframing an existing frame using
@@ -581,10 +582,10 @@ the same thing but is taking a filename to retrieve the list of keys.
 refresh
 =======
 
-This command will update an object list in a frame based on the current
-state of the collection. If any keys have been deleted from the
-collection then the object associated with those keys in the frame will
-also be removed.
+Update the objects in a frame based on it's current set of keys and definition.  
+
+NOTE: If any keys have been deleted from the collection then the object
+associated with those keys in the frame will also be removed.
 
 In the following example the frame name is \"f1\", the collection is
 \"examples.ds\". The example is refreshing the object list.

@@ -1,8 +1,8 @@
 reframe
 =======
 
-This command replace the current keys and object list in a frame based
-on the keys provided.
+This command replace the current keys/objects in a frame based
+on the new keys provided. 
 
 In the following example the frame name is \"f1\", the collection is
 \"examples.ds\". The first example is reframing an existing frame using
