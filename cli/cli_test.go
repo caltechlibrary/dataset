@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -31,6 +32,23 @@ import (
 	// The main dataset package
 	ds "github.com/caltechlibrary/dataset"
 )
+
+func setupTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := ds.Init(cName, dsnURI)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	for k, v := range mappedObjects {
+		if err := c.Create(k, v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func TestDisplay(t *testing.T) {
 	appName := "TestDisplay"
@@ -52,13 +70,14 @@ func TestDisplay(t *testing.T) {
 
 func TestRunCLIOnCRUDL(t *testing.T) {
 	var (
-		input, output []byte
+		input, output, errout []byte
 	)
 	// Map IO for testing
 	in := bytes.NewBuffer(input)
 	out := bytes.NewBuffer(output)
+	eout := bytes.NewBuffer(errout)
 	// Cleanup stale test data
-	cName := path.Join("testout", "C1.ds")
+	cName := path.Join("testout", "RunCLIOnCRUDL_1.ds")
 	if _, err := os.Stat(cName); err == nil {
 		if err := os.RemoveAll(cName); err != nil {
 			t.Errorf("cannot remove stale %q, %s", cName, err)
@@ -106,15 +125,15 @@ func TestRunCLIOnCRUDL(t *testing.T) {
 		if extra, ok := opt[arg]; ok {
 			args = append(args, extra...)
 		}
-		if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		if err := RunCLI(in, out, eout, args); err != nil {
 			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 		}
 	}
 }
 
 func TestCloning(t *testing.T) {
-	srcName := path.Join("testout", "src2.ds")
-	dstName := path.Join("testout", "dst2.ds")
+	srcName := path.Join("testout", "cloning_src2.ds")
+	dstName := path.Join("testout", "cloning_dst2.ds")
 	if _, err := os.Stat(srcName); err == nil {
 		os.RemoveAll(srcName)
 	}
@@ -177,11 +196,16 @@ func TestCloning(t *testing.T) {
 }
 
 func TestSampleCloning(t *testing.T) {
-	srcName := path.Join("testout", "zbs_characters.ds")
-	trainingName := path.Join("testout", "zbs_training.ds")
-	trainingDsnURI := "sqlite://testout/zbs_training.ds/collection.db"
-	testName := path.Join("testout", "zbs_test.ds")
-	testDsnURI := "sqlite://testout/zbs_test.ds/collection.db"
+	input, output, errout := []byte{}, []byte{}, []byte{}
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+	eout := bytes.NewBuffer(errout)
+
+	srcName := path.Join("testout", "sample_src.ds")
+	trainingName := path.Join("testout", "training_src.ds")
+	trainingDsnURI := "sqlite://testout/training_src.ds/collection.db"
+	testName := path.Join("testout", "test_src.ds")
+	testDsnURI := "sqlite://testout/test_src.ds/collection.db"
 	if _, err := os.Stat(srcName); err == nil {
 		os.RemoveAll(srcName)
 	}
@@ -223,14 +247,9 @@ func TestSampleCloning(t *testing.T) {
 	testRecords["character:10"] = map[string]interface{}{
 		"name": "Claudine",
 	}
-	var (
-		input, output []byte
-	)
 	// Map IO for testing
-	in := bytes.NewBuffer(input)
-	out := bytes.NewBuffer(output)
 	args := []string{"init", srcName}
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+	if err := RunCLI(in, out, eout, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
 	// Add our records
@@ -244,7 +263,7 @@ func TestSampleCloning(t *testing.T) {
 			continue
 		}
 		in = bytes.NewBuffer(src)
-		if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		if err := RunCLI(in, out, eout, args); err != nil {
 			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 		}
 	}
@@ -252,166 +271,292 @@ func TestSampleCloning(t *testing.T) {
 	src := []byte(strings.Join(keys, "\n"))
 	in = bytes.NewBuffer(src)
 	args = []string{"clone-sample", "-size", "10", srcName, trainingName, trainingDsnURI, testName, testDsnURI}
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+	if err := RunCLI(in, out, eout, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
 }
 
-func TestCLIOnFrames(t *testing.T) {
-	srcName := path.Join("testout", "zbs_frames.ds")
-	if _, err := os.Stat(srcName); err == nil {
-		os.RemoveAll(srcName)
-	}
+func TestCLIKeys(t *testing.T) {
+	input, output, errout := []byte{}, []byte{}, []byte{}
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+	eout := bytes.NewBuffer(errout)
 
-	testRecords := map[string]map[string]interface{}{}
-	testRecords["character:1"] = map[string]interface{}{
+	cName := path.Join("testout", "CLI_keys.ds")
+
+	mappedObjects := map[string]map[string]interface{}{}
+	mappedObjects["character:1"] = map[string]interface{}{
 		"name": "Jack Flanders",
 		"one":  1,
 	}
-	testRecords["character:2"] = map[string]interface{}{
+	mappedObjects["character:2"] = map[string]interface{}{
 		"name": "Little Frieda",
 		"one":  2,
 	}
-	testRecords["character:3"] = map[string]interface{}{
+	mappedObjects["character:3"] = map[string]interface{}{
 		"name": "Mojo Sam the Yoodoo Man",
 		"one":  3,
 	}
-	testRecords["character:4"] = map[string]interface{}{
+	mappedObjects["character:4"] = map[string]interface{}{
 		"name": "Kasbah Kelly",
 		"one":  4,
 	}
-	testRecords["character:5"] = map[string]interface{}{
+	mappedObjects["character:5"] = map[string]interface{}{
 		"name": "Dr. Marlin Mazoola",
 		"one":  3,
 	}
-	testRecords["character:6"] = map[string]interface{}{
+	mappedObjects["character:6"] = map[string]interface{}{
 		"name": "Old Far-Seeing Art",
 		"one":  2,
 	}
-	testRecords["character:7"] = map[string]interface{}{
+	mappedObjects["character:7"] = map[string]interface{}{
 		"name": "Chief Wampum Stompum",
 		"one":  1,
 	}
-	testRecords["character:8"] = map[string]interface{}{
+	mappedObjects["character:8"] = map[string]interface{}{
 		"name": "The Madonna Vampira",
 		"one":  0,
 	}
-	testRecords["character:9"] = map[string]interface{}{
+	mappedObjects["character:9"] = map[string]interface{}{
 		"name": "Domenique",
 		"one":  1,
 	}
-	testRecords["character:10"] = map[string]interface{}{
+	mappedObjects["character:10"] = map[string]interface{}{
 		"name": "Claudine",
 		"one":  1,
 	}
-	var (
-		input, output []byte
-	)
-	// Map IO for testing
-	in := bytes.NewBuffer(input)
-	out := bytes.NewBuffer(output)
-	args := []string{"init", srcName}
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	if err := setupTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
+		t.FailNow()
 	}
-	// Add our records
+
+	// Setup I/O, args and keys
+	args := []string{}
 	keys := []string{}
-	for k, v := range testRecords {
-		keys = append(keys, k)
-		args = []string{"create", srcName, k}
-		src, err := json.MarshalIndent(v, "", "    ")
-		if err != nil {
-			t.Errorf("Can't marshal %q -> %+v", k, v)
-			continue
-		}
-		in = bytes.NewBuffer(src)
-		if err := RunCLI(in, out, os.Stderr, args); err != nil {
-			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-		}
-	}
-	args = []string{"frame", srcName, "one-data", ".one"}
-	input = []byte(strings.Join(keys, "\n"))
-	in = bytes.NewBuffer(input)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-	}
 
-	// List frames
-	args = []string{"frames", srcName}
-	output = []byte{}
-	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-	}
-	expectedS := "one-data"
-	gotS := strings.TrimSpace(fmt.Sprintf("%s", output))
-	if gotS != "one-data" {
-		t.Errorf("Expected %q, got %q", expectedS, gotS)
-	}
-
-	// get keys from frame
-	args = []string{"frame-keys", srcName, "one-data"}
-	output = []byte{}
-	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-	}
-	okeys := strings.Split(fmt.Sprintf("%s", output), "\n")
-	if len(okeys) == 0 {
-		t.Errorf("failed to read keys from frame-keys")
-	}
-
-	// get definition from frame
-	args = []string{"frame-def", srcName, "one-data"}
-	output = []byte{}
-	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-	}
-	if len(output) == 0 {
-		t.Errorf("Failed to get frame definition")
-	} else {
-		fmt.Printf("DEBUG frame-def -> %q\n", output)
-	}
-
-	// get objects in frame
-	args = []string{"frame-objects", srcName, "one-data"}
-	output = []byte{}
-	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-	}
-	if len(output) == 0 {
-		t.Errorf("Failed to get frame objects")
-	} else {
-		fmt.Printf("DEBUG frame-objects -> %q\n", output)
-	}
-
-	// reframe
-	args = []string{"reframe", srcName, "one-data", "field_one=.one"}
 	input = []byte{}
 	in = bytes.NewBuffer(input)
 	output = []byte{}
 	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+	errout = []byte{}
+	eout = bytes.NewBuffer(errout)
+
+	args = []string{"keys", cName}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("expected to get a list of keys, %s", err)
+		t.FailNow()
+	}
+	src, err := ioutil.ReadAll(out)
+	if err != nil {
+		t.Errorf("could not read output of keys, %s", err)
+		t.FailNow()
+	}
+	// Get keys for all of collection.
+	keys = strings.Split(string(src), "\n")
+	if len(keys) == 0 {
+		t.Errorf("expected a list of keys to frame, got none")
+		t.FailNow()
+	}
+}
+
+func TestCLIOnFrames(t *testing.T) {
+	input, output, errout := []byte{}, []byte{}, []byte{}
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+	eout := bytes.NewBuffer(errout)
+
+	cName := path.Join("testout", "CLI_on_frames.ds")
+
+	mappedObjects := map[string]map[string]interface{}{}
+	mappedObjects["character:1"] = map[string]interface{}{
+		"name": "Jack Flanders",
+		"one":  1,
+	}
+	mappedObjects["character:2"] = map[string]interface{}{
+		"name": "Little Frieda",
+		"one":  2,
+	}
+	mappedObjects["character:3"] = map[string]interface{}{
+		"name": "Mojo Sam the Yoodoo Man",
+		"one":  3,
+	}
+	mappedObjects["character:4"] = map[string]interface{}{
+		"name": "Kasbah Kelly",
+		"one":  4,
+	}
+	mappedObjects["character:5"] = map[string]interface{}{
+		"name": "Dr. Marlin Mazoola",
+		"one":  3,
+	}
+	mappedObjects["character:6"] = map[string]interface{}{
+		"name": "Old Far-Seeing Art",
+		"one":  2,
+	}
+	mappedObjects["character:7"] = map[string]interface{}{
+		"name": "Chief Wampum Stompum",
+		"one":  1,
+	}
+	mappedObjects["character:8"] = map[string]interface{}{
+		"name": "The Madonna Vampira",
+		"one":  0,
+	}
+	mappedObjects["character:9"] = map[string]interface{}{
+		"name": "Domenique",
+		"one":  1,
+	}
+	mappedObjects["character:10"] = map[string]interface{}{
+		"name": "Claudine",
+		"one":  1,
+	}
+	if err := setupTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	// Setup I/O, args and keys
+	args := []string{}
+	keys := []string{}
+
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+
+	args = []string{"keys", cName}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("expected to get a list of keys, %s", err)
+		t.FailNow()
+	}
+	// Get keys for all of collection.
+	src, err := ioutil.ReadAll(out)
+	if err != nil {
+		t.Errorf("failed to read output for keys, %s", err)
+		t.FailNow()
+	}
+	keys = strings.Split(string(src), "\n")
+	if len(keys) == 0 {
+		t.Errorf("expected a list of keys to frame, got none")
+		t.FailNow()
+	}
+
+	frameName := "one-data"
+	frameFile := path.Join(cName, "_frames", frameName+".json")
+	args = []string{"frame", "-i", "-", cName, frameName, ".one=one"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	input = []byte(strings.Join(keys, "\n"))
+	in = bytes.NewBuffer(input)
+	if err := RunCLI(in, out, eout, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	if _, err := os.Stat(frameFile); err != nil {
+		t.Errorf("failed to create frame %q at %q, %s", frameName, frameFile, err)
+		t.FailNow()
+	}
+
+	// List frames
+	args = []string{"frames", cName}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+	}
+	expectedS := "one-data"
+	src, err = ioutil.ReadAll(out)
+	if err != nil {
+		t.Errorf("failed to read frames, %s", err)
+		t.FailNow()
+	}
+	gotS := fmt.Sprintf("%s", src)
+	if gotS != "one-data" {
+		t.Errorf("Expected frame list %q, got %q", expectedS, gotS)
+		t.FailNow()
+	}
+
+	// get keys from frame
+	args = []string{"frame-keys", cName, "one-data"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	src, err = ioutil.ReadAll(out)
+	if err != nil {
+		t.Errorf("failed to read output of frame-keys, %s", err)
+		t.FailNow()
+	}
+	okeys := strings.Split(string(src), "\n")
+	if len(okeys) == 0 {
+		t.Errorf("failed to read keys from frame-keys")
+		t.FailNow()
+	}
+
+	// get definition from frame
+	args = []string{"frame-def", cName, "one-data"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	src, err = ioutil.ReadAll(out)
+	if err != nil {
+		t.Errorf("failed to read frame-def, %s", err)
+		t.FailNow()
+	}
+	if len(src) == 0 {
+		t.Errorf("Failed to get frame definition")
+		t.FailNow()
+	}
+
+	// get objects in frame
+	args = []string{"frame-objects", cName, "one-data"}
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	src, err = ioutil.ReadAll(out)
+	if err != nil {
+		t.Errorf("failed to read output of frame-objects, %s", err)
+		t.FailNow()
+	}
+	if len(src) == 0 {
+		t.Errorf("Failed to get frame objects")
+		t.FailNow()
 	}
 
 	// refresh frame
-	args = []string{"refresh", srcName, "one-data"}
+	args = []string{"refresh", cName, "one-data"}
 	output = []byte{}
 	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+	if err := RunCLI(in, out, eout, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+
+	keys = okeys[0:3]
+
+	// reframe
+	args = []string{"reframe", cName, "one-data"}
+	input = []byte(strings.Join(keys, "\n"))
+	in = bytes.NewBuffer(input)
+	output = []byte{}
+	out = bytes.NewBuffer(output)
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		t.FailNow()
 	}
 
 	// delete frame
-	args = []string{"delete-frame", srcName, "one-data"}
-	output = []byte{}
-	out = bytes.NewBuffer(output)
-	if err := RunCLI(in, out, os.Stderr, args); err != nil {
-		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
-	}
+	/*
+		args = []string{"delete-frame", cName, "one-data"}
+		output = []byte{}
+		out = bytes.NewBuffer(output)
+		if err := RunCLI(in, out, eout, args); err != nil {
+			t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
+		}
+	*/
 
 }
 
@@ -424,11 +569,32 @@ func TestCLIOnAttachments(t *testing.T) {
 	"two": 2,
 	"three": 3
 }`)
+	// Make test attachment file.
+	attachmentFile := path.Join("testout", "test_attachment.txt")
+	src := []byte(`
+This is a plain text file for attachment.
+
+1. One
+2. Two
+3. Three
+
+The End.
+`)
+	if err := ioutil.WriteFile(attachmentFile, src, 0664); err != nil {
+		t.Errorf("unable to create test attachment %q, %s", attachmentFile, err)
+		t.FailNow()
+	}
 	// Map IO for testing
 	in := bytes.NewBuffer(input)
 	out := bytes.NewBuffer(output)
+
+	// Setup clean cName
 	cName := path.Join("testout", "attached.ds")
-	args := []string{"init", cName}
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+
+	args := []string{"init", cName, ""}
 	if err := RunCLI(os.Stdin, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
@@ -436,7 +602,7 @@ func TestCLIOnAttachments(t *testing.T) {
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
-	args = []string{"attach", cName, "uno", "README.md"}
+	args = []string{"attach", cName, "uno", attachmentFile}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
@@ -444,11 +610,12 @@ func TestCLIOnAttachments(t *testing.T) {
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
-	args = []string{"retreive", cName, "uno", "README.md"}
+	os.Rename(attachmentFile, attachmentFile+".bak")
+	args = []string{"retrieve", cName, "uno", attachmentFile}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
-	args = []string{"prune", cName, "uno"}
+	args = []string{"prune", cName, "uno", attachmentFile}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("unexpected error when running %q, %s", strings.Join(args, " "), err)
 	}
@@ -508,165 +675,239 @@ func TestCheckRepair(t *testing.T) {
 	out := bytes.NewBuffer(output)
 
 	// Run tests
-	args := []string{"check", "-verbose", cName}
+	args := []string{"check", cName}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("check should have been OK, %q, %s", strings.Join(args, " "), err)
 	}
 
 	// Test case of missing collections.json
-	os.RemoveAll(path.Join(cName, "collections.json"))
-	args = []string{"check", "-verbose", cName}
+	os.RemoveAll(path.Join(cName, "collection.json"))
+	args = []string{"check", cName}
 	if err := RunCLI(in, out, os.Stderr, args); err == nil {
 		t.Errorf("check should have failed, %q", strings.Join(args, " "))
 	}
 
 	// Initiating a repair
-	args = []string{"repair", "-verbose", cName}
+	args = []string{"repair", cName}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("repair should have succeeded, %q, %s", strings.Join(args, " "), err)
 	}
 
 	// Repair should have worked
-	args = []string{"check", "-verbose", cName}
+	args = []string{"check", cName}
 	if err := RunCLI(in, out, os.Stderr, args); err != nil {
 		t.Errorf("check should confirm repair worked, %q, %s", strings.Join(args, " "), err)
 	}
 }
 
+func TestDataset(t *testing.T) {
+	cName := path.Join("testout", "test1.ds")
+
+	in := bytes.NewBuffer([]byte{})
+	out := bytes.NewBuffer([]byte{})
+	eout := bytes.NewBuffer([]byte{})
+
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+
+	args := []string{"init", cName}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	expectedB := []byte(``)
+	gotB, _ := ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	key := "1"
+	args = []string{"create", cName, key, `{"one": 1}`}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	expectedB = []byte(``)
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	key = "2"
+	src := []byte(`{"two": 2}`)
+	if _, err := in.Write(src); err != nil {
+		t.Errorf("could not write the input, %s", err)
+		t.FailNow()
+	}
+	args = []string{"create", "-i", "-", cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	expectedB = []byte(``)
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	src = []byte(`{"three": 3}`)
+	key = "3"
+	testFile := path.Join("testout", "test3.json")
+	ioutil.WriteFile(testFile, src, 0664)
+
+	args = []string{"create", "-i", testFile, cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	expectedB = []byte(``)
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	key = "4"
+	src = []byte(`{"four": 4}`)
+	testFile = path.Join("testout", "test4.json")
+	ioutil.WriteFile(testFile, src, 0664)
+
+	args = []string{"create", "-i", testFile, cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	expectedB = []byte(``)
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	expectedB = []byte(`{
+    "one": 1
+}`)
+	key = "1"
+	args = []string{"read", cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	expectedB = []byte(`{
+    "two": 2
+}`)
+	key = "2"
+	args = []string{"read", cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	expectedB = []byte(`1
+2
+3
+4`)
+	args = []string{"keys", cName}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+}
+
+func TestIssue19(t *testing.T) {
+	in := bytes.NewBuffer([]byte{})
+	out := bytes.NewBuffer([]byte{})
+	eout := bytes.NewBuffer([]byte{})
+
+	cName := path.Join("testout", "test_issue19.ds")
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+
+	expectedB := []byte(``)
+	args := []string{"init", cName}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	gotB, _ := ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	expectedB = []byte(``)
+	key := "freda"
+	src := []byte(`{
+    "name": "freda",
+	"email": "freda@inverness.example.org",
+	"try": 1
+}`)
+	in.Write(src)
+	args = []string{"create", "-i", "-", cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+
+	// Now attempt to create the record a second time without -overwrite
+	in.Write(src)
+	args = []string{"create", "-i", "-", cName, key}
+	if err := RunCLI(in, out, eout, args); err == nil {
+		t.Errorf("Expected an error when creating a ducplicated record %q in %q", key, cName)
+		t.FailNow()
+	}
+	/* NOTE: eout will be null as that is handle via
+	   cmd/dataset/dataset.go taking the return error value of
+	   RunCLI(). */
+
+	// Now include the -overwrite option
+	expectedB = []byte(``)
+	in.Write(src)
+	args = []string{"create", "-overwrite", "-i", "-", cName, key}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)
+		t.FailNow()
+	}
+	gotB, _ = ioutil.ReadAll(eout)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+	gotB, _ = ioutil.ReadAll(out)
+	if bytes.Compare(expectedB, gotB) != 0 {
+		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+}
+
 /**FIXME: convert this Bash script into Go based cli testing
-#!/bin/bash
-
-function assert_exists() {
-	if [ "$#" != "2" ]; then
-		echo "wrong number of parameters for $1, $*"
-		exit 1
-	fi
-	if [[ ! -f "$2" && ! -d "$2" ]]; then
-		echo "$1: $2 does not exists"
-		exit 1
-	fi
-
-}
-
-function assert_equal() {
-	if [ "$#" != "3" ]; then
-		echo "wrong number of parameters for $1, $*"
-		exit 1
-	fi
-	if [ "$2" != "$3" ]; then
-		echo "$1: expected |$2| got |$3|"
-		exit 1
-	fi
-}
-
-function fail_now() {
-    echo $@
-    exit 1
-}
-
-#
-# Tests
-#
-function test_dataset() {
-	if [[ -f "testdata/test1.ds/collection.json" ]]; then
-		rm -fR testdata/test1.ds
-	fi
-	EXT=".exe"
-	OS=$(uname)
-	if [ "$OS" != "Windows" ]; then
-		EXT=""
-	fi
-	echo "checking for bin/dataset${EXT}"
-	if [[ ! -f "bin/dataset${EXT}" || ! -f "cmd/dataset/assets.go" ]]; then
-		# We need to build
-		pkgassets -o cmd/dataset/assets.go \
-			-p main -ext=".md" -strip-prefix="/" \
-			-strip-suffix=".md" \
-			Examples examples/dataset \
-			Help docs/dataset
-		go build -o "bin/dataset${EXT}" cmd/dataset/dataset.go cmd/dataset/assets.go
-	fi
-
-	# Test init
-	EXPECTED="OK"
-	RESULT=$(bin/dataset init testdata/test1.ds)
-	assert_equal "init testdata/test1.ds" "$EXPECTED" "$RESULT"
-	export DATASET="testdata/test1.ds"
-
-	assert_exists "collection create" "testdata/test1.ds"
-	assert_exists "collection created metadata" "testdata/test1.ds/collection.json"
-
-
-	# Test create
-	if ! bin/dataset create "${DATASET}" 1 '{"one":1}'; then
-       fail_now "Failed to create record 1 in ${DATASET}"
-    fi
-	if ! echo '{"two":2}' | bin/dataset create -i - "${DATASET}" 2; then
-       fail_now "Failed to create record 2 in ${DATASET}"
-    fi
-	echo '{"three":3}' >"testdata/test3.json"
-	if ! bin/dataset create -i testdata/test3.json "${DATASET}" 3; then
-       fail_now "Failed to create record 3 in ${DATASET}"
-    fi
-	echo '{"four":4}' >"testdata/test4.json"
-    if ! bin/dataset create "${DATASET}" 4 testdata/test4.json; then
-       fail_now "Failed to create record 4 in ${DATASET}"
-    fi
-
-	# Test read
-	EXPECTED='{"_Key":"1","one":1}'
-	RESULT=$(bin/dataset read "${DATASET}" 1)
-	assert_equal "read 1:" "$EXPECTED" "$RESULT"
-	EXPECTED='{"_Key":"2","two":2}'
-	RESULT=$(echo -n '2' | bin/dataset -i - read "${DATASET}")
-	assert_equal "read 2:" "$EXPECTED" "$RESULT"
-
-
-	# Test keys
-	EXPECTED="1 2 3 4 "
-	RESULT=$(bin/dataset keys "${DATASET}" | sort | tr "\n" " ")
-	assert_equal "keys:" "$EXPECTED" "$RESULT"
-	EXPECTED="1 "
-	RESULT=$(bin/dataset keys "${DATASET}" '(eq .one 1)' | sort | tr "\n" " ")
-
-	if [ -f "testdata/test1.ds/collection.json" ]; then
-		rm -fR testdata/test1.ds
-	fi
-	echo "test_dataset, OK"
-}
-
-
-function test_issue19() {
-	echo "test_issue19"
-	if [[ -d "testdata/test_issue19.ds" ]]; then
-		rm -fR testdata/test_issue19.ds
-	fi
-	bin/dataset -nl=false -quiet init "testdata/test_issue19.ds"
-	bin/dataset -nl=false -quiet create testdata/test_issue19.ds freda '{"name":"freda","email":"freda@inverness.example.org","try":1}'
-	if [[ "$?" != "0" ]]; then
-		echo "Failed, should be able to create the record in an empty collection"
-		exit 1
-	fi
-
-	# Now try creating the record again without -overwrite
-    echo "NOTE: expecting an error message on next line"
-	bin/dataset -nl=false -quiet create testdata/test_issue19.ds freda '{"name":"freda","email":"freda@inverness.example.org","try":2}'
-	if [[ "$?" != "1" ]]; then
-        echo "Expected return value 1, got $?"
-		echo "Failed, should NOT be able to create the record when it exists in a collection without -overwrite"
-		exit 1
-	fi
-
-	# Now try to create the record with -overwrite
-	bin/dataset -nl=false -quiet create -overwrite testdata/test_issue19.ds freda '{"name":"freda","email":"freda@inverness.example.org","try":3}'
-	if [[ "$?" != "0" ]]; then
-		echo "Failed, should be able to create the record with -overwrite!"
-		exit 1
-	fi
-
-	echo "test_issue19, OK"
-	rm -fR "testdata/test_issue19.ds"
-}
 
 function test_readme () {
     echo "test_readme"

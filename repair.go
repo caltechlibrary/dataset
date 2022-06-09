@@ -43,7 +43,7 @@ import (
 // NOTE: the collection MUST BE CLOSED when Analyzer is called otherwise
 // the results will not be accurate.
 //
-func Analyzer(collectionName string, verbose bool) error {
+func Analyzer(cName string, verbose bool) error {
 	var (
 		eCnt int
 		wCnt int
@@ -53,7 +53,7 @@ func Analyzer(collectionName string, verbose bool) error {
 		err  error
 	)
 
-	collectionPath := collectionName
+	collectionPath := cName
 	// Make sure collection exists
 	_, err = os.Stat(collectionPath)
 	if err != nil {
@@ -101,7 +101,7 @@ func Analyzer(collectionName string, verbose bool) error {
 	}
 
 	// Now try to open the collection ...
-	c, err = Open(collectionName)
+	c, err = Open(cName)
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func Analyzer(collectionName string, verbose bool) error {
 	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
-	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(path.Join(cName, "pairtree"))
 	if err != nil && len(keyMap) > 0 {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		eCnt++
@@ -186,10 +186,10 @@ func Analyzer(collectionName string, verbose bool) error {
 		if _, exists := keyMap[key]; exists == false {
 			if _, exists := keyMap[strings.ToLower(key)]; exists {
 				repairLog(verbose, "WARNING: key %q points at case sensitive path %q",
-					strings.ToLower(key), path.Join(collectionName, "pairtree", pair, key+".json"))
+					strings.ToLower(key), path.Join(cName, "pairtree", pair, key+".json"))
 				wCnt++
 			} else {
-				repairLog(verbose, "ERROR: %q found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
+				repairLog(verbose, "ERROR: %q found at %q not in collection", key, path.Join(cName, "pairtree", pair, key+".json"))
 				eCnt++
 			}
 		}
@@ -203,31 +203,76 @@ func Analyzer(collectionName string, verbose bool) error {
 }
 
 //
+// FixMissingCollectionJson will scan the collection directory
+// and environment making an educated guess to type of
+// collection collection type
+//
+func FixMissingCollectionJson(cName string) error {
+	collectionJson := path.Join(cName, "collection.json")
+	dsnURI := os.Getenv("DATASET_DSN_URI")
+	pairPath := path.Join(cName, "pairtree")
+	keymapPath := path.Join(cName, "keymap.json")
+	storeType := ""
+	version := ""
+	if _, err := os.Stat(pairPath); err == nil {
+		storeType = PTSTORE
+	} else if dsnURI != "" {
+		storeType = SQLSTORE
+		version = Version
+	}
+	if storeType == "" {
+		return fmt.Errorf("unable to determine storage type for %q", cName)
+	}
+	if _, err := os.Stat(keymapPath); err == nil {
+		version = Version
+	}
+	c := &Collection{}
+	c.Name = path.Base(cName)
+	c.DatasetVersion = version
+	c.StoreType = storeType
+	c.DsnURI = dsnURI
+	src, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return fmt.Errorf("unable to encode %q, %s", collectionJson, err)
+	}
+	return ioutil.WriteFile(collectionJson, src, 0664)
+}
+
+//
 // Repair takes a collection name and calls
 // walks the pairtree and repairs collection.json as appropriate.
 //
 // NOTE: the collection MUST BE CLOSED when repair is called otherwise
 // the repaired collection may revert.
 //
-func Repair(collectionName string, verbose bool) error {
+func Repair(cName string, verbose bool) error {
 	var (
 		c   *Collection
 		err error
 	)
-	// See if we can open a collection, if not then create an empty struct
-	c, err = Open(collectionName)
-	if err != nil {
-		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = os.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+	collectionJson := path.Join(cName, "collection.json")
+	// Check to see if we find a collection.json, if not see if we
+	// can make a educated guess
+	if _, err := os.Stat(collectionJson); err != nil {
+		err := FixMissingCollectionJson(cName)
 		if err != nil {
-			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
 		}
-		repairLog(verbose, "Attempting to re-open %s", collectionName)
-
-		c, err = Open(collectionName)
+	}
+	// See if we can open a collection, if not then create an empty struct
+	c, err = Open(cName)
+	if err != nil {
+		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", cName, err)
+		err = os.WriteFile(path.Join(cName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
-			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)
+			repairLog(verbose, "Can't re-initilize %s, %s", cName, err)
+			return err
+		}
+		repairLog(verbose, "Attempting to re-open %s", cName)
+
+		c, err = Open(cName)
+		if err != nil {
+			repairLog(verbose, "Failed to re-open %s, %s", cName, err)
 			return err
 		}
 	}
@@ -251,7 +296,7 @@ func Repair(collectionName string, verbose bool) error {
 
 	c.DatasetVersion = Version
 	repairLog(verbose, "Getting a list of pairs")
-	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(path.Join(cName, "pairtree"))
 	if err != nil {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		return err
@@ -268,7 +313,7 @@ func Repair(collectionName string, verbose bool) error {
 		key := pairtree.Decode(pair)
 		if _, ok := keyMap[key]; ok {
 			// We OK, just need to make sure document exists
-			dirPath := path.Join(collectionName, "pairtree", pair)
+			dirPath := path.Join(cName, "pairtree", pair)
 			if _, err := os.Stat(dirPath); err == nil {
 				fname := url.QueryEscape(key) + ".json"
 				docPath := path.Join(dirPath, fname)
@@ -300,7 +345,7 @@ func Repair(collectionName string, verbose bool) error {
 			//NOTE: Mac OS X file system sensitivety handling can
 			// mess this assumption up, need to see if we can find
 			// the keys we remove and reattach walking the file system.
-			repairLog(verbose, "Missing %s from %s, %s does not exist", key, collectionName, p)
+			repairLog(verbose, "Missing %s from %s, %s does not exist", key, cName, p)
 			// We save the key to re-attach later...
 			missingList = append(missingList, key)
 			delete(keyMap, key)
@@ -310,20 +355,20 @@ func Repair(collectionName string, verbose bool) error {
 	if updateKeymap {
 		updateKeymap = false
 		if err := c.PTStore.UpdateKeymap(keyMap); err != nil {
-			repairLog(verbose, "Unable to update keymap for %q, %s", collectionName, err)
+			repairLog(verbose, "Unable to update keymap for %q, %s", cName, err)
 		}
 	}
 	if len(missingList) > 0 {
 		sort.Strings(missingList)
 		repairLog(verbose, "Trying to locate %d un-associated keys", len(missingList))
-		err = filepath.Walk(path.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
+		err = filepath.Walk(path.Join(cName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
 			if info.IsDir() == false {
 				if key, err := url.QueryUnescape(strings.TrimSuffix(info.Name(), ".json")); err == nil {
 					// Search our list of keys to see if we can fix path issue...
 					for i, missingKey := range missingList {
 						r := strings.Compare(key, missingKey)
 						if r == 0 {
-							kPath := strings.TrimPrefix(strings.TrimSuffix(fPath, info.Name()), collectionName)
+							kPath := strings.TrimPrefix(strings.TrimSuffix(fPath, info.Name()), cName)
 							// trim leading separator ...
 							kPath = kPath[1:]
 							repairLog(verbose, "Fixing path for key %q", key)
@@ -362,7 +407,7 @@ func Repair(collectionName string, verbose bool) error {
 		}
 	}
 
-	repairLog(verbose, "Saving metadata for %s", collectionName)
+	repairLog(verbose, "Saving metadata for %s", cName)
 	// Save the collections' operational metadata
 	c.Repaired = time.Now().Format("2006-01-02")
 	src, err := json.MarshalIndent(c, "", "    ")

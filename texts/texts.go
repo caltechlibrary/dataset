@@ -116,5 +116,6 @@ func ReadKeys(keysName string, in io.Reader) ([]string, error) {
 // ```
 //
 func WriteKeys(keyFilename string, out io.Writer, keys []string) error {
-	return WriteSource(keyFilename, out, []byte(strings.Join(keys, "\n")))
+	src := []byte(strings.Join(keys, "\n"))
+	return WriteSource(keyFilename, out, src)
 }

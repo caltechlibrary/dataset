@@ -76,6 +76,7 @@ var (
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
+		"help":          DisplayHelp,
 		"init":          doInit,
 		"create":        doCreate,
 		"read":          doRead,
@@ -112,7 +113,11 @@ var (
 )
 
 // DisplayHelp writes out help on a supported topic
-func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
+func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var topic string
+	if len(args) > 0 {
+		topic = args[0]
+	}
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
@@ -122,6 +127,7 @@ func DisplayHelp(out io.Writer, eout io.Writer, topic string) {
 	} else {
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
+	return nil
 }
 
 // DisplayLicense returns the license associated with dataset application.
@@ -168,7 +174,7 @@ func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "init")
+		DisplayHelp(in, out, eout, []string{"init"})
 		return nil
 	}
 	switch {
@@ -197,7 +203,7 @@ func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "versioning")
+		DisplayHelp(in, out, eout, []string{"versioning"})
 	}
 	switch {
 	case len(args) == 2:
@@ -226,7 +232,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "versioning")
+		DisplayHelp(in, out, eout, []string{"versioning"})
 	}
 	switch {
 	case len(args) == 2:
@@ -261,7 +267,7 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "versioning")
+		DisplayHelp(in, out, eout, []string{"versioning"})
 	}
 	switch {
 	case len(args) == 3:
@@ -290,21 +296,23 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 
 func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName string
-		key   string
-		src   []byte
-		input string
-		err   error
+		cName     string
+		key       string
+		src       []byte
+		input     string
+		err       error
+		overwrite bool
 	)
 	flagSet := flag.NewFlagSet("create", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
 	flagSet.BoolVar(&showHelp, "help", false, "help for create")
 	flagSet.StringVar(&input, "i", "-", "read JSON from file, use '-' for stdin")
 	flagSet.StringVar(&input, "input", "-", "read JSON from file, use '-' for stdin")
+	flagSet.BoolVar(&overwrite, "overwrite", false, "overwrite object if it previously exists")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "create")
+		DisplayHelp(in, out, eout, []string{"create"})
 	}
 	switch {
 	case len(args) == 3:
@@ -328,6 +336,9 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	if err := ds.DecodeJSON(src, &obj); err != nil {
 		return err
 	}
+	if overwrite && c.HasKey(key) {
+		return c.Update(key, obj)
+	}
 	if err := c.Create(key, obj); err != nil {
 		return err
 	}
@@ -347,7 +358,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "create")
+		DisplayHelp(in, out, eout, []string{"create"})
 	}
 	switch {
 	case len(args) == 2:
@@ -391,7 +402,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "create")
+		DisplayHelp(in, out, eout, []string{"update"})
 	}
 	switch {
 	case len(args) == 3:
@@ -432,7 +443,7 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "create")
+		DisplayHelp(in, out, eout, []string{"delete"})
 	}
 	switch {
 	case len(args) == 2:
@@ -468,7 +479,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "keys")
+		DisplayHelp(in, out, eout, []string{"keys"})
 	}
 	switch {
 	case len(args) == 1:
@@ -485,7 +496,8 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if err != nil {
 		return err
 	}
-	return texts.WriteKeys(output, out, keys)
+	src := []byte(strings.Join(keys, "\n"))
+	return texts.WriteSource(output, out, src)
 }
 
 func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -499,7 +511,7 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "has-key")
+		DisplayHelp(in, out, eout, []string{"has-key"})
 	}
 	switch {
 	case len(args) == 2:
@@ -530,7 +542,7 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "count")
+		DisplayHelp(in, out, eout, []string{"count"})
 	}
 	switch {
 	case len(args) == 1:
@@ -566,7 +578,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "clone")
+		DisplayHelp(in, out, eout, []string{"clone"})
 	}
 	switch {
 	case len(args) == 2:
@@ -605,7 +617,8 @@ func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "frames")
+		DisplayHelp(in, out, eout, []string{"frames"})
+		return nil
 	}
 	switch {
 	case len(args) == 1:
@@ -619,7 +632,8 @@ func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	}
 	defer source.Close()
 	frames := source.Frames()
-	return texts.WriteSource(output, out, []byte(strings.Join(frames, "\n")))
+	src := []byte(strings.Join(frames, "\n"))
+	return texts.WriteSource(output, out, src)
 }
 
 // doFrame
@@ -627,7 +641,7 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		srcName   string
 		frameName string
-		keysName  string
+		input     string
 		keys      []string
 		dotPaths  []string
 		labels    []string
@@ -637,12 +651,12 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet := flag.NewFlagSet("frame", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for read")
 	flagSet.BoolVar(&showHelp, "help", false, "help for read")
-	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
+	flagSet.StringVar(&input, "i", "-", "filename to read keys from")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "frame")
+		DisplayHelp(in, out, eout, []string{"frame"})
 	}
 	switch {
 	case len(args) >= 3:
@@ -650,9 +664,12 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME DOT_PATH [DOT_PATH...] got %q", strings.Join(args, " "))
 	}
-	keys, err = texts.ReadKeys(keysName, in)
+	keys, err = texts.ReadKeys(input, in)
 	if err != nil {
 		return err
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("missing keys for frame %q", frameName)
 	}
 	for _, arg := range args {
 		if strings.Contains(arg, "=") {
@@ -695,7 +712,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "frame-def")
+		DisplayHelp(in, out, eout, []string{"frame-def"})
 	}
 	switch {
 	case len(args) == 2:
@@ -734,7 +751,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "frame-objects")
+		DisplayHelp(in, out, eout, []string{"frame-objects"})
 	}
 	switch {
 	case len(args) == 2:
@@ -773,7 +790,7 @@ func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "frame-keys")
+		DisplayHelp(in, out, eout, []string{"frame-keys"})
 	}
 	switch {
 	case len(args) == 2:
@@ -805,7 +822,7 @@ func doRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "refresh")
+		DisplayHelp(in, out, eout, []string{"refresh"})
 	}
 	switch {
 	case len(args) == 2:
@@ -839,7 +856,7 @@ func doReframe(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "reframe")
+		DisplayHelp(in, out, eout, []string{"reframe"})
 	}
 	switch {
 	case len(args) == 2:
@@ -872,7 +889,7 @@ func doDeleteFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "delete-frame")
+		DisplayHelp(in, out, eout, []string{"delete-frame"})
 	}
 	switch {
 	case len(args) == 2:
@@ -901,7 +918,7 @@ func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "has-frame")
+		DisplayHelp(in, out, eout, []string{"has-frame"})
 	}
 	switch {
 	case len(args) == 2:
@@ -938,7 +955,7 @@ func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "attachments")
+		DisplayHelp(in, out, eout, []string{"attachments"})
 	}
 	switch {
 	case len(args) == 2:
@@ -974,7 +991,7 @@ func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "attach")
+		DisplayHelp(in, out, eout, []string{"attach"})
 	}
 	switch {
 	case len(args) == 3:
@@ -1012,7 +1029,7 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "retrieve")
+		DisplayHelp(in, out, eout, []string{"retrieve"})
 	}
 	switch {
 	case len(args) == 3:
@@ -1055,7 +1072,7 @@ func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "retrieve")
+		DisplayHelp(in, out, eout, []string{"prune"})
 	}
 	switch {
 	case len(args) == 3:
@@ -1095,7 +1112,7 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "clone-sample")
+		DisplayHelp(in, out, eout, []string{"clone-sample"})
 	}
 	switch {
 	case len(args) == 2:
@@ -1142,7 +1159,7 @@ func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "clone-sample")
+		DisplayHelp(in, out, eout, []string{"clone-sample"})
 	}
 	switch {
 	case len(args) == 5:
@@ -1181,7 +1198,7 @@ func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "check")
+		DisplayHelp(in, out, eout, []string{"check"})
 	}
 	switch {
 	case len(args) == 1:
@@ -1208,7 +1225,7 @@ func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(out, eout, "check")
+		DisplayHelp(in, out, eout, []string{"repair"})
 	}
 	switch {
 	case len(args) == 1:
@@ -1232,18 +1249,12 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var err error
 
 	if len(args) == 0 {
-		DisplayHelp(out, eout, "usage")
+		DisplayHelp(in, out, eout, []string{"usage"})
 		return fmt.Errorf(` `)
 	}
 	verb, args := args[0], args[1:]
-	if verb == "help" {
-		if len(args) > 0 {
-			DisplayHelp(out, eout, args[0])
-			return nil
-		}
-		DisplayHelp(out, eout, "usage")
-	} else if fn, ok := verbs[verb]; ok {
-		err = fn(in, eout, eout, args)
+	if fn, ok := verbs[verb]; ok {
+		err = fn(in, out, eout, args)
 	} else {
 		return fmt.Errorf("verb %q not supported", verb)
 	}

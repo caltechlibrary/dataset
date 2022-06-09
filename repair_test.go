@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 	"testing"
 
 	"github.com/caltechlibrary/dataset/pairtree"
@@ -61,77 +60,154 @@ func TestPairtree(t *testing.T) {
 	}
 }
 
-func TestRepair(t *testing.T) {
-	verbose := false
-	o := map[string]interface{}{}
-	o["a"] = 1
-
-	// Setup a test collection and data
-	cName := path.Join("testout", "test_repair.ds")
-	os.RemoveAll(cName)
+func setupTestCollection(cName string) error {
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
 	c, err := Init(cName, "")
 	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
+		return err
 	}
+	defer c.Close()
+
+	o := map[string]interface{}{}
+	o["a"] = 1
 	err = c.Create("a", o)
 	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
+		return err
 	}
 	o["b"] = 2
 	err = c.Create("b", o)
 	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
+		return err
 	}
 	o["c"] = 3
 	err = c.Create("c", o)
 	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
+		return err
 	}
-	// Break the collection by removing a file from disc.
-	p, err := c.PTStore.DocPath("b")
+	return nil
+}
+
+func removeRecord(cName string, key string) error {
+	c, err := Open(cName)
 	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
+		return err
+	}
+	defer c.Close()
+	p, err := c.PTStore.DocPath(key)
+	if err != nil {
+		return err
 	}
 	if err := os.RemoveAll(p); err != nil {
-		t.Errorf("failed to remove %q, %s", p, err)
-		t.FailNow()
+		return err
 	}
 	if _, err := os.Stat(p); err == nil {
-		t.Errorf("removed failed, for %q", p)
-		t.FailNow()
+		return err
 	}
-	cnt := c.Length()
-	if cnt != 3 {
-		t.Errorf("Expected 3, got %d", cnt)
-		t.FailNow()
-	}
-	c.Close()
+	return nil
+}
 
+func TestCheck(t *testing.T) {
+
+	// Setup a test collection and data
+	cName := path.Join("testout", "test_check.ds")
+	if err := setupTestCollection(cName); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	verbose := false
+	// Confer check works for no problems.
+	if err := Analyzer(cName, verbose); err != nil {
+		t.Errorf("Expected Analyzer(%q, %t) return nil, got %s", cName, verbose, err)
+		t.FailNow()
+	}
+
+	// Break the collection by removing a file from disc.
+	if err := removeRecord(cName, "b"); err != nil {
+		t.Errorf("failed to remove record, %s", err)
+		t.FailNow()
+	}
+
+	// Check again, should return error
+	if err := Analyzer(cName, verbose); err == nil {
+		t.Errorf("Expected Analyzer(%q, %t) to return an error, got nil", cName, verbose)
+		t.FailNow()
+	}
+
+	// Reset collection
+	if err := setupTestCollection(cName); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	// Break collection by removing collection.json
+	collection := path.Join(cName, "collection.json")
+	if err := os.RemoveAll(collection); err != nil {
+		t.Errorf("failed to remove %q, %s", collection, err)
+	}
+
+	// Recheck collection, should get error
+	if err := Analyzer(cName, verbose); err == nil {
+		t.Errorf("Expected Analyzer(%q, %t) to return an error, got nil", cName, verbose)
+		t.FailNow()
+	}
+}
+
+func collectionSize(cName string) (int64, error) {
+	c, err := Open(cName)
+	if err != nil {
+		return int64(-1), err
+	}
+	defer c.Close()
+	size := c.Length()
+	return size, nil
+}
+
+func TestRepair(t *testing.T) {
+	verbose := false
+	o := map[string]interface{}{}
+	o["one"] = 1
+
+	// Setup a test collection and data
+	cName := path.Join("testout", "test_repair.ds")
+	if err := setupTestCollection(cName); err != nil {
+		t.Errorf("Failed to setup %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	// Break the collection
+	x, err := collectionSize(cName)
+	if err != nil {
+		t.Errorf("unable to get size %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	// Break the collection by removing a file from disc.
+	if err := removeRecord(cName, "b"); err != nil {
+		t.Errorf("failed to remove record, %s", err)
+		t.FailNow()
+	}
+
+	// Run repair
 	err = Repair(cName, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
 
-	c, err = Open(cName)
+	got, err := collectionSize(cName)
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Errorf("unable to get size %q, %s", cName, err)
 		t.FailNow()
 	}
-	cnt = c.Length()
-	if cnt != 2 {
-		t.Errorf("Expected 2, got %d, check for %q", cnt, p)
-		keys, _ := c.Keys()
-		t.Errorf("Found the following keys\n%s", strings.Join(keys, "\n"))
-		t.Errorf("Detecting missing JSON document failed")
+
+	expected := x - 1
+	if expected != got {
+		t.Errorf("Expected size %d, got %d, check for %q", expected, got, cName)
 		t.FailNow()
 	}
-	c.Close()
 
 	if err := Analyzer(cName, verbose); err != nil {
 		t.Errorf("Expected no errors on Check of %q, got %s", cName, err)
@@ -139,16 +215,10 @@ func TestRepair(t *testing.T) {
 	}
 }
 
-func TestRepairLikeCLI(t *testing.T) {
-	cName := path.Join("testout", "myfix.ds")
-	csvName := path.Join("testout", "myfix.csv")
+func setupTestCollection2(cName string) error {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	if _, err := os.Stat(csvName); err == nil {
-		os.RemoveAll(csvName)
-	}
-
 	// Setup test data
 	data := map[string]map[string]interface{}{
 		"freda": map[string]interface{}{
@@ -167,58 +237,78 @@ func TestRepairLikeCLI(t *testing.T) {
 
 	c, err := Init(cName, "")
 	if err != nil {
-		t.Errorf("Failed to create %q, %s", cName, err)
-		t.FailNow()
+		return err
 	}
+	defer c.Close()
 	for k, v := range data {
 		if err := c.Create(k, v); err != nil {
-			t.Errorf("Failed to setup record %q in %q -> %+v", k, cName, v)
-			t.FailNow()
+			return err
 		}
 	}
 	expected64 := int64(2)
 	got64 := c.Length()
 	if expected64 != got64 {
-		t.Errorf("Expected %d, got %d for count of test data", expected64, got64)
+		return err
+	}
+	return nil
+}
+
+func TestCheckMissingCollectionJSON(t *testing.T) {
+	cName := path.Join("testout", "test_missing_collection_json.ds")
+	if err := setupTestCollection2(cName); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
 		t.FailNow()
 	}
-	c.Close()
+	collectionJSON := path.Join(cName, "collection.json")
+	if err := os.RemoveAll(collectionJSON); err != nil {
+		t.Errorf("failed to remove %q, %s", collectionJSON, err)
+		t.FailNow()
+	}
+	verbose := false
+	err := Analyzer(cName, verbose)
+	if err == nil {
+		t.Errorf("expected Analyzer(%q, %t) to return an error after breaking collection", cName, verbose)
+		t.FailNow()
+	}
+}
+
+func breakCollectionJson(cName string) error {
+	collectionJSON := path.Join(cName, "collection.json")
+	err := os.RemoveAll(collectionJSON)
+	if err != nil {
+		return err
+	}
+	if _, err = os.Stat(collectionJSON); err == nil {
+		return fmt.Errorf("removed collection.json but Stat(%q) returned nil", collectionJSON)
+	}
+	return nil
+}
+
+func TestRepairLikeCLI(t *testing.T) {
+	cName := path.Join("testout", "test_repair_like_cli.ds")
+	if err := setupTestCollection2(cName); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
+		t.FailNow()
+	}
 
 	// Analyzer should show everything is OK
 	verbose := false
-	err = Analyzer(cName, verbose)
+	err := Analyzer(cName, verbose)
 	if err != nil {
 		t.Errorf("Analyzer(%q) should have been, %s", cName, err)
 		t.FailNow()
 	}
 
 	// Break the collection and see if Analyzer returns error.
-	collectionJSON := path.Join(cName, "collections.json")
-	err = os.RemoveAll(collectionJSON)
-	if err != nil {
-		t.Errorf("Failed to remove %q for testing analysis, %s", collectionJSON, err)
+	if err := breakCollectionJson(cName); err != nil {
+		t.Errorf("unable to break collection %q, %s", cName, err)
 		t.FailNow()
 	}
-	fmt.Printf("\n\nDEBUG collection.json %q was removed\n", collectionJSON)
-	_, err = os.Stat(collectionJSON)                              // DEBUG
-	fmt.Printf("DEBUG os.Stat(%q) -> %+v\n", collectionJSON, err) // DEBUG
 
 	// Test case of missing collections.json
-	fmt.Printf("DEBUG start analyzer on %q\n", cName)
 	err = Analyzer(cName, verbose)
 	if err == nil {
-		fmt.Printf("DEBUG Analyzer(%q, %t) -> %+v\n", cName, verbose, err)
-		t.Errorf("Analyzer(%q) has NOT returned the expected error of missing collection.json", cName)
-		_, err = os.Stat(collectionJSON)
-		if err == nil {
-			t.Errorf("%q should be missing.", collectionJSON)
-		}
-	}
-	fmt.Printf("\nDEBUG done analyzer on %q\n\n", cName)
-
-	if _, err := os.Stat(collectionJSON); err == nil {
-		t.Errorf("%q was magically recreated\n", collectionJSON)
-		t.FailNow()
+		t.Errorf("2nd envocation Analyzer(%q) has NOT returned the expected error of missing collection.json", cName)
 	}
 
 	// Initiating a repair

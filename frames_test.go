@@ -25,56 +25,103 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"time"
 )
+
+func setupTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	for k, v := range mappedObjects {
+		if err := c.Create(k, v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func setupTestCollectionWithObjectList(cName string, dsnURI string, listObjects []map[string]interface{}) error {
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	for i, v := range listObjects {
+		k := fmt.Sprintf("%6d", i)
+		if err := c.Create(k, v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func setupTestCollection1(cName string) error {
+	listObjects := []map[string]interface{}{}
+	for i := 1; i <= 10; i++ {
+		key := fmt.Sprintf("%4d", i)
+		o := map[string]interface{}{
+			"id":      key,
+			"cnt":     i,
+			"created": time.Now().String(),
+		}
+		listObjects = append(listObjects, o)
+	}
+	return setupTestCollectionWithObjectList(cName, "", listObjects)
+}
 
 func TestFrame(t *testing.T) {
 	verbose := false
-	os.RemoveAll(path.Join("testout", "frame_test.ds"))
 	cName := path.Join("testout", "frame_test.ds")
-	c, err := Init(cName, "")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	defer c.Close()
 
 	//NOTE: test data and to load into collection and generate grid
-	testRecords := map[string]map[string]interface{}{}
-	testRecords["A"] = map[string]interface{}{
-		"_Key":  "A",
-		"id":    "A",
+	mappedObjects := map[string]map[string]interface{}{}
+	mappedObjects["a"] = map[string]interface{}{
+		"_Key":  "a",
+		"id":    "a",
 		"one":   "one",
 		"two":   22,
 		"three": 3.0,
 		"four":  []string{"one", "two", "three"},
 	}
-	testRecords["B"] = map[string]interface{}{
-		"_Key":  "B",
-		"id":    "B",
+	mappedObjects["b"] = map[string]interface{}{
+		"_Key":  "b",
+		"id":    "b",
 		"two":   2000,
 		"three": 3000.1,
 	}
-	testRecords["C"] = map[string]interface{}{
-		"_Key": "C",
-		"id":   "C",
+	mappedObjects["c"] = map[string]interface{}{
+		"_Key": "c",
+		"id":   "c",
 	}
-	testRecords["D"] = map[string]interface{}{
-		"_Key":  "D",
-		"id":    "D",
+	mappedObjects["d"] = map[string]interface{}{
+		"_Key":  "d",
+		"id":    "d",
 		"one":   "ONE",
 		"two":   20,
 		"three": 334.1,
 		"four":  []string{},
 	}
-	keys := []string{}
-	for k, v := range testRecords {
-		keys = append(keys, k)
-		err := c.Create(k, v)
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
+	if err := setupTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
+		t.Errorf("failed to setup %q, %s", cName, err)
+		t.FailNow()
 	}
+
+	c, err := Open(cName)
+	if err != nil {
+		t.Errorf("Open(%q), %s", cName, err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	keys, _ := c.Keys()
 
 	f, err := c.FrameCreate("frame-1", keys, []string{".id", ".one", ".two", ".three", ".four"}, []string{"id", "one", "two", "three", "four"}, verbose)
 	if err != nil {
@@ -85,12 +132,12 @@ func TestFrame(t *testing.T) {
 		t.Errorf("Expect > 0 objects in ObjectMap")
 		t.FailNow()
 	}
-	if len(f.ObjectMap) != len(testRecords) {
-		t.Errorf("Expected testRecords (%d) to be same length as objectList (%d) -> %s", len(testRecords), len(f.ObjectMap), f.String())
+	if len(f.ObjectMap) != len(mappedObjects) {
+		t.Errorf("Expected testRecords (%d) to be same length as objectList (%d) -> %s", len(mappedObjects), len(f.ObjectMap), f.String())
 		t.FailNow()
 	}
-	if len(f.Keys) != len(testRecords) {
-		t.Errorf("Expected testRecords (%d) to be same length as keys (%d) -> %s", len(testRecords), len(f.Keys), f.String())
+	if len(f.Keys) != len(mappedObjects) {
+		t.Errorf("Expected testRecords (%d) to be same length as keys (%d) -> %s", len(mappedObjects), len(f.Keys), f.String())
 		t.FailNow()
 	}
 	expected := "frame-1"
@@ -111,7 +158,11 @@ func TestFrame(t *testing.T) {
 			t.FailNow()
 		}
 		k := keys[i]
-		rec := testRecords[k]
+		rec, ok := mappedObjects[k]
+		if !ok {
+			t.Errorf("can't find %q in mapped objects for %d -> %+v\n", k, i, obj)
+			continue
+		}
 		for j, key := range f.Labels {
 			if val, ok := obj[key]; ok != true {
 				if _, ok := rec[key]; ok == true {
@@ -379,6 +430,96 @@ func TestFrameRefresh(t *testing.T) {
 		t.Errorf("expected 1 object, got %d -> %+v", len(ol2), ol2)
 		t.FailNow()
 	}
+}
+
+func TestFramesList(t *testing.T) {
+	cName := path.Join("testout", "frames_list_test1.ds")
+	if err := setupTestCollection1(cName); err != nil {
+		t.Errorf("unable to setup %q, %s", cName, err)
+		t.FailNow()
+	}
+	c, err := Open(cName)
+	if err != nil {
+		t.Errorf("Open(%q), %s", cName, err)
+		t.FailNow()
+	}
+	keys, _ := c.Keys()
+	frameName := "f1"
+	verbose := false
+	frame, err := c.FrameCreate(frameName, keys, []string{".id", ".cnt", ".created"}, []string{"ID", "Count", "Created"}, verbose)
+	if err != nil {
+		t.Errorf("failed to create frame %q, %s", frameName, err)
+		t.FailNow()
+	}
+	if frame == nil {
+		t.Errorf("frame %q, is nil", frameName)
+		t.FailNow()
+	}
+	c.Close()
+
+	mappedObjects := map[string]map[string]interface{}{}
+	mappedObjects["character:1"] = map[string]interface{}{
+		"name": "Jack Flanders",
+		"one":  1,
+	}
+	mappedObjects["character:2"] = map[string]interface{}{
+		"name": "Little Frieda",
+		"one":  2,
+	}
+	mappedObjects["character:3"] = map[string]interface{}{
+		"name": "Mojo Sam the Yoodoo Man",
+		"one":  3,
+	}
+	mappedObjects["character:4"] = map[string]interface{}{
+		"name": "Kasbah Kelly",
+		"one":  4,
+	}
+	mappedObjects["character:5"] = map[string]interface{}{
+		"name": "Dr. Marlin Mazoola",
+		"one":  3,
+	}
+	mappedObjects["character:6"] = map[string]interface{}{
+		"name": "Old Far-Seeing Art",
+		"one":  2,
+	}
+	mappedObjects["character:7"] = map[string]interface{}{
+		"name": "Chief Wampum Stompum",
+		"one":  1,
+	}
+	mappedObjects["character:8"] = map[string]interface{}{
+		"name": "The Madonna Vampira",
+		"one":  0,
+	}
+	mappedObjects["character:9"] = map[string]interface{}{
+		"name": "Domenique",
+		"one":  1,
+	}
+	mappedObjects["character:10"] = map[string]interface{}{
+		"name": "Claudine",
+		"one":  1,
+	}
+	cName = path.Join("testout", "frames_list_test2.ds")
+	if setupTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
+		t.Errorf("failed to create %q, %s", cName, err)
+		t.FailNow()
+	}
+
+	c, err = Open(cName)
+	if err != nil {
+		t.Errorf("Open(%q), %s", cName, err)
+		t.FailNow()
+	}
+	frameName = "f2"
+	frame, err = c.FrameCreate(frameName, keys, []string{".one"}, []string{"One"}, verbose)
+	if err != nil {
+		t.Errorf("failed to create frame %q, %s", frameName, err)
+		t.FailNow()
+	}
+	if frame == nil {
+		t.Errorf("frame %q is nil", frameName)
+		t.FailNow()
+	}
+	c.Close()
 }
 
 func TestIssue12PyDataset(t *testing.T) {
