@@ -51,6 +51,17 @@ func TestSemver(t *testing.T) {
 	if err == nil {
 		t.Errorf("expected an error, returns %s", v.ToJSON())
 	}
+
+	expected = "2.0.0-next"
+	v, err = Parse([]byte(expected))
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	result = v.String()
+	if expected != result {
+		t.Errorf("expected %q, got %q", expected, result)
+	}
 }
 
 func TestIncrement(t *testing.T) {
@@ -132,6 +143,7 @@ func TestSorting(t *testing.T) {
 		"12.1.11",
 		"10.10.10",
 		"11.11.11",
+		"2.0.0-next",
 	}
 	expectedStrings := []string{
 		"0.0.0",
@@ -144,6 +156,7 @@ func TestSorting(t *testing.T) {
 		"1.1.1",
 		"1.1.1",
 		"1.9.1",
+		"2.0.0-next",
 		"9.5.3",
 		"10.9.1",
 		"10.10.10",

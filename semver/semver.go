@@ -66,7 +66,7 @@ func (sv *Semver) String() string {
 	if sv.Suffix == "" {
 		return sv.Major + "." + sv.Minor + "." + sv.Patch
 	}
-	return sv.Major + "." + sv.Minor + "." + sv.Patch + sv.Suffix
+	return sv.Major + "." + sv.Minor + "." + sv.Patch + "-" + sv.Suffix
 }
 
 // ToJSON takes a version struct and returns JSON as byte slice
@@ -124,6 +124,11 @@ func Parse(src []byte) (*Semver, error) {
 		return nil, &Err{Msg: "Invalid version, expecting semver string"}
 	}
 	if len(parts) > 2 {
+		if strings.Contains(parts[2], "-") {
+			patch := strings.Split(parts[2], "-")
+			parts[2] = patch[0]
+			parts = append(parts, patch[1])
+		}
 		i, err = strconv.Atoi(parts[2])
 		if err != nil {
 			return nil, &Err{Msg: "Patch value must be an integer"}

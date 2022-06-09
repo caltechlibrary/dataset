@@ -454,8 +454,83 @@ func TestCLIOnAttachments(t *testing.T) {
 	}
 }
 
-func TestCheckAndRepair(t *testing.T) {
-	t.Errorf("Check and Repair not implemented")
+func TestCheckRepair(t *testing.T) {
+	cName := path.Join("testout", "myfix.ds")
+	csvName := path.Join("testout", "myfix.csv")
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	if _, err := os.Stat(csvName); err == nil {
+		os.RemoveAll(csvName)
+	}
+
+	// Setup test data
+	data := map[string]map[string]interface{}{
+		"freda": map[string]interface{}{
+			"Name":   "Little Freda",
+			"Email":  "freda@inverness.example.edu",
+			"Office": "4th Tower",
+			"Count":  1,
+		},
+		"mojo": map[string]interface{}{
+			"Name":   "Mojo Same",
+			"Email":  "mojo.sam@sams-cafe.example.org",
+			"Office": "At the Piano",
+			"Count":  2,
+		},
+	}
+
+	c, err := ds.Init(cName, "")
+	if err != nil {
+		t.Errorf("Failed to create %q, %s", cName, err)
+		t.FailNow()
+	}
+	for k, v := range data {
+		if err := c.Create(k, v); err != nil {
+			t.Errorf("Failed to setup record %q in %q -> %+v", k, cName, v)
+			t.FailNow()
+		}
+	}
+	expected64 := int64(2)
+	got64 := c.Length()
+	if expected64 != got64 {
+		t.Errorf("Expected %d, got %d for count of test data", expected64, got64)
+		t.FailNow()
+	}
+	c.Close()
+
+	// IO Setup
+	var (
+		input  []byte
+		output []byte
+	)
+	in := bytes.NewBuffer(input)
+	out := bytes.NewBuffer(output)
+
+	// Run tests
+	args := []string{"check", "-verbose", cName}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("check should have been OK, %q, %s", strings.Join(args, " "), err)
+	}
+
+	// Test case of missing collections.json
+	os.RemoveAll(path.Join(cName, "collections.json"))
+	args = []string{"check", "-verbose", cName}
+	if err := RunCLI(in, out, os.Stderr, args); err == nil {
+		t.Errorf("check should have failed, %q", strings.Join(args, " "))
+	}
+
+	// Initiating a repair
+	args = []string{"repair", "-verbose", cName}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("repair should have succeeded, %q, %s", strings.Join(args, " "), err)
+	}
+
+	// Repair should have worked
+	args = []string{"check", "-verbose", cName}
+	if err := RunCLI(in, out, os.Stderr, args); err != nil {
+		t.Errorf("check should confirm repair worked, %q, %s", strings.Join(args, " "), err)
+	}
 }
 
 /**FIXME: convert this Bash script into Go based cli testing
@@ -846,66 +921,6 @@ EOT
 	echo "test_attachments, OK"
 }
 
-function test_check_and_repair() {
-    echo 'test_check_and_repair'
-    if [[ -d "testdata/myfix.ds" ]]; then
-        rm -fR testdata/myfix.ds
-    fi
-    cat << EOT > testdata/myfix.csv
-Name,EMail,Office,Count
-freda,freda@inverness.example.edu,4th Tower,1
-mojo,mojo.sam@sams-splace.example.org,piano,2
-EOT
-    bin/dataset -quiet -nl=false init testdata/myfix.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) init testdata/myfix.ds'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false import testdata/myfix.ds testdata/myfix.csv 1
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) import testdata/myfix.ds testdata/myfix.csv 1'
-        exit 1
-    fi
-    bin/dataset -quiet -nl=false check testdata/myfix.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) check testdata/myfix.ds'
-        exit 1
-    fi
-
-    CNT=$(bin/dataset count testdata/myfix.ds)
-    echo "NOTE: expecting ${CNT} warnings detected on following line"
-    echo '{}' > testdata/myfix.ds/collection.json
-    bin/dataset -quiet -nl=false check testdata/myfix.ds
-    if [[ "$?" == "0" ]]; then
-        echo 'test_check_and_repair: (failed, expected exit code 1) testdata/myfix.ds check'
-        exit 1
-    fi
-    echo "NOTE: Initiating a repair"
-    bin/dataset -quiet -nl=false repair testdata/myfix.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) repair testdata/myfix.ds'
-        exit 1
-    fi
-    echo "NOTE: Expecting OK on next line if repair worked"
-    bin/dataset check testdata/myfix.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) check testdata/myfix.ds'
-        exit 1
-    fi
-
-    echo "NOTE: Final Check, expecting OK"
-    bin/dataset check testdata/myfix.ds
-    if [[ "$?" != "0" ]]; then
-        echo 'test_check_and_repair: (failed) check testdata/myfix.ds'
-        exit 1
-    fi
-
-
-    # Success, cleanup
-    rm -fR testdata/myfix.ds
-    rm testdata/myfix.csv
-    echo 'test_check_and_repair, OK'
-}
 
 function test_count() {
     echo 'test_count'

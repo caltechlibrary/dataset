@@ -362,7 +362,7 @@ func TestFrameRefresh(t *testing.T) {
 		t.Errorf("expected one object, got %d", len(ol))
 		t.FailNow()
 	}
-	if c.FrameExists(fName) == false {
+	if c.HasFrame(fName) == false {
 		t.Errorf("expected %q, none was found", fName)
 		t.FailNow()
 	}

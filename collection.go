@@ -69,6 +69,9 @@ type Collection struct {
 	// Created
 	Created string `json:"created,omitempty"`
 
+	// Repaired
+	Repaired string `json:"repaired,omitempty"`
+
 	// PTStore the point to the pairtree implementation of storage
 	PTStore *ptstore.Storage `json:"-"`
 	// SQLStore points to a SQL database with JSON column support

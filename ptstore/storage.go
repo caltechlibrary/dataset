@@ -120,16 +120,13 @@ func (store *Storage) SetVersioning(setting int) error {
 	return nil
 }
 
-// writeKeyMap writes the keymap.json file
-func (store *Storage) writeKeyMap() error {
+// writeKeymap writes the keymap.json file
+func (store *Storage) writeKeymap() error {
 	src, err := json.Marshal(store.keyMap)
 	if err != nil {
 		return fmt.Errorf("could not encode key map for %q, %s", store.WorkPath, err)
 	}
-	if err := ioutil.WriteFile(store.keyMapName, src, 0664); err != nil {
-		return fmt.Errorf("failed to write kep map for %q, %s", store.WorkPath, err)
-	}
-	return nil
+	return ioutil.WriteFile(store.keyMapName, src, 0664)
 }
 
 // Close closes the storage system freeing resources as needed.
@@ -141,7 +138,7 @@ func (store *Storage) writeKeyMap() error {
 // ```
 //
 func (store *Storage) Close() error {
-	return store.writeKeyMap()
+	return store.writeKeymap()
 }
 
 // Create stores a new JSON object in the collection
@@ -197,7 +194,7 @@ func (store *Storage) Create(key string, src []byte) error {
 	sort.Strings(store.keys)
 
 	// Save the metadata for the updated key map
-	if err := store.writeKeyMap(); err != nil {
+	if err := store.writeKeymap(); err != nil {
 		return fmt.Errorf("unable to write keymap file, %s", err)
 	}
 
@@ -374,7 +371,7 @@ func (store *Storage) Delete(key string) error {
 	}
 
 	// Save the metadata for the updated key map
-	if err := store.writeKeyMap(); err != nil {
+	if err := store.writeKeymap(); err != nil {
 		return fmt.Errorf("unable to encode key map for %q in %q, %s", key, store.WorkPath, err)
 	}
 
@@ -501,4 +498,32 @@ func (store *Storage) HasKey(key string) bool {
 //
 func (store *Storage) Length() int64 {
 	return int64(len(store.keys))
+}
+
+//
+// PTStore specific functionality.
+//
+
+func (store *Storage) DocPath(key string) (string, error) {
+	if pPath, ok := store.keyMap[key]; ok {
+		docPath := path.Join(store.WorkPath, "pairtree", pPath)
+		return docPath, nil
+	}
+	return "", fmt.Errorf("%q not found", key)
+}
+
+func (store *Storage) Keymap() map[string]string {
+	return store.keyMap
+}
+
+func (store *Storage) KeymapName() string {
+	return store.keyMapName
+}
+
+func (store *Storage) UpdateKeymap(keymap map[string]string) error {
+	store.keyMap = map[string]string{}
+	for k, v := range keymap {
+		store.keyMap[k] = v
+	}
+	return store.writeKeymap()
 }

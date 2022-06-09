@@ -1,8 +1,8 @@
 dsv1
 ====
 
-This module provides limited read support for v1 based dataset
-collections. It is intended to assure easy migration of data from
+This module provides limited read only support for v1 based dataset
+collections. It is intended to enable migration of data from
 a version 1 dataset collection to the current version of the dataset
 collection.
 

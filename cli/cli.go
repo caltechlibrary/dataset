@@ -1170,12 +1170,56 @@ func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 
 // doCheck
 func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doCheck() not implemented")
+	var (
+		srcName string
+		verbose bool
+	)
+	flagSet := flag.NewFlagSet("check", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&verbose, "verbose", false, "set verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "check")
+	}
+	switch {
+	case len(args) == 1:
+		srcName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	if err := ds.Analyzer(srcName, verbose); err != nil {
+		return err
+	}
+	return nil
 }
 
 // doRepair
 func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doRepair() not implemented")
+	var (
+		srcName string
+		verbose bool
+	)
+	flagSet := flag.NewFlagSet("check", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for read")
+	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(out, eout, "check")
+	}
+	switch {
+	case len(args) == 1:
+		srcName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	if err := ds.Repair(srcName, verbose); err != nil {
+		return err
+	}
+	return nil
 }
 
 // doCodemeta
