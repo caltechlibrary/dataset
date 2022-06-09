@@ -34,26 +34,49 @@ import (
 // Config holds the specific settings for a collection.
 type Config struct {
 	// Host holds the URL to listen to for the web API
-	Host string `json:"host,omitempty"`
+	Host string `json:"host"`
 
-	// Type identifies the type of SQL storage, e.g. SQLite, MySQL
-	Type string `json:"sql_type,omitempty"`
+	// CName holds the Collection Name.
+	// The CName may be passed in from the environment via
+	// the environment variable DATASET_CNAME.
+	CName string `json:"dataset,omitempty"`
 
 	// Dsn URI describes how to connection to a SQL storage engine.
 	// e.g. "sqlite://my_collection.ds/collection.db".
 	// The Dsn URI may be past in from the environment via the
 	// variable DATASET_DSN_URI.
 	DsnURI string `json:"dsn_uri,omitemtpy"`
+
+	// Htdocs holds a path to static content. This content will be
+	// made available via the web service if htdocs is valid.
+	//
+	// NOTE: Htdocs maybe set through the environment via the
+	// environment variable DATASET_HTDOCS
+	Htdocs string `json:"htdocs,emitempty"`
+
+	// Permissions for access the collection through the web service
+	// At least some of these should be set to true otherwise you
+	// don't have much of a web service.
+	Keys     bool `json:"keys,omitempty"`
+	Create   bool `json:"create,omitempty"`
+	Read     bool `json:"read,omitempty"`
+	Update   bool `json:"update,omitempty"`
+	Delete   bool `json:"delete,omitempty"`
+	Attach   bool `json:"attach,omitempty"`
+	Retrieve bool `json:"retrieve,omitempty"`
+	Prune    bool `json:"prune,omitempty"`
 }
 
+// String renders the configuration as a JSON string.
 func (config *Config) String() string {
 	src, _ := json.MarshalIndent(config, "", "    ")
 	return fmt.Sprintf("%s", src)
 }
 
 // LoadConfig reads the JSON configuration file provided, validates it
-// and either returns a Config structure or error. NOTE: if the dsn string
-// isn't specified
+// and either returns a Config structure or error.
+//
+// NOTE: if the dsn string isn't specified
 //
 // ```
 //    settings := "settings.json"
@@ -76,8 +99,23 @@ func LoadConfig(fName string) (*Config, error) {
 	if config.Host == "" {
 		config.Host = "localhost:8485"
 	}
-	if config.Type == "" {
-		config.Type = "mysq"
+	if config.Htdocs == "" {
+		config.Htdocs = os.Getenv("DATASET_HTDOCS")
+	}
+	if config.Htdocs != "" {
+		info, err := os.Stat(config.Htdocs)
+		if err != nil {
+			return nil, fmt.Errorf("error accesss %q, %s", config.Htdocs, err)
+		}
+		if !info.IsDir() {
+			return nil, fmt.Errorf("htdocs needs to be a directory")
+		}
+	}
+	if config.CName == "" {
+		config.CName = os.Getenv("DATASET_CNAME")
+		if config.CName == "" {
+			return nil, fmt.Errorf("missing collection name")
+		}
 	}
 	if config.DsnURI == "" {
 		config.DsnURI = os.Getenv("DATASET_DSN_URI")

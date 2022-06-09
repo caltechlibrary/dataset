@@ -71,7 +71,7 @@ func main() {
 	}
 
 	/* Looking for settings.json */
-	settings := "settings.json"
+	settings := ""
 	if len(args) > 0 {
 		settings = args[0]
 	}
@@ -83,14 +83,8 @@ Try %s --help for usage details
 		os.Exit(1)
 	}
 
-	cfg, err := api.LoadConfig(settings)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Cound not read configuration %q, %s", settings, err)
-		os.Exit(1)
-	}
-
 	/* Run API */
-	if err := api.RunAPI(cfg); err != nil {
+	if err := api.RunAPI(appName, settings); err != nil {
 		fmt.Fprintf(os.Stderr, "RunWebAPI(%q) failed, %s\n", settings, err)
 		os.Exit(1)
 	}

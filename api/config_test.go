@@ -36,7 +36,8 @@ func TestLoadConfig(t *testing.T) {
 	}
 	// Write out sample test settings.json
 	src := []byte(`{
-    "dsn_uri": "DB_USER:DB_PASSWORD@/DB_NAME"
+    "dsn_uri": "DB_USER:DB_PASSWORD@/DB_NAME",
+	"dataset": "api_test.ds"
 }`)
 	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
 		t.Errorf("Failed to generate %q, %s", fName, err)

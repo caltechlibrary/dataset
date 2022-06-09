@@ -21,19 +21,16 @@ The "settings.json" file has the following structure
 ```json
     {
         "host": "localhost:8485",
-        "collections": {
-            "<COLLECTION_ID>": {
-                "dataset": "<PATH_TO_DATASET_COLLECTION>",
-                "keys": true,
-                "create": true,
-                "read": true,
-                "update": true,
-                "delete": false,
-                "attach": false,
-                "retrieve": false,
-                "prune": false
-            }
-        }
+        "dsn_url": "mysql://DB_USER:DB_PASSWORD\@DB_NAME",
+        "dataset": "<PATH_TO_DATASET_COLLECTION>",
+        "keys": true,
+        "create": true,
+        "read": true,
+        "update": true,
+        "delete": false,
+        "attach": false,
+        "retrieve": false,
+        "prune": false
     }
 ```
 
