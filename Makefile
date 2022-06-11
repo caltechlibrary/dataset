@@ -62,15 +62,17 @@ website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
 test: clean build
+	go test
 	cd semver && go test
 	cd dotpath && go test
 	cd pairtree && go test
 	cd ptstore && go test
 	cd sqlstore && go test
 	cd texts && go test
-	cd api && go test
 	cd cli && go test
-	go test
+	cd dsv1 && go test
+	cd dsv1/tbl && go test
+	cd api && go test
 
 cleanweb:
 	@if [ -f index.html ]; then rm *.html; fi

@@ -32,9 +32,36 @@ import (
 	"time"
 
 	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/dsv1"
 	"github.com/caltechlibrary/dataset/pairtree"
 	"github.com/caltechlibrary/dataset/semver"
 )
+
+// sniffVersionNumber tries to get the dataset version
+// string from collection.json file. Returns a semver
+// or nil (on failure)
+func sniffVersionNumber(cName string) *semver.Semver {
+	collection := path.Join(cName, "collection.json")
+	src, err := ioutil.ReadFile(collection)
+	if err != nil {
+		return nil
+	}
+	o := map[string]interface{}{}
+	err = json.Unmarshal(src, &o)
+	if err != nil {
+		return nil
+	}
+	version, ok := o["dataset"]
+	if ok {
+		s := version.(string)
+		sv, err := semver.ParseString(s)
+		if err == nil && sv != nil {
+			return sv
+		}
+		return nil
+	}
+	return nil
+}
 
 //
 // Analyzer checks the collection version and analyzes current
@@ -65,6 +92,14 @@ func Analyzer(cName string, verbose bool) error {
 	_, err = os.Stat(collection)
 	if err != nil {
 		return err
+	}
+
+	// Sniff the version number of the collection
+	v2 := semver.NewSemver(2, 0, 0, "")
+	currentSV := sniffVersionNumber(cName)
+	if currentSV != nil && semver.Less(currentSV, v2) {
+		repairLog(verbose, "WARNING: %q is a version 1 dataset collection", cName)
+		return dsv1.Analyzer(cName, verbose)
 	}
 
 	// Make sure the JSON documents in the collectionPath can be
@@ -113,18 +148,6 @@ func Analyzer(cName string, verbose bool) error {
 			repairLog(verbose, "WARNING: Missing keymap.json\n")
 			wCnt++
 		}
-	}
-
-	currentSV, err := semver.Parse([]byte(Version))
-	if err != nil {
-		return fmt.Errorf("Can't parse dataset version %q, %s", Version, err)
-	}
-	collectionSV, err := semver.Parse([]byte(c.DatasetVersion))
-	if err != nil {
-		return fmt.Errorf("Can't parse dataset version %q, %s", c.DatasetVersion, err)
-	}
-	if semver.Less(collectionSV, currentSV) {
-		return fmt.Errorf("Migration required from %s to %s", c.DatasetVersion, Version)
 	}
 
 	if c.StoreType != PTSTORE {
@@ -250,6 +273,14 @@ func Repair(cName string, verbose bool) error {
 		c   *Collection
 		err error
 	)
+	// Sniff the version number of the collection and delegate
+	// if needed.
+	v2 := semver.NewSemver(2, 0, 0, "")
+	currentSV := sniffVersionNumber(cName)
+	if currentSV != nil && semver.Less(currentSV, v2) {
+		return fmt.Errorf("cannot repair %q dataset collections", currentSV.String())
+	}
+
 	collectionJson := path.Join(cName, "collection.json")
 	// Check to see if we find a collection.json, if not see if we
 	// can make a educated guess
@@ -277,18 +308,6 @@ func Repair(cName string, verbose bool) error {
 		}
 	}
 	defer c.Close()
-
-	currentSV, err := semver.Parse([]byte(Version))
-	if err != nil {
-		return fmt.Errorf("Can't parse dataset version %q, %s", Version, err)
-	}
-	collectionSV, err := semver.Parse([]byte(c.DatasetVersion))
-	if err != nil {
-		return fmt.Errorf("Can't parse dataset version %q, %s", c.DatasetVersion, err)
-	}
-	if semver.Less(collectionSV, currentSV) {
-		return fmt.Errorf("Migration required from %s to %s", c.DatasetVersion, Version)
-	}
 
 	if c.StoreType != PTSTORE {
 		return fmt.Errorf("repair supports pairtree storage only")
@@ -415,6 +434,50 @@ func Repair(cName string, verbose bool) error {
 	err = ioutil.WriteFile(filename, src, 664)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+//
+// Migrate a dataset v1 collection to a v2 collection.
+// Both collections need to already exist. Records from v1
+// will be read out of v1 and created in v2.
+//
+// NOTE: Migrate does not current copy attachments.
+//
+func Migrate(srcName string, dstName string, verbose bool) error {
+	old, err := dsv1.Open(srcName)
+	if err != nil {
+		return err
+	}
+	defer old.Close()
+	c, err := Open(dstName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+
+	keys := old.Keys()
+	tot := len(keys)
+	eCnt := 0
+	for i, key := range keys {
+		o := map[string]interface{}{}
+		// Removed the v1 object cleanly
+		if err := old.Read(key, o, true); err != nil {
+			eCnt++
+			repairLog(verbose, "failed to read %q from %q, %s", key, srcName, err)
+		}
+		// FIXME: Need to also handle attachments eventually
+		if err := c.Create(key, o); err != nil {
+			repairLog(verbose, "failed to write %q from %q, %s", key, dstName, err)
+			eCnt++
+		}
+		if (i % 1000) == 0 {
+			repairLog(verbose, "%d of %d processed", i, tot)
+		}
+	}
+	if eCnt > 0 {
+		return fmt.Errorf("%d error(s) encounterd in migration", eCnt)
 	}
 	return nil
 }

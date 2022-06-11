@@ -24,6 +24,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/caltechlibrary/dataset/dsv1"
 	"github.com/caltechlibrary/dataset/pairtree"
 )
 
@@ -321,5 +322,135 @@ func TestRepairLikeCLI(t *testing.T) {
 	if err := Analyzer(cName, verbose); err != nil {
 		t.Errorf("Analyzer(%q) after repair returned errors, %s", cName, err)
 		t.FailNow()
+	}
+}
+
+func TestV1Check(t *testing.T) {
+	cName := path.Join("testout", "testv1.ds")
+
+	// Test records
+	records := map[string]map[string]interface{}{
+		"kahlo-f": {
+			"_Key":        "kahlo-f",
+			"id":          "Kahlo-F",
+			"given_name":  "Freda",
+			"family_name": "Kahlo",
+			"email":       "freda@arts.example.org",
+			"genre":       []string{"painting"},
+		},
+		"rivera-d": {
+			"_Key":        "rivera-d",
+			"id":          "Rivera-D",
+			"given_name":  "Diego",
+			"family_name": "Rivera",
+			"email":       "deigo@arts.example.org",
+			"genre":       []string{"murials"},
+		},
+		"dali-s": {
+			"_Key":        "dali-s",
+			"id":          "Dali-S",
+			"given_name":  "Salvador",
+			"family_name": "Dali",
+			"email":       "salvador@collectivo.example.org",
+			"genre":       []string{"painting", "architecture"},
+		},
+		"lopez-t": {
+			"_Key":        "lopez-t",
+			"id":          "Lopez-T",
+			"given_name":  "Thomas",
+			"family_name": "Lopez",
+			"email":       "mfulton@zbs.example.org",
+			"genre":       []string{"playright", "speaker", "writer", "dj", "voice"},
+		},
+		"valdez-l": {
+			"_Key":        "valdez-l",
+			"id":          "Valdez-L",
+			"given_name":  "Louis",
+			"family_name": "Valdez",
+			"email":       "lv@theatro-composeno.example.org",
+			"genre":       []string{"playright", "speaker", "writer"},
+		},
+		"steinbeck-j": {
+			"_Key":        "steinbeck-j",
+			"id":          "Steinbeck-J",
+			"given_name":  "John",
+			"family_name": "Steinbeck",
+			"email":       "jsteinbeck@shipharbor.example.org",
+			"genre":       []string{"writer"},
+		},
+	}
+	if err := dsv1.SetupV1TestCollection(cName, records); err != nil {
+		t.Errorf("dsv1.SetupV1TestCollection(%q) -> %s", cName, err)
+		t.FailNow()
+	}
+
+	verbose := false
+	if err := Analyzer(cName, verbose); err != nil {
+		t.Errorf("failed to analyze v1 dataset, %s", err)
+	}
+}
+
+func TestV1Repair(t *testing.T) {
+	cName := path.Join("testout", "testv1.ds")
+
+	// Test records
+	records := map[string]map[string]interface{}{
+		"kahlo-f": {
+			"_Key":        "kahlo-f",
+			"id":          "Kahlo-F",
+			"given_name":  "Freda",
+			"family_name": "Kahlo",
+			"email":       "freda@arts.example.org",
+			"genre":       []string{"painting"},
+		},
+		"rivera-d": {
+			"_Key":        "rivera-d",
+			"id":          "Rivera-D",
+			"given_name":  "Diego",
+			"family_name": "Rivera",
+			"email":       "deigo@arts.example.org",
+			"genre":       []string{"murials"},
+		},
+		"dali-s": {
+			"_Key":        "dali-s",
+			"id":          "Dali-S",
+			"given_name":  "Salvador",
+			"family_name": "Dali",
+			"email":       "salvador@collectivo.example.org",
+			"genre":       []string{"painting", "architecture"},
+		},
+		"lopez-t": {
+			"_Key":        "lopez-t",
+			"id":          "Lopez-T",
+			"given_name":  "Thomas",
+			"family_name": "Lopez",
+			"email":       "mfulton@zbs.example.org",
+			"genre":       []string{"playright", "speaker", "writer", "dj", "voice"},
+		},
+		"valdez-l": {
+			"_Key":        "valdez-l",
+			"id":          "Valdez-L",
+			"given_name":  "Louis",
+			"family_name": "Valdez",
+			"email":       "lv@theatro-composeno.example.org",
+			"genre":       []string{"playright", "speaker", "writer"},
+		},
+		"steinbeck-j": {
+			"_Key":        "steinbeck-j",
+			"id":          "Steinbeck-J",
+			"given_name":  "John",
+			"family_name": "Steinbeck",
+			"email":       "jsteinbeck@shipharbor.example.org",
+			"genre":       []string{"writer"},
+		},
+	}
+	if err := dsv1.SetupV1TestCollection(cName, records); err != nil {
+		t.Errorf("dsv1.SetupV1TestCollection(%q) -> %s", cName, err)
+		t.FailNow()
+	}
+
+	verbose := false
+	if err := Repair(cName, verbose); err == nil {
+		t.Errorf("Repair should fail for a version 1 dataset collection")
 	}
 }

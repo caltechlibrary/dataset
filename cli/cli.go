@@ -72,6 +72,7 @@ var (
 		"prune":         cliPrune,
 		"check":         cliCheck,
 		"repair":        cliRepair,
+		"migrate":       cliMigrate,
 		"codemeta":      cliCodemeta,
 	}
 
@@ -105,6 +106,7 @@ var (
 		"clone-sample":  doCloneSample,
 		"check":         doCheck,
 		"repair":        doRepair,
+		"migrate":       doMigrate,
 		"codemeta":      doCodemeta,
 		"versioning":    doVersioning,
 		"versions":      doVersions,
@@ -352,8 +354,8 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		output string
 	)
 	flagSet := flag.NewFlagSet("read", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -438,8 +440,8 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		key   string
 	)
 	flagSet := flag.NewFlagSet("delete", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -473,8 +475,8 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		output string
 	)
 	flagSet := flag.NewFlagSet("keys", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -506,8 +508,8 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		key   string
 	)
 	flagSet := flag.NewFlagSet("has-key", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -537,8 +539,8 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		cName string
 	)
 	flagSet := flag.NewFlagSet("count", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -571,8 +573,8 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		err       error
 	)
 	flagSet := flag.NewFlagSet("clone", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.Parse(args)
@@ -611,8 +613,8 @@ func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		output  string
 	)
 	flagSet := flag.NewFlagSet("frames", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -649,8 +651,8 @@ func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		err       error
 	)
 	flagSet := flag.NewFlagSet("frame", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&input, "i", "-", "filename to read keys from")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.Parse(args)
@@ -706,8 +708,8 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 		output    string
 	)
 	flagSet := flag.NewFlagSet("frame-def", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -745,8 +747,8 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 		err       error
 	)
 	flagSet := flag.NewFlagSet("frame-objects", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write output to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -784,8 +786,8 @@ func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 		output    string
 	)
 	flagSet := flag.NewFlagSet("frame-keys", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -816,8 +818,8 @@ func doRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 		verbose   bool
 	)
 	flagSet := flag.NewFlagSet("refresh", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -849,8 +851,8 @@ func doReframe(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 		keys      []string
 	)
 	flagSet := flag.NewFlagSet("reframe", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&input, "i", "-", "read keys from a file")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.Parse(args)
@@ -884,8 +886,8 @@ func doDeleteFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		err       error
 	)
 	flagSet := flag.NewFlagSet("delete-frame", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -913,8 +915,8 @@ func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 		err       error
 	)
 	flagSet := flag.NewFlagSet("has-frame", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -949,8 +951,8 @@ func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		output  string
 	)
 	flagSet := flag.NewFlagSet("attachments", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -985,8 +987,8 @@ func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		output    string
 	)
 	flagSet := flag.NewFlagSet("attach", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -1023,8 +1025,8 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 		output    string
 	)
 	flagSet := flag.NewFlagSet("retrieve", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -1066,8 +1068,8 @@ func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		output    string
 	)
 	flagSet := flag.NewFlagSet("retrieve", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -1106,8 +1108,8 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		output  string
 	)
 	flagSet := flag.NewFlagSet("clone-sample", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -1151,8 +1153,8 @@ func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		err            error
 	)
 	flagSet := flag.NewFlagSet("clone-sample", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
 	flagSet.IntVar(&sampleSize, "size", 0, "sample size for training set")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
@@ -1192,8 +1194,8 @@ func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		verbose bool
 	)
 	flagSet := flag.NewFlagSet("check", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.BoolVar(&verbose, "verbose", false, "set verbose output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -1206,10 +1208,7 @@ func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	if err := ds.Analyzer(srcName, verbose); err != nil {
-		return err
-	}
-	return nil
+	return ds.Analyzer(srcName, verbose)
 }
 
 // doRepair
@@ -1219,8 +1218,8 @@ func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		verbose bool
 	)
 	flagSet := flag.NewFlagSet("check", flag.ContinueOnError)
-	flagSet.BoolVar(&showHelp, "h", false, "help for read")
-	flagSet.BoolVar(&showHelp, "help", false, "help for read")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
@@ -1233,10 +1232,32 @@ func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	if err := ds.Repair(srcName, verbose); err != nil {
-		return err
+	return ds.Repair(srcName, verbose)
+}
+
+// doMigrate
+func doMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		srcName string
+		dstName string
+		verbose bool
+	)
+	flagSet := flag.NewFlagSet("migrate", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(in, out, eout, []string{"migrate"})
 	}
-	return nil
+	switch {
+	case len(args) == 2:
+		srcName, dstName = args[0], args[1]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] OLD_COLLECTION_NAME NEW_COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	return ds.Migrate(srcName, dstName, verbose)
 }
 
 // doCodemeta

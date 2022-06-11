@@ -880,4 +880,22 @@ returned one per line.
 ` + "```" + `
 
 `
+
+	cliMigrate = `
+migrate
+=======
+
+This will migrate content from a v1 dataset collection to a
+v2 dataset collection.  Before migrating you need to create an
+empty distination collection.
+
+NOTE: attachments are not currently
+migrated, just the JSON documents.
+
+` + "```" + `shell
+    {app_name} init new_collection.ds
+    {app_name} migrate -verbose old_collection.ds new_collection.ds
+` + "```" + `
+
+`
 )

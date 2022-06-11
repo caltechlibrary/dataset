@@ -122,3 +122,28 @@ func LoadConfig(fName string) (*Config, error) {
 	}
 	return config, nil
 }
+
+// SaveConfig will save a configuration to the filename provided.
+//
+// ```
+//   fName := "settings.json"
+//   cfg := new(Config)
+//   cfg.Host = "localhost:8001"
+//   cfg.Keys = true
+//   cfg.Create = true
+//   cfg.Read = true
+//   cfg.Update = true
+//   cfg.Delete = true
+//   cfg.Attach = false
+//   cfg.Retrieve = false
+//   cfg.Prune = false
+//   cfg.SaveConfig(fName)
+// ```
+//
+func (cfg *Config) SaveConfig(name string) error {
+	src, err := json.MarshalIndent(cfg, "", "    ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(name, src, 664)
+}

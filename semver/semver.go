@@ -49,6 +49,25 @@ type Semver struct {
 	// Timestamp (optional, a timestamp in form of YYYY-MM-DD HH:MM:SS)
 }
 
+// NewSemver takes a major number, minor number, patch number
+// and suffix string and returns a populated Semver.
+//
+// ```
+//    version := semver.NewSemver(0, 0, 1, "-alpha")
+//    fmt.Printf("Version is now %q", version.String())
+// ```
+//
+func NewSemver(major int, minor int, patch int, suffix string) *Semver {
+	version := new(Semver)
+	version.Major = fmt.Sprintf("%d", major)
+	version.Minor = fmt.Sprintf("%d", minor)
+	version.Patch = fmt.Sprintf("%d", patch)
+	if suffix != "" {
+		version.Suffix = suffix
+	}
+	return version
+}
+
 // Return a *Semver as a encoded semver string.
 //
 // ```
@@ -139,6 +158,11 @@ func Parse(src []byte) (*Semver, error) {
 		sv.Suffix = parts[3]
 	}
 	return sv, nil
+}
+
+// ParseString accepts a string instead of a byte slice.
+func ParseString(version string) (*Semver, error) {
+	return Parse([]byte(version))
 }
 
 // IncPatch increments the patch level if it is numeric

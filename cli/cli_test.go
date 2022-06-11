@@ -31,6 +31,7 @@ import (
 
 	// The main dataset package
 	ds "github.com/caltechlibrary/dataset"
+	dsv1 "github.com/caltechlibrary/dataset/dsv1"
 )
 
 func setupTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {
@@ -903,6 +904,55 @@ func TestIssue19(t *testing.T) {
 	gotB, _ = ioutil.ReadAll(out)
 	if bytes.Compare(expectedB, gotB) != 0 {
 		t.Errorf("expected %q, got %q", expectedB, gotB)
+		t.FailNow()
+	}
+}
+
+func TestMigrateV1ToV2(t *testing.T) {
+	srcName := path.Join("testout", "src_v1.ds")
+	dstName := path.Join("testout", "dst_v2.ds")
+
+	if _, err := os.Stat(srcName); err == nil {
+		os.RemoveAll(srcName)
+	}
+	if _, err := os.Stat(dstName); err == nil {
+		os.RemoveAll(dstName)
+	}
+
+	records := map[string]map[string]interface{}{
+		"t1": {
+			"one":   1,
+			"two":   "two",
+			"three": true,
+		},
+		"t2": {
+			"two":   2,
+			"three": false,
+		},
+		"t3": {
+			"one":   3,
+			"two":   3,
+			"three": true,
+		},
+	}
+
+	in := bytes.NewBuffer([]byte{})
+	out := bytes.NewBuffer([]byte{})
+	eout := bytes.NewBuffer([]byte{})
+
+	if err := dsv1.SetupV1TestCollection(srcName, records); err != nil {
+		t.Errorf("failed to setup v1 source collection, %s", err)
+	}
+
+	args := []string{"init", dstName, ""}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("failed to create empty destination collection, %s", err)
+		t.FailNow()
+	}
+
+	args = []string{"migrate", srcName, dstName}
+	if err := RunCLI(in, out, eout, args); err != nil {
+		t.Errorf("migration errors for %q to %q, %s", srcName, dstName, err)
 		t.FailNow()
 	}
 }
