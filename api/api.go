@@ -30,6 +30,7 @@ import (
 
 	// Caltech Library packages
 	ds "github.com/caltechlibrary/dataset"
+	"github.com/clatechlibrary/dataset/config"
 )
 
 const (
@@ -42,13 +43,19 @@ const (
 	attachmentSizeLimit = (jsonSizeLimit * 250)
 )
 
+// API this structure holds the information for running an
+// web service instance. One web service may host many collections.
 type API struct {
-	AppName  string
-	Settings string
-	Version  string
-	Cfg      *Config
-	CName    string
-	c        *ds.Collection
+	// AppName is the name of the running application. E.g. os.Args[0]
+	AppName string
+	// SettingsFile is the path to the settings file.
+	SettingsFile string
+	// Version is the version of the API running
+	Version string
+	// Settings is the configuration reading from SettingsFile
+	Settings *config.Settings
+	// CMap is a map to the collections supported by the web service.
+	CMap map[string]*ds.Collection
 
 	// Routes holds a double map of prefix path and HTTP method that
 	// points to the function that will be dispatched if found.
@@ -65,7 +72,7 @@ type API struct {
 }
 
 var (
-	config *Config
+	settings *config.Settings
 )
 
 // IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
@@ -153,12 +160,12 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 // of dataset.
 func (api *API) WebService() error {
 	mux := http.NewServeMux()
-	host := api.Cfg.Host
+	host := api.Settings.Host
 	// Define Routes here.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		api.Router(w, r)
 	})
-	log.Printf("%s start, listening on %s", api.AppName, api.Cfg.Host)
+	log.Printf("%s start, listening on %s", api.AppName, api.Settings.Host)
 	return http.ListenAndServe(host, RequestLogger(mux))
 }
 
@@ -170,10 +177,16 @@ func (api *API) Shutdown(sigName string) int {
 	pid := os.Getpid()
 	log.Printf(`Received signal %s`, sigName)
 	log.Printf(`Closing dataset connection %s pid: %d`, appName, pid)
-	if err := api.c.Close(); err != nil {
-		exitCode = 1
+
+	for cName, c := range api.CMap {
+		if c != nil {
+			if err := c.Close(); err != nil {
+				log.Printf("WARNING: error closing %q, %s", cName, err)
+				exitCode = 1
+			}
+		}
 	}
-	api.c = nil
+	//api.Collections = map[string]*ds.Collection{}
 	log.Printf(`Shutdown completed %s pid: %d exit code: %d `, appName, pid, exitCode)
 	return exitCode
 }
@@ -182,24 +195,28 @@ func (api *API) Shutdown(sigName string) int {
 // in the settings.json file.
 func (api *API) Reload(sigName string) error {
 	appName := api.AppName
-	settings := api.Settings
+	settingsFile := api.SettingsFile
 	exitCode := api.Shutdown(sigName)
 	if exitCode != 0 {
 		return fmt.Errorf("Reload failed, could not shutdown the current processes")
 	}
 	// Reload the configuration
-	cfg, err := LoadConfig(settings)
+	settings, err := config.Open(settingsFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	api.Cfg = cfg
-	_, err = api.Init(appName, cfg)
+	api.Settings = settings
+	_, err = api.Init(appName, settings)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if api.c != nil {
-			api.c.Close()
+		for cName, c := range api.CMap {
+			if c != nil {
+				if err := c.Close(); err != nil {
+					log.Printf("WARNING: error closing %q, %s", cName, err)
+				}
+			}
 		}
 	}()
 	return api.WebService()
@@ -240,17 +257,27 @@ func (api *API) RegisterRoute(prefix string, method string, fn func(http.Respons
 }
 
 // Init setups and the API to run.
-func (api *API) Init(appName string, cfg *Config) (*ds.Collection, error) {
+func (api *API) Init(appName string, settings *config.Settings) error {
 	var err error
 	api.AppName = path.Base(appName)
 	api.Version = Version
+	api.Pid = os.Getpid()
 
 	// Get out cName from config
-	api.CName = cfg.CName
-	api.Pid = os.Getpid()
-	api.c, err = ds.Open(api.CName)
-	if err != nil {
-		return nil, err
+	for _, cfg := range api.Settings.Collections {
+		cName := cfg.CName
+		if api.CMap == nil {
+			api.CMap = make(map[string]*ds.Collection)
+		}
+		c, err := ds.Open(cName)
+		if err != nil {
+			log.Printf("WARNING: failed to open %q, %s", cName, err)
+		} else {
+			api.CMap[cName] = c
+		}
+	}
+	if len(api.CMap) == 0 {
+		return fmt.Errorf("failed to open any collections")
 	}
 	// Setup an empty request router
 	api.Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request, *API, string, []string))
@@ -259,34 +286,41 @@ func (api *API) Init(appName string, cfg *Config) (*ds.Collection, error) {
 	// add the appropriate routes to api.routes.
 	err = api.RegisterRoute("version", http.MethodGet, ApiVersion)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if cfg.Keys {
-		if err = api.RegisterRoute("keys", http.MethodGet, ApiKeys); err != nil {
-			return nil, err
+	for _, cfg := range api.Settings.Collections {
+		if cfg.Keys {
+			prefix := path.Join(cfg.CName, "keys")
+			if err = api.RegisterRoute(prefix, http.MethodGet, ApiKeys); err != nil {
+				return err
+			}
+		}
+		if cfg.Create {
+			prefix := path.Join(cfg.CName, "object")
+			if err = api.RegisterRoute(prefix, http.MethodPost, ApiCreate); err != nil {
+				return err
+			}
+		}
+		if cfg.Read {
+			prefix := path.Join(cfg.CName, "object")
+			if err = api.RegisterRoute(prefix, http.MethodGet, ApiRead); err != nil {
+				return err
+			}
+		}
+		if cfg.Update {
+			prefix := path.Join(cfg.CName, "object")
+			if err = api.RegisterRoute(prefix, http.MethodPut, ApiUpdate); err != nil {
+				return err
+			}
+		}
+		if cfg.Delete {
+			prefix := path.Join(cfg.CName, "object")
+			if err = api.RegisterRoute(prefix, http.MethodDelete, ApiDelete); err != nil {
+				return err
+			}
 		}
 	}
-	if cfg.Create {
-		if err = api.RegisterRoute("object", http.MethodPost, ApiCreate); err != nil {
-			return nil, err
-		}
-	}
-	if cfg.Read {
-		if err = api.RegisterRoute("object", http.MethodGet, ApiRead); err != nil {
-			return nil, err
-		}
-	}
-	if cfg.Update {
-		if err = api.RegisterRoute("object", http.MethodPut, ApiUpdate); err != nil {
-			return nil, err
-		}
-	}
-	if cfg.Delete {
-		if err = api.RegisterRoute("object", http.MethodDelete, ApiDelete); err != nil {
-			return nil, err
-		}
-	}
-	return api.c, nil
+	return nil
 }
 
 // RunAPI takes a JSON configuration file and opens
@@ -294,33 +328,27 @@ func (api *API) Init(appName string, cfg *Config) (*ds.Collection, error) {
 //
 // ```
 //   appName := path.Base(sys.Argv[0])
-//   configFile := "settings.json"
-//   if err := api.RunAPI(appName, settings); err != nil {
+//   settingsFile := "settings.json"
+//   if err := api.RunAPI(appName, settingsFile); err != nil {
 //      ...
 //   }
 // ```
 //
-func RunAPI(appName string, settings string) error {
+func RunAPI(appName string, settingsFile string) error {
 	var err error
 
 	api := new(API)
 
-	cfg, err := LoadConfig(settings)
+	settings, err := config.Open(settingsFile)
 	if err != nil {
 		return err
 	}
-	api.Cfg = cfg
+	api.SettingsFile = settingsFile
 
 	// Open collection
-	c, err := api.Init(appName, cfg)
-	if err != nil {
+	if err := api.Init(appName, settings); err != nil {
 		return err
 	}
-	defer func() {
-		if c != nil {
-			c.Close()
-		}
-	}()
 
 	// Listen for Ctr-C
 	processControl := make(chan os.Signal, 1)

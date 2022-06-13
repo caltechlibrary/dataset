@@ -1,5 +1,5 @@
 //
-// api is a submodule of dataset
+// config is a submodule of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -16,13 +16,10 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-package api
+package config
 
 //
-// Service configuration management used by datasetd. This just gets
-// us to the SQL database with the JSON columns, that database contains
-// the configuration for each collection in a table called _collections
-// where each collection is it's own table.
+// Configure a web service for dataset
 //
 import (
 	"encoding/json"
@@ -31,30 +28,35 @@ import (
 	"os"
 )
 
-// Config holds the specific settings for a collection.
-type Config struct {
+// Settings holds the specific settings for the web service.
+type Settings struct {
 	// Host holds the URL to listen to for the web API
 	Host string `json:"host"`
 
-	// CName holds the Collection Name.
-	// The CName may be passed in from the environment via
-	// the environment variable DATASET_CNAME.
+	// Htdocs holds the path to static content that will be
+	// provided by the web service.
+	Htdocs string `json:"htdocs"`
+
+	// Collections holds an array of collection configurations that
+	// will be supported by the web service.
+	Collections []*Config `json:"collections"`
+}
+
+// Config holds the collection specific configuration.
+type Config struct {
+	// Dname holds the dataset collection name/path.
 	CName string `json:"dataset,omitempty"`
 
-	// Dsn URI describes how to connection to a SQL storage engine.
+	// Dsn URI describes how to connection to a SQL storage engine
+	// use by the collection(s).
 	// e.g. "sqlite://my_collection.ds/collection.db".
+	//
 	// The Dsn URI may be past in from the environment via the
-	// variable DATASET_DSN_URI.
+	// variable DATASET_DSN_URI. E.g. where all the collections
+	// are stored in a common database.
 	DsnURI string `json:"dsn_uri,omitemtpy"`
 
-	// Htdocs holds a path to static content. This content will be
-	// made available via the web service if htdocs is valid.
-	//
-	// NOTE: Htdocs maybe set through the environment via the
-	// environment variable DATASET_HTDOCS
-	Htdocs string `json:"htdocs,emitempty"`
-
-	// Permissions for access the collection through the web service
+	// Permissions for accessing the collection through the web service
 	// At least some of these should be set to true otherwise you
 	// don't have much of a web service.
 	Keys     bool `json:"keys,omitempty"`
@@ -68,82 +70,106 @@ type Config struct {
 }
 
 // String renders the configuration as a JSON string.
-func (config *Config) String() string {
-	src, _ := json.MarshalIndent(config, "", "    ")
+func (settings *Settings) String() string {
+	src, _ := json.MarshalIndent(settings, "", "    ")
 	return fmt.Sprintf("%s", src)
 }
 
-// LoadConfig reads the JSON configuration file provided, validates it
-// and either returns a Config structure or error.
+// Open reads the JSON configuration file provided, validates it
+// and returns a Settings structure and error.
 //
 // NOTE: if the dsn string isn't specified
 //
 // ```
 //    settings := "settings.json"
-//    cfg, err := api.Config(settings)
+//    settings, err := config.Open(settings)
 //    if err != nil {
 //       ...
 //    }
 // ```
 //
-func LoadConfig(fName string) (*Config, error) {
-	config := new(Config)
+func Open(fName string) (*Settings, error) {
+	settings := new(Settings)
 	src, err := ioutil.ReadFile(fName)
 	if err != nil {
 		return nil, err
 	}
-	// Since we should be OK, unmarshal in into active config
-	if err = json.Unmarshal(src, config); err != nil {
+	// Setup defaults from the environment.
+	defaultHtdocs := os.Getenv("DATASET_HTDOCS")
+	defaultHost := os.Getenv("DATASET_HOST")
+	defaultDsnURI := os.Getenv("DATASET_DSN_URI")
+
+	// Make sure we have a fallback for Host
+	if defaultHost == "" {
+		defaultHost = "localhost:8485"
+	}
+
+	// Since we should be OK, unmarshal in into active settings
+	if err = json.Unmarshal(src, settings); err != nil {
 		return nil, fmt.Errorf("Unmarshaling %q failed, %s", fName, err)
 	}
-	if config.Host == "" {
-		config.Host = "localhost:8485"
+
+	// Apply defaults if needed
+	if settings.Host == "" {
+		settings.Host = defaultHost
 	}
-	if config.Htdocs == "" {
-		config.Htdocs = os.Getenv("DATASET_HTDOCS")
+	if settings.Htdocs == "" {
+		settings.Htdocs = defaultHtdocs
 	}
-	if config.Htdocs != "" {
-		info, err := os.Stat(config.Htdocs)
+	if settings.Htdocs != "" {
+		info, err := os.Stat(settings.Htdocs)
 		if err != nil {
-			return nil, fmt.Errorf("error accesss %q, %s", config.Htdocs, err)
+			return nil, fmt.Errorf("error accesss %q, %s", settings.Htdocs, err)
 		}
 		if !info.IsDir() {
 			return nil, fmt.Errorf("htdocs needs to be a directory")
 		}
 	}
-	if config.CName == "" {
-		config.CName = os.Getenv("DATASET_CNAME")
-		if config.CName == "" {
-			return nil, fmt.Errorf("missing collection name")
+	if defaultDsnURI != "" {
+		// Propagate the default DsnURI for the collections
+		for _, cfg := range settings.Collections {
+			// Override the empty DsnURI with the default
+			if cfg.DsnURI == "" {
+				cfg.DsnURI = defaultDsnURI
+			}
 		}
 	}
-	if config.DsnURI == "" {
-		config.DsnURI = os.Getenv("DATASET_DSN_URI")
-	}
-	return config, nil
+	return settings, nil
 }
 
-// SaveConfig will save a configuration to the filename provided.
+// Write will save a configuration to the filename provided.
 //
 // ```
-//   fName := "settings.json"
-//   cfg := new(Config)
-//   cfg.Host = "localhost:8001"
-//   cfg.Keys = true
-//   cfg.Create = true
-//   cfg.Read = true
-//   cfg.Update = true
-//   cfg.Delete = true
-//   cfg.Attach = false
-//   cfg.Retrieve = false
-//   cfg.Prune = false
-//   cfg.SaveConfig(fName)
+//   fName := "new-settings.json"
+//   mysql_dsn_uri := os.Getenv("DATASET_DSN_URI")
+//
+//   settings := new(Settings)
+//   settings.Host = "localhost:8001"
+//   settings.Htdocs = "/usr/local/www/htdocs"
+//
+//   cfg := &Config{
+//   	DsnURI: mysql_dsn_uri,
+//      CName: "my_collection.ds",
+//      Keys: true,
+//      Create: true,
+//      Read:  true,
+//   	Update: true
+//   	Delete: true
+//   	Attach: false
+//   	Retrieve: false
+//   	Prune: false
+//   }}
+//   settings.Collections = append(settings.Collections, cfg)
+//
+//   if err := api.WriteFile(fName, 0664); err != nil {
+//      ...
+//   }
 // ```
 //
-func (cfg *Config) SaveConfig(name string) error {
-	src, err := json.MarshalIndent(cfg, "", "    ")
+func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
+	src, err := json.MarshalIndent(settings, "", "    ")
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(name, src, 664)
+	return ioutil.WriteFile(name, src, perm)
 }
