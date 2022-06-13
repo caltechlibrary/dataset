@@ -13,6 +13,23 @@ func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, 
 	fmt.Fprintf(w, "%s %s", api.AppName, api.Version)
 }
 
+func ApiCollections(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	collections := []string{}
+	w.Header().Add("Content-Type", "application/json")
+	if len(api.CMap) > 0 {
+		for k := range api.CMap {
+			collections = append(collections, k)
+		}
+		src, err := json.MarshalIndent(collections, "", "     ")
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	fmt.Fprintf(w, "[]")
+}
+
 func ApiKeys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if c, ok := api.CMap[cName]; ok {
 		keys, err := c.Keys()

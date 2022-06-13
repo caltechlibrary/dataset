@@ -75,8 +75,8 @@ var (
 	settings *config.Settings
 )
 
-// IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
-func IsDotPath(p string) bool {
+// hasDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
+func hasDotPath(p string) bool {
 	for _, part := range strings.Split(path.Clean(p), "/") {
 		if strings.HasPrefix(part, "..") == false && strings.HasPrefix(part, ".") == true && len(part) > 1 {
 			return true
@@ -85,8 +85,8 @@ func IsDotPath(p string) bool {
 	return false
 }
 
-// RequestLogger logs the request based on the request object passed into it.
-func RequestLogger(next http.Handler) http.Handler {
+// requestLogger logs the request based on the request object passed into it.
+func requestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		if len(q) > 0 {
@@ -98,8 +98,8 @@ func RequestLogger(next http.Handler) http.Handler {
 	})
 }
 
-// ResponseLogger logs the response based on a request, status and error message
-func ResponseLogger(r *http.Request, status int, err error) {
+// responseLogger logs the response based on a request, status and error message
+func responseLogger(r *http.Request, status int, err error) {
 	q := r.URL.Query()
 	if len(q) > 0 {
 		log.Printf("Response: %s Path: %s RemoteAddr: %s UserAgent: %s Query: %+v Status: %d, %s %q\n", r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent(), q, status, http.StatusText(status), err)
@@ -108,13 +108,13 @@ func ResponseLogger(r *http.Request, status int, err error) {
 	}
 }
 
-// StaticRouter scans the request object to either add a .html extension or prevent serving a dot file path
-func StaticRouter(next http.Handler) http.Handler {
+// staticRouter scans the request object to either add a .html extension or prevent serving a dot file path
+func staticRouter(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If given a dot file path, send forbidden
-		if IsDotPath(r.URL.Path) == true {
+		if hasDotPath(r.URL.Path) == true {
 			http.Error(w, "Forbidden", 403)
-			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
+			responseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
 			return
 		}
 		// If we make it this far, fall back to the default handler
@@ -166,11 +166,14 @@ func (api *API) WebService() error {
 	mux := http.NewServeMux()
 	host := api.Settings.Host
 	// Define Routes here.
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		api.Router(w, r)
 	})
+	if api.Settings.Htdocs != "" {
+		mux.Handle("/", staticRouter(http.FileServer(http.Dir(api.Settings.Htdocs))))
+	}
 	log.Printf("%s start, listening on %s", api.AppName, api.Settings.Host)
-	return http.ListenAndServe(host, RequestLogger(mux))
+	return http.ListenAndServe(host, requestLogger(mux))
 }
 
 // Shutdown attemtps a graceful shutdown of the service.
@@ -276,6 +279,10 @@ func (api *API) Init(appName string, settingsFile string) error {
 
 	// We always should have a version route!
 	err = api.RegisterRoute("version", http.MethodGet, ApiVersion)
+	if err != nil {
+		return err
+	}
+	err = api.RegisterRoute("collections", http.MethodGet, ApiCollections)
 	if err != nil {
 		return err
 	}

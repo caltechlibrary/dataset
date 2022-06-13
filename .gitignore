@@ -28,6 +28,8 @@ _testmain.go
 *.zip
 *.tar.gz
 *.tgz
+*.db
+*.ds
 etc/*
 dist/*
 testout
