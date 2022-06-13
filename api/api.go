@@ -30,7 +30,7 @@ import (
 
 	// Caltech Library packages
 	ds "github.com/caltechlibrary/dataset"
-	"github.com/clatechlibrary/dataset/config"
+	"github.com/caltechlibrary/dataset/config"
 )
 
 const (
@@ -65,7 +65,7 @@ type API struct {
 	// The second level map is organized by HTTP method, e.g. "GET",
 	// "POST". The second map points to the function to call when
 	// the route and method matches.
-	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, *API, string, []string)
+	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, *API, string, string, []string)
 
 	// Process ID
 	Pid int
@@ -131,21 +131,25 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var (
+			cName   string
 			verb    string
 			options []string
 		)
 		switch len(parts) {
 		case 1:
-			verb, options = parts[0], []string{}
+			cName, verb, options = "", parts[0], []string{}
 		case 2:
-			verb, options = parts[0], parts[1:]
+			cName, verb, options = parts[0], parts[1], []string{}
+		case 3:
+			cName, verb, options = parts[0], parts[1], parts[2:]
 		default:
 			http.NotFound(w, r)
 			return
 		}
-		if route, ok := api.Routes[verb]; ok {
+		prefix := path.Join(cName, verb)
+		if route, ok := api.Routes[prefix]; ok {
 			if fn, ok := route[r.Method]; ok {
-				fn(w, r, api, verb, options)
+				fn(w, r, api, cName, verb, options)
 				return
 			}
 			code := http.StatusMethodNotAllowed
@@ -201,13 +205,7 @@ func (api *API) Reload(sigName string) error {
 		return fmt.Errorf("Reload failed, could not shutdown the current processes")
 	}
 	// Reload the configuration
-	settings, err := config.Open(settingsFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	api.Settings = settings
-	_, err = api.Init(appName, settings)
-	if err != nil {
+	if err := api.Init(appName, settingsFile); err != nil {
 		return err
 	}
 	defer func() {
@@ -243,7 +241,7 @@ func (api *API) Reload(sigName string) error {
 //     }
 // ```
 //
-func (api *API) RegisterRoute(prefix string, method string, fn func(http.ResponseWriter, *http.Request, *API, string, []string)) error {
+func (api *API) RegisterRoute(prefix string, method string, fn func(http.ResponseWriter, *http.Request, *API, string, string, []string)) error {
 	if _, ok := api.Routes[prefix]; ok {
 		if _, ok := api.Routes[prefix][method]; ok {
 			return fmt.Errorf("%q %s already registered", prefix, method)
@@ -251,74 +249,86 @@ func (api *API) RegisterRoute(prefix string, method string, fn func(http.Respons
 		api.Routes[prefix][method] = fn
 		return nil
 	}
-	api.Routes[prefix] = make(map[string]func(http.ResponseWriter, *http.Request, *API, string, []string))
+	api.Routes[prefix] = make(map[string]func(http.ResponseWriter, *http.Request, *API, string, string, []string))
 	api.Routes[prefix][method] = fn
 	return nil
 }
 
 // Init setups and the API to run.
-func (api *API) Init(appName string, settings *config.Settings) error {
+func (api *API) Init(appName string, settingsFile string) error {
 	var err error
 	api.AppName = path.Base(appName)
 	api.Version = Version
 	api.Pid = os.Getpid()
+	api.SettingsFile = settingsFile
 
-	// Get out cName from config
-	for _, cfg := range api.Settings.Collections {
-		cName := cfg.CName
-		if api.CMap == nil {
-			api.CMap = make(map[string]*ds.Collection)
-		}
-		c, err := ds.Open(cName)
-		if err != nil {
-			log.Printf("WARNING: failed to open %q, %s", cName, err)
-		} else {
-			api.CMap[cName] = c
-		}
+	settings, err := config.Open(settingsFile)
+	if err != nil {
+		return err
 	}
-	if len(api.CMap) == 0 {
-		return fmt.Errorf("failed to open any collections")
+	if settings == nil {
+		return fmt.Errorf("Open(%q) returned nil, nil", settingsFile)
 	}
+	api.Settings = settings
+
 	// Setup an empty request router
-	api.Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request, *API, string, []string))
+	api.Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request, *API, string, string, []string))
 
-	// NOTE: Need to review the permissions in cfg and then
-	// add the appropriate routes to api.routes.
+	// We always should have a version route!
 	err = api.RegisterRoute("version", http.MethodGet, ApiVersion)
 	if err != nil {
 		return err
 	}
+
+	// Get out cName from config
 	for _, cfg := range api.Settings.Collections {
+		if api.CMap == nil {
+			api.CMap = make(map[string]*ds.Collection)
+		}
+		// NOTE: cName is the name used in our CMap as well as in building
+		// paths for service.
+		cName := path.Base(cfg.CName)
+		c, err := ds.Open(cfg.CName)
+		if err != nil {
+			log.Printf("WARNING: failed to open %q, %s", cfg.CName, err)
+		} else {
+			api.CMap[cName] = c
+		}
+		// NOTE: Need to review the permissions in cfg and then
+		// add the appropriate routes to api.routes.
 		if cfg.Keys {
-			prefix := path.Join(cfg.CName, "keys")
+			prefix := path.Join(cName, "keys")
 			if err = api.RegisterRoute(prefix, http.MethodGet, ApiKeys); err != nil {
 				return err
 			}
 		}
 		if cfg.Create {
-			prefix := path.Join(cfg.CName, "object")
+			prefix := path.Join(cName, "object")
 			if err = api.RegisterRoute(prefix, http.MethodPost, ApiCreate); err != nil {
 				return err
 			}
 		}
 		if cfg.Read {
-			prefix := path.Join(cfg.CName, "object")
+			prefix := path.Join(cName, "object")
 			if err = api.RegisterRoute(prefix, http.MethodGet, ApiRead); err != nil {
 				return err
 			}
 		}
 		if cfg.Update {
-			prefix := path.Join(cfg.CName, "object")
+			prefix := path.Join(cName, "object")
 			if err = api.RegisterRoute(prefix, http.MethodPut, ApiUpdate); err != nil {
 				return err
 			}
 		}
 		if cfg.Delete {
-			prefix := path.Join(cfg.CName, "object")
+			prefix := path.Join(cName, "object")
 			if err = api.RegisterRoute(prefix, http.MethodDelete, ApiDelete); err != nil {
 				return err
 			}
 		}
+	}
+	if len(api.CMap) == 0 {
+		return fmt.Errorf("failed to open any collections")
 	}
 	return nil
 }
@@ -335,18 +345,9 @@ func (api *API) Init(appName string, settings *config.Settings) error {
 // ```
 //
 func RunAPI(appName string, settingsFile string) error {
-	var err error
-
 	api := new(API)
-
-	settings, err := config.Open(settingsFile)
-	if err != nil {
-		return err
-	}
-	api.SettingsFile = settingsFile
-
 	// Open collection
-	if err := api.Init(appName, settings); err != nil {
+	if err := api.Init(appName, settingsFile); err != nil {
 		return err
 	}
 

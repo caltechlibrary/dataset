@@ -72,6 +72,7 @@ test: clean build
 	cd cli && go test
 	cd dsv1 && go test
 	cd dsv1/tbl && go test
+	cd config && go test
 	cd api && go test
 
 cleanweb:
