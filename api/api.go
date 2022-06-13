@@ -286,6 +286,10 @@ func (api *API) Init(appName string, settingsFile string) error {
 	if err != nil {
 		return err
 	}
+	err = api.RegisterRoute("codemeta", http.MethodGet, ApiCodemeta)
+	if err != nil {
+		return err
+	}
 
 	// Get out cName from config
 	for _, cfg := range api.Settings.Collections {

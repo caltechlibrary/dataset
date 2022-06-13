@@ -30,6 +30,10 @@ func ApiCollections(w http.ResponseWriter, r *http.Request, api *API, cName stri
 	fmt.Fprintf(w, "[]")
 }
 
+func ApiCodemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
 func ApiKeys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if c, ok := api.CMap[cName]; ok {
 		keys, err := c.Keys()
