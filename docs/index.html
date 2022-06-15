@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,11 +49,13 @@
 dataset
 </h1>
 <p>
-The documentation is organized around the command line options and as a series of “how to” style examples.
+The documentation is organized around the command line options and as a
+series of “how to” style examples.
 </p>
 <ul>
 <li>
-<a href="../how-to/getting-started-with-dataset.html">getting started with dataset</a> (covers both Bash and Python)
+<a href="../how-to/getting-started-with-dataset.html">getting started
+with dataset</a> (covers both Bash and Python)
 </li>
 <li>
 Explore additional other <a href="../how-to/">tutorials</a>
@@ -63,7 +66,8 @@ Command line program documentation
 </h2>
 <ul>
 <li>
-<a href="dataset.html">dataset</a> - usage page for managing collections with <em>dataset</em>
+<a href="dataset.html">dataset</a> - usage page for managing collections
+with <em>dataset</em>
 </li>
 </ul>
 <h2 id="internal-project-concepts">
@@ -71,17 +75,34 @@ Internal project concepts
 </h2>
 <ul>
 <li>
-<a href="../how-to/upgrading-a-collection.html">upgrading a collection</a> - Describes how to upgrade a collection from a previous version of dataset to a new one
+<a href="../how-to/upgrading-a-collection.html">upgrading a
+collection</a> - Describes how to upgrade a collection from a previous
+version of dataset to a new one
 </li>
 <li>
-<a href="../how-to/how-attachments-work.html">how attachments work</a> - Detailed description of attachments and their metadata
+<a href="../how-to/how-attachments-work.html">how attachments work</a> -
+Detailed description of attachments and their metadata
 </li>
 </ul>
 <h2 id="dataset-operations">
 <strong>dataset</strong> Operations
 </h2>
 <p>
-The basic operations support by <em>dataset</em> are listed below organized by collection and JSON document level.
+The basic operations support by <em>dataset</em> are listed below
+organized by collection and JSON document level.
+</p>
+<h2 id="a-word-about-keys">
+A word about keys
+</h2>
+<p>
+<strong>dataset</strong> is based around the concept of key/value pairs
+where the key is the unique identifier for an object stored (i.e. the
+value) in the collection. Each storage option supported by dataset and
+its own issues around what things can be called. <strong>Keys should be
+lower case alpha numeric or underscore only.</strong> E.g. the pairtree
+storage relies on the file system to store the JSON objects. Some file
+systems are not case sensitive, others face challenges with non-alpha
+numeric filenames.
 </p>
 <h2 id="collection-level">
 Collection Level
@@ -91,22 +112,29 @@ Collection Level
 <a href="init.html">init</a> creates a collection
 </li>
 <li>
-<a href="import-csv.html">import</a> (csv) JSON documents from rows of a CSV file
+<a href="import-csv.html">import</a> (csv) JSON documents from rows of a
+CSV file
 </li>
 <li>
-<a href="export-csv.html">export</a> (csv) JSON documents from a collection into a CSV file
+<a href="export-csv.html">export</a> (csv) JSON documents from a
+collection into a CSV file
 </li>
 <li>
-<a href="keys.html">keys</a> list keys of JSON documents in a collection, supports filtering and sorting
+<a href="keys.html">keys</a> list keys of JSON documents in a
+collection, supports filtering and sorting
 </li>
 <li>
-<a href="haskey.html">haskey</a> returns true if key is found in collection, false otherwise
+<a href="haskey.html">haskey</a> returns true if key is found in
+collection, false otherwise
 </li>
 <li>
-<a href="count.html">count</a> returns the number of documents in a collection, supports filtering for subsets
+<a href="count.html">count</a> returns the number of documents in a
+collection, supports filtering for subsets
 </li>
 <li>
-<a href="../how-to/collections-and-data-frames.html">data frame support</a> provides a persistent metadata associated with the collection as data frames
+<a href="../how-to/collections-and-data-frames.html">data frame
+support</a> provides a persistent metadata associated with the
+collection as data frames
 <ul>
 <li>
 <a href="frame.html">frame</a>
@@ -152,13 +180,16 @@ JSON Document level
 <a href="delete.html">delete</a> a JSON document in a collection
 </li>
 <li>
-<a href="join.html">join</a> a JSON document with a document in a collection
+<a href="join.html">join</a> a JSON document with a document in a
+collection
 </li>
 <li>
-<a href="list.html">list</a> the lists JSON records as an array for the supplied keys
+<a href="list.html">list</a> the lists JSON records as an array for the
+supplied keys
 </li>
 <li>
-<a href="path.html">path</a> list the file path for a JSON document in a collection
+<a href="path.html">path</a> list the file path for a JSON document in a
+collection
 </li>
 </ul>
 <h2 id="json-document-attachments">
@@ -166,16 +197,20 @@ JSON Document Attachments
 </h2>
 <ul>
 <li>
-<a href="attach.html">attach</a> a file to a JSON document in a collection
+<a href="attach.html">attach</a> a file to a JSON document in a
+collection
 </li>
 <li>
-<a href="attachments.html">attachments</a> lists the files attached to a JSON document in a collection
+<a href="attachments.html">attachments</a> lists the files attached to a
+JSON document in a collection
 </li>
 <li>
-<a href="retrieve.html">retrieve</a> retrieve an attached file associated with a JSON document in a collection
+<a href="retrieve.html">retrieve</a> retrieve an attached file
+associated with a JSON document in a collection
 </li>
 <li>
-<a href="prune.html">prune</a> delete one or more attached files of a JSON document in a collection
+<a href="prune.html">prune</a> delete one or more attached files of a
+JSON document in a collection
 </li>
 </ul>
 <h2 id="samples-and-cloning">
@@ -189,7 +224,8 @@ Samples and cloning
 <a href="clone.html">clone</a> - clone a repository
 </li>
 <li>
-<a href="clone-sample.html">clone-sample</a> - cloning a repository into training and test collections
+<a href="clone-sample.html">clone-sample</a> - cloning a repository into
+training and test collections
 </li>
 </ul>
 <h2 id="collection-health">
@@ -197,27 +233,33 @@ Collection health
 </h2>
 <ul>
 <li>
-<a href="check.html">check</a> - checks a collection against the current version of tools
+<a href="check.html">check</a> - checks a collection against the current
+version of tools
 </li>
 <li>
-<a href="repair.html">repair</a> - repairs/upgrades a collection based on the current version of the tool
+<a href="repair.html">repair</a> - repairs/upgrades a collection based
+on the current version of the tool
 </li>
 </ul>
 <h1 id="dataset-as-a-web-service">
 Dataset as a web service
 </h1>
 <p>
-New as of version v2.x is a web service providing access to dataset collections. This is described in the <a href="datasetd.html">datasetd</a> documentation page.
+New as of version v2.x is a web service providing access to dataset
+collections. This is described in the <a
+href="datasetd.html">datasetd</a> documentation page.
 </p>
 <p>
 <a href="datasetd.html">datasetd</a> supports the following end points.
 </p>
 <ul>
 <li>
-List <a href="collections-endpoint.html">collections</a> available from the web service
+List <a href="collections-endpoint.html">collections</a> available from
+the web service
 </li>
 <li>
-List or update a <a href="collection-endpoint.html">collection</a>’s metadata
+List or update a <a href="collection-endpoint.html">collection</a>’s
+metadata
 </li>
 <li>
 List a collection’s <a href="keys-endpoint.html">Keys</a>

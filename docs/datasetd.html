@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -51,64 +52,106 @@ Datasetd
 Overview
 </h2>
 <p>
-<em>datasetd</em> is a minimal web service intended to run on localhost port 8485. It presents one or more dataset collections as a web service. It features a subset of functionallity available with the dataset command line program. <em>datasetd</em> does support multi-process/asynchronous update to a dataset collection.
+<em>datasetd</em> is a minimal web service intended to run on localhost
+port 8485. It presents one or more dataset collections as a web service.
+It features a subset of functionallity available with the dataset
+command line program. <em>datasetd</em> does support
+multi-process/asynchronous update to a dataset collection.
 </p>
 <p>
-<em>datasetd</em> is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a standalone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL data management solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). <em>datasetd</em> is a simple, miminal service.
+<em>datasetd</em> is notable in what it does not provide. It does not
+provide user/role access restrictions to a collection. It is not
+intended to be a standalone web service on the public internet or local
+area network. It does not provide support for search or complex
+querying. If you need these features I suggest looking at existing
+mature NoSQL data management solutions like Couchbase, MongoDB, MySQL
+(which now supports JSON objects) or Postgres (which also support JSON
+objects). <em>datasetd</em> is a simple, miminal service.
 </p>
 <p>
-NOTE: You could run <em>datasetd</em> could be combined with a front end web service like Apache 2 or NginX and through them provide access control based on <em>datasetd</em>’s predictable URL paths. That would require a robust understanding of the front end web server, it’s access control mechanisms and how to defend a proxied service. That is beyond the skope of this project.
+NOTE: You could run <em>datasetd</em> could be combined with a front end
+web service like Apache 2 or NginX and through them provide access
+control based on <em>datasetd</em>’s predictable URL paths. That would
+require a robust understanding of the front end web server, it’s access
+control mechanisms and how to defend a proxied service. That is beyond
+the skope of this project.
 </p>
 <h2 id="configuration">
 Configuration
 </h2>
 <p>
-<em>datasetd</em> can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where <em>datasetd</em> is running. <em>datasetd</em> is configured by reading a “settings.json” file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
+<em>datasetd</em> can make one or more dataset collections visible over
+HTTP. The dataset collections hosted need to be avialable on the same
+file system as where <em>datasetd</em> is running. <em>datasetd</em> is
+configured by reading a “settings.json” file in either the local
+directory where it is launch or by a specified directory on the command
+line to a appropriate JSON settings.
 </p>
 <p>
 The “settings.json” file has the following structure
 </p>
 <div id="cb1" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>        <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>        <span class="dt">&quot;collections&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>            <span class="dt">&quot;&lt;COLLECTION_ID&gt;&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>                <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;&lt;PATH_TO_DATASET_COLLECTION&gt;&quot;</span><span class="fu">,</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>                <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>                <span class="dt">&quot;create&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>                <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>                <span class="dt">&quot;update&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>                <span class="dt">&quot;delete&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>                <span class="dt">&quot;attach&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>                <span class="dt">&quot;retrieve&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>                <span class="dt">&quot;prune&quot;</span><span class="fu">:</span> <span class="kw">false</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>            <span class="fu">}</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a>        <span class="fu">}</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;dsn_url&quot;</span><span class="fu">:</span> <span class="st">&quot;mysql://DB_USER:DB_PASSWORD\@DB_NAME&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;&lt;PATH_TO_DATASET_COLLECTION&gt;&quot;</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;create&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;update&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;delete&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;attach&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;retrieve&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;prune&quot;</span><span class="fu">:</span> <span class="kw">false</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
-In the “collections” object the “<COLLECTION_ID>” is a string which will be used as the start of the path in the URL. The “dataset” attribute sets the path to the dataset collection made available at “<PATH_TO_DATASET_COLLECTION>”. For each collection you can allow the following sub-paths for JSON object interaction “keys”, “create”, “read”, “update” and “delete”. JSON document attachments are supported by “attach”, “retrieve”, “prune”. If any of these attributes are missing from the settings they are assumed to be set to false.
+In the “collections” object the “<COLLECTION_ID>” is a string which will
+be used as the start of the path in the URL. The “dataset” attribute
+sets the path to the dataset collection made available at
+“<PATH_TO_DATASET_COLLECTION>”. For each collection you can allow the
+following sub-paths for JSON object interaction “keys”, “create”,
+“read”, “update” and “delete”. JSON document attachments are supported
+by “attach”, “retrieve”, “prune”. If any of these attributes are missing
+from the settings they are assumed to be set to false.
 </p>
 <p>
-The sub-paths correspond to their counter parts in the dataset command line tool. By varying the settings of these you can support read only collections, drop off collections or function as a object store running behind a web application.
+The sub-paths correspond to their counter parts in the dataset command
+line tool. By varying the settings of these you can support read only
+collections, drop off collections or function as a object store running
+behind a web application.
 </p>
 <h2 id="running-datasetd">
 Running datasetd
 </h2>
 <p>
-<em>datasetd</em> runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP. You should only run <em>datasetd</em> on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by <em>datasetd</em> regardless of the file permissions they may in their account.
+<em>datasetd</em> runs as a HTTP service and as such can be exploited in
+the same manner as other services using HTTP. You should only run
+<em>datasetd</em> on localhost on a trusted machine. If the machine is a
+multi-user machine all users can have access to the collections exposed
+by <em>datasetd</em> regardless of the file permissions they may in
+their account.
 </p>
 <p>
-Example: If all dataset collections are in a directory only allowed access to be the “web-data” user but another users on the machine have access to curl they can access the dataset collections based on the rights of the “web-data” user by access the HTTP service. This is a typical situation for most localhost based web services and you need to be aware of it if you choose to run <em>datasetd</em>.
+Example: If all dataset collections are in a directory only allowed
+access to be the “web-data” user but another users on the machine have
+access to curl they can access the dataset collections based on the
+rights of the “web-data” user by access the HTTP service. This is a
+typical situation for most localhost based web services and you need to
+be aware of it if you choose to run <em>datasetd</em>.
 </p>
 <p>
-<em>datasetd</em> should NOT be used to store confidential, sensitive or secret information.
+<em>datasetd</em> should NOT be used to store confidential, sensitive or
+secret information.
 </p>
 <h2 id="supported-features">
 Supported Features
 </h2>
 <p>
-<em>datasetd</em> provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
+<em>datasetd</em> provides a limitted subset of actions supportted by
+the standard datset command line tool. It only supports the following
+verbs
 </p>
 <ol type="1">
 <li>
@@ -123,7 +166,8 @@ must be a GET request
 create (create a new JSON document in the collection)
 <ul>
 <li>
-must be a POST request ended as JSON with a content type of “application/json”
+must be a POST request ended as JSON with a content type of
+“application/json”
 </li>
 </ul>
 </li>
@@ -139,7 +183,8 @@ must be a GET request
 update (update a JSON document in the collection)
 <ul>
 <li>
-must be a POST request ended as JSON with a content type of “application/json”
+must be a POST request ended as JSON with a content type of
+“application/json”
 </li>
 </ul>
 </li>
@@ -160,38 +205,51 @@ must be a GET request
 </ul>
 </li>
 <li>
-attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB. The POST must be a multi-part encoded web form where the upload name is identified as “filename” in the form and the URL path identifies the name to use for the saved attachment.
+attach allows you to upload via a POST (not JSON encoded) an attachment
+to a JSON document. The attachment is limited in size to 250 MiB. The
+POST must be a multi-part encoded web form where the upload name is
+identified as “filename” in the form and the URL path identifies the
+name to use for the saved attachment.
 </li>
 <li>
-retrieve allows you to download an versioned attachment from a JSON document
+retrieve allows you to download an versioned attachment from a JSON
+document
 </li>
 <li>
 prune removes versioned attachments from a JSON document
 </li>
 </ol>
 <p>
-Each of theses “actions” can be restricted in the configuration ( i.e. “settings.json” file) by setting the value to “false”. If the attribute for the action is not specified in the JSON settings file then it is assumed to be “false”.
+Each of theses “actions” can be restricted in the configuration (
+i.e. “settings.json” file) by setting the value to “false”. If the
+attribute for the action is not specified in the JSON settings file then
+it is assumed to be “false”.
 </p>
 <h2 id="use-case">
 Use case
 </h2>
 <p>
-In this use case a dataset collection called “recipes.ds” has been previously created and populated using the command line tool.
+In this use case a dataset collection called “recipes.ds” has been
+previously created and populated using the command line tool.
 </p>
 <p>
-If I have a settings file for “recipes” based on the collection “recipes.ds” and want to make it read only I would make the attribute “read” set to true and if I want the option of listing the keys in the collection I would set that true also.
+If I have a settings file for “recipes” based on the collection
+“recipes.ds” and want to make it read only I would make the attribute
+“read” set to true and if I want the option of listing the keys in the
+collection I would set that true also.
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="dt">&quot;collections&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>        <span class="dt">&quot;recipes&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>            <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;recipes.ds&quot;</span><span class="fu">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>            <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>            <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>        <span class="fu">}</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>    <span class="fu">}</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a><span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;collections&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;recipes&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;recipes.ds&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre>
 </div>
 <p>
 I would start <em>datasetd</em> with the following command line.
@@ -201,18 +259,23 @@ I would start <em>datasetd</em> with the following command line.
 This would display the start up message and log output of the service.
 </p>
 <p>
-In another shell session I could then use curl to list the keys and read a record. In this example I assume that “waffles” is a JSON document in dataset collection “recipes.ds”.
+In another shell session I could then use curl to list the keys and read
+a record. In this example I assume that “waffles” is a JSON document in
+dataset collection “recipes.ds”.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485/recipies/read/waffles</code></pre>
 <p>
-This would return the “waffles” JSON document or a 404 error if the document was not found.
+This would return the “waffles” JSON document or a 404 error if the
+document was not found.
 </p>
 <p>
 Listing the keys for “recipes.ds” could be done with this curl command.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485/recipies/keys</code></pre>
 <p>
-This would return a list of keys, one per line. You could show all JSON documents in the collection be retrieving a list of keys and iterating over them using curl. Here’s a simple example in Bash.
+This would return a list of keys, one per line. You could show all JSON
+documents in the collection be retrieving a list of keys and iterating
+over them using curl. Here’s a simple example in Bash.
 </p>
 <pre class="shell"><code>    for KEY in $(curl http://localhost:8485/recipes/keys); do
        curl &quot;http://localhost/8485/recipe/read/${KEY}&quot;
@@ -228,7 +291,9 @@ Add a new JSON object to a collection.
 Online Documentation
 </h2>
 <p>
-<em>datasetd</em> provide documentation as plain text output via request to the service end points without parameters. Continuing with our “recipes” example. Try the following URLs with curl.
+<em>datasetd</em> provide documentation as plain text output via request
+to the service end points without parameters. Continuing with our
+“recipes” example. Try the following URLs with curl.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485
     curl http://localhost:8485/recipes
@@ -253,63 +318,97 @@ The following end points are supported by <em>datasetd</em>
 <code>/collections</code> returns a list of available collections.
 </li>
 <li>
-<code>/collection/&lt;COLLECTION_ID&gt;</code> with an HTTP GET returns the metadata for a collection, with an HTTP POST it updates the collections metadata.
+<code>/collection/&lt;COLLECTION_ID&gt;</code> with an HTTP GET returns
+the metadata for a collection, with an HTTP POST it updates the
+collections metadata.
 </li>
 </ul>
 <p>
-The following end points are per colelction. They are available for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.
+The following end points are per colelction. They are available for each
+collection where the settings are set to true. Some end points require
+POST HTTP method and specific content types.
 </p>
 <p>
-The terms “<COLLECTION_ID>”, “<KEY>” and “<SEMVER>” refer to the collection path, the string representing the “key” to a JSON document and semantic version number for attachment. Unless specified end points support the GET method exclusively.
+The terms “<COLLECTION_ID>”, “<KEY>” and “<SEMVER>” refer to the
+collection path, the string representing the “key” to a JSON document
+and semantic version number for attachment. Unless specified end points
+support the GET method exclusively.
 </p>
 <ul>
 <li>
-<code>/&lt;COLLECTION_ID&gt;</code> returns general dataset documentation with some tailoring to the collection.
+<code>/&lt;COLLECTION_ID&gt;</code> returns general dataset
+documentation with some tailoring to the collection.
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/keys</code> returns a list of keys available in the collection
+<code>/&lt;COLLECTION_ID&gt;/keys</code> returns a list of keys
+available in the collection
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/create</code> returns documentation on the <code>create</code> end point
+<code>/&lt;COLLECTION_ID&gt;/create</code> returns documentation on the
+<code>create</code> end point
 </li>
 <li>
-<code>/&lt;COLLECTION_IO&gt;/create/&lt;KEY&gt;</code> requires the POST method with content type header of <code>application/json</code>. It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
+<code>/&lt;COLLECTION_IO&gt;/create/&lt;KEY&gt;</code> requires the POST
+method with content type header of <code>application/json</code>. It can
+accept JSON document up to 1 MiB in size. It will create a new JSON
+document in the collection or return an HTTP error if that fails
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/read</code> returns documentation on the <code>read</code> end point
+<code>/&lt;COLLECTION_ID&gt;/read</code> returns documentation on the
+<code>read</code> end point
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/read/&lt;KEY&gt;</code> returns a JSON object for key or a HTTP error
+<code>/&lt;COLLECTION_ID&gt;/read/&lt;KEY&gt;</code> returns a JSON
+object for key or a HTTP error
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/update</code> returns documentation on the <code>update</code> end point
+<code>/&lt;COLLECTION_ID&gt;/update</code> returns documentation on the
+<code>update</code> end point
 </li>
 <li>
-<code>/COLLECTION_ID&gt;/update/&lt;KEY&gt;</code> requires the POST method with content type header of <code>application/json</code>. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
+<code>/COLLECTION_ID&gt;/update/&lt;KEY&gt;</code> requires the POST
+method with content type header of <code>application/json</code>. It can
+accept JSON document up to 1 MiB is size. It will replace an existing
+document in the collection or return an HTTP error if that fails
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/delete</code> returns documentation on the <code>delete</code> end point
+<code>/&lt;COLLECTION_ID&gt;/delete</code> returns documentation on the
+<code>delete</code> end point
 </li>
 <li>
-<code>/COLLECTION_ID&gt;/delete/&lt;KEY&gt;</code> requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
+<code>/COLLECTION_ID&gt;/delete/&lt;KEY&gt;</code> requires the GET
+method. It will delete a JSON document for the key provided or return an
+HTTP error
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/attach</code> returns documentation on attaching a file to a JSON document in the collection.
+<code>/&lt;COLLECTION_ID&gt;/attach</code> returns documentation on
+attaching a file to a JSON document in the collection.
 </li>
 <li>
-<code>/COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code> requires a POST method and expects a multi-part web form providing the filename in the <code>filename</code> field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by <code>&lt;KEY&gt;</code> in sub directory indicated by <code>&lt;SEMVER&gt;</code>. See https://semver.org/ for more information on semantic version numbers.
+<code>/COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code>
+requires a POST method and expects a multi-part web form providing the
+filename in the <code>filename</code> field. The <FILENAME> in the URL
+is used in storing the file. The document will be written the JSON
+document directory by <code>&lt;KEY&gt;</code> in sub directory
+indicated by <code>&lt;SEMVER&gt;</code>. See https://semver.org/ for
+more information on semantic version numbers.
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/retrieve</code> returns documentation on how to retrieve a versioned attachment from a JSON document.
+<code>/&lt;COLLECTION_ID&gt;/retrieve</code> returns documentation on
+how to retrieve a versioned attachment from a JSON document.
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/retrieve/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code> returns the versioned attachment from a JSON document or an HTTP error if that fails
+<code>/&lt;COLLECTION_ID&gt;/retrieve/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code>
+returns the versioned attachment from a JSON document or an HTTP error
+if that fails
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/prune</code> removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
+<code>/&lt;COLLECTION_ID&gt;/prune</code> removes a versioned attachment
+from a JSON document or returns an HTTP error if that fails.
 </li>
 <li>
-<code>/&lt;COLLECTION_ID&gt;/prune/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code> removes a versioned attachment from a JSON document.
+<code>/&lt;COLLECTION_ID&gt;/prune/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;</code>
+removes a versioned attachment from a JSON document.
 </li>
 </ul>
 </section>

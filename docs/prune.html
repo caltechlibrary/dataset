@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -56,19 +57,26 @@ Syntax
 Description
 </h2>
 <p>
-prune removes all or specific attachments to a JSON document. If only the key is supplied then all attachments are removed if an attachment name is supplied then only the specific attachment is removed.
+prune removes all or specific attachments to a JSON document. If only
+the key is supplied then all attachments are removed if an attachment
+name is supplied then only the specific attachment is removed.
 </p>
 <h2 id="usage">
 Usage
 </h2>
 <p>
-In the following examples <em>r1</em> is the KEY, <em>stats.xlsx</em> is the attached file. In the first example only <em>stats.xlsx</em> is removed in the second all attachments are removed. Our collection name is “data.ds”
+In the following examples <em>r1</em> is the KEY, <em>stats.xlsx</em> is
+the attached file. In the first example only <em>stats.xlsx</em> is
+removed in the second all attachments are removed. Our collection name
+is “data.ds”
 </p>
 <pre class="shell"><code>    dataset prune data.ds k1 v0.0.1 stats.xlsx
     dataset prune data.ds k1 stats.xlsx
     dataset prune data.ds k1</code></pre>
 <p>
-Related topics: <a href="attach.html">attach</a>, <a href="retrieve.html">retrieve</a> and <a href="attachments.html">attachments</a>
+Related topics: <a href="attach.html">attach</a>, <a
+href="retrieve.html">retrieve</a> and <a
+href="attachments.html">attachments</a>
 </p>
 </section>
 

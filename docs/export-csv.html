@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -55,23 +56,29 @@ Syntax
 Description
 </h2>
 <p>
-<strong>export</strong> will render the contents of a collection as a CSV file based on a frame defined in the collection.
+<strong>export</strong> will render the contents of a collection as a
+CSV file based on a frame defined in the collection.
 </p>
 <h2 id="usage">
 Usage
 </h2>
 <p>
-In the following examples we will be using a newly defined “frame” named “my-report”. The frame will have the following fields are being exported - <code>._Key,.title</code>, and <code>.pubDate</code> with the following labels for those fields – id, title and publication date.
+In the following examples we will be using a newly defined “frame” named
+“my-report”. The frame will have the following fields are being exported
+- <code>._Key,.title</code>, and <code>.pubDate</code> with the
+following labels for those fields – id, title and publication date.
 </p>
 <pre class="shell"><code>    dataset frame publications.ds my-report \
         &quot;._Key=id&quot; &quot;.title=title&quot; \
         &quot;.pubDate=publication date&quot;</code></pre>
 <p>
-The example blow creates a CSV file named ‘output.csv’. The collection is “publications.ds”.
+The example blow creates a CSV file named ‘output.csv’. The collection
+is “publications.ds”.
 </p>
 <pre class="shell"><code>    dataset export publications.ds my-report &gt; output.csv</code></pre>
 <p>
-Related topics: <a href="frame.html">frame</a>, <a href="import-csv.html">import-csv</a>
+Related topics: <a href="frame.html">frame</a>, <a
+href="import-csv.html">import-csv</a>
 </p>
 </section>
 

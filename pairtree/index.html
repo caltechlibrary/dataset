@@ -42,50 +42,70 @@ href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </nav>
 
 <section>
+<h1 id="pairtree">
+Pairtree
+</h1>
 <p>
-Copyright (c) 2022, Caltech All rights not granted herein are expressly
-reserved by Caltech.
+This is a library for translate a UTF-8 string to/from a pairtree
+notation. This is typically used in storing things on disc
+(e.g. repository filesystems). This code is based on the specification
+found at <a
+href="https://confluence.ucop.edu/download/attachments/14254128/PairtreeSpec.pdf?version=2&amp;modificationDate=1295552323000&amp;api=v2"
+title="this site is not always available">OCLC’s Confluence website</a>
+which is cited on the <a
+href="https://github.com/OCFL/spec/wiki">OCFL</a> wiki. A draft IETF
+spec by John Kunze et el. can be found at
+https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01.
 </p>
 <p>
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
+NOTE: If you are looking for Python or Java implementedations they can
+befound at <a href="https://pypi.org/project/Pairtree/">PyPi</a> and on
+<a
+href="https://github.com/LibraryOfCongress/pairtree">GitHub</a>
 </p>
-<ol type="1">
+<p>
+This Go package is managed as a sub-module of the dataset project
+developed at Caltech Library.
+</p>
+<h2 id="features">
+Features
+</h2>
+<ul>
 <li>
-<p>
-Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-</p>
+<code>Set()</code> will let you set the path separator
+<ul>
+<li>
+<code>Separator</code> is a readonly value of the file separator used by
+<code>Encode()</code> and <code>Decode()</code>
+</li>
+</ul>
 </li>
 <li>
-<p>
-Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-</p>
+<code>Encode()</code> will encode the provided string as a pairtree path
 </li>
 <li>
-<p>
-Neither the name of the copyright holder nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-</p>
+<code>Decode()</code> will decode a pairtree path returning the
+unencoded string
 </li>
-</ol>
-<p>
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS
-IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-</p>
+</ul>
+<h2 id="example">
+Example
+</h2>
+<pre><code>    import (
+        &quot;fmt&quot;
+        &quot;os&quot;
+
+        &quot;github.com/caltechlibrary/pairtree&quot;
+    )
+
+    func main() {
+        key := &quot;12mIEERD11&quot;
+        fmt.Printf(&quot;Key: %q\n&quot;, key)
+        pairPath := pairtree.Encode(key)
+        fmt.Printf(&quot;Endoded key %q -&gt; %q\n&quot;, key, pairPath)
+        key = Decode(pairPath)
+        fmt.Printf(&quot;Decoded path %q -&gt; %q\n&quot;, pairPath, key)
+    }</code></pre>
 </section>
 
 <footer>

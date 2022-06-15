@@ -8,6 +8,8 @@ Bugs
 Next (prep for v2.x)
 --------------------
 
+- [ ] Help cleanup
+    - remove help pages for depreciated features
 - [ ] Common dataset verbs (dataset/datasetd)
     - [pkg,cli] keys
         - list the keys in a collection

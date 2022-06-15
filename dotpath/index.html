@@ -14,25 +14,22 @@
 <a href="/">Home</a>
 </li>
 <li>
-<a href="../">Up</a>
-</li>
-<li>
 <a href="../">README</a>
 </li>
 <li>
-<a href="../license.html">LICENSE</a>
+<a href="license.html">LICENSE</a>
 </li>
 <li>
-<a href="../install.html">INSTALL</a>
+<a href="install.html">INSTALL</a>
 </li>
 <li>
-<a href="./">Documentation</a>
+<a href="docs/">Documentation</a>
 </li>
 <li>
-<a href="../how-to/">Tutorials</a>
+<a href="how-to/">Tutorials</a>
 </li>
 <li>
-<a href="topics.html">Topics</a>
+<a href="docs/topics.html">Topics</a>
 </li>
 <li>
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
@@ -45,41 +42,12 @@ href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </nav>
 
 <section>
-<h1 id="retrieve">
-retrieve
+<h1 id="dotpath-package">
+dotpath package
 </h1>
-<h2 id="syntax">
-Syntax
-</h2>
-<pre class="shell"><code>    dataset retrieve COLLECTION_NAME KEY [SEMVER]
-    dataset retrieve COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME</code></pre>
-<h2 id="description">
-Description
-</h2>
 <p>
-<strong>retrieve</strong> writes out (to local disc) the items that have
-been attached to a JSON record in the collection with the matching KEY
-</p>
-<h2 id="usage">
-Usage
-</h2>
-<p>
-Write out all the attached files for k1 in collection named
-“publications.ds”
-</p>
-<pre class="shell"><code>    dataset retrieve publications.ds k1</code></pre>
-<p>
-Write out only the <em>stats.xlsx</em> file attached to k1
-</p>
-<pre class="shell"><code>    dataset retrieve publications.ds k1 stats.xlsx</code></pre>
-<p>
-Write out only the v0.0.1 <em>stats.xlsx</em> file attached to k1
-</p>
-<pre class="shell"><code>    dataset retrieve publications.ds k1 v0.0.1 stats.xlsx</code></pre>
-<p>
-Related topics: <a href="attach.html">attach</a>, <a
-href="attachments.html">attachments</a>, and <a
-href="prune.html">prune</a>
+This Go package provides a simple mechanism to extract bits of JSON
+based on simple explicit dot path notation.
 </p>
 </section>
 

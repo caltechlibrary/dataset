@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,10 +49,14 @@
 reframe
 </h1>
 <p>
-This command replace the current keys and object list in a frame based on the keys provided.
+This command replace the current keys/objects in a frame based on the
+new keys provided.
 </p>
 <p>
-In the following example the frame name is “f1”, the collection is “examples.ds”. The first example is reframing an existing frame using existing keys coming from standard input, the second example performs the same thing but is taking a filename to retrieve the list of keys.
+In the following example the frame name is “f1”, the collection is
+“examples.ds”. The first example is reframing an existing frame using
+existing keys coming from standard input, the second example performs
+the same thing but is taking a filename to retrieve the list of keys.
 </p>
 <pre class="shell"><code>    cat f1-updated.keys | dataset reframe example.ds f1
     dataset reframe example.ds f1 f1-updated.keys</code></pre>
@@ -59,11 +64,16 @@ In the following example the frame name is “f1”, the collection is “exampl
 In python
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    f1_updated_keys <span class="op">=</span> generate_updates_keys()</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_reframe(<span class="st">&#39;example.ds&#39;</span>, <span class="st">&#39;f1&#39;</span>, f1_updated_keys)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    f1_updated_keys <span class="op">=</span> generate_updates_keys()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_reframe(<span class="st">&#39;example.ds&#39;</span>, <span class="st">&#39;f1&#39;</span>, f1_updated_keys)</span></code></pre>
 </div>
 <p>
-Releted topics: <a href="frame.html">frame</a>, <a href="refresh.html">refresh</a>, <a href="frame-objects.html">frame-objects</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frames.html">frames</a>, <a href="delete-frame.html">delete-frame</a>
+Releted topics: <a href="frame.html">frame</a>, <a
+href="refresh.html">refresh</a>, <a
+href="frame-objects.html">frame-objects</a>, <a
+href="frame-grid.html">frame-grid</a>, <a href="frames.html">frames</a>,
+<a href="delete-frame.html">delete-frame</a>
 </p>
 </section>
 

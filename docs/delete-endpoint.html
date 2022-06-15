@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,23 +49,30 @@
 Delete (end point)
 </h1>
 <p>
-Interacting with the <strong>datasetd</strong> web service can be done with any web client. For documentation purposes I am assuming you are using <a href="https://curl.se/">curl</a>. This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the <strong>datasetd</strong> web service can be done
+with any web client. For documentation purposes I am assuming you are
+using <a href="https://curl.se/">curl</a>. This command line program is
+available on most POSIX systems including Linux, macOS and Windows.
 </p>
 <p>
-Delete a JSON document in the collection. Requires the document key and collection name.
+Delete a JSON document in the collection. Requires the document key and
+collection name.
 </p>
 <pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/delete/&lt;KEY&gt;`</code></pre>
 <p>
 Requires a <code>GET</code> HTTP method.
 </p>
 <p>
-Deletes a JSON document for the <code>&lt;KEY&gt;</code> in collection <code>&lt;COLLECTION_ID&gt;</code>. On success it returns HTTP 200 OK. Otherwise an HTTP error if creation fails.
+Deletes a JSON document for the <code>&lt;KEY&gt;</code> in collection
+<code>&lt;COLLECTION_ID&gt;</code>. On success it returns HTTP 200 OK.
+Otherwise an HTTP error if creation fails.
 </p>
 <h2 id="example">
 Example
 </h2>
 <p>
-The <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the <code>&lt;KEY&gt;</code> is “one” The content posted is
+The <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
+<code>&lt;KEY&gt;</code> is “one” The content posted is
 </p>
 <p>
 Posting using CURL is done like

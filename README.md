@@ -25,7 +25,7 @@ The JSON documents are plain UTF-8 source. This means the objects can be
 accessed with common [Unix](https://en.wikipedia.org/wiki/Unix)
 text processing tools as well as most programming languages.
 
-The _dataset_ command line tool supports common data management operations
+The __dataset__ command line tool supports common data management operations
 such as initialization of collections; document creation, reading,
 updating and deleting; listing keys of JSON objects in the collection;
 and associating non-JSON documents (attachments) with specific JSON

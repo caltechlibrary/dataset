@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,13 +49,20 @@
 Collection (end point)
 </h1>
 <p>
-Interacting with the <strong>datasetd</strong> web service can be done with any web client. For documentation purposes I am assuming you are using <a href="https://curl.se/">curl</a>. This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the <strong>datasetd</strong> web service can be done
+with any web client. For documentation purposes I am assuming you are
+using <a href="https://curl.se/">curl</a>. This command line program is
+available on most POSIX systems including Linux, macOS and Windows.
 </p>
 <p>
-This provides a metadata as JSON for a specific collection. This may including attributes like authorship, funding and contributions.
+This provides a metadata as JSON for a specific collection. This may
+including attributes like authorship, funding and contributions.
 </p>
 <p>
-If this end point is request with a GET method then the data is returned, if requested with a POST method the date is updated the updated metadata returned. The POST must submit JSON encoded object with the mime type of “application/json”.
+If this end point is request with a GET method then the data is
+returned, if requested with a POST method the date is updated the
+updated metadata returned. The POST must submit JSON encoded object with
+the mime type of “application/json”.
 </p>
 <p>
 The metadata fields are
@@ -85,24 +93,30 @@ The metadata fields are
 “author” (array of PersonOrOrg) a list of authors of the collection
 </li>
 <li>
-“contributor” (array of PersonOrOrg) a list of contributors to a collection
+“contributor” (array of PersonOrOrg) a list of contributors to a
+collection
 </li>
 <li>
 “funder” (array of PersonOrOrg) a list of funders of the collection
 </li>
 <li>
-“annotations” (an object) this is a map to any ad-hoc fields for the collection’s metadata
+“annotations” (an object) this is a map to any ad-hoc fields for the
+collection’s metadata
 </li>
 </ul>
 <p>
-The PersonOrOrg structure holds the metadata for either a person or organization. This is inspired by codemeta’s peron or organization object scheme. For a person you’d have a structure like
+The PersonOrOrg structure holds the metadata for either a person or
+organization. This is inspired by codemeta’s peron or organization
+object scheme. For a person you’d have a structure like
 </p>
 <ul>
 <li>
-“<span class="citation" data-cites="type"><span class="citation" data-cites="type">@type</span></span>” (the string “Person”)
+“<span class="citation" data-cites="type"><span class="citation"
+data-cites="type">@type</span></span>” (the string “Person”)
 </li>
 <li>
-“<span class="citation" data-cites="id"><span class="citation" data-cites="id">@id</span></span>” (string) the person’s ORCID
+“<span class="citation" data-cites="id"><span class="citation"
+data-cites="id">@id</span></span>” (string) the person’s ORCID
 </li>
 <li>
 “givenName” (string) person’s given name
@@ -119,10 +133,12 @@ For an organization structure like
 </p>
 <ul>
 <li>
-“<span class="citation" data-cites="type"><span class="citation" data-cites="type">@type</span></span>” (the string “Organization”)
+“<span class="citation" data-cites="type"><span class="citation"
+data-cites="type">@type</span></span>” (the string “Organization”)
 </li>
 <li>
-“<span class="citation" data-cites="id"><span class="citation" data-cites="id">@id</span></span>” (string) the orgnization’s ROR
+“<span class="citation" data-cites="id"><span class="citation"
+data-cites="id">@id</span></span>” (string) the orgnization’s ROR
 </li>
 <li>
 “name” (string) name of organization
@@ -132,7 +148,9 @@ For an organization structure like
 Example
 </h1>
 <p>
-The assumption is that we have <strong>datasetd</strong> running on port “8485” of “localhost” and a collection named characters is defined in the “settings.json” used at launch.
+The assumption is that we have <strong>datasetd</strong> running on port
+“8485” of “localhost” and a collection named characters is defined in
+the “settings.json” used at launch.
 </p>
 <p>
 Retrieving metatadata
@@ -142,53 +160,56 @@ Retrieving metatadata
 This would return the metadata found for our characters’ collection.
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>        <span class="dt">&quot;dataset_version&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.1.10&quot;</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;characters.ds&quot;</span><span class="fu">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>        <span class="dt">&quot;created&quot;</span><span class="fu">:</span> <span class="st">&quot;2021-07-28T11:32:36-07:00&quot;</span><span class="fu">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>        <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0&quot;</span><span class="fu">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>        <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>            <span class="fu">{</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>                <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://orcid.org/0000-0000-0000-0000&quot;</span><span class="fu">,</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>                <span class="dt">&quot;givenName&quot;</span><span class="fu">:</span> <span class="st">&quot;Jane&quot;</span><span class="fu">,</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>                <span class="dt">&quot;familyName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>                <span class="dt">&quot;affiliation&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>                    <span class="fu">{</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>                        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>                        <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://ror.org/05dxps055&quot;</span><span class="fu">,</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>                        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;California Institute of Technology&quot;</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>                    <span class="fu">}</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>                <span class="ot">]</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>            <span class="fu">}</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a>        <span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a>        <span class="dt">&quot;contributor&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a>            <span class="fu">{</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a>                <span class="dt">&quot;givenName&quot;</span><span class="fu">:</span> <span class="st">&quot;Martha&quot;</span><span class="fu">,</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a>                <span class="dt">&quot;familyName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a>                <span class="dt">&quot;affiliation&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a>                    <span class="fu">{</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a>                        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a>                        <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://ror.org/05dxps055&quot;</span><span class="fu">,</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a>                        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;California Institute of Technology&quot;</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a>                    <span class="fu">}</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a>                <span class="ot">]</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a>            <span class="fu">}</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a>        <span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a>        <span class="dt">&quot;funder&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a>            <span class="fu">{</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Caltech Library&quot;</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a>            <span class="fu">}</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a>        <span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true"></a>        <span class="dt">&quot;annotation&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true"></a>            <span class="dt">&quot;award&quot;</span><span class="fu">:</span> <span class="st">&quot;00000000000000001-2021&quot;</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true"></a>        <span class="fu">}</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;dataset_version&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.1.10&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;characters.ds&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;created&quot;</span><span class="fu">:</span> <span class="st">&quot;2021-07-28T11:32:36-07:00&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://orcid.org/0000-0000-0000-0000&quot;</span><span class="fu">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;givenName&quot;</span><span class="fu">:</span> <span class="st">&quot;Jane&quot;</span><span class="fu">,</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;familyName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;affiliation&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">{</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://ror.org/05dxps055&quot;</span><span class="fu">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;California Institute of Technology&quot;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">}</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                <span class="ot">]</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;contributor&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;givenName&quot;</span><span class="fu">:</span> <span class="st">&quot;Martha&quot;</span><span class="fu">,</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;familyName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doe&quot;</span><span class="fu">,</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;affiliation&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">{</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://ror.org/05dxps055&quot;</span><span class="fu">,</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;California Institute of Technology&quot;</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">}</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>                <span class="ot">]</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;funder&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Caltech Library&quot;</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;annotation&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;award&quot;</span><span class="fu">:</span> <span class="st">&quot;00000000000000001-2021&quot;</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
-Update metadata requires a POST with content type “application/json”. In this example the dataset collection is named “t1” only the “name” and “dataset_version” set.
+Update metadata requires a POST with content type “application/json”. In
+this example the dataset collection is named “t1” only the “name” and
+“dataset_version” set.
 </p>
 <pre class="shell"><code>    curl -X POST -H &#39;Content-Type: application/json&#39; \
     http://localhost:8485/collection/t1 \
@@ -197,17 +218,18 @@ Update metadata requires a POST with content type “application/json”. In thi
 The curl calls returns
 </p>
 <div id="cb4" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>        <span class="dt">&quot;dataset_version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0.1&quot;</span><span class="fu">,</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;T1.ds&quot;</span><span class="fu">,</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>        <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>            <span class="fu">{</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a>                <span class="dt">&quot;givenName&quot;</span><span class="fu">:</span> <span class="st">&quot;Robert&quot;</span><span class="fu">,</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a>                <span class="dt">&quot;familyName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doiel&quot;</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a>            <span class="fu">}</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>        <span class="ot">]</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;dataset_version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0.1&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;T1.ds&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;givenName&quot;</span><span class="fu">:</span> <span class="st">&quot;Robert&quot;</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;familyName&quot;</span><span class="fu">:</span> <span class="st">&quot;Doiel&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 </section>
 

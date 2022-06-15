@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,24 +49,33 @@
 Filters and sorting
 </h1>
 <p>
-<strong>dataset</strong> does not support internally sorting or filtering of keys. It does support data frames which can be used to do that with external tools.
+<strong>dataset</strong> does not support internally sorting or
+filtering of keys. It does support data frames which can be used to do
+that with external tools.
 </p>
 <h2 id="example">
 Example
 </h2>
 <ol type="1">
 <li>
-Create a data frame using <code>frame</code> verb containing the field “.given” and the record “.id”
+Create a data frame using <code>frame</code> verb containing the field
+“.given” and the record “.id”
 </li>
 <li>
-Iterate over the frame objects and in the frame using <code>frame-objects</code> verb.
+Iterate over the frame objects and in the frame using
+<code>frame-objects</code> verb.
 </li>
 <li>
-For desired keys output the key and send to a new “filtered” frame using <code>frame</code> verb.
+For desired keys output the key and send to a new “filtered” frame using
+<code>frame</code> verb.
 </li>
 </ol>
 <p>
-NOTE: In the example below I’ve used <strong>jsonrange</strong> and <strong>jsoncols</strong> for iterating and filtering our objects. These are provided by <a href="https://github.com/caltechlibrary/datatools/releases">datatools</a>. See <a href="filtering-keys.bash">filtering-keys.bash</a>.
+NOTE: In the example below I’ve used <strong>jsonrange</strong> and
+<strong>jsoncols</strong> for iterating and filtering our objects. These
+are provided by <a
+href="https://github.com/caltechlibrary/datatools/releases">datatools</a>.
+See <a href="filtering-keys.bash">filtering-keys.bash</a>.
 </p>
 <pre class="shell"><code>#
 # Frames, filter for given name &quot;Mojo&quot;

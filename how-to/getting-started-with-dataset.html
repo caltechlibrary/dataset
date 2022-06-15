@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,426 +49,566 @@
 Getting started with dataset
 </h1>
 <p>
-<em>dataset</em> is designed to easily manage collections of JSON objects. Objects are associated with a unique key you provide. The objects themselves are stored on disc in a folder inside the collection folder. The collection folder contains a JSON object document called <em>collection.json</em>. This file stores metadata about the collection including the association of keys with paths to their objects. <em>dataset</em> comes in several flavors — a command line program called <em>dataset</em>, a Go language package also called dataset, a shared library called libdataset and a Python 3.7 package called <a href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>. This tutorial talks both the command line program and the Python package. The command line is great for simple setup but Python is often more convenient for more complex operations.
+<em>dataset</em> is designed to easily manage collections of JSON
+objects. Objects are associated with a unique key you provide. The
+objects themselves are stored on disc in a folder inside the collection
+folder. The collection folder contains a JSON object document called
+<em>collection.json</em>. This file stores metadata about the collection
+including the association of keys with paths to their objects.
+<em>dataset</em> comes in several flavors — a command line program
+called <em>dataset</em>, a Go language package also called dataset, a
+shared library called libdataset and a Python 3.7 package called <a
+href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>. This
+tutorial talks both the command line program and the Python package. The
+command line is great for simple setup but Python is often more
+convenient for more complex operations.
 </p>
 <h2 id="create-a-collection-with-init">
 Create a collection with init
 </h2>
 <p>
-To create a collection you use the init verb. In the following examples you will see how to do this with both the command line tool <em>dataset</em> as well as the Python module of the same name.
+To create a collection you use the init verb. In the following examples
+you will see how to do this with both the command line tool
+<em>dataset</em> as well as the Python module of the same name.
 </p>
 <p>
-Let’s create a collection called <em>friends.ds</em>. At the command line type the following.
+Let’s create a collection called <em>friends.ds</em>. At the command
+line type the following.
 </p>
 <div id="cb1" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>    <span class="ex">dataset</span> init friends.ds</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> init friends.ds</span></code></pre>
 </div>
 <p>
-Notice that after you typed this and press enter you see an “OK” response. If there had been an error then you would have seen an error message instead.
+Notice that after you typed this and press enter you see an “OK”
+response. If there had been an error then you would have seen an error
+message instead.
 </p>
 <p>
-Working in Python is similar to the command line. We import the modules needed then use them. For these exercises we’ll be importing the following modules <em>sys</em>, <em>os</em>, <em>json</em> and of course <em>dataset</em> via <code>from py_dataset import dataset</code>.
+Working in Python is similar to the command line. We import the modules
+needed then use them. For these exercises we’ll be importing the
+following modules <em>sys</em>, <em>os</em>, <em>json</em> and of course
+<em>dataset</em> via <code>from py_dataset import dataset</code>.
 </p>
 <div id="cb2" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>    <span class="im">import</span> sys</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    <span class="im">import</span> os</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="im">import</span> json</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    <span class="co"># stop is a convenience function</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>    <span class="kw">def</span> stop(msg):</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>        <span class="bu">print</span>(msg)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>        sys.exit(<span class="dv">1</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>        </span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>    err <span class="op">=</span> dataset.init(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>        stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> sys</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> os</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> json</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># stop is a convenience function</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> stop(msg):</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(msg)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        sys.exit(<span class="dv">1</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.init(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
 </div>
 <p>
-In Python the error message is an empty string if everything is ok, otherwise we call stop which prints the message and exits. You will see this pattern followed in a number of upcoming Python examples.
+In Python the error message is an empty string if everything is ok,
+otherwise we call stop which prints the message and exits. You will see
+this pattern followed in a number of upcoming Python examples.
 </p>
 <h3 id="removing-friends.ds">
 removing friends.ds
 </h3>
 <p>
-There is no dataset verb to remove a collection. A collection is just a folder with some files in it. You can delete the collection by throwing the folder in the trash (Mac OS X and Windows) or using a recursive remove in the Unix shell.
+There is no dataset verb to remove a collection. A collection is just a
+folder with some files in it. You can delete the collection by throwing
+the folder in the trash (Mac OS X and Windows) or using a recursive
+remove in the Unix shell.
 </p>
 <h2 id="create-read-update-and-delete">
 create, read, update and delete
 </h2>
 <p>
-As with many systems that store information dataset provides for basic operations of creating, updating and deleting. In the following section we will work with the <em>friends.ds</em> collection and <em>favorites.ds</em> collection we created previously.
+As with many systems that store information dataset provides for basic
+operations of creating, updating and deleting. In the following section
+we will work with the <em>friends.ds</em> collection and
+<em>favorites.ds</em> collection we created previously.
 </p>
 <p>
-I have some friends who are characters in <a href="https://zbs.org">ZBS</a> radio plays. I am going to create and save some of their info in our collection called <em>friends.ds</em>. I am going to store their name and email address so I can contact them. Their names are Little Frieda, Mojo Sam and Jack Flanders.
+I have some friends who are characters in <a
+href="https://zbs.org">ZBS</a> radio plays. I am going to create and
+save some of their info in our collection called <em>friends.ds</em>. I
+am going to store their name and email address so I can contact them.
+Their names are Little Frieda, Mojo Sam and Jack Flanders.
 </p>
 <div id="cb3" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>    <span class="ex">dataset</span> create friends.ds frieda <span class="kw">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>      <span class="st">&#39;{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds frieda <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;</span></span></code></pre>
 </div>
 <p>
-Notice the “OK”. Just like <em>init</em> the <em>create</em> verb returns a status. “OK” means everything is good, otherwise an error is shown. Doing the same thing in Python would look like.
+Notice the “OK”. Just like <em>init</em> the <em>create</em> verb
+returns a status. “OK” means everything is good, otherwise an error is
+shown. Doing the same thing in Python would look like.
 </p>
 <div id="cb4" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>, </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>          {<span class="st">&quot;name&quot;</span>:<span class="st">&quot;Little Frieda&quot;</span>,<span class="st">&quot;email&quot;</span>:<span class="st">&quot;frieda@inverness.example.org&quot;</span>})</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>        stop(msg)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>, </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>          {<span class="st">&quot;name&quot;</span>:<span class="st">&quot;Little Frieda&quot;</span>,<span class="st">&quot;email&quot;</span>:<span class="st">&quot;frieda@inverness.example.org&quot;</span>})</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        stop(msg)</span></code></pre>
 </div>
 <p>
-With create we need to provide a collection name, a key (e.g. “frieda”) and Python dict (which becomes our JSON object). Now let’s add records for Mojo Sam and Jack Flanders.
+With create we need to provide a collection name, a key (e.g. “frieda”)
+and Python dict (which becomes our JSON object). Now let’s add records
+for Mojo Sam and Jack Flanders.
 </p>
 <p>
 command line –
 </p>
 <div id="cb5" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>    <span class="ex">dataset</span> create friends.ds <span class="st">&quot;mojo&quot;</span> <span class="kw">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>        <span class="st">&#39;{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}&#39;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>    <span class="ex">dataset</span> create friends.ds <span class="st">&quot;jack&quot;</span> <span class="kw">\</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>        <span class="st">&#39;{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}&#39;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds <span class="st">&quot;mojo&quot;</span> <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}&#39;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds <span class="st">&quot;jack&quot;</span> <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}&#39;</span></span></code></pre>
 </div>
 <p>
 in python –
 </p>
 <div id="cb6" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>, </span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>          {<span class="st">&quot;name&quot;</span>: <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span>, </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>          <span class="st">&quot;email&quot;</span>: <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span>})</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>: </span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, </span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>          {<span class="st">&quot;name&quot;</span>: <span class="st">&quot;Jack Flanders&quot;</span>, </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>          <span class="st">&quot;email&quot;</span>: <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span>})</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>: </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>        stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>, </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          {<span class="st">&quot;name&quot;</span>: <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span>, </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;email&quot;</span>: <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span>})</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>: </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>          {<span class="st">&quot;name&quot;</span>: <span class="st">&quot;Jack Flanders&quot;</span>, </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;email&quot;</span>: <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span>})</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>: </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
 </div>
 <h3 id="read">
 read
 </h3>
 <p>
-We have three records in our <em>friends.ds</em> collection — “frieda”, “mojo”, and “jack”. Let’s see what they look like with the <em>read</em> verb.
+We have three records in our <em>friends.ds</em> collection — “frieda”,
+“mojo”, and “jack”. Let’s see what they look like with the <em>read</em>
+verb.
 </p>
 <p>
 command line –
 </p>
 <div id="cb7" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>    <span class="ex">dataset</span> read friends.ds frieda</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read friends.ds frieda</span></code></pre>
 </div>
 <p>
-This command emits a JSON object. The JSON is somewhat hard to read. To get a pretty version of the JSON object used the “-p” option.
+This command emits a JSON object. The JSON is somewhat hard to read. To
+get a pretty version of the JSON object used the “-p” option.
 </p>
 <div id="cb8" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>    <span class="ex">dataset</span> read -p friends.ds frieda</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds frieda</span></code></pre>
 </div>
 <p>
-On the command line you can easily pipe the results to a file for latter modification. Let’s do this for each of the records we have created so far.
+On the command line you can easily pipe the results to a file for latter
+modification. Let’s do this for each of the records we have created so
+far.
 </p>
 <div id="cb9" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>    <span class="ex">dataset</span> read -p friends.ds frieda <span class="op">&gt;</span>frieda-profile.json</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>    <span class="ex">dataset</span> read -p friends.ds mojo <span class="op">&gt;</span>mojo-profile.json</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>    <span class="ex">dataset</span> read -p friends.ds jack <span class="op">&gt;</span>jack-profile.json</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds frieda <span class="op">&gt;</span>frieda-profile.json</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds mojo <span class="op">&gt;</span>mojo-profile.json</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds jack <span class="op">&gt;</span>jack-profile.json</span></code></pre>
 </div>
 <p>
-Working in python is similar but rather than write out our JSON structures to a file we’re going to keep them in memory as Python dict.
+Working in python is similar but rather than write out our JSON
+structures to a file we’re going to keep them in memory as Python dict.
 </p>
 <p>
 In Python –
 </p>
 <div id="cb10" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>    (frieda_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>    (mojo_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>    (jack_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>        stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    (frieda_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    (mojo_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    (jack_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
 </div>
 <p>
-In Python, just like with <em>init</em> and <em>create</em> the <em>read</em> verb returns a tuple of the value and err. Notice a pattern?
+In Python, just like with <em>init</em> and <em>create</em> the
+<em>read</em> verb returns a tuple of the value and err. Notice a
+pattern?
 </p>
 <h3 id="update">
 update
 </h3>
 <p>
-Next we can modify the profiles (the *.json files for the command line version). We’re going to add a key/value pair for “catch_phrase” associated with each JSON object in <em>friends.ds</em>. For Little Frieda edit freida-profile.json to look like –
+Next we can modify the profiles (the *.json files for the command line
+version). We’re going to add a key/value pair for “catch_phrase”
+associated with each JSON object in <em>friends.ds</em>. For Little
+Frieda edit freida-profile.json to look like –
 </p>
 <div id="cb11" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda&quot;</span><span class="fu">,</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda@inverness.example.org&quot;</span><span class="fu">,</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Woweee Zoweee&quot;</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda@inverness.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Woweee Zoweee&quot;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 For Mojo’s mojo-profile.json –
 </p>
 <div id="cb12" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;mojo&quot;</span><span class="fu">,</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span><span class="fu">,</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span><span class="fu">,</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;mojo&quot;</span><span class="fu">,</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span><span class="fu">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 An Jack’s jack-profile.json –
 </p>
 <div id="cb13" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>    <span class="fu">{</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;jack&quot;</span><span class="fu">,</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span><span class="fu">,</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>    <span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;jack&quot;</span><span class="fu">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
-On the command line we can read in the updated JSON objects and save the results in the collection with the <em>update</em> verb. Like with <em>init</em> and <em>create</em> the <em>update</em> verb will return an “OK” or error message. Let’s update each of our JSON objects.
+On the command line we can read in the updated JSON objects and save the
+results in the collection with the <em>update</em> verb. Like with
+<em>init</em> and <em>create</em> the <em>update</em> verb will return
+an “OK” or error message. Let’s update each of our JSON objects.
 </p>
 <div id="cb14" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a>    <span class="ex">dataset</span> update friends.ds freida frieda-profile.json</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>    <span class="ex">dataset</span> update friends.ds mojo mojo-profile.json</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>    <span class="ex">dataset</span> update friends.ds jack jack-profile.json</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds freida frieda-profile.json</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds mojo mojo-profile.json</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds jack jack-profile.json</span></code></pre>
 </div>
 <p>
-<strong>TIP</strong>: By providing a filename ending in “.json” the dataset command knows to read the JSON object from disc. If the object had stated with a “{” and ended with a “}” it would assume you were using an explicit JSON expression.
+<strong>TIP</strong>: By providing a filename ending in “.json” the
+dataset command knows to read the JSON object from disc. If the object
+had stated with a “{” and ended with a “}” it would assume you were
+using an explicit JSON expression.
 </p>
 <p>
-In Python we can work with each of the dictionaries variables we save from our previous <em>read</em> example. We add our “catch_phrase” attribute then <em>update</em> each record.
+In Python we can work with each of the dictionaries variables we save
+from our previous <em>read</em> example. We add our “catch_phrase”
+attribute then <em>update</em> each record.
 </p>
 <div id="cb15" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a>    frieda_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;Wowee Zowee&quot;</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a>    mojo_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a>    jack_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a>    </span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>, frieda_profile)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>, mojo_profile)</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, jack_profile)</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true"></a>        stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>    frieda_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;Wowee Zowee&quot;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    mojo_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    jack_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>, frieda_profile)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>, mojo_profile)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, jack_profile)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
 </div>
 <p>
-As an exercise how would you read back the updated version on the command line or in Python?
+As an exercise how would you read back the updated version on the
+command line or in Python?
 </p>
 <h3 id="delete">
 delete
 </h3>
 <p>
-Eventually you might want to remove a JSON object from the collection. Let’s remove Jack Flander’s record for now.
+Eventually you might want to remove a JSON object from the collection.
+Let’s remove Jack Flander’s record for now.
 </p>
 <p>
 command line –
 </p>
 <div id="cb16" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>    <span class="ex">dataset</span> delete friends.ds jack</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> delete friends.ds jack</span></code></pre>
 </div>
 <p>
-Notice the “OK” in this case it means we’ve successfully delete the JSON object from the collection.
+Notice the “OK” in this case it means we’ve successfully delete the JSON
+object from the collection.
 </p>
 <p>
 An perhaps as you’ve already guessed working in Python looks like –
 </p>
 <div id="cb17" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a>       stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>       stop(err)</span></code></pre>
 </div>
 <h2 id="keys-and-count">
 keys and count
 </h2>
 <p>
-Eventually you have lots of objects in your collection. You are not going to be able to remember all the keys. dataset provides a <em>keys</em> function for getting a list of keys as well as a <em>count</em> to give you a total number of keys.
+Eventually you have lots of objects in your collection. You are not
+going to be able to remember all the keys. dataset provides a
+<em>keys</em> function for getting a list of keys as well as a
+<em>count</em> to give you a total number of keys.
 </p>
 <p>
-Now that we’ve deleted a few things let’s see how many keys are in <em>friends.ds</em>. We can do that with the <em>count</em> verb.
+Now that we’ve deleted a few things let’s see how many keys are in
+<em>friends.ds</em>. We can do that with the <em>count</em> verb.
 </p>
 <p>
 Command line –
 </p>
 <div id="cb18" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a>    <span class="ex">dataset</span> count friends.ds</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> count friends.ds</span></code></pre>
 </div>
 <p>
 In Python –
 </p>
 <div id="cb19" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a>    cnt <span class="op">=</span> dataset.count(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Total Records Now: </span><span class="sc">{</span>cnt<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>    cnt <span class="op">=</span> dataset.count(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Total Records Now: </span><span class="sc">{</span>cnt<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre>
 </div>
 <p>
 Likewise we can get a list of the keys with the <em>keys</em> verb.
 </p>
 <div id="cb20" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a>    <span class="ex">dataset</span> keys friends.ds</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds</span></code></pre>
 </div>
 <p>
-If you are following along in Python then you can just save the keys to a variable called keys.
+If you are following along in Python then you can just save the keys to
+a variable called keys.
 </p>
 <div id="cb21" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join(keys))</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join(keys))</span></code></pre>
 </div>
 <h2 id="data-frames-and-grids">
 Data frames and grids
 </h2>
 <p>
-JSON objects are tree like. This structure can be inconvenient for some types of analysis like tabulation, comparing values or generating summarizing reports. Many languages support a concept of “data frame”. Meaning a list of objects, possibly with associated metadata about how the list was created. This becomes a convenient way to process data. Frames can easily be transformed. Sometimes a spreadsheet, table or 2D grid like structure is often a more familiar format for these types of tasks. <em>frame-grid</em> is dataset’s verb for taking a data frame and returning a 2D list of grid results. The 2D grid is easy to iterate over. A <em>frame-grid</em> doesn’t enforce any specifics on the columns and rows. It only contains the values you specified in the list of keys and dot paths when you defined the data frame.
+JSON objects are tree like. This structure can be inconvenient for some
+types of analysis like tabulation, comparing values or generating
+summarizing reports. Many languages support a concept of “data frame”.
+Meaning a list of objects, possibly with associated metadata about how
+the list was created. This becomes a convenient way to process data.
+Frames can easily be transformed. Sometimes a spreadsheet, table or 2D
+grid like structure is often a more familiar format for these types of
+tasks. <em>frame-grid</em> is dataset’s verb for taking a data frame and
+returning a 2D list of grid results. The 2D grid is easy to iterate
+over. A <em>frame-grid</em> doesn’t enforce any specifics on the columns
+and rows. It only contains the values you specified in the list of keys
+and dot paths when you defined the data frame.
 </p>
 <h3 id="the-frame">
 the frame
 </h3>
 <p>
-dataset also comes with a <em>frame</em> verb. A <em>frame</em> is an order list of objects with some additional metadata. It is similar to the “data frames” concepts in languages like Julia, Matlab, Octave, Python and R. It is a data structure that can be easily mapped to a grid (2D array or rows and columns). A frame is represented as an array of objects there the column names correspond to a attribute name in an object. It enforces a structure that behaves like a grid but is also easy to iterate over for other types of processing. Like our “grid” command a a <em>frame</em> will also derive heading labels (object attribute names) from the dot paths used to define the frame and will include metadata about the collection, keys used to define the frame and default types of data in the columns. The extra information in a <em>frame</em> stays with the collection. Frames are persistent and can be easily recalculated based on collection updates.
+dataset also comes with a <em>frame</em> verb. A <em>frame</em> is an
+order list of objects with some additional metadata. It is similar to
+the “data frames” concepts in languages like Julia, Matlab, Octave,
+Python and R. It is a data structure that can be easily mapped to a grid
+(2D array or rows and columns). A frame is represented as an array of
+objects there the column names correspond to a attribute name in an
+object. It enforces a structure that behaves like a grid but is also
+easy to iterate over for other types of processing. Like our “grid”
+command a a <em>frame</em> will also derive heading labels (object
+attribute names) from the dot paths used to define the frame and will
+include metadata about the collection, keys used to define the frame and
+default types of data in the columns. The extra information in a
+<em>frame</em> stays with the collection. Frames are persistent and can
+be easily recalculated based on collection updates.
 </p>
 <p>
-To define a frame we only need one additional piece of information besides what we used for a grid. We need a name for the frame.
+To define a frame we only need one additional piece of information
+besides what we used for a grid. We need a name for the frame.
 </p>
 <div id="cb22" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a>    <span class="ex">dataset</span> frame-create -i=friends.keys friends.ds <span class="kw">\</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true"></a>        <span class="st">&quot;name-and-email&quot;</span> <span class="kw">\</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true"></a>        <span class="ex">.name</span>=name .email=email <span class="kw">\</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true"></a>        <span class="ex">.catch_phrase</span>=catch_phrase</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-create <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="dt">\</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        .name=name .email=email <span class="dt">\</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        .catch_phrase=catch_phrase</span></code></pre>
 </div>
 <p>
 In python it would look like
 </p>
 <div id="cb23" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a>          keys, { </span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true"></a>              <span class="st">&quot;.name&quot;</span>: <span class="st">&quot;name&quot;</span>, </span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true"></a>              <span class="st">&quot;.email&quot;</span>: <span class="st">&quot;email&quot;</span>, </span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true"></a>              <span class="st">&quot;.catch_phrase&quot;</span>: <span class="st">&quot;catch_phrase&quot;</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true"></a>              })</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true"></a>        stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>          keys, { </span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;.name&quot;</span>: <span class="st">&quot;name&quot;</span>, </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;.email&quot;</span>: <span class="st">&quot;email&quot;</span>, </span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;.catch_phrase&quot;</span>: <span class="st">&quot;catch_phrase&quot;</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>              })</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
 </div>
 <p>
-To see the full contents of a frame we only need to supply the collection and frame names.
+To see the full contents of a frame we only need to supply the
+collection and frame names.
 </p>
 <div id="cb24" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true"></a>    <span class="ex">dataset</span> frame friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
 In Python it’d look like
 </p>
 <div id="cb25" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>    (f, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true"></a>    <span class="bu">print</span>(json.dumps(f, indent <span class="op">=</span> <span class="dv">4</span>))</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>    (f, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(f, indent <span class="op">=</span> <span class="dv">4</span>))</span></code></pre>
 </div>
 <p>
-Looking at the resulting JSON object you see other attributes beyond the object list of the frame. These are created to simplify some of dataset more complex interactions.
+Looking at the resulting JSON object you see other attributes beyond the
+object list of the frame. These are created to simplify some of dataset
+more complex interactions.
 </p>
 <p>
-Most of the time you don’t want the metadata, so you we have a way of just retrieving the object list.
+Most of the time you don’t want the metadata, so you we have a way of
+just retrieving the object list.
 </p>
 <div id="cb26" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
 Or in Python
 </p>
 <div id="cb27" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a>    object_list <span class="op">=</span> dataset.frame_objects(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>    object_list <span class="op">=</span> dataset.frame_objects(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span></code></pre>
 </div>
 <p>
-Let’s add back the Jack record we deleted a few sections ago and “reframe” our “name-and-email” frame.
+Let’s add back the Jack record we deleted a few sections ago and
+“reframe” our “name-and-email” frame.
 </p>
 <div id="cb28" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true"></a>    <span class="co"># Adding back Jack</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true"></a>    <span class="ex">dataset</span> create friends.ds jack jack-profile.json</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true"></a>    <span class="co"># Save all the keys in the collection</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true"></a>    <span class="ex">dataset</span> keys friends.ds <span class="op">&gt;</span>friends.keys</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true"></a>    <span class="co"># Now reframe &quot;name-and-email&quot; with the updated friends.keys</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true"></a>    <span class="ex">dataset</span> frame-reframe -i=friends.keys friends.ds <span class="st">&quot;name-and-email&quot;</span> </span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true"></a>    <span class="co"># Now let&#39;s take a look at the frame</span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true"></a>    <span class="ex">dataset</span> frame -p friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Adding back Jack</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds jack jack-profile.json</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save all the keys in the collection</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds <span class="op">&gt;</span>friends.keys</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now reframe &quot;name-and-email&quot; with the updated friends.keys</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-reframe <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="st">&quot;name-and-email&quot;</span> </span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s take a look at the frame</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame <span class="at">-p</span> friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
-NOTE: the <em>read</em> before it the “-p” option will cause the JSON representation of the frame to be pretty printed.
+NOTE: the <em>read</em> before it the “-p” option will cause the JSON
+representation of the frame to be pretty printed.
 </p>
 <p>
 Let’s try the same thing in Python
 </p>
 <div id="cb29" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, jack_profile)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_reframe(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, keys)</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true"></a>    (f, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true"></a>    <span class="bu">print</span>(json.dumps(f, indent <span class="op">=</span> <span class="dv">4</span>))</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, jack_profile)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_reframe(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, keys)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    (f, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(f, indent <span class="op">=</span> <span class="dv">4</span>))</span></code></pre>
 </div>
 <p>
 We can list the frames in the collection using the <em>frames</em> verb.
 </p>
 <div id="cb30" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true"></a>    <span class="ex">dataset</span> frames friends.ds</span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frames friends.ds</span></code></pre>
 </div>
 <p>
 In Python
 </p>
 <div id="cb31" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true"></a>    frame_names <span class="op">=</span> dataset.frames(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join(frame_names))</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>    frame_names <span class="op">=</span> dataset.frames(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join(frame_names))</span></code></pre>
 </div>
 <p>
-In our frame we have previously defined three columns, looking at the JSON representation of the frame we also see a “labels” attribute. Labels are used when exporting and synchronizing content between a CSV file, Google Sheet and a collection (labels become column names).
+In our frame we have previously defined three columns, looking at the
+JSON representation of the frame we also see a “labels” attribute.
+Labels are used when exporting and synchronizing content between a CSV
+file, Google Sheet and a collection (labels become column names).
 </p>
 <p>
-Labels are set at the time of frame definition and persist as long as the frame exists. The order of the columns reflects the order of the pairs defining the dot paths and labels. In our previous examples we provided the order of the columns for the frame “name-and-email” as .name, .email, .catch_phrase dot paths. If we want to have the labels “ID”, “Display Name”, “EMail”, and “Catch Phrase” we need to define our frame that way.
+Labels are set at the time of frame definition and persist as long as
+the frame exists. The order of the columns reflects the order of the
+pairs defining the dot paths and labels. In our previous examples we
+provided the order of the columns for the frame “name-and-email” as
+.name, .email, .catch_phrase dot paths. If we want to have the labels
+“ID”, “Display Name”, “EMail”, and “Catch Phrase” we need to define our
+frame that way.
 </p>
 <div id="cb32" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true"></a>    <span class="ex">dataset</span> frame friends.ds <span class="st">&quot;name-and-email&quot;</span> <span class="kw">\</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true"></a>        <span class="st">&quot;._Key=ID&quot;</span> <span class="st">&quot;.name=Display Name&quot;</span> <span class="kw">\</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true"></a>        <span class="st">&quot;.email=EMail&quot;</span> <span class="st">&quot;.catch_phrase=Catch Phrase&quot;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame friends.ds <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;._Key=ID&quot;</span> <span class="st">&quot;.name=Display Name&quot;</span> <span class="dt">\</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;.email=EMail&quot;</span> <span class="st">&quot;.catch_phrase=Catch Phrase&quot;</span></span></code></pre>
 </div>
 <p>
 In Python it look like
 </p>
 <div id="cb33" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true"></a>        stop(err)</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true"></a>    </span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true"></a>          <span class="st">&quot;._Key&quot;</span>: <span class="st">&quot;ID&quot;</span>, </span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true"></a>          <span class="st">&quot;.name&quot;</span>: <span class="st">&quot;Display Name&quot;</span>, </span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true"></a>          <span class="st">&quot;.email&quot;</span>: <span class="st">&quot;EMail&quot;</span>, </span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true"></a>          <span class="st">&quot;.catch_pharse&quot;</span>: <span class="st">&quot;Catch Phrase&quot;</span></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true"></a>          })</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true"></a>        stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;._Key&quot;</span>: <span class="st">&quot;ID&quot;</span>, </span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;.name&quot;</span>: <span class="st">&quot;Display Name&quot;</span>, </span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;.email&quot;</span>: <span class="st">&quot;EMail&quot;</span>, </span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;.catch_pharse&quot;</span>: <span class="st">&quot;Catch Phrase&quot;</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>          })</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
 </div>
 <p>
-Finally the last thing we need to be able to do is delete a frame. Delete frames work very similar to deleting a JSON record.
+Finally the last thing we need to be able to do is delete a frame.
+Delete frames work very similar to deleting a JSON record.
 </p>
 <div id="cb34" class="sourceCode">
-<pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+<pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
 Or in Python
 </p>
 <div id="cb35" class="sourceCode">
-<pre class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true"></a>          stop(err)</span></code></pre>
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>          stop(err)</span></code></pre>
 </div>
 <p>
-<strong>TIP</strong>: Frames like collections have a number of operations. Here’s the list
+<strong>TIP</strong>: Frames like collections have a number of
+operations. Here’s the list
 </p>
 <ol type="1">
 <li>
@@ -492,7 +633,8 @@ Or in Python
 </li>
 <li>
 <p>
-<em>frames</em> will list the frames defined in the collection columns in a frame, it will cause the frame to regenerate its object list
+<em>frames</em> will list the frames defined in the collection columns
+in a frame, it will cause the frame to regenerate its object list
 </p>
 </li>
 <li>

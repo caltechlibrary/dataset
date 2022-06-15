@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,24 +49,32 @@
 Prune (end point)
 </h1>
 <p>
-Removes an attached document from a JSON record using <code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and <code>&lt;FILENAME&gt;</code>.
+Removes an attached document from a JSON record using
+<code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and
+<code>&lt;FILENAME&gt;</code>.
 </p>
 <pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;`</code></pre>
 <p>
-Requires a GET method. Returns an HTTP 200 OK on success or an HTTP error code if not.
+Requires a GET method. Returns an HTTP 200 OK on success or an HTTP
+error code if not.
 </p>
 <p>
-See https://semver.org/ for more information on semantic version numbers.
+See https://semver.org/ for more information on semantic version
+numbers.
 </p>
 <h2 id="example">
 Example
 </h2>
 <p>
-In this example <code>&lt;COLLECTION_ID&gt;</code> is “t1”, <code>&lt;KEY&gt;</code> is “one”, <code>&lt;SEMVER&gt;</code> is “0.0.1” and <code>&lt;FILENAME&gt;</code> is “a1.png”. Once again our example uses curl.
+In this example <code>&lt;COLLECTION_ID&gt;</code> is “t1”,
+<code>&lt;KEY&gt;</code> is “one”, <code>&lt;SEMVER&gt;</code> is
+“0.0.1” and <code>&lt;FILENAME&gt;</code> is “a1.png”. Once again our
+example uses curl.
 </p>
 <pre class="shell"><code>    curl http://localhost:8485/t1/prune/one/0.0.1/a1.png</code></pre>
 <p>
-This will cause the attached file to be removed from the record and collection.
+This will cause the attached file to be removed from the record and
+collection.
 </p>
 </section>
 

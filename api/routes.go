@@ -9,10 +9,29 @@ import (
 	"strings"
 )
 
+//
+// NOTE: Examples routes using curl assume the "host" has been
+// configured for the default "localhost:8485".
+//
+
+// ApiVersion returns the version of the web service running.
+// This will normally be the same version of dataset you installed.
+//
+// ```shell
+//    curl -X GET http://localhost:8485/api/version
+// ```
+//
 func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	fmt.Fprintf(w, "%s %s", api.AppName, api.Version)
 }
 
+// ApiCollections returns a list of dataset collections supported
+// by the running web service.
+//
+// ```shell
+//    curl -X GET http://localhost:8485/api/collections
+// ```
+//
 func ApiCollections(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	collections := []string{}
 	w.Header().Add("Content-Type", "application/json")
@@ -30,10 +49,24 @@ func ApiCollections(w http.ResponseWriter, r *http.Request, api *API, cName stri
 	fmt.Fprintf(w, "[]")
 }
 
+// ApiCollection returns the codemeta JSON for a specific collection.
+// Example collection name "journals.ds"
+//
+// ```shell
+//    curl -X GET http://localhost:8485/api/collection/journals.ds
+// ```
+//
 func ApiCodemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
+// ApiKeys returns the available keys in a collection as a JSON array.
+// Example collection name "journals.ds"
+//
+// ```shell
+//    curl -X GET http://localhost:8485/api/journals.ds/keys
+// ```
+//
 func ApiKeys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if c, ok := api.CMap[cName]; ok {
 		keys, err := c.Keys()
@@ -56,6 +89,7 @@ func ApiKeys(w http.ResponseWriter, r *http.Request, api *API, cName string, ver
 	return
 }
 
+// ApiKeys
 func ApiCreate(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {

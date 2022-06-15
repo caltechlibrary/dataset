@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,10 +49,20 @@
 Working with CSV
 </h1>
 <p>
-<a href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a> files are commonly used to share data. Most spreadsheets and many database systems can export and import from CSV files. <em>datatset</em> can use a spreadsheet in CSV format to populate JSON objects in a collection. The header row of the CSV file will become the object attribute names and the rows will become their values. <em>dataset</em> requires a column of unique values to become the keys for the JSON objects stored in the collection.
+<a
+href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a>
+files are commonly used to share data. Most spreadsheets and many
+database systems can export and import from CSV files. <em>datatset</em>
+can use a spreadsheet in CSV format to populate JSON objects in a
+collection. The header row of the CSV file will become the object
+attribute names and the rows will become their values. <em>dataset</em>
+requires a column of unique values to become the keys for the JSON
+objects stored in the collection.
 </p>
 <p>
-You can export CSV directly from a collection too. The paths to the elements in the objects become the header row and the values exported from the objects become the subsequent rows.
+You can export CSV directly from a collection too. The paths to the
+elements in the objects become the header row and the values exported
+from the objects become the subsequent rows.
 </p>
 <pre><code>NOTE: In an upcoming release of data the specific command line 
 parameters and Python method definitions may change.  Now that 
@@ -63,7 +74,8 @@ release method for working with CSV files.</code></pre>
 Import objects from a CSV file
 </h2>
 <p>
-You can import rows of a CSV document as JSON documents. This is useful when you have a large number of simple structures.
+You can import rows of a CSV document as JSON documents. This is useful
+when you have a large number of simple structures.
 </p>
 <p>
 In this example we have a simple CSV file containing the following
@@ -76,16 +88,19 @@ In this example we have a simple CSV file containing the following
     Far Seeing Art,old.art@zbs.example.org
     Jack Flanders,captain.jack@zbs.example.org</code></pre>
 <p>
-Save this file as <em>characters.csv</em>. To import this let’s create a collection named <em>characters</em>.
+Save this file as <em>characters.csv</em>. To import this let’s create a
+collection named <em>characters</em>.
 </p>
 <pre class="shell"><code>    dataset init characters-v1.ds</code></pre>
 <p>
-Now we can populate our characters collection by importing <em>characters.csv</em>. Then look at the keys.
+Now we can populate our characters collection by importing
+<em>characters.csv</em>. Then look at the keys.
 </p>
 <pre class="shell"><code>    dataset import characters-v1.ds characters.csv 2
     dataset keys characeter-v1.ds </code></pre>
 <p>
-Notice the assigned ids. We used the second column, the one with th email heading to be our keys.
+Notice the assigned ids. We used the second column, the one with th
+email heading to be our keys.
 </p>
 <pre class="shell"><code>    ralph.rolf@zbs.example.org
     zowie@zbs.example.org
@@ -98,7 +113,8 @@ Notice the assigned ids. We used the second column, the one with th email headin
            dataset read characters-v1.ds &quot;${ID}&quot;; 
        done</code></pre>
 <p>
-Now let’s make a new version of our characters collection but this time we’ll column one (the name column) as the key.
+Now let’s make a new version of our characters collection but this time
+we’ll column one (the name column) as the key.
 </p>
 <pre class="shell"><code>    dataset init characters-v2.ds
     dataset import characters-v2.ds characters.csv 1
@@ -108,7 +124,8 @@ Now our keys look a little different.
 </p>
 <pre class="shell"><code></code></pre>
 <p>
-Reading the records back we see we have the JSON same document structure.
+Reading the records back we see we have the JSON same document
+structure.
 </p>
 <pre class="shell"><code>    dataset keys characters-v2.ds | \
         while read ID; do 
@@ -126,7 +143,8 @@ Our records look like…
 What if the CSV file has no header row?
 </h2>
 <p>
-Let’s create a new collection and try the “-use-header-row=false” option.
+Let’s create a new collection and try the “-use-header-row=false”
+option.
 </p>
 <pre class="shell"><code>    dataset init characters-v4.ds
     dataset import -skip-header-row=false characters-v4.ds characters.csv
@@ -136,7 +154,8 @@ Let’s create a new collection and try the “-use-header-row=false” option.
             dataset read characters-v4.ds &quot;${ID}&quot;; 
         done</code></pre>
 <p>
-Our ids are like in our first example because we chose to use the default JSON document key.
+Our ids are like in our first example because we chose to use the
+default JSON document key.
 </p>
 <pre><code>    characters.csv_2
     characters.csv_3
@@ -149,16 +168,20 @@ Our ids are like in our first example because we chose to use the default JSON d
 Now take a look at the records output
 </p>
 <div id="cb13" class="sourceCode">
-<pre class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Zowie&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;zowie@zbs.example.org&quot;</span><span class="fu">}</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Ralph Rolf&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;ralph.rolf@zbs.example.org&quot;</span><span class="fu">}</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Mojo Sam&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;mojo.sam@zbs.example.org&quot;</span><span class="fu">}</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;little.frieda@zbs.example.org&quot;</span><span class="fu">}</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Far Seeing Art&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;old.art@zbs.example.org&quot;</span><span class="fu">}</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;captain.jack@zbs.example.org&quot;</span><span class="fu">}</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;name&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;email&quot;</span><span class="fu">}</span></span></code></pre>
+<pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Zowie&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;zowie@zbs.example.org&quot;</span><span class="fu">}</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Ralph Rolf&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;ralph.rolf@zbs.example.org&quot;</span><span class="fu">}</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Mojo Sam&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;mojo.sam@zbs.example.org&quot;</span><span class="fu">}</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;little.frieda@zbs.example.org&quot;</span><span class="fu">}</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Far Seeing Art&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;old.art@zbs.example.org&quot;</span><span class="fu">}</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;captain.jack@zbs.example.org&quot;</span><span class="fu">}</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">&quot;col1&quot;</span><span class="fu">:</span><span class="st">&quot;name&quot;</span><span class="fu">,</span><span class="dt">&quot;col2&quot;</span><span class="fu">:</span><span class="st">&quot;email&quot;</span><span class="fu">}</span></span></code></pre>
 </div>
 <p>
-Instead of a <em>name</em> and <em>email</em> property name we have <em>col1</em> and <em>col2</em>.<br /> Setting “-use-header-row” to false can be used with column numbers and or “-uuid” option. Give it a try with this final collection.
+Instead of a <em>name</em> and <em>email</em> property name we have
+<em>col1</em> and <em>col2</em>.<br /> Setting “-use-header-row” to
+false can be used with column numbers and or “-uuid” option. Give it a
+try with this final collection.
 </p>
 <pre class="shell"><code>    dataset import -use-header-row=false characters-v5.ds characters.csv 2
     dataset keys characters-v5.ds
@@ -176,12 +199,16 @@ imports and exports
 importing data into a collection
 </h2>
 <p>
-We can import data from a CSV file and store each row as a JSON document in dataset. You need to pick a column with unique values to be the key for each record in the collection. In this example we assume column one has the key value.
+We can import data from a CSV file and store each row as a JSON document
+in dataset. You need to pick a column with unique values to be the key
+for each record in the collection. In this example we assume column one
+has the key value.
 </p>
 <pre class="shell"><code>    dataset init mydata.ds
     dataset import mydata.ds my-data.csv 1</code></pre>
 <p>
-You can create a CSV export by providing the dot paths for each column and then givening columns a name.
+You can create a CSV export by providing the dot paths for each column
+and then givening columns a name.
 </p>
 <h2 id="exporting-data-from-a-collection">
 exporting data from a collection
@@ -193,7 +220,8 @@ exporting data from a collection
        &#39;.pubDate=date&#39;
    dataset export mydata.ds export-frame </code></pre>
 <p>
-If you wanted to restrict to a subset (e.g. publication in year 2016) You just need to create a frame with that restriction.
+If you wanted to restrict to a subset (e.g. publication in year 2016)
+You just need to create a frame with that restriction.
 </p>
 <pre class="shell"><code>   dataset keys mydata.ds &#39;(eq 2016 (year .pubDate))&#39; | \
       dataset frame-create mydata.ds published-2016 \
