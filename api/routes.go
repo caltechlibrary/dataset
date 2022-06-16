@@ -318,6 +318,7 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	log.Printf("DEBUG src -> %s", src)
 	m := map[string][]string{}
 	if err := json.Unmarshal(src, &m); err != nil {
 		log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
@@ -335,6 +336,7 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	if data, ok := m["keys"]; ok {
 		keys = data[:]
 	}
+	log.Printf("DEBUG dot_paths, labels, keys %+v, %+v, %+v", dotPaths, labels, keys)
 	// Get collection
 	c, ok := api.CMap[cName]
 	if ok {
