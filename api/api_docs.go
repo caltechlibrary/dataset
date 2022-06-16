@@ -83,8 +83,8 @@ implemented by {app_name}.
 
 	// EndPointREADME a copy of docs/datasetd.md
 	EndPointREADME = `
-Datasetd
-========
+{app_name}
+==========
 
 Overview
 --------
@@ -111,7 +111,7 @@ The "settings.json" file has the following structure
 ` + "```" + `
 
 
-Running datasetd
+Running {app_name}
 ----------------
 
 {app_name} runs as a HTTP service and as such can be exploited in the same manner as other services using HTTP.  You should only run {app_name} on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by {app_name} regardless of the file permissions they may in their account.
@@ -170,7 +170,7 @@ If I have a settings file for "recipes" based on the collection
 I would start {app_name} with the following command line.
 
 ` + "```" + `shell
-    datasetd settings.json
+    {app_name} settings.json
 ` + "```" + `
 
 This would display the start up message and log output of the service.
@@ -747,8 +747,8 @@ usually "mysql" though could be "sqlite", the "dsn" is the data source name
 used to initialized the connection to the SQL engine. It is SQL engine
 specific. E.g. if "sql_type" is "sqlite" then the "dsn" might be "file:DB_NAME?cache=shared".
 
-Running datasetd
-----------------
+Running {app_name}
+------------------
 
 {app_name} runs as a HTTP/HTTPS service and as such can be exploit as other network based services can be.  It is recommend you only run {app_name} on localhost on a trusted machine. If the machine is a multi-user machine all users can have access to the collections exposed by {app_name} regardless of the file permissions they may in their account.  E.g. If all dataset collections are in a directory only allowed access to be the "web-data" user but another user on the system can run cURL then they can access the dataset collections based on the rights of the "web-data" user.  This is a typical situation for most web services and you need to be aware of it if you choose to run {app_name}. A way to minimize the problem would be to run {app_name} in a container restricted to the specific user.
 
@@ -779,7 +779,7 @@ Each of theses "actions" can be restricted in the _collections table (
 attribute for the action is not specified in the JSON settings file
 then it is assumed to be "false".
 
-Working with datasetd
+Working with {app_name}
 ---------------------
 
 E.g. if I have a settings file for "recipes" based on the collection
@@ -799,7 +799,7 @@ E.g. if I have a settings file for "recipes" based on the collection
 
 I would start {app_name} with the following command line.
 
-    datasetd settings.json
+    {app_name} settings.json
 
 This would display the start up message and log output of the service.
 
@@ -867,7 +867,7 @@ In the "setttings.json" file the JSON should look like.
 Now we can run {app_name} and make the dataset collection available
 via HTTP.
 
-    datasetd settings.json
+    {app_name} settings.json
 
 You should now see the start up message and any log information display
 to the console. You should open a new shell sessions and try the following.

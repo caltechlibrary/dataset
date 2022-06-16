@@ -54,11 +54,11 @@ func main() {
 	eout := os.Stderr
 
 	if showHelp {
-		cli.DisplayUsage(out, appName, flagSet, cli.CLIDescription, cli.CLIExamples, cli.License)
+		cli.DisplayUsage(out, appName, flagSet)
 		os.Exit(0)
 	}
 	if showLicense {
-		cli.DisplayLicense(out, appName, cli.License)
+		cli.DisplayLicense(out, appName)
 		os.Exit(0)
 	}
 	if showVersion {

@@ -19,7 +19,11 @@ import (
 )
 
 var (
-	records = map[string]map[string]interface{}{
+	contentType = "application/json"
+	dName       = "testout"
+	dbName      = path.Join(dName, "collections.db")
+	dsnURI      = "sqlite://" + dbName
+	records     = map[string]map[string]interface{}{
 		"Miller-A": {
 			"id":     "Miller-A",
 			"given":  "Arthor",
@@ -33,7 +37,44 @@ var (
 			"genre":  []string{"plays", "radio-theater"},
 		},
 	}
+
+	frames = map[string]map[string]string{
+		"name": {
+			".given":  "Given Name",
+			".family": "Family Name",
+		},
+	}
 )
+
+func makePayload(src []byte) (io.Reader, error) {
+	return bytes.NewBuffer(src), nil
+}
+
+func makeObjectPayload(o map[string]interface{}) (io.Reader, error) {
+	src, err := json.MarshalIndent(o, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+	return makePayload(src)
+}
+
+func makeRequest(u string, method string, payload io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, u, payload)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("content-type", contentType)
+	client := new(http.Client)
+	return client.Do(req)
+}
+
+func assertHTTPStatus(t *testing.T, expected int, got int) bool {
+	if expected != got {
+		t.Errorf("expected http status %q, got %q", http.StatusText(expected), http.StatusText(got))
+		return false
+	}
+	return true
+}
 
 func sameObjectSrc(expected []byte, got []byte) bool {
 	expectedO := map[string]interface{}{}
@@ -75,8 +116,7 @@ func clientTestVersion(t *testing.T, settings *config.Settings) {
 		t.FailNow()
 	}
 	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		t.Errorf("unexpected response, %q", res.Status)
+	if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
 		t.FailNow()
 	}
 	body, err := io.ReadAll(res.Body)
@@ -113,8 +153,7 @@ func clientTestKeys(t *testing.T, settings *config.Settings) {
 			t.FailNow()
 		}
 		defer res.Body.Close()
-		if res.StatusCode != 200 {
-			t.Errorf("unexpected response, %q", res.Status)
+		if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
 			t.FailNow()
 		}
 		body, err := io.ReadAll(res.Body)
@@ -151,7 +190,6 @@ func clientTestKeys(t *testing.T, settings *config.Settings) {
 func clientTestObjects(t *testing.T, settings *config.Settings) {
 	fmt.Printf("starting client test add objects\n")
 
-	mimeType := "application/json"
 	newRecords := map[string]map[string]interface{}{
 		"Flanders-J": {
 			"name":        "Jack Flanders",
@@ -184,19 +222,21 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 			// Add an Object
 			u := fmt.Sprintf("http://%s/api/%s/object/%s", settings.Host, cName, k)
 			body := bytes.NewBuffer(v)
-			res, err := http.Post(u, mimeType, body)
+			res, err := makeRequest(u, http.MethodPost, body)
 			if err != nil {
-				t.Errorf("http.Post(%q, %q, %s) error %s", u, mimeType, body, err)
+				t.Errorf("http.Post(%q, %q, %s) error %s", u, contentType, body, err)
 				t.FailNow()
 			}
-			if res.StatusCode != http.StatusOK {
-				t.Errorf("expected http (POST) status %q, got %q", http.StatusText(http.StatusOK), http.StatusText(res.StatusCode))
+			if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
 				t.FailNow()
 			}
 			// Read Back Object
-			res, err = http.Get(u)
+			res, err = makeRequest(u, http.MethodGet, nil)
 			if err != nil {
-				t.Errorf("expected http (GET) status %q, got %q", http.StatusText(http.StatusOK), http.StatusText(res.StatusCode))
+				t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
+				t.FailNow()
+			}
+			if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
 				t.FailNow()
 			}
 			src, err := ioutil.ReadAll(res.Body)
@@ -212,28 +252,20 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 				o["active"] = false
 				src, _ := json.Marshal(o)
 				body = bytes.NewBuffer(src)
-				req, _ := http.NewRequest(http.MethodPut, u, body)
-				req.Header.Set("content-type", mimeType)
-				client := new(http.Client)
-				res, err := client.Do(req)
+				res, err := makeRequest(u, http.MethodPut, body)
 				if err != nil {
 					t.Errorf("put failed, %s", err)
 				}
-				if res.StatusCode != http.StatusOK {
-					t.Errorf("expected status code %q, got %q", http.StatusText(http.StatusOK), http.StatusText(res.StatusCode))
+				if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
 					t.FailNow()
 				}
 			} else if k == "Freda-L" {
 				// Little Freda went on to a different plain of existence
-				req, _ := http.NewRequest(http.MethodDelete, u, nil)
-				req.Header.Set("content-type", mimeType)
-				client := new(http.Client)
-				res, err := client.Do(req)
+				res, _ := makeRequest(u, http.MethodDelete, nil)
 				if err != nil {
 					t.Errorf("delete failed, %s", err)
 				}
-				if res.StatusCode != http.StatusOK {
-					t.Errorf("expected status code %q, got %q", http.StatusText(http.StatusOK), http.StatusText(res.StatusCode))
+				if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
 					t.FailNow()
 				}
 			}
@@ -241,8 +273,134 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 	}
 }
 
+func clientTestAttachments(t *testing.T, settings *config.Settings) {
+	t.Errorf("clientTestAttachments() not implemented.")
+}
+
+func clientTestFrames(t *testing.T, settings *config.Settings) {
+	framedRecords := map[string]map[string]interface{}{
+		"Miller-A": {
+			"id":        "Miller-A",
+			"given":     "Arthor",
+			"family":    "Miller",
+			"character": false,
+			"vocations": []string{"playright", "writer", "author"},
+		},
+		"Lopez-T": {
+			"id":        "Lopez-T",
+			"given":     "Tom",
+			"family":    "Lopez",
+			"character": false,
+			"vocations": []string{"playright", "producer", "director", "sound-engineer", "voice actor", "disc jockey"},
+		},
+		"Flanders-J": {
+			"given":       "Jack",
+			"family":      "Jack Flanders",
+			"played-by":   "Robert Lorick",
+			"character":   true,
+			"description": "Metaphysical Detective",
+		},
+		"Freda-L": {
+			"given":       "Little",
+			"family":      "Freda",
+			"played-by":   "P.J. O'Rorke",
+			"character":   true,
+			"description": "A wise Venusian",
+		},
+		"Sam-M": {
+			"given":       "Mojo",
+			"family":      "Sam",
+			"played-by":   "Dave Adams",
+			"character":   true,
+			"description": "The wise You-do man",
+		},
+	}
+
+	cName := path.Join(dName, "frames_test.ds")
+	if err := SetupTestCollection(cName, dsnURI, framedRecords); err != nil {
+		t.Errorf("SetupTestCollection(%q, %+v) -> %s", cName, records, err)
+		t.FailNow()
+	}
+
+	// Check to make sure frame does not exist
+	frameName := "names"
+	u := fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
+	res, err := makeRequest(u, http.MethodGet, nil)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
+		t.FailNow()
+	}
+	if !assertHTTPStatus(t, http.StatusNotFound, res.StatusCode) {
+		t.FailNow()
+	}
+	if _, err := ioutil.ReadAll(res.Body); err != nil {
+		t.Errorf("expected to read the body of reqest, %s", err)
+	}
+	res.Body.Close()
+
+	// Create the frame "names"
+	frameDef := map[string]interface{}{
+		"dot_paths": []string{
+			".given=Given Name",
+			".family=Family Name",
+		},
+		"keys": []string{"Sam-M", "Flanders-J"},
+	}
+	payload, err := makeObjectPayload(frameDef)
+	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
+	res, err = makeRequest(u, http.MethodPost, payload)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, %s) -> %s", u, http.MethodPost, payload, err)
+	}
+	assertHTTPStatus(t, http.StatusOK, res.StatusCode)
+
+	// Check if we have the "names" frame.
+	u = fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
+	res, err = makeRequest(u, http.MethodGet, nil)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
+		t.FailNow()
+	}
+	if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+		t.FailNow()
+	}
+	if _, err := ioutil.ReadAll(res.Body); err != nil {
+		t.Errorf("expected to read the body of request, %s", err)
+	}
+	res.Body.Close()
+
+	// List the frames in a collection
+	u = fmt.Sprintf("http://%s/api/%s/frames/", settings.Host, cName)
+	res, err = makeRequest(u, http.MethodGet, nil)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
+		t.FailNow()
+	}
+	if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+		t.FailNow()
+	}
+	src, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("expected to read the body of the request, %s", err)
+	}
+	res.Body.Close()
+	frameList := []string{}
+	if err := json.Unmarshal(src, &frameList); err != nil {
+		t.Errorf("Unmarshal(%s, %+v) -> %s", src, frameList, err)
+	}
+	if len(frameList) != 1 {
+		t.Errorf("expected on frame defined, got %d", len(frameList))
+		t.FailNow()
+	}
+	if frameList[0] != frameName {
+		t.Errorf("expected frame name %q, got %q", frameName, frameList[0])
+		t.FailNow()
+	}
+
+	//	t.Errorf("clientTestFrames() incomplete")
+}
+
 func TestRunAPI(t *testing.T) {
-	dName := "testout"
 	if _, err := os.Stat(dName); os.IsNotExist(err) {
 		os.MkdirAll(dName, 0775)
 	}
@@ -251,19 +409,17 @@ func TestRunAPI(t *testing.T) {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	dbName := path.Join(dName, "collections.db")
 	if _, err := os.Stat(dbName); err == nil {
 		os.RemoveAll(dbName)
 	}
 
-	dsnURI := "sqlite://" + dbName
 	if err := SetupTestCollection(cName, dsnURI, records); err != nil {
 		t.Errorf("failed to setup %q %q, %s", cName, dsnURI, err)
 		t.FailNow()
 	}
 
 	// Setup a test configuration
-	fName := path.Join("testout", "settings.json")
+	fName := path.Join(dName, "settings.json")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
@@ -311,4 +467,6 @@ Client testings starts in %s (s = seconds)
 	clientTestKeys(t, settings)
 	clientTestObjects(t, settings)
 	clientTestKeys(t, settings)
+	clientTestFrames(t, settings)
+	clientTestAttachments(t, settings)
 }

@@ -25,14 +25,14 @@ func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, 
 	fmt.Fprintf(w, "%s %s", api.AppName, api.Version)
 }
 
-// ApiCollections returns a list of dataset collections supported
+// Collections returns a list of dataset collections supported
 // by the running web service.
 //
 // ```shell
 //    curl -X GET http://localhost:8485/api/collections
 // ```
 //
-func ApiCollections(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	collections := []string{}
 	w.Header().Add("Content-Type", "application/json")
 	if len(api.CMap) > 0 {
@@ -49,14 +49,14 @@ func ApiCollections(w http.ResponseWriter, r *http.Request, api *API, cName stri
 	fmt.Fprintf(w, "[]")
 }
 
-// ApiCollection returns the codemeta JSON for a specific collection.
+// Collection returns the codemeta JSON for a specific collection.
 // Example collection name "journals.ds"
 //
 // ```shell
 //    curl -X GET http://localhost:8485/api/collection/journals.ds
 // ```
 //
-func ApiCodemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
@@ -67,7 +67,7 @@ func ApiCodemeta(w http.ResponseWriter, r *http.Request, api *API, cName string,
 //    curl -X GET http://localhost:8485/api/journals.ds/keys
 // ```
 //
-func ApiKeys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if c, ok := api.CMap[cName]; ok {
 		keys, err := c.Keys()
 		if err != nil {
@@ -89,8 +89,20 @@ func ApiKeys(w http.ResponseWriter, r *http.Request, api *API, cName string, ver
 	return
 }
 
-// ApiKeys
-func ApiCreate(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+// Create deposit a JSON object in the collection for a given key.
+//
+// In this example the json document is in the working directory called
+// "record-123.json" and the environment variable KEY holds the document
+// key which is the string "123".
+//
+// ```shell
+//    KEY="123"
+//    curl -X POST http://localhost:8585/api/journals.ds/object/$KEY
+//         -H "Content-Type: application/json" \
+//          --data-binary "@./record-123.json"
+// ```
+//
+func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
 		log.Printf("DEBUG request missing key value")
@@ -126,7 +138,19 @@ func ApiCreate(w http.ResponseWriter, r *http.Request, api *API, cName string, v
 	return
 }
 
-func ApiRead(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+// Read retrieves a JSON object from the collection for a given key.
+//
+// In this example the json retrieved will be called "record-123.json"
+// and the environment variable KEY holds the document key
+// as a string "123".
+//
+// ```shell
+//    KEY="123"
+//    curl -o "record-123.json" -X GET \
+//         http://localhost:8585/api/journals.ds/object/$KEY
+// ```
+//
+func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
 		log.Printf("DEBUG request missing key value")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -156,7 +180,20 @@ func ApiRead(w http.ResponseWriter, r *http.Request, api *API, cName string, ver
 	return
 }
 
-func ApiUpdate(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+// Update replaces a JSON object in the collection for a given key.
+//
+// In this example the json document is in the working directory called
+// "record-123.json" and the environment variable KEY holds the document
+// key which is the string "123".
+//
+// ```shell
+//    KEY="123"
+//    curl -X PUT http://localhost:8585/api/journals.ds/object/$KEY
+//         -H "Content-Type: application/json" \
+//          --data-binary "@./record-123.json"
+// ```
+//
+func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
 		log.Printf("DEBUG request missing key value")
@@ -192,7 +229,17 @@ func ApiUpdate(w http.ResponseWriter, r *http.Request, api *API, cName string, v
 	return
 }
 
-func ApiDelete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+// Delete removes a JSON object from the collection for a given key.
+//
+// In this example the environment variable KEY holds the document
+// key which is the string "123".
+//
+// ```shell
+//    KEY="123"
+//    curl -X DELETE http://localhost:8585/api/journals.ds/object/$KEY
+// ```
+//
+func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
 		log.Printf("DEBUG request missing key value")
@@ -214,4 +261,95 @@ func ApiDelete(w http.ResponseWriter, r *http.Request, api *API, cName string, v
 	}
 	http.NotFound(w, r)
 	return
+}
+
+//
+// The following routes handle attachments
+//
+
+func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+//
+// The following routes handle frames
+//
+func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameRefresh(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameReframe(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+//***************************************************
+// The following routes handle JSON object versions
+//***************************************************
+
+func ObjectVersions(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func ReadVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func DeleteVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+//**************************************************
+// The following routes handle attachment versions
+//**************************************************
+
+func AttachmentVersions(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func RetrieveVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
+func PruneVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }

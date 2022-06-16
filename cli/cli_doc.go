@@ -18,16 +18,9 @@
 //
 package cli
 
-import (
-	ds "github.com/caltechlibrary/dataset"
-)
-
 const (
-	Version = ds.Version
-
-	License = ds.License
-
-	CLIDescription = `
+	// cliDescription describes how to use the cli
+	cliDescription = `
 USAGE
 
    {app_name} [OPTIONS] VERB COLLECTION_NAME [PRAMETER ...]
@@ -83,7 +76,8 @@ characters and some are not case sensistive.
 
 `
 
-	CLIExamples = `
+	// cliExamples lists some examples of using the cli
+	cliExamples = `
 EXAMPLES
 
    {app_name} help init

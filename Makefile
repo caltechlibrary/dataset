@@ -11,7 +11,9 @@ CODEMETA2CFF = $(shell which codemeta2cff)
 
 PROGRAMS = $(shell ls -1 cmd)
 
-PACKAGE = $(shell ls -1 *.go)
+PACKAGE = $(shell ls -1 *.go | grep -v 'version.go')
+
+SUBPACKAGES = $(shell ls -1 */*.go)
 
 #PREFIX = /usr/local/bin
 PREFIX = $(HOME)
@@ -30,7 +32,6 @@ endif
 DIST_FOLDERS = bin/*
 
 build: version.go $(PROGRAMS)
-
 
 version.go: .FORCE
 	@echo "package $(PROJECT)" >version.go
@@ -61,19 +62,35 @@ uninstall: .FORCE
 website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
 	bash mk-website.bash
 
+check: .FORCE
+	go vet *.go
+	cd api && go vet *.go
+	cd cli && go vet *.go
+	cd config && go vet *.go
+	cd cmd/dataset && go vet *.go
+	cd cmd/datasetd && go vet *.go
+	cd dotpath && go vet *.go
+	cd dsv1 && go vet *.go
+	cd dsv1/tbl && go vet *.go
+	cd pairtree && go vet *.go
+	cd ptstore && go vet *.go
+	cd semver && go vet *.go
+	cd sqlstore && go vet *.go
+	cd texts && go vet *.go
+
 test: clean build
 	go test
-	cd semver && go test
-	cd dotpath && go test
-	cd pairtree && go test
-	cd ptstore && go test
-	cd sqlstore && go test
-	cd texts && go test
+	cd api && go test
 	cd cli && go test
+	cd config && go test
+	cd dotpath && go test
 	cd dsv1 && go test
 	cd dsv1/tbl && go test
-	cd config && go test
-	cd api && go test
+	cd pairtree && go test
+	cd ptstore && go test
+	cd semver && go test
+	cd sqlstore && go test
+	cd texts && go test
 
 cleanweb:
 	@if [ -f index.html ]; then rm *.html; fi

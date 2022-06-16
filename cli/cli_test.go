@@ -57,13 +57,13 @@ func TestDisplay(t *testing.T) {
 
 	output := []byte{}
 	out := bytes.NewBuffer(output)
-	DisplayLicense(out, appName, License)
+	DisplayLicense(out, appName)
 	if out.Len() == 0 {
 		t.Errorf("DisplayLicense() failed, nothing written to output buffer")
 	}
 	output = []byte{}
 	out = bytes.NewBuffer(output)
-	DisplayUsage(out, appName, flagSet, "This is a description", "This is examples", "This would be license text")
+	DisplayUsage(out, appName, flagSet)
 	if out.Len() == 0 {
 		t.Errorf("DisplayUsage() failed, nothing written to output buffer")
 	}

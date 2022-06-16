@@ -282,11 +282,11 @@ func (api *API) Init(appName string, settingsFile string) error {
 	if err != nil {
 		return err
 	}
-	err = api.RegisterRoute("collections", http.MethodGet, ApiCollections)
+	err = api.RegisterRoute("collections", http.MethodGet, Collections)
 	if err != nil {
 		return err
 	}
-	err = api.RegisterRoute("codemeta", http.MethodGet, ApiCodemeta)
+	err = api.RegisterRoute("codemeta", http.MethodGet, Codemeta)
 	if err != nil {
 		return err
 	}
@@ -309,32 +309,134 @@ func (api *API) Init(appName string, settingsFile string) error {
 		// add the appropriate routes to api.routes.
 		if cfg.Keys {
 			prefix := path.Join(cName, "keys")
-			if err = api.RegisterRoute(prefix, http.MethodGet, ApiKeys); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodGet, Keys); err != nil {
 				return err
 			}
 		}
 		if cfg.Create {
 			prefix := path.Join(cName, "object")
-			if err = api.RegisterRoute(prefix, http.MethodPost, ApiCreate); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodPost, Create); err != nil {
 				return err
 			}
 		}
 		if cfg.Read {
 			prefix := path.Join(cName, "object")
-			if err = api.RegisterRoute(prefix, http.MethodGet, ApiRead); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodGet, Read); err != nil {
 				return err
 			}
 		}
 		if cfg.Update {
 			prefix := path.Join(cName, "object")
-			if err = api.RegisterRoute(prefix, http.MethodPut, ApiUpdate); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodPut, Update); err != nil {
 				return err
 			}
 		}
 		if cfg.Delete {
 			prefix := path.Join(cName, "object")
-			if err = api.RegisterRoute(prefix, http.MethodDelete, ApiDelete); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodDelete, Delete); err != nil {
 				return err
+			}
+		}
+		if cfg.Attachments {
+			prefix := path.Join(cName, "attachments")
+			if err = api.RegisterRoute(prefix, http.MethodGet, Attachments); err != nil {
+				return err
+			}
+		}
+		if cfg.Attach {
+			prefix := path.Join(cName, "attach")
+			if err = api.RegisterRoute(prefix, http.MethodPost, Attach); err != nil {
+				return err
+			}
+		}
+		if cfg.Retrieve {
+			prefix := path.Join(cName, "retrieve")
+			if err = api.RegisterRoute(prefix, http.MethodGet, Retrieve); err != nil {
+				return err
+			}
+		}
+		if cfg.Prune {
+			prefix := path.Join(cName, "prune")
+			if err = api.RegisterRoute(prefix, http.MethodGet, Prune); err != nil {
+				return err
+			}
+		}
+		if cfg.FrameCreate {
+			prefix := path.Join(cName, "frame")
+			if err = api.RegisterRoute(prefix, http.MethodGet, Frames); err != nil {
+				return err
+			}
+		}
+		if cfg.FrameRead {
+			prefix := path.Join(cName, "frames")
+			if err = api.RegisterRoute(prefix, http.MethodGet, Frames); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "has-frame")
+			if err = api.RegisterRoute(prefix, http.MethodGet, HasFrame); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "frame-objects")
+			if err = api.RegisterRoute(prefix, http.MethodGet, FrameObjects); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "frame-def")
+			if err = api.RegisterRoute(prefix, http.MethodGet, FrameDef); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "frame-keys")
+			if err = api.RegisterRoute(prefix, http.MethodGet, FrameKeys); err != nil {
+				return err
+			}
+		}
+		if cfg.FrameWrite {
+			prefix := path.Join(cName, "frame-refresh")
+			if err = api.RegisterRoute(prefix, http.MethodGet, FrameRefresh); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "frame-reframe")
+			if err = api.RegisterRoute(prefix, http.MethodGet, FrameReframe); err != nil {
+				return err
+			}
+		}
+
+		//NOTE: Need to apply versioned routes if a collection uses
+		// versioning and permission is granted to see versions.
+		if cfg.Versions && c != nil && c.Versioning != "" {
+			prefix := path.Join(cName, "object-versions")
+			if err = api.RegisterRoute(prefix, http.MethodGet, ObjectVersions); err != nil {
+				return err
+			}
+			if cfg.Read {
+				prefix := path.Join(cName, "object-version")
+				if err = api.RegisterRoute(prefix, http.MethodGet, ReadVersion); err != nil {
+					return err
+				}
+			}
+			if cfg.Delete {
+				prefix := path.Join(cName, "object-version")
+				if err = api.RegisterRoute(prefix, http.MethodDelete, DeleteVersion); err != nil {
+					return err
+				}
+			}
+
+			if cfg.Attachments {
+				prefix := path.Join(cName, "attachment-versions")
+				if err = api.RegisterRoute(prefix, http.MethodGet, AttachmentVersions); err != nil {
+					return err
+				}
+			}
+			if cfg.Retrieve {
+				prefix := path.Join(cName, "attachment-version")
+				if err = api.RegisterRoute(prefix, http.MethodGet, RetrieveVersion); err != nil {
+					return err
+				}
+			}
+			if cfg.Prune {
+				prefix := path.Join(cName, "attachment-version")
+				if err = api.RegisterRoute(prefix, http.MethodDelete, PruneVersion); err != nil {
+					return err
+				}
 			}
 		}
 	}

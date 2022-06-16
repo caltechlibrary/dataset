@@ -31,7 +31,6 @@ import (
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dataset/api"
-	"github.com/caltechlibrary/dataset/cli"
 )
 
 var (
@@ -56,17 +55,17 @@ func main() {
 	args := flagSet.Args()
 
 	if showHelp {
-		cli.DisplayUsage(os.Stdout, appName, flagSet, description, examples, license)
+		api.DisplayUsage(os.Stdout, appName, flagSet)
 		os.Exit(0)
 	}
 
 	if showLicense {
-		cli.DisplayLicense(os.Stdout, appName, license)
+		api.DisplayLicense(os.Stdout, appName)
 		os.Exit(0)
 	}
 
 	if showVersion {
-		cli.DisplayVersion(os.Stdout, appName)
+		api.DisplayVersion(os.Stdout, appName)
 		os.Exit(0)
 	}
 

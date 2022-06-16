@@ -59,14 +59,54 @@ type Config struct {
 	// Permissions for accessing the collection through the web service
 	// At least some of these should be set to true otherwise you
 	// don't have much of a web service.
-	Keys     bool `json:"keys,omitempty"`
-	Create   bool `json:"create,omitempty"`
-	Read     bool `json:"read,omitempty"`
-	Update   bool `json:"update,omitempty"`
-	Delete   bool `json:"delete,omitempty"`
-	Attach   bool `json:"attach,omitempty"`
+
+	// Keys lets you get a list of keys in a collection
+	Keys bool `json:"keys,omitempty"`
+
+	// Create allows you to add objects to a collection
+	Create bool `json:"create,omitempty"`
+
+	// Read allows you to retrive an object from a collection
+	Read bool `json:"read,omitempty"`
+
+	// Update allows you to replace objects in a collection
+	Update bool `json:"update,omitempty"`
+
+	// Delete allows ytou to removes objects, object versions,
+	// and attachments from a collection
+	Delete bool `json:"delete,omitempty"`
+
+	// Attachments allows you to attached documents for an object in the
+	// collection.
+	Attachments bool `json:"attachments,omitempty"`
+
+	// Attach allows you to store an attachment for an object in
+	// the collection
+	Attach bool `json:"attach,omitempty"`
+
+	// Retrieve allows you to get an attachment in the collection for
+	// a given object.
 	Retrieve bool `json:"retrieve,omitempty"`
-	Prune    bool `json:"prune,omitempty"`
+
+	// Prune allows you to remove an attachment from an object in
+	// a collection
+	Prune bool `json:"prune,omitempty"`
+
+	// FrameCreate allows you to create a new frame
+	FrameCreate bool `json:"frame_create,omitempty"`
+
+	// FrameRead allows you to see a list of frames, check for
+	// a frame's existance and read the content of a frame, e.g.
+	// it's definition, keys, object list.
+	FrameRead bool `json:"frame_read,omitempty"`
+
+	// FrameWrite allows you to change the frame's content or
+	// remove the frame completely.
+	FrameWrite bool `json:"frame_write,omitempty"`
+
+	// Versions allows you to list versions, read and delete
+	// versioned objects and attachments in a collection.
+	Versions bool `json:"versions,omitempty"`
 }
 
 // String renders the configuration as a JSON string.

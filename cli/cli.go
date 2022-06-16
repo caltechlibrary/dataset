@@ -39,8 +39,8 @@ var (
 	appName  = path.Base(os.Args[0])
 
 	helpDocs = map[string]string{
-		"usage":         CLIDescription,
-		"examples":      CLIExamples,
+		"usage":         cliDescription,
+		"examples":      cliExamples,
 		"init":          cliInit,
 		"create":        cliCreate,
 		"read":          cliRead,
@@ -74,6 +74,7 @@ var (
 		"repair":        cliRepair,
 		"migrate":       cliMigrate,
 		"codemeta":      cliCodemeta,
+		"license":       ds.License,
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
@@ -122,7 +123,7 @@ func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	}
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  Version,
+		"{version}":  ds.Version,
 	}
 	if text, ok := helpDocs[topic]; ok {
 		fmt.Fprintf(out, texts.StringProcessor(m, text))
@@ -133,29 +134,26 @@ func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 }
 
 // DisplayLicense returns the license associated with dataset application.
-func DisplayLicense(out io.Writer, appName string, license string) {
-	m := map[string]string{
-		"{app_name}": appName,
-		"{version}":  Version,
-	}
-	fmt.Fprintf(out, texts.StringProcessor(m, license))
+func DisplayLicense(out io.Writer, appName string) {
+	fmt.Fprintf(out, ds.License)
 }
 
 // DisplayVersion returns the of the dataset application.
 func DisplayVersion(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  Version,
+		"{version}":  ds.Version,
 	}
 	fmt.Fprintf(out, texts.StringProcessor(m, "{app_name} {version}\n"))
 }
 
 // DisplayUsage displays a usage message.
-func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, description string, examples string, license string) {
+func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	// Replacable text vars
+	description, examples := cliDescription, cliExamples
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  Version,
+		"{version}":  ds.Version,
 	}
 	// Convert {app_name} and {version} in description
 	fmt.Fprintf(out, texts.StringProcessor(m, description))
@@ -163,7 +161,7 @@ func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet, descript
 	flagSet.PrintDefaults()
 
 	fmt.Fprintf(out, texts.StringProcessor(m, examples))
-	DisplayLicense(out, appName, texts.StringProcessor(m, license))
+	DisplayLicense(out, appName)
 }
 
 func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
