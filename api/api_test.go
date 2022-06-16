@@ -21,8 +21,6 @@ import (
 var (
 	contentType = "application/json"
 	dName       = "testout"
-	dbName      = path.Join(dName, "collections.db")
-	dsnURI      = "sqlite://" + dbName
 	records     = map[string]map[string]interface{}{
 		"Miller-A": {
 			"id":     "Miller-A",
@@ -68,12 +66,15 @@ func makeRequest(u string, method string, payload io.Reader) (*http.Response, er
 	return client.Do(req)
 }
 
-func assertHTTPStatus(t *testing.T, expected int, got int) bool {
-	if expected != got {
-		t.Errorf("expected http status %q, got %q", http.StatusText(expected), http.StatusText(got))
-		return false
+func assertHTTPStatus(expected int, got int) error {
+	if got == http.StatusNotImplemented {
+		return fmt.Errorf("expected status %s, got %s <- %s",
+			http.StatusText(expected), http.StatusText(got), http.StatusText(http.StatusNotImplemented))
 	}
-	return true
+	if expected != got {
+		return fmt.Errorf("expected http status %q, got %q", http.StatusText(expected), http.StatusText(got))
+	}
+	return nil
 }
 
 func sameObjectSrc(expected []byte, got []byte) bool {
@@ -116,7 +117,8 @@ func clientTestVersion(t *testing.T, settings *config.Settings) {
 		t.FailNow()
 	}
 	defer res.Body.Close()
-	if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
 		t.FailNow()
 	}
 	body, err := io.ReadAll(res.Body)
@@ -153,7 +155,8 @@ func clientTestKeys(t *testing.T, settings *config.Settings) {
 			t.FailNow()
 		}
 		defer res.Body.Close()
-		if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+		if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+			t.Error(err)
 			t.FailNow()
 		}
 		body, err := io.ReadAll(res.Body)
@@ -165,7 +168,6 @@ func clientTestKeys(t *testing.T, settings *config.Settings) {
 			t.Errorf("expected a response body, got %q", body)
 			t.FailNow()
 		}
-		//fmt.Printf("DEBUG body -> %s\n", body)
 		keys := []string{}
 		err = json.Unmarshal(body, &keys)
 		if err != nil {
@@ -227,7 +229,8 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 				t.Errorf("http.Post(%q, %q, %s) error %s", u, contentType, body, err)
 				t.FailNow()
 			}
-			if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+			if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+				t.Error(err)
 				t.FailNow()
 			}
 			// Read Back Object
@@ -236,7 +239,8 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 				t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
 				t.FailNow()
 			}
-			if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+			if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+				t.Error(err)
 				t.FailNow()
 			}
 			src, err := ioutil.ReadAll(res.Body)
@@ -256,7 +260,8 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 				if err != nil {
 					t.Errorf("put failed, %s", err)
 				}
-				if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+				if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+					t.Error(err)
 					t.FailNow()
 				}
 			} else if k == "Freda-L" {
@@ -265,7 +270,8 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 				if err != nil {
 					t.Errorf("delete failed, %s", err)
 				}
-				if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+				if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+					t.Error(err)
 					t.FailNow()
 				}
 			}
@@ -316,8 +322,11 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		},
 	}
 
-	cName := path.Join(dName, "frames_test.ds")
-	if err := SetupTestCollection(cName, dsnURI, framedRecords); err != nil {
+	cPath := path.Join(dName, "frames_test.ds")
+	dbName := path.Join(cPath, "collections.db")
+	cName := path.Base(cPath)
+	dsnURI := "sqlite://" + dbName
+	if err := SetupTestCollection(cPath, dsnURI, framedRecords); err != nil {
 		t.Errorf("SetupTestCollection(%q, %+v) -> %s", cName, records, err)
 		t.FailNow()
 	}
@@ -330,29 +339,33 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
 		t.FailNow()
 	}
-	if !assertHTTPStatus(t, http.StatusNotFound, res.StatusCode) {
+	if err := assertHTTPStatus(http.StatusNotFound, res.StatusCode); err != nil {
+		t.Error(err)
 		t.FailNow()
 	}
 	if _, err := ioutil.ReadAll(res.Body); err != nil {
 		t.Errorf("expected to read the body of reqest, %s", err)
+		t.FailNow()
 	}
 	res.Body.Close()
 
 	// Create the frame "names"
 	frameDef := map[string]interface{}{
-		"dot_paths": []string{
-			".given=Given Name",
-			".family=Family Name",
-		},
-		"keys": []string{"Sam-M", "Flanders-J"},
+		"dot_paths": []string{".given", ".family"},
+		"labels":    []string{"Given Name", "Family Name"},
+		"keys":      []string{"Sam-M", "Flanders-J"},
 	}
 	payload, err := makeObjectPayload(frameDef)
 	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
 	res, err = makeRequest(u, http.MethodPost, payload)
 	if err != nil {
 		t.Errorf("makeRequest(%q, %q, %s) -> %s", u, http.MethodPost, payload, err)
+		t.FailNow()
 	}
-	assertHTTPStatus(t, http.StatusOK, res.StatusCode)
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
 
 	// Check if we have the "names" frame.
 	u = fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
@@ -361,7 +374,8 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
 		t.FailNow()
 	}
-	if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
 		t.FailNow()
 	}
 	if _, err := ioutil.ReadAll(res.Body); err != nil {
@@ -376,7 +390,8 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
 		t.FailNow()
 	}
-	if !assertHTTPStatus(t, http.StatusOK, res.StatusCode) {
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
 		t.FailNow()
 	}
 	src, err := ioutil.ReadAll(res.Body)
@@ -405,38 +420,41 @@ func TestRunAPI(t *testing.T) {
 		os.MkdirAll(dName, 0775)
 	}
 	// Setup up a test collection
-	cName := path.Join(dName, "apitest.ds")
-	if _, err := os.Stat(cName); err == nil {
-		os.RemoveAll(cName)
-	}
-	if _, err := os.Stat(dbName); err == nil {
-		os.RemoveAll(dbName)
-	}
-
-	if err := SetupTestCollection(cName, dsnURI, records); err != nil {
-		t.Errorf("failed to setup %q %q, %s", cName, dsnURI, err)
-		t.FailNow()
-	}
-
-	// Setup a test configuration
 	fName := path.Join(dName, "settings.json")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
 	settings := new(config.Settings)
 	settings.Host = "localhost:8585"
-	cfg := new(config.Config)
-	cfg.CName = cName
-	cfg.DsnURI = dsnURI
-	cfg.Keys = true
-	cfg.Create = true
-	cfg.Read = true
-	cfg.Update = true
-	cfg.Delete = true
-	cfg.Attach = false
-	cfg.Retrieve = false
-	cfg.Prune = false
-	settings.Collections = append(settings.Collections, cfg)
+	colNames := []string{"apitest.ds", "frames_test.ds"}
+	for _, name := range colNames {
+		cName := path.Join(dName, name)
+		if _, err := os.Stat(cName); err == nil {
+			os.RemoveAll(cName)
+		}
+		dbName := path.Join(cName, "collection.db")
+		dsnURI := "sqlite://" + dbName
+		if err := SetupTestCollection(cName, dsnURI, records); err != nil {
+			t.Errorf("failed to setup %q %q, %s", cName, dsnURI, err)
+			t.FailNow()
+		}
+
+		// Setup a test configuration
+		cfg := new(config.Config)
+		cfg.CName = cName
+		cfg.DsnURI = dsnURI
+		cfg.Keys = true
+		cfg.Create = true
+		cfg.Read = true
+		cfg.Update = true
+		cfg.Delete = true
+		cfg.Attach = true
+		cfg.Retrieve = true
+		cfg.Prune = true
+		cfg.FrameRead = true
+		cfg.FrameWrite = true
+		settings.Collections = append(settings.Collections, cfg)
+	}
 	if err := settings.WriteFile(fName, 0664); err != nil {
 		t.Errorf("failed to save config %q, %s", fName, err)
 		t.FailNow()

@@ -92,16 +92,13 @@ type Config struct {
 	// a collection
 	Prune bool `json:"prune,omitempty"`
 
-	// FrameCreate allows you to create a new frame
-	FrameCreate bool `json:"frame_create,omitempty"`
-
 	// FrameRead allows you to see a list of frames, check for
 	// a frame's existance and read the content of a frame, e.g.
 	// it's definition, keys, object list.
 	FrameRead bool `json:"frame_read,omitempty"`
 
-	// FrameWrite allows you to change the frame's content or
-	// remove the frame completely.
+	// FrameWrite allows you to create a frame, change the frame's
+	// content or remove the frame completely.
 	FrameWrite bool `json:"frame_write,omitempty"`
 
 	// Versions allows you to list versions, read and delete

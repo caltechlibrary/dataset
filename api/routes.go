@@ -105,7 +105,6 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
-		log.Printf("DEBUG request missing key value")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -125,7 +124,6 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			return
 		}
 		if err := c.Create(key, o); err != nil {
-			log.Printf("DEBUG c.Create(%q, %s), %s", key, src, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -152,7 +150,6 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 //
 func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
-		log.Printf("DEBUG request missing key value")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -196,7 +193,6 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
-		log.Printf("DEBUG request missing key value")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -216,7 +212,6 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			return
 		}
 		if err := c.Update(key, o); err != nil {
-			log.Printf("DEBUG c.Update(%q, %s), %s", key, src, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -242,7 +237,6 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
-		log.Printf("DEBUG request missing key value")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -250,7 +244,6 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 
 	if c, ok := api.CMap[cName]; ok {
 		if err := c.Delete(key); err != nil {
-			log.Printf("DEBUG c.Delete(%q), %s", key, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -286,12 +279,75 @@ func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string,
 //
 // The following routes handle frames
 //
+
+// HasFrame checks a collection for a frame by its name
+//
+//```shell
+//    FRM_NAME="name"
+//    curl -X GET http://localhost:8585/api/journals.ds/has-frame/$FRM_NAME
+//```
+//
 func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	// Get Frame name
+	frameName := ""
+	if len(options) > 0 {
+		frameName = options[0]
+	}
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		if c.HasFrame(frameName) {
+			fmt.Fprint(w, "true")
+			return
+		}
+	}
+	// Check if frame is in collection
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
 func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	// Get Frame name
+	frameName := ""
+	if len(options) > 0 {
+		frameName = options[0]
+	}
+	// Process post
+	src, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	m := map[string][]string{}
+	if err := json.Unmarshal(src, &m); err != nil {
+		log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	}
+	keys := []string{}
+	dotPaths := []string{}
+	labels := []string{}
+	if data, ok := m["dot_paths"]; ok {
+		dotPaths = data[:]
+	}
+	if data, ok := m["labels"]; ok {
+		labels = data[:]
+	}
+	if data, ok := m["keys"]; ok {
+		keys = data[:]
+	}
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		if _, err := c.FrameCreate(frameName, keys, dotPaths, labels, false); err != nil {
+			log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		}
+		fmt.Fprintf(w, "OK")
+		return
+	}
+	// Check if frame is in collection
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
 func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {

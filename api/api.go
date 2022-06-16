@@ -156,6 +156,8 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(code), code)
 			return
 		}
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
 	}
 	http.NotFound(w, r)
 }
@@ -361,12 +363,6 @@ func (api *API) Init(appName string, settingsFile string) error {
 				return err
 			}
 		}
-		if cfg.FrameCreate {
-			prefix := path.Join(cName, "frame")
-			if err = api.RegisterRoute(prefix, http.MethodGet, Frames); err != nil {
-				return err
-			}
-		}
 		if cfg.FrameRead {
 			prefix := path.Join(cName, "frames")
 			if err = api.RegisterRoute(prefix, http.MethodGet, Frames); err != nil {
@@ -390,12 +386,16 @@ func (api *API) Init(appName string, settingsFile string) error {
 			}
 		}
 		if cfg.FrameWrite {
-			prefix := path.Join(cName, "frame-refresh")
-			if err = api.RegisterRoute(prefix, http.MethodGet, FrameRefresh); err != nil {
+			prefix := path.Join(cName, "frame")
+			if err = api.RegisterRoute(prefix, http.MethodPost, FrameCreate); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "frame-refresh")
+			if err = api.RegisterRoute(prefix, http.MethodPut, FrameRefresh); err != nil {
 				return err
 			}
 			prefix = path.Join(cName, "frame-reframe")
-			if err = api.RegisterRoute(prefix, http.MethodGet, FrameReframe); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodPut, FrameReframe); err != nil {
 				return err
 			}
 		}
