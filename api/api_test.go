@@ -750,7 +750,7 @@ func TestRunAPI(t *testing.T) {
 	setupWait := "5s"
 	wait, _ := time.ParseDuration(setupWait)
 	fmt.Printf(`
-Launching API Tests at http://%q
+Launching API Tests at http://%s
 
 Press Ctr-C if tests hang, you should see requests log output
 
