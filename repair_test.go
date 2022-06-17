@@ -61,7 +61,7 @@ func TestPairtree(t *testing.T) {
 	}
 }
 
-func setupTestCollection(cName string) error {
+func setupTestCollectionNamed(cName string) error {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
@@ -113,7 +113,7 @@ func TestCheck(t *testing.T) {
 
 	// Setup a test collection and data
 	cName := path.Join("testout", "test_check.ds")
-	if err := setupTestCollection(cName); err != nil {
+	if err := setupTestCollectionNamed(cName); err != nil {
 		t.Errorf("failed to setup %q, %s", cName, err)
 		t.FailNow()
 	}
@@ -138,7 +138,7 @@ func TestCheck(t *testing.T) {
 	}
 
 	// Reset collection
-	if err := setupTestCollection(cName); err != nil {
+	if err := setupTestCollectionNamed(cName); err != nil {
 		t.Errorf("failed to setup %q, %s", cName, err)
 		t.FailNow()
 	}
@@ -173,7 +173,7 @@ func TestRepair(t *testing.T) {
 
 	// Setup a test collection and data
 	cName := path.Join("testout", "test_repair.ds")
-	if err := setupTestCollection(cName); err != nil {
+	if err := setupTestCollectionNamed(cName); err != nil {
 		t.Errorf("Failed to setup %q, %s", cName, err)
 		t.FailNow()
 	}

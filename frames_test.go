@@ -28,6 +28,28 @@ import (
 	"time"
 )
 
+func setupTestCollection(cName string, dsnURI string, records map[string]map[string]interface{}) error {
+	// Create collection.json using v1 structures
+	if len(cName) == 0 {
+		return fmt.Errorf("missing a collection name")
+	}
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	// Now populate with some test records records.
+	for key, obj := range records {
+		if err := c.Create(key, obj); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func setupTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
@@ -579,4 +601,73 @@ func TestIssue12PyDataset(t *testing.T) {
 		t.Errorf("expected no errors for delete frame, got %s", err)
 		t.FailNow()
 	}
+}
+
+func TestFrameLikeWS(t *testing.T) {
+	framedRecords := map[string]map[string]interface{}{
+		"Miller-A": {
+			"id":        "Miller-A",
+			"given":     "Arthor",
+			"family":    "Miller",
+			"character": false,
+			"vocations": []string{"playright", "writer", "author"},
+		},
+		"Lopez-T": {
+			"id":        "Lopez-T",
+			"given":     "Tom",
+			"family":    "Lopez",
+			"character": false,
+			"vocations": []string{"playright", "producer", "director", "sound-engineer", "voice actor", "disc jockey"},
+		},
+		"Flanders-J": {
+			"given":       "Jack",
+			"family":      "Jack Flanders",
+			"played-by":   "Robert Lorick",
+			"character":   true,
+			"description": "Metaphysical Detective",
+		},
+		"Freda-L": {
+			"given":       "Little",
+			"family":      "Freda",
+			"played-by":   "P.J. O'Rorke",
+			"character":   true,
+			"description": "A wise Venusian",
+		},
+		"Sam-M": {
+			"given":       "Mojo",
+			"family":      "Sam",
+			"played-by":   "Dave Adams",
+			"character":   true,
+			"description": "The wise You-do man",
+		},
+	}
+
+	dName := "testout"
+	cPath := path.Join(dName, "frames_test_ws.ds")
+	dbName := path.Join(cPath, "collections.db")
+	cName := path.Base(cPath)
+	dsnURI := "sqlite://" + dbName
+	if err := setupTestCollection(cPath, dsnURI, framedRecords); err != nil {
+		t.Errorf("setupTestCollection(%q, %+v) -> %s", cName, framedRecords, err)
+		t.FailNow()
+	}
+
+	c, err := Open(cPath)
+	if err != nil {
+		t.Errorf("Open(%q, %q) -> %s", cPath, dsnURI, err)
+		t.FailNow()
+	}
+	defer c.Close()
+
+	// Check to make sure frame does not exist
+	frameName := "names"
+	dotPaths := []string{".given", ".family"}
+	labels := []string{"Given Name", "Family Name"}
+	keys := []string{"Freda-L", "Sam-M"}
+
+	if _, err := c.FrameCreate(frameName, keys, dotPaths, labels, false); err != nil {
+		t.Errorf("expected no error, got %s", err)
+		t.FailNow()
+	}
+
 }
