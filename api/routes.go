@@ -282,18 +282,57 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // The following routes handle attachments
 //
 
+// Attachemnts lists the attachments avialable for a JSON object in the
+// collection.
+//
+//```shell
+//    KEY="123"
+//    curl -X GET http://localhost:8585/api/journals.ds/attachments/$KEY
+//```
+//
 func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
+// Attach will add or replace an attachment for a JSON object in the
+// collection.
+//
+//```shell
+//    KEY="123"
+//    FILENAME="mystuff.zip"
+//    curl -X POST \
+//       http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
+//         -H "Content-Type: application/zip" \
+//         --data-binary "@./mystuff.zip"
+//```
+//
 func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
+// Attach retrieve an attachment from a JSON object in the
+// collection.
+//
+//```shell
+//    KEY="123"
+//    FILENAME="mystuff.zip"
+//    curl -X GET \
+//       http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
+//```
+//
 func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
+// Prune removes and attachment from a JSON object in the collection.
+//
+//```shell
+//    KEY="123"
+//    FILENAME="mystuff.zip"
+//    curl -X DELETE \
+//       http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
+//```
+//
 func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
