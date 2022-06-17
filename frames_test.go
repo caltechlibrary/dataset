@@ -573,7 +573,7 @@ func TestIssue12PyDataset(t *testing.T) {
 		}
 	}
 	// Clear out any stale frames.
-	for i, fName := range c.Frames() {
+	for i, fName := range c.FrameNames() {
 		if err := c.FrameDelete(fName); err != nil {
 			t.Errorf("Failed to delete frame (%d) %q in %q, %s", i, fName, cName, err)
 			t.FailNow()
@@ -665,9 +665,19 @@ func TestFrameLikeWS(t *testing.T) {
 	labels := []string{"Given Name", "Family Name"}
 	keys := []string{"Freda-L", "Sam-M"}
 
-	if _, err := c.FrameCreate(frameName, keys, dotPaths, labels, false); err != nil {
+	frm, err := c.FrameCreate(frameName, keys, dotPaths, labels, false)
+	if err != nil {
 		t.Errorf("expected no error, got %s", err)
 		t.FailNow()
+	}
+	if len(frm.ObjectMap) == 0 {
+		t.Errorf("something went wrong, frm.ObjectMap should have objects, %+v", frm)
+		t.FailNow()
+	}
+	for k, v := range frm.ObjectMap {
+		if v == nil || len(v.(map[string]interface{})) == 0 {
+			t.Errorf("something went wrong, frm.ObjectMap[%q] should have a populated map[string]interface{}, %+v", k, frm.ObjectMap)
+		}
 	}
 
 }

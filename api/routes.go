@@ -6,7 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
+)
+
+const (
+	verbose = true // set to true for debugging, false otherwise
 )
 
 //
@@ -22,6 +25,7 @@ import (
 // ```
 //
 func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	fmt.Fprintf(w, "%s %s", api.AppName, api.Version)
 }
 
@@ -41,6 +45,7 @@ func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string,
 		}
 		src, err := json.MarshalIndent(collections, "", "     ")
 		if err != nil {
+			log.Printf("marshal error %+v, %s", collections, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 		fmt.Fprintf(w, "%s", src)
@@ -57,10 +62,24 @@ func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string,
 // ```
 //
 func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		src, err := c.Codemeta()
+		if err != nil {
+			log.Printf("Codemeta, not found for %s, %s", cName, err)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
-// ApiKeys returns the available keys in a collection as a JSON array.
+// Keys returns the available keys in a collection as a JSON array.
 // Example collection name "journals.ds"
 //
 // ```shell
@@ -77,6 +96,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 		}
 		src, err := json.MarshalIndent(keys, "", "    ")
 		if err != nil {
+			log.Printf("marshal error %+v, %s", keys, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -85,7 +105,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 		fmt.Fprintf(w, "%s", src)
 		return
 	}
-	fmt.Fprintf(w, "ApiKeys(w, r, api, %q, %q, %s) not implemented", cName, verb, strings.Join(options, " "))
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	return
 }
 
@@ -113,13 +133,14 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 	if c, ok := api.CMap[cName]; ok {
 		src, err := ioutil.ReadAll(r.Body)
 		if err != nil {
+			log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 		o := map[string]interface{}{}
 		err = json.Unmarshal(src, &o)
 		if err != nil {
-			log.Printf("unmarshal error %+v, %s", o, err)
+			log.Printf("Create, unmarshal error %+v, %s", o, err)
 			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
 			return
 		}
@@ -201,13 +222,14 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 	if c, ok := api.CMap[cName]; ok {
 		src, err := ioutil.ReadAll(r.Body)
 		if err != nil {
+			log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 		o := map[string]interface{}{}
 		err = json.Unmarshal(src, &o)
 		if err != nil {
-			log.Printf("unmarshal error %+v, %s", o, err)
+			log.Printf("Update, unmarshal error %+v, %s", o, err)
 			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
 			return
 		}
@@ -297,6 +319,7 @@ func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 	c, ok := api.CMap[cName]
 	if ok {
 		if c.HasFrame(frameName) {
+			w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 			fmt.Fprint(w, "true")
 			return
 		}
@@ -305,6 +328,23 @@ func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
+// FrameCreate creates a new frame in a collection. It accepts the
+// frame definition as a POST of JSON.
+//
+//```shell
+//   FRM_NAME="names"
+//   cat<<EOT>frame-def.json
+//   {
+//     "dot_paths": [ ".given", ".family" ],
+//     "labels": [ "Given Name", "Family Name" ],
+//     "keys": [ "Miller-A", "Stienbeck-J", "Topez-T", "Valdez-L" ]
+//   }
+//   EOT
+//   curl -X POST http://localhost:8585/api/journals.ds/frame/$FRM_NAME
+//        -H "Content-Type: application/json" \
+//        --data-binary "@./frame-def.json"
+//```
+//
 func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	// Get Frame name
 	frameName := ""
@@ -318,11 +358,11 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	log.Printf("DEBUG src -> %s", src)
 	m := map[string][]string{}
 	if err := json.Unmarshal(src, &m); err != nil {
-		log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Printf("FrameCreate, unmarshal error %+v, %s", m, err)
+		http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+		return
 	}
 	keys := []string{}
 	dotPaths := []string{}
@@ -336,14 +376,14 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	if data, ok := m["keys"]; ok {
 		keys = data[:]
 	}
-	log.Printf("DEBUG dot_paths, labels, keys %+v, %+v, %+v", dotPaths, labels, keys)
 	// Get collection
 	c, ok := api.CMap[cName]
 	if ok {
-		if _, err := c.FrameCreate(frameName, keys, dotPaths, labels, false); err != nil {
+		if _, err := c.FrameCreate(frameName, keys, dotPaths, labels, verbose); err != nil {
 			log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		}
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 		fmt.Fprintf(w, "OK")
 		return
 	}
@@ -352,32 +392,239 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	return
 }
 
+// Frames retrieves a list of available frames in a collection.
+//
+//```shell
+//   curl -X GET http://localhost:8585/api/journals.ds/frames
+//```
+//
 func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		frameNames := c.FrameNames()
+		src, err := json.MarshalIndent(frameNames, "", "    ")
+		if err != nil {
+			log.Printf("marshal error %+v, %s", frameNames, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json; charset=utf-8")
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
+// FrameKeys retrieves the list of keys associated with a frame
+//
+//```shell
+//   FRM_NAME="names"
+//   curl -X GET http://localhost:8585/api/journals.ds/frame-keys/$FRM_NAME
+//```
+//
 func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	frameName := options[0]
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		keys := c.FrameKeys(frameName)
+		src, err := json.MarshalIndent(keys, "", "    ")
+		if err != nil {
+			log.Printf("marshal error %+v, %s", keys, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json; charset=utf-8")
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
+// FrameDef retrieves the frame definition associated with a frame
+//
+//```shell
+//   FRM_NAME="names"
+//   curl -X GET http://localhost:8585/api/journals.ds/frame-def/$FRM_NAME
+//```
+//
 func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	frameName := options[0]
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		def, err := c.FrameDef(frameName)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		src, err := json.MarshalIndent(def, "", "    ")
+		if err != nil {
+			log.Printf("marshal error %+v, %s", def, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json; charset=utf-8")
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
+// FrameObjects retrieves the frame objects associated with a frame
+//
+//```shell
+//   FRM_NAME="names"
+//   curl -X GET http://localhost:8585/api/journals.ds/frame-objects/$FRM_NAME
+//```
+//
 func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	frameName := options[0]
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		objects, err := c.FrameObjects(frameName)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		src, err := json.MarshalIndent(objects, "", "    ")
+		if err != nil {
+			log.Printf("marshal error %+v, %s", objects, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json; charset=utf-8")
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
+// FrameRefresh updates the object values in a frame based on the
+// current state of the collection.
+//
+//```shell
+//   FRM_NAME="names"
+//   curl -X PUT http://localhost:8585/api/journals.ds/frame-refresh/$FRM_NAME
+//```
+//
 func FrameRefresh(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	frameName := options[0]
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		err := c.FrameRefresh(frameName, verbose)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+		fmt.Fprintf(w, "OK")
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
+// FrameReframe replaces the objects in based on a new list of keys.
+//
+//```shell
+//   FRM_NAME="names"
+//   cat<<EOT>frame-keys.json
+//   [ "Gentle-M", "Stienbeck-J", "Topez-T", "Valdez-L" ]
+//   EOT
+//   curl -X PUT http://localhost:8585/api/journals.ds/frame-reframe/$FRM_NAME
+//```
+//
 func FrameReframe(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	frameName := options[0]
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		src, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("FrameReframe, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		keys := []string{}
+		err = json.Unmarshal(src, &keys)
+		if err != nil {
+			log.Printf("FrameReframe, unmarshal error %+v, %s", keys, err)
+			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			return
+		}
+		err = c.FrameReframe(frameName, keys, verbose)
+		if err != nil {
+		}
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+		fmt.Fprintf(w, "OK")
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
+// FrameDelete removes a frame from a collection.
+//
+//```shell
+//  FRM_NAME="names"
+//  curl -X DELETE http://localhost:8585/api/journals.ds/frame/$FRM_NAME
+//```
+//
 func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) < 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	frameName := options[0]
+	// Get collection
+	c, ok := api.CMap[cName]
+	if ok {
+		err := c.FrameDelete(frameName)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+		fmt.Fprintf(w, "OK")
+		return
+	}
+	// Collection not found
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
 }
 
 //***************************************************

@@ -88,8 +88,8 @@ var (
 		"haskey":        doHasKey,
 		"has-key":       doHasKey,
 		"count":         doCount,
-		"frames":        doFrames,
-		"frame":         doFrame,
+		"frames":        doFrameNames,
+		"frame":         doFrameCreate,
 		"frame-def":     doFrameDef,
 		"frame-keys":    doFrameKeys,
 		"frame-objects": doFrameObjects,
@@ -603,8 +603,8 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	return nil
 }
 
-// doFrames
-func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+// doFrameNames
+func doFrameNames(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		srcName string
 		err     error
@@ -631,13 +631,13 @@ func doFrames(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
 	defer source.Close()
-	frames := source.Frames()
+	frames := source.FrameNames()
 	src := []byte(strings.Join(frames, "\n"))
 	return texts.WriteSource(output, out, src)
 }
 
-// doFrame
-func doFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+// doFrameCreate
+func doFrameCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		srcName   string
 		frameName string

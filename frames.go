@@ -88,7 +88,7 @@ func (c *Collection) frameObject(key string, dotPaths []string, labels []string)
 			key := labels[j]
 			o[key] = value
 		} else {
-			errors = append(errors, fmt.Sprintf("%q path (%d) not found for key %q", dpath, j, key))
+			errors = append(errors, fmt.Sprintf("path %q not found, %q in %q for %+v", dpath, key, c.Name, obj))
 		}
 	}
 	if len(errors) > 0 {
@@ -121,10 +121,10 @@ func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []strin
 		obj, err := c.frameObject(key, dotPaths, labels)
 		if verbose == true {
 			if err != nil {
-				log.Printf("(pid: %d) WARNING: framing error for key %q (%d), %s", pid, key, i, err)
+				log.Printf("(pid: %d) WARNING: framing error, %s", pid, err)
 			}
 			if obj == nil {
-				log.Printf("(pid: %d) WARNING: skipping object key %q (%d), object is nil", pid, key, i)
+				log.Printf("(pid: %d) WARNING: skipping object %q (%d) in %q, object is nil", pid, key, i, c.Name)
 			}
 		}
 		if obj != nil {
@@ -278,7 +278,7 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 				log.Printf("(pid: %d) WARNING: framing error for key %q (%d), %s", pid, key, i, err)
 			}
 			if obj == nil {
-				log.Printf("(pid: %d) WARNING: skipping object key %q (%d), object is nil", pid, key, i)
+				log.Printf("(pid: %d) WARNING: skipping object for key %q (%d), object is nil", pid, key, i)
 			}
 		}
 		if obj != nil {
@@ -301,7 +301,7 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 // collection.
 //
 // ```
-//   frames := c.Frames()
+//   frameNames := c.FrameNames()
 //   for _, name := range frames {
 //      // do something with each frame name
 //      objects, err := c.FrameObjects(name)
@@ -309,7 +309,7 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 //   }
 // ```
 //
-func (c *Collection) Frames() []string {
+func (c *Collection) FrameNames() []string {
 	framesDir := path.Join(c.workPath, "_frames")
 	files, err := os.ReadDir(framesDir)
 	if err != nil {

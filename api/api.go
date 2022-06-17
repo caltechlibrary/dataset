@@ -346,20 +346,20 @@ func (api *API) Init(appName string, settingsFile string) error {
 			}
 		}
 		if cfg.Attach {
-			prefix := path.Join(cName, "attach")
+			prefix := path.Join(cName, "attachment")
 			if err = api.RegisterRoute(prefix, http.MethodPost, Attach); err != nil {
 				return err
 			}
 		}
 		if cfg.Retrieve {
-			prefix := path.Join(cName, "retrieve")
+			prefix := path.Join(cName, "attachment")
 			if err = api.RegisterRoute(prefix, http.MethodGet, Retrieve); err != nil {
 				return err
 			}
 		}
 		if cfg.Prune {
-			prefix := path.Join(cName, "prune")
-			if err = api.RegisterRoute(prefix, http.MethodGet, Prune); err != nil {
+			prefix := path.Join(cName, "attachment")
+			if err = api.RegisterRoute(prefix, http.MethodDelete, Prune); err != nil {
 				return err
 			}
 		}
@@ -396,6 +396,10 @@ func (api *API) Init(appName string, settingsFile string) error {
 			}
 			prefix = path.Join(cName, "frame-reframe")
 			if err = api.RegisterRoute(prefix, http.MethodPut, FrameReframe); err != nil {
+				return err
+			}
+			prefix = path.Join(cName, "frame")
+			if err = api.RegisterRoute(prefix, http.MethodDelete, FrameDelete); err != nil {
 				return err
 			}
 		}

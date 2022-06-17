@@ -47,8 +47,8 @@ func EvalJSON(p string, src []byte) (interface{}, error) {
 	return Eval(p, data)
 }
 
-// Eval takes a dot path and interface (either a map[string]interface{} or []interface) and
-// returns a value from the dot ath or error
+// Eval takes a dot path and interface (either a map[string]interface{}
+// or []interface) and returns a value from the dot path or error
 func Eval(p string, data interface{}) (interface{}, error) {
 	// Parse the dotpath into an array representing map keys or array indexes
 	if p == "." {

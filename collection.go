@@ -442,7 +442,7 @@ func Init(name string, dsnURI string) (*Collection, error) {
 	return Open(name)
 }
 
-// Metadata returns a copy of the codemeta.json file content found
+// Codemeta returns a copy of the codemeta.json file content found
 // in the collection directory. The collection must be previous open.
 //
 // ```
@@ -459,7 +459,7 @@ func Init(name string, dsnURI string) (*Collection, error) {
 //   ioutil.WriteFile("codemeta.json", src, 664)
 // ```
 //
-func (c *Collection) Metadata() ([]byte, error) {
+func (c *Collection) Codemeta() ([]byte, error) {
 	fName := path.Join(c.Name, "codemeta.json")
 	src, err := ioutil.ReadFile(fName)
 	if err != nil {
