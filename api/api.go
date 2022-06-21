@@ -140,11 +140,8 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 			cName, verb, options = "", parts[0], []string{}
 		case 2:
 			cName, verb, options = parts[0], parts[1], []string{}
-		case 3:
-			cName, verb, options = parts[0], parts[1], parts[2:]
 		default:
-			http.NotFound(w, r)
-			return
+			cName, verb, options = parts[0], parts[1], parts[2:]
 		}
 		prefix := path.Join(cName, verb)
 		if route, ok := api.Routes[prefix]; ok {
@@ -345,15 +342,15 @@ func (api *API) Init(appName string, settingsFile string) error {
 				return err
 			}
 		}
-		if cfg.Attach {
-			prefix := path.Join(cName, "attachment")
-			if err = api.RegisterRoute(prefix, http.MethodPost, Attach); err != nil {
-				return err
-			}
-		}
 		if cfg.Retrieve {
 			prefix := path.Join(cName, "attachment")
 			if err = api.RegisterRoute(prefix, http.MethodGet, Retrieve); err != nil {
+				return err
+			}
+		}
+		if cfg.Attach {
+			prefix := path.Join(cName, "attachment")
+			if err = api.RegisterRoute(prefix, http.MethodPost, Attach); err != nil {
 				return err
 			}
 		}

@@ -23,6 +23,13 @@ var (
 	contentType        = "application/json"
 	dName              = "testout"
 	testCollectionsSrc = []byte(`{
+	"attachment_test.ds": {
+		"one": {
+			"one": 1,
+			"two": "too",
+			"three": true
+		}
+	},
 	"objects_test.ds": {
 		"Miller-A": {
 			"id":     "Miller-A",
@@ -349,7 +356,128 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 }
 
 func clientTestAttachments(t *testing.T, settings *config.Settings) {
-	t.Errorf("clientTestAttachments() not implemented.")
+	cPath := path.Join(dName, "attachment_test.ds")
+	cName := path.Base(cPath)
+	/*
+		c, err := ds.Open(cPath)
+		if err != nil {
+			t.Errorf("Failed to open test collection %q, %s", cPath, err)
+		}
+		defer c.Close()
+	*/
+
+	// Write out a file to attach, attach it and then test "attachments"
+	// route.
+	key := "123"
+	src := []byte(`one,two,three
+1,3,2
+4,7,6
+10,100,50
+131,313,113
+`)
+	aName := path.Join(dName, "numbers.csv")
+	if _, err := os.Stat(aName); err == nil {
+		os.RemoveAll(aName)
+	}
+	if err := ioutil.WriteFile(aName, src, 0664); err != nil {
+		t.Errorf("failed to write %q, %s", aName, err)
+		t.FailNow()
+	}
+
+	// Retrieve the attachments (should be no attachments first time)
+	u := fmt.Sprintf("http://%s/api/%s/attachments/%s", settings.Host, cName, key)
+	res, err := makeRequest(u, http.MethodGet, nil)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
+		t.FailNow()
+	}
+	defer res.Body.Close()
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	if len(body) == 0 {
+		t.Errorf("expected a response body, got %q", body)
+		t.FailNow()
+	}
+	l := []string{}
+	if err := json.Unmarshal(body, &l); err != nil {
+		t.Errorf("expected a list of attachments %q, %s", len(l), err)
+		t.FailNow()
+	}
+	if len(l) > 0 {
+		t.Errorf("expected a no attachments, got %+v", l)
+		t.FailNow()
+	}
+
+	// Adding a new document
+	fName := "numbers.csv"
+	u = fmt.Sprintf("http://%s/api/%s/attachment/%s/%s", settings.Host, cName, key, fName)
+	payload, err := makePayload(src)
+	res, err = makeRequest(u, http.MethodPost, payload)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, %q) -> %s", u, http.MethodPost, payload, err)
+		t.FailNow()
+	}
+	defer res.Body.Close()
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	if len(body) == 0 {
+		t.Errorf("expected a response body, got %q", body)
+		t.FailNow()
+	}
+
+	// Retrieve the attachments (should be one attachment second time)
+	u = fmt.Sprintf("http://%s/api/%s/attachments/%s", settings.Host, cName, key)
+	res, err = makeRequest(u, http.MethodGet, nil)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
+		t.FailNow()
+	}
+	defer res.Body.Close()
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	if len(body) == 0 {
+		t.Errorf("expected a response body, got %q", body)
+		t.FailNow()
+	}
+	l = []string{}
+	if err := json.Unmarshal(body, &l); err != nil {
+		t.Errorf("expected a list of attachments %q, %s", len(l), err)
+		t.FailNow()
+	}
+	if len(l) != 1 {
+		t.Errorf("expected a no attachments, got %+v", l)
+		t.FailNow()
+	}
+	if l[0] != path.Base(aName) {
+		t.Errorf("expected %q, got, %q", path.Base(aName), l[0])
+		t.FailNow()
+	}
+
+	// Get the file we added and make sure it looks OK
+	t.Errorf("retrieve attachment test not implemented")
+	// Prune the file we added and confirm it happened
+	t.Errorf("prune attachment test not implemented")
 }
 
 func clientTestFrames(t *testing.T, settings *config.Settings) {
@@ -735,6 +863,7 @@ func TestRunAPI(t *testing.T) {
 		cfg.Read = true
 		cfg.Update = true
 		cfg.Delete = true
+		cfg.Attachments = true
 		cfg.Attach = true
 		cfg.Retrieve = true
 		cfg.Prune = true

@@ -257,7 +257,6 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // ```
 //
 func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
-	defer r.Body.Close()
 	if len(options) != 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -291,7 +290,31 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 //```
 //
 func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) != 1 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	key := options[0]
+
+	if c, ok := api.CMap[cName]; ok {
+		fNames, err := c.Attachments(key)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		src, err := json.MarshalIndent(fNames, "", "    ")
+		if err != nil {
+			log.Printf("Attachments, unmarshal error %+v, %s", fNames, err)
+			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			return
+		}
+		// Set header to application/json
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, `%s`, src)
+		return
+	}
+	http.NotFound(w, r)
+	return
 }
 
 // Attach will add or replace an attachment for a JSON object in the
@@ -307,7 +330,54 @@ func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 //```
 //
 func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) != 2 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	key := options[0]
+	fName := options[1]
+	c, ok := api.CMap[cName]
+	if ok {
+		// Handle multipart upload or just streamed upload
+		contentType := r.Header.Get("content-type")
+		if contentType == `multipart/form-data` || contentType == `multipart/mixed` {
+			r.ParseMultipartForm(1024 << 20) // allow up to 1G files
+			// Get file handler and name
+			file, _, err := r.FormFile("file")
+			if err != nil {
+				log.Printf("Error in handling file upload %s", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+
+			}
+			defer file.Close()
+
+			fmt.Printf("DEBUG in AttachStream(%q, %q, file)\n", key, fName)
+			// Now we can attach the file to the record.
+			if err := c.AttachStream(key, fName, file); err != nil {
+				log.Printf("Failed to attach %q to %q, %s", fName, key, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Add("Content-Type", "text/plain")
+			fmt.Fprintf(w, "OK")
+			return
+		} else {
+			// Assume raw bytes and read them.
+			if err := c.AttachStream(key, fName, r.Body); err != nil {
+				log.Printf("Failed to attach stream %q to %q, %s", fName, key, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer r.Body.Close()
+			w.Header().Add("Content-Type", "text/plain")
+			fmt.Fprintf(w, "OK")
+			return
+		}
+	}
+	// collection or key not found.
+	http.NotFound(w, r)
+	return
 }
 
 // Attach retrieve an attachment from a JSON object in the

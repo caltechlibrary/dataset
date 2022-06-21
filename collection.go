@@ -190,6 +190,11 @@ func (c *Collection) Close() error {
 	return fmt.Errorf("%q not supported", c.StoreType)
 }
 
+// WorkPath returns the working path to the collection.
+func (c *Collection) WorkPath() string {
+	return c.workPath
+}
+
 // SetVersioning sets the versioning on a collection. The version string
 // can be "major", "minor", "patch". Any other value (e.g. "", "off", "none")
 // will turn off versioning for the collection.

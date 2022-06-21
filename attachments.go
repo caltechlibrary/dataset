@@ -407,8 +407,12 @@ func (c *Collection) RetrieveStream(key string, filename string, buf io.Writer) 
 		return err
 	}
 	defer in.Close()
-	if _, err := io.Copy(buf, in); err != nil {
+	size, err := io.Copy(buf, in)
+	if err != nil {
 		return err
+	}
+	if size == 0 {
+		return fmt.Errorf("zero bytes copied")
 	}
 	return err
 }
