@@ -23,7 +23,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -1016,16 +1015,16 @@ func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 // doRetrieve
 func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		srcName   string
-		filenames []string
-		key       string
-		err       error
-		output    string
+		srcName  string
+		filename string
+		key      string
+		err      error
+		output   string
 	)
 	flagSet := flag.NewFlagSet("retrieve", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
-	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.StringVar(&output, "o", "-", "save to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -1033,25 +1032,36 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	}
 	switch {
 	case len(args) == 3:
-		srcName, key, filenames = args[0], args[1], args[2:]
+		srcName, key, filename = args[0], args[1], args[2]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAME[FILENAME ...], got %q", strings.Join(args, " "))
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAMEgot, %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	c, err := ds.Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
-	defer source.Close()
-	for _, filename := range filenames {
-		src, err := source.RetrieveFile(key, filename)
+	defer c.Close()
+	// Handle writing to stdout
+	if output == "-" {
+		fOut := out
+		err = c.RetrieveStream(key, filename, fOut)
 		if err != nil {
+			return fmt.Errorf("failed to retrieve %q from %q, %s", filename, key, err)
 		}
-		if err != nil {
-			fmt.Fprintf(eout, "failed to retrieve %q from %q, %s", filename, key, err)
-		}
-		if err := ioutil.WriteFile(filename, src, 0664); err != nil {
-			fmt.Fprintf(eout, "failed to write %q from %q, %s", filename, key, err)
-		}
+		return nil
+	}
+	// Handle writing to designated file
+	if output == "" {
+		output = filename
+	}
+	fOut, err := os.Create(output)
+	if err != nil {
+		return fmt.Errorf("could not create %q, %s", output, err)
+	}
+	defer fOut.Close()
+	err = c.RetrieveStream(key, filename, fOut)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve %q from %q, %s", filename, key, err)
 	}
 	return nil
 }

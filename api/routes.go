@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"mime"
 	"net/http"
+	"path"
 )
 
 const (
@@ -16,6 +18,28 @@ const (
 // NOTE: Examples routes using curl assume the "host" has been
 // configured for the default "localhost:8485".
 //
+
+// statusOK returns a JSON object indicating the status of a request
+// is OK.
+func statusIsOK(w http.ResponseWriter, cName string, key string, action string, fName string) {
+	w.Header().Add("Content-Type", "application/json")
+	m := map[string]string{}
+	m["status"] = "OK"
+	if cName != "" {
+		m["collection"] = cName
+	}
+	if key != "" {
+		m["key"] = key
+	}
+	if action != "" {
+		m["action"] = action
+	}
+	if fName == "" {
+		m["filename"] = fName
+	}
+	src, _ := json.Marshal(m)
+	fmt.Fprintf(w, "%s", src)
+}
 
 // ApiVersion returns the version of the web service running.
 // This will normally be the same version of dataset you installed.
@@ -148,9 +172,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		// Set header to application/json
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok", "key": %q, "action": "created"}`, key)
+		statusIsOK(w, cName, key, "created", "")
 		return
 	}
 	http.NotFound(w, r)
@@ -237,9 +259,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		// Set header to application/json
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok", "key": %q, "action": "updated"}`, key)
+		statusIsOK(w, cName, key, "updated", "")
 		return
 	}
 	http.NotFound(w, r)
@@ -268,9 +288,7 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		// Set header to application/json
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"ok", "key": %q, "action": "deleted"}`, key)
+		statusIsOK(w, cName, key, "delete", "")
 		return
 	}
 	http.NotFound(w, r)
@@ -352,15 +370,13 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 			}
 			defer file.Close()
 
-			fmt.Printf("DEBUG in AttachStream(%q, %q, file)\n", key, fName)
 			// Now we can attach the file to the record.
 			if err := c.AttachStream(key, fName, file); err != nil {
 				log.Printf("Failed to attach %q to %q, %s", fName, key, err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError)
 				return
 			}
-			w.Header().Add("Content-Type", "text/plain")
-			fmt.Fprintf(w, "OK")
+			statusIsOK(w, cName, key, "attach", fName)
 			return
 		} else {
 			// Assume raw bytes and read them.
@@ -370,8 +386,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 				return
 			}
 			defer r.Body.Close()
-			w.Header().Add("Content-Type", "text/plain")
-			fmt.Fprintf(w, "OK")
+			statusIsOK(w, cName, key, "attach", fName)
 			return
 		}
 	}
@@ -391,7 +406,37 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 //```
 //
 func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) != 2 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	contentType := "application/octet-stream"
+	key, filename := options[0], options[1]
+	ext := path.Ext(filename)
+	if ext != "" {
+		contentType = mime.TypeByExtension(ext)
+	}
+	c, ok := api.CMap[cName]
+	if !ok {
+		log.Printf("collection %q not found", cName)
+		http.NotFound(w, r)
+		return
+	}
+	_, err := c.AttachmentPath(key, filename)
+	if err != nil {
+		log.Printf("attachment not found %q from %q in %q", filename, key, cName)
+		http.NotFound(w, r)
+		return
+	}
+	if contentType != "" {
+		w.Header().Add("Content-Type", contentType)
+	}
+	err = c.RetrieveStream(key, filename, w)
+	if err != nil {
+		log.Printf("failed to retrieve stream %q from %q in %q, %s", filename, key, cName, err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 }
 
 // Prune removes and attachment from a JSON object in the collection.
@@ -404,7 +449,24 @@ func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 //```
 //
 func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	if len(options) != 2 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	key, fName := options[0], options[1]
+	c, ok := api.CMap[cName]
+	if !ok {
+		log.Printf("collection %q not found", cName)
+		http.NotFound(w, r)
+		return
+	}
+	err := c.Prune(key, fName)
+	if err != nil {
+		log.Printf("failed to removed %q from %q in %q", fName, key, cName)
+		http.NotFound(w, r)
+		return
+	}
+	statusIsOK(w, cName, key, "prune", fName)
 }
 
 //
@@ -492,8 +554,7 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 			log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		}
-		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintf(w, "OK")
+		statusIsOK(w, cName, "", "frame-create", frameName)
 		return
 	}
 	// Check if frame is in collection

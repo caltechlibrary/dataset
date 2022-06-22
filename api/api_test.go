@@ -475,9 +475,75 @@ func clientTestAttachments(t *testing.T, settings *config.Settings) {
 	}
 
 	// Get the file we added and make sure it looks OK
-	t.Errorf("retrieve attachment test not implemented")
-	// Prune the file we added and confirm it happened
-	t.Errorf("prune attachment test not implemented")
+	for _, filename := range l {
+		u = fmt.Sprintf("http://%s/api/%s/attachment/%s/%s", settings.Host, cName, key, filename)
+		res, err = makeRequest(u, http.MethodGet, nil)
+		if err != nil {
+			t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
+			t.FailNow()
+		}
+		defer res.Body.Close()
+		if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			t.Errorf("%s", err)
+			t.FailNow()
+		}
+		if len(body) == 0 {
+			t.Errorf("expected a response body, got %q", body)
+			t.FailNow()
+		}
+		outName := path.Join(dName, "download-"+filename)
+		if err := ioutil.WriteFile(outName, body, 0664); err != nil {
+			t.Errorf("unable to write requested file %q, %s", filename, err)
+		}
+	}
+	for _, filename := range l {
+		u = fmt.Sprintf("http://%s/api/%s/attachment/%s/%s", settings.Host, cName, key, filename)
+		res, err = makeRequest(u, http.MethodDelete, nil)
+		if err != nil {
+			t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
+			t.FailNow()
+		}
+		defer res.Body.Close()
+		if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+	}
+	// Now make sure attachments were all removed.
+	u = fmt.Sprintf("http://%s/api/%s/attachments/%s", settings.Host, cName, key)
+	res, err = makeRequest(u, http.MethodGet, nil)
+	if err != nil {
+		t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
+		t.FailNow()
+	}
+	defer res.Body.Close()
+	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	if len(body) == 0 {
+		t.Errorf("expected a response body, got %q", body)
+		t.FailNow()
+	}
+	l = []string{}
+	if err := json.Unmarshal(body, &l); err != nil {
+		t.Errorf("expected a list of attachments %q, %s", len(l), err)
+		t.FailNow()
+	}
+	if len(l) > 0 {
+		t.Errorf("expected a no attachments, got %+v", l)
+		t.FailNow()
+	}
 }
 
 func clientTestFrames(t *testing.T, settings *config.Settings) {
