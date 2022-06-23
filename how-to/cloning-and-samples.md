@@ -36,20 +36,6 @@ On the command line \--
     dataset clone -i sample.keys friends.ds friends-sample.ds
 ```
 
-In Python I am assuming you have defined a function called
-\"get_sample_keys()\" your self.
-
-```python
-    keys = get_sample_keys('friends.ds', 5)
-    err = dataset.clone('friends.ds', keys, 'friends-sample.ds')
-```
-
-As you can see this version of clone works off a set of supplied keys.
-What if you don\'t want to calculate the key list first? e.g I am
-working in Python and I don\'t want to have to write
-\"get_sample_keys()\"! That\'s what **clone-sample** (or in Python
-**clone_sample**) is for.
-
 Clone sample
 ------------
 
@@ -66,14 +52,6 @@ friends collection.
     dataset clone-sample -size=5 friends.ds friends-sample.ds
 ```
 
-Likewise in python this becomes
-
-```python
-    err = dataset.clone_sample('friends.ds', 5, 'friends-sample.ds')
-    if err != '':
-        print(err)
-```
-
 ### Training and test collections
 
 By adding a second target collection name we can use **clone-sample** to
@@ -84,8 +62,3 @@ our *friends.ds* collection creating *training.ds* and *test.ds*.
     dataset clone-sample -size=5 friends.ds training.ds test.ds
 ```
 
-```python
-    err = dataset.clone_sample('friends.ds', 5, 'training.ds', 'test.ds')
-    if err != '':
-        print(err)
-```

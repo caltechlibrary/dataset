@@ -51,8 +51,7 @@ retrieve
 <h2 id="syntax">
 Syntax
 </h2>
-<pre class="shell"><code>    dataset retrieve COLLECTION_NAME KEY [SEMVER]
-    dataset retrieve COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME</code></pre>
+<pre class="shell"><code>    dataset retrieve COLLECTION_NAME KEY ATTACHMENT_NAME</code></pre>
 <h2 id="description">
 Description
 </h2>
@@ -72,15 +71,6 @@ Write out all the attached files for k1 in collection named
 Write out only the <em>stats.xlsx</em> file attached to k1
 </p>
 <pre class="shell"><code>    dataset retrieve publications.ds k1 stats.xlsx</code></pre>
-<p>
-Write out only the v0.0.1 <em>stats.xlsx</em> file attached to k1
-</p>
-<pre class="shell"><code>    dataset retrieve publications.ds k1 v0.0.1 stats.xlsx</code></pre>
-<p>
-Related topics: <a href="attach.html">attach</a>, <a
-href="attachments.html">attachments</a>, and <a
-href="prune.html">prune</a>
-</p>
 </section>
 
 <footer>

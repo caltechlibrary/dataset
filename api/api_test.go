@@ -304,7 +304,7 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 					t.Errorf("http.Post(%q, %q, %s) error %s", u, contentType, body, err)
 					t.FailNow()
 				}
-				if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+				if err := assertHTTPStatus(http.StatusCreated, res.StatusCode); err != nil {
 					t.Error(err)
 					t.FailNow()
 				}
@@ -333,7 +333,7 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 					body = bytes.NewBuffer(src)
 					res, err := makeRequest(u, http.MethodPut, body)
 					if err != nil {
-						t.Errorf("put failed, %s", err)
+						t.Errorf("makeRequest(%q, %q, %s) %s", u, http.MethodPut, body, err)
 					}
 					if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
 						t.Error(err)
@@ -425,7 +425,7 @@ func clientTestAttachments(t *testing.T, settings *config.Settings) {
 		t.FailNow()
 	}
 	defer res.Body.Close()
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+	if err := assertHTTPStatus(http.StatusCreated, res.StatusCode); err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
@@ -623,7 +623,7 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		t.Errorf("makeRequest(%q, %q, %s) -> %s", u, http.MethodPost, payload, err)
 		t.FailNow()
 	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+	if err := assertHTTPStatus(http.StatusCreated, res.StatusCode); err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
@@ -706,7 +706,7 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		t.Errorf("expected to find frame def for %q, got %s", frameName, err)
 		t.FailNow()
 	}
-	u = fmt.Sprintf("http://%s/api/%s/frame-def/%s", settings.Host, cName, frameName)
+	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
 	res, err = makeRequest(u, http.MethodGet, nil)
 	if err != nil {
 		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
@@ -807,7 +807,7 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 	u = fmt.Sprintf("http://%s/api/%s/object/%s", settings.Host, cName, key)
 	res, err = makeRequest(u, http.MethodPut, buf)
 	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
+		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
 		t.FailNow()
 	}
 	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
@@ -816,10 +816,10 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 	}
 
 	// Make a refresh call
-	u = fmt.Sprintf("http://%s/api/%s/frame-refresh/%s", settings.Host, cName, frameName)
+	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
 	res, err = makeRequest(u, http.MethodPut, nil)
 	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
+		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
 		t.FailNow()
 	}
 	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
@@ -849,7 +849,7 @@ func clientTestFrames(t *testing.T, settings *config.Settings) {
 		t.Errorf("failed to marshal key list, %s", err)
 		t.FailNow()
 	}
-	u = fmt.Sprintf("http://%s/api/%s/frame-reframe/%s", settings.Host, cName, frameName)
+	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
 	buf = bytes.NewBuffer(src)
 	res, err = makeRequest(u, http.MethodPut, buf)
 	if err != nil {

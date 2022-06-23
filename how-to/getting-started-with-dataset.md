@@ -1,19 +1,30 @@
 Getting started with dataset
 ============================
 
-*dataset* is designed to easily manage collections of JSON objects.
-Objects are associated with a unique key you provide. The objects
+*dataset* is designed to easily manage collections of JSON documents.
+A JSON object is associated with a unique key you provide. If
+you are using the default storage engine the objects
 themselves are stored on disc in a folder inside the collection folder.
+If you are using a SQL storage engine they are stored in a column of
+a table of the collection in your SQL database.
+
 The collection folder contains a JSON object document called
-*collection.json*. This file stores metadata about the collection
-including the association of keys with paths to their objects. *dataset*
-comes in several flavors --- a command line program called *dataset*, a
-Go language package also called dataset, a shared library called
-libdataset and a Python 3.7 package called
-[py_dataset](https://github.com/caltechlibrary/py_dataset). This
-tutorial talks both the command line program and the Python package. The
-command line is great for simple setup but Python is often more
-convenient for more complex operations.
+*collection.json*. This file stores operational metadata about the
+collection. If the collection is using a pairtree then a *keymap.json*
+file will include the association of keys with paths to their objects. 
+When a collection is initialized a minimal codemeta.json file will
+created describing the collection. This can be update to a full
+codemeta.json file, follow the guideline and practice described
+at the [codemeta](https://codemeta.github.io) website.
+
+*dataset* comes in several flavors --- a command line program
+called *dataset*, a web service called *datasetd* and the 
+Go language package used to build for programs.
+
+This tutorial talks both the command line program and the Go package. The
+command line is great for simple setup, the Go package allows you to
+build on other programs that use dataset collections for content
+persistence.
 
 Create a collection with init
 -----------------------------
@@ -33,30 +44,38 @@ Notice that after you typed this and press enter you see an \"OK\"
 response. If there had been an error then you would have seen an error
 message instead.
 
-Working in Python is similar to the command line. We import the modules
-needed then use them. For these exercises we\'ll be importing the
-following modules *sys*, *os*, *json* and of course *dataset* via
-`from py_dataset import dataset`.
+Working in Go is similar. We use the `dataset.Init()` func to create
+our new collection. We can import the "dataset" package using
+the import line `"github.com/caltechlibrary/dataset"`.  Here's a
+general code sketch.
 
-```python
-    import sys
-    import os
-    import json
-    from py_dataset import dataset
-    
-    # stop is a convenience function
-    def stop(msg):
-        print(msg)
-        sys.exit(1)
+```golang
+   import (
+      // import the packages your program needs ...
+      "fmt"
+      "os"
+
+      // import dataset
+      "github.com/caltechlibrary/dataset"
+   )
         
-    err = dataset.init("friends.ds")
-    if err != "":
-        stop(err)
+   func main() {
+       // The dataset collection is held in 'c'
+       // This create the collection "friends.ds"
+       collectionName := "frieds.ds"
+       c, err := dataset.init(collectionName)
+       if err != nil {
+           fmt.Fprintf(os.Stderr, "Something went wrong, %s\n", err)
+           os.Exit(1)
+       }
+       defer c.Close() // Remember to close your collection
+       fmt.Printf("Created %q, ready to use\n", collectionName)
+   }
 ```
 
-In Python the error message is an empty string if everything is ok,
-otherwise we call stop which prints the message and exits. You will see
-this pattern followed in a number of upcoming Python examples.
+In this Go example if the error is nil a statement is written
+to standard out saying the collection was created, if not an
+error is shown.
 
 ### removing friends.ds {#removing-friends.ds}
 
@@ -64,6 +83,20 @@ There is no dataset verb to remove a collection. A collection is just a
 folder with some files in it. You can delete the collection by throwing
 the folder in the trash (Mac OS X and Windows) or using a recursive
 remove in the Unix shell.
+
+```shell
+    rm -fR friends.ds
+```
+
+Or using `os.RemoveAll()` in Go programs.
+
+```
+    if _, err := os.Stat(collectionName); err == nil {
+        os.RemoveAll(collectionName)
+    }
+```
+
+
 
 create, read, update and delete
 -------------------------------
@@ -85,42 +118,137 @@ and Jack Flanders.
 ```
 
 Notice the \"OK\". Just like *init* the *create* verb returns a status.
-\"OK\" means everything is good, otherwise an error is shown. Doing the
-same thing in Python would look like.
+\"OK\" means everything is good, otherwise an error is shown. 
 
-```python
-    err = dataset.create("friends.ds", "frieda", 
-          {"name":"Little Frieda","email":"frieda@inverness.example.org"})
-    if err != "":
-        stop(msg)
+Doing the same thing in Go would look like. Note we have to explicitly
+`Open()` the collection to get a collection object then call `Create()`
+on the opened collection. `defer` make it easy for us to remember to close
+the collection when we're done.
+
+```golang
+    import (
+        "fmt"
+        "os"
+
+        "github.com/caltechlibrary/dataset"
+    )
+
+    func main() {
+        c, err := dataset.Open("fiends.ds")
+        if err != nil {
+            fmt.Fprintf(os.Stderr, "something went wrong, %s", err)
+            os.Exit(1)
+        }
+        defer c.Close() // Don't forget to close the collection
+        id := "frieda"
+        m := map[string]interface{}{
+            "id": id,
+            "name":"Little Frieda",
+            "email":"frieda@inverness.example.org",
+        }
+        // Create adds a map[string]interface{} to the collection.
+        if err := dataset.Create(id, m); err != nil {
+            fmt.Fprintf(os.Stderr, "%s",err)
+            os.Exit(1)
+        }
+        fmt.Printf("OK")
+        os.Exit(0)
+    }
 ```
 
-With create we need to provide a collection name, a key (e.g.
-\"frieda\") and Python dict (which becomes our JSON object). Now let\'s
-add records for Mojo Sam and Jack Flanders.
+Go supports easy translation of struct types into JSON
+encoded byte slices. Can then use that store the JSON representations
+using the `CreateObject()` to create a JSON object from any Go type.
+
+```golang
+   import (
+      "encoding/json"
+      "fmt"
+      "os"
+
+      "github.com/caltechlibrary/dataset"
+   )
+
+   type Record struct {
+       ID string `json:"id"`
+       Name string `json:"name,omitempty"`
+       EMail string `json:"email,omitempty"`
+   }
+
+   func main() {
+       obj := &Record{
+           ID: "frieda",
+           Name: "Little Fieda",
+           EMail: "frieda@inverness.example.org",
+       }
+       if err := dataset.CreateObject("friends.ds", obj.ID, obj); err != nil {
+           fmt.Fprintf(os.Stderr, "%s", err)
+           os.Exit(1)
+       }
+       fmt.Printf("OK")
+       os.Exit(0)
+   }
+```
+
+On the command line create requires us to provide a collection name, a 
+key (e.g.  \"frieda\") and JSON markup to store the JSON object. We can
+provide that either through the command line or by reading in a file or
+standard input.
 
 command line \--
 
 ```bash
-    dataset create friends.ds "mojo" \
-        '{"name": "Mojo Sam, the Yudoo Man", "email": "mojosam@cosmic-cafe.example.org"}'
-    dataset create friends.ds "jack" \
-        '{"name": "Jack Flanders", "email": "capt-jack@cosmic-voyager.example.org"}'
+    cat <<EOT >mojo.json
+    {
+        "id": "mojo",
+        "name": "Mojo Sam, the Yudoo Man", 
+        "email": "mojosam@cosmic-cafe.example.org"
+    }
+    EOT
+
+    cat mojo.json | dataset create friends.ds "mojo"
+
+    cat <<EOT >jack.json
+    {
+        "id": "jack",
+        "name": "Jack Flanders", 
+        "email": "capt-jack@cosmic-voyager.example.org"
+     
+    EOT
+
+    dataset create -i jack.json friends.ds "jack"
 ```
 
-in python \--
+in Go  we can loop through records easily and add them \--
 
-```python
-    err = dataset.create("friends.ds", "mojo", 
-          {"name": "Mojo Sam, the Yudoo Man", 
-          "email": "mojosam@cosmic-cafe.example.org"})
-    if err != "": 
-        stop(err)
-    err = dataset.create("friends.ds", "jack", 
-          {"name": "Jack Flanders", 
-          "email": "capt-jack@cosmic-voyager.example.org"})
-    if err != "": 
-        stop(err)
+```golang
+    // Open the collection
+    c, err := dataset.Open("friends.ds")
+    if err != nil {
+        ...
+    }
+    defer c.Close()// Don't forget to close the collection
+
+    // Create some new records
+    newRecords := []Record{
+        Record{
+            ID: "mojo",
+            Name: "Mojo Sam",
+            EMail: "mojosam@cosmic-cafe.example.rog",
+        },
+        Record{
+            ID: "jack",
+            Name: "Jack Flanders",
+            Email: "capt-jack@cosmic-voyager.example.org",
+        },
+    }
+    // Save the new records into the collection
+    for _, record := range newRecords {
+        if err := dataset.CreateObject(record.ID, record); err != nil {
+            fmt.Fprintf(os.Stderr, 
+               "something went wrong add %q, %s\n", record.ID, key)
+        }
+    }
 ```
 
 ### read
@@ -135,13 +263,6 @@ command line \--
     dataset read friends.ds frieda
 ```
 
-This command emits a JSON object. The JSON is somewhat hard to read. To
-get a pretty version of the JSON object used the \"-p\" option.
-
-```bash
-    dataset read -p friends.ds frieda
-```
-
 On the command line you can easily pipe the results to a file for latter
 modification. Let\'s do this for each of the records we have created so
 far.
@@ -152,25 +273,38 @@ far.
     dataset read -p friends.ds jack >jack-profile.json
 ```
 
-Working in python is similar but rather than write out our JSON
-structures to a file we\'re going to keep them in memory as Python dict.
+Working in Go is similar but rather than write out our JSON
+structures to a file we\'re going to keep them in memory as 
+an array of record structs before converting to JSON and writing
+it out.
 
-In Python \--
+In Go \--
 
-```python
-    (frieda_profile, err) = dataset.read("friends.ds", "frieda")
-    if err != "":
-        stop(err)
-    (mojo_profile, err) = dataset.read("friends.ds", "mojo")
-    if err != "":
-        stop(err)
-    (jack_profile, err) = dataset.read("friends.ds", "jack")
-    if err != "":
-        stop(err)
+```golang
+    // Open our collection
+    c, err := dataset.Open("friends.ds")
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "%s\n", err)
+        os.Exit(1)
+    }
+    defer c.Close()
+
+    // build our list of keys
+    keys := []string{ "frieda", "mojo", "jack" }
+    records := []*Record{}
+    // loop through the list and write the JSON source to file.
+    for _, key := range keys {
+       obj := &Record{}
+       if err := c.ReadObject(key, &obj); err != nil {
+           fmt.Fprintf(os.Stderr, "%s\n", err)
+           os.Exit(1)
+       }  
+       records = append(records, obj)
+    }
+    src, _ := json.MarshalIndent(records)
+    fmt.Println("%s\n", src)
+    os.Exit(0)
 ```
-
-In Python, just like with *init* and *create* the *read* verb returns a
-tuple of the value and err. Notice a pattern?
 
 ### update
 
@@ -226,28 +360,48 @@ knows to read the JSON object from disc. If the object had stated with a
 \"{\" and ended with a \"}\" it would assume you were using an explicit
 JSON expression.
 
-In Python we can work with each of the dictionaries variables we save
-from our previous *read* example. We add our "catch_phrase" attribute
-then *update* each record.
+In Go we can work with each of the record as `map[string]interface{}`
+variables. We save from our previous *Read* example. We add our 
+"catch_phrase" attribute then *Update* each record.
 
-```python
-    frieda_profile["catch_phrase"] = "Wowee Zowee"
-    mojo_profile["catch_phrase"] = "Feet Don't Fail Me Now!"
-    jack_profile["catch_phrase"] = "What is coming at you is coming from you"
+```golang
+    c, err := dataset.Open("friends.ds")
+    if err != nil { 
+        // ... handle errors
+    }
+    defer c.Close()
+
+    // Read our three profiles
+    friedaProfile := map[string]interface{}{}
+    if err := c.Read("frieda", fredaProfile); err != nil {
+        // ... handle error
+    }
+    mojoProfile := map[string]interface{}{}
+    if err :=  c.Read("mojo", mojoProfile); err != nil  {
+        // ... handle error
+    }
+    jackProfile := map[string]interface{}{}
+    if err := c.Read("jack", jackProfile); err != nil {
+        // ... handle error
+    }
     
-    err = dataset.update("friends.ds", "frieda", frieda_profile)
-    if err != "":
-        stop(err)
-    err = dataset.update("friends.ds", "mojo", mojo_profile)
-    if err != "":
-        stop(err)
-    err = dataset.update("friends.ds", "jack", jack_profile)
-    if err != "":
-        stop(err)
+    // Add our catch phrases
+    friedaProfile["catch_phrase"] = "Wowee Zowee"
+    mojoProfile["catch_phrase"] = "Feet Don't Fail Me Now!"
+    jackProfile["catch_phrase"] = "What is coming at you is coming from you"
+    
+    // Update our records
+    if err := c.Update("frieda", friedaProfile); err != "" {
+        // ... handle error
+    }
+    if err := c.Update("mojo", mojoProfile); err != "" {
+        // ... handle error
+    }
+    if err := c.Update("jack", jackProfile); err != nil {
+        // ... handle error
+    }
 ```
 
-As an exercise how would you read back the updated version on the
-command line or in Python?
 
 ### delete
 
@@ -263,12 +417,21 @@ command line \--
 Notice the "OK" in this case it means we\'ve successfully delete the
 JSON object from the collection.
 
-An perhaps as you\'ve already guessed working in Python looks like \--
+An perhaps as you\'ve already guessed working in Go looks like \--
 
-```python
-    err = dataset.delete("friends.ds", "jack")
-    if err != "":
-       stop(err)
+```golang
+   c, err := dataset.Open("friends.ds")
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   if err := c.Delete("jack"); err != nil {
+       fmt.Fprintf(os.Stderr, "%s\n", err)
+       os.Exit(1)
+   }
+   fmt.Println("OK")
+   os.Exit(0)
 ```
 
 keys and count
@@ -288,11 +451,17 @@ Command line \--
     dataset count friends.ds
 ```
 
-In Python \--
+In Go \--
 
-```python
-    cnt = dataset.count("friends.ds")
-    print(f"Total Records Now: {cnt}")
+```golang
+   c, err := dataset.Open("friends.ds")
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   cnt = c.Length()
+   fmt.Printf("Total Records Now: %d\n", cnt)
 ```
 
 Likewise we can get a list of the keys with the *keys* verb.
@@ -301,49 +470,45 @@ Likewise we can get a list of the keys with the *keys* verb.
     dataset keys friends.ds
 ```
 
-If you are following along in Python then you can just save the keys to
+If you are following along in Go then you can just save the keys to
 a variable called keys.
 
-```python
-    keys = dataset.keys("friends.ds")
-    print("\n".join(keys))
+```golang
+   c, err := dataset.Open("friends.ds")
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   keys, err = c.Keys()
+   if err != nil {
+       // ... handle error
+   }
+   fmt.Printf("%s\n", strings.Join(keys, "\n"))
 ```
 
-Data frames and grids
----------------------
+Data frames
+-----------
 
 JSON objects are tree like. This structure can be inconvenient for some
 types of analysis like tabulation, comparing values or generating
 summarizing reports. Many languages support a concept of \"data frame\".
 Meaning a list of objects, possibly with associated metadata about how
 the list was created. This becomes a convenient way to process data.
-Frames can easily be transformed. Sometimes a spreadsheet, table or 2D
-grid like structure is often a more familiar format for these types of
-tasks. *frame-grid* is dataset\'s verb for taking a data frame and
-returning a 2D list of grid results. The 2D grid is easy to iterate
-over. A *frame-grid* doesn\'t enforce any specifics on the columns and
-rows. It only contains the values you specified in the list of keys and
-dot paths when you defined the data frame.
+Frames can easily be transformed. 
 
 ### the frame
 
 dataset also comes with a *frame* verb. A *frame* is an order list of
-objects with some additional metadata. It is similar to the \"data
-frames\" concepts in languages like Julia, Matlab, Octave, Python and R.
-It is a data structure that can be easily mapped to a grid (2D array or
-rows and columns). A frame is represented as an array of objects there
-the column names correspond to a attribute name in an object. It
-enforces a structure that behaves like a grid but is also easy to
-iterate over for other types of processing. Like our \"grid\" command a
-a *frame* will also derive heading labels (object attribute names) from
-the dot paths used to define the frame and will include metadata about
-the collection, keys used to define the frame and default types of data
-in the columns. The extra information in a *frame* stays with the
-collection. Frames are persistent and can be easily recalculated based
-on collection updates.
+objects based on a set of keys and metadata about how the values for
+the objects we mapped from the collection's JSON documents. It is similar
+to the \"data frames\" concepts in languages like Julia, Matlab, Octave,
+Python and R.
 
-To define a frame we only need one additional piece of information
-besides what we used for a grid. We need a name for the frame.
+To define a frame we only need two pieces of information,
+a list of keys in the collection to be framed and a list of 
+dot notated paths to map into a set of labels for the object in
+the frame.
 
 ```bash
     dataset frame-create -i=friends.keys friends.ds \
@@ -352,34 +517,35 @@ besides what we used for a grid. We need a name for the frame.
         .catch_phrase=catch_phrase
 ```
 
-In python it would look like
+In Go it would look like
 
 ```python
-    keys = dataset.keys("friends.ds")
-    err = dataset.frame_create("friends.ds", "name-and-email", 
-          keys, { 
-              ".name": "name", 
-              ".email": "email", 
-              ".catch_phrase": "catch_phrase"
-              })
-    if err != "":
-        stop(err)
+    c, err := dataset.Open("friends.ds")
+    // ... handle error
+    defer c.Close()
+
+    verbose := true
+    keys = c.Keys()
+    dotPaths := []string{ ".name", ".email", ".catch_phrase" }
+    labels := []string{ "name", "email", "catch_phrase" }
+    if err := c.FrameCreate("friends.ds", "name-and-email", 
+                keys, dotPaths, labels, verbose); err != nil {
+        // ... handle error
+    }
 ```
 
-To see the full contents of a frame we only need to supply the
-collection and frame names.
+In Go it\'d look like
 
-```bash
-    dataset frame friends.ds "name-and-email"
-```
+```golang
+    c, err := dataset.Open("friends.ds")
+    // ... handle error
+    defer c.Close()
 
-In Python it\'d look like
-
-```python
-    (f, err) = dataset.frame("friends.ds", "name-and-email")
-    if err != "":
-        stop(err)
-    print(json.dumps(f, indent = 4))
+    frm, err := c.FrameRead("name-and-email")
+    // ... handle error
+    src, err := json.MarshalIndent(frm, "", "    ")
+    // ... handle error
+    fmt.Printf("%s\n", src)
 ```
 
 Looking at the resulting JSON object you see other attributes beyond the
@@ -393,10 +559,18 @@ just retrieving the object list.
     dataset frame-objects friends.ds "name-and-email"
 ```
 
-Or in Python
+Or in Go \--
 
-```python
-    object_list = dataset.frame_objects("friends.ds", "name-and-email")
+```golang
+    c, err := dataset.Open("friends.ds")
+    // ... handle error
+    defer c.Close()
+
+    objects, err := c.FrameObjects("name-and-email")
+    // ... handle error
+    src, err := json.MarshalIndent(objects, "", "    ")
+    // ... handle error
+    fmt.Printf("%s\n", src)
 ```
 
 Let\'s add back the Jack record we deleted a few sections ago and
@@ -404,32 +578,36 @@ Let\'s add back the Jack record we deleted a few sections ago and
 
 ```bash
     # Adding back Jack
-    dataset create friends.ds jack jack-profile.json
+    dataset create -i jack-profile.json friends.ds jack
     # Save all the keys in the collection
     dataset keys friends.ds >friends.keys
     # Now reframe "name-and-email" with the updated friends.keys
-    dataset frame-reframe -i=friends.keys friends.ds "name-and-email" 
-    # Now let's take a look at the frame
-    dataset frame -p friends.ds "name-and-email"
+    dataset reframe -i=friends.keys friends.ds "name-and-email" 
+    # Now let's take a look at the frame's objects
+    dataset frame-objects friends.ds "name-and-email"
 ```
 
-NOTE: the *read* before it the "-p" option will cause the JSON
-representation of the frame to be pretty printed.
+Let\'s try the same thing in Go \--
 
-Let\'s try the same thing in Python
-
-```python
-    err = dataset.create("friends.ds", "jack", jack_profile)
-    if err != "":
-        stop(err)
-    keys = dataset.keys("friends.ds")
-    err = dataset.frame_reframe("friends.ds", "name-and-email", keys)
-    if err != "":
-        stop(err)
-    (f, err) = dataset.frame("friends.ds", "name-and-email")
-    if err != "":
-        stop(err)
-    print(json.dumps(f, indent = 4))
+```golang
+   c, err := dataset.Open("friends.ds")
+   // ... handle error
+   defer c.Close()
+   if err := c.CreateObject("jack", jackProfile); err != nil {
+       // ... handle error
+   }
+   keys, err := c.Keys()
+   if err != nil {
+       // ... handle error
+   }
+   if err := c.Reframe("name-and-email", keys); err != nil {
+       // ... handle error
+   }
+   objects, err := c.FrameObjects("name-and-email")
+   // ... handle error
+   src, err := json.MarshalIndent(objects, "", "    ")
+   // ... handle error
+   fmt.Printf("%s\n", src)
 ```
 
 We can list the frames in the collection using the *frames* verb.
@@ -438,11 +616,15 @@ We can list the frames in the collection using the *frames* verb.
     dataset frames friends.ds
 ```
 
-In Python
+In Go \--
 
-```python
-    frame_names = dataset.frames("friends.ds")
-    print("\n".join(frame_names))
+```golang
+   c, err := dataset.Open("friends.ds")
+   // ... handle error
+   defer c.Close()
+
+   frameNames := c.Frames()
+   fmt.Printf("%s\n", string.Join(frame_names, "\n"))
 ```
 
 In our frame we have previously defined three columns, looking at the
@@ -459,27 +641,39 @@ provided the order of the columns for the frame \"name-and-email\" as
 define our frame that way.
 
 ```bash
+    dataset frame-keys friends.ds >keys.json 
     dataset frame-delete friends.ds "name-and-email"
-    dataset frame friends.ds "name-and-email" \
+    dataset frame -i keys.json friends.ds "name-and-email" \
         "._Key=ID" ".name=Display Name" \
         ".email=EMail" ".catch_phrase=Catch Phrase"
 ```
 
-In Python it look like
+In Go it might look like
 
-```python
-    err = dataset.frame_delete("friends.ds", "name-and-email")
-    if err != "":
-        stop(err)
-    
-    err = dataset.frame("friends.ds", "name-and-email", 
-          "._Key": "ID", 
-          ".name": "Display Name", 
-          ".email": "EMail", 
-          ".catch_pharse": "Catch Phrase"
-          })
-    if err != "":
-        stop(err)
+```golang
+    c, err := dataset.Open("friends.ds")
+    // ... handle error
+    defer c.Close()
+
+    verbose := true
+    keys, err := c.FrameKeys("name-and-email")
+    // ... handle error
+    frm, err := c.FrameRead("name-and-email")
+    // ... handle error
+
+    // Retrieve our dot paths and labels
+    dotPaths := frm.DotPaths
+    dotPaths = append(dotPaths, ".catch_phrase")
+    labels := frm.Labels
+    labels = append(labels, "catch_phrase")
+
+    err := c.FrameDelete("name-and-email")
+    // ... handle error
+
+    err := c.Frame("name-and-email", keys, dotPath, labels, verbose)
+    if err != nil {
+        // ... handle error
+    }
 ```
 
 Finally the last thing we need to be able to do is delete a frame.
@@ -489,30 +683,30 @@ Delete frames work very similar to deleting a JSON record.
     dataset frame-delete friends.ds "name-and-email"
 ```
 
-Or in Python
+Or in Go \--
 
-```python
-    err = dataset.frame_delete("friends.ds", "name-and-email")
-    if err != "":
-          stop(err)
+```golang
+   c, err := dataset.Open("friends.ds")
+   // ... handle
+   defer c.Close()
+
+   err := c.FrameDelete("name-and-email")
+   // ... handle error
 ```
 
 **TIP**: Frames like collections have a number of operations. Here\'s
 the list
 
-1.  *frame-create* will set you define a frame
+1.  *frame* will let you define a frame
 
-2.  *frame* will let you read back a frame with full metadata
+2.  *frame-def* will let you read back a frame's definition
 
-3.  *frame-grid* return the frame\'s object list as a 2D array
+3.  *frame-objects* return the frame\'s object list
 
-4.  *frame-objects* return the frame\'s object list
+4.  *frame-keys* return the frame\'s key list
 
 5.  *frames* will list the frames defined in the collection columns in a
     frame, it will cause the frame to regenerate its object list
 
-6.  *frame-delete* will remove the frame from the collection
+6.  *delete-frame* will remove the frame from the collection
 
-Continue exploring dataset with
-
--   [Working with CSV](working-with-csv.html)

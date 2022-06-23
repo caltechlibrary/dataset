@@ -15,12 +15,3 @@ In the following example the frame name is \"f1\", the collection is
     dataset refresh example.ds f1
 ```
 
-In python
-
-```python
-    err = dataset.frame_refresh('example.ds', 'f1')
-```
-
-Releted topics: [frame](frame.html), [reframe](reframe.html),
-[frame-objects](frame-objects.html), [frame-grid](frame-grid.html),
-[frames](frames.html), [delete-frame](delete-frame.html)

@@ -112,19 +112,11 @@ Collection Level
 <a href="init.html">init</a> creates a collection
 </li>
 <li>
-<a href="import-csv.html">import</a> (csv) JSON documents from rows of a
-CSV file
-</li>
-<li>
-<a href="export-csv.html">export</a> (csv) JSON documents from a
-collection into a CSV file
-</li>
-<li>
 <a href="keys.html">keys</a> list keys of JSON documents in a
 collection, supports filtering and sorting
 </li>
 <li>
-<a href="haskey.html">haskey</a> returns true if key is found in
+<a href="haskey.html">has-key</a> returns true if key is found in
 collection, false otherwise
 </li>
 <li>
@@ -141,9 +133,6 @@ collection as data frames
 </li>
 <li>
 <a href="frame-objects.html">frame-objects</a>
-</li>
-<li>
-<a href="frame-grid.html">frame-grid</a>
 </li>
 <li>
 <a href="frames.html">frames</a>
@@ -178,18 +167,6 @@ JSON Document level
 </li>
 <li>
 <a href="delete.html">delete</a> a JSON document in a collection
-</li>
-<li>
-<a href="join.html">join</a> a JSON document with a document in a
-collection
-</li>
-<li>
-<a href="list.html">list</a> the lists JSON records as an array for the
-supplied keys
-</li>
-<li>
-<a href="path.html">path</a> list the file path for a JSON document in a
-collection
 </li>
 </ul>
 <h2 id="json-document-attachments">
@@ -231,6 +208,10 @@ training and test collections
 <h2 id="collection-health">
 Collection health
 </h2>
+<p>
+The following commands are provided to support pairtrees and a limitted
+amount of backward campatiblity with v1 dataset collections.
+</p>
 <ul>
 <li>
 <a href="check.html">check</a> - checks a collection against the current
@@ -241,8 +222,8 @@ version of tools
 on the current version of the tool
 </li>
 </ul>
-<h1 id="dataset-as-a-web-service">
-Dataset as a web service
+<h1 id="datasetd-as-a-web-service">
+datasetd as a web service
 </h1>
 <p>
 New as of version v2.x is a web service providing access to dataset
@@ -252,50 +233,6 @@ href="datasetd.html">datasetd</a> documentation page.
 <p>
 <a href="datasetd.html">datasetd</a> supports the following end points.
 </p>
-<ul>
-<li>
-List <a href="collections-endpoint.html">collections</a> available from
-the web service
-</li>
-<li>
-List or update a <a href="collection-endpoint.html">collection</a>’s
-metadata
-</li>
-<li>
-List a collection’s <a href="keys-endpoint.html">Keys</a>
-</li>
-<li>
-Object level actions
-<ul>
-<li>
-<a href="create-endpoint.html">create</a>
-</li>
-<li>
-<a href="read-endpoint.html">read</a>
-</li>
-<li>
-<a href="update-endpoint.html">update</a>
-</li>
-<li>
-<a href="delete-endpoint.html">delete</a>
-</li>
-<li>
-Documents as attachments
-<ul>
-<li>
-<a href="attach-endpoint.html">attach</a>
-</li>
-<li>
-<a href="retrieve-endpoint.html">retrieve</a>
-</li>
-<li>
-<a href="prune-endpoint.html">prune</a>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 </section>
 
 <footer>

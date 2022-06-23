@@ -21,8 +21,9 @@ const (
 
 // statusOK returns a JSON object indicating the status of a request
 // is OK.
-func statusIsOK(w http.ResponseWriter, cName string, key string, action string, fName string) {
-	w.Header().Add("Content-Type", "application/json")
+func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string, action string, target string) {
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(statusCode)
 	m := map[string]string{}
 	m["status"] = "OK"
 	if cName != "" {
@@ -34,8 +35,8 @@ func statusIsOK(w http.ResponseWriter, cName string, key string, action string, 
 	if action != "" {
 		m["action"] = action
 	}
-	if fName == "" {
-		m["filename"] = fName
+	if target == "" {
+		m["target"] = target
 	}
 	src, _ := json.Marshal(m)
 	fmt.Fprintf(w, "%s", src)
@@ -172,7 +173,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		statusIsOK(w, cName, key, "created", "")
+		statusIsOK(w, http.StatusCreated, cName, key, "created", "")
 		return
 	}
 	http.NotFound(w, r)
@@ -259,7 +260,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		statusIsOK(w, cName, key, "updated", "")
+		statusIsOK(w, http.StatusOK, cName, key, "updated", "")
 		return
 	}
 	http.NotFound(w, r)
@@ -288,7 +289,7 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		statusIsOK(w, cName, key, "delete", "")
+		statusIsOK(w, http.StatusOK, cName, key, "delete", "")
 		return
 	}
 	http.NotFound(w, r)
@@ -376,7 +377,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 				http.Error(w, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError)
 				return
 			}
-			statusIsOK(w, cName, key, "attach", fName)
+			statusIsOK(w, http.StatusCreated, cName, key, "attach", fName)
 			return
 		} else {
 			// Assume raw bytes and read them.
@@ -386,7 +387,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 				return
 			}
 			defer r.Body.Close()
-			statusIsOK(w, cName, key, "attach", fName)
+			statusIsOK(w, http.StatusCreated, cName, key, "attach", fName)
 			return
 		}
 	}
@@ -466,7 +467,7 @@ func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string,
 		http.NotFound(w, r)
 		return
 	}
-	statusIsOK(w, cName, key, "prune", fName)
+	statusIsOK(w, http.StatusOK, cName, key, "prune", fName)
 }
 
 //
@@ -554,7 +555,7 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 			log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		}
-		statusIsOK(w, cName, "", "frame-create", frameName)
+		statusIsOK(w, http.StatusCreated, cName, "", "frame-create", frameName)
 		return
 	}
 	// Check if frame is in collection
@@ -692,48 +693,28 @@ func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 	return
 }
 
-// FrameRefresh updates the object values in a frame based on the
-// current state of the collection.
+// FrameUpdate updates a frame either refreshing the current frame objects
+// on the keys associated with the object or if a JSON array of keys is
+// provided it reframes the objects using the new list of keys.
 //
 //```shell
 //   FRM_NAME="names"
-//   curl -X PUT http://localhost:8585/api/journals.ds/frame-refresh/$FRM_NAME
+//   curl -X PUT http://localhost:8585/api/journals.ds/frame/$FRM_NAME
 //```
 //
-func FrameRefresh(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	if len(options) < 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	frameName := options[0]
-	// Get collection
-	c, ok := api.CMap[cName]
-	if ok {
-		err := c.FrameRefresh(frameName, verbose)
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
-		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintf(w, "OK")
-		return
-	}
-	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	return
-}
-
-// FrameReframe replaces the objects in based on a new list of keys.
+// Reframing a frame providing new keys looks something like this --
 //
 //```shell
 //   FRM_NAME="names"
 //   cat<<EOT>frame-keys.json
 //   [ "Gentle-M", "Stienbeck-J", "Topez-T", "Valdez-L" ]
 //   EOT
-//   curl -X PUT http://localhost:8585/api/journals.ds/frame-reframe/$FRM_NAME
+//   curl -X PUT http://localhost:8585/api/journals.ds/frame/$FRM_NAME \
+//        -H "Content-Type: application/json" \
+//        --data-binary "@./frame-keys.json"
 //```
 //
-func FrameReframe(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
+func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -742,24 +723,28 @@ func FrameReframe(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 	// Get collection
 	c, ok := api.CMap[cName]
 	if ok {
-		src, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("FrameReframe, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		// Check to see if we have a body containing a list of keys
+		body, err := ioutil.ReadAll(r.Body)
+		if err == nil && len(body) > 0 {
+			// Handle reframe
+			keys := []string{}
+			if err := json.Unmarshal(body, &keys); err != nil {
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			if err := c.FrameReframe(frameName, keys, verbose); err != nil {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			statusIsOK(w, http.StatusOK, cName, "", "reframe", frameName)
 			return
 		}
-		keys := []string{}
-		err = json.Unmarshal(src, &keys)
+		err = c.FrameRefresh(frameName, verbose)
 		if err != nil {
-			log.Printf("FrameReframe, unmarshal error %+v, %s", keys, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
-		err = c.FrameReframe(frameName, keys, verbose)
-		if err != nil {
-		}
-		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintf(w, "OK")
+		statusIsOK(w, http.StatusOK, cName, "", "refresh", frameName)
 		return
 	}
 	// Collection not found
@@ -788,8 +773,7 @@ func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
-		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintf(w, "OK")
+		statusIsOK(w, http.StatusOK, cName, "", "frame-delete", frameName)
 		return
 	}
 	// Collection not found
@@ -797,9 +781,10 @@ func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	return
 }
 
-//***************************************************
-// The following routes handle JSON object versions
-//***************************************************
+//**************************************************************
+// The following routes handle JSON object versions. These are
+// placeholders for some future release of 2.X.
+//**************************************************************
 
 func ObjectVersions(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
@@ -813,9 +798,10 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
-//**************************************************
-// The following routes handle attachment versions
-//**************************************************
+//**************************************************************
+// The following routes handle attachment versions. These are
+// placeholders for some future release of 2.X.
+//**************************************************************
 
 func AttachmentVersions(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)

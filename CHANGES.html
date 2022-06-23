@@ -47,10 +47,10 @@ Release 2.0.0:
 </p>
 <p>
 This release is a rewrite of version 1 focusing on removing features,
-adding useful concepts and abstracting the storage engines cleanly. The
-latter was done to allow the web implementation of dataset to achieve an
-appropriate performance and be able to scale to a larger number of
-collections and size of collections.
+clearifying useful concepts and abstracting the storage engines cleanly.
+The latter was done to allow the web implementation of dataset to
+achieve an appropriate performance and be able to scale to a larger
+number of collections and size of collections.
 </p>
 <p>
 The dataset collection’s structure has changed.
@@ -147,7 +147,7 @@ CLI changes:
 </p>
 <ul>
 <li>
-options have be restructured so that some come after the verb
+options have be restructured so that most come after the verb
 </li>
 <li>
 help has been restructured to better support focusing the help text on
@@ -164,16 +164,13 @@ Web Service changes:
 </p>
 <ul>
 <li>
-the web service does not support the pairtree implementation except
-export, it still uses a pairtree for storing attachments
+the web service is generally RESTful so the end points no longer map
+directly to the client syntax
 </li>
 <li>
-the web service is now RESTful so the end points no longer map directly
-to the client syntax
-</li>
-<li>
-the web service requires running a SQL database with JSON column support
-for storing JSON documents, currently this means SQLite3 and MySQL
+it is recommended to use SQL storage for your dataset collections
+explosed using the web service (e.q. SQLite3 or MySQL). This is because
+a pairtree collection doesn’t provide docuemnt locking
 </li>
 <li>
 Access to the SQL storage engine is through either the environment or a

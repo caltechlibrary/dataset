@@ -1,7 +1,7 @@
 reframe
 =======
 
-This command replace the current keys/objects in a frame based
+This command replaces the current keys/objects in a frame based
 on the new keys provided. 
 
 In the following example the frame name is \"f1\", the collection is
@@ -14,13 +14,3 @@ the same thing but is taking a filename to retrieve the list of keys.
     dataset reframe example.ds f1 f1-updated.keys
 ```
 
-In python
-
-```python
-    f1_updated_keys = generate_updates_keys()
-    err = dataset.frame_reframe('example.ds', 'f1', f1_updated_keys)
-```
-
-Releted topics: [frame](frame.html), [refresh](refresh.html),
-[frame-objects](frame-objects.html), [frame-grid](frame-grid.html),
-[frames](frames.html), [delete-frame](delete-frame.html)

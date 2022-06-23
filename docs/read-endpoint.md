@@ -6,7 +6,7 @@ Interacting with the __datasetd__ web service can be done with any web client. F
 
 Retrieve a JSON document from a collection.
 
-    `http://localhost:8485/<COLLECTION_ID>/read/<KEY>`
+    `http://localhost:8485/<COLLECTION_ID>/object/<KEY>`
 
 Requires a "GET" HTTP method.
 
@@ -18,7 +18,7 @@ Example
 Curl accessing "t1" with a key of "one"
 
 ```shell
-    curl http://localhost:8485/t1/read/one
+    curl http://localhost:8485/t1/object/one
 ```
 
 An example JSON document (this example happens to have an attachment) returned.

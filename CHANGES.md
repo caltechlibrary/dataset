@@ -1,6 +1,6 @@
 Release 2.0.0:
 
-This release is a rewrite of version 1 focusing on removing features, adding useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.
+This release is a rewrite of version 1 focusing on removing features, clearifying useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.
 
 
 The dataset collection's structure has changed.
@@ -33,16 +33,15 @@ libdataset:
 
 CLI changes:
 
-- options have be restructured so that some come after the verb
+- options have be restructured so that most come after the verb
 - help has been restructured to better support focusing the help text on the task needed
 - the command line version is single user, single process and be default assumes pairtree storage. It can also access SQL databases for storing JSON objects. Currently this is being tested with SQLite3 and MySQL 8
 
 
 Web Service changes:
 
-- the web service does not support the pairtree implementation except export, it still uses a pairtree for storing attachments
-- the web service is now RESTful so the end points no longer map directly to the client syntax
-- the web service requires running a SQL database with JSON column support for storing JSON documents, currently this means SQLite3 and MySQL
+- the web service is generally RESTful so the end points no longer map directly to the client syntax
+- it is recommended to use SQL storage for your dataset collections explosed using the web service (e.q. SQLite3 or MySQL). This is because a pairtree collection doesn't provide docuemnt locking
 - Access to the SQL storage engine is through either the environment or a URI expressing a storage type as protocol and a data source name to making the connection
 
 

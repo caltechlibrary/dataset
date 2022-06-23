@@ -57,7 +57,7 @@ available on most POSIX systems including Linux, macOS and Windows.
 <p>
 Retrieve a JSON document from a collection.
 </p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/read/&lt;KEY&gt;`</code></pre>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/object/&lt;KEY&gt;`</code></pre>
 <p>
 Requires a “GET” HTTP method.
 </p>
@@ -71,7 +71,7 @@ Example
 <p>
 Curl accessing “t1” with a key of “one”
 </p>
-<pre class="shell"><code>    curl http://localhost:8485/t1/read/one</code></pre>
+<pre class="shell"><code>    curl http://localhost:8485/t1/object/one</code></pre>
 <p>
 An example JSON document (this example happens to have an attachment)
 returned.

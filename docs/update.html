@@ -74,14 +74,8 @@ the JSON document from standard input and save the update to “jane.doe”.
 The collection name is “people.ds”.
 </p>
 <pre class="shell"><code>    dataset update people.ds jane.doe &#39;{&quot;name&quot;:&quot;Jane Doiel&quot;}&#39;
-    dataset update people.ds jane.doe jane-doe.json
     dataset update -i jane-doe.json people.ds jane.doe
     cat jane-doe.json | dataset update people.ds jane.doe</code></pre>
-<p>
-Related topics: <a href="keys.html">keys</a>, <a
-href="create.html">create</a>, <a href="read.html">read</a>, <a
-href="delete.html">delete</a>
-</p>
 </section>
 
 <footer>

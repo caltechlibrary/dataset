@@ -56,9 +56,9 @@ alt="Project Status: Active – The project has reached a stable, usable state a
 </p>
 <p>
 The Dataset Project provides tools for working with collections of JSON
-documents stored on the local file system, in a SQL database supporting
-JSON columns. The two tools are provided by the project include a
-command line interface (dataset) and a <a
+documents stored on the local file system in a pairtree or in a SQL
+database supporting JSON columns. Two tools are provided by the project
+– a command line interface (dataset) and a <a
 href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful</a>
 web service (datasetd).
 </p>
@@ -211,9 +211,11 @@ versioning - Listing <a href="docs/keys.html">Keys</a> in a collection -
 Object level actions - <a href="docs/create.html">create</a> - <a
 href="docs/read.html">read</a> - <a href="docs/update.html">update</a> -
 <a href="docs/delete.html">delete</a> - <a
-href="docs/keys.html">keys</a> - <a href="docs/sample.html">sample</a> -
-<a href="docs/has-key.html">has-key</a> - Documents as attachments - <a
-href="docs/attacments.html">attachments</a> (list) - <a
+href="docs/keys.html">keys</a> - <a href="docs/has-key.html">has-key</a>
+- <a href="docs/sample.html">sample</a> - <a
+href="docs/clone.html">clone</a> - <a
+href="docs/clone-sample.html">clone-sample</a> - Documents as
+attachments - <a href="docs/attacments.html">attachments</a> (list) - <a
 href="docs/attach.html">attach</a> (create/update) - <a
 href="docs/retrieve.html">retrieve</a> (read) - <a
 href="docs/prune.html">prune</a> (delete) - The ability to create data
@@ -240,8 +242,7 @@ List <a href="docs/collections-endpoint.html">collections</a> available
 from the web service
 </li>
 <li>
-List or update a <a href="collection-endpoint.html">collection</a>’s
-metadata
+List a <a href="collection-endpoint.html">collection</a>’s metadata
 </li>
 <li>
 List a collection’s <a href="docs/keys-endpoint.html">Keys</a>
@@ -278,16 +279,12 @@ Documents as attachments
 </ul>
 </li>
 <li>
-A means of importing to or exporting from pairtree based dataset
-collections
-</li>
-<li>
 The ability to create data <a href="docs/frame.html">frames</a> from
-while collections or based on keys lists
+collections or based on keys lists and dot paths to form a new object
 <ul>
 <li>
-frames are defined using <a href="docs/dotpath.html">dot paths</a>
-describing what is to be pulled out of a stored JSON objects
+<a href="docs/dotpath.html">dot paths</a> describing what is to be
+pulled out of a stored JSON objects
 </li>
 </ul>
 </li>
@@ -422,7 +419,7 @@ Releases
 </h2>
 <p>
 Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1),
-Windows 10 (x86) and Raspberry Pi OS (ARM7).
+Windows 11 (x86) and Raspberry Pi OS (ARM7).
 </p>
 <p>
 <a

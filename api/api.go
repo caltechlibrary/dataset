@@ -373,7 +373,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 			if err = api.RegisterRoute(prefix, http.MethodGet, FrameObjects); err != nil {
 				return err
 			}
-			prefix = path.Join(cName, "frame-def")
+			prefix = path.Join(cName, "frame")
 			if err = api.RegisterRoute(prefix, http.MethodGet, FrameDef); err != nil {
 				return err
 			}
@@ -387,22 +387,18 @@ func (api *API) Init(appName string, settingsFile string) error {
 			if err = api.RegisterRoute(prefix, http.MethodPost, FrameCreate); err != nil {
 				return err
 			}
-			prefix = path.Join(cName, "frame-refresh")
-			if err = api.RegisterRoute(prefix, http.MethodPut, FrameRefresh); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodPut, FrameUpdate); err != nil {
 				return err
 			}
-			prefix = path.Join(cName, "frame-reframe")
-			if err = api.RegisterRoute(prefix, http.MethodPut, FrameReframe); err != nil {
-				return err
-			}
-			prefix = path.Join(cName, "frame")
 			if err = api.RegisterRoute(prefix, http.MethodDelete, FrameDelete); err != nil {
 				return err
 			}
 		}
 
 		//NOTE: Need to apply versioned routes if a collection uses
-		// versioning and permission is granted to see versions.
+		// versioning and permission is granted to see versions. I am
+		// not planning on implementing version support in the web
+		// service until it is needed, e.g. at some future 2.x release.
 		if cfg.Versions && c != nil && c.Versioning != "" {
 			prefix := path.Join(cName, "object-versions")
 			if err = api.RegisterRoute(prefix, http.MethodGet, ObjectVersions); err != nil {

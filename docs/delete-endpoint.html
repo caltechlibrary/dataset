@@ -58,9 +58,9 @@ available on most POSIX systems including Linux, macOS and Windows.
 Delete a JSON document in the collection. Requires the document key and
 collection name.
 </p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/delete/&lt;KEY&gt;`</code></pre>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/object/&lt;KEY&gt;`</code></pre>
 <p>
-Requires a <code>GET</code> HTTP method.
+Requires a <code>DELETE</code> HTTP method.
 </p>
 <p>
 Deletes a JSON document for the <code>&lt;KEY&gt;</code> in collection
@@ -77,8 +77,8 @@ The <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
 <p>
 Posting using CURL is done like
 </p>
-<pre class="shell"><code>    curl -X GET -H &#39;Content-Type: application.json&#39; \
-      http://locahost:8485/t1/delete/one</code></pre>
+<pre class="shell"><code>    curl -X DELETE -H &#39;Content-Type: application.json&#39; \
+      http://locahost:8485/t1/object/one</code></pre>
 </section>
 
 <footer>

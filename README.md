@@ -5,9 +5,9 @@ Dataset Project
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 The Dataset Project provides tools for working with collections of
-JSON documents stored on the local file system, in a SQL database
-supporting JSON columns. The two tools are provided by the project
-include a command line interface (dataset) and a
+JSON documents stored on the local file system in a pairtree or
+in a SQL database supporting JSON columns. Two tools are provided 
+by the project -- a command line interface (dataset) and a
 [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer)
 web service (datasetd).
 
@@ -122,8 +122,10 @@ Features
   - [update](docs/update.html)
   - [delete](docs/delete.html)
   - [keys](docs/keys.html)
-  - [sample](docs/sample.html)
   - [has-key](docs/has-key.html)
+  - [sample](docs/sample.html)
+  - [clone](docs/clone.html)
+  - [clone-sample](docs/clone-sample.html)
   - Documents as attachments
     - [attachments](docs/attacments.html) (list)
     - [attach](docs/attach.html) (create/update)
@@ -153,7 +155,7 @@ Features
 
 - List [collections](docs/collections-endpoint.html) available from the
   web service
-- List or update a [collection](collection-endpoint.html)'s metadata
+- List a [collection](collection-endpoint.html)'s metadata
 - List a collection's [Keys](docs/keys-endpoint.html)
 - Object level actions
     - [create](docs/create-endpoint.html)
@@ -164,11 +166,9 @@ Features
         - [attach](docs/attach-endpoint.html)
         - [retrieve](docs/retrieve-endpoint.html)
         - [prune](docs/prune-endpoint.html)
-- A means of importing to or exporting from pairtree based dataset
-  collections
-- The ability to create data [frames](docs/frame.html) from while
-  collections or based on keys lists
-  - frames are defined using [dot paths](docs/dotpath.html) describing
+- The ability to create data [frames](docs/frame.html) from
+  collections or based on keys lists and dot paths to form a new object
+  - [dot paths](docs/dotpath.html) describing
     what is to be pulled out of a stored JSON objects
 
 Both _dataset_  and _datasetd_ maybe useful for general data science
@@ -232,7 +232,7 @@ Releases
 --------
 
 Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1),
-Windows 10 (x86) and Raspberry Pi OS (ARM7). 
+Windows 11 (x86) and Raspberry Pi OS (ARM7). 
 
 [github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 

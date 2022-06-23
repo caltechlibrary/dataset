@@ -58,7 +58,7 @@ available on most POSIX systems including Linux, macOS and Windows.
 Create a JSON document in the collection. Requires a unique key in the
 URL and the content most be JSON less than 1 MiB in size.
 </p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/created/&lt;KEY&gt;`</code></pre>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/object/&lt;KEY&gt;`</code></pre>
 <p>
 Requires a “POST” HTTP method with.
 </p>
@@ -89,7 +89,7 @@ Posting using CURL is done like
 </p>
 <pre class="shell"><code>    curl -X POST -H `Content-Type: application.json` \
       -d `{&quot;one&quot;: 1}` \
-      http://locahost:8485/t1/create/one</code></pre>
+      http://locahost:8485/t1/object/one</code></pre>
 </section>
 
 <footer>

@@ -51,8 +51,8 @@ prune
 <h2 id="syntax">
 Syntax
 </h2>
-<pre class="shell"><code>    dataset prune COLLECTION_NAME KEY [SEMVER]
-    dataset prune COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME</code></pre>
+<pre class="shell"><code>    dataset prune COLLECTION_NAME KEY ATTACHMENT_NAME
+    dataset prune COLLECTION_NAME KEY</code></pre>
 <h2 id="description">
 Description
 </h2>
@@ -73,11 +73,6 @@ is “data.ds”
 <pre class="shell"><code>    dataset prune data.ds k1 v0.0.1 stats.xlsx
     dataset prune data.ds k1 stats.xlsx
     dataset prune data.ds k1</code></pre>
-<p>
-Related topics: <a href="attach.html">attach</a>, <a
-href="retrieve.html">retrieve</a> and <a
-href="attachments.html">attachments</a>
-</p>
 </section>
 
 <footer>

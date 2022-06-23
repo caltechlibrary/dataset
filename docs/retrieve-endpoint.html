@@ -56,30 +56,24 @@ available on most POSIX systems including Linux, macOS and Windows.
 </p>
 <p>
 Retrieves an s attached document from a JSON record using
-<code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and
-<code>&lt;FILENAME&gt;</code>.
+<code>&lt;KEY&gt;</code> and <code>&lt;FILENAME&gt;</code>.
 </p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;`</code></pre>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;FILENAME&gt;`</code></pre>
 <p>
 Requires a POST method and expects a multi-part web form providing the
 filename. The document will be written the JSON document directory by
-<code>&lt;KEY&gt;</code> in sub directory indicated by
-<code>&lt;SEMVER&gt;</code>.
-</p>
-<p>
-See https://semver.org/ for more information on semantic version
-numbers.
+<code>&lt;KEY&gt;</code> in attachments sub directory using a pairtree
+path.
 </p>
 <h2 id="example">
 Example
 </h2>
 <p>
 In this example we<code>re retieving the</code><FILENAME><code>of
-“a1.png”, with the</code><SEMVER><code>of “0.0.1” from
-the</code><COLLECTION_ID><code>of “t1” and</code><KEY>` of “one” using
-curl.
+“a1.png” into</code><COLLECTION_ID><code>of “t1” and</code><KEY>` of
+“one” using curl.
 </p>
-<pre class="shell"><code>    curl http://localhost:8485/t1/retrieve/one/0.0.1/a1.png</code></pre>
+<pre class="shell"><code>    curl http://localhost:8485/t1/retrieve/one/a1.png</code></pre>
 <p>
 This should trigger a download of the “a1.png” image file in the
 collection for document “one”.

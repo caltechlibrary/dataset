@@ -19,6 +19,7 @@
 package dataset
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -532,8 +533,59 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// Read retrieves an object from the collection, unmarshals it and
-// updates the object pointed to by obj.
+// CreateObject store an object (e.g. a struct type with JSON encoding
+// defined) in a collection.
+//
+// ```
+//    type Record struct {
+//        ID string `json:"id"`
+//        Name string `json:"name,omitempty"`
+//        EMail string `json:"email,omitempty"`
+//    }
+//
+//    func main() {
+//        c, err := dataset.Open("friends.ds")
+//        if err != nil {
+//             fmt.Fprintf(os.Stderr, "%s", err)
+//             os.Exit(1)
+//        }
+//        defer c.Close()
+//
+//        obj := &Record{
+//            ID: "mojo",
+//            Name: "Mojo Sam",
+//            EMail: "mojo.sam@cosmic-cafe.example.org",
+//        }
+//        if err := c.CreateObject(obj.ID, obj); err != nil {
+//             fmt.Fprintf(os.Stderr, "%s", err)
+//             os.Exit(1)
+//        }
+//        fmt.Printf("OK\n")
+//        os.Exit(0)
+//    }
+// ```
+func (c *Collection) CreateObject(key string, obj interface{}) error {
+	src, err := json.MarshalIndent(obj, "", "    ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
+	}
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Create(key, src)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Create(key, src)
+		}
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return fmt.Errorf("%s not open", c.Name)
+}
+
+// Read retrieves an map[string]inteferface{} from the collection,
+// unmarshals it and updates the object pointed to by obj.
 //
 // ```
 //   var obj map[string]interface{}
@@ -561,6 +613,42 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 		return fmt.Errorf("failed to read %s, %s", key, err)
 	}
 	return DecodeJSON(src, &obj)
+}
+
+// ReadObject retrieves an inteferface{} from the collection,
+// unmarshals it and updates the object pointed to by obj.
+//
+// ```
+//   var obj map[string]interface{}
+//
+//   key := "123"
+//   if err := c.Read(key, &obj); err != nil {
+//      ...
+//   }
+// ```
+//
+func (c *Collection) ReadObject(key string, obj interface{}) error {
+	var (
+		src []byte
+		err error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.Read(key)
+	case SQLSTORE:
+		src, err = c.SQLStore.Read(key)
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to read %s, %s", key, err)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(src))
+	decoder.UseNumber()
+	if err := decoder.Decode(&obj); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Versions retrieves a list of versions available for a JSON document if
@@ -622,6 +710,47 @@ func (c *Collection) ReadVersion(key string, version string, obj map[string]inte
 	return DecodeJSON(src, &obj)
 }
 
+// ReadObjectVersion retrieves a specific vesion from the collection
+// for the given object.
+//
+// ```
+//   type Record srtuct {
+//       // ... structure def goes here.
+//   }
+//
+//   obj = &Record {
+//       // ... field in the struct data here.
+//   }
+//   key, version := "123", "0.0.1"
+//   if err := ReadObjectVersion(key, version, &obj); err != nil {
+//      ...
+//   }
+// ```
+//
+func (c *Collection) ReadObjectVersion(key string, version string, obj interface{}) error {
+	var (
+		src []byte
+		err error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.ReadVersion(key, version)
+	case SQLSTORE:
+		src, err = c.SQLStore.ReadVersion(key, version)
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to read %s, %s", key, err)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(src))
+	decoder.UseNumber()
+	if err := decoder.Decode(&obj); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Update replaces a JSON document in the collection with a new one.
 // If the collection is versioned then it creates a new versioned copy
 // and updates the "current" version to use it.
@@ -635,6 +764,40 @@ func (c *Collection) ReadVersion(key string, version string, obj map[string]inte
 // ```
 //
 func (c *Collection) Update(key string, obj map[string]interface{}) error {
+	src, err := json.MarshalIndent(obj, "", "    ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
+	}
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Update(key, src)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Update(key, src)
+		}
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return fmt.Errorf("%s not open", c.Name)
+}
+
+// UpdateObject replaces a JSON document in the collection with a new one.
+// If the collection is versioned then it creates a new versioned copy
+// and updates the "current" version to use it.
+//
+// ```
+//   key := "123"
+//   obj := &Record {
+//     Three: 3,
+//   }
+//   if err := c.Update(key, obj); err != nil {
+//      ...
+//   }
+// ```
+//
+func (c *Collection) UpdateObject(key string, obj interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
