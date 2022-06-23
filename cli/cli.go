@@ -468,13 +468,17 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 
 func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName  string
-		output string
+		cName      string
+		output     string
+		sampleSize int
+		keys       []string
+		err        error
 	)
 	flagSet := flag.NewFlagSet("keys", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.IntVar(&sampleSize, "sample", 0, "generate sample N of keys, where N is greater than zero")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -491,7 +495,11 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return err
 	}
 	defer c.Close()
-	keys, err := c.Keys()
+	if sampleSize > 0 {
+		keys, err = c.Sample(sampleSize)
+	} else {
+		keys, err = c.Keys()
+	}
 	if err != nil {
 		return err
 	}
