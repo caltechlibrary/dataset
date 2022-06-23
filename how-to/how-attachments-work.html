@@ -68,21 +68,23 @@ and others don’t?
 <p>
 The <strong>dataset</strong> command line tool and related Go package
 store the attachments un-versioned by default in the pairtree. The
-metadata about the attached document is stored in a sub folder
-<code>_docs</code>. The un-versioned attached document is stored in
-<code>v0.0.0</code> folder. The attached document is stored by its
-basename. The basename must be unique among the documents attached
-otherwise it will be overwritten when attaching another document using
-the same basename.
+un-versioned attached document is stored in a pairtree in the
+“attachments” folder of the collection. This is true regardless of the
+storage engine used (e.g. pairtree storage, sql storage). The attached
+document is stored by its basename. The basename must be unique among
+the documents attached otherwise it will be overwritten when attaching
+another document using the same basename.
 </p>
 <p>
-If you need versioning you MUST supply a valid <a
-href="https://semver.org">semver</a> when attaching the document. The
-metadata for the attached document will be in <code>_docs</code> as
-before but the document will be stored in a sub directory indicated by
-the semver. The basename must be unique to the semver provided otherwise
-the document with the same basename using that semver will be
-overwritten.
+If you need versioning you create your collection with versioning
+support. Attaching the documents will automatically version based on the
+basename of the attachment. When retrieving a specific version you need
+to support a <a href="https://semver.org">semver</a> using the
+appropraite versioned verb. By default reads will be the current version
+of the document, meaning the version with the “largest” semver value. In
+a versioned collection two files with the same basename will result in
+different “versions” of the document with the highest semver reflecting
+the most recent addition.
 </p>
 <p>
 It is easier to see with this example. We have a dataset collection
@@ -101,158 +103,24 @@ The results in a simple directory stricture for the JSON object and
 attachment.
 </p>
 <pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx</code></pre>
+    Sea-Mamanls/attachments/wa/lr/us/notes-on-walrus.docx</code></pre>
 <p>
-In this example the metadata for the attachment is updated in the
-walrus.json file. Since no versioning was specified for
-“notes-on-walrus.docx” it is stored as version v0.0.0.
-</p>
-<p>
-If we had added our attachment including a semver the directory
-structure will be slightly more complex.
-</p>
-<pre class="shell"><code>    dataset attach Sea-Mamals.ds walrus v0.0.1 /Users/fred/Documents/notes-on-walrus.docx</code></pre>
-<p>
-This will cause additional sub directories to exist (if they haven’t be
-created before). Our “un-versioned” version still exists as v0.0.0 but
-now we have v0.0.1. Our attachment metadata file in our JSON object file
-will now include an href pointing to v0.0.1 and a map to all versions
-including v0.0.0.
-</p>
-<pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx</code></pre>
-<p>
-If we later add a v0.0.2 of “notes-on-walrus.docx” it’d looks like
-</p>
-<pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.2/notes-on-walrus.docx</code></pre>
-<p>
-All the metadata about the files attached are stored in the primary JSON
-document under the attribute <code>_Attachments</code>. In the metadata
-we include an “href” string and “version_hrefs” map. The version_href
-will point to all known versions keyed by the semver. The href string
-will point to the last version added, in this case v0.0.2.
-</p>
-<p>
-IMPORTANT: If you provide the same semver and attach a file with the
-same basename the previously stored version will be overwritten. Example
-if we issue our original un-versioned command the v0.0.0 copy of
-“notes-on-walrus.docx” will be overwritten!
-</p>
-<p>
-<strong>dataset</strong> attachment versioning is user driven. The only
-implicit version is v0.0.0 if no semver is provided.
-<strong>dataset</strong> is not a substitute for a version control
-system like <a href="">Subversion</a> or <a href="">Git</a> and is not
-substitute for a versioned file systems like <a href="">ZFS</a>. If your
-program needs to avoid overwriting an existing version or to “auto
-increment” the semver you need to check the existing versions and decide
-what the new version will be before attaching the new version of the
-document.
-</p>
-<p>
-The semver versioned directories may contain more than one attached
-document. The documents attached can be of various versions though if
-you attach more than one document at a time they will carry the same
-semver. This is because their is an implied semver is v0.0.0 when using
-the command line without semver <strong>dataset</strong> otherwise the
-first valid semver is used for all files being attached in that command
-execution.
-</p>
-<p>
-NOTE: The href in the attachments metadata always points at the last
-attached version.
+The directory structured for versioned attachments and JSON document is
+more complex. In the case of the JSON document the semver gets embedded
+in the JSON document name while the attachments are stored in subfolders
+by version. The assignment of the semver is automatic based on the
+collection’s original setup.
 </p>
 <h2 id="how-attachments-look-in-the-json-object">
 How Attachments look in the JSON Object
 </h2>
 <p>
-When you retrieve a JSON object <strong>dataset</strong> will add some
-internal fields. The first is a <code>_Key</code> and if you have any
-attachments a <code>_Attachments</code> array will be added. The later
-holds the metadata we create during the attachment process.
+In version 2 of dataset the JSON document remain unmodified. You will
+nolonger see added attributes like <code>_Key</code> or
+<code>_Attachments</code> in the object. Likewise attachments will
+remain unaltered beyond remaining the file path to the basename when the
+attachment is made. Versions are in their own version folder.
 </p>
-<p>
-Let’s look at our first example again in detail.
-</p>
-<pre class="shell"><code>    dataset create Sea-Mamals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
-    dataset attach Sea-Mamals.ds walrus \
-       /Users/fred/Documents/notes-on-walrus.docx</code></pre>
-<p>
-The JSON object created by the two command looks like
-</p>
-<div id="cb7" class="sourceCode">
-<pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;walrus&quot;</span><span class="fu">,</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;may have tusks&quot;</span><span class="fu">,</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;impressive&quot;</span><span class="fu">,</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Attachments&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;href&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;version_hrefs&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                    <span class="dt">&quot;v0.0.0&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0/notes-on-walrus.docx&quot;</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                <span class="fu">},</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                <span class="er">...</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<p>
-When we added v0.0.1 the object would change shape and be something like
-</p>
-<div id="cb8" class="sourceCode">
-<pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;walrus&quot;</span><span class="fu">,</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;may have tusks&quot;</span><span class="fu">,</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;impressive&quot;</span><span class="fu">,</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Attachments&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;href&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;version_hrefs&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                    <span class="dt">&quot;v0.0.0&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.0/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                    <span class="dt">&quot;v0.0.1&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                <span class="fu">},</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                <span class="er">...</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<p>
-If you have a program that moves old versions off to Glacier you’ll want
-to update the value in the version_hrefs effected. In this example we’ve
-moved v0.0.0 off to
-</p>
-<pre><code>&quot;s3://sea-mamals/walrus/v0.0.0/notes-on-walrus.docx&quot;</code></pre>
-<p>
-The JSON should look something like–
-</p>
-<div id="cb10" class="sourceCode">
-<pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;walrus&quot;</span><span class="fu">,</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;may have tusks&quot;</span><span class="fu">,</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;impressive&quot;</span><span class="fu">,</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Attachments&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">{</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;size&quot;</span><span class="fu">:</span> <span class="st">&quot;1041&quot;</span><span class="fu">,</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;href&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;version_hrefs&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>                    <span class="dt">&quot;v0.0.0&quot;</span><span class="fu">:</span> <span class="st">&quot;s3://sea-mamals/v0.0.0/notes-on-walrus.docx&quot;</span><span class="fu">,</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>                    <span class="dt">&quot;v0.0.1&quot;</span><span class="fu">:</span> <span class="st">&quot;v0.0.1/notes-on-walrus.docx&quot;</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>                <span class="fu">},</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>                <span class="er">...</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="ot">]</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
-</div>
 </section>
 
 <footer>

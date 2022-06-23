@@ -504,6 +504,9 @@ func (c *Collection) UpdateMetadata(fName string) error {
 
 // Create store a an object in the collection. Object will get
 // converted to JSON source then stored. Collection must be open.
+// A Go `map[string]interface{}` is a common way to handle ad-hoc
+// JSON data in gow. Use `CreateObject()` to store structured
+// data.
 //
 // ```
 //   key := "123"
@@ -533,10 +536,17 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// CreateObject store an object (e.g. a struct type with JSON encoding
-// defined) in a collection.
+// CreateObject is used to store structed data in a dataset collection.
+// The object needs to be defined as a Go struct notated approriately
+// with the domain markup for working with json.
 //
 // ```
+//    import (
+//      "encoding/json"
+//      "fmt"
+//      "os"
+//    )
+//
 //    type Record struct {
 //        ID string `json:"id"`
 //        Name string `json:"name,omitempty"`
@@ -564,6 +574,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 //        os.Exit(0)
 //    }
 // ```
+//
 func (c *Collection) CreateObject(key string, obj interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
@@ -584,11 +595,11 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// Read retrieves an map[string]inteferface{} from the collection,
-// unmarshals it and updates the object pointed to by obj.
+// Read retrieves a map[string]inteferface{} from the collection,
+// unmarshals it and updates the object pointed to by the map.
 //
 // ```
-//   var obj map[string]interface{}
+//   obj := map[string]interface{}{}
 //
 //   key := "123"
 //   if err := c.Read(key, &obj); err != nil {
@@ -615,15 +626,24 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 	return DecodeJSON(src, &obj)
 }
 
-// ReadObject retrieves an inteferface{} from the collection,
-// unmarshals it and updates the object pointed to by obj.
+// ReadObject retrieves structed data via Go's general inteferface{} type.
+// The JSON document is retreived from the collection,
+// unmarshaled and variable holding the struct is updated.
 //
 // ```
-//   var obj map[string]interface{}
+//   type Record struct {
+//       ID string `json:"id"`
+//       Name string `json:"name,omitempty"`
+//       EMail string `json:"email,omitempty"`
+//   }
+//
+//   // ...
+//
+//   var obj *Record
 //
 //   key := "123"
 //   if err := c.Read(key, &obj); err != nil {
-//      ...
+//      // ... handle error
 //   }
 // ```
 //
@@ -718,9 +738,8 @@ func (c *Collection) ReadVersion(key string, version string, obj map[string]inte
 //       // ... structure def goes here.
 //   }
 //
-//   obj = &Record {
-//       // ... field in the struct data here.
-//   }
+//   var obj = *Record
+//
 //   key, version := "123", "0.0.1"
 //   if err := ReadObjectVersion(key, version, &obj); err != nil {
 //      ...
@@ -788,12 +807,19 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 // and updates the "current" version to use it.
 //
 // ```
+//   type Record struct {
+//       // ... structure def goes here.
+//       Three int `json:"three"`
+//   }
+//
+//   var obj = *Record
+//
 //   key := "123"
 //   obj := &Record {
 //     Three: 3,
 //   }
 //   if err := c.Update(key, obj); err != nil {
-//      ...
+//      // ... handle error
 //   }
 // ```
 //
@@ -824,7 +850,7 @@ func (c *Collection) UpdateObject(key string, obj interface{}) error {
 // ```
 //   key := "123"
 //   if err := c.Delete(key); err != nil {
-//      ...
+//      // ... handle error
 //   }
 // ```
 //

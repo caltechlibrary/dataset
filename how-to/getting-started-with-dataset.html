@@ -50,18 +50,33 @@ Getting started with dataset
 </h1>
 <p>
 <em>dataset</em> is designed to easily manage collections of JSON
-objects. Objects are associated with a unique key you provide. The
-objects themselves are stored on disc in a folder inside the collection
-folder. The collection folder contains a JSON object document called
-<em>collection.json</em>. This file stores metadata about the collection
-including the association of keys with paths to their objects.
+documents. A JSON object is associated with a unique key you provide. If
+you are using the default storage engine the objects themselves are
+stored on disc in a folder inside the collection folder. If you are
+using a SQL storage engine they are stored in a column of a table of the
+collection in your SQL database.
+</p>
+<p>
+The collection folder contains a JSON object document called
+<em>collection.json</em>. This file stores operational metadata about
+the collection. If the collection is using a pairtree then a
+<em>keymap.json</em> file will include the association of keys with
+paths to their objects. When a collection is initialized a minimal
+codemeta.json file will created describing the collection. This can be
+update to a full codemeta.json file, follow the guideline and practice
+described at the <a href="https://codemeta.github.io">codemeta</a>
+website.
+</p>
+<p>
 <em>dataset</em> comes in several flavors — a command line program
-called <em>dataset</em>, a Go language package also called dataset, a
-shared library called libdataset and a Python 3.7 package called <a
-href="https://github.com/caltechlibrary/py_dataset">py_dataset</a>. This
-tutorial talks both the command line program and the Python package. The
-command line is great for simple setup but Python is often more
-convenient for more complex operations.
+called <em>dataset</em>, a web service called <em>datasetd</em> and the
+Go language package used to build for programs.
+</p>
+<p>
+This tutorial talks both the command line program and the Go package.
+The command line is great for simple setup, the Go package allows you to
+build on other programs that use dataset collections for content
+persistence.
 </p>
 <h2 id="create-a-collection-with-init">
 Create a collection with init
@@ -85,31 +100,37 @@ response. If there had been an error then you would have seen an error
 message instead.
 </p>
 <p>
-Working in Python is similar to the command line. We import the modules
-needed then use them. For these exercises we’ll be importing the
-following modules <em>sys</em>, <em>os</em>, <em>json</em> and of course
-<em>dataset</em> via <code>from py_dataset import dataset</code>.
+Working in Go is similar. We use the <code>dataset.Init()</code> func to
+create our new collection. We can import the “dataset” package using the
+import line <code>“github.com/caltechlibrary/dataset”</code>. Here’s a
+general code sketch.
 </p>
-<div id="cb2" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> sys</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> os</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> json</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># stop is a convenience function</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> stop(msg):</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(msg)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        sys.exit(<span class="dv">1</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.init(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
-</div>
+<pre class="golang"><code>   import (
+      // import the packages your program needs ...
+      &quot;fmt&quot;
+      &quot;os&quot;
+
+      // import dataset
+      &quot;github.com/caltechlibrary/dataset&quot;
+   )
+        
+   func main() {
+       // The dataset collection is held in &#39;c&#39;
+       // This create the collection &quot;friends.ds&quot;
+       collectionName := &quot;frieds.ds&quot;
+       // &quot;c&quot; is a handle to the collection
+       c, err := dataset.init(collectionName)
+       if err != nil {
+           fmt.Fprintf(os.Stderr, &quot;Something went wrong, %s\n&quot;, err)
+           os.Exit(1)
+       }
+       defer c.Close() // Remember to close your collection
+       fmt.Printf(&quot;Created %q, ready to use\n&quot;, collectionName)
+   }</code></pre>
 <p>
-In Python the error message is an empty string if everything is ok,
-otherwise we call stop which prints the message and exits. You will see
-this pattern followed in a number of upcoming Python examples.
+In this Go example if the error is nil a statement is written to
+standard out saying the collection was created, if not an error is
+shown.
 </p>
 <h3 id="removing-friends.ds">
 removing friends.ds
@@ -120,6 +141,13 @@ folder with some files in it. You can delete the collection by throwing
 the folder in the trash (Mac OS X and Windows) or using a recursive
 remove in the Unix shell.
 </p>
+<pre class="shell"><code>    rm -fR friends.ds</code></pre>
+<p>
+Or using <code>os.RemoveAll()</code> in Go programs.
+</p>
+<pre><code>    if _, err := os.Stat(collectionName); err == nil {
+        os.RemoveAll(collectionName)
+    }</code></pre>
 <h2 id="create-read-update-and-delete">
 create, read, update and delete
 </h2>
@@ -136,54 +164,143 @@ save some of their info in our collection called <em>friends.ds</em>. I
 am going to store their name and email address so I can contact them.
 Their names are Little Frieda, Mojo Sam and Jack Flanders.
 </p>
-<div id="cb3" class="sourceCode">
+<div id="cb5" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds frieda <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;</span></span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds frieda <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;</span></span></code></pre>
 </div>
 <p>
 Notice the “OK”. Just like <em>init</em> the <em>create</em> verb
 returns a status. “OK” means everything is good, otherwise an error is
-shown. Doing the same thing in Python would look like.
+shown.
 </p>
-<div id="cb4" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>, </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>          {<span class="st">&quot;name&quot;</span>:<span class="st">&quot;Little Frieda&quot;</span>,<span class="st">&quot;email&quot;</span>:<span class="st">&quot;frieda@inverness.example.org&quot;</span>})</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        stop(msg)</span></code></pre>
-</div>
 <p>
-With create we need to provide a collection name, a key (e.g. “frieda”)
-and Python dict (which becomes our JSON object). Now let’s add records
-for Mojo Sam and Jack Flanders.
+Doing the same thing in Go would look like. Note we have to explicitly
+<code>Open()</code> the collection to get a collection object then call
+<code>Create()</code> on the opened collection. <code>defer</code> make
+it easy for us to remember to close the collection when we’re done.
+</p>
+<pre class="golang"><code>    import (
+        &quot;fmt&quot;
+        &quot;os&quot;
+
+        &quot;github.com/caltechlibrary/dataset&quot;
+    )
+
+    func main() {
+        c, err := dataset.Open(&quot;fiends.ds&quot;)
+        if err != nil {
+            fmt.Fprintf(os.Stderr, &quot;something went wrong, %s&quot;, err)
+            os.Exit(1)
+        }
+        defer c.Close() // Don&#39;t forget to close the collection
+        id := &quot;frieda&quot;
+        m := map[string]interface{}{
+            &quot;id&quot;: id,
+            &quot;name&quot;:&quot;Little Frieda&quot;,
+            &quot;email&quot;:&quot;frieda@inverness.example.org&quot;,
+        }
+        // Create adds a map[string]interface{} to the collection.
+        if err := dataset.Create(id, m); err != nil {
+            fmt.Fprintf(os.Stderr, &quot;%s&quot;,err)
+            os.Exit(1)
+        }
+        fmt.Printf(&quot;OK&quot;)
+        os.Exit(0)
+    }</code></pre>
+<p>
+Go supports easy translation of struct types into JSON encoded byte
+slices. Can then use that store the JSON representations using the
+<code>CreateObject()</code> to create a JSON object from any Go type.
+</p>
+<pre class="golang"><code>   import (
+      &quot;encoding/json&quot;
+      &quot;fmt&quot;
+      &quot;os&quot;
+
+      &quot;github.com/caltechlibrary/dataset&quot;
+   )
+
+   type Record struct {
+       ID string `json:&quot;id&quot;`
+       Name string `json:&quot;name,omitempty&quot;`
+       EMail string `json:&quot;email,omitempty&quot;`
+   }
+
+   func main() {
+       obj := &amp;Record{
+           ID: &quot;frieda&quot;,
+           Name: &quot;Little Fieda&quot;,
+           EMail: &quot;frieda@inverness.example.org&quot;,
+       }
+       if err := dataset.CreateObject(&quot;friends.ds&quot;, obj.ID, obj); err != nil {
+           fmt.Fprintf(os.Stderr, &quot;%s&quot;, err)
+           os.Exit(1)
+       }
+       fmt.Printf(&quot;OK&quot;)
+       os.Exit(0)
+   }</code></pre>
+<p>
+On the command line create requires us to provide a collection name, a
+key (e.g. “frieda”) and JSON markup to store the JSON object. We can
+provide that either through the command line or by reading in a file or
+standard input.
 </p>
 <p>
 command line –
 </p>
-<div id="cb5" class="sourceCode">
+<div id="cb8" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds <span class="st">&quot;mojo&quot;</span> <span class="dt">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}&#39;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds <span class="st">&quot;jack&quot;</span> <span class="dt">\</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}&#39;</span></span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span> <span class="op">&lt;&lt;EOT</span> <span class="op">&gt;</span>mojo.json</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">    {</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;id&quot;: &quot;mojo&quot;,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, </span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">    EOT</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="st">    cat mojo.json | dataset create friends.ds &quot;mojo&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="st">    cat &lt;&lt;EOT &gt;jack.json</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">    {</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;id&quot;: &quot;jack&quot;,</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;name&quot;: &quot;Jack Flanders&quot;, </span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">     </span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">    EOT</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="st">    dataset create -i jack.json friends.ds &quot;jack&quot;</span></span></code></pre>
 </div>
 <p>
-in python –
+in Go we can loop through records easily and add them –
 </p>
-<div id="cb6" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>, </span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          {<span class="st">&quot;name&quot;</span>: <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span>, </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;email&quot;</span>: <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span>})</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>: </span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, </span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>          {<span class="st">&quot;name&quot;</span>: <span class="st">&quot;Jack Flanders&quot;</span>, </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;email&quot;</span>: <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span>})</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>: </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
-</div>
+<pre class="golang"><code>    // Open the collection
+    c, err := dataset.Open(&quot;friends.ds&quot;)
+    if err != nil {
+        ...
+    }
+    defer c.Close()// Don&#39;t forget to close the collection
+
+    // Create some new records
+    newRecords := []Record{
+        Record{
+            ID: &quot;mojo&quot;,
+            Name: &quot;Mojo Sam&quot;,
+            EMail: &quot;mojosam@cosmic-cafe.example.rog&quot;,
+        },
+        Record{
+            ID: &quot;jack&quot;,
+            Name: &quot;Jack Flanders&quot;,
+            Email: &quot;capt-jack@cosmic-voyager.example.org&quot;,
+        },
+    }
+    // Save the new records into the collection
+    for _, record := range newRecords {
+        if err := dataset.CreateObject(record.ID, record); err != nil {
+            fmt.Fprintf(os.Stderr, 
+               &quot;something went wrong add %q, %s\n&quot;, record.ID, key)
+        }
+    }</code></pre>
 <h3 id="read">
 read
 </h3>
@@ -195,53 +312,52 @@ verb.
 <p>
 command line –
 </p>
-<div id="cb7" class="sourceCode">
+<div id="cb10" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read friends.ds frieda</span></code></pre>
-</div>
-<p>
-This command emits a JSON object. The JSON is somewhat hard to read. To
-get a pretty version of the JSON object used the “-p” option.
-</p>
-<div id="cb8" class="sourceCode">
-<pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds frieda</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read friends.ds frieda</span></code></pre>
 </div>
 <p>
 On the command line you can easily pipe the results to a file for latter
 modification. Let’s do this for each of the records we have created so
 far.
 </p>
-<div id="cb9" class="sourceCode">
+<div id="cb11" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds frieda <span class="op">&gt;</span>frieda-profile.json</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds mojo <span class="op">&gt;</span>mojo-profile.json</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds jack <span class="op">&gt;</span>jack-profile.json</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds frieda <span class="op">&gt;</span>frieda-profile.json</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds mojo <span class="op">&gt;</span>mojo-profile.json</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read <span class="at">-p</span> friends.ds jack <span class="op">&gt;</span>jack-profile.json</span></code></pre>
 </div>
 <p>
-Working in python is similar but rather than write out our JSON
-structures to a file we’re going to keep them in memory as Python dict.
+Working in Go is similar but rather than write out our JSON structures
+to a file we’re going to keep them in memory as an array of record
+structs before converting to JSON and writing it out.
 </p>
 <p>
-In Python –
+In Go –
 </p>
-<div id="cb10" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    (frieda_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    (mojo_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    (jack_profile, err) <span class="op">=</span> dataset.read(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
-</div>
-<p>
-In Python, just like with <em>init</em> and <em>create</em> the
-<em>read</em> verb returns a tuple of the value and err. Notice a
-pattern?
-</p>
+<pre class="golang"><code>    // Open our collection
+    c, err := dataset.Open(&quot;friends.ds&quot;)
+    if err != nil {
+        fmt.Fprintf(os.Stderr, &quot;%s\n&quot;, err)
+        os.Exit(1)
+    }
+    defer c.Close() // remember to close the collection
+
+    // build our list of keys
+    keys := []string{ &quot;frieda&quot;, &quot;mojo&quot;, &quot;jack&quot; }
+    records := []*Record{}
+    // loop through the list and write the JSON source to file.
+    for _, key := range keys {
+       obj := &amp;Record{}
+       if err := c.ReadObject(key, &amp;obj); err != nil {
+           fmt.Fprintf(os.Stderr, &quot;%s\n&quot;, err)
+           os.Exit(1)
+       }  
+       records = append(records, obj)
+    }
+    src, _ := json.MarshalIndent(records)
+    fmt.Println(&quot;%s\n&quot;, src)
+    os.Exit(0)</code></pre>
 <h3 id="update">
 update
 </h3>
@@ -251,38 +367,38 @@ version). We’re going to add a key/value pair for “catch_phrase”
 associated with each JSON object in <em>friends.ds</em>. For Little
 Frieda edit freida-profile.json to look like –
 </p>
-<div id="cb11" class="sourceCode">
+<div id="cb13" class="sourceCode">
 <pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda&quot;</span><span class="fu">,</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda@inverness.example.org&quot;</span><span class="fu">,</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Woweee Zoweee&quot;</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda&quot;</span><span class="fu">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda@inverness.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Woweee Zoweee&quot;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 For Mojo’s mojo-profile.json –
 </p>
-<div id="cb12" class="sourceCode">
+<div id="cb14" class="sourceCode">
 <pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;mojo&quot;</span><span class="fu">,</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span><span class="fu">,</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span><span class="fu">,</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
+class="sourceCode json"><code class="sourceCode json"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;mojo&quot;</span><span class="fu">,</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span><span class="fu">,</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 An Jack’s jack-profile.json –
 </p>
-<div id="cb13" class="sourceCode">
+<div id="cb15" class="sourceCode">
 <pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;jack&quot;</span><span class="fu">,</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span><span class="fu">,</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
+class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;jack&quot;</span><span class="fu">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
 </div>
 <p>
 On the command line we can read in the updated JSON objects and save the
@@ -290,11 +406,11 @@ results in the collection with the <em>update</em> verb. Like with
 <em>init</em> and <em>create</em> the <em>update</em> verb will return
 an “OK” or error message. Let’s update each of our JSON objects.
 </p>
-<div id="cb14" class="sourceCode">
+<div id="cb16" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds freida frieda-profile.json</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds mojo mojo-profile.json</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds jack jack-profile.json</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds freida frieda-profile.json</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds mojo mojo-profile.json</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds jack jack-profile.json</span></code></pre>
 </div>
 <p>
 <strong>TIP</strong>: By providing a filename ending in “.json” the
@@ -303,30 +419,106 @@ had stated with a “{” and ended with a “}” it would assume you were
 using an explicit JSON expression.
 </p>
 <p>
-In Python we can work with each of the dictionaries variables we save
-from our previous <em>read</em> example. We add our “catch_phrase”
-attribute then <em>update</em> each record.
+In Go we can work with each of the record as
+<code>map[string]interface{}</code> variables. We save from our previous
+<em>Read</em> example. We add our “catch_phrase” attribute then
+<em>Update</em> each record.
 </p>
-<div id="cb15" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>    frieda_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;Wowee Zowee&quot;</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    mojo_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    jack_profile[<span class="st">&quot;catch_phrase&quot;</span>] <span class="op">=</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;frieda&quot;</span>, frieda_profile)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;mojo&quot;</span>, mojo_profile)</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.update(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, jack_profile)</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
-</div>
+<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
+    if err != nil { 
+        // ... handle errors
+    }
+    defer c.Close()
+
+    // Read our three profiles
+    friedaProfile := map[string]interface{}{}
+    if err := c.Read(&quot;frieda&quot;, fredaProfile); err != nil {
+        // ... handle error
+    }
+    mojoProfile := map[string]interface{}{}
+    if err :=  c.Read(&quot;mojo&quot;, mojoProfile); err != nil  {
+        // ... handle error
+    }
+    jackProfile := map[string]interface{}{}
+    if err := c.Read(&quot;jack&quot;, jackProfile); err != nil {
+        // ... handle error
+    }
+    
+    // Add our catch phrases
+    friedaProfile[&quot;catch_phrase&quot;] = &quot;Wowee Zowee&quot;
+    mojoProfile[&quot;catch_phrase&quot;] = &quot;Feet Don&#39;t Fail Me Now!&quot;
+    jackProfile[&quot;catch_phrase&quot;] = &quot;What is coming at you is coming from you&quot;
+    
+    // Update our records
+    if err := c.Update(&quot;frieda&quot;, friedaProfile); err != &quot;&quot; {
+        // ... handle error
+    }
+    if err := c.Update(&quot;mojo&quot;, mojoProfile); err != &quot;&quot; {
+        // ... handle error
+    }
+    if err := c.Update(&quot;jack&quot;, jackProfile); err != nil {
+        // ... handle error
+    }</code></pre>
 <p>
-As an exercise how would you read back the updated version on the
-command line or in Python?
+A better approach where we would be to use a Go struct to hold the
+profile records. This would ensure that they mapping of attribute names
+are consistently handled.
 </p>
+<pre class="golang"><code>    import (
+        &quot;github.com/caltechlibrary/dataset&quot;
+    )
+
+    type Profile struct {
+        Name string `json:&quot;name&quot;`
+        EMail string `json:&quot;email,omitempty&quot;`
+        CatchPhrase string `json:&quot;catech_phrase,omitempty&quot;`
+    }
+
+    func main() {
+        // Load our minimal records, i.e. name and email
+        records := map[string]*Profile{}{
+            &quot;frieda&quot;: &amp;Profile{ 
+                Key: &quot;frieda&quot;, 
+                EMail: &quot;frieda@inverness.example.org&quot;,
+                Name: &quot;Little Frieda&quot;, 
+                },
+            &quot;mojo&quot;: &amp;Profile{
+                Key: &quot;mojo&quot;,
+                EMail: &quot;mojosam@cosmic-cafe.example.org&quot;,
+                Name: &quot;Mojo Sam, the Yudoo Man&quot;,
+            },
+            &quot;jack&quot;: &amp;Profile{
+                Key: &quot;jack&quot;,
+                EMail: &quot;capt-jack@cosmic-voyager.example.org&quot;,
+                Name: &quot;Jack Flanders&quot;,
+            },
+        }
+
+        // Create the collection and add our records
+        c, err := dataset.Init(&quot;friends.ds&quot;, &quot;&quot;)
+        if err != nil {
+            // ... handle errror
+        }
+        for key, record := range records {
+            if err := c.CreateObject(key, recorrd); err != nil {
+                // ... handle error
+            }
+        }
+
+        // Add our catch phrases
+    
+        records[&quot;frieda&quot;].CatchPhrase = &quot;Wowee Zowee&quot;
+        records[&quot;mojo&quot;].CatchPhrase = &quot;Feet Don&#39;t Fail Me Now!&quot;
+        records[&quot;jack&quot;].CatchPhrase = 
+             &quot;What is coming at you is coming from you&quot;
+    
+        // Update our records
+        for key, record := range records {
+            if err := c.UpdateObject(key, record); err != &quot;&quot; {
+                // ... handle error
+            }
+        }
+    }</code></pre>
 <h3 id="delete">
 delete
 </h3>
@@ -337,23 +529,29 @@ Let’s remove Jack Flander’s record for now.
 <p>
 command line –
 </p>
-<div id="cb16" class="sourceCode">
+<div id="cb19" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> delete friends.ds jack</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> delete friends.ds jack</span></code></pre>
 </div>
 <p>
 Notice the “OK” in this case it means we’ve successfully delete the JSON
 object from the collection.
 </p>
 <p>
-An perhaps as you’ve already guessed working in Python looks like –
+An perhaps as you’ve already guessed working in Go looks like –
 </p>
-<div id="cb17" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>       stop(err)</span></code></pre>
-</div>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   if err := c.Delete(&quot;jack&quot;); err != nil {
+       fmt.Fprintf(os.Stderr, &quot;%s\n&quot;, err)
+       os.Exit(1)
+   }
+   fmt.Println(&quot;OK&quot;)
+   os.Exit(0)</code></pre>
 <h2 id="keys-and-count">
 keys and count
 </h2>
@@ -370,36 +568,45 @@ Now that we’ve deleted a few things let’s see how many keys are in
 <p>
 Command line –
 </p>
-<div id="cb18" class="sourceCode">
+<div id="cb21" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> count friends.ds</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> count friends.ds</span></code></pre>
 </div>
 <p>
-In Python –
+In Go –
 </p>
-<div id="cb19" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>    cnt <span class="op">=</span> dataset.count(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Total Records Now: </span><span class="sc">{</span>cnt<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre>
-</div>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   cnt = c.Length() // NOTE: this is an int64 value
+   fmt.Printf(&quot;Total Records Now: %d\n&quot;, cnt)</code></pre>
 <p>
 Likewise we can get a list of the keys with the <em>keys</em> verb.
 </p>
-<div id="cb20" class="sourceCode">
+<div id="cb23" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds</span></code></pre>
 </div>
 <p>
-If you are following along in Python then you can just save the keys to
-a variable called keys.
+If you are following along in Go then you can just save the keys to a
+variable called keys.
 </p>
-<div id="cb21" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join(keys))</span></code></pre>
-</div>
-<h2 id="data-frames-and-grids">
-Data frames and grids
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   keys, err = c.Keys()
+   if err != nil {
+       // ... handle error
+   }
+   fmt.Printf(&quot;%s\n&quot;, strings.Join(keys, &quot;\n&quot;))</code></pre>
+<h2 id="data-frames">
+Data frames
 </h2>
 <p>
 JSON objects are tree like. This structure can be inconvenient for some
@@ -407,77 +614,60 @@ types of analysis like tabulation, comparing values or generating
 summarizing reports. Many languages support a concept of “data frame”.
 Meaning a list of objects, possibly with associated metadata about how
 the list was created. This becomes a convenient way to process data.
-Frames can easily be transformed. Sometimes a spreadsheet, table or 2D
-grid like structure is often a more familiar format for these types of
-tasks. <em>frame-grid</em> is dataset’s verb for taking a data frame and
-returning a 2D list of grid results. The 2D grid is easy to iterate
-over. A <em>frame-grid</em> doesn’t enforce any specifics on the columns
-and rows. It only contains the values you specified in the list of keys
-and dot paths when you defined the data frame.
+Frames can easily be transformed.
 </p>
 <h3 id="the-frame">
 the frame
 </h3>
 <p>
 dataset also comes with a <em>frame</em> verb. A <em>frame</em> is an
-order list of objects with some additional metadata. It is similar to
-the “data frames” concepts in languages like Julia, Matlab, Octave,
-Python and R. It is a data structure that can be easily mapped to a grid
-(2D array or rows and columns). A frame is represented as an array of
-objects there the column names correspond to a attribute name in an
-object. It enforces a structure that behaves like a grid but is also
-easy to iterate over for other types of processing. Like our “grid”
-command a a <em>frame</em> will also derive heading labels (object
-attribute names) from the dot paths used to define the frame and will
-include metadata about the collection, keys used to define the frame and
-default types of data in the columns. The extra information in a
-<em>frame</em> stays with the collection. Frames are persistent and can
-be easily recalculated based on collection updates.
+order list of objects based on a set of keys and metadata about how the
+values for the objects we mapped from the collection’s JSON documents.
+It is similar to the “data frames” concepts in languages like Julia,
+Matlab, Octave, Python and R.
 </p>
 <p>
-To define a frame we only need one additional piece of information
-besides what we used for a grid. We need a name for the frame.
-</p>
-<div id="cb22" class="sourceCode">
-<pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-create <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="dt">\</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        .name=name .email=email <span class="dt">\</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        .catch_phrase=catch_phrase</span></code></pre>
-</div>
-<p>
-In python it would look like
-</p>
-<div id="cb23" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>          keys, { </span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;.name&quot;</span>: <span class="st">&quot;name&quot;</span>, </span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;.email&quot;</span>: <span class="st">&quot;email&quot;</span>, </span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;.catch_phrase&quot;</span>: <span class="st">&quot;catch_phrase&quot;</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>              })</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
-</div>
-<p>
-To see the full contents of a frame we only need to supply the
-collection and frame names.
-</p>
-<div id="cb24" class="sourceCode">
-<pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
-</div>
-<p>
-In Python it’d look like
+To define a frame we only need two pieces of information, a list of keys
+in the collection to be framed and a list of dot notated paths to map
+into a set of labels for the object in the frame.
 </p>
 <div id="cb25" class="sourceCode">
 <pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>    (f, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(f, indent <span class="op">=</span> <span class="dv">4</span>))</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-create <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="dt">\</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        .name=name .email=email <span class="dt">\</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        .catch_phrase=catch_phrase</span></code></pre>
 </div>
+<p>
+In Go it would look like
+</p>
+<div id="cb26" class="sourceCode">
+<pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>    c, err :<span class="op">=</span> dataset.Open(<span class="st">&quot;friends.ds&quot;</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> ... handle error</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    defer c.Close()</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    verbose :<span class="op">=</span> true</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> c.Keys()</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    dotPaths :<span class="op">=</span> []string{ <span class="st">&quot;.name&quot;</span>, <span class="st">&quot;.email&quot;</span>, <span class="st">&quot;.catch_phrase&quot;</span> }</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    labels :<span class="op">=</span> []string{ <span class="st">&quot;name&quot;</span>, <span class="st">&quot;email&quot;</span>, <span class="st">&quot;catch_phrase&quot;</span> }</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err :<span class="op">=</span> c.FrameCreate(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>                keys, dotPaths, labels, verbose)<span class="op">;</span> err <span class="op">!=</span> nil {</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">//</span> ... handle error</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre>
+</div>
+<p>
+In Go it’d look like
+</p>
+<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
+    // ... handle error
+    defer c.Close()
+
+    frm, err := c.FrameRead(&quot;name-and-email&quot;)
+    // ... handle error
+    src, err := json.MarshalIndent(frm, &quot;&quot;, &quot;    &quot;)
+    // ... handle error
+    fmt.Printf(&quot;%s\n&quot;, src)</code></pre>
 <p>
 Looking at the resulting JSON object you see other attributes beyond the
 object list of the frame. These are created to simplify some of dataset
@@ -487,68 +677,74 @@ more complex interactions.
 Most of the time you don’t want the metadata, so you we have a way of
 just retrieving the object list.
 </p>
-<div id="cb26" class="sourceCode">
+<div id="cb28" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
-Or in Python
+Or in Go –
 </p>
-<div id="cb27" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>    object_list <span class="op">=</span> dataset.frame_objects(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span></code></pre>
-</div>
+<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
+    // ... handle error
+    defer c.Close()
+
+    objects, err := c.FrameObjects(&quot;name-and-email&quot;)
+    // ... handle error
+    src, err := json.MarshalIndent(objects, &quot;&quot;, &quot;    &quot;)
+    // ... handle error
+    fmt.Printf(&quot;%s\n&quot;, src)</code></pre>
 <p>
 Let’s add back the Jack record we deleted a few sections ago and
 “reframe” our “name-and-email” frame.
 </p>
-<div id="cb28" class="sourceCode">
+<div id="cb30" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Adding back Jack</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create friends.ds jack jack-profile.json</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save all the keys in the collection</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds <span class="op">&gt;</span>friends.keys</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now reframe &quot;name-and-email&quot; with the updated friends.keys</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-reframe <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="st">&quot;name-and-email&quot;</span> </span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s take a look at the frame</span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame <span class="at">-p</span> friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Adding back Jack</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create <span class="at">-i</span> jack-profile.json friends.ds jack</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save all the keys in the collection</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds <span class="op">&gt;</span>friends.keys</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now reframe &quot;name-and-email&quot; with the updated friends.keys</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> reframe <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="st">&quot;name-and-email&quot;</span> </span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s take a look at the frame&#39;s objects</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
-NOTE: the <em>read</em> before it the “-p” option will cause the JSON
-representation of the frame to be pretty printed.
+Let’s try the same thing in Go –
 </p>
-<p>
-Let’s try the same thing in Python
-</p>
-<div id="cb29" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.create(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;jack&quot;</span>, jack_profile)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_reframe(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, keys)</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    (f, err) <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(f, indent <span class="op">=</span> <span class="dv">4</span>))</span></code></pre>
-</div>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   // ... handle error
+   defer c.Close()
+   if err := c.CreateObject(&quot;jack&quot;, jackProfile); err != nil {
+       // ... handle error
+   }
+   keys, err := c.Keys()
+   if err != nil {
+       // ... handle error
+   }
+   if err := c.Reframe(&quot;name-and-email&quot;, keys); err != nil {
+       // ... handle error
+   }
+   objects, err := c.FrameObjects(&quot;name-and-email&quot;)
+   // ... handle error
+   src, err := json.MarshalIndent(objects, &quot;&quot;, &quot;    &quot;)
+   // ... handle error
+   fmt.Printf(&quot;%s\n&quot;, src)</code></pre>
 <p>
 We can list the frames in the collection using the <em>frames</em> verb.
 </p>
-<div id="cb30" class="sourceCode">
+<div id="cb32" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frames friends.ds</span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frames friends.ds</span></code></pre>
 </div>
 <p>
-In Python
+In Go –
 </p>
-<div id="cb31" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>    frame_names <span class="op">=</span> dataset.frames(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>.join(frame_names))</span></code></pre>
-</div>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   // ... handle error
+   defer c.Close()
+
+   frameNames := c.Frames()
+   fmt.Printf(&quot;%s\n&quot;, string.Join(frame_names, &quot;\n&quot;))</code></pre>
 <p>
 In our frame we have previously defined three columns, looking at the
 JSON representation of the frame we also see a “labels” attribute.
@@ -556,56 +752,67 @@ Labels are used when exporting and synchronizing content between a CSV
 file, Google Sheet and a collection (labels become column names).
 </p>
 <p>
-Labels are set at the time of frame definition and persist as long as
-the frame exists. The order of the columns reflects the order of the
-pairs defining the dot paths and labels. In our previous examples we
-provided the order of the columns for the frame “name-and-email” as
-.name, .email, .catch_phrase dot paths. If we want to have the labels
-“ID”, “Display Name”, “EMail”, and “Catch Phrase” we need to define our
-frame that way.
+Labels are the target attribute name. They are set at the time of frame
+definition and persist as long as the frame exists. The order of the
+columns reflects the order of the pairs defining the dot paths and
+labels. In our previous examples we provided the order of the columns
+for the frame “name-and-email” as <code>.name</code>,
+<code>.email</code>, <code>.catch_phrase</code> dot paths. If we want to
+have the labels “ID”, “Display Name”, “EMail”, and “Catch Phrase” we
+need to define our frame that way.
 </p>
-<div id="cb32" class="sourceCode">
+<div id="cb34" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame friends.ds <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;._Key=ID&quot;</span> <span class="st">&quot;.name=Display Name&quot;</span> <span class="dt">\</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;.email=EMail&quot;</span> <span class="st">&quot;.catch_phrase=Catch Phrase&quot;</span></span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-keys friends.ds <span class="op">&gt;</span>keys.json </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame <span class="at">-i</span> keys.json friends.ds <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;._Key=ID&quot;</span> <span class="st">&quot;.name=Display Name&quot;</span> <span class="dt">\</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;.email=EMail&quot;</span> <span class="st">&quot;.catch_phrase=Catch Phrase&quot;</span></span></code></pre>
 </div>
 <p>
-In Python it look like
+In Go it might look like
 </p>
-<div id="cb33" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        stop(err)</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;._Key&quot;</span>: <span class="st">&quot;ID&quot;</span>, </span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;.name&quot;</span>: <span class="st">&quot;Display Name&quot;</span>, </span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;.email&quot;</span>: <span class="st">&quot;EMail&quot;</span>, </span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;.catch_pharse&quot;</span>: <span class="st">&quot;Catch Phrase&quot;</span></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>          })</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>        stop(err)</span></code></pre>
-</div>
+<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
+    // ... handle error
+    defer c.Close()
+
+    verbose := true
+    keys, err := c.FrameKeys(&quot;name-and-email&quot;)
+    // ... handle error
+    frm, err := c.FrameRead(&quot;name-and-email&quot;)
+    // ... handle error
+
+    // Retrieve our dot paths and labels then append
+    // the additional path and label
+    dotPaths := frm.DotPaths
+    dotPaths = append(dotPaths, &quot;.catch_phrase&quot;)
+    labels := frm.Labels
+    labels = append(labels, &quot;catch_phrase&quot;)
+
+    err := c.FrameDelete(&quot;name-and-email&quot;)
+    // ... handle error
+
+    err := c.Frame(&quot;name-and-email&quot;, keys, dotPath, labels, verbose)
+    if err != nil {
+        // ... handle error
+    }</code></pre>
 <p>
 Finally the last thing we need to be able to do is delete a frame.
 Delete frames work very similar to deleting a JSON record.
 </p>
-<div id="cb34" class="sourceCode">
+<div id="cb36" class="sourceCode">
 <pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre>
 </div>
 <p>
-Or in Python
+Or in Go –
 </p>
-<div id="cb35" class="sourceCode">
-<pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>    err <span class="op">=</span> dataset.frame_delete(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&quot;&quot;</span>:</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>          stop(err)</span></code></pre>
-</div>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   // ... handle
+   defer c.Close()
+
+   err := c.FrameDelete(&quot;name-and-email&quot;)
+   // ... handle error</code></pre>
 <p>
 <strong>TIP</strong>: Frames like collections have a number of
 operations. Here’s the list
@@ -613,22 +820,22 @@ operations. Here’s the list
 <ol type="1">
 <li>
 <p>
-<em>frame-create</em> will set you define a frame
+<em>frame</em> will let you define a frame
 </p>
 </li>
 <li>
 <p>
-<em>frame</em> will let you read back a frame with full metadata
-</p>
-</li>
-<li>
-<p>
-<em>frame-grid</em> return the frame’s object list as a 2D array
+<em>frame-def</em> will let you read back a frame’s definition
 </p>
 </li>
 <li>
 <p>
 <em>frame-objects</em> return the frame’s object list
+</p>
+</li>
+<li>
+<p>
+<em>frame-keys</em> return the frame’s key list
 </p>
 </li>
 <li>
@@ -639,18 +846,24 @@ in a frame, it will cause the frame to regenerate its object list
 </li>
 <li>
 <p>
-<em>frame-delete</em> will remove the frame from the collection
+<em>delete-frame</em> will remove the frame from the collection
+</p>
+</li>
+<li>
+<p>
+<em>refresh</em> will let you refresh the objects in a frame from the
+current state of the collection, it’ll prune any existing objects in the
+frame is they no longer exist.
+</p>
+</li>
+<li>
+<p>
+<em>reframe</em> will take a new list of keys from the colletion
+recreating ( (replacing) the objects in the data frame based on the new
+list of keys
 </p>
 </li>
 </ol>
-<p>
-Continue exploring dataset with
-</p>
-<ul>
-<li>
-<a href="working-with-csv.html">Working with CSV</a>
-</li>
-</ul>
 </section>
 
 <footer>

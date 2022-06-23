@@ -17,7 +17,7 @@ Compiled version
 Compiled versions are available for macOS (Intel and M1), Linux (Intel), 
 Windows (Intel) and Raspberry Pi (ARM).
 
-VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v1.0.2)
+VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v2.0.0)
 
 
 For all the released version go to the project page on GitHub and click
@@ -140,6 +140,7 @@ Clone the repository and then compile.
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
     make
+    # Add any missing dependencies you might need in your Go environment
     make test
     make install
 ```

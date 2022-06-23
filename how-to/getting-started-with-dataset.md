@@ -63,6 +63,7 @@ general code sketch.
        // The dataset collection is held in 'c'
        // This create the collection "friends.ds"
        collectionName := "frieds.ds"
+       // "c" is a handle to the collection
        c, err := dataset.init(collectionName)
        if err != nil {
            fmt.Fprintf(os.Stderr, "Something went wrong, %s\n", err)
@@ -287,7 +288,7 @@ In Go \--
         fmt.Fprintf(os.Stderr, "%s\n", err)
         os.Exit(1)
     }
-    defer c.Close()
+    defer c.Close() // remember to close the collection
 
     // build our list of keys
     keys := []string{ "frieda", "mojo", "jack" }
@@ -402,6 +403,68 @@ variables. We save from our previous *Read* example. We add our
     }
 ```
 
+A better approach where we would be to use a Go struct to hold
+the profile records. This would ensure that they mapping of
+attribute names are consistently handled.
+
+```golang
+    import (
+        "github.com/caltechlibrary/dataset"
+    )
+
+    type Profile struct {
+        Name string `json:"name"`
+        EMail string `json:"email,omitempty"`
+        CatchPhrase string `json:"catech_phrase,omitempty"`
+    }
+
+    func main() {
+        // Load our minimal records, i.e. name and email
+        records := map[string]*Profile{}{
+            "frieda": &Profile{ 
+                Key: "frieda", 
+                EMail: "frieda@inverness.example.org",
+                Name: "Little Frieda", 
+                },
+            "mojo": &Profile{
+                Key: "mojo",
+                EMail: "mojosam@cosmic-cafe.example.org",
+                Name: "Mojo Sam, the Yudoo Man",
+            },
+            "jack": &Profile{
+                Key: "jack",
+                EMail: "capt-jack@cosmic-voyager.example.org",
+                Name: "Jack Flanders",
+            },
+        }
+
+        // Create the collection and add our records
+        c, err := dataset.Init("friends.ds", "")
+        if err != nil {
+            // ... handle errror
+        }
+        for key, record := range records {
+            if err := c.CreateObject(key, recorrd); err != nil {
+                // ... handle error
+            }
+        }
+
+        // Add our catch phrases
+    
+        records["frieda"].CatchPhrase = "Wowee Zowee"
+        records["mojo"].CatchPhrase = "Feet Don't Fail Me Now!"
+        records["jack"].CatchPhrase = 
+             "What is coming at you is coming from you"
+    
+        // Update our records
+        for key, record := range records {
+            if err := c.UpdateObject(key, record); err != "" {
+                // ... handle error
+            }
+        }
+    }
+```
+
 
 ### delete
 
@@ -460,7 +523,7 @@ In Go \--
    }
    defer c.Close()
 
-   cnt = c.Length()
+   cnt = c.Length() // NOTE: this is an int64 value
    fmt.Printf("Total Records Now: %d\n", cnt)
 ```
 
@@ -632,11 +695,12 @@ JSON representation of the frame we also see a \"labels\" attribute.
 Labels are used when exporting and synchronizing content between a CSV
 file, Google Sheet and a collection (labels become column names).
 
-Labels are set at the time of frame definition and persist as long as
-the frame exists. The order of the columns reflects the order of the
-pairs defining the dot paths and labels. In our previous examples we
-provided the order of the columns for the frame \"name-and-email\" as
-.name, .email, .catch_phrase dot paths. If we want to have the labels
+Labels are the target attribute name. They are set at the time of
+frame definition and persist as long as the frame exists. The order
+of the columns reflects the order of the pairs defining the dot paths
+and labels. In our previous examples we provided the order of the
+columns for the frame \"name-and-email\" as `.name`, `.email`, 
+`.catch_phrase` dot paths. If we want to have the labels
 \"ID\", \"Display Name\", \"EMail\", and \"Catch Phrase\" we need to
 define our frame that way.
 
@@ -661,7 +725,8 @@ In Go it might look like
     frm, err := c.FrameRead("name-and-email")
     // ... handle error
 
-    // Retrieve our dot paths and labels
+    // Retrieve our dot paths and labels then append
+    // the additional path and label
     dotPaths := frm.DotPaths
     dotPaths = append(dotPaths, ".catch_phrase")
     labels := frm.Labels
@@ -709,4 +774,9 @@ the list
     frame, it will cause the frame to regenerate its object list
 
 6.  *delete-frame* will remove the frame from the collection
+
+7. *refresh* will let you refresh the objects in a frame from the current state of the collection, it'll prune any existing objects in the frame is they no longer exist.
+
+8. *reframe* will take a new list of keys from the colletion recreating (
+   (replacing) the objects in the data frame based on the new list of keys
 
