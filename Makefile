@@ -50,7 +50,8 @@ $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 install: build
 	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
 	@echo "Installing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then cp -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
+	# NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then mv -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
 	@echo ""
 	@echo "Make sure $(PREFIX)/bin is in your PATH"
 
@@ -151,8 +152,7 @@ update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: clean dataset.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
-	cd libdataset && $(MAKE) release
+release: clean version.go collection.go distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
 
 status:
 	git status

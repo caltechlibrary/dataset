@@ -23,7 +23,7 @@ const (
 	cliDescription = `
 USAGE
 
-   {app_name} [OPTIONS] VERB COLLECTION_NAME [PRAMETER ...]
+ {app_name} [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PRAMETER ...]
 
 SYNOPSIS
 
@@ -73,6 +73,16 @@ for keys with punctation or that rely on case sensitivity. E.g.
 The pairtree storage engine relies on the host file system. File
 systems are notorious for being picky about non-alpha numeric
 characters and some are not case sensistive.
+
+A word about "GLOBAL_OPTIONS" in v2 of dataset.  Originally
+all options came after the command name, now they tend to
+come after the verb itself. This is because context counts
+in trying to remember options (at least for the authors of
+dataset).  The are three "GLOBAL_OPTIONS" that are exception
+and they are ` + "`" + `-version` + "`, " + "`" + `-help` + "`" + `
+and ` + "`" + `-license` + "`" + `. All other options come
+after the verb and apply to the specific action the verb
+implements.
 
 `
 
