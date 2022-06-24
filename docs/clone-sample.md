@@ -11,5 +11,4 @@ based on a training sample size of 1000.
     dataset clone-sample -size=1000 mycollection.ds training.ds test.ds
 ```
 
-Related topics: [clone](clone.html)
 

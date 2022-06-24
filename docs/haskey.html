@@ -38,38 +38,32 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
 
 <section>
-<h1 id="haskey">
-haskey
+<h1 id="has-key">
+has-key
 </h1>
 <h2 id="syntax">
 Syntax
 </h2>
-<pre class="shell"><code>    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR</code></pre>
+<pre class="shell"><code>    dataset [OPTIONS] has-key COLLECTION_NAME KEY_TO_CHECK_FOR</code></pre>
 <h2 id="description">
 Description
 </h2>
 <p>
-Checks if a given key is in the a collection. Returns “true” if found, “false” otherwise. The collection name is “people.ds”
+Checks if a given key is in the a collection. Returns “true” if found,
+“false” otherwise. The collection name is “people.ds”
 </p>
 <h2 id="usage">
 Usage
 </h2>
-<pre class="shell"><code>    dataset haskey people.ds &#39;0000-0003-0900-6903&#39;
-    dataset haskey people.ds r1</code></pre>
-<p>
-In python
-</p>
-<pre class="shell"><code>    dataset.has_key(&#39;people.ds&#39;, &#39;0000-0003-0900-6903&#39;)
-    dataset.has_key(&#39;people.ds&#39;, &#39;r1&#39;)</code></pre>
-<p>
-Related topics: <a href="keys.html">keys</a>
-</p>
+<pre class="shell"><code>    dataset has-key people.ds &#39;0000-0003-0900-6903&#39;
+    dataset has-key people.ds r1</code></pre>
 </section>
 
 <footer>

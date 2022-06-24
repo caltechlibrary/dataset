@@ -2,21 +2,19 @@
 Prune (end point)
 =================
 
-Removes an attached document from a JSON record using `<KEY>`, `<SEMVER>` and `<FILENAME>`.
+Removes an attached document from a JSON record using `<KEY>` and `<FILENAME>`.
 
-    `http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>`
+    `http://localhost:8485/<COLLECTION_ID>/attachment/<KEY>/<SEMVER>/<FILENAME>`
 
-Requires a GET method. Returns an HTTP 200 OK on success or an HTTP error code if not.
-
-See https://semver.org/ for more information on semantic version numbers.
+Requires a DELETE method. Returns an HTTP 200 OK on success or an HTTP error code if not.
 
 Example
 -------
 
-In this example `<COLLECTION_ID>` is "t1", `<KEY>` is "one", `<SEMVER>` is "0.0.1" and `<FILENAME>` is "a1.png". Once again our example uses curl.
+In this example `<COLLECTION_ID>` is "t1", `<KEY>` is "one", and `<FILENAME>` is "a1.png". Once again our example uses curl.
 
 ```shell
-    curl http://localhost:8485/t1/prune/one/0.0.1/a1.png
+    curl -X DELETE http://localhost:8485/t1/attachment/one/a1.png
 ```
 
 This will cause the attached file to be removed from the record

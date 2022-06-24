@@ -10,14 +10,11 @@ Getting started
 Data shapes
 -----------
 
-- [Joining Objects](../how-to/joining-objects.html)
-- [Reshaping collections](../how-to/reshape-json-collections.html)
 - [Data Frames](../how-to/collections-and-data-frames.html)
 
-Keys, samples and cloning collections
--------------------------------------
+Sampling and cloning collections
+--------------------------------
 
-- [keys and filters](../how-to/filtering-keys.html)
 - [taking samples](../how-to/taking-samples.html)
 - [cloning and samples](../how-to/cloning-and-samples.html)
 
@@ -28,11 +25,6 @@ Attachments and storage
 - [How attachments work](../how-to/how-attachments-work.html)
 - [Managing attachments](../how-to/managing-attachments.html)
 - [Upgrading a collection](../how-to/upgrading-a-collection.html)
-
-Import/Export
--------------
-
-- [Working with CSV](../how-to/working-with-csv.html)
 
 Dataset as a web service
 ------------------------
@@ -50,19 +42,13 @@ Topics A-Z
 - [delete](delete.html), [delete end point](delete-endpoint.html)
 - [delete-frame](delete-frame.html)
 - [dotpath](dotpath.html)
-- [export-csv](export-csv.html)
 - [frame](frame.html)
-- [frame-grid](frame-grid.html)
 - [frame-objects](frame-objects.html)
 - [frames](frames.html)
-- [hasframe](hasframe.html)
-- [haskey](haskey.html)
-- [import-csv](import-csv.html)
+- [has-frame](hasframe.html)
+- [has-key](haskey.html)
 - [init](init.html)
-- [join](join.html)
 - [keys](keys.html)
-- [list](list.html)
-- [path](path.html)
 - [prune](prune.html), [prune end point](prune-endpoint.html)
 - [read](read.html)
 - [reframe](reframe.html)
@@ -70,8 +56,5 @@ Topics A-Z
 - [repair](repair.html)
 - [retrieve](retrieve.html "formerly known as detach"), [retrieve end point](retrieve-endpoint.html)
 - [samples](../how-to/samples.html)
-- [status](status.html)
-- [sync-receive](sync-receive.html)
-- [sync-send](sync-send.html)
 - [update](update.html), [update end point](update-endpoint.html)
 

@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -50,27 +51,22 @@ attach
 <h2 id="syntax">
 Syntax
 </h2>
-<pre class="shell"><code>    dataset attach COLLECTION_NAME KEY [SEMVER] FILENAME(S)</code></pre>
+<pre class="shell"><code>    dataset attach COLLECTION_NAME KEY FILENAME(S)</code></pre>
 <h2 id="description">
 Description
 </h2>
 <p>
-Attach a file to a JSON record. Attachments are stored in a tar ball related to the JSON record key.
+Attach a file to a JSON record. Attachments are stored in a tar ball
+related to the JSON record key.
 </p>
 <h2 id="usage">
 Usage
 </h2>
 <p>
-Attaching a file named <em>start.xlsx</em> to the JSON record with id <em>t1</em> in collection “stats.ds”
+Attaching a file named <em>start.xlsx</em> to the JSON record with id
+<em>t1</em> in collection “stats.ds”
 </p>
 <pre class="shell"><code>    dataset attach stats.ds t1 start.xlsx</code></pre>
-<p>
-Attaching the file as version v0.0.1
-</p>
-<pre class="shell"><code>    dataset attach stats.ds t1 v0.0.1 start.xlsx</code></pre>
-<p>
-Related topics: <a href="attachments.html">attachments</a>, <a href="retrieve.html">retrieve</a> and <a href="prune.html">prune</a>
-</p>
 </section>
 
 <footer>

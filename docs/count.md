@@ -32,5 +32,3 @@ Count records where the ".published" field is true.
     dataset count "publications.ds" '(eq .published true)'
 ```
 
-Related topic: [keys](keys.html)
-

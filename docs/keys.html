@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -55,13 +56,19 @@ Syntax
 Description
 </h2>
 <p>
-List the JSON_DOCUMENT_ID available in a collection. Key order is not guaranteed. Keys are forced to lower case when the record is created in the dataset (as of version 1.0.2). Note combining “keys” with a pipe and POSIX commands like “sort” can given a rich pallet of ways to work with your dataset collection’s keys.
+List the JSON_DOCUMENT_ID available in a collection. Key order is not
+guaranteed. Keys are forced to lower case when the record is created in
+the dataset (as of version 1.0.2). Note combining “keys” with a pipe and
+POSIX commands like “sort” can given a rich pallet of ways to work with
+your dataset collection’s keys.
 </p>
 <h2 id="examples">
 Examples
 </h2>
 <p>
-Here are three examples usage. Notice the sorting is handled by the POSIX sort command which lets you sort ascending or descending including sorting number strings.
+Here are three examples usage. Notice the sorting is handled by the
+POSIX sort command which lets you sort ascending or descending including
+sorting number strings.
 </p>
 <pre class="shell"><code>    dataset keys COLLECTION_NAME
     dataset keys COLLECTION_NAME | sort
@@ -70,10 +77,18 @@ Here are three examples usage. Notice the sorting is handled by the POSIX sort c
 Getting a “sample” of keys
 </h2>
 <p>
-The <strong>dataset</strong> command respects an option named <code>-sample N</code> where N is the size (number) of the keys to include in the sample. The sample is taken after any filters are applied but may be less than requested size if the the filtered results are few than the sample size. The basic process is to get a set of keys, randomly sort the keys, then return the top N number of those keys.
+The <strong>dataset</strong> command respects an option named
+<code>-sample N</code> where N is the size (number) of the keys to
+include in the sample. The sample is taken after any filters are applied
+but may be less than requested size if the the filtered results are few
+than the sample size. The basic process is to get a set of keys,
+randomly sort the keys, then return the top N number of those keys.
 </p>
 <p>
-Related topics: <a href="count.html">count</a>, <a href="clone">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="frame.html">frame</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-objects.html">frame-objects</a>
+Related topics: <a href="count.html">count</a>, <a
+href="clone">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a
+href="frame.html">frame</a>, <a href="frame-grid.html">frame-grid</a>,
+<a href="frame-objects.html">frame-objects</a>
 </p>
 </section>
 

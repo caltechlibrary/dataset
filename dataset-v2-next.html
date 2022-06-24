@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="license.html">LICENSE</a>
+</li>
+<li>
+<a href="install.html">INSTALL</a>
+</li>
+<li>
+<a href="docs/">Documentation</a>
+</li>
+<li>
+<a href="how-to/">Tutorials</a>
+</li>
+<li>
+<a href="docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
+</ul>
+</nav>
+
+<section>
+<h1 id="dataset-next">
+Dataset next
+</h1>
+<h2 id="ideas">
+Ideas
+</h2>
+<p>
+We’ve been using dataset for several years now. It has proven helpful.
+The strength of dataset appears to be in severl areas. A simple clear
+API of commands on the command line make it easy to pickup and use.
+Storing JSON Object documents in a pairtree makes it easy to integrated
+into a text friendly environment like that found on Unix systems. The
+added ability to store non-JSON documents along side the JSON document
+as attachments he proven useful but could be refined to be more seemless
+(e.g. you pass a semver when you attach a document).
+</p>
+<p>
+Dataset was concieved with deliberate limitiations. This in part due to
+the options available at the time (e.g. MySQL, Postgres, MongDB,
+CouchDB, Redis) all imposed a high level of complexity to do
+conceptually simple things. While many of the limitations were
+deliberate it is time to consider loosing some. This should be done with
+a degree of caution.
+</p>
+<p>
+In the intervening years since starting the dataset project the NoSQL
+and SQL database engines have started to converge in capabilities. This
+is particularly true on the SQL engine side. SQLite 3, MySQL 8, and
+Postgres 14 all have mature support for storing JSON objects in a
+column. This provides an opportunity for dataset itself. It can use
+those engines for storing hetrogenious collections of JSON objects. The
+use case where this is particularly helpful is when running multi-user,
+multi-proccess support for interacting with a dataset collection. If
+dataset provides a web service the SQL engines can be used to store the
+objects reliably. This allows for larger dataset collections as well as
+concurrent interactions. The SQL engines provide the necessary record
+locking to avoid curruption on concurrent writes.
+</p>
+<p>
+In developing a version 2 of dataset an eye needs to be kept to several
+areas –
+</p>
+<ol type="1">
+<li>
+reduction of complexity
+<ol type="a">
+<li>
+simplification of codebase
+</li>
+<li>
+simplification of operation
+</li>
+</ol>
+</li>
+<li>
+learn from other systems
+<ol type="a">
+<li>
+align with good data practices
+</li>
+<li>
+adopt standards, e.g. codemeta for general metadata
+</li>
+</ol>
+</li>
+<li>
+elimination of unused “features”
+</li>
+</ol>
+<p>
+With the introduction of Go 1.18 some of this can be achieved through a
+better organization of code, some by applying lessons learned over the
+last several years and some by reorganizing the underlying persistenent
+structure of the collections themselves (e.g. take advantage of SQL
+storage options as well as the tried and true pairtree model)
+</p>
+<h2 id="proposed-updates">
+Proposed updates
+</h2>
+<p>
+The metadata of a collection can be described by two JSON document.
+Operational metadata (e.g. type of collection storage) is held in a
+document named “collection.json”. General metadata about a collection’s
+purpose is held in a document named “codemeta.json”. The “codemeta.json”
+document should reflect the codemeta’s project for describing software
+and data. This has been adopted in the data science community.
+</p>
+<p>
+Looking at storage options. While a pairtree is well suited for
+integration into the text processing environment of Unix it is not
+performant when dealing with large numbers of objects and concurrent
+access. To meet the needs of scaling out a collection other options can
+easily be explored. First SQL databases often support JSON columns. This
+includes two commonly used in Caltech Library, i.e. MySQL 8 and SQLite
+3. If a dataset collection is to be accessed via a web service then
+using a SQL store gives us an implementation that solves concurrent
+access and updates to JSON metadata. This is desirable.
+</p>
+<p>
+Dataset has supported a form of versioning attachments for some time.
+It’s has not supported versioning of JSON objects, that is desirable.
+Likewise the JSON support for attachments has been achieved by
+explicitly passing <a href="https://semver.org/">semver</a> strings when
+attaching a document. This is not ideal. The versioning process should
+be automatic. Retaining a semver raises a question, what is the
+increment value to change? Should you increment by major version, minor
+version or patch level? There is no “right” answer for the likely use
+cases for dataset. The incremented level could be set collection wide,
+e.g. “my_collection.ds” might increment patch level with each update,
+“your_collection.ds” might increment the major level. That needs to be
+explored through using the tool. Versioning should be across the
+collection meaning both the JSON documents and attachments should be
+versioning consistently or not versioned at all.
+</p>
+<p>
+Dataset frames have proved very helpful. Where possible code should be
+simplified and frames should be available regardless of JSON document
+storage type. As we continue to use frames in growing collections
+performance will need to be improved. In practice the object list or
+keys associated with a frame are used not the direct representation of
+the frame in memory. This is an area suited to refinement. The internals
+could be changed to improve performance as long as the access to the
+keys/objects in the frame remains consistent. E.g. Frames don’t have to
+be stored as plain text on disk. The code for frames needs to be
+reviewed and positioned for possible evolution as needs evolve with
+frame usage.
+</p>
+<p>
+Before frames were implemented data grids were tried. In practical usage
+frames replaced grids. The data grids code can be removed from dataset.
+The few places where they are used in our feeds processing are scheduled
+to be rewritten to use regular frames. It is a good time to prune this
+“feature”.
+</p>
+<p>
+Importing, syncing and exporting to CSV is a canidate for a rethink.
+While it makes it easy to get started with dataset maintaining the
+ability to syncronization between a CSV representation and a dataset
+collection is overly complex. While CSV support in Go is very good but
+so are the Python libraries for working with CSV files. Processing
+objects in a collection is more commonly done in a script (e.g. Python
+using py_dataset) then directly in Go. It may make more sense to either
+simplify or drop support for CSV for the version 1 level integration.
+How much does Go bring to the table beyond Python? Does this need to be
+“built-in” to dataset or should it be left to scripting a dataset
+service or resource? Does import/export support of CSV files make
+dataset easier to use beyond the library? If so does that extend to SQL
+tables in general?
+</p>
+<p>
+There are generally two practices in using dataset in Caltech Library.
+The command line is used interactively or Python is used programatically
+to process collections (e.g. like in reporting or the feeds project).
+Python has been support via a C shared library called libdataset. While
+this has worked well it also has been a challenge to maintain requiring
+acccess to each os/hardware platform the cli supports. I don’t think
+this is sustainable. Since the introduction of datasetd (the web service
+implementation of dataset) py_dataset could be rewritten to use the web
+service implementation of dataset (i.e. datasetd) and this would fit
+most of our use cases now and planned in the near future. It would avoid
+some hard edge cases we’ve run across where the Go run time and Python
+run need to be kept in sync.
+</p>
+<p>
+Dropping libdataset support would allow dataset/datasetd to be cross
+compiled for all supported platforms using only the Go tool chain. It
+would make fully supporting snap installs possible.
+</p>
+<p>
+A large area of cruft is the integrated help system. It makes more sense
+to focus that on GitHub, godoc and possibly publish to a site like
+readthedocs.io from the GitHub repository than to sustain a high level
+of direct help integration with the cli or web service.
+</p>
+<h2 id="goals">
+Goals
+</h2>
+<ol type="1">
+<li>
+Extended dataset’s usefulness
+</li>
+<li>
+Improve performance
+</li>
+<li>
+Simplify features (e.g. prune the crufty bits)
+</li>
+<li>
+Expand usage beyond Tom and Robert
+</li>
+</ol>
+<h2 id="proposals">
+Proposals
+</h2>
+<p>
+In moving to version 2 there will be breaking changes.
+</p>
+<ol type="1">
+<li>
+(braking change) datasetd should should store data in a SQL engine that
+support JSON columns, e.g. MySQL 8
+</li>
+</ol>
+<ol type="a">
+<li>
+should improve performance and allow for better concurrent usage
+</li>
+<li>
+improve frames support
+</li>
+<li>
+facilitate integration with fulltext search engines, e.g. Lunr, Solr,
+Elasticsearch
+</li>
+</ol>
+<ol start="2" type="1">
+<li>
+Cleanup frames and clarify their behavior, position the code for
+persisting frames efficiently. (e.g. explore frames implemented using
+SQLite 3 database and tables)
+</li>
+<li>
+Versioning of attachments needs to be automatic. A set of four version
+keywords could make it easier.
+</li>
+</ol>
+<ol type="a">
+<li>
+<strong>set</strong> would set the initial version number (defaults to
+0.0.0)
+</li>
+<li>
+<strong>patch</strong> would increment the patch number in the semver,
+if versioning is enabled in the collection then update will assume patch
+increment
+</li>
+<li>
+<strong>minor</strong> would increment the minor number and set patch to
+zero
+</li>
+<li>
+<strong>major</strong> would increment the major number and set minor
+and patch to zer
+</li>
+</ol>
+<ol start="4" type="1">
+<li>
+JSON objects should be versioned if the collection is versioned.
+</li>
+<li>
+Versioning of JSON documents and attachments should be global to the
+collection, i.e. everything is versioned or nothing is versioned
+</li>
+<li>
+Dot notation needs reviewed. Look at how SQL databases are interacting
+with JSON columns. Is there a convergence in notation?
+<ol type="a">
+<li>
+<a href="https://www.sqlite.org/json1.html">SQLite3</a>,
+</li>
+<li>
+<a href="https://dev.mysql.com/doc/refman/8.0/en/json.html">MySQL 8</a>
+and
+</li>
+<li>
+<a
+href="https://www.postgresql.org/docs/9.3/functions-json.html">Postgres
+9</a>
+</li>
+</ol>
+</li>
+<li>
+Easily clone to/from pairtree and SQL stored dataset collections
+</li>
+<li>
+Drop libdataset, it has been a time sync and constrainged dataset’s
+evolution
+</li>
+<li>
+Automated migration from version 1 to version 2 databases (via
+check/repair) for primary JSON documents
+</li>
+</ol>
+<h2 id="leveraging-sql-with-json-column-support">
+Leveraging SQL with JSON column support
+</h2>
+<p>
+When initializing a new SQL based collection a directory will get
+created and a collections.json document will also be create. This will
+help in supporting import/export (aka cloning) of JSON collections
+to/from pairtree and SQL engines.
+</p>
+<p>
+The v1 structure of a collection is defined by a directory name (e.g.
+mydataset.ds) containing a collection.json file (e.g. 
+mydata.ds/collection.json).
+</p>
+<p>
+When supporting SQL storage the collections.json should identify that
+the storage type is a SQL storage engine targetted
+(e.g. <code>“sqlite3”, “mysql”</code>) a URI like string could be used
+to define the SQL stored based on Go’s DNS (data source name). The
+storage engine could be indentified as the “protocal” in the URI. The
+collection.json document SHOULD NOT require storing any secrets. Secrets
+can be passed via the environment. Loading a configuration should
+automatically check for this situation (e.g. you’re running a datasetd
+cprocess in a container and the settings.json file needs to be stored in
+the project’s GitHub repo)
+</p>
+<p>
+If the “storage type” is not present it is assumed that storage is local
+disk in a pairtree. Storage type is set at collection creation. E.g.
+</p>
+<ul>
+<li>
+<code>init COLLECTION_NAME</code>, intialize dataset as a pairtree
+</li>
+<li>
+<code>init COLLECTION_NAME DSN_URI</code>, intialize dataset using
+SQLite3 or MySQL 8 for JSON document storage depending on the values in
+DSN_URI
+</li>
+</ul>
+<p>
+A SQL based dataset collections could be stored in a single SQL database
+as tables. This would allow for easier collection migration and
+replication.
+</p>
+<p>
+The desired column structure of a SQL based collection could be
+</p>
+<ul>
+<li>
+<code>Key VARCHAR(255) NOT NULL PRIMARY KEY</code>
+</li>
+<li>
+<code>Object JSON</code>
+</li>
+<li>
+<code>Created DATETIME DEFAULT CURRENT_TIMESTAMP</code>
+</li>
+<li>
+<code>Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE
+CURRENT_TIMESTAMP</code>
+</li>
+</ul>
+<p>
+NOTE: The problem is specifying automatic update timestamps isn’t
+standard across SQL implementations. It may make sense to only have one
+or other other. This needs to be explored further.
+</p>
+<p>
+The column structure for a SQL base frame set could be
+</p>
+<ul>
+<li>
+<code>Key VARCHAR(255) NOT NULL PRIMARY KEY</code>
+</li>
+<li>
+<code>Extract JSON</code> (the extracted attributes exposed by the
+frame)
+</li>
+<li>
+<code>Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE
+CURRENT_TIMESTAMP</code>
+</li>
+</ul>
+<p>
+A search index could be defined as a frame with a full text index of the
+atrtibutes.
+</p>
+<p>
+Stored procedures or triggers could implement the JSON document
+versioning via a copy to a history table. The latest version would be
+saved in the primary table, versions would be stored in the history
+table where <code>_Key</code> becomes <code>Key</code> combined with
+<code>Version</code>
+</p>
+<p>
+In a pairtree implementation JSON documents could use the same semver
+settings as attachment. Need to think about how this is organized on
+disk. Also attachments should not be stored in a SQL engine (we have big
+attachments). The could be stored in their own pairtree. Using
+versioning on JSON documents and attachments should function the same
+way but the implementation may need to very.
+</p>
+<h2 id="code-organization">
+Code organization
+</h2>
+<p>
+The v1 series of dataset source code is rather organic. It needs to be
+structured so that it is easier to read, understand and curate. In Go
+version 1.18 we can keep all the packages in the same repository. This
+means code for pairtree, semver, etc. can be maintained in the same
+repository easily now. This beings us an opportunity to refine things.
+</p>
+<ul>
+<li>
+collection.go should hold the general collection level actions and
+collection level data structures
+</li>
+<li>
+frames.go should hold the frames implementation indepent of the JSON
+store being used
+</li>
+<li>
+attachments.go should hold the attachments implementation indepent of
+the JSON store being used
+</li>
+<li>
+ptstore holds the code for the pairtree local disk implementation
+<ul>
+<li>
+ptstore/storage.go handle mapping objects and attachments to disk in the
+pairtree
+</li>
+<li>
+ptstore/frames.go should handling implementing frames for pairtree
+implementation
+</li>
+<li>
+ptstore/versioning.go should handle the version mapping on disk
+</li>
+<li>
+ptstore/attachments.go should hold the attachment implementation
+</li>
+</ul>
+</li>
+<li>
+sqlstore holds the code hanlding a SQL engine storage using JSON columns
+<ul>
+<li>
+sqlstore/sql.go - SQL primatives for mapping actions to the SQL store
+</li>
+<li>
+sqlstore/frames.go should hold the SQL implementation of frames
+</li>
+<li>
+sqlstore/storage.go should handle mapping objects into MySQL storage
+</li>
+<li>
+sqlstore/versioning.go should handle the version mapping in MySQL tables
+</li>
+</ul>
+</li>
+<li>
+semver/semver.go models semver behaviors
+</li>
+<li>
+dotpath/dotpath.go models dotpaths and JSON object behaviors
+</li>
+<li>
+pairtree/pairtree.go should hold pairtree structure and methods
+</li>
+<li>
+cli/cli.go should hold the outer methods for implementing the dataset
+CLI
+<ul>
+<li>
+base assumption, single user, single process
+</li>
+</ul>
+</li>
+<li>
+api/api.go should hold the wrapper that implements the datasetd daemon
+<ul>
+<li>
+base assumption, multi user, multi process
+</li>
+</ul>
+</li>
+<li>
+cmd/dataset/dataset.go is a light wrapper envoking run methods in cli
+</li>
+<li>
+cmd/datasetd/datasetd.go is a light wrapper envoking the run methods in
+ebapi.go
+</li>
+</ul>
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
+</body>
+</html>

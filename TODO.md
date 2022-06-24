@@ -8,53 +8,95 @@ Bugs
 Next (prep for v2.x)
 --------------------
 
-- [ ] Provide a dataset service (datasetd)
-    - [ ] keys
-    - [ ] create
-    - [ ] read
-    - [ ] update
-    - [ ] delete
-- [ ] Evaluate the following end points for datasetd
-    - [ ] attach
-    - [ ] attachments
-    - [ ] retrieve (aka detach)
-    - [ ] prune
-- [x] Add pid lock support for processes accessing dataset collections
-- [x] Document example Shell access to datasetd via cURL
-- [ ] Document dataesetd access from Python 3
-- [x] Migrate cli package into dataset package
+- [ ] Help cleanup
+    - [ ] remove help pages for depreciated features
+- [ ] Common dataset verbs (dataset/datasetd)
+    - [X] keys
+        - list the keys in a collection
+    - [X] has-key
+        - return "true "(w/OS exit 0 in CLI) if key is in collection,
+          "false" otherwise (w/OS exit 1 in CLI)
+    - [pkg,cli] sample
+        - return a sample of keys from a collection
+    - [X] create
+        - add an new object to the collection if key does not exist,
+          return false if object already exists or unable to create
+          the new object
+    - [X] read
+        - return the object with nil error in the collection with the
+          provided key, nil object and error value if not found
+    - [X] update
+        - replace the object in the collection for given key, return false
+          is object does not to replace or replacement fails
+    - [X] delete
+        - delete the object in the collection for given key, return true
+          if deletion was successful, false if the object was not deleted
+          (e.g. key not found or the collection is read only)
+    - [pkg,cli] versioning
+        - set the versioning on a collection, the following strings enable
+          versioning "major", "minor", "patch". Any other value disables
+          versioning on the collection
+        - [ ] read-versions, list the versions available for JSON object
+        - [pkg,cli] read-version
+             - return the object with nil error in the collection with the
+               provided key and version, nil object and error value if not
+               found
+        - [pkg,cli] update-version
+        - [pkg,cli] delete-version
+        - [pkg] attachment-versions list versions of an attachment
+        - [ ] attach-version add/replace a specific version of attachment
+        - [pkg] retrieve-version retrieve version of attachment
+        - [pkg] prune-version remove version of attachment
+    - [X] frames
+        - list the names of the frames currently defined in the collection
+    - [X] frame
+        - define a new frame in the collection, if frame exists replace it
+    - [X] frame-meta
+        - return the frame definition and metadata about the frame (e.g.
+          how many objects and attributes)
+    - [X] frame-objects
+        - return the frame's list of objects
+    - [X] refresh
+        - update all the objects in the frame based on current state of
+          the collection
+    - [X] reframe
+        - replace the frame definition but using the existing frame's keys
+          refresh the frame with the new object describe
+    - [X] delete-frame
+    - [X] has-frame
+- [X] Attachment support
+    - [X] attachments
+    - [X] attach
+    - [X] retrieve (aka detach)
+    - [X] prune
+- [X] Verbs support by cli only
+    - [X] sample
+    - [X] clone
+    - [X] clone-sample
+    - [X] check
+    - [X] repair
+- [X] Document example Shell access to datasetd via cURL
+- [X] take KeyMap out of collection.json so collection.json is smaller
+    - support for segmented key maps (to limit memory consumption for very
+      large collections)
+- [X] Auto-version attachments by patch, minor or major release per
+      settings in collection.json using keywords of patch, minor, major
 
 Someday, Maybe
 --------------
 
-- [ ] Drop Namaste from dataset
-- [ ] Missing tests for AttachStream()
-- [ ] Auto-version attachments by patch, minor or major release per settings in collection.json
-- [ ] Add some additional metadata fields
-    - [ ] version control on/off for attachments (we could version via Subversion or git depending...)
-    - [ ] Date/time repair was done
-    - [ ] Date/time clone was executed as well as basename name of cloned
-        - [ ] clone should include info about where it was cloned from
-- [ ] Documentation updates
-    - Write up spec for storage indicating where it relates to other approaches (e.g. datacrate, bagit, Oxford Common File Layout, dflat, redd, pairtree)
-- [ ] Implement a wrapping logger that takes a verboseness level for output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors should always show)
-+ [ ] Integrate Lunrjs and an index.html file into the root folder of a collection, this could be used to provide a web browser read interface to the collection without installing dataset itself.
-+ [ ] Memory consumption is high for attaching, figure out how to improve memory usage
-    - Currently the attachment process generates the tar ball in memory rather than a tmp file on disc
-    - for each attached filename process as stream instead of ioutil.ReadFile() and ioutil.ReadAll()
-    - for size info, call Stats first to get the filesize to include in tarball header
-- [ ] Add support for https:// based datasets (in addition to local disc and s3://)
-- [ ] VCARD and VCAL importer
-- [ ] Should the keymap in collection.json be a separate file(s)?
-- [ ] optional strategies for including arrays in a single column of CSV output
-    - provide a hint for   express such as quoted comma delimited list, semi-column delimited list, pipe delimited list, etc.
-- [ ] Bug? Need to include optional stimmers (e.g. search for Adventure should also spot Adventures)
-- [ ] Improve internal stringToGeoPoint support a few more string notations of coordinates
-    - [ ] N35.0000,W118.0000 or S35.000,E118.000
-    - [ ] slice notation (GeoJSON) with longitude as cell 0, latitude as cell 1
-- [ ] take KeyMap out of collection.json so collection.json is smaller
-    - support for segmented key maps (to limit memory consumption for very large collections)
-- [ ] dsbagit would generate a "BagIt" bag for preservation of collection objects
-- [ ] OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
-- dataset "versioning" support via something like libgit2
-
+- [ ] Document an example Python 3 http client support for web API implementing a drop in replacement for py_dataset using the web service or cli
+- [X] Missing tests for AttachStream()
+- [ ] Implement a wrapping logger that takes a verboseness level for
+      output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors
+      should always show)
+- [X] Memory consumption is high for attaching, figure out how to improve
+      memory usage, switched to using streams where possible
+- [ ] Add support for https:// based datasets (in addition to local disc
+      and s3://)
+- [ ] dsbagit would generate a "BagIt" bag for preservation of collection
+      objects
+- [ ] OAI-PMH importer to prototype iiif service based on Islandora
+      content driven by a dataset collection
+- [ ] Implement version support in the web service
+- [ ] Implement an integrated UI for datasetd

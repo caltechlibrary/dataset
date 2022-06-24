@@ -11,5 +11,3 @@ and then clone those keys into a new collection called *sample.ds*.
     dataset clone -i sample.keys mycollection.ds sample.ds
 ```
 
-Related topics: [clone-sample](clone-sample.html)
-

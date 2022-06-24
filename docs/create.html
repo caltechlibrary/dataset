@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -51,28 +52,29 @@ create
 Syntax
 </h2>
 <pre class="shell"><code>    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
-    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY
     dataset create COLLECTION_NAME KEY JSON_VALUE
-    dataset create COLLECTION_NAME KEY JSON_FILENAME</code></pre>
+    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY</code></pre>
 <h2 id="description">
 Description
 </h2>
 <p>
-create adds or replaces a JSON document to a collection. The JSON document can be read from a standard in, a named file (with a “.json” file extension) or expressed literally on the command line.
+create adds a JSON document to a collection. The JSON document can be
+read from a standard in, a named file (with a “.json” file extension) or
+expressed literally on the command line.
 </p>
 <h2 id="usage">
 Usage
 </h2>
 <p>
-In the following four examples <em>jane-doe.json</em> is a file on the local file system contains JSON data containing the JSON_VALUE of <code>{“name”:“Jane Doe”}</code>. The KEY we will create is <em>r1</em>. Collection is “people.ds”. The following are equivalent in resulting record.
+In the following four examples <em>jane-doe.json</em> is a file on the
+local file system contains JSON data containing the JSON_VALUE of
+<code>{“name”:“Jane Doe”}</code>. The KEY we will create is <em>r1</em>.
+Collection is “people.ds”. The following are equivalent in resulting
+record.
 </p>
 <pre class="shell"><code>    cat jane-doe.json | dataset create people.ds r1
-    dataset create -i blob.json people.ds r1
-    dataset create people.ds r1 &#39;{&quot;name&quot;:&quot;Jane Doe&quot;}&#39;
-    dataset create people.ds r1 jane-doe.json</code></pre>
-<p>
-Related topics: <a href="update.html">update</a>, <a href="read.html">read</a>, and <a href="delete.html">delete</a>
-</p>
+    dataset create -i jane-doe.json people.ds r1
+    dataset create people.ds r1 &#39;{&quot;name&quot;:&quot;Jane Doe&quot;}&#39;</code></pre>
 </section>
 
 <footer>

@@ -6,13 +6,16 @@
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "1.1.0a",
+    "version": "2.0.0-a1",
     "author": [
         {
             "@type": "Person",
             "givenName": "R. S.",
             "familyName": "Doiel",
-            "affiliation": "Caltech Library",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },
             "email": "rsdoiel@caltech.edu",
             "@id": "https://orcid.org/0000-0003-0900-6903"
         },
@@ -20,7 +23,10 @@
             "@type": "Person",
             "givenName": "Thomas E",
             "familyName": "Morrell",
-            "affiliation": "Caltech Library",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },
             "email": "tmorrell@caltech.edu",
             "@id": "https://orcid.org/0000-0001-9266-5146"
         }

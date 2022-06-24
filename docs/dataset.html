@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -50,80 +51,66 @@ dataset
 <h2 id="usage">
 USAGE
 </h2>
-<pre><code>dataset [OPTIONS] VERB COLLECTION_NAME [ACTION PARAMETERS...]</code></pre>
+<pre><code>dataset [OPTIONS] VERB [OPTIONS] COLLECTION_NAME [ACTION PARAMETERS...]</code></pre>
 <h2 id="synopsis">
 SYNOPSIS
 </h2>
 <p>
-dataset is a command line tool demonstrating dataset package for managing JSON documents stored on disc. A dataset is organized around collections, collections contain a pairtree holding specific JSON documents and related content. In addition to the JSON documents dataset maintains metadata for management of the documents, their attachments as well as a ability to generate select lists based JSON document keys (aka JSON document names).
+dataset is a command line tool demonstrating dataset package for
+managing JSON documents stored on disc. A dataset is organized around
+collections, collections contain a pairtree holding specific JSON
+documents and related content. In addition to the JSON documents dataset
+maintains metadata for management of the documents, their attachments as
+well as a ability to generate select lists based JSON document keys (aka
+JSON document names).
 </p>
 <h2 id="options">
 OPTIONS
 </h2>
 <p>
-Options are shared between all actions and must precede the action on the command line.
+Options can be general (e.g. <code>–help</code>) or specific to a verb.
+General options are
 </p>
-<pre><code>    -c, -collection           sets the collection to be used
-    -csv                      (find) format results as a CSV document, used with fields option
-    -csv-skip-header          (find) don&#39;t output a header row, only values for csv output
-    -e, -examples             display examples
-    -explain                  (find) explain results in a verbose JSON document
-    -fields                   (find) comma delimited list of fields to display in the results
-    -from                     (find) return the result starting with this result number
-    -generate-markdown-docs   output documentation in Markdown
+<pre><code>    -e, -examples             display examples
     -h, -help                 display help
-    -highlight                (find) display highlight in search results
-    -highlighter              (find) set the highlighter (ansi,html) for search results
-    -i, -input                input file name
-    -ids, -ids-only           (find) output only a list of ids from results
-    -json                     (find) format results as a JSON document
-    -key-file                 operate on the record keys contained in file, one key per line
     -l, -license              display license
-    -nl, -newline             if set to false suppress the trailing newline
-    -o, -output               output file name
-    -overwrite                overwrite will treat a create as update if the record exists
-    -p, -pretty               pretty print output
-    -quiet                    suppress error messages
-    -sample                   set the sample size when listing keys
-    -sort                     (find) a comma delimited list of field names to sort by
-    -use-header-row           (import) use the header row as attribute names in the JSON document
     -v, -version              display version
     -verbose                  output rows processed on importing from CSV</code></pre>
 <h2 id="verbs">
 VERBS
 </h2>
 <pre><code>    attach         Attach a document (file) to a JSON record in a collection
-    attachments    List of attachments associated with a JSON record in a collection
-    check          Check the health of a dataset collection
-    clone          Clone a collection from a list of keys into a new collection
-    clone-sample   Clone a collection into a sample size based training collection and test collection
-    count          Counts the number of records in a collection, accepts a filter for sub-counts
+    attachments    List of attachments associated with a JSON record in
+                   a collection
+    check          Check the health of a dataset collection (for collections
+                   using pairtree storage model)
+    clone          Clone a collection from a list of keys into a new
+                   collection
+    clone-sample   Clone a collection into a sample size based training
+                   collection and test collection
+    count          Counts the number of records in a collection, accepts
+                   a filter for sub-counts
     create         Create a JSON record in a collection
     delete         Delete a JSON record (and attachments) from a collection
     delete-frame   remove a frame from a collection
-    retrieve         Copy an attach out of an associated JSON record in a collection
-    export-csv     Export a JSON records from a collection to a CSV file
-    frame          define or retrieve a frame from a collection
+    retrieve       Copy an attachment out of an associated JSON record in
+                   a collection
+    frame          define a frame in a collection
+    frame-def      retrieve a frame&#39;s definition
     frame-objects  retrieve a frame&#39;s object list
-    frame-grid     retrieve a frame&#39;s object list as a 2D JSON array
-    frame-types    define explicitly the column type names associated with a frame
+    frame-keys     retrieve a frame&#39;s key list
     frames         list the available frames in a collection
-    haskey         Returns true if key is in collection, false otherwise
-    import-csv     Import a CSV file&#39;s rows as JSON records into a collection
+    has-key        Returns true if key is in collection, false otherwise
     init           Initialize a dataset collection
     join           Join a JSON record with a new JSON object in a collection
-    keys           List the keys in a collection, support filtering and sorting
-    list           List the JSON records as an array for provided record ids
-    path           Show the file system path to a JSON record in a collection
+    keys           List the keys in a collection
     prune          Remove attachments from a JSON record in a collection
     read           Read back a JSON record from a collection
-    reframe        re-generate a frame with existing or provided key list
-    repair         Try to repair a damaged dataset collection
-    status         Checks for a collection&#39;s layout and version
+    reframe        re-generate a frame with provided key list
+    repair         Try to repair a damaged dataset collection (for
+                   collections using a pairtree storage model)
+    sample         return a random sample of keys in a collection
     update         Update a JSON record in a collection</code></pre>
-<p>
-Related: <a href="attach.html">attach</a>, <a href="attachments.html">attachments</a>, <a href="check.html">check</a>, <a href="clone.html">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a href="count.html">count</a>, <a href="create.html">create</a>, <a href="delete.html">delete</a>, <a href="delete-frame.html">delete-frame</a>, <a href="retrieve.html">retrieve</a>, <a href="export-csv.html">export-csv</a>, <a href="frame.html">frame</a>, <a href="frame-objects.html">frame-objects</a>, <a href="frame-grid.html">frame-grid</a>, <a href="frame-types.html">frame-types</a>, <a href="frames.html">frames</a>, <a href="haskey.html">haskey</a>, <a href="import-csv.html">import-csv</a>, <a href="init.html">init</a>, <a href="join.html">join</a>, <a href="keys.html">keys</a>, <a href="list.html">list</a>, <a href="path.html">path</a>, <a href="prune.html">prune</a>, <a href="read.html">read</a>, <a href="reframe.html">reframe</a>, <a href="repair.html">repair</a>, <a href="status.html">status</a>, <a href="update.html">update</a>
-</p>
 </section>
 
 <footer>

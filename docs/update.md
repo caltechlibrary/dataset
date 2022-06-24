@@ -31,10 +31,7 @@ The collection name is "people.ds".
 
 ```shell
     dataset update people.ds jane.doe '{"name":"Jane Doiel"}'
-    dataset update people.ds jane.doe jane-doe.json
     dataset update -i jane-doe.json people.ds jane.doe
     cat jane-doe.json | dataset update people.ds jane.doe
 ```
-
-Related topics: [keys](keys.html), [create](create.html), [read](read.html), [delete](delete.html)
 

@@ -5,8 +5,7 @@ Syntax
 ------
 
 ```shell
-    dataset retrieve COLLECTION_NAME KEY [SEMVER]
-    dataset retrieve COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
+    dataset retrieve COLLECTION_NAME KEY ATTACHMENT_NAME
 ```
 
 Description
@@ -30,12 +29,4 @@ Write out only the *stats.xlsx* file attached to k1
 ```shell
     dataset retrieve publications.ds k1 stats.xlsx
 ```
-
-Write out only the v0.0.1 *stats.xlsx* file attached to k1
-
-```shell
-    dataset retrieve publications.ds k1 v0.0.1 stats.xlsx
-```
-
-Related topics: [attach](attach.html), [attachments](attachments.html), and [prune](prune.html)
 
