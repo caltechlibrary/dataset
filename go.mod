@@ -1,4 +1,4 @@
-module github.com/caltechlibrary/dataset
+module github.com/caltechlibrary/dataset/v2
 
 go 1.18
 
