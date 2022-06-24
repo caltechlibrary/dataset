@@ -28,8 +28,8 @@ import (
 	"strings"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/pairtree"
-	"github.com/caltechlibrary/dataset/semver"
+	"github.com/caltechlibrary/dataset/v2/pairtree"
+	"github.com/caltechlibrary/dataset/v2/semver"
 )
 
 const (

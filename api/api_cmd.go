@@ -6,8 +6,8 @@ import (
 	"io"
 
 	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/texts"
+	ds "github.com/caltechlibrary/dataset/v2"
+	"github.com/caltechlibrary/dataset/v2/texts"
 )
 
 // DisplayLicense returns the license associated with dataset application.

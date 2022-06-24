@@ -11,7 +11,7 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dataset/v2/pairtree"
 )
 
 func SetupV1TestCollection(cName string, records map[string]map[string]interface{}) error {

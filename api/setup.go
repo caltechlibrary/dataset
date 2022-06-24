@@ -5,7 +5,7 @@ import (
 	"os"
 
 	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset"
+	ds "github.com/caltechlibrary/dataset/v2"
 )
 
 func SetupTestCollection(cName string, dsnURI string, records map[string]map[string]interface{}) error {

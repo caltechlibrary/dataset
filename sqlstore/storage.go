@@ -28,7 +28,7 @@ import (
 	"strings"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/semver"
+	"github.com/caltechlibrary/dataset/v2/semver"
 
 	// Database specific drivers
 	_ "github.com/glebarez/go-sqlite"

@@ -28,7 +28,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dataset/v2/pairtree"
 )
 
 //

@@ -30,8 +30,8 @@ import (
 	"testing"
 
 	// The main dataset package
-	ds "github.com/caltechlibrary/dataset"
-	dsv1 "github.com/caltechlibrary/dataset/dsv1"
+	ds "github.com/caltechlibrary/dataset/v2"
+	dsv1 "github.com/caltechlibrary/dataset/v2/dsv1"
 )
 
 func setupTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {

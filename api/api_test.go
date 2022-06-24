@@ -14,9 +14,9 @@ import (
 	"time"
 
 	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/config"
-	"github.com/caltechlibrary/dataset/dotpath"
+	ds "github.com/caltechlibrary/dataset/v2"
+	"github.com/caltechlibrary/dataset/v2/config"
+	"github.com/caltechlibrary/dataset/v2/dotpath"
 )
 
 var (

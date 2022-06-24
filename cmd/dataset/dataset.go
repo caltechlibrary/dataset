@@ -25,7 +25,7 @@ import (
 	"path"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/cli"
+	"github.com/caltechlibrary/dataset/v2/cli"
 )
 
 var (

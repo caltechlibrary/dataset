@@ -29,8 +29,8 @@ import (
 	"syscall"
 
 	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/config"
+	ds "github.com/caltechlibrary/dataset/v2"
+	"github.com/caltechlibrary/dataset/v2/config"
 )
 
 const (

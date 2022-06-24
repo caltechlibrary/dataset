@@ -30,7 +30,7 @@ import (
 	"path"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/api"
+	"github.com/caltechlibrary/dataset/v2/api"
 )
 
 var (

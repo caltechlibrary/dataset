@@ -29,8 +29,8 @@ import (
 	"strings"
 
 	// dataset submodule
-	ds "github.com/caltechlibrary/dataset"
-	"github.com/caltechlibrary/dataset/texts"
+	ds "github.com/caltechlibrary/dataset/v2"
+	"github.com/caltechlibrary/dataset/v2/texts"
 )
 
 var (

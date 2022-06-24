@@ -19,7 +19,7 @@
 package api
 
 import (
-	ds "github.com/caltechlibrary/dataset"
+	ds "github.com/caltechlibrary/dataset/v2"
 )
 
 var (
