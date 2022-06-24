@@ -1,11 +1,11 @@
-haskey
-======
+has-key
+=======
 
 Syntax
 ------
 
 ```shell
-    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
+    dataset [OPTIONS] has-key COLLECTION_NAME KEY_TO_CHECK_FOR
 ```
 
 Description
@@ -18,16 +18,7 @@ Usage
 -----
 
 ```shell
-    dataset haskey people.ds '0000-0003-0900-6903'
-    dataset haskey people.ds r1
+    dataset has-key people.ds '0000-0003-0900-6903'
+    dataset has-key people.ds r1
 ```
-
-In python
-
-```shell
-    dataset.has_key('people.ds', '0000-0003-0900-6903')
-    dataset.has_key('people.ds', 'r1')
-```
-
-Related topics: [keys](keys.html)
 

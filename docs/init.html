@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -50,23 +51,47 @@ init
 <h2 id="syntax">
 Syntax
 </h2>
-<pre class="shell"><code>    dataset init COLLECTION_NAME</code></pre>
+<pre class="shell"><code>    dataset init COLLECTION_NAME [DSN_URI]</code></pre>
 <h2 id="description">
 Description
 </h2>
 <p>
-<em>init</em> creates a collection. Collections are created on local disc.
+<em>init</em> creates a collection. Collections are created on local
+disc.
 </p>
 <h2 id="usage">
 Usage
 </h2>
 <p>
-The following example command create a dataset collection named “data.ds”.
+The following example command create a dataset collection named
+“data.ds”.
 </p>
 <pre class="shell"><code>    dataset init data.ds</code></pre>
 <p>
-NOTE: After each evocation of <code>dataset init</code> if all went well you will be shown an <code>OK</code> if everything went OK, otherwise an error message.
+NOTE: After each evocation of <code>dataset init</code> if all went well
+you will be shown an <code>OK</code> if everything went OK, otherwise an
+error message.
 </p>
+<p>
+By default dataset cli creates pairtree collections. You can now
+optionally store your documents in a SQL database (e.g. SQLite3, MySQL
+8). This can improve performance for large collections as well as
+support multi-user or multi-process concurrent use of a collection. To
+use a SQL storage engine you need to provide a “DSN_URI”. The DSN_URI is
+formed by setting the “protocl” of the URL to either “sqlite://” or
+“mysql://” followed by a DSN (data source name) as described by the
+database/sql package in Go.
+</p>
+<p>
+This examples shows using SQLite3 storage for the JSON documents in a
+“collection.db” stored inside the “data.ds” collection.
+</p>
+<pre class="shell"><code>    dataset init data.ds &quot;sqlite://data.ds/collection.db&quot;</code></pre>
+<p>
+Here’s a variation using MySQL 8 as the storage engine storing the
+collection in the “collections” database.
+</p>
+<pre class="shell"><code>    dataset init data.ds &quot;mysql://DB_USER:DB_NAME@/collections&quot;</code></pre>
 </section>
 
 <footer>

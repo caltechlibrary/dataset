@@ -27,5 +27,4 @@ will become inaccurate.
     dataset check MyBrokenCollection.ds MyRecordCollection.ds
 ```
 
-Related topics: [repair](repair.html)
 

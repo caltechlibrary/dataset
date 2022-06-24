@@ -3,7 +3,7 @@ Filters and sorting
 ===================
 
 __dataset__ does not support internally sorting or filtering of keys.
-It does support data frames which can be used to do that with external
+It does support data frames which can be used to do that via external
 tools.
 
 Example

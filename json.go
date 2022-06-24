@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2021, Caltech
+// Copyright (c) 2022, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,12 +24,27 @@ import (
 )
 
 // EncodeJSON provides a common method for encoding data for use in Dataset.
+//
+// ```
+//     src, err := EncodeJSON(obj)
+//     if err != nil {
+//        ...
+//     }
+// ```
+//
 func EncodeJSON(obj map[string]interface{}) ([]byte, error) {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	return src, err
 }
 
 // DecodeJSON provides a common method for decoding data for use in Dataset.
+//
+// ```
+//    obj := map[string]interface{}{}
+//    if err := DecodeJSON(src, &obj); err != nil {
+//       ...
+//    }
+// ```
 func DecodeJSON(src []byte, obj *map[string]interface{}) error {
 	decoder := json.NewDecoder(bytes.NewReader(src))
 	decoder.UseNumber()

@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -48,29 +49,38 @@
 Attach (end point)
 </h1>
 <p>
-Interacting with the <strong>datasetd</strong> web service can be done with any web client. For documentation purposes I am assuming you are using <a href="https://curl.se/">curl</a>. This command line program is available on most POSIX systems including Linux, macOS and Windows.
+Interacting with the <strong>datasetd</strong> web service can be done
+with any web client. For documentation purposes I am assuming you are
+using <a href="https://curl.se/">curl</a>. This command line program is
+available on most POSIX systems including Linux, macOS and Windows.
 </p>
 <p>
-Attaches a document to a JSON Document using <code>&lt;KEY&gt;</code>, <code>&lt;SEMVER&gt;</code> and <code>&lt;FILENAME&gt;</code>.
+Attaches a document to a JSON Document using <code>&lt;KEY&gt;</code>,
+and <code>&lt;FILENAME&gt;</code>.
 </p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;SEMVER&gt;/&lt;FILENAME&gt;`</code></pre>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attachment/&lt;KEY&gt;/&lt;FILENAME&gt;`</code></pre>
 <p>
-Requires a “POST” method. The “POST” is expected to be a multi-part web form providing the source filename in the field “filename”. The document will be written the JSON document directory by <code>&lt;KEY&gt;</code> in sub directory indicated by <code>&lt;SEMVER&gt;</code>.
-</p>
-<p>
-See https://semver.org/ for more information on semantic version numbers.
+Requires a “POST” method. The “POST” is expected to be a multi-part web
+form providing the source filename in the field “filename”. The document
+will be written for JSON document in the attachments sub directory under
+<code>&lt;KEY&gt;</code>.
 </p>
 <h1 id="example">
 Example
 </h1>
 <p>
-In this example the <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the <code>&lt;KEY&gt;</code> is “one” and the content upload is “a1.png” in the home directory “/home/jane.doe”. The <code>&lt;SEMVER&gt;</code> is “0.0.1”.
+In this example the <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
+<code>&lt;KEY&gt;</code> is “one” and the content upload is “a1.png” in
+the home directory “/home/jane.doe”. The <code>&lt;SEMVER&gt;</code> is
+“0.0.1”.
 </p>
 <pre class="shell"><code>    curl -X POST -H &#39;Content-Type: multipart/form-data&#39; \
        -F &#39;filename=@/home/jane.doe/a1.png&#39; \
-       http://localhost:8485/t1/attach/one/0.0.1/a1.png</code></pre>
+       http://localhost:8485/t1/attachment/one/a1.png</code></pre>
 <p>
-NOTE: The URL contains the filename used in the saved attachment. If I did not want to call it “a1.png” I could have provided a different name in the URL path.
+NOTE: The URL contains the filename used in the saved attachment. If I
+did not want to call it “a1.png” I could have provided a different name
+in the URL path.
 </p>
 </section>
 

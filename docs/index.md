@@ -24,24 +24,34 @@ __dataset__ Operations
 The basic operations support by *dataset* are listed below organized 
 by collection and JSON document level.
 
+A word about keys
+-----------------
+
+__dataset__ is based around the concept of key/value pairs where
+the key is the unique identifier for an object stored (i.e. the 
+value) in the collection. Each storage option supported by dataset
+and its own issues around what things can be called. **Keys should be
+lower case alpha numeric or underscore only.** E.g. the pairtree storage
+relies on the file system to store the JSON objects. Some file
+systems are not case sensitive, others face challenges with
+non-alpha numeric filenames.
+
+
 Collection Level
 ----------------
 
 - [init](init.html) creates a collection
-- [import](import-csv.html) (csv) JSON documents from rows of a CSV file
-- [export](export-csv.html) (csv) JSON documents from a collection into a CSV file
 - [keys](keys.html) list keys of JSON documents in a collection, supports filtering and sorting
-- [haskey](haskey.html) returns true if key is found in collection, false otherwise
+- [has-key](haskey.html) returns true if key is found in collection, false otherwise
 - [count](count.html) returns the number of documents in a collection, supports filtering for subsets
 - [data frame support](../how-to/collections-and-data-frames.html) provides a persistent metadata associated with the collection as data frames
     - [frame](frame.html)
     - [frame-objects](frame-objects.html)
-    - [frame-grid](frame-grid.html)
     - [frames](frames.html)
     - [refresh](refresh.html)
     - [reframe](reframe.html)
     - [delete-frame](delete-frame.html)
-    - [hasframe](hasframe.html)
+    - [has-frame](hasframe.html)
 
 JSON Document level
 -------------------
@@ -50,9 +60,6 @@ JSON Document level
 - [read](read.html) back a JSON document in a collection
 - [update](update.html) a JSON document in a collection
 - [delete](delete.html) a JSON document in a collection
-- [join](join.html) a JSON document with a document in a collection
-- [list](list.html) the lists JSON records as an array for the supplied keys
-- [path](path.html) list the file path for a JSON document in a collection
 
 JSON Document Attachments
 -------------------------
@@ -72,28 +79,17 @@ Samples and cloning
 Collection health
 -----------------
 
+The following commands are provided to support pairtrees and a limitted amount of backward campatiblity with v1 dataset collections.
+
 - [check](check.html) - checks a collection against the current version of tools
 - [repair](repair.html) - repairs/upgrades a collection based on the current version of the tool
 
-Dataset as a web service
-========================
+datasetd as a web service
+=========================
 
 New as of version v2.x is a web service providing access to dataset
 collections. This is described in the [datasetd](datasetd.html) 
 documentation page.
 
 [datasetd](datasetd.html) supports the following end points.
-
-- List [collections](collections-endpoint.html) available from the web service
-- List or update a [collection](collection-endpoint.html)'s metadata
-- List a collection's [Keys](keys-endpoint.html)
-- Object level actions
-    - [create](create-endpoint.html)
-    - [read](read-endpoint.html)
-    - [update](update-endpoint.html)
-    - [delete](delete-endpoint.html)
-    - Documents as attachments
-        - [attach](attach-endpoint.html)
-        - [retrieve](retrieve-endpoint.html)
-        - [prune](prune-endpoint.html)
 

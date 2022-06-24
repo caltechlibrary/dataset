@@ -1,8 +1,9 @@
-Windows Notes
-=============
+Windows 11 Notes
+================
 
-Windows' command prompt presents some challenges for working
-with JSON on the command line. A command line
+Windows 11 command prompt presents some challenges for working
+with JSON on the command line. This is partularly true if you're not
+using the Linux subsystem shell. A command line
 
 ```shell
     dataset create T1.ds one '{"one":1}'
