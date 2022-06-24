@@ -47,10 +47,10 @@ $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/*.go
 
+# NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 install: build
 	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
 	@echo "Installing programs in $(PREFIX)/bin"
-	# NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then mv -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
 	@echo ""
 	@echo "Make sure $(PREFIX)/bin is in your PATH"
