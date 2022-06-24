@@ -29,7 +29,7 @@ import (
 	"testing"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dataset/v2/pairtree"
 )
 
 func TestAttachments(t *testing.T) {

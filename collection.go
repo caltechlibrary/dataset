@@ -29,9 +29,9 @@ import (
 	"time"
 
 	// Dataset sub-modules
-	"github.com/caltechlibrary/dataset/ptstore"
-	"github.com/caltechlibrary/dataset/sqlstore"
-	"github.com/caltechlibrary/dataset/texts"
+	"github.com/caltechlibrary/dataset/v2/ptstore"
+	"github.com/caltechlibrary/dataset/v2/sqlstore"
+	"github.com/caltechlibrary/dataset/v2/texts"
 )
 
 const (
