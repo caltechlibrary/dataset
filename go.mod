@@ -3,8 +3,7 @@ module github.com/caltechlibrary/dataset
 go 1.18
 
 require (
-	github.com/caltechlibrary/dotpath v0.0.3
-	github.com/glebarez/go-sqlite v1.17.2
+	github.com/glebarez/go-sqlite v1.17.3
 	github.com/go-sql-driver/mysql v1.6.0
 )
 
@@ -16,5 +15,5 @@ require (
 	modernc.org/libc v1.16.8 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
 	modernc.org/memory v1.1.1 // indirect
-	modernc.org/sqlite v1.17.2 // indirect
+	modernc.org/sqlite v1.17.3 // indirect
 )
