@@ -156,7 +156,7 @@ func (store *Storage) saveNewVersion(key string, src []byte) error {
 	}
 	version := sv.String()
 	versionTable := versionPrefix + store.tableName
-	stmt := fmt.Sprintf(`INSERT INTO %s (key, version, src) VALUES (?, ?, ?)`, versionTable)
+	stmt := fmt.Sprintf(`INSERT INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, version, src) VALUES (?, ?, ?)`, versionTable)
 	_, err = store.db.Exec(stmt, key, version, string(src))
 	if err != nil {
 		return fmt.Errorf(`failed to save version %q for %q in %q, %s`, key, version, store.WorkPath, err)
@@ -348,7 +348,7 @@ func (store *Storage) Close() error {
 //   }
 //
 func (store *Storage) Create(key string, src []byte) error {
-	stmt := fmt.Sprintf(`INSERT INTO %q (key, src) VALUES (?, ?)`, store.tableName)
+	stmt := fmt.Sprintf(`INSERT INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
 		return err
@@ -371,7 +371,7 @@ func (store *Storage) Create(key string, src []byte) error {
 //      ...
 //   }
 func (store *Storage) Read(key string) ([]byte, error) {
-	stmt := fmt.Sprintf(`SELECT src FROM %s WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
+	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return nil, err
