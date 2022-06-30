@@ -96,7 +96,7 @@ func Init(name string, dsnURI string) (*Storage, error) {
   updated DATETIME DEFAULT CURRENT_TIMESTAMP
 )`, store.tableName)
 	case "mysql":
-		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS `+"`"+`%s`+"`"+` (
   `+"`"+`key`+"`"+` VARCHAR(255) PRIMARY KEY,
   src JSON,
   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
