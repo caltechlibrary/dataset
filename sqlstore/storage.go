@@ -478,7 +478,7 @@ func (store *Storage) Delete(key string) error {
 //   }
 //
 func (store *Storage) Keys() ([]string, error) {
-	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY key`, store.tableName)
+	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY `+"`"+`key`+"`", store.tableName)
 	rows, err := store.db.Query(stmt)
 	if err != nil {
 		return nil, err
