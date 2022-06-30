@@ -97,10 +97,10 @@ func Init(name string, dsnURI string) (*Storage, error) {
 )`, store.tableName)
 	case "mysql":
 		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  key VARCHAR(255) PRIMARY KEY,
+  `+"`"+`key`+"`"+` VARCHAR(255) PRIMARY KEY,
   src JSON,
-  created DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`, store.tableName)
 	default:
 		return nil, fmt.Errorf("%q database not supported", store.driverName)
