@@ -11,7 +11,7 @@ authors:
 abstract: Tools for working with JSON documents as a collection hosted on the file system
 repository-code: "https://github.com/caltechlibrary/dataset"
 type: software
-version: 2.0.0-a3
+version: 2.0.0-a5
 license-url: "https://data.caltech.edu/license"
 keyword:
   - GitHub

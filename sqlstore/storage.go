@@ -371,7 +371,7 @@ func (store *Storage) Create(key string, src []byte) error {
 //      ...
 //   }
 func (store *Storage) Read(key string) ([]byte, error) {
-	stmt := fmt.Sprintf(`SELECT src FROM %s WHERE key = ? LIMIT 1`, store.tableName)
+	stmt := fmt.Sprintf(`SELECT src FROM %s WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return nil, err
@@ -394,7 +394,7 @@ func (store *Storage) Read(key string) ([]byte, error) {
 
 // Versions return a list of semver strings for a versioned object.
 func (store *Storage) Versions(key string) ([]string, error) {
-	stmt := fmt.Sprintf(`SELECT version FROM %s WHERE key = ?`, versionPrefix+store.tableName)
+	stmt := fmt.Sprintf(`SELECT version FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ?`, versionPrefix+store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return nil, err
@@ -416,7 +416,7 @@ func (store *Storage) Versions(key string) ([]string, error) {
 
 // ReadVersion returns a specific version of a JSON object.
 func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
-	stmt := fmt.Sprintf(`SELECT src FROM %s WHERE key = ? AND version = ?`, versionPrefix+store.tableName)
+	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? AND version = ?`, versionPrefix+store.tableName)
 	rows, err := store.db.Query(stmt, key, version)
 	if err != nil {
 		return nil, err
@@ -442,7 +442,7 @@ func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 //   }
 //
 func (store *Storage) Update(key string, src []byte) error {
-	stmt := fmt.Sprintf(`REPLACE INTO %q (key, src) VALUES (?, ?)`, store.tableName)
+	stmt := fmt.Sprintf(`REPLACE INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
 		return err
@@ -461,7 +461,7 @@ func (store *Storage) Update(key string, src []byte) error {
 //   }
 //
 func (store *Storage) Delete(key string) error {
-	stmt := fmt.Sprintf(`DELETE FROM %s WHERE key = ?`, store.tableName)
+	stmt := fmt.Sprintf(`DELETE FROM `+"`"+`%s`+"`"+` WHERE key = ?`, store.tableName)
 	_, err := store.db.Exec(stmt, key)
 	// FIXME: Remove attachments
 	// FIXME: remove versions
@@ -478,7 +478,7 @@ func (store *Storage) Delete(key string) error {
 //   }
 //
 func (store *Storage) Keys() ([]string, error) {
-	stmt := fmt.Sprintf(`SELECT key FROM %s ORDER BY key`, store.tableName)
+	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY key`, store.tableName)
 	rows, err := store.db.Query(stmt)
 	if err != nil {
 		return nil, err
@@ -514,7 +514,7 @@ func (store *Storage) Keys() ([]string, error) {
 //   }
 // ```
 func (store *Storage) HasKey(key string) bool {
-	stmt := fmt.Sprintf(`SELECT key FROM %s WHERE key = ? LIMIT 1`, store.tableName)
+	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return false
@@ -539,7 +539,7 @@ func (store *Storage) HasKey(key string) bool {
 // Length returns the number of records (count of rows in collection).
 // Requires collection to be open.
 func (store *Storage) Length() int64 {
-	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM %s`, store.tableName)
+	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM `+"`"+`%s`+"`", store.tableName)
 	rows, err := store.db.Query(stmt)
 	if err != nil {
 		return int64(-1)
