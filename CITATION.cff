@@ -13,10 +13,10 @@ repository-code: "https://github.com/caltechlibrary/dataset"
 type: software
 version: 2.0.0-a7
 license-url: "https://data.caltech.edu/license"
-keyword:
+keywords:
   - GitHub
   - metadata
   - data
   - software
   - json
-date-released: 2022-06-30
+date-released: 2022-07-05
