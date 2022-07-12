@@ -896,6 +896,27 @@ func (c *Collection) Keys() ([]string, error) {
 	return nil, fmt.Errorf("%s not open", c.Name)
 }
 
+// UpdatedKeys takes a start and end time and returns a list of
+// keys for records that were modified in that time range.
+// The start and end values are expected to be in YYYY-MM-DD HH:MM:SS
+// notation or empty strings.
+//
+// NOTE: This currently only supports SQL stored collections.
+//
+func (c *Collection) UpdatedKeys(start string, end string) ([]string, error) {
+	switch c.StoreType {
+	case PTSTORE:
+		return nil, fmt.Errorf("not implemented for pairtree storaged")
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.UpdatedKeys(start, end)
+		}
+	default:
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return nil, fmt.Errorf("%s not open", c.Name)
+}
+
 // Sample takes a sample size and returns a list of
 // randomly selected keys and an error. Sample size most
 // be greater than zero and less or equal to the number of keys

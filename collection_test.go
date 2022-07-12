@@ -26,6 +26,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Test the Pairtree storage implementation
@@ -147,6 +148,11 @@ func TestPTStore(t *testing.T) {
 	} else if len(keys) != 1 {
 		t.Errorf("Expected one key left after delete, got %+v", keys)
 	}
+	start := "2001-01-01 00:00:00"
+	end := time.Now().Format("2006-01-02") + " 23:23:59"
+	if _, err := c.UpdatedKeys(start, end); err == nil {
+		t.Errorf("expected error for unsupported UpdateKeys on pairtree collections")
+	}
 }
 
 // Test the SQL storage implementation
@@ -265,6 +271,24 @@ func TestSQLStore(t *testing.T) {
 			t.Errorf("Expected key (%T) %s, got (%T) %s", expected, expected, got, got)
 		}
 	}
+	start := "2001-01-01 00:00:00"
+	end := time.Now().Format("2006-01-02") + " 23:23:59"
+	updatedKeys, err := c.UpdatedKeys(start, end)
+	if err != nil {
+		t.Errorf("expected UpdateKeys to work, %s", err)
+	}
+	sort.Strings(updatedKeys)
+	ul := len(updatedKeys)
+	if ul == l {
+		for i, k := range keys {
+			if k != updatedKeys[i] {
+				t.Errorf("expected %d-th key to be %q, got %q", i, k, updatedKeys[i])
+			}
+		}
+	} else {
+		t.Errorf("expected %d updated keys, got %d", l, ul)
+	}
+
 	// Test deletes
 	for i := 0; i < 2; i++ {
 		key := fmt.Sprintf("%d", i)

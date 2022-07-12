@@ -134,7 +134,11 @@ func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 
 // DisplayLicense returns the license associated with dataset application.
 func DisplayLicense(out io.Writer, appName string) {
-	fmt.Fprintf(out, ds.License)
+	m := map[string]string{
+		"{app_name}": appName,
+		"{version}":  ds.Version,
+	}
+	fmt.Fprintf(out, texts.StringProcessor(m, ds.License))
 }
 
 // DisplayVersion returns the of the dataset application.

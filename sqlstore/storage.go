@@ -468,7 +468,7 @@ func (store *Storage) Delete(key string) error {
 	return err
 }
 
-// List returns all keys in a collection as a slice of strings.
+// Keys returns all keys in a collection as a slice of strings.
 //
 //   var keys []string
 //   keys, _ = storage.Keys()
@@ -480,6 +480,55 @@ func (store *Storage) Delete(key string) error {
 func (store *Storage) Keys() ([]string, error) {
 	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY `+"`"+`key`+"`", store.tableName)
 	rows, err := store.db.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var (
+		value string
+		keys  []string
+	)
+	for rows.Next() {
+		err := rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+		if value != "" {
+			keys = append(keys, value)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return keys, nil
+}
+
+// UpdatedKeys returns all keys updated in a time range
+//
+//```
+//   var (
+//      keys []string
+//      start = "2022-06-01 00:00:00"
+//      end = "20022-06-30 23:23:59"
+//   )
+//   keys, _ = storage.UpdatedKeys(start, end)
+//   /* iterate over the keys retrieved */
+//   for _, key := range keys {
+//      ...
+//   }
+//```
+//
+func (store *Storage) UpdatedKeys(start string, end string) ([]string, error) {
+	if start == "" {
+		return nil, fmt.Errorf("missing start time value")
+	}
+	if end == "" {
+		return nil, fmt.Errorf("missing end time value")
+	}
+	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` WHERE (updated >= ? AND updated <= ?) ORDER BY updated ASC`, store.tableName)
+
+	rows, err := store.db.Query(stmt, start, end)
 	if err != nil {
 		return nil, err
 	}

@@ -157,8 +157,6 @@ resulting record.
     {app_name} create people.ds r1 jane-doe.json
 ` + "```" + `
 
-Related topics: [update](update.html), [read](read.html), and [delete](delete.html)
-
 `
 
 	cliRead = `
@@ -457,8 +455,6 @@ and then clone those keys into a new collection called *sample.ds*.
     {app_name} keys -sample=3 mycollection.ds > sample.keys
     {app_name} clone -i sample.keys mycollection.ds sample.ds
 ` + "```" + `
-
-Related topics: [clone-sample](clone-sample.html)
 
 `
 
