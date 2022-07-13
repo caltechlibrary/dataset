@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -146,9 +147,9 @@ func TestAttachments(t *testing.T) {
 			continue
 		}
 		pairPath := pairtree.Encode(key)
-		expectedPath := path.Join("testout", "attachment_test.ds", "attachments", pairPath, filename)
+		expectedPath, _ := filepath.Abs(path.Join("testout", "attachment_test.ds", "attachments", pairPath, filename))
 		if fPath != expectedPath {
-			t.Errorf("expected %q, got %q", expectedPath, pairPath)
+			t.Errorf("expected %q, got %q", expectedPath, fPath)
 			t.FailNow()
 		}
 		if fInfo, err := os.Lstat(fPath); err != nil {

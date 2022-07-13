@@ -26,6 +26,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	// Dataset sub-modules
@@ -127,7 +128,12 @@ func Open(name string) (*Collection, error) {
 	if err := json.Unmarshal(src, &c); err != nil {
 		return nil, err
 	}
-	c.workPath = name
+	fullPath, err := filepath.Abs(name)
+	if err == nil {
+		c.workPath = fullPath
+	} else {
+		c.workPath = name
+	}
 	if c.DsnURI == "" {
 		c.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
