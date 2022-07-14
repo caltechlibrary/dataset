@@ -139,7 +139,7 @@ func Open(name string) (*Collection, error) {
 	}
 	switch c.StoreType {
 	case PTSTORE:
-		c.PTStore, err = ptstore.Open(name, c.DsnURI)
+		c.PTStore, err = ptstore.Open(c.workPath, c.DsnURI)
 		switch c.Versioning {
 		case "major":
 			c.PTStore.SetVersioning(ptstore.Major)
@@ -151,7 +151,7 @@ func Open(name string) (*Collection, error) {
 			c.PTStore.SetVersioning(ptstore.None)
 		}
 	case SQLSTORE:
-		c.SQLStore, err = sqlstore.Open(name, c.DsnURI)
+		c.SQLStore, err = sqlstore.Open(c.workPath, c.DsnURI)
 		switch c.Versioning {
 		case "major":
 			c.SQLStore.SetVersioning(ptstore.Major)
@@ -365,7 +365,7 @@ func (c *Collection) initSQLStore() error {
 	}
 	//NOTE: the collection's table needs to be created using the
 	// SQLStore's Init method..
-	c.SQLStore, err = sqlstore.Init(basename, c.DsnURI)
+	c.SQLStore, err = sqlstore.Init(fullName, c.DsnURI)
 	return err
 }
 
@@ -388,7 +388,7 @@ func (c *Collection) initSQLStore() error {
 //
 // The one for SQLite3
 //
-//    `sqlite://PATH_TO_DATABASE`
+//    `sqlite://FILENAME_FOR_SQLITE_DATABASE`
 //
 // NOTE: The DSN URI is stored in the collections.json.  The file should
 // NOT be world readable as that will expose your database password. You
@@ -420,7 +420,7 @@ func (c *Collection) initSQLStore() error {
 //      err error
 //   )
 //   name := "my_collection.ds"
-//   dsnURI := "sqlite://my_collection.ds/collection.db"
+//   dsnURI := "sqlite://collection.db"
 //   c, err = dataset.Init(name, dsnURI)
 //   if err != nil {
 //     // ... handle error

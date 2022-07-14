@@ -39,7 +39,7 @@ This examples shows using SQLite3 storage for the JSON documents in
 a "collection.db" stored inside the "data.ds" collection.
 
 ```shell
-    dataset init data.ds "sqlite://data.ds/collection.db"
+    dataset init data.ds "sqlite://collection.db"
 ```
 
 Here's a variation using MySQL 8 as the storage engine storing the
@@ -48,8 +48,5 @@ collection in the "collections" database.
 ```shell
     dataset init data.ds "mysql://DB_USER:DB_NAME@/collections"
 ```
-
-
-
 
 

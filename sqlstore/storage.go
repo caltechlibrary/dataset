@@ -71,6 +71,17 @@ type Storage struct {
 	Versioning int
 }
 
+func dsnFixUp(driverName string, dsn string, workPath string) string {
+	switch driverName {
+	case "sqlite":
+		// NOTE: the db needs to be stored in the dataset directory
+		// to keep the dataset easily movable.
+		dbName := path.Base(dsn)
+		return path.Join(workPath, dbName)
+	}
+	return dsn
+}
+
 // Init creates a table to hold the collection if it doesn't already
 // exist.
 func Init(name string, dsnURI string) (*Storage, error) {
@@ -82,7 +93,7 @@ func Init(name string, dsnURI string) (*Storage, error) {
 	}
 	store := new(Storage)
 	store.WorkPath = name
-	store.dsn = dsn
+	store.dsn = dsnFixUp(driverName, dsn, name)
 	store.driverName = driverName
 	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
 	// Validate we support this SQL driver and form create statement.
@@ -268,7 +279,7 @@ func (store *Storage) SetVersioning(setting int) error {
 // path to collection.json and for a sql store file holding a DSN URI.
 // The DSN URI is formed from a protocal prefixed to the DSN. E.g.
 // for a SQLite connection to test.ds database the DSN URI might be
-// "sqlite://file:test.ds?cache=shared".
+// "sqlite://collections.db".
 //
 // ```
 //  store, err := c.Store.Open(c.Name, c.DsnURI)
@@ -293,7 +304,7 @@ func Open(name string, dsnURI string) (*Storage, error) {
 	store.WorkPath = name
 	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
 	store.driverName = driverName
-	store.dsn = dsn
+	store.dsn = dsnFixUp(driverName, dsn, name)
 	// Validate the driver name as supported by sqlstore ...
 	switch store.driverName {
 	case "sqlite":
