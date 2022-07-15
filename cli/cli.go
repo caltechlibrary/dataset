@@ -48,6 +48,7 @@ var (
 		"keys":          cliKeys,
 		"haskey":        cliHasKey,
 		"has-key":       cliHasKey,
+		"updated-keys":  cliUpdatedKeys,
 		"count":         cliCount,
 		"versioning":    cliVersioning,
 		"versions":      cliVersioning,
@@ -84,6 +85,7 @@ var (
 		"update":        doUpdate,
 		"delete":        doDelete,
 		"keys":          doKeys,
+		"updated-keys":  doUpdatedKeys,
 		"haskey":        doHasKey,
 		"has-key":       doHasKey,
 		"count":         doCount,
@@ -504,6 +506,43 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	} else {
 		keys, err = c.Keys()
 	}
+	if err != nil {
+		return err
+	}
+	src := []byte(strings.Join(keys, "\n"))
+	return texts.WriteSource(output, out, src)
+}
+
+func doUpdatedKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName  string
+		start  string
+		end    string
+		output string
+		keys   []string
+		err    error
+	)
+	flagSet := flag.NewFlagSet("keys", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		DisplayHelp(in, out, eout, []string{"keys"})
+	}
+	switch {
+	case len(args) == 3:
+		cName, start, end = args[0], args[1], args[2]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME START END, got %q", strings.Join(args, " "))
+	}
+	c, err := ds.Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	keys, err = c.UpdatedKeys(start, end)
 	if err != nil {
 		return err
 	}

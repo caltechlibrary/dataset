@@ -342,6 +342,42 @@ Usage
 ` + "```" + `
 
 `
+	cliUpdatedKeys = `
+updated-keys
+============
+
+Syntax
+------
+
+` + "```" + `shell
+    {app_name} update-keys COLLECTION_NAME START END
+` + "```" + `
+
+Description
+-----------
+
+List the JSON_DOCUMENT_ID available in a collection. Key order is not
+guaranteed. Keys are forced to lower case when the record is created
+in the {app_name} (as of version 1.0.2). Note combining "keys" with
+a pipe and POSIX commands like "sort" can given a rich pallet of
+ways to work with your {app_name} collection's keys.
+
+Example
+-------
+
+Here is an example usage for select updates keys for record
+created or update between a start and end time (inclusive).
+The times are in the form of "YYYY-MM-DD HH:MM:SS" and are required.
+The hours are in 24 hour notation.  The resulting keys are sorted
+in ascending updated timestamp order.
+
+` + "```" + `shell
+    {app_name} updated-keys COLLECTION_NAME \
+	           "2022-01-01 00:00:00"
+	           "2022-12-31 23:23:59"
+` + "```" + `
+
+`
 
 	cliCount = `
 count
