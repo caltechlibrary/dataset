@@ -1,4 +1,3 @@
-//
 // sqlstore is a sub module of the dataset package.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package sqlstore
 
 import (
@@ -282,12 +280,13 @@ func (store *Storage) SetVersioning(setting int) error {
 // "sqlite://collections.db".
 //
 // ```
-//  store, err := c.Store.Open(c.Name, c.DsnURI)
-//  if err != nil {
-//     ...
-//  }
-// ```
 //
+//	store, err := c.Store.Open(c.Name, c.DsnURI)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func Open(name string, dsnURI string) (*Storage, error) {
 	var err error
 
@@ -334,11 +333,12 @@ func Open(name string, dsnURI string) (*Storage, error) {
 // Close closes the storage system freeing resources as needed.
 //
 // ```
-//   if err := storage.Close(); err != nil {
-//      ...
-//   }
-// ```
 //
+//	if err := storage.Close(); err != nil {
+//	   ...
+//	}
+//
+// ```
 func (store *Storage) Close() error {
 	switch store.driverName {
 	case "sqlite":
@@ -353,11 +353,10 @@ func (store *Storage) Close() error {
 // Create stores a new JSON object in the collection
 // It takes a string as a key and a byte slice of encoded JSON
 //
-//   err := storage.Create("123", []byte(`{"one": 1}`))
-//   if err != nil {
-//      ...
-//   }
-//
+//	err := storage.Create("123", []byte(`{"one": 1}`))
+//	if err != nil {
+//	   ...
+//	}
 func (store *Storage) Create(key string, src []byte) error {
 	stmt := fmt.Sprintf(`INSERT INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
@@ -373,14 +372,14 @@ func (store *Storage) Create(key string, src []byte) error {
 // Read retrieves takes a string as a key and returns the encoded
 // JSON document from the collection
 //
-//   src, err := storage.Read("123")
-//   if err != nil {
-//      ...
-//   }
-//   obj := map[string]interface{}{}
-//   if err := json.Unmarshal(src, &obj); err != nil {
-//      ...
-//   }
+//	src, err := storage.Read("123")
+//	if err != nil {
+//	   ...
+//	}
+//	obj := map[string]interface{}{}
+//	if err := json.Unmarshal(src, &obj); err != nil {
+//	   ...
+//	}
 func (store *Storage) Read(key string) ([]byte, error) {
 	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
 	rows, err := store.db.Query(stmt, key)
@@ -446,12 +445,11 @@ func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 
 // Update takes a key and encoded JSON object and updates a
 //
-//   key := "123"
-//   src := []byte(`{"one": 1, "two": 2}`)
-//   if err := storage.Update(key, src); err != nil {
-//      ...
-//   }
-//
+//	key := "123"
+//	src := []byte(`{"one": 1, "two": 2}`)
+//	if err := storage.Update(key, src); err != nil {
+//	   ...
+//	}
 func (store *Storage) Update(key string, src []byte) error {
 	stmt := fmt.Sprintf(`REPLACE INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
@@ -466,13 +464,12 @@ func (store *Storage) Update(key string, src []byte) error {
 
 // Delete removes a JSON document from the collection
 //
-//   key := "123"
-//   if err := storage.Delete(key); err != nil {
-//      ...
-//   }
-//
+//	key := "123"
+//	if err := storage.Delete(key); err != nil {
+//	   ...
+//	}
 func (store *Storage) Delete(key string) error {
-	stmt := fmt.Sprintf(`DELETE FROM `+"`"+`%s`+"`"+` WHERE key = ?`, store.tableName)
+	stmt := fmt.Sprintf(`DELETE FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ?`, store.tableName)
 	_, err := store.db.Exec(stmt, key)
 	// FIXME: Remove attachments
 	// FIXME: remove versions
@@ -481,13 +478,12 @@ func (store *Storage) Delete(key string) error {
 
 // Keys returns all keys in a collection as a slice of strings.
 //
-//   var keys []string
-//   keys, _ = storage.Keys()
-//   /* iterate over the keys retrieved */
-//   for _, key := range keys {
-//      ...
-//   }
-//
+//	var keys []string
+//	keys, _ = storage.Keys()
+//	/* iterate over the keys retrieved */
+//	for _, key := range keys {
+//	   ...
+//	}
 func (store *Storage) Keys() ([]string, error) {
 	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY `+"`"+`key`+"`", store.tableName)
 	rows, err := store.db.Query(stmt)
@@ -517,19 +513,20 @@ func (store *Storage) Keys() ([]string, error) {
 
 // UpdatedKeys returns all keys updated in a time range
 //
-//```
-//   var (
-//      keys []string
-//      start = "2022-06-01 00:00:00"
-//      end = "20022-06-30 23:23:59"
-//   )
-//   keys, _ = storage.UpdatedKeys(start, end)
-//   /* iterate over the keys retrieved */
-//   for _, key := range keys {
-//      ...
-//   }
-//```
+// ```
 //
+//	var (
+//	   keys []string
+//	   start = "2022-06-01 00:00:00"
+//	   end = "20022-06-30 23:23:59"
+//	)
+//	keys, _ = storage.UpdatedKeys(start, end)
+//	/* iterate over the keys retrieved */
+//	for _, key := range keys {
+//	   ...
+//	}
+//
+// ```
 func (store *Storage) UpdatedKeys(start string, end string) ([]string, error) {
 	if start == "" {
 		return nil, fmt.Errorf("missing start time value")
@@ -568,10 +565,12 @@ func (store *Storage) UpdatedKeys(start string, end string) ([]string, error) {
 // Storage must be open or zero false will always be returned.
 //
 // ```
-//   key := "123"
-//   if store.HasKey(key) {
-//      ...
-//   }
+//
+//	key := "123"
+//	if store.HasKey(key) {
+//	   ...
+//	}
+//
 // ```
 func (store *Storage) HasKey(key string) bool {
 	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
