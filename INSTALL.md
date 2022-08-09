@@ -15,7 +15,7 @@ Compiled version
 ----------------
 
 Compiled versions are available for macOS (Intel and M1), Linux (Intel), 
-Windows (Intel) and Raspberry Pi (ARM).
+Windows (Intel and ARM64) and Raspberry Pi (ARM).
 
 VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v2.0.0)
 
@@ -26,13 +26,14 @@ latest release
 >    https://github.com/caltechlibrary/dataset/releases/latest
 
 
-| Platform    | Zip Filename                             | 
-|-------------|------------------------------------------|
-| Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
-| macOS (Intel) | dataset-VERSION_NUMBER-macos-amd64.zip  |
-| macOS (M1)  | dataset-VERSION_NUMBER-macos-arm64.zip  |
-| Linux (Intel) | dataset-VERSION_NUMBER-linux-amd64.zip   |
-| Raspberry Pi OS (ARM) | dataset-VERSION_NUMBER-raspbian-arm7.zip |
+| Platform         | Zip Filename                             | 
+|------------------|------------------------------------------|
+| Windows (Intel)  | dataset-VERSION_NUMBER-windows-amd64.zip |
+| Windows (ARM 64) | dataset-VERSION_NUMBER-windows-arm64.zip |
+| macOS (Intel)    | dataset-VERSION_NUMBER-macos-amd64.zip   |
+| macOS (M1)       | dataset-VERSION_NUMBER-macos-arm64.zip   |
+| Linux (Intel)    | dataset-VERSION_NUMBER-linux-amd64.zip   |
+| Raspberry Pi OS (ARM7) | dataset-VERSION_NUMBER-raspbian-arm7.zip |
 
 
 The basic recipe
@@ -74,14 +75,30 @@ downloading the zip file.
 3. Copy the executable to the "bin" directory in your "HOME" directory (or a folder in your path)
 4. Test
 
-Here's an example of the commands run in from the Bash shell on Windows 10
-after downloading the zip file.
+#### Intel Hardware
+
+Here's an example of the commands run in from the Bash shell on Windows 11
+after downloading the zip file (assume Linux Subsystem for Windows).
 
 ```shell
     cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
+    mv -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
+
+#### ARM64 Hardware
+
+Here's an example of the commands run in from the Bash shell on Windows 11
+after downloading the zip file (assumes Linux Subsystem for Windows).
+
+```shell
+    cd Downloads/
+    unzip dataset-*-windows-arm64.zip
+    mkdir -p $HOME/bin
+    mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version
 ```
@@ -163,5 +180,5 @@ batch files to perform some of what Make under Linux and macOS would do.
 - clean.bat removes executable and temp files
 
 
-Compilation assumes [go](https://github.com/golang/go) v1.18.2
+Compilation assumes [go](https://github.com/golang/go) v1.19 or better.
 
