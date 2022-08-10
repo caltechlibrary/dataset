@@ -1,31 +1,39 @@
 Installation
 ============
 
-__dataset__ is a set of command line programs run from a shell like Bash. It allows you to organize JSON documents into a collection by unique filename. 
+__dataset__ is a set of command line programs run from a shell like Bash.
+It is designed for single user, single process management of a JSON
+object documents as a collection where JSON documents are referenced
+by a unique identifier or key.  __datasetd__ is a web service which
+serves a similar purpose but is intended for supporting multi-user
+and multi-processes.
 
-This is generalized instructions for a release.  For deployment suggestions see NOTES.md
+This is generalized instructions for a release.  For deployment suggestions 
+see NOTES.md
 
 Compiled version
 ----------------
 
 Compiled versions are available for macOS (Intel and M1), Linux (Intel), 
-Windows (Intel) and Raspberry Pi (ARM).
+Windows (Intel and ARM64) and Raspberry Pi (ARM).
 
-VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v1.0.2)
+VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v2.0.0)
 
 
-For all the released version go to the project page on GitHub and click latest release
+For all the released version go to the project page on GitHub and click
+latest release
 
 >    https://github.com/caltechlibrary/dataset/releases/latest
 
 
-| Platform    | Zip Filename                             | 
-|-------------|------------------------------------------|
-| Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
-| macOS (Intel) | dataset-VERSION_NUMBER-macos-amd64.zip  |
-| macOS (M1)  | dataset-VERSION_NUMBER-macos-arm64.zip  |
-| Linux (Intel) | dataset-VERSION_NUMBER-linux-amd64.zip   |
-| Raspberry Pi OS (ARM) | dataset-VERSION_NUMBER-raspbian-arm7.zip |
+| Platform         | Zip Filename                             | 
+|------------------|------------------------------------------|
+| Windows (Intel)  | dataset-VERSION_NUMBER-windows-amd64.zip |
+| Windows (ARM 64) | dataset-VERSION_NUMBER-windows-arm64.zip |
+| macOS (Intel)    | dataset-VERSION_NUMBER-macos-amd64.zip   |
+| macOS (M1)       | dataset-VERSION_NUMBER-macos-arm64.zip   |
+| Linux (Intel)    | dataset-VERSION_NUMBER-linux-amd64.zip   |
+| Raspberry Pi OS (ARM7) | dataset-VERSION_NUMBER-raspbian-arm7.zip |
 
 
 The basic recipe
@@ -48,8 +56,8 @@ The basic recipe
 4. Make sure the new location in in our path
 5. Test
 
-Here's an example of the commands run in the Terminal App after downloading the 
-zip file.
+Here's an example of the commands run in the Terminal App after
+downloading the zip file.
 
 ```shell
     cd Downloads/
@@ -67,14 +75,30 @@ zip file.
 3. Copy the executable to the "bin" directory in your "HOME" directory (or a folder in your path)
 4. Test
 
-Here's an example of the commands run in from the Bash shell on Windows 10 after
-downloading the zip file.
+#### Intel Hardware
+
+Here's an example of the commands run in from the Bash shell on Windows 11
+after downloading the zip file (assume Linux Subsystem for Windows).
 
 ```shell
     cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
+    mv -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
+
+#### ARM64 Hardware
+
+Here's an example of the commands run in from the Bash shell on Windows 11
+after downloading the zip file (assumes Linux Subsystem for Windows).
+
+```shell
+    cd Downloads/
+    unzip dataset-*-windows-arm64.zip
+    mkdir -p $HOME/bin
+    mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version
 ```
@@ -102,7 +126,9 @@ downloading the zip file.
 
 ### Raspberry Pi OS
 
-Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit Raspberry Pi OS.
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7
+support). Testing is done on Raspberry Pi 4 B devices using 32bit
+Raspberry Pi OS.
 
 1. Download the zip file
 2. Unzip the zip file
@@ -124,46 +150,26 @@ downloading the zip file.
 
 ## Compiling from source
 
-_dataset_ is "go get-able".  Use the "go get" command to download the dependent packages
-as well as _dataset_'s source code. 
-
-
-```shell
-    go get -u github.com/caltechlibrary/dataset/...
-```
-
-Or clone the repository and then compile
+Clone the repository and then compile.
 
 ```shell
     cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
     make
+    # Add any missing dependencies you might need in your Go environment
     make test
     make install
 ```
-
-Building just the `libdataset` shared library requires the following sequence.
-
-```
-    cd
-    git clone https://github.com/caltechlibrary/dataset
-    cd dataset
-    make
-    cd libdataset
-    make test
-    make release
-```
-
-You should now have a "dist" directory in the root of the repository with a
-Zip file for the "libdataset" shared library.
 
 ### Windows compilation
 
 The tool chain to compile on Windows make several assumptions.
 
-1. You're using Anaconda shell and have the C tool chain installed for cgo to work
-2. You have Stephen Dolan's jq command available (so the version.go file can be regenerated)
+1. You're using Anaconda shell and have the C tool chain installed for
+   cgo to work
+2. You have Stephen Dolan's jq command available (so the version.go file
+   can be regenerated)
 3. You have the latest go installed
 
 Since I don't assume a POSIX shell environment on windows I have made
@@ -171,8 +177,8 @@ batch files to perform some of what Make under Linux and macOS would do.
 
 - make.bat builds our application and depends on go and jq commands
 - release.bat builds a release, will prompt for version
-- clean.bat removes executables and temp files
+- clean.bat removes executable and temp files
 
 
-Compilation assumes [go](https://github.com/golang/go) v1.17.2
+Compilation assumes [go](https://github.com/golang/go) v1.19 or better.
 

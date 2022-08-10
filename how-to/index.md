@@ -8,8 +8,6 @@ A short reading list
 --------------------
 
 - [Getting started with dataset](getting-started-with-dataset.html)
-- [Working with CSV](working-with-csv.html)
-
 
 Additional topics
 -----------------
@@ -19,9 +17,7 @@ Additional topics
 - [File system layout](file-system-layout.html)
 - [How attachments work](how-attachments-work.html)
 - [An approach to filtering keys](filtering-keys.html)
-- [Joining objects](joining-objects.html)
 - [Managing attachments](managing-attachments.html)
-- [Reshape JSON collections](reshape-json-collections.html)
 - [Taking Samples](taking-samples.html)
 - [Upgrading a collection](upgrading-a-collection.html)
-- [Windows 10 cmd prompt and dataset](Windows-cmd-prompt.html)
+- [Windows 11 cmd prompt and dataset](Windows-cmd-prompt.html)

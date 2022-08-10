@@ -3,7 +3,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2021, Caltech
+// Copyright (c) 2022, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,6 +21,7 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -30,14 +31,46 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caltechlibrary/pairtree"
+	// Caltech Library packages
+	"github.com/caltechlibrary/dataset/v2/dsv1"
+	"github.com/caltechlibrary/dataset/v2/pairtree"
+	"github.com/caltechlibrary/dataset/v2/semver"
 )
+
+// sniffVersionNumber tries to get the dataset version
+// string from collection.json file. Returns a semver
+// or nil (on failure)
+func sniffVersionNumber(cName string) *semver.Semver {
+	collection := path.Join(cName, "collection.json")
+	src, err := ioutil.ReadFile(collection)
+	if err != nil {
+		return nil
+	}
+	o := map[string]interface{}{}
+	err = json.Unmarshal(src, &o)
+	if err != nil {
+		return nil
+	}
+	version, ok := o["dataset"]
+	if ok {
+		s := version.(string)
+		sv, err := semver.ParseString(s)
+		if err == nil && sv != nil {
+			return sv
+		}
+		return nil
+	}
+	return nil
+}
 
 //
 // Analyzer checks the collection version and analyzes current
 // state of collection reporting on errors.
 //
-func Analyzer(collectionName string, verbose bool) error {
+// NOTE: the collection MUST BE CLOSED when Analyzer is called otherwise
+// the results will not be accurate.
+//
+func Analyzer(cName string, verbose bool) error {
 	var (
 		eCnt int
 		wCnt int
@@ -47,75 +80,107 @@ func Analyzer(collectionName string, verbose bool) error {
 		err  error
 	)
 
-	collectionPath := collectionName
+	collectionPath := cName
+	// Make sure collection exists
+	_, err = os.Stat(collectionPath)
+	if err != nil {
+		return err
+	}
+
+	// Check for collections.json file.
+	collection := path.Join(collectionPath, "collection.json")
+	_, err = os.Stat(collection)
+	if err != nil {
+		return err
+	}
+
+	// Sniff the version number of the collection
+	v2 := semver.NewSemver(2, 0, 0, "")
+	currentSV := sniffVersionNumber(cName)
+	if currentSV != nil && semver.Less(currentSV, v2) {
+		repairLog(verbose, "WARNING: %q is a version 1 dataset collection", cName)
+		return dsv1.Analyzer(cName, verbose)
+	}
+
+	// Make sure the JSON documents in the collectionPath can be
+	// parsed.
 	files, err := os.ReadDir(collectionPath)
 	if err != nil {
 		return err
 	}
-	hasCollectionJSON := false
 	for _, file := range files {
-		fname := file.Name()
-		switch {
-		case fname == "collection.json":
-			hasCollectionJSON = true
-		}
-		if hasCollectionJSON {
-			break
+		filename := file.Name()
+		isDir := file.IsDir()
+		if !isDir && strings.HasSuffix(filename, ".json") {
+			// Make sure we can JSON parse the file
+			docPath := path.Join(collectionPath, filename)
+			if src, err := os.ReadFile(docPath); err == nil {
+				if err := json.Unmarshal(src, &data); err == nil {
+					// release the memory
+					data = nil
+				} else {
+					return fmt.Errorf("error parsing %s, %s", docPath, err)
+				}
+			} else {
+				return fmt.Errorf("error opening %s, %s", docPath, err)
+			}
 		}
 	}
 
-	// NOTE: Check to see if we have a collection.json
-	if hasCollectionJSON == false {
-		repairLog(verbose, "WARNING: Missing collection.json\n")
+	// NOTE: Check to see if we have a codemeta.json file
+	codemeta := path.Join(collectionPath, "codemeta.json")
+	_, err = os.Stat(codemeta)
+	if err != nil {
+		repairLog(verbose, "WARNING: Missing codemeta.json\n")
 		wCnt++
-	} else {
-		// Make sure we can JSON parse the file
-		docPath := path.Join(collectionPath, "collection.json")
-		if src, err := os.ReadFile(docPath); err == nil {
-			if err := json.Unmarshal(src, &data); err == nil {
-				// release the memory
-				data = nil
-			} else {
-				repairLog(verbose, "ERROR: parsing %s, %s", docPath, err)
-				eCnt++
-			}
-		} else {
-			repairLog(verbose, "ERROR: opening %s, %s", docPath, err)
-			eCnt++
-		}
 	}
 
 	// Now try to open the collection ...
-	c, err = Open(collectionName)
+	c, err = Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 
+	if c.StoreType == PTSTORE {
+		keymap := path.Join(collectionPath, "keymap.json")
+		if _, err := os.Stat(keymap); err != nil {
+			repairLog(verbose, "WARNING: Missing keymap.json\n")
+			wCnt++
+		}
+	}
+
+	if c.StoreType != PTSTORE {
+		return fmt.Errorf("analyzer only supports pairtree storage")
+	}
+
 	// Set layout to PAIRTREE_LAYOUT
 	// Make sure we have all the known pairs in the pairtree
 	// Check to see if records can be found in their buckets
-	for k, v := range c.KeyMap {
+	keyMap := c.PTStore.Keymap()
+	for k, v := range keyMap {
 		// NOTE: as of 1.0.1 keys are forced to lower case internally.
-		dirPath := path.Join(collectionPath, v)
+		dirPath := path.Join(collectionPath, "pairtree", v)
 		_, err := os.Stat(dirPath)
 		if err != nil {
 			repairLog(verbose, "ERROR: %s is missing (%q)", k, dirPath)
 			eCnt++
 		}
+		// Is the key in mixed case?
 		if strings.ToLower(k) != k {
-			if c.KeyExists(strings.ToLower(k)) {
+			// Get lower case key
+			lKey := strings.ToLower(k)
+			if c.HasKey(lKey) {
 				repairLog(true, "ERROR: key %q should be lower case, record CANNOT be merged for case sensitive path %q", k, dirPath)
 				eCnt++
-
 			} else {
-				repairLog(verbose, "WARNING: key %q should be lower case, record can be merged for case sensitive path %q", k, dirPath)
+				repairLog(verbose, "WARNING: key %q should have been lower case, record can be merged for path %q", k, dirPath)
 				wCnt++
 			}
 		}
 		// NOTE: k needs to be urlencoded before checking for file
 		fname := url.QueryEscape(k) + ".json"
-		docPath := path.Join(collectionPath, v, fname)
+		docPath := path.Join(collectionPath, "pairtree", v, fname)
 		_, err = os.Stat(docPath)
 		if err != nil {
 			repairLog(verbose, "ERROR: %s is missing (%q)", k, docPath)
@@ -123,30 +188,32 @@ func Analyzer(collectionName string, verbose bool) error {
 		}
 		kCnt++
 		if (kCnt % 5000) == 0 {
-			repairLog(verbose, "%d of %d keys checked", kCnt, len(c.KeyMap))
+			repairLog(verbose, "%d of %d keys checked", kCnt, len(keyMap))
 		}
 	}
-	if len(c.KeyMap) > 0 {
-		repairLog(verbose, "%d of %d keys checked", kCnt, len(c.KeyMap))
+	if len(keyMap) > 0 {
+		repairLog(verbose, "%d of %d keys checked", kCnt, len(keyMap))
 	}
 
 	// Check sub-directories in pairtree find but not in KeyMap
-	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
-	if err != nil && len(c.KeyMap) > 0 {
+	pairs, err := walkPairtree(path.Join(cName, "pairtree"))
+	if err != nil && len(keyMap) > 0 {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		eCnt++
-	} else {
-		for _, pair := range pairs {
-			key := pairtree.Decode(pair)
-			if _, exists := c.KeyMap[key]; exists == false {
-				if _, exists := c.KeyMap[strings.ToLower(key)]; exists {
-					repairLog(verbose, "WARNING: key %q points at case sensitive path %q",
-						strings.ToLower(key), path.Join(collectionName, "pairtree", pair, key+".json"))
-					wCnt++
-				} else {
-					repairLog(verbose, "ERROR: %q found at %q not in collection", key, path.Join(collectionName, "pairtree", pair, key+".json"))
-					eCnt++
-				}
+	}
+	// Pivot to pair path as key and key as value
+	pathMap := map[string]string{}
+	for _, pair := range pairs {
+		key := pairtree.Decode(pair)
+		pathMap[pair] = key
+		if _, exists := keyMap[key]; exists == false {
+			if _, exists := keyMap[strings.ToLower(key)]; exists {
+				repairLog(verbose, "WARNING: key %q points at case sensitive path %q",
+					strings.ToLower(key), path.Join(cName, "pairtree", pair, key+".json"))
+				wCnt++
+			} else {
+				repairLog(verbose, "ERROR: %q found at %q not in collection", key, path.Join(cName, "pairtree", pair, key+".json"))
+				eCnt++
 			}
 		}
 	}
@@ -159,114 +226,172 @@ func Analyzer(collectionName string, verbose bool) error {
 }
 
 //
+// FixMissingCollectionJson will scan the collection directory
+// and environment making an educated guess to type of
+// collection collection type
+//
+func FixMissingCollectionJson(cName string) error {
+	collectionJson := path.Join(cName, "collection.json")
+	dsnURI := os.Getenv("DATASET_DSN_URI")
+	pairPath := path.Join(cName, "pairtree")
+	keymapPath := path.Join(cName, "keymap.json")
+	storeType := ""
+	version := ""
+	if _, err := os.Stat(pairPath); err == nil {
+		storeType = PTSTORE
+	} else if dsnURI != "" {
+		storeType = SQLSTORE
+		version = Version
+	}
+	if storeType == "" {
+		return fmt.Errorf("unable to determine storage type for %q", cName)
+	}
+	if _, err := os.Stat(keymapPath); err == nil {
+		version = Version
+	}
+	c := &Collection{}
+	c.Name = path.Base(cName)
+	c.DatasetVersion = version
+	c.StoreType = storeType
+	c.DsnURI = dsnURI
+	src, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return fmt.Errorf("unable to encode %q, %s", collectionJson, err)
+	}
+	return ioutil.WriteFile(collectionJson, src, 0664)
+}
+
+//
 // Repair takes a collection name and calls
 // walks the pairtree and repairs collection.json as appropriate.
 //
-func Repair(collectionName string, verbose bool) error {
+// NOTE: the collection MUST BE CLOSED when repair is called otherwise
+// the repaired collection may revert.
+//
+func Repair(cName string, verbose bool) error {
 	var (
 		c   *Collection
 		err error
 	)
+	// Sniff the version number of the collection and delegate
+	// if needed.
+	v2 := semver.NewSemver(2, 0, 0, "")
+	currentSV := sniffVersionNumber(cName)
+	if currentSV != nil && semver.Less(currentSV, v2) {
+		return fmt.Errorf("cannot repair %q dataset collections", currentSV.String())
+	}
 
-	// See if we can open a collection, if not then create an empty struct
-	c, err = Open(collectionName)
-	if err != nil {
-		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", collectionName, err)
-		err = os.WriteFile(path.Join(collectionName, "collection.json"), []byte("{}"), 0664)
+	collectionJson := path.Join(cName, "collection.json")
+	// Check to see if we find a collection.json, if not see if we
+	// can make a educated guess
+	if _, err := os.Stat(collectionJson); err != nil {
+		err := FixMissingCollectionJson(cName)
 		if err != nil {
-			repairLog(verbose, "Can't re-initilize %s, %s", collectionName, err)
 			return err
 		}
-		repairLog(verbose, "Attempting to re-open %s", collectionName)
-
-		c, err = Open(collectionName)
+	}
+	// See if we can open a collection, if not then create an empty struct
+	c, err = Open(cName)
+	if err != nil {
+		repairLog(verbose, "Open %s error, %s, attempting to re-create collection.json", cName, err)
+		err = os.WriteFile(path.Join(cName, "collection.json"), []byte("{}"), 0664)
 		if err != nil {
-			repairLog(verbose, "Failed to re-open %s, %s", collectionName, err)
+			repairLog(verbose, "Can't re-initilize %s, %s", cName, err)
+			return err
+		}
+		repairLog(verbose, "Attempting to re-open %s", cName)
+
+		c, err = Open(cName)
+		if err != nil {
+			repairLog(verbose, "Failed to re-open %s, %s", cName, err)
 			return err
 		}
 	}
 	defer c.Close()
 
-	if c.DatasetVersion != Version {
-		repairLog(verbose, "Migrating format from %s to %s", c.DatasetVersion, Version)
+	if c.StoreType != PTSTORE {
+		return fmt.Errorf("repair supports pairtree storage only")
 	}
+
 	c.DatasetVersion = Version
 	repairLog(verbose, "Getting a list of pairs")
-	pairs, err := walkPairtree(path.Join(collectionName, "pairtree"))
+	pairs, err := walkPairtree(path.Join(cName, "pairtree"))
 	if err != nil {
 		repairLog(verbose, "ERROR: unable to walk pairtree, %s", err)
 		return err
 	}
 	repairLog(verbose, "Adding missing pairs")
-	if c.KeyMap == nil {
-		c.KeyMap = map[string]string{}
+	keyMap := c.PTStore.Keymap()
+	if keyMap == nil {
+		keyMap = map[string]string{}
 	}
+	// Find any missing documents
+	updateKeymap := false
 	for _, pair := range pairs {
+		// Make sure we're generating a lower case key
 		key := pairtree.Decode(pair)
-		if strings.ToLower(key) != key {
-			if c.KeyExists(key) && c.KeyExists(strings.ToLower(key)) == false {
-				tKey := strings.ToLower(key)
-				tValue, _ := c.KeyMap[key]
-				repairLog(true, "WARNING: moving key %q to %q is being saved lowercase for case sensitive path %q",
-					key, tKey, tValue)
-				delete(c.KeyMap, key)
-				c.KeyMap[tKey] = tValue
-			} else if c.KeyExists(key) && c.KeyExists(strings.ToLower(key)) {
-				pairPath1, _ := c.KeyMap[key]
-				pairPath2, _ := c.KeyMap[strings.ToLower(key)]
-				if pairPath1 == "" {
-					delete(c.KeyMap, key)
-					repairLog(verbose, "WARNING: key %q points at %q.", strings.ToLower(key), pairPath2)
-				} else if pairPath1 != pairPath2 {
-					repairLog(true, "ERROR: key %q cannot merged as %q for case sensitive path %q.",
-						key, strings.ToLower(key), path.Join(c.Name, "pairtree", pair))
-				} else {
-					repairLog(verbose, "WARNING: previously merged key %q for %q.",
-						key, path.Join(c.Name, "paritree", pairPath1))
+		if _, ok := keyMap[key]; ok {
+			// We OK, just need to make sure document exists
+			dirPath := path.Join(cName, "pairtree", pair)
+			if _, err := os.Stat(dirPath); err == nil {
+				fname := url.QueryEscape(key) + ".json"
+				docPath := path.Join(dirPath, fname)
+				if _, err := os.Lstat(docPath); err == nil {
+					// Document path exists add it to the keymap
+					keyMap[key] = pair
+					updateKeymap = true
 				}
-			} else {
-				repairLog(true, "WARNING: key %q added for case sensitive path %q.",
-					key, path.Join(c.Name, "pairtree", pair))
-				c.KeyMap[strings.ToLower(key)] = path.Join("pairtree", pair)
 			}
-		} else if _, exists := c.KeyMap[key]; exists == false {
-			c.KeyMap[key] = path.Join("pairtree", pair)
 		}
 	}
-	repairLog(verbose, "%d keys in pairtree", len(c.KeyMap))
-	keyList := c.Keys()
+	repairLog(verbose, "%d keys in pairtree", len(keyMap))
+	keyList, err := c.PTStore.Keys()
+	if err != nil {
+		repairLog(verbose, "chould not get keys to repair, %s", err)
+	}
 	repairLog(verbose, "checking that each key resolves to a value on disc")
 	missingList := []string{}
+	updateKeymap = false
 	for _, key := range keyList {
-		p, err := c.DocPath(key)
+		p, err := c.PTStore.DocPath(key)
 		if err != nil {
-			break
+			repairLog(verbose, "Missing document path %q (%q), %s", key, p, err)
+			delete(keyMap, key)
+			updateKeymap = true
+			continue
 		}
 		if _, err := os.Stat(p); os.IsNotExist(err) == true {
 			//NOTE: Mac OS X file system sensitivety handling can
 			// mess this assumption up, need to see if we can find
 			// the keys we remove and reattach walking the file system.
-			repairLog(verbose, "Missing %s from %s, %s does not exist", key, collectionName, p)
+			repairLog(verbose, "Missing %s from %s, %s does not exist", key, cName, p)
 			// We save the key to re-attach later...
 			missingList = append(missingList, key)
-			delete(c.KeyMap, key)
+			delete(keyMap, key)
+			updateKeymap = true
+		}
+	}
+	if updateKeymap {
+		updateKeymap = false
+		if err := c.PTStore.UpdateKeymap(keyMap); err != nil {
+			repairLog(verbose, "Unable to update keymap for %q, %s", cName, err)
 		}
 	}
 	if len(missingList) > 0 {
 		sort.Strings(missingList)
 		repairLog(verbose, "Trying to locate %d un-associated keys", len(missingList))
-		err = filepath.Walk(path.Join(collectionName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
+		err = filepath.Walk(path.Join(cName, "pairtree"), func(fPath string, info os.FileInfo, err error) error {
 			if info.IsDir() == false {
 				if key, err := url.QueryUnescape(strings.TrimSuffix(info.Name(), ".json")); err == nil {
 					// Search our list of keys to see if we can fix path issue...
 					for i, missingKey := range missingList {
 						r := strings.Compare(key, missingKey)
 						if r == 0 {
-							kPath := strings.TrimPrefix(strings.TrimSuffix(fPath, info.Name()), collectionName)
+							kPath := strings.TrimPrefix(strings.TrimSuffix(fPath, info.Name()), cName)
 							// trim leading separator ...
 							kPath = kPath[1:]
 							repairLog(verbose, "Fixing path for key %q", key)
-							c.KeyMap[key] = kPath
+							keyMap[key] = kPath
 							// Now remove key from missingList
 							missingList = append(missingList[:i], missingList[i+1:]...)
 							continue
@@ -281,23 +406,78 @@ func Repair(collectionName string, verbose bool) error {
 		}
 		// NOTE: the pairtree path in collection.json should be
 		// using POSIX path separator.
-		for key, value := range c.KeyMap {
+		updateKeymap = false
+		for key, value := range keyMap {
 			// force paths to be POSIX version.
 			if strings.Contains(value, "\\") {
-				c.KeyMap[key] = strings.ReplaceAll(value, "\\", "/")
+				keyMap[key] = strings.ReplaceAll(value, "\\", "/")
+				updateKeymap = true
+			}
+		}
+		if updateKeymap {
+			updateKeymap = false
+			if err := c.PTStore.UpdateKeymap(keyMap); err != nil {
+				repairLog(verbose, "failed to update keymap")
+				return err
 			}
 		}
 		if len(missingList) > 0 {
 			repairLog(verbose, "Unable to find the following keys - %s", strings.Join(missingList, ", "))
 		}
 	}
-	repairLog(verbose, "Saving metadata for %s", collectionName)
-	if c.When == "" {
-		c.When = time.Now().Format("2006-01-02")
-	}
-	err = c.saveMetadata()
+
+	repairLog(verbose, "Saving metadata for %s", cName)
+	// Save the collections' operational metadata
+	c.Repaired = time.Now().Format("2006-01-02")
+	src, err := json.MarshalIndent(c, "", "    ")
+	filename := path.Join(c.workPath, "collection.json")
+	err = ioutil.WriteFile(filename, src, 664)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+//
+// Migrate a dataset v1 collection to a v2 collection.
+// Both collections need to already exist. Records from v1
+// will be read out of v1 and created in v2.
+//
+// NOTE: Migrate does not current copy attachments.
+//
+func Migrate(srcName string, dstName string, verbose bool) error {
+	old, err := dsv1.Open(srcName)
+	if err != nil {
+		return err
+	}
+	defer old.Close()
+	c, err := Open(dstName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+
+	keys := old.Keys()
+	tot := len(keys)
+	eCnt := 0
+	for i, key := range keys {
+		o := map[string]interface{}{}
+		// Removed the v1 object cleanly
+		if err := old.Read(key, o, true); err != nil {
+			eCnt++
+			repairLog(verbose, "failed to read %q from %q, %s", key, srcName, err)
+		}
+		// FIXME: Need to also handle attachments eventually
+		if err := c.Create(key, o); err != nil {
+			repairLog(verbose, "failed to write %q from %q, %s", key, dstName, err)
+			eCnt++
+		}
+		if (i % 1000) == 0 {
+			repairLog(verbose, "%d of %d processed", i, tot)
+		}
+	}
+	if eCnt > 0 {
+		return fmt.Errorf("%d error(s) encounterd in migration", eCnt)
 	}
 	return nil
 }

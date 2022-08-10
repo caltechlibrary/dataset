@@ -34,21 +34,3 @@ The objects in the frame\'s object list will look like
 
 This allows you to create convenient names for otherwise deep dot paths.
 
-In python we use a Dict to map the dotpaths to labels rather than an
-embedded equal sign. Doing the same task as before would look like this
-in Python.
-
-```python
-    keys = dataset.keys("pubs.ds")
-    (frame, err) = dataset.frame("pubs.ds", "title-authors-year", 
-         keys, { 
-             ".title": "Title", 
-             ".authors": "Authors",
-              ".publication_year": "PubYear"
-         })
-```
-
-Related topics: [frames](frames.html),
-[frame-objects](frame-objects.html), [frame-grid](frame-grid.html),
-[frame-types](frame-types.html), [reframe](reframe.html),
-[delete-frame](delete-frame.html)

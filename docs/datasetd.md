@@ -21,8 +21,9 @@ The "settings.json" file has the following structure
 ```json
     {
         "host": "localhost:8485",
-        "collections": {
-            "<COLLECTION_ID>": {
+        "dsn_url": "mysql://DB_USER:DB_PASSWORD\@DB_NAME",
+        "collections": [
+            {
                 "dataset": "<PATH_TO_DATASET_COLLECTION>",
                 "keys": true,
                 "create": true,
@@ -31,9 +32,11 @@ The "settings.json" file has the following structure
                 "delete": false,
                 "attach": false,
                 "retrieve": false,
-                "prune": false
-            }
-        }
+                "prune": false,
+                "frame-read": true,
+                "frame-write": false
+           }
+        ]
     }
 ```
 
@@ -54,23 +57,20 @@ _datasetd_ should NOT be used to store confidential, sensitive or secret informa
 Supported Features
 ------------------
 
-_datasetd_ provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following verbs
+_datasetd_ provides a limitted subset of actions supportted by the standard datset command line tool. It only supports the following actions
 
-1. keys (return a list of all keys in the collection)
-    - must be a GET request
-2. create (create a new JSON document in the collection)
-    - must be a POST request ended as JSON with a content type of "application/json"
-3. read (read a JSON document from a collection)
-    - must be a GET request
-4. update (update a JSON document in the collection)
-    - must be a POST request ended as JSON with a content type of "application/json"
-5. delete (delete a JSON document in the collection)
-    - must be a GET request
-6. collections (list as a JSON array of objects the collections avialable)
-    - must be a GET request
-7. attach allows you to upload via a POST (not JSON encoded) an attachment to a JSON document. The attachment is limited in size to 250 MiB. The POST must be a multi-part encoded web form where the upload name is identified as "filename" in the form and the URL path identifies the name to use for the saved attachment.
-8. retrieve allows you to download an versioned attachment from a JSON document
-9. prune removes versioned attachments from a JSON document
+- collections (return a list of collections available)
+- collection (return the codemeta for a collection)
+- keys (return the list of keys in a collection)
+- has-keys (return the list of keys in a collection)
+- object (CRUD operations on a JSON document via REST calls)
+- frames (return a list of frames available in a collection)
+- has-frame (return a true if frame exists, false otherwise)
+- frame (CRUD operations on a frame via REST calls)
+- frame-objects (get a frame's list of objects)
+- frame-keys (get a frame's list of keys)
+- attachments (list attachments for a JSON document)
+- attachment (CRUD operations on attachment via REST calls)
 
 Each of theses "actions" can be restricted in the configuration (
 i.e. "settings.json" file) by setting the value to "false". If the
@@ -143,56 +143,32 @@ Add a new JSON object to a collection.
      -d '{"ingredients":["banana","ice cream","chocalate syrup"]}'
 ```
 
-Online Documentation
---------------------
-
-_datasetd_ provide documentation as plain text output via request
-to the service end points without parameters. Continuing with our
-"recipes" example. Try the following URLs with curl.
-
-```shell
-    curl http://localhost:8485
-    curl http://localhost:8485/recipes
-    curl http://localhost:8485/recipes/create
-    curl http://localhost:8485/recipes/read
-    curl http://localhost:8485/recipes/update
-    curl http://localhost:8485/recipes/delete
-    curl http://localhost:8485/recipes/attach
-    curl http://localhost:8485/recipes/retrieve
-    curl http://localhost:8485/recipes/prune
-```
-
 End points
 ----------
 
-The following end points are supported by _datasetd_
+The following end points are planned for _datasetd_ in version 2.
 
-- `/` returns documentation for _datasetd_
 - `/collections` returns a list of available collections.
-- `/collection/<COLLECTION_ID>` with an HTTP GET returns the metadata for a collection, with an HTTP POST it updates the collections metadata.
+- `/collection/<COLLECTION_ID>` with an HTTP GET returns the codemeta document describing the collection.
 
-The following end points are per colelction. They are available
-for each collection where the settings are set to true. Some end points require POST HTTP method and specific content types.
+The following end points are per collection. They are available for each
+collection where the settings are set to true. The end points 
+are generally RESTful so one end point will often map to a CRUD style
+operations via http methods POST to create an object, GET to "read" or retrieve an object, a PUT to update an object and DELETE to remove it.
 
-The terms "<COLLECTION_ID>", "<KEY>" and "<SEMVER>" refer to
-the collection path, the string representing the "key" to a JSON document and semantic version number for attachment. Unless specified
-end points support the GET method exclusively.
+The terms "<COLLECTION_ID>" and "<KEY>" refer to the collection path, the
+string representing the "key" to a JSON document. For attachment then a
+base filename is used to identify the attachment associate with a "key"
+in a collection.
 
-- `/<COLLECTION_ID>` returns general dataset documentation with some tailoring to the collection.
 - `/<COLLECTION_ID>/keys` returns a list of keys available in the collection
-- `/<COLLECTION_ID>/create` returns documentation on the `create` end point
-- `/<COLLECTION_IO>/create/<KEY>` requires the POST method with content type header of `application/json`. It can accept JSON document up to 1 MiB in size. It will create a new JSON document in the collection or return an HTTP error if that fails
-- `/<COLLECTION_ID>/read` returns documentation on the `read` end point
-- `/<COLLECTION_ID>/read/<KEY>` returns a JSON object for key or a HTTP error
-- `/<COLLECTION_ID>/update` returns documentation on the `update` end point
-- `/COLLECTION_ID>/update/<KEY>` requires the POST method with content type header of `application/json`. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
-- `/<COLLECTION_ID>/delete` returns documentation on the `delete` end point
-- `/COLLECTION_ID>/delete/<KEY>` requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
-- `/<COLLECTION_ID>/attach` returns documentation on attaching a file to a JSON document in the collection.
-- `/COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>` requires a POST method and expects a multi-part web form providing the filename in the `filename` field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by `<KEY>` in sub directory indicated by `<SEMVER>`. See https://semver.org/ for more information on semantic version numbers.
-- `/<COLLECTION_ID>/retrieve` returns documentation on how to retrieve a versioned attachment from a JSON document.
-- `/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>/<FILENAME>` returns the versioned attachment from a JSON document or an HTTP error if that fails
-- `/<COLLECTION_ID>/prune` removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
-- `/<COLLECTION_ID>/prune/<KEY>/<SEMVER>/<FILENAME>` removes a versioned attachment from a JSON document.
-
+- `/<COLLECTION_ID>/has-key/<KEY>` returns true if a key is found for a JSON document or false otherwise
+- `/<COLLECTION_ID>/object/<KEY>` performs CRUD operations on a JSON document, a GET retrieves the JSON document, a POST creates it, PUT updates it and DELETE removes it.
+- `/<COLLECTION_ID>/attachments/<KEY>` returns a list of attachments assocated with the JSON document
+- `/<COLLECTION_ID>/attachment/<KEY>/<FILENAME>` allows you to perform CRUD operations on an attachment. Create is done with a POST, read (retrieval) is done wiht a GET, replacement is done with a PUT and deleting an attachment (pruning) is done with a DELETE http method.
+- `/<COLLECTION_ID>/frames` list the frames defined for a collection
+- `/<COLLECTION_ID>/has-frame/<FRAME_NAME>` returns true if frame is defined otherwise false
+- `/<COLLECTION_ID>/frame/<FRAME_NAME>` a GET will return the frame definition, a POST will create a frame, a DELETE will remove a frame, a PUT without a body will cause the frame to be refreshed and a PUT with an array of keys will cause the frame to be reframed
+- `/<COLLECTION_ID>/frame-objects/<FRAME_NAME>` will return a list of the frame's objects
+- `/<COLLECTION_ID>/frame-keys/<FRAME_NAME>` will return a list of keys in the frame
 

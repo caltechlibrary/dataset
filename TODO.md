@@ -59,3 +59,19 @@ Someday, Maybe
 - [ ] OAI-PMH importer to prototype iiif service based on Islandora content driven by a dataset collection
 - dataset "versioning" support via something like libgit2
 
+=======
+- [ ] Document an example Python 3 http client support for web API implementing a drop in replacement for py_dataset using the web service or cli
+- [X] Missing tests for AttachStream()
+- [ ] Implement a wrapping logger that takes a verboseness level for
+      output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors
+      should always show)
+- [X] Memory consumption is high for attaching, figure out how to improve
+      memory usage, switched to using streams where possible
+- [ ] Add support for https:// based datasets (in addition to local disc
+      and s3://)
+- [ ] dsbagit would generate a "BagIt" bag for preservation of collection
+      objects
+- [ ] OAI-PMH importer to prototype iiif service based on Islandora
+      content driven by a dataset collection
+- [ ] Implement version support in the web service
+- [ ] Implement an integrated UI for datasetd

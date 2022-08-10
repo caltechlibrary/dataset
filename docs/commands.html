@@ -38,7 +38,8 @@
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
-<a href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </li>
 </ul>
 </nav>
@@ -59,10 +60,20 @@ replaced with one of the commands below –
 </p>
 <ul>
 <li>
-<a href="init.html">init</a> - initialize a new collection if none exists, requires a path to collection
+<a href="init.html">init</a> - initialize a new collection if none
+exists, requires a path to collection
 </li>
 <li>
-<a href="create.html">create</a> - creates a new JSON document or replace an existing one in collection
+<a href="keys.html">keys</a> - returns the keys to stdout, one key per
+line
+</li>
+<li>
+<a href="haskey.html">has-key</a> - returns true is key is in
+collection, false otherwise
+</li>
+<li>
+<a href="create.html">create</a> - creates a new JSON document or
+replace an existing one in collection
 </li>
 <li>
 <a href="read.html">read</a> - displays a JSON document to stdout
@@ -71,59 +82,61 @@ replaced with one of the commands below –
 <a href="update.html">update</a> - updates a JSON document in collection
 </li>
 <li>
-<a href="delete.html">delete</a> - removes a JSON document from collection
+<a href="delete.html">delete</a> - removes a JSON document from
+collection
 </li>
 <li>
-<a href="join.html">join</a> - brings the functionality of <strong>jsonjoin</strong> to the dataset command.
-</li>
-<li>
-<a href="filter.html">filter</a> - takes a filter and returns an unordered list of keys that match filter expression
+Data frames
 <ul>
 <li>
-<a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)
+<a href="frames.html">frames</a> - list the data frames defined for a
+collection
+</li>
+<li>
+<a href="frame.html">frame</a> - defines a new data frame
+</li>
+<li>
+<a href="frame-def.html">frame-def</a> - returns a frame’s object
+definition
+</li>
+<li>
+<a href="frame-keys.html">frame-keys</a> - returns a frame’s key list
+</li>
+<li>
+<a href="frame-objects.html">frame-objects</a> - returns a frame’s
+object list
+</li>
+<li>
+<a href="reframe.html">reframe</a> - uses the existing frame definition
+replacing all objects using a new key list
+</li>
+<li>
+<a href="refresh.html">refresh</a> - updates the objects in a data frame
+based on the current status of the collection.
+</li>
+<li>
+<a href="delete-frame.html">delete-frame</a> - remove a frame from a
+collection
 </li>
 </ul>
-</li>
-<li>
-<a href="frames.html">frames</a> - list the data frames defined for a collection
-<ul>
-<li>
-<a href="frame.html">frame</a> - defines or returns a data frame
-</li>
-<li>
-<a href="frame-objects.html">frame-objects</a> - returns a frame’s object list
-</li>
-<li>
-<a href="frame-grid.html">frame-grid</a> - returns a frame’s object list as a 2D JSON array
-</li>
-<li>
-<a href="reframe.html">reframe</a> - redefines a data frame (updates the objects in the data frame)
-</li>
-<li>
-<a href="delete-frame.html">delete-frame</a> - remove a frame from a collection
-</li>
-</ul>
-</li>
-<li>
-<a href="keys.html">keys</a> - returns the keys to stdout, one key per line
-</li>
-<li>
-<a href="haskey.html">haskey</a> - returns true is key is in collection, false otherwise
 </li>
 <li>
 <a href="count.html">count</a> - returns a count of keys in a collection
 </li>
 <li>
-<a href="path.html">path</a> - given a document name return the full path to document
-</li>
-<li>
-<a href="attachments.html">attachments</a> - lists any attached content for JSON document
+Attachments
 <ul>
 <li>
-<a href="attach.html">attach</a> - attaches a non-JSON content to a JSON record
+<a href="attachments.html">attachments</a> - lists any attached content
+for JSON document
 </li>
 <li>
-<a href="retrieve.html">retrieve</a> - returns attachments for a JSON document
+<a href="attach.html">attach</a> - attaches a non-JSON content to a JSON
+record
+</li>
+<li>
+<a href="retrieve.html">retrieve</a> - returns attachments for a JSON
+document
 </li>
 <li>
 <a href="prune.html">prune</a> - remove attachments to a JSON document
@@ -131,38 +144,19 @@ replaced with one of the commands below –
 </ul>
 </li>
 <li>
-<a href="import-csv.html">import-csv</a> - import a CSV file’s rows as JSON documents
-<ul>
-<li>
-<a href="import-gsheet.html">import-gsheet</a> - import a Google Sheets sheet rows as JSON documents
-</li>
-</ul>
+<a href="check.html">check</a> - will check a collection against current
+version (for pairtree storage collections)
 </li>
 <li>
-<a href="export-csv.html">export-csv</a> - export a CSV file based on filtered results of collection records rendering dotpaths associated with column names
-<ul>
-<li>
-<a href="export-gsheet.html">export-gsheet</a> - export a Collection of JSON documents to Google Sheets sheet rows
-</li>
-</ul>
-</li>
-<li>
-<a href="extract.html">extract</a> - will return a unique list of unique values based on the associated dot path described in the JSON docs
-<ul>
-<li>
-<a href="dotpath.html">dotpath</a> - reach into an object to return a value(s)
-</li>
-</ul>
-</li>
-<li>
-<a href="check.html">check</a> - will check a collection against current version
-</li>
-<li>
-<a href="repair.html">repair</a> - will attempt to repair/upgrade a collection
+<a href="repair.html">repair</a> - will attempt to repair/upgrade a
+collection (for pairtree storage collections)
 </li>
 </ul>
 <p>
-NOTE: The options create, update can read JSON documents piped from standard in if you use the ‘-i -’ or ‘-include -’ option. Likewise keys can be read from standard input with the ‘-i -’ or ‘-include -’ options for read, list, keys and count.
+NOTE: The options create, update can read JSON documents piped from
+standard in if you use the ‘-i -’ or ‘-include -’ option. Likewise keys
+can be read from standard input with the ‘-i -’ or ‘-include -’ options
+for read, list, keys and count.
 </p>
 </section>
 

@@ -6,7 +6,7 @@ Interacting with the __datasetd__ web service can be done with any web client. F
 
 Create a JSON document in the collection. Requires a unique key in the URL and the content most be JSON less than 1 MiB in size.
 
-    `http://localhost:8485/<COLLECTION_ID>/created/<KEY>`
+    `http://localhost:8485/<COLLECTION_ID>/object/<KEY>`
 
 Requires a "POST" HTTP method with.
 
@@ -30,6 +30,6 @@ Posting using CURL is done like
 ```shell
     curl -X POST -H `Content-Type: application.json` \
       -d `{"one": 1}` \
-      http://locahost:8485/t1/create/one
+      http://locahost:8485/t1/object/one
 ```
 
