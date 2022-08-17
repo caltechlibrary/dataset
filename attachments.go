@@ -1,4 +1,3 @@
-//
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package dataset
 
 import (
@@ -27,8 +25,8 @@ import (
 	"strings"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/v2/pairtree"
-	"github.com/caltechlibrary/dataset/v2/semver"
+	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dataset/semver"
 )
 
 //
@@ -133,22 +131,23 @@ func attachmentVersionDir(c *Collection, key string, filename string) (string, e
 
 // Attachments returns a list of filenames for a key name in the collection
 //
-//   Example: "c" is a dataset collection previously opened,
-//   "key" is a string.  The "key" is for a JSON document in
-//   the collection. It returns an slice of filenames and err.
+//	Example: "c" is a dataset collection previously opened,
+//	"key" is a string.  The "key" is for a JSON document in
+//	the collection. It returns an slice of filenames and err.
 //
 // ```
-//   filenames, err := c.Attachments(key)
-//   if err != nil {
-//      ...
-//   }
-//   // Print the names of the files attached to the JSON document
-//   // referred to by "key".
-//   for i, filename := ranges {
-//      fmt.Printf("key: %q, filename: %q", key, filename)
-//   }
-// ```
 //
+//	filenames, err := c.Attachments(key)
+//	if err != nil {
+//	   ...
+//	}
+//	// Print the names of the files attached to the JSON document
+//	// referred to by "key".
+//	for i, filename := ranges {
+//	   fmt.Printf("key: %q, filename: %q", key, filename)
+//	}
+//
+// ```
 func (c *Collection) Attachments(key string) ([]string, error) {
 	aPath, err := attachmentDir(c, key)
 	if err != nil {
@@ -176,20 +175,21 @@ func (c *Collection) Attachments(key string) ([]string, error) {
 // AttachmentVersions returns a list of versions for an attached file
 // to a JSON document in the collection.
 //
-//    Example: retrieve a list of versions of an attached file.
-//    "key" is a key in the collection, filename is name of an
-//    attached file for the JSON document referred to by key.
+//	Example: retrieve a list of versions of an attached file.
+//	"key" is a key in the collection, filename is name of an
+//	attached file for the JSON document referred to by key.
 //
 // ```
-//   versions, err := c.AttachmentVersions(key, filename)
-//   if err != nil {
-//      ...
-//   }
-//   for i, version := range versions {
-//      fmt.Printf("key: %q, filename: %q, version: %q", key, filename, version)
-//   }
-// ```
 //
+//	versions, err := c.AttachmentVersions(key, filename)
+//	if err != nil {
+//	   ...
+//	}
+//	for i, version := range versions {
+//	   fmt.Printf("key: %q, filename: %q, version: %q", key, filename, version)
+//	}
+//
+// ```
 func (c *Collection) AttachmentVersions(key string, filename string) ([]string, error) {
 	aPath, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -215,22 +215,23 @@ func (c *Collection) AttachmentVersions(key string, filename string) ([]string, 
 // the document attached is automatically versioned per collection
 // versioning setting.
 //
-//    Example: attach the file "report.pdf" to JSON document "123"
-//    in an open collection.
+//	Example: attach the file "report.pdf" to JSON document "123"
+//	in an open collection.
 //
 // ```
-//    key, filename := "123", "report.pdf"
-//    buf, err := os.Open(filename)
-//    if err != nil {
-//       ...
-//    }
-//    err := c.AttachStream(key, filename, buf)
-//    if err != nil {
-//       ...
-//    }
-//    buf.Close()
-// ```
 //
+//	key, filename := "123", "report.pdf"
+//	buf, err := os.Open(filename)
+//	if err != nil {
+//	   ...
+//	}
+//	err := c.AttachStream(key, filename, buf)
+//	if err != nil {
+//	   ...
+//	}
+//	buf.Close()
+//
+// ```
 func (c *Collection) AttachStream(key string, filename string, buf io.Reader) error {
 	aDir, err := attachmentDir(c, key)
 	if err != nil {
@@ -292,15 +293,15 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 	return nil
 }
 
-//
-// ```
-//   key, filename := "123", "report.pdf"
-//   err := c.AttachFile(key, filename)
-//   if err != nil {
-//      ...
-//   }
 // ```
 //
+//	key, filename := "123", "report.pdf"
+//	err := c.AttachFile(key, filename)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) AttachFile(key string, filename string) error {
 	buf, err := os.Open(filename)
 	if err != nil {
@@ -314,22 +315,23 @@ func (c *Collection) AttachFile(key string, filename string) error {
 // (via an io.Reader) to a specific version of a file. If attached
 // file exists it is replaced.
 //
-//    Example: attach the file "report.pdf", version "0.0.3" to
-//    JSON document "123" in an open collection.
+//	Example: attach the file "report.pdf", version "0.0.3" to
+//	JSON document "123" in an open collection.
 //
 // ```
-//    key, filename, version := "123", "helloworld.txt", "0.0.3"
-//    buf, err := os.Open(filename)
-//    if err != nil {
-//       ...
-//    }
-//    err := c.AttachVersionStream(key, filename, version, buf)
-//    if err != nil {
-//       ...
-//    }
-//    buf.Close()
-// ```
 //
+//	key, filename, version := "123", "helloworld.txt", "0.0.3"
+//	buf, err := os.Open(filename)
+//	if err != nil {
+//	   ...
+//	}
+//	err := c.AttachVersionStream(key, filename, version, buf)
+//	if err != nil {
+//	   ...
+//	}
+//	buf.Close()
+//
+// ```
 func (c *Collection) AttachVersionStream(key string, filename string, version string, buf io.Reader) error {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -356,13 +358,14 @@ func (c *Collection) AttachVersionStream(key string, filename string, version st
 // the symbolic link to the "current" attachment.
 //
 // ```
-//   key, filename, version := "123", "report.pdf", "0.0.3"
-//   err := c.AttachVersionFile(key, filename, version)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	key, filename, version := "123", "report.pdf", "0.0.3"
+//	err := c.AttachVersionFile(key, filename, version)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) AttachVersionFile(key string, filename string, version string) error {
 	buf, err := os.Open(filename)
 	if err != nil {
@@ -377,13 +380,14 @@ func (c *Collection) AttachVersionFile(key string, filename string, version stri
 // this is the path the symbolic link for the "current" version.
 //
 // ```
-//   key, filename := "123", "report.pdf"
-//   docPath, err := c.AttachmentPath(key, filename)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	key, filename := "123", "report.pdf"
+//	docPath, err := c.AttachmentPath(key, filename)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) AttachmentPath(key string, filename string) (string, error) {
 	aDir, err := attachmentDir(c, key)
 	if err != nil {
@@ -401,13 +405,14 @@ func (c *Collection) AttachmentPath(key string, filename string) (string, error)
 // the path to the attached versioned file (if found).
 //
 // ```
-//   key, filename, version := "123", "report.pdf", "0.0.3"
-//   docPath, err := c.AttachmentVersionPath(key, filename, version)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	key, filename, version := "123", "report.pdf", "0.0.3"
+//	docPath, err := c.AttachmentVersionPath(key, filename, version)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) AttachmentVersionPath(key string, filename string, version string) (string, error) {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -426,16 +431,17 @@ func (c *Collection) AttachmentVersionPath(key string, filename string, version 
 // "current" version of the attached file.
 //
 // ```
-//   key, filename := "123", "report.pdf"
-//   src := []byte{}
-//   buf := bytes.NewBuffer(src)
-//   err := c.Retrieve(key, filename, buf)
-//   if err != nil {
-//      ...
-//   }
-//   ioutil.WriteFile(filename, src, 0664)
-// ```
 //
+//	key, filename := "123", "report.pdf"
+//	src := []byte{}
+//	buf := bytes.NewBuffer(src)
+//	err := c.Retrieve(key, filename, buf)
+//	if err != nil {
+//	   ...
+//	}
+//	ioutil.WriteFile(filename, src, 0664)
+//
+// ```
 func (c *Collection) RetrieveStream(key string, filename string, out io.Writer) error {
 	aDir, err := attachmentDir(c, key)
 	if err != nil {
@@ -461,17 +467,18 @@ func (c *Collection) RetrieveStream(key string, filename string, out io.Writer) 
 // collection.
 //
 // ```
-//    key, filename := "123", "report.pdf"
-//    src, err := c.RetrieveFile(key, filename)
-//    if err != nil {
-//       ...
-//    }
-//    err = ioutil.WriteFile(filename, src, 0664)
-//    if err != nil {
-//       ...
-//    }
-// ```
 //
+//	key, filename := "123", "report.pdf"
+//	src, err := c.RetrieveFile(key, filename)
+//	if err != nil {
+//	   ...
+//	}
+//	err = ioutil.WriteFile(filename, src, 0664)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) RetrieveFile(key string, filename string) ([]byte, error) {
 	src := []byte{}
 	buf := bytes.NewBuffer(src)
@@ -486,16 +493,17 @@ func (c *Collection) RetrieveFile(key string, filename string) ([]byte, error) {
 // returns an io.Reader and error.
 //
 // ```
-//   key, filename, version := "123", "helloworld.txt", "0.0.3"
-//   src := []byte{}
-//   buf := bytes.NewBuffer(src)
-//   err := c.RetrieveVersion(key, filename, version, buf)
-//   if err != nil {
-//      ...
-//   }
-//   ioutil.WriteFile(filename + "_" + version, src, 0664)
-// ```
 //
+//	key, filename, version := "123", "helloworld.txt", "0.0.3"
+//	src := []byte{}
+//	buf := bytes.NewBuffer(src)
+//	err := c.RetrieveVersion(key, filename, version, buf)
+//	if err != nil {
+//	   ...
+//	}
+//	ioutil.WriteFile(filename + "_" + version, src, 0664)
+//
+// ```
 func (c *Collection) RetrieveVersionStream(key string, filename string, version string, buf io.Writer) error {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -517,17 +525,18 @@ func (c *Collection) RetrieveVersionStream(key string, filename string, version 
 // document in the collection.
 //
 // ```
-//    key, filename, version := "123", "report.pdf", "0.0.3"
-//    src, err := c.RetrieveVersionFile(key, filename, version)
-//    if err != nil  {
-//       ...
-//    }
-//    err = ioutil.WriteFile(filename + "_" + version, src, 0664)
-//    if err != nil {
-//       ...
-//    }
-// ```
 //
+//	key, filename, version := "123", "report.pdf", "0.0.3"
+//	src, err := c.RetrieveVersionFile(key, filename, version)
+//	if err != nil  {
+//	   ...
+//	}
+//	err = ioutil.WriteFile(filename + "_" + version, src, 0664)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) RetrieveVersionFile(key string, filename string, version string) ([]byte, error) {
 	src := []byte{}
 	buf := bytes.NewBuffer(src)
@@ -543,13 +552,14 @@ func (c *Collection) RetrieveVersionFile(key string, filename string, version st
 // versions of the attached document.
 //
 // ```
-//   key, filename := "123", "report.pdf"
-//   err := c.Prune(key, filename)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	key, filename := "123", "report.pdf"
+//	err := c.Prune(key, filename)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) Prune(key string, filename string) error {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -576,13 +586,14 @@ func (c *Collection) Prune(key string, filename string) error {
 // PruneVersion removes an attached version of a document.
 //
 // ```
-//   key, filename, version := "123", "report.pdf, "0.0.3"
-//   err := c.PruneVersion(key, filename, version)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	key, filename, version := "123", "report.pdf, "0.0.3"
+//	err := c.PruneVersion(key, filename, version)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) PruneVersion(key string, filename string, version string) error {
 	vDir, err := attachmentVersionDir(c, key, filename)
 	if err != nil {
@@ -596,13 +607,14 @@ func (c *Collection) PruneVersion(key string, filename string, version string) e
 // When the collection is versioned it removes all versions of all too.
 //
 // ```
-//   key := "123"
-//   err := c.PruneAll(key)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	key := "123"
+//	err := c.PruneAll(key)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) PruneAll(key string) error {
 	if c == nil {
 		return fmt.Errorf("collection isn't open")
