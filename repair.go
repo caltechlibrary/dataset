@@ -1,4 +1,3 @@
-//
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package dataset
 
 import (
@@ -32,8 +30,8 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/v2/dsv1"
-	"github.com/caltechlibrary/dataset/v2/pairtree"
+	"github.com/caltechlibrary/dataset/dsv1"
+	"github.com/caltechlibrary/dataset/pairtree"
 	"github.com/caltechlibrary/dataset/v2/semver"
 )
 
@@ -63,13 +61,11 @@ func sniffVersionNumber(cName string) *semver.Semver {
 	return nil
 }
 
-//
 // Analyzer checks the collection version and analyzes current
 // state of collection reporting on errors.
 //
 // NOTE: the collection MUST BE CLOSED when Analyzer is called otherwise
 // the results will not be accurate.
-//
 func Analyzer(cName string, verbose bool) error {
 	var (
 		eCnt int
@@ -225,11 +221,9 @@ func Analyzer(cName string, verbose bool) error {
 	return nil
 }
 
-//
 // FixMissingCollectionJson will scan the collection directory
 // and environment making an educated guess to type of
 // collection collection type
-//
 func FixMissingCollectionJson(cName string) error {
 	collectionJson := path.Join(cName, "collection.json")
 	dsnURI := os.Getenv("DATASET_DSN_URI")
@@ -261,13 +255,11 @@ func FixMissingCollectionJson(cName string) error {
 	return ioutil.WriteFile(collectionJson, src, 0664)
 }
 
-//
 // Repair takes a collection name and calls
 // walks the pairtree and repairs collection.json as appropriate.
 //
 // NOTE: the collection MUST BE CLOSED when repair is called otherwise
 // the repaired collection may revert.
-//
 func Repair(cName string, verbose bool) error {
 	var (
 		c   *Collection
@@ -438,13 +430,11 @@ func Repair(cName string, verbose bool) error {
 	return nil
 }
 
-//
 // Migrate a dataset v1 collection to a v2 collection.
 // Both collections need to already exist. Records from v1
 // will be read out of v1 and created in v2.
 //
 // NOTE: Migrate does not current copy attachments.
-//
 func Migrate(srcName string, dstName string, verbose bool) error {
 	old, err := dsv1.Open(srcName)
 	if err != nil {

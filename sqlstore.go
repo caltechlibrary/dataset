@@ -1,4 +1,4 @@
-// sqlstore is a sub module of the dataset package.
+// sqlstore is a part of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -14,7 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-package sqlstore
+package dataset
 
 import (
 	"database/sql"
@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/v2/semver"
+	"github.com/caltechlibrary/dataset/semver"
 
 	// Database specific drivers
 	_ "github.com/glebarez/go-sqlite"
@@ -46,7 +46,7 @@ const (
 	versionPrefix = "_v_"
 )
 
-type Storage struct {
+type SQLStore struct {
 	// WorkPath holds the path to where the collection definition is held.
 	WorkPath string
 
@@ -82,14 +82,14 @@ func dsnFixUp(driverName string, dsn string, workPath string) string {
 
 // Init creates a table to hold the collection if it doesn't already
 // exist.
-func Init(name string, dsnURI string) (*Storage, error) {
+func Init(name string, dsnURI string) (*SQLStore, error) {
 	var err error
 
 	driverName, dsn, ok := strings.Cut(dsnURI, "://")
 	if !ok {
 		return nil, fmt.Errorf("could not parse DSN URI, got %q", dsnURI)
 	}
-	store := new(Storage)
+	store := new(SQLStore)
 	store.WorkPath = name
 	store.dsn = dsnFixUp(driverName, dsn, name)
 	store.driverName = driverName
@@ -133,7 +133,7 @@ func Init(name string, dsnURI string) (*Storage, error) {
 }
 
 // saveNewVersion saves an object to the version table for collection
-func (store *Storage) saveNewVersion(key string, src []byte) error {
+func (store *SQLStore) saveNewVersion(key string, src []byte) error {
 	// Figure out the next version number in sequence
 	var (
 		sv *semver.Semver
@@ -174,7 +174,7 @@ func (store *Storage) saveNewVersion(key string, src []byte) error {
 }
 
 // saveVersioning() is a help function to store current versioning settings.
-func (store *Storage) saveVersioning() error {
+func (store *SQLStore) saveVersioning() error {
 	versioningName := path.Join(store.WorkPath, "versioning.json")
 	src := []byte(fmt.Sprintf(`{"versioning": %d}`, store.Versioning))
 	if _, err := os.Stat(store.WorkPath); os.IsNotExist(err) {
@@ -188,7 +188,7 @@ func (store *Storage) saveVersioning() error {
 
 // getVersioning() reads the versioning information for collection
 // and returns the integer value it finds.
-func (store *Storage) getVersioning() error {
+func (store *SQLStore) getVersioning() error {
 	versioningName := path.Join(store.WorkPath, "versioning.json")
 	if _, err := os.Stat(versioningName); os.IsNotExist(err) {
 		store.Versioning = None
@@ -223,7 +223,7 @@ func (store *Storage) getVersioning() error {
 // SetVersioning sets versioning to Major, Minor, Patch or None
 // If versioning is set to Major, Minor or Patch a table in the
 // open SQL storage engine will be created.
-func (store *Storage) SetVersioning(setting int) error {
+func (store *SQLStore) SetVersioning(setting int) error {
 	switch setting {
 	case None:
 		store.Versioning = None
@@ -287,7 +287,7 @@ func (store *Storage) SetVersioning(setting int) error {
 //	}
 //
 // ```
-func Open(name string, dsnURI string) (*Storage, error) {
+func Open(name string, dsnURI string) (*SQLStore, error) {
 	var err error
 
 	// Check to see if the DSN coming from th environment
@@ -299,7 +299,7 @@ func Open(name string, dsnURI string) (*Storage, error) {
 		return nil, fmt.Errorf(`DSN URI is malformed, expected DRIVER_NAME://DSN, got %q`, dsnURI)
 	}
 
-	store := new(Storage)
+	store := new(SQLStore)
 	store.WorkPath = name
 	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
 	store.driverName = driverName
@@ -339,7 +339,7 @@ func Open(name string, dsnURI string) (*Storage, error) {
 //	}
 //
 // ```
-func (store *Storage) Close() error {
+func (store *SQLStore) Close() error {
 	switch store.driverName {
 	case "sqlite":
 		return store.db.Close()
@@ -357,7 +357,7 @@ func (store *Storage) Close() error {
 //	if err != nil {
 //	   ...
 //	}
-func (store *Storage) Create(key string, src []byte) error {
+func (store *SQLStore) Create(key string, src []byte) error {
 	stmt := fmt.Sprintf(`INSERT INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
@@ -380,7 +380,7 @@ func (store *Storage) Create(key string, src []byte) error {
 //	if err := json.Unmarshal(src, &obj); err != nil {
 //	   ...
 //	}
-func (store *Storage) Read(key string) ([]byte, error) {
+func (store *SQLStore) Read(key string) ([]byte, error) {
 	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
@@ -403,7 +403,7 @@ func (store *Storage) Read(key string) ([]byte, error) {
 }
 
 // Versions return a list of semver strings for a versioned object.
-func (store *Storage) Versions(key string) ([]string, error) {
+func (store *SQLStore) Versions(key string) ([]string, error) {
 	stmt := fmt.Sprintf(`SELECT version FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ?`, versionPrefix+store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
@@ -425,7 +425,7 @@ func (store *Storage) Versions(key string) ([]string, error) {
 }
 
 // ReadVersion returns a specific version of a JSON object.
-func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
+func (store *SQLStore) ReadVersion(key string, version string) ([]byte, error) {
 	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? AND version = ?`, versionPrefix+store.tableName)
 	rows, err := store.db.Query(stmt, key, version)
 	if err != nil {
@@ -450,7 +450,7 @@ func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 //	if err := storage.Update(key, src); err != nil {
 //	   ...
 //	}
-func (store *Storage) Update(key string, src []byte) error {
+func (store *SQLStore) Update(key string, src []byte) error {
 	stmt := fmt.Sprintf(`REPLACE INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
@@ -468,7 +468,7 @@ func (store *Storage) Update(key string, src []byte) error {
 //	if err := storage.Delete(key); err != nil {
 //	   ...
 //	}
-func (store *Storage) Delete(key string) error {
+func (store *SQLStore) Delete(key string) error {
 	stmt := fmt.Sprintf(`DELETE FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ?`, store.tableName)
 	_, err := store.db.Exec(stmt, key)
 	// FIXME: Remove attachments
@@ -484,7 +484,7 @@ func (store *Storage) Delete(key string) error {
 //	for _, key := range keys {
 //	   ...
 //	}
-func (store *Storage) Keys() ([]string, error) {
+func (store *SQLStore) Keys() ([]string, error) {
 	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY `+"`"+`key`+"`", store.tableName)
 	rows, err := store.db.Query(stmt)
 	if err != nil {
@@ -527,7 +527,7 @@ func (store *Storage) Keys() ([]string, error) {
 //	}
 //
 // ```
-func (store *Storage) UpdatedKeys(start string, end string) ([]string, error) {
+func (store *SQLStore) UpdatedKeys(start string, end string) ([]string, error) {
 	if start == "" {
 		return nil, fmt.Errorf("missing start time value")
 	}
@@ -562,7 +562,7 @@ func (store *Storage) UpdatedKeys(start string, end string) ([]string, error) {
 }
 
 // HasKey will look up and make sure key is in collection.
-// Storage must be open or zero false will always be returned.
+// SQLStore must be open or zero false will always be returned.
 //
 // ```
 //
@@ -572,7 +572,7 @@ func (store *Storage) UpdatedKeys(start string, end string) ([]string, error) {
 //	}
 //
 // ```
-func (store *Storage) HasKey(key string) bool {
+func (store *SQLStore) HasKey(key string) bool {
 	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
@@ -597,7 +597,7 @@ func (store *Storage) HasKey(key string) bool {
 
 // Length returns the number of records (count of rows in collection).
 // Requires collection to be open.
-func (store *Storage) Length() int64 {
+func (store *SQLStore) Length() int64 {
 	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM `+"`"+`%s`+"`", store.tableName)
 	rows, err := store.db.Query(stmt)
 	if err != nil {

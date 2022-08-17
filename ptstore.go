@@ -1,5 +1,4 @@
-//
-// ptstore is a submodule of the dataset package.
+// ptstore is a part of the dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -15,8 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-package ptstore
+package dataset
 
 import (
 	"encoding/json"
@@ -28,8 +26,8 @@ import (
 	"strings"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/v2/pairtree"
-	"github.com/caltechlibrary/dataset/v2/semver"
+	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dataset/semver"
 )
 
 const (
@@ -47,7 +45,7 @@ const (
 	vDelimiter = "^"
 )
 
-type Storage struct {
+type PTStore struct {
 	// Working path to the directory where the collections.json is found.
 	WorkPath string
 
@@ -75,16 +73,17 @@ type Storage struct {
 // implementation.
 //
 // ```
-//  name := "testout/T1.ds" // a collection called "T1.ds"
-//  store, err := c.Store.Open(name, "")
-//  if err != nil {
-//     ...
-//  }
-//  defer store.Close()
-// ```
 //
-func Open(name string, dsnURI string) (*Storage, error) {
-	store := new(Storage)
+//	name := "testout/T1.ds" // a collection called "T1.ds"
+//	store, err := c.Store.Open(name, "")
+//	if err != nil {
+//	   ...
+//	}
+//	defer store.Close()
+//
+// ```
+func PTStoreOpen(name string, dsnURI string) (*PTStore, error) {
+	store := new(PTStore)
 	store.WorkPath = name
 	// Find the key map file and read it
 	store.keyMapName = path.Join(name, "keymap.json")
@@ -104,7 +103,7 @@ func Open(name string, dsnURI string) (*Storage, error) {
 }
 
 // SetVersioning sets the type of versioning associated with the stored collection.
-func (store *Storage) SetVersioning(setting int) error {
+func (store *PTStore) SetVersioning(setting int) error {
 	switch setting {
 	case None:
 		store.Versioning = setting
@@ -121,7 +120,7 @@ func (store *Storage) SetVersioning(setting int) error {
 }
 
 // writeKeymap writes the keymap.json file
-func (store *Storage) writeKeymap() error {
+func (store *PTStore) writeKeymap() error {
 	src, err := json.Marshal(store.keyMap)
 	if err != nil {
 		return fmt.Errorf("could not encode key map for %q, %s", store.WorkPath, err)
@@ -132,24 +131,24 @@ func (store *Storage) writeKeymap() error {
 // Close closes the storage system freeing resources as needed.
 //
 // ```
-//   if err := store.Close(); err != nil {
-//      ...
-//   }
-// ```
 //
-func (store *Storage) Close() error {
+//	if err := store.Close(); err != nil {
+//	   ...
+//	}
+//
+// ```
+func (store *PTStore) Close() error {
 	return store.writeKeymap()
 }
 
 // Create stores a new JSON object in the collection
 // It takes a string as a key and a byte slice of encoded JSON
 //
-//   err := store.Create("123", []byte(`{"one": 1}`))
-//   if err != nil {
-//      ...
-//   }
-//
-func (store *Storage) Create(key string, src []byte) error {
+//	err := store.Create("123", []byte(`{"one": 1}`))
+//	if err != nil {
+//	   ...
+//	}
+func (store *PTStore) Create(key string, src []byte) error {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
 	key = strings.ToLower(key)
@@ -224,17 +223,18 @@ func (store *Storage) Create(key string, src []byte) error {
 // version of the object. Use Versions() and ReadVersion() for versioned copies.
 //
 // ```
-//   src, err := store.Read("123")
-//   if err != nil {
-//      ...
-//   }
-//   obj := map[string]interface{}{}
-//   if err := json.Unmarshal(src, &obj); err != nil {
-//      ...
-//   }
-// ```
 //
-func (store *Storage) Read(key string) ([]byte, error) {
+//	src, err := store.Read("123")
+//	if err != nil {
+//	   ...
+//	}
+//	obj := map[string]interface{}{}
+//	if err := json.Unmarshal(src, &obj); err != nil {
+//	   ...
+//	}
+//
+// ```
+func (store *PTStore) Read(key string) ([]byte, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
 	key = strings.ToLower(key)
@@ -258,14 +258,15 @@ func (store *Storage) Read(key string) ([]byte, error) {
 // JSON document in the collection.
 //
 // ```
-//   key := "123"
-//   src := []byte(`{"one": 1, "two": 2}`)
-//   if err := store.Update(key, src); err != nil {
-//      ...
-//   }
-// ```
 //
-func (store *Storage) Update(key string, src []byte) error {
+//	key := "123"
+//	src := []byte(`{"one": 1, "two": 2}`)
+//	if err := store.Update(key, src); err != nil {
+//	   ...
+//	}
+//
+// ```
+func (store *PTStore) Update(key string, src []byte) error {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
 	key = strings.ToLower(key)
@@ -292,7 +293,7 @@ func (store *Storage) Update(key string, src []byte) error {
 
 // saveNewVersions (private) if versioning is enabled the JSON document is saved
 // with a version number in filename along side the current version.
-func (store *Storage) saveNewVersion(key string, src []byte, dName string) error {
+func (store *PTStore) saveNewVersion(key string, src []byte, dName string) error {
 	// Figure out the next version number in sequence
 	l, err := store.Versions(key)
 	if err != nil {
@@ -326,23 +327,24 @@ func (store *Storage) saveNewVersion(key string, src []byte, dName string) error
 // Delete removes all versions of JSON document and attachment indicated by the
 // key provided.
 //
-//   key := "123"
-//   if err := store.Delete(key); err != nil {
-//      ...
-//   }
+//	key := "123"
+//	if err := store.Delete(key); err != nil {
+//	   ...
+//	}
 //
 // NOTE: If you're versioning your collection then you never really want to delete.
 // An approach could be to use update using an empty JSON document to indicate
 // the document is retired those avoiding the deletion problem of versioned content.
 //
 // ```
-//   key := "123"
-//   if err := store.Delete(key); err != nil {
-//      ...
-//   }
-// ```
 //
-func (store *Storage) Delete(key string) error {
+//	key := "123"
+//	if err := store.Delete(key); err != nil {
+//	   ...
+//	}
+//
+// ```
+func (store *PTStore) Delete(key string) error {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
 	key = strings.ToLower(key)
@@ -382,17 +384,18 @@ func (store *Storage) Delete(key string) error {
 // for a JSON document.
 //
 // ```
-//    key := "123"
-//    versions, err := store.Versions(key)
-//    if err != nil {
-//       ...
-//    }
-//    for _, version := range versions {
-//         // do something with version string.
-//    }
-// ```
 //
-func (store *Storage) Versions(key string) ([]string, error) {
+//	key := "123"
+//	versions, err := store.Versions(key)
+//	if err != nil {
+//	   ...
+//	}
+//	for _, version := range versions {
+//	     // do something with version string.
+//	}
+//
+// ```
+func (store *PTStore) Versions(key string) ([]string, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
 	key = strings.ToLower(key)
@@ -424,14 +427,15 @@ func (store *Storage) Versions(key string) ([]string, error) {
 // in a collection.
 //
 // ```
-//   key, version := "123", "0.0.1"
-//   src, err := store.ReadVersion(key, version)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
-func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
+//	key, version := "123", "0.0.1"
+//	src, err := store.ReadVersion(key, version)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
+func (store *PTStore) ReadVersion(key string, version string) ([]byte, error) {
 	// NOTE: Keys are always normalized to lower case due to
 	// naming issues in case insensitive file systems.
 	key = strings.ToLower(key)
@@ -454,31 +458,34 @@ func (store *Storage) ReadVersion(key string, version string) ([]byte, error) {
 // List returns all keys in a collection as a slice of strings.
 //
 // ```
-//   var keys []string
-//   keys, _ = store.Keys()
-//   /* iterate over the keys retrieved */
-//   for _, key := range keys {
-//      ...
-//   }
+//
+//	var keys []string
+//	keys, _ = store.Keys()
+//	/* iterate over the keys retrieved */
+//	for _, key := range keys {
+//	   ...
+//	}
+//
 // ```
 //
 // NOTE: the error will always be nil, this func signature needs to match
 // the other storage engines.
-func (store *Storage) Keys() ([]string, error) {
+func (store *PTStore) Keys() ([]string, error) {
 	return store.keys, nil
 }
 
 // HasKey will look up and make sure key is in collection.
-// Storage must be open or zero false will always be returned.
+// PTStore must be open or zero false will always be returned.
 //
 // ```
-//   key := "123"
-//   if store.HasKey(key) {
-//      ...
-//   }
-// ```
 //
-func (store *Storage) HasKey(key string) bool {
+//	key := "123"
+//	if store.HasKey(key) {
+//	   ...
+//	}
+//
+// ```
+func (store *PTStore) HasKey(key string) bool {
 	key = strings.ToLower(key)
 	ok := false
 	if len(store.keyMap) > 0 {
@@ -491,12 +498,13 @@ func (store *Storage) HasKey(key string) bool {
 // Requires collection to be open.
 //
 // ```
-//  var x int64
 //
-//  x = store.Length()
+//	var x int64
+//
+//	x = store.Length()
+//
 // ```
-//
-func (store *Storage) Length() int64 {
+func (store *PTStore) Length() int64 {
 	return int64(len(store.keys))
 }
 
@@ -504,7 +512,7 @@ func (store *Storage) Length() int64 {
 // PTStore specific functionality.
 //
 
-func (store *Storage) DocPath(key string) (string, error) {
+func (store *PTStore) DocPath(key string) (string, error) {
 	if pPath, ok := store.keyMap[key]; ok {
 		docPath := path.Join(store.WorkPath, "pairtree", pPath)
 		return docPath, nil
@@ -512,15 +520,15 @@ func (store *Storage) DocPath(key string) (string, error) {
 	return "", fmt.Errorf("%q not found", key)
 }
 
-func (store *Storage) Keymap() map[string]string {
+func (store *PTStore) Keymap() map[string]string {
 	return store.keyMap
 }
 
-func (store *Storage) KeymapName() string {
+func (store *PTStore) KeymapName() string {
 	return store.keyMapName
 }
 
-func (store *Storage) UpdateKeymap(keymap map[string]string) error {
+func (store *PTStore) UpdateKeymap(keymap map[string]string) error {
 	store.keyMap = map[string]string{}
 	for k, v := range keymap {
 		store.keyMap[k] = v

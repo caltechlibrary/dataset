@@ -1,5 +1,4 @@
-//
-// sqlstore is a sub module of the dataset package.
+// ptstorage_test is a of the dataset package.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -15,8 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-package sqlstore
+package dataset
 
 import (
 	"encoding/json"
@@ -31,36 +29,21 @@ import (
 // Test the storage functionality
 //
 
-func TestStorageBasic(t *testing.T) {
+func TestPTStoreBasic(t *testing.T) {
 	os.MkdirAll("testout", 0775)
-	sName := path.Join("testout", "sqls1.ds")
-	sDsnURI := "sqlite://testout/sqls1.ds/collection.db"
+	sName := path.Join("testout", "pt1.ds")
 	if _, err := os.Stat(sName); err == nil {
 		os.RemoveAll(sName)
 	}
-	os.MkdirAll(sName, 0775)
-	store, err := Init(sName, sDsnURI)
+	store, err := PTStoreOpen(sName, "")
 	if err != nil {
-		t.Errorf("failed to create table %q, %s", sName, err)
+		t.Errorf(`Open(%q, ""), error %s`, sName, err)
 		t.FailNow()
 	}
 	if store == nil {
-		t.Errorf(`Init(%q, %q), store should not be nil`, sName, sDsnURI)
+		t.Errorf(`Open(%q, ""), store should not be nil`, sName)
 		t.FailNow()
 	}
-	store.Close()
-
-	store, err = Open(sName, sDsnURI)
-	if err != nil {
-		t.Errorf(`Open(%q, %q), error %s`, sName, sDsnURI, err)
-		t.FailNow()
-	}
-	if store == nil {
-		t.Errorf(`Open(%q, %q), store should not be nil`, sName, sDsnURI)
-		t.FailNow()
-	}
-	// Setup main databases
-
 	for _, setting := range []int{Major, Minor, Patch, None} {
 		if err := store.SetVersioning(setting); err != nil {
 			t.Errorf("store.SetVersioning(%d) failed, %s", setting, err)
@@ -168,7 +151,7 @@ func TestStorageBasic(t *testing.T) {
 			t.FailNow()
 		} else {
 			if len(versions) != 2 {
-				t.Errorf("expected 2 version numbers, %+v", versions)
+				t.Errorf("expected 1 version number, %+v", versions)
 				t.FailNow()
 			}
 			for i := range versions {

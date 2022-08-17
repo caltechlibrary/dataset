@@ -81,17 +81,6 @@ check: .FORCE
 
 test: clean build
 	go test
-	cd config && go test
-	cd dotpath && go test
-	cd dsv1 && go test
-	cd dsv1/tbl && go test
-	cd pairtree && go test
-	cd ptstore && go test
-	cd semver && go test
-	cd sqlstore && go test
-	cd texts && go test
-	cd cli && go test
-	cd api && go test
 
 cleanweb:
 	@if [ -f index.html ]; then rm *.html; fi
