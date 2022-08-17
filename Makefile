@@ -147,7 +147,7 @@ update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: clean build CITATION.cff distribute_docs dist/linux-amd64 dist/windows-amd64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
+release: clean build CITATION.cff distribute_docs dist/linux-amd64 dist/windows-amd64 dist/windows-arm64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
 
 status:
 	git status
