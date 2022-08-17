@@ -1,5 +1,4 @@
-//
-// texts is a submodule of dataset
+// texts is part of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -15,8 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-package texts
+package dataset
 
 import (
 	"bytes"
@@ -57,11 +55,12 @@ func BytesProcessor(varMap map[string]string, text []byte) []byte {
 //
 // ```
 // src, err := ReadSource(inputName, os.Stdin)
-// if err != nil {
-//    ...
-// }
-// ```
 //
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func ReadSource(fName string, in io.Reader) ([]byte, error) {
 	var (
 		src []byte
@@ -90,11 +89,12 @@ func WriteSource(fName string, out io.Writer, src []byte) error {
 // one key per line with a line delimited of "\n".
 //
 // ```
-//   keys, err := dataset.ReadKeys(keysFilename, os.Stdin)
-//   if err != nil {
-//   }
-// ```
 //
+//	keys, err := dataset.ReadKeys(keysFilename, os.Stdin)
+//	if err != nil {
+//	}
+//
+// ```
 func ReadKeys(keysName string, in io.Reader) ([]string, error) {
 	src, err := ReadSource(keysName, in)
 	if err != nil {
@@ -109,12 +109,13 @@ func ReadKeys(keysName string, in io.Reader) ([]string, error) {
 // "\n" as a separator.
 //
 // ```
-//   keys := ...
-//   if err := WriteKeys(out, keyFilename, keys); err != nil {
-//      ...
-//   }
-// ```
 //
+//	keys := ...
+//	if err := WriteKeys(out, keyFilename, keys); err != nil {
+//	   ...
+//	}
+//
+// ```
 func WriteKeys(keyFilename string, out io.Writer, keys []string) error {
 	src := []byte(strings.Join(keys, "\n"))
 	return WriteSource(keyFilename, out, src)

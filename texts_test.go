@@ -1,4 +1,4 @@
-package texts
+package dataset
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-// cli is a sub module of dataset.
+// cli is part of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -14,7 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-package cli
+package dataset
 
 import (
 	"encoding/json"
@@ -25,10 +25,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-
-	// dataset submodule
-	ds "github.com/caltechlibrary/dataset/v2"
-	"github.com/caltechlibrary/dataset/v2/texts"
 )
 
 var (
@@ -72,7 +68,7 @@ var (
 		"repair":        cliRepair,
 		"migrate":       cliMigrate,
 		"codemeta":      cliCodemeta,
-		"license":       ds.License,
+		"license":       License,
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
@@ -122,10 +118,10 @@ func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	}
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  ds.Version,
+		"{version}":  Version,
 	}
 	if text, ok := helpDocs[topic]; ok {
-		fmt.Fprintf(out, texts.StringProcessor(m, text))
+		fmt.Fprintf(out, StringProcessor(m, text))
 	} else {
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -136,18 +132,18 @@ func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 func DisplayLicense(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  ds.Version,
+		"{version}":  Version,
 	}
-	fmt.Fprintf(out, texts.StringProcessor(m, ds.License))
+	fmt.Fprintf(out, StringProcessor(m, License))
 }
 
 // DisplayVersion returns the of the dataset application.
 func DisplayVersion(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  ds.Version,
+		"{version}":  Version,
 	}
-	fmt.Fprintf(out, texts.StringProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
 }
 
 // DisplayUsage displays a usage message.
@@ -156,14 +152,14 @@ func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	description, examples := cliDescription, cliExamples
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  ds.Version,
+		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, texts.StringProcessor(m, description))
+	fmt.Fprintf(out, StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, texts.StringProcessor(m, examples))
+	fmt.Fprintf(out, StringProcessor(m, examples))
 	DisplayLicense(out, appName)
 }
 
@@ -188,7 +184,7 @@ func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME [DSN_URI], got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Init(cName, dsnURI)
+	c, err := Init(cName, dsnURI)
 	if err == nil {
 		defer c.Close()
 	}
@@ -214,7 +210,7 @@ func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	default:
 		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME VERSIONING_SETTING, got %q", strings.Join(append([]string{appName, "versioning"}, args...), " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
@@ -243,7 +239,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(append([]string{appName, "versions"}, args...), " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
@@ -252,7 +248,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	if err != nil {
 		return fmt.Errorf("version errors for %q, %s", key, err)
 	}
-	return texts.WriteSource(output, out, []byte(strings.Join(versions, "\n")))
+	return WriteSource(output, out, []byte(strings.Join(versions, "\n")))
 }
 
 func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -278,15 +274,15 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME KEY VERSION, got %q", strings.Join(append([]string{appName, "read-version"}, args...), " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	switch c.StoreType {
-	case ds.PTSTORE:
+	case PTSTORE:
 		src, err = c.PTStore.ReadVersion(key, version)
-	case ds.SQLSTORE:
+	case SQLSTORE:
 		// NOTE: SQL databases will store JSON in an un-pretty way.
 		// I want to pretty print the JSON I output.
 		src, err = c.SQLStore.ReadVersion(key, version)
@@ -302,7 +298,7 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		return fmt.Errorf("%q storage not supported", c.StoreType)
 	}
 	if err == nil {
-		return texts.WriteSource(output, out, src)
+		return WriteSource(output, out, src)
 	}
 	return err
 }
@@ -333,20 +329,20 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 		// Read the JSON object from a file or standard input
-		src, err = texts.ReadSource(input, in)
+		src, err = ReadSource(input, in)
 		if err != nil {
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC], got %q", strings.Join(append([]string{appName, "create"}, args...), " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	obj := map[string]interface{}{}
-	if err := ds.DecodeJSON(src, &obj); err != nil {
+	if err := DecodeJSON(src, &obj); err != nil {
 		return err
 	}
 	if overwrite && c.HasKey(key) {
@@ -379,16 +375,16 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	src := []byte{}
 	switch c.StoreType {
-	case ds.PTSTORE:
+	case PTSTORE:
 		src, err = c.PTStore.Read(key)
-	case ds.SQLSTORE:
+	case SQLSTORE:
 		src, err = c.SQLStore.Read(key)
 		// Force output to be pretty printed. I can't rely on a
 		// standard way to implement this in SQL.
@@ -402,7 +398,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
 	}
 	if err == nil {
-		return texts.WriteSource(output, out, src)
+		return WriteSource(output, out, src)
 	}
 	return err
 }
@@ -431,20 +427,20 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	case len(args) == 2:
 		cName, key = args[0], args[1]
 		// Read JSON source
-		src, err = texts.ReadSource(input, in)
+		src, err = ReadSource(input, in)
 		if err != nil {
 			return fmt.Errorf("could not read JSON file, %s", err)
 		}
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY [JSON_SRC], got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	obj := map[string]interface{}{}
-	if err := ds.DecodeJSON(src, &obj); err != nil {
+	if err := DecodeJSON(src, &obj); err != nil {
 		return err
 	}
 	if err := c.Update(key, obj); err != nil {
@@ -472,15 +468,15 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 	switch c.StoreType {
-	case ds.PTSTORE:
+	case PTSTORE:
 		err = c.PTStore.Delete(key)
-	case ds.SQLSTORE:
+	case SQLSTORE:
 		err = c.SQLStore.Delete(key)
 	default:
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
@@ -512,7 +508,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
@@ -526,7 +522,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return err
 	}
 	src := []byte(strings.Join(keys, "\n"))
-	return texts.WriteSource(output, out, src)
+	return WriteSource(output, out, src)
 }
 
 func doUpdatedKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -553,7 +549,7 @@ func doUpdatedKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME START END, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
@@ -563,7 +559,7 @@ func doUpdatedKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		return err
 	}
 	src := []byte(strings.Join(keys, "\n"))
-	return texts.WriteSource(output, out, src)
+	return WriteSource(output, out, src)
 }
 
 func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -585,7 +581,7 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
@@ -616,7 +612,7 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
@@ -654,11 +650,11 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME DEST_COLLECTION_NAME [DEST_DSN_URI], got %q", strings.Join(args, " "))
 	}
-	keys, err = texts.ReadKeys(keysName, in)
+	keys, err = ReadKeys(keysName, in)
 	if err != nil {
 		return err
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -692,14 +688,14 @@ func doFrameNames(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
 	defer source.Close()
 	frames := source.FrameNames()
 	src := []byte(strings.Join(frames, "\n"))
-	return texts.WriteSource(output, out, src)
+	return WriteSource(output, out, src)
 }
 
 // doFrameCreate
@@ -730,7 +726,7 @@ func doFrameCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME DOT_PATH [DOT_PATH...] got %q", strings.Join(args, " "))
 	}
-	keys, err = texts.ReadKeys(input, in)
+	keys, err = ReadKeys(input, in)
 	if err != nil {
 		return err
 	}
@@ -748,7 +744,7 @@ func doFrameCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		}
 	}
 
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -786,7 +782,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -799,7 +795,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	if err != nil {
 		return err
 	}
-	return texts.WriteSource(output, out, src)
+	return WriteSource(output, out, src)
 }
 
 // doFrameObjects
@@ -825,7 +821,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -838,7 +834,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	if err != nil {
 		return err
 	}
-	return texts.WriteSource(output, out, src)
+	return WriteSource(output, out, src)
 }
 
 // doFrameKeys
@@ -864,13 +860,13 @@ func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
 	defer source.Close()
 	keys := source.FrameKeys(frameName)
-	return texts.WriteKeys(output, out, keys)
+	return WriteKeys(output, out, keys)
 }
 
 // doRefresh
@@ -896,7 +892,7 @@ func doRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -930,11 +926,11 @@ func doReframe(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	keys, err = texts.ReadKeys(input, in)
+	keys, err = ReadKeys(input, in)
 	if err != nil {
 		return err
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -963,7 +959,7 @@ func doDeleteFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -992,7 +988,7 @@ func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME FRAME_NAME, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -1029,7 +1025,7 @@ func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -1038,7 +1034,7 @@ func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	if err != nil {
 		return fmt.Errorf("failed to get attachments %q, %q, %s", srcName, key, err)
 	}
-	return texts.WriteKeys(output, out, attachments)
+	return WriteKeys(output, out, attachments)
 }
 
 // doAttach
@@ -1065,7 +1061,7 @@ func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAME[FILENAME ...], got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -1103,7 +1099,7 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAMEgot, %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(srcName)
+	c, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -1157,7 +1153,7 @@ func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAME[FILENAME ...], got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return fmt.Errorf("failed to open %q, %s", srcName, err)
 	}
@@ -1197,7 +1193,7 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME SIZE_OF_SAMPLE_KEYS, got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return err
 	}
@@ -1210,7 +1206,7 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	if err != nil {
 		return fmt.Errorf("sampling keys failed, %s", err)
 	}
-	return texts.WriteKeys(output, out, keys)
+	return WriteKeys(output, out, keys)
 }
 
 // doCloneSample
@@ -1248,11 +1244,11 @@ func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME TRAINING_COLLECTION TRAINING_DSN_URI [DEST_COLLECTION_NAME [TEST_DSN_URI]], got %q", strings.Join(args, " "))
 	}
-	source, err := ds.Open(srcName)
+	source, err := Open(srcName)
 	if err != nil {
 		return err
 	}
-	keys, err = texts.ReadKeys(keysName, in)
+	keys, err = ReadKeys(keysName, in)
 	if err != nil {
 		return err
 	}
@@ -1283,7 +1279,7 @@ func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	return ds.Analyzer(srcName, verbose)
+	return Analyzer(srcName, verbose)
 }
 
 // doRepair
@@ -1307,7 +1303,7 @@ func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	return ds.Repair(srcName, verbose)
+	return Repair(srcName, verbose)
 }
 
 // doMigrate
@@ -1332,7 +1328,7 @@ func doMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] OLD_COLLECTION_NAME NEW_COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	return ds.Migrate(srcName, dstName, verbose)
+	return Migrate(srcName, dstName, verbose)
 }
 
 // doCodemeta
@@ -1344,7 +1340,7 @@ func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	c, err := ds.Open(cName)
+	c, err := Open(cName)
 	if err != nil {
 		return err
 	}
