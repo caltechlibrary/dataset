@@ -1321,7 +1321,24 @@ func doMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 
 // doCodemeta
 func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	return fmt.Errorf("doCodemeta() not implemented")
+	var cName string
+	switch {
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	c, err := ds.Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	src, err := c.Codemeta()
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "%s\n", src)
+	return nil
 }
 
 // / RunCLI implemented the functionlity used by the cli.
