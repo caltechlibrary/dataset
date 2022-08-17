@@ -290,12 +290,6 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		// NOTE: SQL databases will store JSON in an un-pretty way.
 		// I want to pretty print the JSON I output.
 		src, err = c.SQLStore.ReadVersion(key, version)
-		var o *interface{}
-		if err := json.Unmarshal(src, o); err == nil {
-			if txt, err := json.MarshalIndent(o, "", "    "); err == nil {
-				src = txt
-			}
-		}
 	default:
 		return fmt.Errorf("%q storage not supported", c.StoreType)
 	}
