@@ -1,4 +1,3 @@
-//
 // cli is a sub module of dataset.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package cli
 
 import (
@@ -289,7 +287,15 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	case ds.PTSTORE:
 		src, err = c.PTStore.ReadVersion(key, version)
 	case ds.SQLSTORE:
+		// NOTE: SQL databases will store JSON in an un-pretty way.
+		// I want to pretty print the JSON I output.
 		src, err = c.SQLStore.ReadVersion(key, version)
+		var o *interface{}
+		if err := json.Unmarshal(src, o); err == nil {
+			if txt, err := json.MarshalIndent(o, "", "    "); err == nil {
+				src = txt
+			}
+		}
 	default:
 		return fmt.Errorf("%q storage not supported", c.StoreType)
 	}
@@ -1324,7 +1330,7 @@ func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	return fmt.Errorf("doCodemeta() not implemented")
 }
 
-/// RunCLI implemented the functionlity used by the cli.
+// / RunCLI implemented the functionlity used by the cli.
 func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var err error
 

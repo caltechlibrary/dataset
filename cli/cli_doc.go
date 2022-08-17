@@ -1,4 +1,3 @@
-//
 // cli is a submodule of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package cli
 
 const (
@@ -127,12 +125,12 @@ create
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     cat JSON_DOCNAME | {app_name} create COLLECTION_NAME KEY
     {app_name} create -i JSON_DOCNAME COLLECTION_NAME KEY
     {app_name} create COLLECTION_NAME KEY JSON_VALUE
     {app_name} create COLLECTION_NAME KEY JSON_FILENAME
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -150,12 +148,12 @@ of ` + "`" + `{"name":"Jane Doe"}` + "`" + `.  The KEY we will create is _r1_.
 Collection is "people.ds".  The following are equivalent in 
 resulting record.
 
-` + "```" + `shell
+~~~shell
     cat jane-doe.json | {app_name} create people.ds r1
     {app_name} create -i blob.json people.ds r1
     {app_name} create people.ds r1 '{"name":"Jane Doe"}'
     {app_name} create people.ds r1 jane-doe.json
-` + "```" + `
+~~~
 
 `
 
@@ -166,9 +164,9 @@ read
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} read COLLECTION_NAME KEY
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -183,9 +181,9 @@ Usage
 An example we're assuming there is a JSON document with a KEY 
 of "r1". Our collection name is "data.ds"
 
-` + "```" + `shell
+~~~shell
     {app_name} read data.ds r1
-` + "```" + `
+~~~
 
 Options
 -------
@@ -195,9 +193,9 @@ and possibly ` + "`._Attachments`" + `. You can get the object without these
 added attributes by using the ` + "`-c` or `-clean`" + ` option.
 
 
-` + "```" + `shell
+~~~shell
     {app_name} read -clean data.ds r1
-` + "```" + `
+~~~
 
 `
 
@@ -208,9 +206,9 @@ update
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} update COLLECTION_NAME KEY
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -233,12 +231,12 @@ data from _jane-doe.json_. Finally in the last we read the JSON
 document from standard input and save the update to "jane.doe".
 The collection name is "people.ds".
 
-` + "```" + `shell
+~~~shell
     {app_name} update people.ds jane.doe '{"name":"Jane Doiel"}'
     {app_name} update people.ds jane.doe jane-doe.json
     {app_name} update -i jane-doe.json people.ds jane.doe
     cat jane-doe.json | {app_name} update people.ds jane.doe
-` + "```" + `
+~~~
 
 `
 
@@ -249,9 +247,9 @@ delete
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} delete COLLECTION_NAME KEY
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -265,9 +263,9 @@ Usage
 This usage example will delete the JSON document withe the key _r1_ in 
 the collection named "publications.ds".
 
-` + "```" + `shell
+~~~shell
     {app_name} delete publications.ds r1
-` + "```" + `
+~~~
 
 `
 
@@ -278,9 +276,9 @@ keys
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} keys COLLECTION_NAME
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -298,11 +296,11 @@ Here are three examples usage. Notice the sorting is handled by
 the POSIX sort command which lets you sort ascending or descending
 including sorting number strings.
 
-` + "```" + `shell
+~~~shell
     {app_name} keys COLLECTION_NAME
     {app_name} keys COLLECTION_NAME | sort
     {app_name} keys COLLECTION_NAME | sort -n
-` + "```" + `
+~~~
 
 Getting a "sample" of keys
 --------------------------
@@ -323,9 +321,9 @@ haskey
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -336,10 +334,10 @@ found, "false" otherwise. The collection name is "people.ds"
 Usage
 -----
 
-` + "```" + `shell
+~~~shell
     {app_name} haskey people.ds '0000-0003-0900-6903'
     {app_name} haskey people.ds r1
-` + "```" + `
+~~~
 
 `
 	cliUpdatedKeys = `
@@ -349,9 +347,9 @@ updated-keys
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} update-keys COLLECTION_NAME START END
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -371,11 +369,11 @@ The times are in the form of "YYYY-MM-DD HH:MM:SS" and are required.
 The hours are in 24 hour notation.  The resulting keys are sorted
 in ascending updated timestamp order.
 
-` + "```" + `shell
+~~~shell
     {app_name} updated-keys COLLECTION_NAME \
 	           "2022-01-01 00:00:00"
 	           "2022-12-31 23:23:59"
-` + "```" + `
+~~~
 
 `
 
@@ -386,9 +384,9 @@ count
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} count COLLECTION_NAME [FILTER EXPRESSION]
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -404,15 +402,15 @@ Usage
 
 Count all records in collection "publications.ds"
 
-` + "```" + `shell
+~~~shell
     {app_name} count "publications.ds"
-` + "```" + `
+~~~
 
 Count records where the ".published" field is true.
 
-` + "```" + `shell
+~~~shell
     {app_name} count "publications.ds" '(eq .published true)'
-` + "```" + `
+~~~
 
 `
 
@@ -423,9 +421,9 @@ init
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} init COLLECTION_NAME
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -439,9 +437,9 @@ Usage
 The following example command create a dataset collection 
 named "data.ds".
 
-` + "```" + `shell
+~~~shell
     {app_name} init data.ds
-` + "```" + `
+~~~
 
 NOTE: After each evocation of ` + "`{app_name} init`" + ` if all went well 
 you will be shown an ` + "`OK`" + ` if everything went OK, otherwise
@@ -469,12 +467,12 @@ verb which takes a key and a semver version string.
 create a copy of the JSON document or attachment using a semver 
 then and
 
-` + "```" + `shell
+~~~shell
   # List versions in the data.ds collection for key "123"
   {app_name} versions data.ds 123
   # To read a specific vesion, e.g. 0.0.3
   {app_name} version data.ds 123 0.0.3
-` + "```" + `
+~~~
 
 `
 
@@ -487,10 +485,10 @@ Clone a collection from a list of keys into a new collection.
 In this example we create a list of keys using the ` + "`-sample`" + ` option
 and then clone those keys into a new collection called *sample.ds*.
 
-` + "```" + `shell
+~~~shell
     {app_name} keys -sample=3 mycollection.ds > sample.keys
     {app_name} clone -i sample.keys mycollection.ds sample.ds
-` + "```" + `
+~~~
 
 `
 
@@ -504,9 +502,9 @@ and test collection.
 In this example we create a training and testing collections 
 based on a training sample size of 1000.
 
-` + "```" + `shell
+~~~shell
     {app_name} clone-sample -size=1000 mycollection.ds training.ds test.ds
-` + "```" + `
+~~~
 
 `
 
@@ -517,9 +515,9 @@ frames
 Lists the frames available in a collection. In this example our
 collection name is ` + "`pubs.ds`" + `.
 
-` + "```" + `shell
+~~~shell
    {app_name} frames pubs.ds
-` + "```" + `
+~~~
 
 `
 
@@ -540,23 +538,23 @@ from a dataset collection called ` + "`pubs.ds`" + `. Note the labels of
 \"Title\", \"Authors\", \"PubYear\" are on the right side the an equal
 sign and the dot paths to the left.
 
-` + "```" + `shell
+~~~shell
     {app_name} keys pubs.ds |\
         {app_name} frame pubs.ds "title-authors-year" \
                 ".title=Title" \
                 ".authors=Authors" \
                 ".publication_year=PubYear"
-` + "```" + `
+~~~
 
 The objects in the frame\'s object list will look like
 
-` + "```" + `json
+~~~json
     {
         "Title": ...,
         "Authors": ...,
         "PubYear": ...,
     }
-` + "```" + `
+~~~
 
 This allows you to create convenient names for otherwise deep dot paths.
 
@@ -569,9 +567,9 @@ frame-objects
 Usage
 -----
 
-` + "```" + `shell
+~~~shell
     frame-objects COLLECTION FRAME_NAME
-` + "```" + `
+~~~
 
 Returns the object list of a frame.
 
@@ -589,9 +587,9 @@ for a frame named "captions-dates-locations" from my collection
 called "photos.ds" I would do the following (will be using the
 ` + "`-p`" + ` option to pretty print the results)
 
-` + "```" + `shell
+~~~shell
     {app_name} frame-objects -p photos.ds captions-dates-locations
-` + "```" + `
+~~~
 
 `
 
@@ -607,10 +605,10 @@ In the following example the frame name is \"f1\", the collection is
 existing keys coming from standard input, the second example performs
 the same thing but is taking a filename to retrieve the list of keys.
 
-` + "```" + `shell
+~~~shell
     cat f1-updated.keys | {app_name} reframe example.ds f1
     {app_name} reframe example.ds f1 f1-updated.keys
-` + "```" + `
+~~~
 
 `
 
@@ -626,9 +624,9 @@ associated with those keys in the frame will also be removed.
 In the following example the frame name is \"f1\", the collection is
 \"examples.ds\". The example is refreshing the object list.
 
-` + "```" + `shell
+~~~shell
     {app_name} refresh example.ds f1
-` + "```" + `
+~~~
 
 `
 
@@ -638,9 +636,9 @@ delete-frame
 
 This is used to removed a frame from a collection.
 
-` + "```" + `shell
+~~~shell
     {app_name} delete-frame example.ds f1
-` + "```" + `
+~~~
 
 delete frame f1 from collection called example.ds
 
@@ -653,9 +651,9 @@ attachments
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} attachments COLLECTION_NAME KEY
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -668,9 +666,9 @@ Usage
 
 List all the attachments for _k1_ in collection "stats.ds".
 
-` + "```" + `shell
+~~~shell
     {app_name} attachments stats.ds k1
-` + "```" + `
+~~~
 
 `
 
@@ -681,9 +679,9 @@ attach
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} attach COLLECTION_NAME KEY [SEMVER] FILENAME(S)
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -697,15 +695,15 @@ Usage
 Attaching a file named *start.xlsx* to the JSON record with id _t1_ in 
 collection "stats.ds"
 
-` + "```" + `shell
+~~~shell
     {app_name} attach stats.ds t1 start.xlsx
-` + "```" + `
+~~~
 
 Attaching the file as version v0.0.1
 
-` + "```" + `shell
+~~~shell
     {app_name} attach stats.ds t1 v0.0.1 start.xlsx
-` + "```" + `
+~~~
 
 `
 
@@ -716,10 +714,10 @@ retrieve
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} retrieve COLLECTION_NAME KEY [SEMVER]
     {app_name} retrieve COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -733,21 +731,21 @@ Usage
 Write out all the attached files for k1 in collection named 
 "publications.ds"
 
-` + "```" + `shell
+~~~shell
     {app_name} retrieve publications.ds k1
-` + "```" + `
+~~~
 
 Write out only the *stats.xlsx* file attached to k1
 
-` + "```" + `shell
+~~~shell
     {app_name} retrieve publications.ds k1 stats.xlsx
-` + "```" + `
+~~~
 
 Write out only the v0.0.1 *stats.xlsx* file attached to k1
 
-` + "```" + `shell
+~~~shell
     {app_name} retrieve publications.ds k1 v0.0.1 stats.xlsx
-` + "```" + `
+~~~
 
 `
 
@@ -758,10 +756,10 @@ prune
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     {app_name} prune COLLECTION_NAME KEY [SEMVER]
     {app_name} prune COLLECTION_NAME KEY [SEMVER] ATTACHMENT_NAME
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -778,11 +776,11 @@ attached file. In the first example only *stats.xlsx* is removed in
 the second all attachments are removed. Our collection name is "data.ds"
 
 
-` + "```" + `shell
+~~~shell
     {app_name} prune data.ds k1 v0.0.1 stats.xlsx
     {app_name} prune data.ds k1 stats.xlsx
     {app_name} prune data.ds k1
-` + "```" + `
+~~~
 
 `
 	cliSample = `
@@ -796,9 +794,9 @@ a positive integer value "N". It returns a randomly selected number of
 keys.  If N is greater than the collection then all keys are returned
 for the collection.
 
-` + "```" + `shell
+~~~shell
     {app_name} sample data.ds 100
-` + "```" + `
+~~~
 
 `
 
@@ -809,9 +807,9 @@ frame-def
 {app_name} supports the concept of frames and the "frame-def" verb
 lets you review the definition of an existing frame.
 
-` + "```" + `shell
+~~~shell
     {app_name} frame-def data.ds myframe
-` + "```" + `shell
+~~~shell
 
 `
 
@@ -822,9 +820,9 @@ has-frame
 {app_name} supports the concept of frames and the "has-frame" verb
 lets you check if a frame exists.
 
-` + "```" + `shell
+~~~shell
     {app_name} has-frame data.ds myframe
-` + "```" + `shell
+~~~shell
 
 `
 
@@ -835,9 +833,9 @@ check
 syntax
 ------
 
-` + "```" + `shell
+~~~shell
     dataset check COLLECTION_NAME [COLLECTION_NAME ...]
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -853,10 +851,10 @@ If multiple instances of dataset write (e.g. create or update) to
 a collection then it is possible that the JSON file ` + "`collection.json`" + `
 will become inaccurate.
 
-` + "```" + `shell
+~~~shell
     dataset check MyRecordCollection.ds
     dataset check MyBrokenCollection.ds MyRecordCollection.ds
-` + "```" + `
+~~~
 
 `
 
@@ -867,9 +865,9 @@ repair
 Syntax
 ------
 
-` + "```" + `shell
+~~~shell
     dataset repair COLLECTION_NAME
-` + "```" + `
+~~~
 
 Description
 -----------
@@ -882,9 +880,9 @@ Usage
 
 Our collection name is "MyCollectiond.ds".
 
-` + "```" + `shell
+~~~shell
    dataset repair MyCollection.ds
-` + "```" + `
+~~~
 
 `
 
@@ -895,9 +893,9 @@ codemeta
 The command imports a codemeta.json file into the collection replacing
 it's existing metadata.
 
-` + "```" + `shell
+~~~shell
    {app_name} codemeta data.ds ./codemeta.json
-` + "```" + `
+~~~
 
 Without the codemeta filename it returns the existing codemeta values.
 
@@ -911,9 +909,9 @@ This returnes a list of keys assocaited with the frame. Keys are
 returned one per line.
 
 
-` + "```" + `shell
+~~~shell
     {app_name} frame-keys data.ds
-` + "```" + `
+~~~
 
 `
 
@@ -928,10 +926,10 @@ empty distination collection.
 NOTE: attachments are not currently
 migrated, just the JSON documents.
 
-` + "```" + `shell
+~~~shell
     {app_name} init new_collection.ds
     {app_name} migrate -verbose old_collection.ds new_collection.ds
-` + "```" + `
+~~~
 
 `
 )
