@@ -1,30 +1,27 @@
-package api
+package dataset
 
 import (
 	"flag"
 	"fmt"
 	"io"
-
-	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset/v2"
 )
 
-// DisplayLicense returns the license associated with dataset application.
-func DisplayLicense(out io.Writer, appName string) {
-	fmt.Fprintf(out, ds.License)
+// ApiDisplayLicense returns the license associated with dataset application.
+func ApiDisplayLicense(out io.Writer, appName string) {
+	fmt.Fprintf(out, License)
 }
 
-// DisplayVersion returns the of the dataset application.
-func DisplayVersion(out io.Writer, appName string) {
+// ApiDisplayVersion returns the of the dataset application.
+func ApiDisplayVersion(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  ds.Version,
+		"{version}":  Version,
 	}
-	fmt.Fprintf(out, ds.StringProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
 }
 
-// DisplayUsage displays a usage message.
-func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
+// ApiDisplayUsage displays a usage message.
+func ApiDisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	// Replacable text vars
 	description := `
 USAGE
@@ -53,13 +50,13 @@ Starting up the web service
 `
 	m := map[string]string{
 		"{app_name}": appName,
-		"{version}":  ds.Version,
+		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, ds.StringProcessor(m, description))
+	fmt.Fprintf(out, StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, ds.StringProcessor(m, examples))
+	fmt.Fprintf(out, StringProcessor(m, examples))
 	DisplayLicense(out, appName)
 }

@@ -1,4 +1,4 @@
-package api
+package dataset
 
 import (
 	"bytes"
@@ -14,8 +14,6 @@ import (
 	"time"
 
 	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset/v2"
-	"github.com/caltechlibrary/dataset/v2/config"
 	"github.com/caltechlibrary/dataset/v2/dotpath"
 )
 
@@ -180,7 +178,7 @@ func sameObjectSrc(expected []byte, got []byte) bool {
 	return true
 }
 
-func clientTestVersion(t *testing.T, settings *config.Settings) {
+func clientTestVersion(t *testing.T, settings *Settings) {
 	fmt.Printf("starting client test verisons\n")
 	// Run through a set of the
 	u := fmt.Sprintf("http://%s/api/version", settings.Host)
@@ -205,11 +203,11 @@ func clientTestVersion(t *testing.T, settings *config.Settings) {
 	}
 }
 
-func clientTestKeys(t *testing.T, settings *config.Settings) {
+func clientTestKeys(t *testing.T, settings *Settings) {
 	fmt.Printf("starting client test keys\n")
 
 	for _, cfg := range settings.Collections {
-		c, err := ds.Open(cfg.CName)
+		c, err := Open(cfg.CName)
 		if err != nil {
 			t.Errorf("Open(%q) failed, %s", cfg.CName, err)
 			t.FailNow()
@@ -262,7 +260,7 @@ func clientTestKeys(t *testing.T, settings *config.Settings) {
 	}
 }
 
-func clientTestObjects(t *testing.T, settings *config.Settings) {
+func clientTestObjects(t *testing.T, settings *Settings) {
 	fmt.Printf("starting client test add objects\n")
 
 	newRecords := map[string]map[string]interface{}{
@@ -355,11 +353,11 @@ func clientTestObjects(t *testing.T, settings *config.Settings) {
 	}
 }
 
-func clientTestAttachments(t *testing.T, settings *config.Settings) {
+func clientTestAttachments(t *testing.T, settings *Settings) {
 	cPath := path.Join(dName, "attachment_test.ds")
 	cName := path.Base(cPath)
 	/*
-		c, err := ds.Open(cPath)
+		c, err := Open(cPath)
 		if err != nil {
 			t.Errorf("Failed to open test collection %q, %s", cPath, err)
 		}
@@ -546,10 +544,10 @@ func clientTestAttachments(t *testing.T, settings *config.Settings) {
 	}
 }
 
-func clientTestFrames(t *testing.T, settings *config.Settings) {
+func clientTestFrames(t *testing.T, settings *Settings) {
 	cPath := path.Join(dName, "frames_test.ds")
 	cName := path.Base(cPath)
-	c, err := ds.Open(cPath)
+	c, err := Open(cPath)
 	if err != nil {
 		t.Errorf("Failed to open test collection %q, %s", cPath, err)
 	}
@@ -897,7 +895,7 @@ func TestRunAPI(t *testing.T) {
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
-	settings := new(config.Settings)
+	settings := new(Settings)
 	settings.Host = "localhost:8585"
 	testCollections := map[string]interface{}{}
 	if err := json.Unmarshal(testCollectionsSrc, &testCollections); err != nil {
@@ -916,12 +914,12 @@ func TestRunAPI(t *testing.T) {
 
 		dbName := path.Join(pName, "collection.db")
 		dsnURI := "sqlite://" + dbName
-		if err := SetupTestCollection(pName, dsnURI, records); err != nil {
+		if err := SetupApiTestCollection(pName, dsnURI, records); err != nil {
 			t.Errorf("Failed to setup test collection %q, %s", pName, err)
 			t.FailNow()
 		}
 		// Setup a test configuration
-		cfg := new(config.Config)
+		cfg := new(Config)
 		cfg.CName = pName
 		cfg.DsnURI = dsnURI
 		cfg.Keys = true

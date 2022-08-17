@@ -1,14 +1,11 @@
-package api
+package dataset
 
 import (
 	"fmt"
 	"os"
-
-	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset/v2"
 )
 
-func SetupTestCollection(cName string, dsnURI string, records map[string]map[string]interface{}) error {
+func SetupApiTestCollection(cName string, dsnURI string, records map[string]map[string]interface{}) error {
 	// Create collection.json using v1 structures
 	if len(cName) == 0 {
 		return fmt.Errorf("missing a collection name")
@@ -16,7 +13,7 @@ func SetupTestCollection(cName string, dsnURI string, records map[string]map[str
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	c, err := ds.Init(cName, dsnURI)
+	c, err := Init(cName, dsnURI)
 	if err != nil {
 		return err
 	}

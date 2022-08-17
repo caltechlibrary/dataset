@@ -1,4 +1,4 @@
-package api
+package dataset
 
 import (
 	"encoding/json"
@@ -46,9 +46,10 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 // This will normally be the same version of dataset you installed.
 //
 // ```shell
-//    curl -X GET http://localhost:8485/api/version
-// ```
 //
+//	curl -X GET http://localhost:8485/api/version
+//
+// ```
 func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	fmt.Fprintf(w, "%s %s", api.AppName, api.Version)
@@ -58,9 +59,10 @@ func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, 
 // by the running web service.
 //
 // ```shell
-//    curl -X GET http://localhost:8485/api/collections
-// ```
 //
+//	curl -X GET http://localhost:8485/api/collections
+//
+// ```
 func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	collections := []string{}
 	w.Header().Add("Content-Type", "application/json")
@@ -83,9 +85,10 @@ func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string,
 // Example collection name "journals.ds"
 //
 // ```shell
-//    curl -X GET http://localhost:8485/api/collection/journals.ds
-// ```
 //
+//	curl -X GET http://localhost:8485/api/collection/journals.ds
+//
+// ```
 func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	// Get collection
 	c, ok := api.CMap[cName]
@@ -108,9 +111,10 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 // Example collection name "journals.ds"
 //
 // ```shell
-//    curl -X GET http://localhost:8485/api/journals.ds/keys
-// ```
 //
+//	curl -X GET http://localhost:8485/api/journals.ds/keys
+//
+// ```
 func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if c, ok := api.CMap[cName]; ok {
 		keys, err := c.Keys()
@@ -141,12 +145,13 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 // key which is the string "123".
 //
 // ```shell
-//    KEY="123"
-//    curl -X POST http://localhost:8585/api/journals.ds/object/$KEY
-//         -H "Content-Type: application/json" \
-//          --data-binary "@./record-123.json"
-// ```
 //
+//	KEY="123"
+//	curl -X POST http://localhost:8585/api/journals.ds/object/$KEY
+//	     -H "Content-Type: application/json" \
+//	      --data-binary "@./record-123.json"
+//
+// ```
 func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
@@ -187,11 +192,12 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // as a string "123".
 //
 // ```shell
-//    KEY="123"
-//    curl -o "record-123.json" -X GET \
-//         http://localhost:8585/api/journals.ds/object/$KEY
-// ```
 //
+//	KEY="123"
+//	curl -o "record-123.json" -X GET \
+//	     http://localhost:8585/api/journals.ds/object/$KEY
+//
+// ```
 func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -228,12 +234,13 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 // key which is the string "123".
 //
 // ```shell
-//    KEY="123"
-//    curl -X PUT http://localhost:8585/api/journals.ds/object/$KEY
-//         -H "Content-Type: application/json" \
-//          --data-binary "@./record-123.json"
-// ```
 //
+//	KEY="123"
+//	curl -X PUT http://localhost:8585/api/journals.ds/object/$KEY
+//	     -H "Content-Type: application/json" \
+//	      --data-binary "@./record-123.json"
+//
+// ```
 func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
@@ -273,10 +280,11 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // key which is the string "123".
 //
 // ```shell
-//    KEY="123"
-//    curl -X DELETE http://localhost:8585/api/journals.ds/object/$KEY
-// ```
 //
+//	KEY="123"
+//	curl -X DELETE http://localhost:8585/api/journals.ds/object/$KEY
+//
+// ```
 func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -303,11 +311,12 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // Attachemnts lists the attachments avialable for a JSON object in the
 // collection.
 //
-//```shell
-//    KEY="123"
-//    curl -X GET http://localhost:8585/api/journals.ds/attachments/$KEY
-//```
+// ```shell
 //
+//	KEY="123"
+//	curl -X GET http://localhost:8585/api/journals.ds/attachments/$KEY
+//
+// ```
 func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -339,15 +348,16 @@ func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 // Attach will add or replace an attachment for a JSON object in the
 // collection.
 //
-//```shell
-//    KEY="123"
-//    FILENAME="mystuff.zip"
-//    curl -X POST \
-//       http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
-//         -H "Content-Type: application/zip" \
-//         --data-binary "@./mystuff.zip"
-//```
+// ```shell
 //
+//	KEY="123"
+//	FILENAME="mystuff.zip"
+//	curl -X POST \
+//	   http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
+//	     -H "Content-Type: application/zip" \
+//	     --data-binary "@./mystuff.zip"
+//
+// ```
 func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 2 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -399,13 +409,14 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 // Attach retrieve an attachment from a JSON object in the
 // collection.
 //
-//```shell
-//    KEY="123"
-//    FILENAME="mystuff.zip"
-//    curl -X GET \
-//       http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
-//```
+// ```shell
 //
+//	KEY="123"
+//	FILENAME="mystuff.zip"
+//	curl -X GET \
+//	   http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
+//
+// ```
 func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 2 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -442,13 +453,14 @@ func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 
 // Prune removes and attachment from a JSON object in the collection.
 //
-//```shell
-//    KEY="123"
-//    FILENAME="mystuff.zip"
-//    curl -X DELETE \
-//       http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
-//```
+// ```shell
 //
+//	KEY="123"
+//	FILENAME="mystuff.zip"
+//	curl -X DELETE \
+//	   http://localhost:8585/api/journals.ds/attachment/$KEY/$FILENAME
+//
+// ```
 func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 2 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -476,11 +488,12 @@ func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string,
 
 // HasFrame checks a collection for a frame by its name
 //
-//```shell
-//    FRM_NAME="name"
-//    curl -X GET http://localhost:8585/api/journals.ds/has-frame/$FRM_NAME
-//```
+// ```shell
 //
+//	FRM_NAME="name"
+//	curl -X GET http://localhost:8585/api/journals.ds/has-frame/$FRM_NAME
+//
+// ```
 func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	// Get Frame name
 	frameName := ""
@@ -503,20 +516,21 @@ func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 // FrameCreate creates a new frame in a collection. It accepts the
 // frame definition as a POST of JSON.
 //
-//```shell
-//   FRM_NAME="names"
-//   cat<<EOT>frame-def.json
-//   {
-//     "dot_paths": [ ".given", ".family" ],
-//     "labels": [ "Given Name", "Family Name" ],
-//     "keys": [ "Miller-A", "Stienbeck-J", "Topez-T", "Valdez-L" ]
-//   }
-//   EOT
-//   curl -X POST http://localhost:8585/api/journals.ds/frame/$FRM_NAME
-//        -H "Content-Type: application/json" \
-//        --data-binary "@./frame-def.json"
-//```
+// ```shell
 //
+//	FRM_NAME="names"
+//	cat<<EOT>frame-def.json
+//	{
+//	  "dot_paths": [ ".given", ".family" ],
+//	  "labels": [ "Given Name", "Family Name" ],
+//	  "keys": [ "Miller-A", "Stienbeck-J", "Topez-T", "Valdez-L" ]
+//	}
+//	EOT
+//	curl -X POST http://localhost:8585/api/journals.ds/frame/$FRM_NAME
+//	     -H "Content-Type: application/json" \
+//	     --data-binary "@./frame-def.json"
+//
+// ```
 func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	// Get Frame name
 	frameName := ""
@@ -565,10 +579,11 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 
 // Frames retrieves a list of available frames in a collection.
 //
-//```shell
-//   curl -X GET http://localhost:8585/api/journals.ds/frames
-//```
+// ```shell
 //
+//	curl -X GET http://localhost:8585/api/journals.ds/frames
+//
+// ```
 func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	// Get collection
 	c, ok := api.CMap[cName]
@@ -591,11 +606,12 @@ func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 
 // FrameKeys retrieves the list of keys associated with a frame
 //
-//```shell
-//   FRM_NAME="names"
-//   curl -X GET http://localhost:8585/api/journals.ds/frame-keys/$FRM_NAME
-//```
+// ```shell
 //
+//	FRM_NAME="names"
+//	curl -X GET http://localhost:8585/api/journals.ds/frame-keys/$FRM_NAME
+//
+// ```
 func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -623,11 +639,12 @@ func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb str
 
 // FrameDef retrieves the frame definition associated with a frame
 //
-//```shell
-//   FRM_NAME="names"
-//   curl -X GET http://localhost:8585/api/journals.ds/frame-def/$FRM_NAME
-//```
+// ```shell
 //
+//	FRM_NAME="names"
+//	curl -X GET http://localhost:8585/api/journals.ds/frame-def/$FRM_NAME
+//
+// ```
 func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -659,11 +676,12 @@ func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 
 // FrameObjects retrieves the frame objects associated with a frame
 //
-//```shell
-//   FRM_NAME="names"
-//   curl -X GET http://localhost:8585/api/journals.ds/frame-objects/$FRM_NAME
-//```
+// ```shell
 //
+//	FRM_NAME="names"
+//	curl -X GET http://localhost:8585/api/journals.ds/frame-objects/$FRM_NAME
+//
+// ```
 func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -697,23 +715,26 @@ func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 // on the keys associated with the object or if a JSON array of keys is
 // provided it reframes the objects using the new list of keys.
 //
-//```shell
-//   FRM_NAME="names"
-//   curl -X PUT http://localhost:8585/api/journals.ds/frame/$FRM_NAME
-//```
+// ```shell
+//
+//	FRM_NAME="names"
+//	curl -X PUT http://localhost:8585/api/journals.ds/frame/$FRM_NAME
+//
+// ```
 //
 // Reframing a frame providing new keys looks something like this --
 //
-//```shell
-//   FRM_NAME="names"
-//   cat<<EOT>frame-keys.json
-//   [ "Gentle-M", "Stienbeck-J", "Topez-T", "Valdez-L" ]
-//   EOT
-//   curl -X PUT http://localhost:8585/api/journals.ds/frame/$FRM_NAME \
-//        -H "Content-Type: application/json" \
-//        --data-binary "@./frame-keys.json"
-//```
+// ```shell
 //
+//	FRM_NAME="names"
+//	cat<<EOT>frame-keys.json
+//	[ "Gentle-M", "Stienbeck-J", "Topez-T", "Valdez-L" ]
+//	EOT
+//	curl -X PUT http://localhost:8585/api/journals.ds/frame/$FRM_NAME \
+//	     -H "Content-Type: application/json" \
+//	     --data-binary "@./frame-keys.json"
+//
+// ```
 func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -754,11 +775,12 @@ func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 
 // FrameDelete removes a frame from a collection.
 //
-//```shell
-//  FRM_NAME="names"
-//  curl -X DELETE http://localhost:8585/api/journals.ds/frame/$FRM_NAME
-//```
+// ```shell
 //
+//	FRM_NAME="names"
+//	curl -X DELETE http://localhost:8585/api/journals.ds/frame/$FRM_NAME
+//
+// ```
 func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

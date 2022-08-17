@@ -1,4 +1,4 @@
-// api is a submodule of dataset
+// api is a part of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -14,7 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-package api
+package dataset
 
 import (
 	"fmt"
@@ -25,9 +25,6 @@ import (
 	"path"
 	"strings"
 	"syscall"
-
-	// Caltech Library packages
-	ds "github.com/caltechlibrary/dataset/v2"
 )
 
 const (
@@ -50,9 +47,9 @@ type API struct {
 	// Version is the version of the API running
 	Version string
 	// Settings is the configuration reading from SettingsFile
-	Settings *config.Settings
+	Settings *Settings
 	// CMap is a map to the collections supported by the web service.
-	CMap map[string]*ds.Collection
+	CMap map[string]*Collection
 
 	// Routes holds a double map of prefix path and HTTP method that
 	// points to the function that will be dispatched if found.
@@ -69,7 +66,7 @@ type API struct {
 }
 
 var (
-	settings *config.Settings
+	settings *Settings
 )
 
 // hasDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
@@ -189,7 +186,7 @@ func (api *API) Shutdown(sigName string) int {
 			}
 		}
 	}
-	//api.Collections = map[string]*ds.Collection{}
+	//api.Collections = map[string]*Collection{}
 	log.Printf(`Shutdown completed %s pid: %d exit code: %d `, appName, pid, exitCode)
 	return exitCode
 }
@@ -262,7 +259,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 	api.Pid = os.Getpid()
 	api.SettingsFile = settingsFile
 
-	settings, err := ds.ConfigOpen(settingsFile)
+	settings, err := ConfigOpen(settingsFile)
 	if err != nil {
 		return err
 	}
@@ -291,12 +288,12 @@ func (api *API) Init(appName string, settingsFile string) error {
 	// Get out cName from config
 	for _, cfg := range api.Settings.Collections {
 		if api.CMap == nil {
-			api.CMap = make(map[string]*ds.Collection)
+			api.CMap = make(map[string]*Collection)
 		}
 		// NOTE: cName is the name used in our CMap as well as in building
 		// paths for service.
 		cName := path.Base(cfg.CName)
-		c, err := ds.Open(cfg.CName)
+		c, err := Open(cfg.CName)
 		if err != nil {
 			log.Printf("WARNING: failed to open %q, %s", cfg.CName, err)
 		} else {

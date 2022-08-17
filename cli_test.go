@@ -31,11 +31,11 @@ import (
 	dsv1 "github.com/caltechlibrary/dataset/v2/dsv1"
 )
 
-func setupTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {
+func setupCliTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	c, err := ds.Init(cName, dsnURI)
+	c, err := Init(cName, dsnURI)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func TestCloning(t *testing.T) {
 	}
 
 	// Populate our source repository
-	source, err := ds.Init(srcName, "")
+	source, err := Init(srcName, "")
 	if err != nil {
 		t.Errorf("unable to create source %q, %s", srcName, err)
 		t.FailNow()
@@ -323,7 +323,7 @@ func TestCLIKeys(t *testing.T) {
 		"name": "Claudine",
 		"one":  1,
 	}
-	if err := setupTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
+	if err := setupCliTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
 		t.Errorf("failed to setup %q, %s", cName, err)
 		t.FailNow()
 	}
@@ -406,7 +406,7 @@ func TestCLIOnFrames(t *testing.T) {
 		"name": "Claudine",
 		"one":  1,
 	}
-	if err := setupTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
+	if err := setupCliTestCollectionWithMappedObjects(cName, "", mappedObjects); err != nil {
 		t.Errorf("failed to setup %q, %s", cName, err)
 		t.FailNow()
 	}
@@ -645,7 +645,7 @@ func TestCheckRepair(t *testing.T) {
 		},
 	}
 
-	c, err := ds.Init(cName, "")
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("Failed to create %q, %s", cName, err)
 		t.FailNow()
@@ -991,7 +991,7 @@ func TestKeySample(t *testing.T) {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	c, err := ds.Init(cName, "")
+	c, err := Init(cName, "")
 	if err != nil {
 		t.Errorf("failed to setup %q, %s", cName, err)
 		t.FailNow()
@@ -1158,7 +1158,7 @@ func testGettingStarted(t *testing.T) {
 	}
 }
 
-func TestAttachments(t *testing.T) {
+func TestCliAttachments(t *testing.T) {
 	dName := "testout"
 	cName := path.Join(dName, "test_mydata.ds")
 	if _, err := os.Stat(cName); err == nil {
