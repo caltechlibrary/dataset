@@ -17,6 +17,7 @@
 package dataset
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -110,6 +111,31 @@ var (
 		"read-version":  doReadVersion,
 	}
 )
+
+func prettyPrintJSON(src []byte) ([]byte, error) {
+	var (
+		err error
+		txt []byte
+	)
+	// Force output to be pretty printed. I can't rely on a
+	// standard way to implement this in SQL.
+	if bytes.HasPrefix(src, []byte(`{`)) {
+		obj := map[string]*interface{}{}
+		if err = json.Unmarshal(src, &obj); err == nil {
+			if txt, err = json.MarshalIndent(obj, "", "    "); err == nil {
+				src = txt
+			}
+		}
+	} else if bytes.HasPrefix(src, []byte(`[`)) {
+		array := []*interface{}{}
+		if err = json.Unmarshal(src, &array); err == nil {
+			if txt, err = json.MarshalIndent(array, "", "    "); err == nil {
+				src = txt
+			}
+		}
+	}
+	return src, err
+}
 
 // CliDisplayHelp writes out help on a supported topic
 func CliDisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -259,11 +285,13 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		version string
 		src     []byte
 		output  string
+		pretty  bool
 	)
 	flagSet := flag.NewFlagSet("read-version", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
 	flagSet.BoolVar(&showHelp, "help", false, "help for create")
 	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.BoolVar(&pretty, "pretty", false, "pretty print output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -287,16 +315,11 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 		// NOTE: SQL databases will store JSON in an un-pretty way.
 		// I want to pretty print the JSON I output.
 		src, err = c.SQLStore.ReadVersion(key, version)
-		// Force output to be pretty printed. I can't rely on a
-		// standard way to implement this in SQL.
-		var o *interface{}
-		if err := json.Unmarshal(src, o); err == nil {
-			if txt, err := json.MarshalIndent(o, "", "    "); err == nil {
-				src = txt
-			}
-		}
 	default:
 		return fmt.Errorf("%q storage not supported", c.StoreType)
+	}
+	if pretty {
+		src, err = prettyPrintJSON(src)
 	}
 	if err == nil {
 		return WriteSource(output, out, src)
@@ -360,11 +383,13 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		cName  string
 		key    string
 		output string
+		pretty bool
 	)
 	flagSet := flag.NewFlagSet("read", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
+	flagSet.BoolVar(&pretty, "pretty", false, "pretty print output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -387,16 +412,11 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		src, err = c.PTStore.Read(key)
 	case SQLSTORE:
 		src, err = c.SQLStore.Read(key)
-		// Force output to be pretty printed. I can't rely on a
-		// standard way to implement this in SQL.
-		var o *interface{}
-		if err := json.Unmarshal(src, o); err == nil {
-			if txt, err := json.MarshalIndent(o, "", "    "); err == nil {
-				src = txt
-			}
-		}
 	default:
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
+	}
+	if pretty {
+		src, err = prettyPrintJSON(src)
 	}
 	if err == nil {
 		return WriteSource(output, out, src)

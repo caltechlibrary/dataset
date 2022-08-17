@@ -62,7 +62,7 @@ Compiled version
 </h2>
 <p>
 Compiled versions are available for macOS (Intel and M1), Linux (Intel),
-Windows (Intel) and Raspberry Pi (ARM).
+Windows (Intel and ARM64) and Raspberry Pi (ARM).
 </p>
 <p>
 VERSION_NUMBER is a <a href="http://semver.org/">semantic version
@@ -91,7 +91,7 @@ Zip Filename
 <tbody>
 <tr class="odd">
 <td>
-Windows
+Windows (Intel)
 </td>
 <td>
 dataset-VERSION_NUMBER-windows-amd64.zip
@@ -99,13 +99,21 @@ dataset-VERSION_NUMBER-windows-amd64.zip
 </tr>
 <tr class="even">
 <td>
+Windows (ARM 64)
+</td>
+<td>
+dataset-VERSION_NUMBER-windows-arm64.zip
+</td>
+</tr>
+<tr class="odd">
+<td>
 macOS (Intel)
 </td>
 <td>
 dataset-VERSION_NUMBER-macos-amd64.zip
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>
 macOS (M1)
 </td>
@@ -113,7 +121,7 @@ macOS (M1)
 dataset-VERSION_NUMBER-macos-arm64.zip
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>
 Linux (Intel)
 </td>
@@ -121,9 +129,9 @@ Linux (Intel)
 dataset-VERSION_NUMBER-linux-amd64.zip
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>
-Raspberry Pi OS (ARM)
+Raspberry Pi OS (ARM7)
 </td>
 <td>
 dataset-VERSION_NUMBER-raspbian-arm7.zip
@@ -213,14 +221,30 @@ a folder in your path)
 Test
 </li>
 </ol>
+<h4 id="intel-hardware">
+Intel Hardware
+</h4>
 <p>
 Here’s an example of the commands run in from the Bash shell on Windows
-10 after downloading the zip file.
+11 after downloading the zip file (assume Linux Subsystem for Windows).
 </p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
+    mv -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version</code></pre>
+<h4 id="arm64-hardware">
+ARM64 Hardware
+</h4>
+<p>
+Here’s an example of the commands run in from the Bash shell on Windows
+11 after downloading the zip file (assumes Linux Subsystem for Windows).
+</p>
+<pre class="shell"><code>    cd Downloads/
+    unzip dataset-*-windows-arm64.zip
+    mkdir -p $HOME/bin
+    mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
 <h3 id="linux">
@@ -330,8 +354,8 @@ clean.bat removes executable and temp files
 </li>
 </ul>
 <p>
-Compilation assumes <a href="https://github.com/golang/go">go</a>
-v1.18.2
+Compilation assumes <a href="https://github.com/golang/go">go</a> v1.19
+or better.
 </p>
 </section>
 
