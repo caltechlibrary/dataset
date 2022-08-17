@@ -60,7 +60,7 @@ func TestDisplay(t *testing.T) {
 	}
 	output = []byte{}
 	out = bytes.NewBuffer(output)
-	DisplayUsage(out, appName, flagSet)
+	CliDisplayUsage(out, appName, flagSet)
 	if out.Len() == 0 {
 		t.Errorf("DisplayUsage() failed, nothing written to output buffer")
 	}

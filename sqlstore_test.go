@@ -37,7 +37,7 @@ func TestSQLStoreBasic(t *testing.T) {
 		os.RemoveAll(sName)
 	}
 	os.MkdirAll(sName, 0775)
-	store, err := Init(sName, sDsnURI)
+	store, err := SQLStoreInit(sName, sDsnURI)
 	if err != nil {
 		t.Errorf("failed to create table %q, %s", sName, err)
 		t.FailNow()
@@ -48,17 +48,16 @@ func TestSQLStoreBasic(t *testing.T) {
 	}
 	store.Close()
 
-	store, err = Open(sName, sDsnURI)
+	store, err = SQLStoreOpen(sName, sDsnURI)
 	if err != nil {
-		t.Errorf(`Open(%q, %q), error %s`, sName, sDsnURI, err)
+		t.Errorf(`SQLStoreOpen(%q, %q), error %s`, sName, sDsnURI, err)
 		t.FailNow()
 	}
 	if store == nil {
-		t.Errorf(`Open(%q, %q), store should not be nil`, sName, sDsnURI)
+		t.Errorf(`SQLStoreOpen(%q, %q), store should not be nil`, sName, sDsnURI)
 		t.FailNow()
 	}
 	// Setup main databases
-
 	for _, setting := range []int{Major, Minor, Patch, None} {
 		if err := store.SetVersioning(setting); err != nil {
 			t.Errorf("store.SetVersioning(%d) failed, %s", setting, err)
