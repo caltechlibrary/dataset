@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -1333,19 +1334,14 @@ func doMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 
 // doCodemeta
 func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	var cName string
+	var cPath string
 	switch {
 	case len(args) == 1:
-		cName = args[0]
+		cPath = args[0]
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	c, err := Open(cName)
-	if err != nil {
-		return err
-	}
-	defer c.Close()
-	src, err := c.Codemeta()
+	src, err := ioutil.ReadFile(path.Join(cPath, "codemeta.json"))
 	if err != nil {
 		return err
 	}
