@@ -1,4 +1,3 @@
-//
 // api is a submodule of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package api
 
 import (
@@ -30,7 +28,6 @@ import (
 
 	// Caltech Library packages
 	ds "github.com/caltechlibrary/dataset/v2"
-	"github.com/caltechlibrary/dataset/v2/config"
 )
 
 const (
@@ -231,18 +228,19 @@ func (api *API) Reload(sigName string) error {
 // fn is the function that handles this route.
 //
 // ```
-//     func Version(w http.ResponseWriter, r *http.Reqest, api *API, verb string, options []string) {
-//        ...
-//     }
 //
-//     ...
+//	func Version(w http.ResponseWriter, r *http.Reqest, api *API, verb string, options []string) {
+//	   ...
+//	}
 //
-//     err := api.RegistereRoute("version", http.MethodGet, Version)
-//     if err != nil {
-//        ...
-//     }
+//	...
+//
+//	err := api.RegistereRoute("version", http.MethodGet, Version)
+//	if err != nil {
+//	   ...
+//	}
+//
 // ```
-//
 func (api *API) RegisterRoute(prefix string, method string, fn func(http.ResponseWriter, *http.Request, *API, string, string, []string)) error {
 	if _, ok := api.Routes[prefix]; ok {
 		if _, ok := api.Routes[prefix][method]; ok {
@@ -264,12 +262,12 @@ func (api *API) Init(appName string, settingsFile string) error {
 	api.Pid = os.Getpid()
 	api.SettingsFile = settingsFile
 
-	settings, err := config.Open(settingsFile)
+	settings, err := ds.ConfigOpen(settingsFile)
 	if err != nil {
 		return err
 	}
 	if settings == nil {
-		return fmt.Errorf("Open(%q) returned nil, nil", settingsFile)
+		return fmt.Errorf("ConfigOpen(%q) returned nil, nil", settingsFile)
 	}
 	api.Settings = settings
 
@@ -447,13 +445,14 @@ func (api *API) Init(appName string, settingsFile string) error {
 // all the collections to be used by web service.
 //
 // ```
-//   appName := path.Base(sys.Argv[0])
-//   settingsFile := "settings.json"
-//   if err := api.RunAPI(appName, settingsFile); err != nil {
-//      ...
-//   }
-// ```
 //
+//	appName := path.Base(sys.Argv[0])
+//	settingsFile := "settings.json"
+//	if err := api.RunAPI(appName, settingsFile); err != nil {
+//	   ...
+//	}
+//
+// ```
 func RunAPI(appName string, settingsFile string) error {
 	api := new(API)
 	// Open collection

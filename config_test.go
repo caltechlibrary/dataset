@@ -1,5 +1,4 @@
-//
-// api is a submodule of dataset
+// config_test is a part of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -15,8 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-package config
+package dataset
 
 import (
 	"io/ioutil"
@@ -25,7 +23,7 @@ import (
 	"testing"
 )
 
-func TestOpen(t *testing.T) {
+func TestConfigOpen(t *testing.T) {
 	dName := "testout"
 	if _, err := os.Stat(dName); err == nil {
 		os.RemoveAll(dName)
@@ -57,9 +55,9 @@ func TestOpen(t *testing.T) {
 		t.FailNow()
 	}
 
-	settings, err := Open(fName)
+	settings, err := ConfigOpen(fName)
 	if err != nil {
-		t.Errorf("Open(%q) failed, %s", fName, err)
+		t.Errorf("ConfigOpen(%q) failed, %s", fName, err)
 	}
 	if settings == nil {
 		t.Errorf("Configuration is nil")
@@ -107,9 +105,9 @@ func TestWriteFile(t *testing.T) {
 	if err := settings.WriteFile(fName, 0664); err != nil {
 		t.Errorf("WriteFile(%q, 0664) failed, %s", fName, err)
 	}
-	tsettings, err := Open(fName)
+	tsettings, err := ConfigOpen(fName)
 	if err != nil {
-		t.Errorf("expected to Open(%q) saved config, %s", fName, err)
+		t.Errorf("expected to ConfigOpen(%q) saved config, %s", fName, err)
 		t.FailNow()
 	}
 	if tsettings == nil {

@@ -1,5 +1,4 @@
-//
-// config is a submodule of dataset
+// config is a part of dataset
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
@@ -15,8 +14,7 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-package config
+package dataset
 
 //
 // Configure a web service for dataset
@@ -112,20 +110,21 @@ func (settings *Settings) String() string {
 	return fmt.Sprintf("%s", src)
 }
 
-// Open reads the JSON configuration file provided, validates it
+// ConfigOpen reads the JSON configuration file provided, validates it
 // and returns a Settings structure and error.
 //
 // NOTE: if the dsn string isn't specified
 //
 // ```
-//    settings := "settings.json"
-//    settings, err := config.Open(settings)
-//    if err != nil {
-//       ...
-//    }
-// ```
 //
-func Open(fName string) (*Settings, error) {
+//	settings := "settings.json"
+//	settings, err := ConfigOpen(settings)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
+func ConfigOpen(fName string) (*Settings, error) {
 	settings := new(Settings)
 	src, err := ioutil.ReadFile(fName)
 	if err != nil {
@@ -177,32 +176,33 @@ func Open(fName string) (*Settings, error) {
 // Write will save a configuration to the filename provided.
 //
 // ```
-//   fName := "new-settings.json"
-//   mysql_dsn_uri := os.Getenv("DATASET_DSN_URI")
 //
-//   settings := new(Settings)
-//   settings.Host = "localhost:8001"
-//   settings.Htdocs = "/usr/local/www/htdocs"
+//	fName := "new-settings.json"
+//	mysql_dsn_uri := os.Getenv("DATASET_DSN_URI")
 //
-//   cfg := &Config{
-//   	DsnURI: mysql_dsn_uri,
-//      CName: "my_collection.ds",
-//      Keys: true,
-//      Create: true,
-//      Read:  true,
-//   	Update: true
-//   	Delete: true
-//   	Attach: false
-//   	Retrieve: false
-//   	Prune: false
-//   }}
-//   settings.Collections = append(settings.Collections, cfg)
+//	settings := new(Settings)
+//	settings.Host = "localhost:8001"
+//	settings.Htdocs = "/usr/local/www/htdocs"
 //
-//   if err := api.WriteFile(fName, 0664); err != nil {
-//      ...
-//   }
+//	cfg := &Config{
+//		DsnURI: mysql_dsn_uri,
+//	   CName: "my_collection.ds",
+//	   Keys: true,
+//	   Create: true,
+//	   Read:  true,
+//		Update: true
+//		Delete: true
+//		Attach: false
+//		Retrieve: false
+//		Prune: false
+//	}}
+//	settings.Collections = append(settings.Collections, cfg)
+//
+//	if err := api.WriteFile(fName, 0664); err != nil {
+//	   ...
+//	}
+//
 // ```
-//
 func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
 	src, err := json.MarshalIndent(settings, "", "    ")
 	if err != nil {

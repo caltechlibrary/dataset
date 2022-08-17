@@ -7,7 +7,6 @@ import (
 
 	// Caltech Library packages
 	ds "github.com/caltechlibrary/dataset/v2"
-	"github.com/caltechlibrary/dataset/v2/texts"
 )
 
 // DisplayLicense returns the license associated with dataset application.
@@ -21,7 +20,7 @@ func DisplayVersion(out io.Writer, appName string) {
 		"{app_name}": appName,
 		"{version}":  ds.Version,
 	}
-	fmt.Fprintf(out, texts.StringProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprintf(out, ds.StringProcessor(m, "{app_name} {version}\n"))
 }
 
 // DisplayUsage displays a usage message.
@@ -57,10 +56,10 @@ Starting up the web service
 		"{version}":  ds.Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, texts.StringProcessor(m, description))
+	fmt.Fprintf(out, ds.StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, texts.StringProcessor(m, examples))
+	fmt.Fprintf(out, ds.StringProcessor(m, examples))
 	DisplayLicense(out, appName)
 }

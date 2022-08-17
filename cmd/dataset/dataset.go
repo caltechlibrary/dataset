@@ -23,7 +23,7 @@ import (
 	"path"
 
 	// Caltech Library Packages
-	cli "github.com/caltechlibrary/dataset/v2"
+	"github.com/caltechlibrary/dataset/v2"
 )
 
 var (
@@ -52,20 +52,20 @@ func main() {
 	eout := os.Stderr
 
 	if showHelp {
-		cli.DisplayUsage(out, appName, flagSet)
+		dataset.DisplayUsage(out, appName, flagSet)
 		os.Exit(0)
 	}
 	if showLicense {
-		cli.DisplayLicense(out, appName)
+		dataset.DisplayLicense(out, appName)
 		os.Exit(0)
 	}
 	if showVersion {
-		cli.DisplayVersion(out, appName)
+		dataset.DisplayVersion(out, appName)
 		os.Exit(0)
 	}
 
 	// Application Logic
-	err := cli.RunCLI(in, out, eout, args)
+	err := dataset.RunCLI(in, out, eout, args)
 	if err != nil {
 		fmt.Fprintf(eout, "%s\n", err)
 		os.Exit(1)
