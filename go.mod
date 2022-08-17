@@ -2,11 +2,13 @@ module github.com/caltechlibrary/dataset
 
 go 1.19
 
-require github.com/caltechlibrary/dataset/v2 v2.0.0-b01
+require (
+	github.com/caltechlibrary/dataset/v2 v2.0.0-b01
+	github.com/glebarez/go-sqlite v1.17.3
+	github.com/go-sql-driver/mysql v1.6.0
+)
 
 require (
-	github.com/glebarez/go-sqlite v1.17.3 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
