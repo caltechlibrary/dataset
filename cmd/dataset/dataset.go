@@ -52,15 +52,15 @@ func main() {
 	eout := os.Stderr
 
 	if showHelp {
-		dataset.DisplayUsage(out, appName, flagSet)
+		dataset.CliDisplayUsage(out, appName, flagSet)
 		os.Exit(0)
 	}
 	if showLicense {
-		dataset.DisplayLicense(out, appName)
+		dataset.CliDisplayLicense(out, appName)
 		os.Exit(0)
 	}
 	if showVersion {
-		dataset.DisplayVersion(out, appName)
+		dataset.CliDisplayVersion(out, appName)
 		os.Exit(0)
 	}
 

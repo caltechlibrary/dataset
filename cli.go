@@ -72,7 +72,7 @@ var (
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
-		"help":          DisplayHelp,
+		"help":          CliDisplayHelp,
 		"init":          doInit,
 		"create":        doCreate,
 		"read":          doRead,
@@ -110,8 +110,8 @@ var (
 	}
 )
 
-// DisplayHelp writes out help on a supported topic
-func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+// CliDisplayHelp writes out help on a supported topic
+func CliDisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var topic string
 	if len(args) > 0 {
 		topic = args[0]
@@ -128,8 +128,8 @@ func DisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	return nil
 }
 
-// DisplayLicense returns the license associated with dataset application.
-func DisplayLicense(out io.Writer, appName string) {
+// CliDisplayLicense returns the license associated with dataset application.
+func CliDisplayLicense(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
@@ -137,8 +137,8 @@ func DisplayLicense(out io.Writer, appName string) {
 	fmt.Fprintf(out, StringProcessor(m, License))
 }
 
-// DisplayVersion returns the of the dataset application.
-func DisplayVersion(out io.Writer, appName string) {
+// CliDisplayVersion returns the of the dataset application.
+func CliDisplayVersion(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
@@ -146,8 +146,8 @@ func DisplayVersion(out io.Writer, appName string) {
 	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
 }
 
-// DisplayUsage displays a usage message.
-func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
+// CliDisplayUsage displays a usage message.
+func CliDisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	// Replacable text vars
 	description, examples := cliDescription, cliExamples
 	m := map[string]string{
@@ -160,7 +160,7 @@ func DisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	flagSet.PrintDefaults()
 
 	fmt.Fprintf(out, StringProcessor(m, examples))
-	DisplayLicense(out, appName)
+	CliDisplayLicense(out, appName)
 }
 
 func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -173,7 +173,7 @@ func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"init"})
+		CliDisplayHelp(in, out, eout, []string{"init"})
 		return nil
 	}
 	switch {
@@ -202,7 +202,7 @@ func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"versioning"})
+		CliDisplayHelp(in, out, eout, []string{"versioning"})
 	}
 	switch {
 	case len(args) == 2:
@@ -231,7 +231,7 @@ func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"versioning"})
+		CliDisplayHelp(in, out, eout, []string{"versioning"})
 	}
 	switch {
 	case len(args) == 2:
@@ -266,7 +266,7 @@ func doReadVersion(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"versioning"})
+		CliDisplayHelp(in, out, eout, []string{"versioning"})
 	}
 	switch {
 	case len(args) == 3:
@@ -321,7 +321,7 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"create"})
+		CliDisplayHelp(in, out, eout, []string{"create"})
 	}
 	switch {
 	case len(args) == 3:
@@ -367,7 +367,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"create"})
+		CliDisplayHelp(in, out, eout, []string{"create"})
 	}
 	switch {
 	case len(args) == 2:
@@ -419,7 +419,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"update"})
+		CliDisplayHelp(in, out, eout, []string{"update"})
 	}
 	switch {
 	case len(args) == 3:
@@ -460,7 +460,7 @@ func doDelete(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"delete"})
+		CliDisplayHelp(in, out, eout, []string{"delete"})
 	}
 	switch {
 	case len(args) == 2:
@@ -500,7 +500,7 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"keys"})
+		CliDisplayHelp(in, out, eout, []string{"keys"})
 	}
 	switch {
 	case len(args) == 1:
@@ -541,7 +541,7 @@ func doUpdatedKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"keys"})
+		CliDisplayHelp(in, out, eout, []string{"keys"})
 	}
 	switch {
 	case len(args) == 3:
@@ -573,7 +573,7 @@ func doHasKey(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"has-key"})
+		CliDisplayHelp(in, out, eout, []string{"has-key"})
 	}
 	switch {
 	case len(args) == 2:
@@ -604,7 +604,7 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"count"})
+		CliDisplayHelp(in, out, eout, []string{"count"})
 	}
 	switch {
 	case len(args) == 1:
@@ -640,7 +640,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"clone"})
+		CliDisplayHelp(in, out, eout, []string{"clone"})
 	}
 	switch {
 	case len(args) == 2:
@@ -679,7 +679,7 @@ func doFrameNames(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"frames"})
+		CliDisplayHelp(in, out, eout, []string{"frames"})
 		return nil
 	}
 	switch {
@@ -718,7 +718,7 @@ func doFrameCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"frame"})
+		CliDisplayHelp(in, out, eout, []string{"frame"})
 	}
 	switch {
 	case len(args) >= 3:
@@ -774,7 +774,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"frame-def"})
+		CliDisplayHelp(in, out, eout, []string{"frame-def"})
 	}
 	switch {
 	case len(args) == 2:
@@ -813,7 +813,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"frame-objects"})
+		CliDisplayHelp(in, out, eout, []string{"frame-objects"})
 	}
 	switch {
 	case len(args) == 2:
@@ -852,7 +852,7 @@ func doFrameKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) err
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"frame-keys"})
+		CliDisplayHelp(in, out, eout, []string{"frame-keys"})
 	}
 	switch {
 	case len(args) == 2:
@@ -884,7 +884,7 @@ func doRefresh(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"refresh"})
+		CliDisplayHelp(in, out, eout, []string{"refresh"})
 	}
 	switch {
 	case len(args) == 2:
@@ -918,7 +918,7 @@ func doReframe(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"reframe"})
+		CliDisplayHelp(in, out, eout, []string{"reframe"})
 	}
 	switch {
 	case len(args) == 2:
@@ -951,7 +951,7 @@ func doDeleteFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"delete-frame"})
+		CliDisplayHelp(in, out, eout, []string{"delete-frame"})
 	}
 	switch {
 	case len(args) == 2:
@@ -980,7 +980,7 @@ func doHasFrame(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"has-frame"})
+		CliDisplayHelp(in, out, eout, []string{"has-frame"})
 	}
 	switch {
 	case len(args) == 2:
@@ -1017,7 +1017,7 @@ func doAttachments(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"attachments"})
+		CliDisplayHelp(in, out, eout, []string{"attachments"})
 	}
 	switch {
 	case len(args) == 2:
@@ -1053,7 +1053,7 @@ func doAttach(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"attach"})
+		CliDisplayHelp(in, out, eout, []string{"attach"})
 	}
 	switch {
 	case len(args) == 3:
@@ -1091,7 +1091,7 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"retrieve"})
+		CliDisplayHelp(in, out, eout, []string{"retrieve"})
 	}
 	switch {
 	case len(args) == 3:
@@ -1145,7 +1145,7 @@ func doPrune(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"prune"})
+		CliDisplayHelp(in, out, eout, []string{"prune"})
 	}
 	switch {
 	case len(args) == 3:
@@ -1185,7 +1185,7 @@ func doSample(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"clone-sample"})
+		CliDisplayHelp(in, out, eout, []string{"clone-sample"})
 	}
 	switch {
 	case len(args) == 2:
@@ -1232,7 +1232,7 @@ func doCloneSample(in io.Reader, out io.Writer, eout io.Writer, args []string) e
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"clone-sample"})
+		CliDisplayHelp(in, out, eout, []string{"clone-sample"})
 	}
 	switch {
 	case len(args) == 5:
@@ -1271,7 +1271,7 @@ func doCheck(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"check"})
+		CliDisplayHelp(in, out, eout, []string{"check"})
 	}
 	switch {
 	case len(args) == 1:
@@ -1295,7 +1295,7 @@ func doRepair(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"repair"})
+		CliDisplayHelp(in, out, eout, []string{"repair"})
 	}
 	switch {
 	case len(args) == 1:
@@ -1320,7 +1320,7 @@ func doMigrate(in io.Reader, out io.Writer, eout io.Writer, args []string) error
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		DisplayHelp(in, out, eout, []string{"migrate"})
+		CliDisplayHelp(in, out, eout, []string{"migrate"})
 	}
 	switch {
 	case len(args) == 2:
@@ -1358,7 +1358,7 @@ func RunCLI(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var err error
 
 	if len(args) == 0 {
-		DisplayHelp(in, out, eout, []string{"usage"})
+		CliDisplayHelp(in, out, eout, []string{"usage"})
 		return fmt.Errorf(` `)
 	}
 	verb, args := args[0], args[1:]
