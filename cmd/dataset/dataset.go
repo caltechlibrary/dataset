@@ -56,11 +56,11 @@ func main() {
 		os.Exit(0)
 	}
 	if showLicense {
-		dataset.CliDisplayLicense(out, appName)
+		dataset.DisplayLicense(out, appName)
 		os.Exit(0)
 	}
 	if showVersion {
-		dataset.CliDisplayVersion(out, appName)
+		dataset.DisplayVersion(out, appName)
 		os.Exit(0)
 	}
 

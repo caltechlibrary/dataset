@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/semver"
+	"github.com/caltechlibrary/semver"
 
 	// Database specific drivers
 	_ "github.com/glebarez/go-sqlite"
@@ -80,9 +80,9 @@ func dsnFixUp(driverName string, dsn string, workPath string) string {
 	return dsn
 }
 
-// Init creates a table to hold the collection if it doesn't already
+// SQLStoreInit creates a table to hold the collection if it doesn't already
 // exist.
-func Init(name string, dsnURI string) (*SQLStore, error) {
+func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	var err error
 
 	driverName, dsn, ok := strings.Cut(dsnURI, "://")
@@ -272,7 +272,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
 	return nil
 }
 
-// Open opens the storage system and returns an storage struct and error
+// SQLStoreOpen opens the storage system and returns an storage struct and error
 // It is passed either a filename. For a Pairtree the would be the
 // path to collection.json and for a sql store file holding a DSN URI.
 // The DSN URI is formed from a protocal prefixed to the DSN. E.g.
@@ -287,7 +287,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
 //	}
 //
 // ```
-func Open(name string, dsnURI string) (*SQLStore, error) {
+func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 	var err error
 
 	// Check to see if the DSN coming from th environment

@@ -128,8 +128,8 @@ func CliDisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	return nil
 }
 
-// CliDisplayLicense returns the license associated with dataset application.
-func CliDisplayLicense(out io.Writer, appName string) {
+// DisplayLicense returns the license associated with dataset application.
+func DisplayLicense(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
@@ -137,8 +137,8 @@ func CliDisplayLicense(out io.Writer, appName string) {
 	fmt.Fprintf(out, StringProcessor(m, License))
 }
 
-// CliDisplayVersion returns the of the dataset application.
-func CliDisplayVersion(out io.Writer, appName string) {
+// DisplayVersion returns the of the dataset application.
+func DisplayVersion(out io.Writer, appName string) {
 	m := map[string]string{
 		"{app_name}": appName,
 		"{version}":  Version,
@@ -160,7 +160,7 @@ func CliDisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	flagSet.PrintDefaults()
 
 	fmt.Fprintf(out, StringProcessor(m, examples))
-	CliDisplayLicense(out, appName)
+	DisplayLicense(out, appName)
 }
 
 func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {

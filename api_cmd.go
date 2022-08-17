@@ -6,20 +6,6 @@ import (
 	"io"
 )
 
-// ApiDisplayLicense returns the license associated with dataset application.
-func ApiDisplayLicense(out io.Writer, appName string) {
-	fmt.Fprintf(out, License)
-}
-
-// ApiDisplayVersion returns the of the dataset application.
-func ApiDisplayVersion(out io.Writer, appName string) {
-	m := map[string]string{
-		"{app_name}": appName,
-		"{version}":  Version,
-	}
-	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
-}
-
 // ApiDisplayUsage displays a usage message.
 func ApiDisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 	// Replacable text vars

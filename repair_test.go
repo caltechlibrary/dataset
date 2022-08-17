@@ -22,8 +22,8 @@ import (
 	"path"
 	"testing"
 
-	"github.com/caltechlibrary/dataset/dsv1"
-	"github.com/caltechlibrary/dataset/pairtree"
+	"github.com/caltechlibrary/dsv1"
+	"github.com/caltechlibrary/pairtree"
 )
 
 func TestPairtree(t *testing.T) {

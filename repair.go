@@ -30,9 +30,9 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/dsv1"
-	"github.com/caltechlibrary/dataset/pairtree"
-	"github.com/caltechlibrary/dataset/v2/semver"
+	"github.com/caltechlibrary/dsv1"
+	"github.com/caltechlibrary/pairtree"
+	"github.com/caltechlibrary/semver"
 )
 
 // sniffVersionNumber tries to get the dataset version

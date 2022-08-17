@@ -28,7 +28,7 @@ import (
 	"testing"
 
 	// The main dataset package
-	dsv1 "github.com/caltechlibrary/dataset/v2/dsv1"
+	dsv1 "github.com/caltechlibrary/dsv1"
 )
 
 func setupCliTestCollectionWithMappedObjects(cName string, dsnURI string, mappedObjects map[string]map[string]interface{}) error {

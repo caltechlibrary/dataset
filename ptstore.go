@@ -26,20 +26,11 @@ import (
 	"strings"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/pairtree"
-	"github.com/caltechlibrary/dataset/semver"
+	"github.com/caltechlibrary/pairtree"
+	"github.com/caltechlibrary/semver"
 )
 
 const (
-	// None means versioning is turned off for collection
-	None = iota
-	// Major means increment the major semver value on creation or update
-	Major
-	// Minor means increment the minor semver value on creation or update
-	Minor
-	// Patach means increment the patch semver value on creation or update
-	Patch
-
 	// vDelimiter is the delimited used in versioning to indicate a version number
 	// of a JSON document object or attachment.
 	vDelimiter = "^"

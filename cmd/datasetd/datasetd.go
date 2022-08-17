@@ -1,4 +1,3 @@
-//
 // datasetd implements a web service for working with dataset collections.
 //
 // @Author R. S. Doiel, <rsdoiel@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package main
 
 //
@@ -30,7 +28,7 @@ import (
 	"path"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/v2/api"
+	"github.com/caltechlibrary/dataset/v2"
 )
 
 var (
@@ -38,9 +36,9 @@ var (
 	showVersion bool
 	showLicense bool
 
-	description = api.WebDescription
-	examples    = api.WebExamples
-	license     = api.License
+	description = dataset.WebDescription
+	examples    = dataset.WebExamples
+	license     = dataset.License
 )
 
 func main() {
@@ -55,17 +53,17 @@ func main() {
 	args := flagSet.Args()
 
 	if showHelp {
-		api.DisplayUsage(os.Stdout, appName, flagSet)
+		dataset.ApiDisplayUsage(os.Stdout, appName, flagSet)
 		os.Exit(0)
 	}
 
 	if showLicense {
-		api.DisplayLicense(os.Stdout, appName)
+		dataset.DisplayLicense(os.Stdout, appName)
 		os.Exit(0)
 	}
 
 	if showVersion {
-		api.DisplayVersion(os.Stdout, appName)
+		dataset.DisplayVersion(os.Stdout, appName)
 		os.Exit(0)
 	}
 
@@ -83,7 +81,7 @@ Try %s --help for usage details
 	}
 
 	/* Run API */
-	if err := api.RunAPI(appName, settings); err != nil {
+	if err := dataset.RunAPI(appName, settings); err != nil {
 		fmt.Fprintf(os.Stderr, "RunWebAPI(%q) failed, %s\n", settings, err)
 		os.Exit(1)
 	}

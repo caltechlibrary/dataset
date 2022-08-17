@@ -25,8 +25,8 @@ import (
 	"strings"
 
 	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/pairtree"
-	"github.com/caltechlibrary/dataset/semver"
+	"github.com/caltechlibrary/pairtree"
+	"github.com/caltechlibrary/semver"
 )
 
 //
