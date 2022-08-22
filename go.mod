@@ -9,6 +9,7 @@ require (
 	github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a
 	github.com/glebarez/go-sqlite v1.18.1
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/lib/pq v1.10.6
 )
 
 require (

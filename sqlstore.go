@@ -21,8 +21,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
+	"net/url"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	// Caltech Library Packages
@@ -31,6 +34,8 @@ import (
 	// Database specific drivers
 	_ "github.com/glebarez/go-sqlite"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	//_ "github.com/jackc/pgx/v4"
 )
 
 const (
@@ -69,8 +74,55 @@ type SQLStore struct {
 	Versioning int
 }
 
+func ParseDSN(uri string) (string, error) {
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+
+	if u.Scheme != "postgres" {
+		return "", fmt.Errorf("invalid connection protocol: %s", u.Scheme)
+	}
+
+	var kvs []string
+	escaper := strings.NewReplacer(`'`, `\'`, `\`, `\\`)
+	accrue := func(k, v string) {
+		if v != "" {
+			kvs = append(kvs, k+"='"+escaper.Replace(v)+"'")
+		}
+	}
+
+	if u.User != nil {
+		v := u.User.Username()
+		accrue("user", v)
+
+		v, _ = u.User.Password()
+		accrue("password", v)
+	}
+
+	if host, port, err := net.SplitHostPort(u.Host); err != nil {
+		accrue("host", u.Host)
+	} else {
+		accrue("host", host)
+		accrue("port", port)
+	}
+
+	if u.Path != "" {
+		accrue("dbname", u.Path[1:])
+	}
+
+	q := u.Query()
+	for k := range q {
+		accrue(k, q.Get(k))
+	}
+	sort.Strings(kvs) // Makes testing easier (not a performance concern)
+	return strings.Join(kvs, " "), nil
+}
+
 func dsnFixUp(driverName string, dsn string, workPath string) string {
 	switch driverName {
+	case "postgres":
+		return fmt.Sprintf("%s://%s", driverName, dsn)
 	case "sqlite":
 		// NOTE: the db needs to be stored in the dataset directory
 		// to keep the dataset easily movable.
@@ -99,14 +151,20 @@ func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	switch driverName {
 	case "sqlite":
 		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  key VARCHAR(255) PRIMARY KEY,
+  _key VARCHAR(255) PRIMARY KEY,
   src JSON,
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated DATETIME DEFAULT CURRENT_TIMESTAMP
 )`, store.tableName)
+	case "postgres":
+		stmt = fmt.Sprintf(`CREATE TABLE %s (_key VARCHAR(255) PRIMARY KEY,
+src JSON,
+created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)`, store.tableName)
+		//NOTE: Postgres needs a trigger to make update work.
 	case "mysql":
-		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS `+"`"+`%s`+"`"+` (
-  `+"`"+`key`+"`"+` VARCHAR(255) PRIMARY KEY,
+		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  _key VARCHAR(255) PRIMARY KEY,
   src JSON,
   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -128,6 +186,27 @@ func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	_, err = store.db.Exec(stmt)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create table %q, %s", store.tableName, err)
+	}
+
+	// Add Triggers if needed, e.g. Postgres
+	switch driverName {
+	case "postgres":
+		stmt = `CREATE OR REPLACE FUNCTION updated_src_column()   
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated = now();
+    RETURN NEW;   
+END;
+$$ language 'plpgsql';`
+		_, err = store.db.Exec(stmt)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to create table %q, %s", store.tableName, err)
+		}
+		stmt = fmt.Sprintf(`CREATE TRIGGER updated_src_column BEFORE UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE updated_src_column();`, store.tableName)
+		_, err = store.db.Exec(stmt)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to create table %q, %s", store.tableName, err)
+		}
 	}
 	return store, err
 }
@@ -165,7 +244,13 @@ func (store *SQLStore) saveNewVersion(key string, src []byte) error {
 	}
 	version := sv.String()
 	versionTable := versionPrefix + store.tableName
-	stmt := fmt.Sprintf(`INSERT INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, version, src) VALUES (?, ?, ?)`, versionTable)
+	var stmt string
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`INSERT INTO %s (_key, version, src) VALUES ($1, $2, $3)`, versionTable)
+	default:
+		stmt = fmt.Sprintf(`INSERT INTO %s (_key, version, src) VALUES (?, ?, ?)`, versionTable)
+	}
 	_, err = store.db.Exec(stmt, key, version, string(src))
 	if err != nil {
 		return fmt.Errorf(`failed to save version %q for %q in %q, %s`, key, version, store.WorkPath, err)
@@ -244,19 +329,27 @@ func (store *SQLStore) SetVersioning(setting int) error {
 		switch store.driverName {
 		case "sqlite":
 			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  key VARCHAR(255) NOT NULL,
+  _key VARCHAR(255) NOT NULL,
   version VARCHAR(255) NOT NULL,
   src JSON,
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (key, version)
+  PRIMARY KEY (_key, version)
 )`, versionTable)
-		case "mysql":
+		case "postgres":
 			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   key VARCHAR(255) NOT NULL,
   version VARCHAR(255) NOT NULL,
   src JSON,
+  created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  PRIMARY KEY (_key, version)
+)`, versionTable)
+		case "mysql":
+			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+  _key VARCHAR(255) NOT NULL,
+  version VARCHAR(255) NOT NULL,
+  src JSON,
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (key, version)
+  PRIMARY KEY (_key, version)
 )`, versionTable)
 		default:
 			return fmt.Errorf("%q database not supported", store.driverName)
@@ -306,6 +399,7 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 	store.dsn = dsnFixUp(driverName, dsn, name)
 	// Validate the driver name as supported by sqlstore ...
 	switch store.driverName {
+	case "postgres":
 	case "sqlite":
 	case "mysql":
 	default:
@@ -343,6 +437,8 @@ func (store *SQLStore) Close() error {
 	switch store.driverName {
 	case "sqlite":
 		return store.db.Close()
+	case "postgres":
+		return store.db.Close()
 	case "mysql":
 		return store.db.Close()
 	default:
@@ -358,7 +454,13 @@ func (store *SQLStore) Close() error {
 //	   ...
 //	}
 func (store *SQLStore) Create(key string, src []byte) error {
-	stmt := fmt.Sprintf(`INSERT INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
+	var stmt string
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src) VALUES ($1, $2)`, store.tableName)
+	default:
+		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src) VALUES (?, ?)`, store.tableName)
+	}
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
 		return err
@@ -381,7 +483,13 @@ func (store *SQLStore) Create(key string, src []byte) error {
 //	   ...
 //	}
 func (store *SQLStore) Read(key string) ([]byte, error) {
-	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
+	var stmt string
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = $1`, store.tableName)
+	default:
+		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = ?`, store.tableName)
+	}
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return nil, err
@@ -404,7 +512,13 @@ func (store *SQLStore) Read(key string) ([]byte, error) {
 
 // Versions return a list of semver strings for a versioned object.
 func (store *SQLStore) Versions(key string) ([]string, error) {
-	stmt := fmt.Sprintf(`SELECT version FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ?`, versionPrefix+store.tableName)
+	var stmt string
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`SELECT version FROM %s WHERE _key = $1`, versionPrefix+store.tableName)
+	default:
+		stmt = fmt.Sprintf(`SELECT version FROM %s WHERE _key = ?`, versionPrefix+store.tableName)
+	}
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return nil, err
@@ -426,7 +540,14 @@ func (store *SQLStore) Versions(key string) ([]string, error) {
 
 // ReadVersion returns a specific version of a JSON object.
 func (store *SQLStore) ReadVersion(key string, version string) ([]byte, error) {
-	stmt := fmt.Sprintf(`SELECT src FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? AND version = ?`, versionPrefix+store.tableName)
+	var stmt string
+
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = $1 AND version = $2`, versionPrefix+store.tableName)
+	default:
+		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = ? AND version = ?`, versionPrefix+store.tableName)
+	}
 	rows, err := store.db.Query(stmt, key, version)
 	if err != nil {
 		return nil, err
@@ -451,8 +572,15 @@ func (store *SQLStore) ReadVersion(key string, version string) ([]byte, error) {
 //	   ...
 //	}
 func (store *SQLStore) Update(key string, src []byte) error {
-	stmt := fmt.Sprintf(`REPLACE INTO `+"`"+`%s`+"`"+` (`+"`"+`key`+"`"+`, src) VALUES (?, ?)`, store.tableName)
-	_, err := store.db.Exec(stmt, key, string(src))
+	var stmt string
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`UPDATE %s SET src = $1 WHERE _key = $2`, store.tableName)
+	default:
+		stmt = fmt.Sprintf(`UPDATE %s SET src = ? WHERE _key = ?`, store.tableName)
+	}
+
+	_, err := store.db.Exec(stmt, string(src), key)
 	if err != nil {
 		return err
 	}
@@ -469,7 +597,13 @@ func (store *SQLStore) Update(key string, src []byte) error {
 //	   ...
 //	}
 func (store *SQLStore) Delete(key string) error {
-	stmt := fmt.Sprintf(`DELETE FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ?`, store.tableName)
+	var stmt string
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`DELETE FROM %s WHERE _key = $1`, store.tableName)
+	default:
+		stmt = fmt.Sprintf(`DELETE FROM %s WHERE _key = ?`, store.tableName)
+	}
 	_, err := store.db.Exec(stmt, key)
 	// FIXME: Remove attachments
 	// FIXME: remove versions
@@ -485,7 +619,14 @@ func (store *SQLStore) Delete(key string) error {
 //	   ...
 //	}
 func (store *SQLStore) Keys() ([]string, error) {
-	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` ORDER BY `+"`"+`key`+"`", store.tableName)
+	var stmt string
+
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`SELECT _key FROM %s ORDER BY _key`, store.tableName)
+	default:
+		stmt = fmt.Sprintf(`SELECT _key FROM %s ORDER BY _key`, store.tableName)
+	}
 	rows, err := store.db.Query(stmt)
 	if err != nil {
 		return nil, err
@@ -534,7 +675,12 @@ func (store *SQLStore) UpdatedKeys(start string, end string) ([]string, error) {
 	if end == "" {
 		return nil, fmt.Errorf("missing end time value")
 	}
-	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` WHERE (updated >= ? AND updated <= ?) ORDER BY updated ASC`, store.tableName)
+	var stmt string
+
+	switch store.driverName {
+	default:
+		stmt = fmt.Sprintf(`SELECT _key FROM %s WHERE (updated >= ? AND updated <= ?) ORDER BY updated ASC`, store.tableName)
+	}
 
 	rows, err := store.db.Query(stmt, start, end)
 	if err != nil {
@@ -573,7 +719,14 @@ func (store *SQLStore) UpdatedKeys(start string, end string) ([]string, error) {
 //
 // ```
 func (store *SQLStore) HasKey(key string) bool {
-	stmt := fmt.Sprintf(`SELECT `+"`"+`key`+"`"+` FROM `+"`"+`%s`+"`"+` WHERE `+"`"+`key`+"`"+` = ? LIMIT 1`, store.tableName)
+	var stmt string
+
+	switch store.driverName {
+	case "postgres":
+		stmt = fmt.Sprintf(`SELECT _key FROM %s WHERE _key = $1 LIMIT 1`, store.tableName)
+	default:
+		stmt = fmt.Sprintf(`SELECT _key FROM %s WHERE _key = ? LIMIT 1`, store.tableName)
+	}
 	rows, err := store.db.Query(stmt, key)
 	if err != nil {
 		return false
@@ -598,7 +751,12 @@ func (store *SQLStore) HasKey(key string) bool {
 // Length returns the number of records (count of rows in collection).
 // Requires collection to be open.
 func (store *SQLStore) Length() int64 {
-	stmt := fmt.Sprintf(`SELECT COUNT(*) FROM `+"`"+`%s`+"`", store.tableName)
+	var stmt string
+
+	switch store.driverName {
+	default:
+		stmt = fmt.Sprintf(`SELECT COUNT(*) FROM %s`, store.tableName)
+	}
 	rows, err := store.db.Query(stmt)
 	if err != nil {
 		return int64(-1)
