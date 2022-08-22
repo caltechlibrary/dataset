@@ -41,13 +41,13 @@ locking to avoid curruption on concurrent writes.
 In developing a version 2 of dataset an eye needs to be kept to several
 areas --
 
-1. reduction of complexity
-    a. simplification of codebase
-    b. simplification of operation
-3. learn from other systems 
-    a. align with good data practices
-    b. adopt standards, e.g. codemeta for general metadata
-3. elimination of unused "features"
+1. reduction of complexity.
+   a. simplification of codebase
+   b. simplification of operation
+2. learn from other systems. 
+   a. align with good data practices
+   b. adopt standards, e.g. codemeta for general metadata
+3. **elimination** of underused "features".
 
 With the introduction of Go 1.18 some of this can be achieved through
 a better organization of code, some by applying lessons learned over the
@@ -160,35 +160,35 @@ Proposals
 In moving to version 2 there will be breaking changes.
 
 1. (braking change) datasetd should should store data in a SQL engine
-  that support JSON columns, e.g. MySQL 8
-  a. should improve performance and allow for better concurrent usage
-  b. improve frames support
-  c. facilitate integration with fulltext search engines, e.g. Lunr,
+that support JSON columns, e.g. MySQL 8
+   a. should improve performance and allow for better concurrent usage
+   b. improve frames support
+   c. facilitate integration with fulltext search engines, e.g. Lunr,
      Solr, Elasticsearch
 2. Cleanup frames and clarify their behavior, position the code for
-   persisting frames efficiently. (e.g. explore frames implemented
-   using SQLite 3 database and tables)
+persisting frames efficiently. (e.g. explore frames implemented
+using SQLite 3 database and tables)
 3. Versioning of attachments needs to be automatic. A set of four
-   version keywords could make it easier.
-  a. __set__ would set the initial version number (defaults to 0.0.0)
-  b. __patch__ would increment the patch number in the semver, if
-     versioning is enabled in the collection then update will assume
-     patch increment
-  c. __minor__ would increment the minor number and set patch to zero
-  d. __major__ would increment the major number and set minor and patch
-     to zer
+version keywords could make it easier.
+   a. __set__ would set the initial version number (defaults to 0.0.0)
+   b. __patch__ would increment the patch number in the semver, if
+      versioning is enabled in the collection then update will assume
+      patch increment
+   c. __minor__ would increment the minor number and set patch to zero
+   d. __major__ would increment the major number and set minor and patch
+to zer
 4. JSON objects should be versioned if the collection is versioned.
 5. Versioning of JSON documents and attachments should be global to the
-   collection, i.e. everything is versioned or nothing is versioned
+collection, i.e. everything is versioned or nothing is versioned
 6. Dot notation needs reviewed. Look at how SQL databases are interacting with JSON columns. Is there a convergence in notation?
    a. [SQLite3](https://www.sqlite.org/json1.html), 
    b. [MySQL 8](https://dev.mysql.com/doc/refman/8.0/en/json.html) and
    c. [Postgres 9](https://www.postgresql.org/docs/9.3/functions-json.html)
 7. Easily clone to/from pairtree and SQL stored dataset collections
 8. Drop libdataset, it has been a time sync and constrainged dataset's
-   evolution
+evolution
 9. Automated migration from version 1 to version 2 databases
-   (via check/repair) for primary JSON documents
+(via check/repair) for primary JSON documents
 
 Leveraging SQL with JSON column support
 ---------------------------------------
