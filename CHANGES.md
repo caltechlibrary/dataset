@@ -1,4 +1,4 @@
-Release 2.0.0:
+Release 2.0.0-b06:
 
 This release is a rewrite of version 1 focusing on removing features, clearifying useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.
 
@@ -10,11 +10,19 @@ The dataset collection's structure has changed.
     - when running dataset as a web service or on a shared user machine you can setup the database connection through the environment. I.e. set DATASET_DSN_URI value (DSN URI is formed with a protocol named for the SQL driver, a "://" and the DSN for that driver, e.g. "mysql://DB_USER:DB_PASSWD@/DB_NAME")
 - a codemeta.json file is now used for holding general collection level metadata. [codemeta](https://codemeta.github.io/) has been adopted by the data science community for describing data and software
 - additional JSON configuration files may be used to manage the collection dependent on storage engine
+- Experimental features in dataset v2
+    - Using SQL JSON columns to store our JSON documents in a relational database
+        - SQLite 3
+        - MySQL 8
+        - Posgres 14.5 (very experimental, still learning Postgres)
+    - Object level versioning 
+    - Attachment versioning
+    - dataset package to support Async, multi-process access via JSON stored in SQL databases
 
 
 Golang package changes:
 
-- Minimum Go version is now 1.18.2
+- Minimum Go version is now 1.19
 - The dataset v2 package has been substantially reorganized and simplified, most things have changed
     - Collection.Init() now takes two parameters, collection name, an an optional DSN URI, if a DSN URI is provided it'll define the storage engine, e.g. a dataset.SQLSTORE)
     - Collection.DocPath() removed, doesn't make sense anymore since JSON may be stored in a SQL table
@@ -35,13 +43,19 @@ CLI changes:
 
 - options have be restructured so that most come after the verb
 - help has been restructured to better support focusing the help text on the task needed
-- the command line version is single user, single process and be default assumes pairtree storage. It can also access SQL databases for storing JSON objects. Currently this is being tested with SQLite3 and MySQL 8
+- the command line version is single user, single process and be default assumes pairtree storage. 
+- Experimental features
+    - JSON stored in SQL database via JSON column types
+        - SQLite3
+        - MySQL 8
+        - Postgres 14.5
 
 
 Web Service changes:
 
 - the web service is generally RESTful so the end points no longer map directly to the client syntax
 - it is recommended to use SQL storage for your dataset collections explosed using the web service (e.q. SQLite3 or MySQL). This is because a pairtree collection doesn't provide docuemnt locking
+- relies on SQL JSON columns for storage
 - Access to the SQL storage engine is through either the environment or a URI expressing a storage type as protocol and a data source name to making the connection
 
 
