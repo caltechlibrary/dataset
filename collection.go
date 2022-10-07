@@ -1,4 +1,3 @@
-//
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package dataset
 
 import (
@@ -26,12 +24,8 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
-
-	// Dataset sub-modules
-	"github.com/caltechlibrary/dataset/ptstore"
-	"github.com/caltechlibrary/dataset/sqlstore"
-	"github.com/caltechlibrary/dataset/texts"
 )
 
 const (
@@ -63,7 +57,7 @@ type Collection struct {
 	StoreType string `json:"storage_type,omitempty"`
 
 	// DsnURI holds protocol plus dsn string. The protocol can be
-	// "sqlite://", "mysql://" and the dsn conforming to the Golang
+	// "sqlite://", "mysql://" or "postgres://"and the dsn conforming to the Golang
 	// database/sql driver name in the database/sql package.
 	DsnURI string `json:"dsn_uri,omitempty"`
 
@@ -74,9 +68,9 @@ type Collection struct {
 	Repaired string `json:"repaired,omitempty"`
 
 	// PTStore the point to the pairtree implementation of storage
-	PTStore *ptstore.Storage `json:"-"`
+	PTStore *PTStore `json:"-"`
 	// SQLStore points to a SQL database with JSON column support
-	SQLStore *sqlstore.Storage `json:"-"`
+	SQLStore *SQLStore `json:"-"`
 
 	// Versioning holds the type of versioning implemented in the collection.
 	// It can be set to an empty string (the default) which means no versioning.
@@ -105,17 +99,18 @@ type Collection struct {
 // a new collection structure and error value.
 //
 // ```
-//    var (
-//       c *dataset.Collection
-//       err error
-//    )
-//    c, err = dataset.Open("collection.ds")
-//    if err != nil {
-//       // ... handle error
-//    }
-//    defer c.Close()
-// ```
 //
+//	var (
+//	   c *dataset.Collection
+//	   err error
+//	)
+//	c, err = dataset.Open("collection.ds")
+//	if err != nil {
+//	   // ... handle error
+//	}
+//	defer c.Close()
+//
+// ```
 func Open(name string) (*Collection, error) {
 	// NOTE: find the collection.json file then
 	// open the appropriate store.
@@ -127,34 +122,39 @@ func Open(name string) (*Collection, error) {
 	if err := json.Unmarshal(src, &c); err != nil {
 		return nil, err
 	}
-	c.workPath = name
+	fullPath, err := filepath.Abs(name)
+	if err == nil {
+		c.workPath = fullPath
+	} else {
+		c.workPath = name
+	}
 	if c.DsnURI == "" {
 		c.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
 	switch c.StoreType {
 	case PTSTORE:
-		c.PTStore, err = ptstore.Open(name, c.DsnURI)
+		c.PTStore, err = PTStoreOpen(c.workPath, c.DsnURI)
 		switch c.Versioning {
 		case "major":
-			c.PTStore.SetVersioning(ptstore.Major)
+			c.PTStore.SetVersioning(Major)
 		case "minor":
-			c.PTStore.SetVersioning(ptstore.Minor)
+			c.PTStore.SetVersioning(Minor)
 		case "patch":
-			c.PTStore.SetVersioning(ptstore.Patch)
+			c.PTStore.SetVersioning(Patch)
 		default:
-			c.PTStore.SetVersioning(ptstore.None)
+			c.PTStore.SetVersioning(None)
 		}
 	case SQLSTORE:
-		c.SQLStore, err = sqlstore.Open(name, c.DsnURI)
+		c.SQLStore, err = SQLStoreOpen(c.workPath, c.DsnURI)
 		switch c.Versioning {
 		case "major":
-			c.SQLStore.SetVersioning(ptstore.Major)
+			c.SQLStore.SetVersioning(Major)
 		case "minor":
-			c.SQLStore.SetVersioning(ptstore.Minor)
+			c.SQLStore.SetVersioning(Minor)
 		case "patch":
-			c.SQLStore.SetVersioning(ptstore.Patch)
+			c.SQLStore.SetVersioning(Patch)
 		default:
-			c.SQLStore.SetVersioning(ptstore.None)
+			c.SQLStore.SetVersioning(None)
 		}
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
@@ -167,16 +167,17 @@ func Open(name string) (*Collection, error) {
 // Close is often called in conjunction with "defer" keyword.
 //
 // ```
-//    c, err := dataset.Open("my_collection.ds")
-//    if err != nil { /* .. handle error ... */ }
-//    /* do some stuff with the collection */
-//    defer func() {
-//      if err := c.Close(); err != nil {
-//         /* ... handle closing error ... */
-//      }
-//    }()
-// ```
 //
+//	c, err := dataset.Open("my_collection.ds")
+//	if err != nil { /* .. handle error ... */ }
+//	/* do some stuff with the collection */
+//	defer func() {
+//	  if err := c.Close(); err != nil {
+//	     /* ... handle closing error ... */
+//	  }
+//	}()
+//
+// ```
 func (c *Collection) Close() error {
 	switch c.StoreType {
 	case PTSTORE:
@@ -259,7 +260,7 @@ func (c *Collection) initPTStore() error {
 		"{app_name}": path.Base(os.Args[0]),
 		"{version}":  Version,
 	}
-	src = texts.BytesProcessor(m, []byte(`{
+	src = BytesProcessor(m, []byte(`{
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
     "dateCreated": "{today}",
@@ -341,7 +342,7 @@ func (c *Collection) initSQLStore() error {
 		"{app_name}": path.Base(os.Args[0]),
 		"{version}":  Version,
 	}
-	src = texts.BytesProcessor(m, []byte(`{
+	src = BytesProcessor(m, []byte(`{
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
     "dateCreated": "{today}",
@@ -359,7 +360,7 @@ func (c *Collection) initSQLStore() error {
 	}
 	//NOTE: the collection's table needs to be created using the
 	// SQLStore's Init method..
-	c.SQLStore, err = sqlstore.Init(basename, c.DsnURI)
+	c.SQLStore, err = SQLStoreInit(fullName, c.DsnURI)
 	return err
 }
 
@@ -373,16 +374,17 @@ func (c *Collection) initSQLStore() error {
 // before you can successfully intialized your dataset collection.
 // Currently three SQL database engines are support, SQLite3 or MySQL 8.
 // You select the SQL storage engine by forming a URI consisting of a
-// "protocol" (e.g. "sqlite", "mysql"), the protocol delimiter "://" and
-// a Go SQL supported DSN based on the database driver implementation.
+// "protocol" (e.g. "sqlite", "mysql", "postgres"), the protocol
+// delimiter "://" and a Go SQL supported DSN based on the database
+// driver implementation.
 //
 // A MySQL 8 DSN URI would look something like
 //
-//    `mysql://DB_USER:DB_PASSWD@PROTOCAL_EXPR/DB_NAME`
+//	`mysql://DB_USER:DB_PASSWD@PROTOCAL_EXPR/DB_NAME`
 //
 // The one for SQLite3
 //
-//    `sqlite://PATH_TO_DATABASE`
+//	`sqlite://FILENAME_FOR_SQLITE_DATABASE`
 //
 // NOTE: The DSN URI is stored in the collections.json.  The file should
 // NOT be world readable as that will expose your database password. You
@@ -393,35 +395,38 @@ func (c *Collection) initSQLStore() error {
 // For PTSTORE the access value can be left blank.
 //
 // ```
-//   var (
-//      c *Collection
-//      err error
-//   )
-//   name := "my_collection.ds"
-//   c, err = dataset.Init(name, "")
-//   if err != nil {
-//     // ... handle error
-//   }
-//   defer c.Close()
+//
+//	var (
+//	   c *Collection
+//	   err error
+//	)
+//	name := "my_collection.ds"
+//	c, err = dataset.Init(name, "")
+//	if err != nil {
+//	  // ... handle error
+//	}
+//	defer c.Close()
+//
 // ```
 //
 // For a sqlstore collection we need to pass the "access" value. This
 // is the file containing a DNS or environment variables formating a DSN.
 //
 // ```
-//   var (
-//      c *Collection
-//      err error
-//   )
-//   name := "my_collection.ds"
-//   dsnURI := "sqlite://my_collection.ds/collection.db"
-//   c, err = dataset.Init(name, dsnURI)
-//   if err != nil {
-//     // ... handle error
-//   }
-//   defer c.Close()
-// ```
 //
+//	var (
+//	   c *Collection
+//	   err error
+//	)
+//	name := "my_collection.ds"
+//	dsnURI := "sqlite://collection.db"
+//	c, err = dataset.Init(name, dsnURI)
+//	if err != nil {
+//	  // ... handle error
+//	}
+//	defer c.Close()
+//
+// ```
 func Init(name string, dsnURI string) (*Collection, error) {
 	var (
 		err error
@@ -452,19 +457,20 @@ func Init(name string, dsnURI string) (*Collection, error) {
 // in the collection directory. The collection must be previous open.
 //
 // ```
-//   name := "my_collection.ds"
-//   c, err := dataset.Open(name)
-//   if err != nil {
-//      ...
-//   }
-//   defer c.Close()
-//   src, err := c.Metadata()
-//   if err != nil {
-//      ...
-//   }
-//   ioutil.WriteFile("codemeta.json", src, 664)
-// ```
 //
+//	name := "my_collection.ds"
+//	c, err := dataset.Open(name)
+//	if err != nil {
+//	   ...
+//	}
+//	defer c.Close()
+//	src, err := c.Metadata()
+//	if err != nil {
+//	   ...
+//	}
+//	ioutil.WriteFile("codemeta.json", src, 664)
+//
+// ```
 func (c *Collection) Codemeta() ([]byte, error) {
 	fName := path.Join(c.Name, "codemeta.json")
 	src, err := ioutil.ReadFile(fName)
@@ -478,14 +484,16 @@ func (c *Collection) Codemeta() ([]byte, error) {
 // the previous version. Collection must be open.
 //
 // ```
-//   name := "my_collection.ds"
-//   codemetaFilename := "../codemeta.json"
-//   c, err := dataset.Open(name)
-//   if err != nil {
-//      ...
-//   }
-//   defer c.Close()
-//   c.UpdateMetadata(codemetaFilename)
+//
+//	name := "my_collection.ds"
+//	codemetaFilename := "../codemeta.json"
+//	c, err := dataset.Open(name)
+//	if err != nil {
+//	   ...
+//	}
+//	defer c.Close()
+//	c.UpdateMetadata(codemetaFilename)
+//
 // ```
 func (c *Collection) UpdateMetadata(fName string) error {
 	src, err := ioutil.ReadFile(fName)
@@ -509,13 +517,14 @@ func (c *Collection) UpdateMetadata(fName string) error {
 // data.
 //
 // ```
-//   key := "123"
-//   obj := map[]*interface{}{ "one": 1, "two": 2 }
-//   if err := c.Create(key, obj); err != nil {
-//      ...
-//   }
-// ```
 //
+//	key := "123"
+//	obj := map[]*interface{}{ "one": 1, "two": 2 }
+//	if err := c.Create(key, obj); err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) Create(key string, obj map[string]interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
@@ -541,40 +550,41 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 // with the domain markup for working with json.
 //
 // ```
-//    import (
-//      "encoding/json"
-//      "fmt"
-//      "os"
-//    )
 //
-//    type Record struct {
-//        ID string `json:"id"`
-//        Name string `json:"name,omitempty"`
-//        EMail string `json:"email,omitempty"`
-//    }
+//	import (
+//	  "encoding/json"
+//	  "fmt"
+//	  "os"
+//	)
 //
-//    func main() {
-//        c, err := dataset.Open("friends.ds")
-//        if err != nil {
-//             fmt.Fprintf(os.Stderr, "%s", err)
-//             os.Exit(1)
-//        }
-//        defer c.Close()
+//	type Record struct {
+//	    ID string `json:"id"`
+//	    Name string `json:"name,omitempty"`
+//	    EMail string `json:"email,omitempty"`
+//	}
 //
-//        obj := &Record{
-//            ID: "mojo",
-//            Name: "Mojo Sam",
-//            EMail: "mojo.sam@cosmic-cafe.example.org",
-//        }
-//        if err := c.CreateObject(obj.ID, obj); err != nil {
-//             fmt.Fprintf(os.Stderr, "%s", err)
-//             os.Exit(1)
-//        }
-//        fmt.Printf("OK\n")
-//        os.Exit(0)
-//    }
+//	func main() {
+//	    c, err := dataset.Open("friends.ds")
+//	    if err != nil {
+//	         fmt.Fprintf(os.Stderr, "%s", err)
+//	         os.Exit(1)
+//	    }
+//	    defer c.Close()
+//
+//	    obj := &Record{
+//	        ID: "mojo",
+//	        Name: "Mojo Sam",
+//	        EMail: "mojo.sam@cosmic-cafe.example.org",
+//	    }
+//	    if err := c.CreateObject(obj.ID, obj); err != nil {
+//	         fmt.Fprintf(os.Stderr, "%s", err)
+//	         os.Exit(1)
+//	    }
+//	    fmt.Printf("OK\n")
+//	    os.Exit(0)
+//	}
+//
 // ```
-//
 func (c *Collection) CreateObject(key string, obj interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
@@ -599,14 +609,15 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 // unmarshals it and updates the object pointed to by the map.
 //
 // ```
-//   obj := map[string]interface{}{}
 //
-//   key := "123"
-//   if err := c.Read(key, &obj); err != nil {
-//      ...
-//   }
+//	obj := map[string]interface{}{}
+//
+//	key := "123"
+//	if err := c.Read(key, &obj); err != nil {
+//	   ...
+//	}
+//
 // ```
-//
 func (c *Collection) Read(key string, obj map[string]interface{}) error {
 	var (
 		src []byte
@@ -631,22 +642,23 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 // unmarshaled and variable holding the struct is updated.
 //
 // ```
-//   type Record struct {
-//       ID string `json:"id"`
-//       Name string `json:"name,omitempty"`
-//       EMail string `json:"email,omitempty"`
-//   }
 //
-//   // ...
+//	type Record struct {
+//	    ID string `json:"id"`
+//	    Name string `json:"name,omitempty"`
+//	    EMail string `json:"email,omitempty"`
+//	}
 //
-//   var obj *Record
+//	// ...
 //
-//   key := "123"
-//   if err := c.Read(key, &obj); err != nil {
-//      // ... handle error
-//   }
+//	var obj *Record
+//
+//	key := "123"
+//	if err := c.Read(key, &obj); err != nil {
+//	   // ... handle error
+//	}
+//
 // ```
-//
 func (c *Collection) ReadObject(key string, obj interface{}) error {
 	var (
 		src []byte
@@ -675,12 +687,13 @@ func (c *Collection) ReadObject(key string, obj interface{}) error {
 // versioning is enabled for the collection.
 //
 // ```
-//   key, version := "123", "0.0.1"
-//   if versions, err := Versions(key); err != nil {
-//      ...
-//   }
-// ```
 //
+//	key, version := "123", "0.0.1"
+//	if versions, err := Versions(key); err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) Versions(key string) ([]string, error) {
 	var (
 		versions []string
@@ -703,14 +716,15 @@ func (c *Collection) Versions(key string) ([]string, error) {
 // ReadVersion retrieves a specific vesion from the collection for the given object.
 //
 // ```
-//   var obj map[string]interface{}
 //
-//   key, version := "123", "0.0.1"
-//   if err := ReadVersion(key, version, &obj); err != nil {
-//      ...
-//   }
+//	var obj map[string]interface{}
+//
+//	key, version := "123", "0.0.1"
+//	if err := ReadVersion(key, version, &obj); err != nil {
+//	   ...
+//	}
+//
 // ```
-//
 func (c *Collection) ReadVersion(key string, version string, obj map[string]interface{}) error {
 	var (
 		src []byte
@@ -734,18 +748,19 @@ func (c *Collection) ReadVersion(key string, version string, obj map[string]inte
 // for the given object.
 //
 // ```
-//   type Record srtuct {
-//       // ... structure def goes here.
-//   }
 //
-//   var obj = *Record
+//	type Record srtuct {
+//	    // ... structure def goes here.
+//	}
 //
-//   key, version := "123", "0.0.1"
-//   if err := ReadObjectVersion(key, version, &obj); err != nil {
-//      ...
-//   }
+//	var obj = *Record
+//
+//	key, version := "123", "0.0.1"
+//	if err := ReadObjectVersion(key, version, &obj); err != nil {
+//	   ...
+//	}
+//
 // ```
-//
 func (c *Collection) ReadObjectVersion(key string, version string, obj interface{}) error {
 	var (
 		src []byte
@@ -775,13 +790,14 @@ func (c *Collection) ReadObjectVersion(key string, version string, obj interface
 // and updates the "current" version to use it.
 //
 // ```
-//   key := "123"
-//   obj["three"] = 3
-//   if err := c.Update(key, obj); err != nil {
-//      ...
-//   }
-// ```
 //
+//	key := "123"
+//	obj["three"] = 3
+//	if err := c.Update(key, obj); err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) Update(key string, obj map[string]interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
@@ -807,22 +823,23 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 // and updates the "current" version to use it.
 //
 // ```
-//   type Record struct {
-//       // ... structure def goes here.
-//       Three int `json:"three"`
-//   }
 //
-//   var obj = *Record
+//	type Record struct {
+//	    // ... structure def goes here.
+//	    Three int `json:"three"`
+//	}
 //
-//   key := "123"
-//   obj := &Record {
-//     Three: 3,
-//   }
-//   if err := c.Update(key, obj); err != nil {
-//      // ... handle error
-//   }
+//	var obj = *Record
+//
+//	key := "123"
+//	obj := &Record {
+//	  Three: 3,
+//	}
+//	if err := c.Update(key, obj); err != nil {
+//	   // ... handle error
+//	}
+//
 // ```
-//
 func (c *Collection) UpdateObject(key string, obj interface{}) error {
 	src, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
@@ -848,12 +865,13 @@ func (c *Collection) UpdateObject(key string, obj interface{}) error {
 // JSON document are also deleted including any versioned attachments.
 //
 // ```
-//   key := "123"
-//   if err := c.Delete(key); err != nil {
-//      // ... handle error
-//   }
-// ```
 //
+//	key := "123"
+//	if err := c.Delete(key); err != nil {
+//	   // ... handle error
+//	}
+//
+// ```
 func (c *Collection) Delete(key string) error {
 	switch c.StoreType {
 	case PTSTORE:
@@ -874,12 +892,13 @@ func (c *Collection) Delete(key string) error {
 // in the collection.
 //
 // ```
-//   keys, err := c.Keys()
-//   for _, key := range keys {
-//      ...
-//   }
-// ```
 //
+//	keys, err := c.Keys()
+//	for _, key := range keys {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) Keys() ([]string, error) {
 	switch c.StoreType {
 	case PTSTORE:
@@ -896,16 +915,37 @@ func (c *Collection) Keys() ([]string, error) {
 	return nil, fmt.Errorf("%s not open", c.Name)
 }
 
+// UpdatedKeys takes a start and end time and returns a list of
+// keys for records that were modified in that time range.
+// The start and end values are expected to be in YYYY-MM-DD HH:MM:SS
+// notation or empty strings.
+//
+// NOTE: This currently only supports SQL stored collections.
+func (c *Collection) UpdatedKeys(start string, end string) ([]string, error) {
+	switch c.StoreType {
+	case PTSTORE:
+		return nil, fmt.Errorf("not implemented for pairtree storaged")
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.UpdatedKeys(start, end)
+		}
+	default:
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return nil, fmt.Errorf("%s not open", c.Name)
+}
+
 // Sample takes a sample size and returns a list of
 // randomly selected keys and an error. Sample size most
 // be greater than zero and less or equal to the number of keys
 // in the collection. Collection needs to be previously opened.
 //
 // ```
-//   smapleSize := 1000
-//   keys, err := c.Sample(sampleSize)
-// ```
 //
+//	smapleSize := 1000
+//	keys, err := c.Sample(sampleSize)
+//
+// ```
 func (c *Collection) Sample(size int) ([]string, error) {
 	var (
 		keys []string
@@ -941,12 +981,13 @@ func (c *Collection) Sample(size int) ([]string, error) {
 // NOTE: collection must be open otherwise false will always be returned.
 //
 // ```
-//   key := "123"
-//   if c.HasKey(key) {
-//      ...
-//   }
-// ```
 //
+//	key := "123"
+//	if c.HasKey(key) {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) HasKey(key string) bool {
 	switch c.StoreType {
 	case PTSTORE:
@@ -969,10 +1010,11 @@ func (c *Collection) HasKey(key string) bool {
 // or Length not available for storage type.
 //
 // ```
-//    var x int64
-//    x = c.Length()
-// ```
 //
+//	var x int64
+//	x = c.Length()
+//
+// ```
 func (c *Collection) Length() int64 {
 	switch c.StoreType {
 	case PTSTORE:

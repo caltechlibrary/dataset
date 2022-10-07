@@ -8,14 +8,14 @@ by a unique identifier or key.  __datasetd__ is a web service which
 serves a similar purpose but is intended for supporting multi-user
 and multi-processes.
 
-This is generalized instructions for a release.  For deployment suggestions 
+This is generalized instructions for a release.  For deployment suggestions
 see NOTES.md
 
 Compiled version
 ----------------
 
-Compiled versions are available for macOS (Intel and M1), Linux (Intel), 
-Windows (Intel) and Raspberry Pi (ARM).
+Compiled versions are available for macOS (Intel and M1), Linux (Intel),
+Windows (Intel and ARM64) and Raspberry Pi (ARM).
 
 VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v2.0.0)
 
@@ -26,13 +26,14 @@ latest release
 >    https://github.com/caltechlibrary/dataset/releases/latest
 
 
-| Platform    | Zip Filename                             | 
-|-------------|------------------------------------------|
-| Windows     | dataset-VERSION_NUMBER-windows-amd64.zip |
-| macOS (Intel) | dataset-VERSION_NUMBER-macos-amd64.zip  |
-| macOS (M1)  | dataset-VERSION_NUMBER-macos-arm64.zip  |
-| Linux (Intel) | dataset-VERSION_NUMBER-linux-amd64.zip   |
-| Raspberry Pi OS (ARM) | dataset-VERSION_NUMBER-raspbian-arm7.zip |
+| Platform         | Zip Filename                             |
+|------------------|------------------------------------------|
+| Windows (Intel)  | dataset-VERSION_NUMBER-windows-amd64.zip |
+| Windows (ARM 64) | dataset-VERSION_NUMBER-windows-arm64.zip |
+| macOS (Intel)    | dataset-VERSION_NUMBER-macos-amd64.zip   |
+| macOS (M1)       | dataset-VERSION_NUMBER-macos-arm64.zip   |
+| Linux (Intel)    | dataset-VERSION_NUMBER-linux-amd64.zip   |
+| Raspberry Pi OS (ARM7) | dataset-VERSION_NUMBER-raspbian-arm7.zip |
 
 
 The basic recipe
@@ -41,7 +42,7 @@ The basic recipe
 - Find the Zip file listed matching the architecture you're running and download it
     - (e.g. if you're on a Windows 10 laptop/Surface with a amd64 style CPU you'd choose the Zip file with "windows-amd64" in the name).
 - Download the zip file and unzip the file.
-- Copy the contents of the folder named "bin" to a folder that is in your path 
+- Copy the contents of the folder named "bin" to a folder that is in your path
     - (e.g. "bin" in your "HOME" directory is common).
 - Adjust your PATH if needed
 - Test
@@ -74,20 +75,36 @@ downloading the zip file.
 3. Copy the executable to the "bin" directory in your "HOME" directory (or a folder in your path)
 4. Test
 
-Here's an example of the commands run in from the Bash shell on Windows 10
-after downloading the zip file.
+#### Intel Hardware
+
+Here's an example of the commands run in from the Bash shell on Windows 11
+after downloading the zip file (assume Linux Subsystem for Windows).
 
 ```shell
     cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
+    mv -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version
+```
+
+#### ARM64 Hardware
+
+Here's an example of the commands run in from the Bash shell on Windows 11
+after downloading the zip file (assumes Linux Subsystem for Windows).
+
+```shell
+    cd Downloads/
+    unzip dataset-*-windows-arm64.zip
+    mkdir -p $HOME/bin
+    mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version
 ```
 
 
-### Linux 
+### Linux
 
 1. Download the zip file
 2. Unzip the zip file
@@ -145,15 +162,21 @@ Clone the repository and then compile.
     make install
 ```
 
+### Requirements
+
+- Go version 1.19.2 or better
+- Pandoc version 2.19.2 or better
+- GNU Make
+- Common POSIX/Unix utilities, e.g. cat, sed, grep
+
 ### Windows compilation
 
 The tool chain to compile on Windows make several assumptions.
 
 1. You're using Anaconda shell and have the C tool chain installed for
    cgo to work
-2. You have Stephen Dolan's jq command available (so the version.go file
-   can be regenerated)
-3. You have the latest go installed
+2. GNU Make, cat, grep and sed
+3. You have the latest Go installed
 
 Since I don't assume a POSIX shell environment on windows I have made
 batch files to perform some of what Make under Linux and macOS would do.
@@ -163,5 +186,5 @@ batch files to perform some of what Make under Linux and macOS would do.
 - clean.bat removes executable and temp files
 
 
-Compilation assumes [go](https://github.com/golang/go) v1.18.2
+Compilation assumes [go](https://github.com/golang/go) v1.19.2 or better.
 

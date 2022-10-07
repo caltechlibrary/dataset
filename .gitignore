@@ -43,3 +43,4 @@ test*.json
 man
 settings.json
 pandoc.*.json
+_codemeta.json

@@ -32,6 +32,9 @@
 <a href="docs/topics.html">Topics</a>
 </li>
 <li>
+<a href="about.html">About</a>
+</li>
+<li>
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
@@ -62,7 +65,7 @@ Compiled version
 </h2>
 <p>
 Compiled versions are available for macOS (Intel and M1), Linux (Intel),
-Windows (Intel) and Raspberry Pi (ARM).
+Windows (Intel and ARM64) and Raspberry Pi (ARM).
 </p>
 <p>
 VERSION_NUMBER is a <a href="http://semver.org/">semantic version
@@ -91,7 +94,7 @@ Zip Filename
 <tbody>
 <tr class="odd">
 <td>
-Windows
+Windows (Intel)
 </td>
 <td>
 dataset-VERSION_NUMBER-windows-amd64.zip
@@ -99,13 +102,21 @@ dataset-VERSION_NUMBER-windows-amd64.zip
 </tr>
 <tr class="even">
 <td>
+Windows (ARM 64)
+</td>
+<td>
+dataset-VERSION_NUMBER-windows-arm64.zip
+</td>
+</tr>
+<tr class="odd">
+<td>
 macOS (Intel)
 </td>
 <td>
 dataset-VERSION_NUMBER-macos-amd64.zip
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>
 macOS (M1)
 </td>
@@ -113,7 +124,7 @@ macOS (M1)
 dataset-VERSION_NUMBER-macos-arm64.zip
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>
 Linux (Intel)
 </td>
@@ -121,9 +132,9 @@ Linux (Intel)
 dataset-VERSION_NUMBER-linux-amd64.zip
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>
-Raspberry Pi OS (ARM)
+Raspberry Pi OS (ARM7)
 </td>
 <td>
 dataset-VERSION_NUMBER-raspbian-arm7.zip
@@ -213,14 +224,30 @@ a folder in your path)
 Test
 </li>
 </ol>
+<h4 id="intel-hardware">
+Intel Hardware
+</h4>
 <p>
 Here’s an example of the commands run in from the Bash shell on Windows
-10 after downloading the zip file.
+11 after downloading the zip file (assume Linux Subsystem for Windows).
 </p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
+    mv -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version</code></pre>
+<h4 id="arm64-hardware">
+ARM64 Hardware
+</h4>
+<p>
+Here’s an example of the commands run in from the Bash shell on Windows
+11 after downloading the zip file (assumes Linux Subsystem for Windows).
+</p>
+<pre class="shell"><code>    cd Downloads/
+    unzip dataset-*-windows-arm64.zip
+    mkdir -p $HOME/bin
+    mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
 <h3 id="linux">
@@ -295,6 +322,23 @@ Clone the repository and then compile.
     # Add any missing dependencies you might need in your Go environment
     make test
     make install</code></pre>
+<h3 id="requirements">
+Requirements
+</h3>
+<ul>
+<li>
+Go version 1.19.2 or better
+</li>
+<li>
+Pandoc version 2.19.2 or better
+</li>
+<li>
+GNU Make
+</li>
+<li>
+Common POSIX/Unix utilities, e.g. cat, sed, grep
+</li>
+</ul>
 <h3 id="windows-compilation">
 Windows compilation
 </h3>
@@ -307,11 +351,10 @@ You’re using Anaconda shell and have the C tool chain installed for cgo
 to work
 </li>
 <li>
-You have Stephen Dolan’s jq command available (so the version.go file
-can be regenerated)
+GNU Make, cat, grep and sed
 </li>
 <li>
-You have the latest go installed
+You have the latest Go installed
 </li>
 </ol>
 <p>
@@ -331,7 +374,7 @@ clean.bat removes executable and temp files
 </ul>
 <p>
 Compilation assumes <a href="https://github.com/golang/go">go</a>
-v1.18.2
+v1.19.2 or better.
 </p>
 </section>
 

@@ -1,4 +1,3 @@
-//
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package dataset
 
 import (
@@ -30,7 +28,7 @@ import (
 	"time"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/dataset/dotpath"
+	"github.com/caltechlibrary/dotpath"
 )
 
 //
@@ -102,15 +100,16 @@ func (c *Collection) frameObject(key string, dotPaths []string, labels []string)
 // labels provided.
 //
 // ```
-//   var mapList []map[string]interface{}
 //
-//   keys := []string{ "123", "124", "125" }
-//   dotPaths := []string{ ".title", ".description" }
-//   labels := []string{ "Title", "Description" }
-//   verbose := true
-//   mapList, err = c.ObjectList(keys, dotPaths, labels, verbose)
+//	var mapList []map[string]interface{}
+//
+//	keys := []string{ "123", "124", "125" }
+//	dotPaths := []string{ ".title", ".description" }
+//	labels := []string{ "Title", "Description" }
+//	verbose := true
+//	mapList, err = c.ObjectList(keys, dotPaths, labels, verbose)
+//
 // ```
-//
 func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []string, verbose bool) ([]map[string]interface{}, error) {
 	if len(dotPaths) != len(labels) {
 		return nil, fmt.Errorf("dot paths and labels do not match")
@@ -141,12 +140,13 @@ func (c *Collection) ObjectList(keys []string, dotPaths []string, labels []strin
 // to previously been opened.
 //
 // ```
-//   frameName := "journals"
-//   if c.HasFrame(frameName) {
-//      ...
-//   }
-// ```
 //
+//	frameName := "journals"
+//	if c.HasFrame(frameName) {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) HasFrame(frameName string) bool {
 	framePath := path.Join(c.workPath, "_frames",
 		path.Base(frameName)+".json")
@@ -233,17 +233,18 @@ func (c *Collection) rmFrame(key string) error {
 // you need to change a frame's objects or ordering use FrameReframe().
 //
 // ```
-//   frameName := "journals"
-//   keys := []string{ "123", "124", "125" }
-//   dotPaths := []string{ ".title", ".description" }
-//   labels := []string{ "Title", "Description" }
-//   verbose := true
-//   frame, err := c.FrameCreate(frameName, keys, dotPaths, labels, verbose)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	frameName := "journals"
+//	keys := []string{ "123", "124", "125" }
+//	dotPaths := []string{ ".title", ".description" }
+//	labels := []string{ "Title", "Description" }
+//	verbose := true
+//	frame, err := c.FrameCreate(frameName, keys, dotPaths, labels, verbose)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, labels []string, verbose bool) (*DataFrame, error) {
 	frameDir := path.Join(c.workPath, "_frames")
 	if _, err := os.Stat(frameDir); os.IsNotExist(err) {
@@ -301,14 +302,15 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 // collection.
 //
 // ```
-//   frameNames := c.FrameNames()
-//   for _, name := range frames {
-//      // do something with each frame name
-//      objects, err := c.FrameObjects(name)
-//      ...
-//   }
-// ```
 //
+//	frameNames := c.FrameNames()
+//	for _, name := range frames {
+//	   // do something with each frame name
+//	   objects, err := c.FrameObjects(name)
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) FrameNames() []string {
 	framesDir := path.Join(c.workPath, "_frames")
 	files, err := os.ReadDir(framesDir)
@@ -326,10 +328,11 @@ func (c *Collection) FrameNames() []string {
 // FrameKeys retrieves a list of keys assocaited with a data frame
 //
 // ```
-//   frameName := "journals"
-//   keys := c.FrameKeys(frameName)
-// ```
 //
+//	frameName := "journals"
+//	keys := c.FrameKeys(frameName)
+//
+// ```
 func (c *Collection) FrameKeys(name string) []string {
 	frame, err := c.FrameRead(name)
 	if err != nil {
@@ -342,13 +345,14 @@ func (c *Collection) FrameKeys(name string) []string {
 // Returns the DataFrame and an error value
 //
 // ```
-//   frameName := "journals"
-//   data, err := c.FrameRead(frameName)
-//   if err != nil {
-//      ..
-//   }
-// ```
 //
+//	frameName := "journals"
+//	data, err := c.FrameRead(frameName)
+//	if err != nil {
+//	   ..
+//	}
+//
+// ```
 func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 	return c.getFrame(name)
 }
@@ -357,14 +361,15 @@ func (c *Collection) FrameRead(name string) (*DataFrame, error) {
 // a map string interface.
 //
 // ```
-//   definition := map[string]interface{}{}
-//   frameName := "journals"
-//   definition, err := c.FrameDef(frameName)
-//   if err != nil {
-//      ..
-//   }
-// ```
 //
+//	definition := map[string]interface{}{}
+//	frameName := "journals"
+//	definition, err := c.FrameDef(frameName)
+//	if err != nil {
+//	   ..
+//	}
+//
+// ```
 func (c *Collection) FrameDef(name string) (map[string]interface{}, error) {
 	frame, err := c.FrameRead(name)
 	if err != nil {
@@ -387,13 +392,14 @@ func (c *Collection) FrameDef(name string) (map[string]interface{}, error) {
 // the object list.
 //
 // ```
-//   frameName, verbose := "journals", true
-//   err := c.FrameRefresh(frameName, verbose)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	frameName, verbose := "journals", true
+//	err := c.FrameRefresh(frameName, verbose)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) FrameRefresh(name string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
@@ -439,14 +445,15 @@ func (c *Collection) FrameRefresh(name string, verbose bool) error {
 // keys provided. It uses the frame's existing definition.
 //
 // ```
-//   frameName, verbose := "journals", false
-//   keys := ...
-//   err := c.FrameReframe(frameName, keys, verbose)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	frameName, verbose := "journals", false
+//	keys := ...
+//	err := c.FrameReframe(frameName, keys, verbose)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) FrameReframe(name string, keys []string, verbose bool) error {
 	f, err := c.getFrame(name)
 	if err != nil {
@@ -480,17 +487,18 @@ func (c *Collection) FrameReframe(name string, keys []string, verbose bool) erro
 // SaveFrame saves a frame in a collection or returns an error
 //
 // ```
-//    frameName := "journals"
-//    data, err := c.FrameRead(frameName)
-//    if err != nil {
-//       ...
-//    }
-//    // do stuff with the frame's data
-//       ...
-//    // Save the changed frame data
-//    err = c.SaveFrame(frameName, data)
-// ```
 //
+//	frameName := "journals"
+//	data, err := c.FrameRead(frameName)
+//	if err != nil {
+//	   ...
+//	}
+//	// do stuff with the frame's data
+//	   ...
+//	// Save the changed frame data
+//	err = c.SaveFrame(frameName, data)
+//
+// ```
 func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 	return c.setFrame(name, f)
 }
@@ -500,12 +508,12 @@ func (c *Collection) SaveFrame(name string, f *DataFrame) error {
 // to re-populate a frame based on a new key list.
 //
 // ```
-//   frameName := "journals"
-//   err := c.FrameClear(frameName)
-//   if err != nil  {
-//      ...
-//   }
 //
+//	frameName := "journals"
+//	err := c.FrameClear(frameName)
+//	if err != nil  {
+//	   ...
+//	}
 func (c *Collection) FrameClear(name string) error {
 	f, err := c.getFrame(name)
 	if err != nil {
@@ -521,13 +529,14 @@ func (c *Collection) FrameClear(name string) error {
 // if frame can't be deleted.
 //
 // ```
-//   frameName := "journals"
-//   err := c.FrameDelete(frameName)
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	frameName := "journals"
+//	err := c.FrameDelete(frameName)
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) FrameDelete(name string) error {
 	return c.rmFrame(name)
 }
@@ -536,17 +545,18 @@ func (c *Collection) FrameDelete(name string) error {
 // collection's frame name.
 //
 // ```
-//    var (
-//      err error
-//      objects []map[string]interface{}
-//    )
-//    frameName := "journals"
-//    objects, err = c.FrameObjects(frameName)
-//    if err != nil  {
-//       ...
-//    }
-// ```
 //
+//	var (
+//	  err error
+//	  objects []map[string]interface{}
+//	)
+//	frameName := "journals"
+//	objects, err = c.FrameObjects(frameName)
+//	if err != nil  {
+//	   ...
+//	}
+//
+// ```
 func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error) {
 	f, err := c.FrameRead(fName)
 	if err != nil {
@@ -562,15 +572,14 @@ func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error
 
 // String renders the data structure DataFrame as JSON to a string
 //
-//  ```
-//   frameName := "journals"
-//   data, err := c.FrameRead(frameName)
-//   if err != nil {
-//      ...
-//   }
-//   fmt.Printf("\n%s\n", data.String())
-//  ```
-//
+//	```
+//	 frameName := "journals"
+//	 data, err := c.FrameRead(frameName)
+//	 if err != nil {
+//	    ...
+//	 }
+//	 fmt.Printf("\n%s\n", data.String())
+//	```
 func (f *DataFrame) String() string {
 	src, _ := json.MarshalIndent(f, "", "  ")
 	return fmt.Sprintf("%s", src)
@@ -579,18 +588,19 @@ func (f *DataFrame) String() string {
 // Grid returns a table representaiton of a DataFrame's ObjectList
 //
 // ```
-//   frameName, includeHeader := "journals", true
-//   data, err := c.FrameRead(frameName)
-//   if err != nil {
-//      ...
-//   }
-//   rows, err := data.Grid(includeHeader)
-//   if err != nil {
-//      ...
-//   }
-//   ... /* now do something with the rows */ ...
-// ```
 //
+//	frameName, includeHeader := "journals", true
+//	data, err := c.FrameRead(frameName)
+//	if err != nil {
+//	   ...
+//	}
+//	rows, err := data.Grid(includeHeader)
+//	if err != nil {
+//	   ...
+//	}
+//	... /* now do something with the rows */ ...
+//
+// ```
 func (f *DataFrame) Grid(includeHeaderRow bool) [][]interface{} {
 	rowCnt := len(f.Keys)
 	colCnt := len(f.Labels)
@@ -630,17 +640,18 @@ func (f *DataFrame) Grid(includeHeaderRow bool) [][]interface{} {
 // Objects returns a copy of DataFrame's object list (an array of map[string]interface{})
 //
 // ```
-//   frameName := "journals"
-//   data, err := c.FrameRead(frameName)
-//   if err != nil {
-//      ...
-//   }
-//   objectList, err := data.Objects()
-//   if err != nil {
-//      ...
-//   }
-// ```
 //
+//	frameName := "journals"
+//	data, err := c.FrameRead(frameName)
+//	if err != nil {
+//	   ...
+//	}
+//	objectList, err := data.Objects()
+//	if err != nil {
+//	   ...
+//	}
+//
+// ```
 func (f *DataFrame) Objects() []map[string]interface{} {
 	ol := []map[string]interface{}{}
 	for _, key := range f.Keys {

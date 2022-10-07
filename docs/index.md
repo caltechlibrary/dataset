@@ -93,3 +93,7 @@ documentation page.
 
 [datasetd](datasetd.html) supports the following end points.
 
+Storage engines
+===============
+
+In v2 dataset is starting to suport storing your JSON document in a SQL database. This is an experimental feature and likely to contain some surprises in the 2.0 series implementation. Currently three SQL databases can be used to store the JSON documents, SQLite 3 (used in dataset's test suites), MySQL 8 (used by some related projects but under tested), Postgres 14 (not tested yet).  See [storage engines](storage-engines.html) for more details.

@@ -26,6 +26,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Test the Pairtree storage implementation
@@ -147,6 +148,11 @@ func TestPTStore(t *testing.T) {
 	} else if len(keys) != 1 {
 		t.Errorf("Expected one key left after delete, got %+v", keys)
 	}
+	start := "2001-01-01 00:00:00"
+	end := time.Now().Format("2006-01-02") + " 23:23:59"
+	if _, err := c.UpdatedKeys(start, end); err == nil {
+		t.Errorf("expected error for unsupported UpdateKeys on pairtree collections")
+	}
 }
 
 // Test the SQL storage implementation
@@ -265,6 +271,24 @@ func TestSQLStore(t *testing.T) {
 			t.Errorf("Expected key (%T) %s, got (%T) %s", expected, expected, got, got)
 		}
 	}
+	start := "2001-01-01 00:00:00"
+	end := time.Now().Format("2006-01-02") + " 23:23:59"
+	updatedKeys, err := c.UpdatedKeys(start, end)
+	if err != nil {
+		t.Errorf("expected UpdateKeys to work, %s", err)
+	}
+	sort.Strings(updatedKeys)
+	ul := len(updatedKeys)
+	if ul == l {
+		for i, k := range keys {
+			if k != updatedKeys[i] {
+				t.Errorf("expected %d-th key to be %q, got %q", i, k, updatedKeys[i])
+			}
+		}
+	} else {
+		t.Errorf("expected %d updated keys, got %d", l, ul)
+	}
+
 	// Test deletes
 	for i := 0; i < 2; i++ {
 		key := fmt.Sprintf("%d", i)
@@ -285,7 +309,7 @@ func TestSQLStore(t *testing.T) {
 
 func TestFredaExample(t *testing.T) {
 	// Create a collection "mystuff" inside the directory called demo
-	cName := path.Join("testout", "mystuff.ds")
+	cName := path.Join("testout", "freda1.ds")
 	if _, err := os.Stat(cName); err == nil {
 		// Clear stale data if needed.
 		os.RemoveAll(cName)
@@ -306,6 +330,79 @@ func TestFredaExample(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	// Keys should get a key back ...
+	keys, err := c.Keys()
+	if err != nil {
+		t.Errorf("expected c.Keys(), got error %s", err)
+	}
+	if len(keys) != 1 {
+		t.Errorf("expected one key, got %d", len(keys))
+	} else if keys[0] != docName {
+		t.Errorf("expected key %q, got %q", docName, keys[0])
+	}
+	// Read a JSON document
+	if err := c.Read(docName, document); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Update a JSON document
+	document["email"] = "freda@zbs.example.org"
+	if err := c.Update(docName, document); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Delete a JSON document
+	if err := c.Delete(docName); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+}
+
+func TestSQLStoreFredaExample(t *testing.T) {
+	// Create a collection "mystuff" inside the directory called demo
+	cName := path.Join("testout", "freda2.ds")
+	if _, err := os.Stat(cName); err == nil {
+		// Clear stale data if needed.
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, "sqlite://collection.db")
+	if err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	defer c.Close()
+	// Create a JSON document
+	docName := "freda.json"
+	document := map[string]interface{}{
+		"name":  "freda",
+		"email": "freda@inverness.example.org",
+	}
+	if err := c.Create(docName, document); err != nil {
+		t.Errorf("%s", err)
+		t.FailNow()
+	}
+	// Keys should get a key back ...
+	keys, err := c.Keys()
+	if err != nil {
+		t.Errorf("expected c.Keys(), got error %s", err)
+	}
+	if len(keys) != 1 {
+		t.Errorf("expected one key, got %d", len(keys))
+	} else if keys[0] != docName {
+		t.Errorf("expected key %q, got %q", docName, keys[0])
+	}
+	start := "2000-01-01 00:00:00"
+	end := "2100-12-31 23:23:59"
+	keys, err = c.UpdatedKeys(start, end)
+	if err != nil {
+		t.Errorf("expected c.UpdatedKeys(%q, %q), got error %s", start, end, err)
+	}
+	if len(keys) != 1 {
+		t.Errorf("expected one key, got %d", len(keys))
+	} else if keys[0] != docName {
+		t.Errorf("expected key %q, got %q", docName, keys[0])
+	}
+
 	// Read a JSON document
 	if err := c.Read(docName, document); err != nil {
 		t.Errorf("%s", err)

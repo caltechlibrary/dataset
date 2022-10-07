@@ -32,6 +32,9 @@
 <a href="docs/topics.html">Topics</a>
 </li>
 <li>
+<a href="about.html">About</a>
+</li>
+<li>
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
 </li>
 <li>
@@ -43,7 +46,7 @@ href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 
 <section>
 <p>
-Release 2.0.0:
+Release 2.0.0-b06:
 </p>
 <p>
 This release is a rewrite of version 1 focusing on removing features,
@@ -83,13 +86,43 @@ adopted by the data science community for describing data and software
 additional JSON configuration files may be used to manage the collection
 dependent on storage engine
 </li>
+<li>
+Experimental features in dataset v2
+<ul>
+<li>
+Using SQL JSON columns to store our JSON documents in a relational
+database
+<ul>
+<li>
+SQLite 3
+</li>
+<li>
+MySQL 8
+</li>
+<li>
+Posgres 14.5 (very experimental, still learning Postgres)
+</li>
+</ul>
+</li>
+<li>
+Object level versioning
+</li>
+<li>
+Attachment versioning
+</li>
+<li>
+dataset package to support Async, multi-process access via JSON stored
+in SQL databases
+</li>
+</ul>
+</li>
 </ul>
 <p>
 Golang package changes:
 </p>
 <ul>
 <li>
-Minimum Go version is now 1.18.2
+Minimum Go version is now 1.19
 </li>
 <li>
 The dataset v2 package has been substantially reorganized and
@@ -155,8 +188,26 @@ the task needed
 </li>
 <li>
 the command line version is single user, single process and be default
-assumes pairtree storage. It can also access SQL databases for storing
-JSON objects. Currently this is being tested with SQLite3 and MySQL 8
+assumes pairtree storage.
+</li>
+<li>
+Experimental features
+<ul>
+<li>
+JSON stored in SQL database via JSON column types
+<ul>
+<li>
+SQLite3
+</li>
+<li>
+MySQL 8
+</li>
+<li>
+Postgres 14.5
+</li>
+</ul>
+</li>
+</ul>
 </li>
 </ul>
 <p>
@@ -171,6 +222,9 @@ directly to the client syntax
 it is recommended to use SQL storage for your dataset collections
 explosed using the web service (e.q. SQLite3 or MySQL). This is because
 a pairtree collection doesn’t provide docuemnt locking
+</li>
+<li>
+relies on SQL JSON columns for storage
 </li>
 <li>
 Access to the SQL storage engine is through either the environment or a
