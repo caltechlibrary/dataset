@@ -57,7 +57,7 @@ type Collection struct {
 	StoreType string `json:"storage_type,omitempty"`
 
 	// DsnURI holds protocol plus dsn string. The protocol can be
-	// "sqlite://", "mysql://" and the dsn conforming to the Golang
+	// "sqlite://", "mysql://" or "postgres://"and the dsn conforming to the Golang
 	// database/sql driver name in the database/sql package.
 	DsnURI string `json:"dsn_uri,omitempty"`
 
@@ -374,8 +374,9 @@ func (c *Collection) initSQLStore() error {
 // before you can successfully intialized your dataset collection.
 // Currently three SQL database engines are support, SQLite3 or MySQL 8.
 // You select the SQL storage engine by forming a URI consisting of a
-// "protocol" (e.g. "sqlite", "mysql"), the protocol delimiter "://" and
-// a Go SQL supported DSN based on the database driver implementation.
+// "protocol" (e.g. "sqlite", "mysql", "postgres"), the protocol
+// delimiter "://" and a Go SQL supported DSN based on the database
+// driver implementation.
 //
 // A MySQL 8 DSN URI would look something like
 //

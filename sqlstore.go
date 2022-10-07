@@ -80,7 +80,7 @@ func ParseDSN(uri string) (string, error) {
 		return "", err
 	}
 
-	if u.Scheme != "postgres" {
+	if !(u.Scheme == "sqlite" || u.Scheme == "postgres" || u.Scheme == "mysql") {
 		return "", fmt.Errorf("invalid connection protocol: %s", u.Scheme)
 	}
 

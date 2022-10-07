@@ -21,10 +21,11 @@ cleanUpHTML
 
 # Look through files and build new site
 mkpage "nav=nav.md" "content=markdown:$(cat LICENSE)" page.tmpl >license.html
+mkpage "nav=nav.md" "content=markdown:$(cat about.md)" page.tmpl >about.html
 mkpage "nav=nav.md" "content=markdown:$(cat INSTALL.md)" page.tmpl >install.html
 mkpage "nav=nav.md" "content=markdown:$(cat CONTRIBUTING.md)" page.tmpl >contributing.html
 mkpage "nav=nav.md" "content=markdown:$(cat CODE_OF_CONDUCT.md)" page.tmpl >code_of_conduct.html
-git add -f license.html install.html
+git add -f license.html install.html about.html
 findfile -s ".md" . | while read P; do
 	DNAME=$(dirname "$P")
 	if [[ "${DNAME:0:3}" = "etc" || "${DNAME:0:5}" = "demos" || ${DNAME:0:8} = "examples" ]]; then

@@ -6,7 +6,7 @@ Dataset Project
 
 The Dataset Project provides tools for working with collections of
 JSON documents stored on the local file system in a pairtree or
-in a SQL database supporting JSON columns. Two tools are provided 
+in a SQL database supporting JSON columns. Two tools are provided
 by the project -- a command line interface (dataset) and a
 [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer)
 web service (datasetd).
@@ -55,20 +55,20 @@ Design choices
 --------------
 
 _dataset_ and _datasetd_ are intended to be simple tools for managing
-collections JSON object documents in a predictable structured way. 
+collections JSON object documents in a predictable structured way.
 
 _dataset_ is guided by the idea that you should be able to work with
 JSON documents as easily as you can any plain text document on the Unix
 command line. _dataset_ is intended to be simple to use with minimal
 setup (e.g.  `dataset init mycollection.ds` creates a new collection
-called 'mycollection.ds'). 
+called 'mycollection.ds').
 
 - _dataset_ and _datasetd_ store JSON object documents in collections.
   - Storage of the JSON documents may be either in a pairtree on disk
     or in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)
   - dataset collections are made up of a directory containing a
     collection.json and codemeta.json files.
-  - collection.json metadata file describing the collection, 
+  - collection.json metadata file describing the collection,
     e.g. storage type, name, description, if versioning is enabled
   - codemeta.json is a [codemeta](https://codemeta.github.io) file describing the nature of the collection, e.g. authors, description, funding
   - collection objects are accessed by their key, a unique identifier made of lower case alpha numeric characters
@@ -96,8 +96,8 @@ _datasetd_ is a web service
 
 
 The choice of plain UTF-8 is intended to help future proof reading dataset
-collections.  Care has been taken to keep _dataset_ simple enough and light 
-weight enough that it will run on a machine as small as a Raspberry Pi Zero 
+collections.  Care has been taken to keep _dataset_ simple enough and light
+weight enough that it will run on a machine as small as a Raspberry Pi Zero
 while being equally comfortable on a more resource rich server or desktop
 environment. _dataset_ can be re-implement in any programming language
 supporting file input and output, common string operations and along with
@@ -108,7 +108,7 @@ Go language.
 Features
 --------
 
-[dataset](docs/dataset.html) supports 
+[dataset](docs/dataset.html) supports
 - Initialize a new dataset collection
   - Define metadata about the collection using a codemeta.json file
   - Define a keys file holding a list of allocated keys in the collection
@@ -232,7 +232,7 @@ Releases
 --------
 
 Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1),
-Windows 11 (x86) and Raspberry Pi OS (ARM7). 
+Windows 11 (x86) and Raspberry Pi OS (ARM7).
 
 [github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 

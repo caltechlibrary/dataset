@@ -1,8 +1,9 @@
 {
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
-    "description": "Tools for working with JSON documents as a collection hosted on the file system",
+    "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
     "name": "dataset",
+    "datePublished": "2022-08-22",
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
@@ -43,6 +44,10 @@
     "maintainer": "https://orcid.org/0000-0003-0900-6903",
     "programmingLanguage": [
         "Go"
+    ],
+    "softwareRequirements": [
+        "Golang 1.19.2 or better",
+        "Pandoc 2.19.2 or better"
     ],
     "funder":[
   {

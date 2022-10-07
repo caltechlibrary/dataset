@@ -14,28 +14,25 @@
 <a href="/">Home</a>
 </li>
 <li>
-<a href="../">Up</a>
-</li>
-<li>
 <a href="../">README</a>
 </li>
 <li>
-<a href="../license.html">LICENSE</a>
+<a href="license.html">LICENSE</a>
 </li>
 <li>
-<a href="../install.html">INSTALL</a>
+<a href="install.html">INSTALL</a>
 </li>
 <li>
-<a href="./">Documentation</a>
+<a href="docs/">Documentation</a>
 </li>
 <li>
-<a href="../how-to/">Tutorials</a>
+<a href="how-to/">Tutorials</a>
 </li>
 <li>
-<a href="topics.html">Topics</a>
+<a href="docs/topics.html">Topics</a>
 </li>
 <li>
-<a href="../about.html">About</a>
+<a href="about.html">About</a>
 </li>
 <li>
 <a href="https://github.com/caltechlibrary/dataset">Github</a>
@@ -48,39 +45,57 @@ href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
 </nav>
 
 <section>
-<h1 id="retrieve-end-point">
-Retrieve (end point)
+<h1 id="about-this-software">
+About this software
 </h1>
-<p>
-Interacting with the <strong>datasetd</strong> web service can be done
-with any web client. For documentation purposes I am assuming you are
-using <a href="https://curl.se/">curl</a>. This command line program is
-available on most POSIX systems including Linux, macOS and Windows.
-</p>
-<p>
-Retrieves an s attached document from a JSON record using
-<code>&lt;KEY&gt;</code> and <code>&lt;FILENAME&gt;</code>.
-</p>
-<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attach/&lt;KEY&gt;/&lt;FILENAME&gt;`</code></pre>
-<p>
-Requires a POST method and expects a multi-part web form providing the
-filename. The document will be written the JSON document directory by
-<code>&lt;KEY&gt;</code> in attachments sub directory using a pairtree
-path.
-</p>
-<h2 id="example">
-Example
+<h2 id="dataset-2.0.0-b06">
+dataset 2.0.0-b06
 </h2>
+<h3 id="authors">
+Authors
+</h3>
+<ul>
+<li>
+R. S. Doiel
+</li>
+<li>
+Thomas E Morrell
+</li>
+</ul>
 <p>
-In this example we<code>re retieving the</code><FILENAME><code>of
-“a1.png” into</code><COLLECTION_ID><code>of “t1” and</code><KEY>` of
-“one” using curl.
+Tools for working with JSON documents as a collection hosted on the file
+system or SQL JSON store
 </p>
-<pre class="shell"><code>    curl http://localhost:8485/t1/retrieve/one/a1.png</code></pre>
-<p>
-This should trigger a download of the “a1.png” image file in the
-collection for document “one”.
-</p>
+<ul>
+<li>
+License: https://data.caltech.edu/license
+</li>
+<li>
+GitHub: https://github.com/caltechlibrary/dataset
+</li>
+<li>
+Issues: https://github.com/caltechlibrary/dataset/issues
+</li>
+</ul>
+<h3 id="programming-languages">
+Programming languages
+</h3>
+<ul>
+<li>
+Go
+</li>
+</ul>
+<h3 id="software-requiremets">
+Software Requiremets
+</h3>
+<ul>
+<li>
+Golang 1.19.2 or better
+</li>
+<li>
+Pandoc 2.19.2 or better
+</li>
+</ul>
 </section>
 
 <footer>

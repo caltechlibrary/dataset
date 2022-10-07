@@ -7,7 +7,7 @@ VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-CODEMETA2CFF = $(shell which codemeta2cff)
+PANDOC = $(shell which pandoc)
 
 PROGRAMS = $(shell ls -1 cmd)
 
@@ -24,14 +24,14 @@ endif
 
 OS = $(shell uname)
 
-EXT = 
+EXT =
 ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
 DIST_FOLDERS = bin/*
 
-build: version.go $(PROGRAMS)
+build: version.go $(PROGRAMS) CITATION.cff about.md
 
 version.go: .FORCE
 	@echo "package $(PROJECT)" >version.go
@@ -46,6 +46,14 @@ version.go: .FORCE
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/*.go
+
+CITATION.cff: codemeta.json .FORCE
+	cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
+	if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="Cite $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff; fi
+
+about.md: codemeta.json .FORCE
+	cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
+	if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md; fi
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 install: build
@@ -85,7 +93,7 @@ test: clean build
 cleanweb:
 	@if [ -f index.html ]; then rm *.html; fi
 
-clean: 
+clean:
 	@if [ -d bin ]; then rm -fR bin; fi
 	@if [ -d dist ]; then rm -fR dist; fi
 	@if [ -d testout ]; then rm -fR testout; fi
