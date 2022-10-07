@@ -322,6 +322,23 @@ Clone the repository and then compile.
     # Add any missing dependencies you might need in your Go environment
     make test
     make install</code></pre>
+<h3 id="requirements">
+Requirements
+</h3>
+<ul>
+<li>
+Go version 1.19.2 or better
+</li>
+<li>
+Pandoc version 2.19.2 or better
+</li>
+<li>
+GNU Make
+</li>
+<li>
+Common POSIX/Unix utilities, e.g. cat, sed, grep
+</li>
+</ul>
 <h3 id="windows-compilation">
 Windows compilation
 </h3>
@@ -334,11 +351,10 @@ You’re using Anaconda shell and have the C tool chain installed for cgo
 to work
 </li>
 <li>
-You have Stephen Dolan’s jq command available (so the version.go file
-can be regenerated)
+GNU Make, cat, grep and sed
 </li>
 <li>
-You have the latest go installed
+You have the latest Go installed
 </li>
 </ol>
 <p>
@@ -357,8 +373,8 @@ clean.bat removes executable and temp files
 </li>
 </ul>
 <p>
-Compilation assumes <a href="https://github.com/golang/go">go</a> v1.19
-or better.
+Compilation assumes <a href="https://github.com/golang/go">go</a>
+v1.19.2 or better.
 </p>
 </section>
 
