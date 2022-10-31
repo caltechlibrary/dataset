@@ -8,6 +8,7 @@ Bugs
 Next (prep for v2.x)
 --------------------
 
+- [ ] Review [Go-app](https://go-app.dev/) and see if this would be a way to create a local client UI for working with datasets and enabling LunrJS for search
 - [ ] Help cleanup
     - [ ] remove help pages for depreciated features
 - [ ] Common dataset verbs (dataset/datasetd)
