@@ -60,3 +60,5 @@ libdataset/*.ds
 __pycache__
 settings.json
 pandoc.*.json
+_codemeta.json
+testout/*
