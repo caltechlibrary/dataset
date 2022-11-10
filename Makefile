@@ -52,7 +52,7 @@ $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 install: build
 	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
 	@echo "Installing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then cp -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then mv -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
 	@echo ""
 	@echo "Make sure $(PREFIX)/bin is in your PATH"
 
