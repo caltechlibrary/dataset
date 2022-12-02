@@ -1,3 +1,8 @@
+Release 1.1.1:
+
+- Updated codemeta.json
+- Using v1.1 branch for continued development of dataset v1 compiling under recent go1.19
+
 Release 1.1.0:
 
 Added attachment support for __datasetd__.
