@@ -1,13 +1,22 @@
-
-cff-version: 1.1.0
+cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-authors:
-   - family-names: Doiel
-     given-names: R. S.
-     orcid: https://orcid.org/0000-0003-0900-6903
-   - family-names: Morrell
-     given-names: Thomas E
-     orcid: https://orcid.org/0000-0001-9266-5146
-version: 1.1.0
 title: dataset
-date-released: 2021-10-13
+authors:
+  - family-names: Doiel
+    given-names: R. S.
+    orcid: https://orcid.org/0000-0003-0900-6903
+  - family-names: Morrell
+    given-names: Thomas E
+    orcid: https://orcid.org/0000-0001-9266-5146
+abstract: Tools for working with JSON documents as a collection hosted on the file system
+repository-code: "https://github.com/caltechlibrary/dataset"
+type: software
+version: 1.1.1
+license-url: "https://data.caltech.edu/license"
+keywords:
+  - GitHub
+  - metadata
+  - data
+  - software
+  - json
+date-released: 2022-12-02
