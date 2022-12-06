@@ -605,6 +605,50 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
+// CreateJSON is used to store JSON directory into a dataset collection.
+// NOTE: the JSON is NOT validated.
+//
+// ```
+//
+//	import (
+//	  "fmt"
+//	  "os"
+//	)
+//
+//	func main() {
+//	    c, err := dataset.Open("friends.ds")
+//	    if err != nil {
+//	         fmt.Fprintf(os.Stderr, "%s", err)
+//	         os.Exit(1)
+//	    }
+//	    defer c.Close()
+//
+//	    src := []byte(`{ "ID": "mojo", "Name": "Mojo Sam", "EMail": "mojo.sam@cosmic-cafe.example.org" }`)
+//	    if err := c.CreateJSON("modo", src); err != nil {
+//	         fmt.Fprintf(os.Stderr, "%s", err)
+//	         os.Exit(1)
+//	    }
+//	    fmt.Printf("OK\n")
+//	    os.Exit(0)
+//	}
+//
+// ```
+func (c *Collection) CreateJSON(key string, src []byte) error {
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Create(key, src)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Create(key, src)
+		}
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return fmt.Errorf("%s not open", c.Name)
+}
+
 // Read retrieves a map[string]inteferface{} from the collection,
 // unmarshals it and updates the object pointed to by the map.
 //
@@ -681,6 +725,37 @@ func (c *Collection) ReadObject(key string, obj interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// ReadJSON retrieves JSON stored in a dataset collection for
+// a given key. NOTE: It does not validate the JSON
+//
+// ```
+//
+//	key := "123"
+//	src, err := c.ReadJSON(key)
+//  if err != nil {
+//	   // ... handle error
+//	}
+//
+// ```
+func (c *Collection) ReadJSON(key string) ([]byte, error) {
+	var (
+		src []byte
+		err error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.Read(key)
+	case SQLSTORE:
+		src, err = c.SQLStore.Read(key)
+	default:
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return src, fmt.Errorf("failed to read %s, %s", key, err)
+	}
+	return src, nil
 }
 
 // Versions retrieves a list of versions available for a JSON document if
@@ -845,6 +920,34 @@ func (c *Collection) UpdateObject(key string, obj interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
+	switch c.StoreType {
+	case PTSTORE:
+		if c.PTStore != nil {
+			return c.PTStore.Update(key, src)
+		}
+	case SQLSTORE:
+		if c.SQLStore != nil {
+			return c.SQLStore.Update(key, src)
+		}
+	default:
+		return fmt.Errorf("%q not supported", c.StoreType)
+	}
+	return fmt.Errorf("%s not open", c.Name)
+}
+
+// UpdateJSON replaces a JSON document in the collection with a new one.
+// NOTE: It does not validate the JSON
+//
+// ```
+//
+//	src := []byte(`{"Three": 3}`)
+//	key := "123"
+//	if err := c.UpdateJSON(key, src); err != nil {
+//	   // ... handle error
+//	}
+//
+// ```
+func (c *Collection) UpdateJSON(key string, src []byte) error {
 	switch c.StoreType {
 	case PTSTORE:
 		if c.PTStore != nil {
