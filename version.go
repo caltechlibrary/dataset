@@ -1,5 +1,5 @@
 package dataset
 
 // Version of package
-const Version = "2.0.0-b06"
+const Version = "2.0.1"
 
