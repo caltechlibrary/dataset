@@ -30,9 +30,14 @@ About this software
 - R. S. Doiel
 - Thomas E Morrell
 
+
+### Maintainers
+
+- R. S. Doiel
+- Thomas E Morrell
+
 Tools for working with JSON documents as a collection hosted on the file
 system or SQL JSON store
-
 
 - License: https://data.caltech.edu/license
 - GitHub: https://github.com/caltechlibrary/dataset
@@ -46,5 +51,5 @@ system or SQL JSON store
 
 ### Software Requiremets
 
-- Golang 1.19.2 or better
-- Pandoc 2.19.2 or better
+- Golang 1.19 or better
+- Pandoc 2.19 or better
