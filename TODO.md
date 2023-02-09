@@ -8,6 +8,7 @@ Bugs
 Next (prep for v2.x)
 --------------------
 
+- [ ] Add backward compatibility for dataset v2 with v1, re-implement a libdatset for use with py_datset, bump version number to 2.1.0
 - [ ] Review [Go-app](https://go-app.dev/) and see if this would be a way to create a local client UI for working with datasets and enabling LunrJS for search
 - [ ] Help cleanup
     - [ ] remove help pages for depreciated features

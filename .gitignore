@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+*.dylib
 
 # Folders
 _obj
@@ -40,7 +41,9 @@ demos/*
 test*.json
 *.bak
 *.pdf
-man
 settings.json
 pandoc.*.json
 _codemeta.json
+libdataset/dist
+libdataset/*.h
+__pycache__

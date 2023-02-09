@@ -3,6 +3,10 @@
 #
 PROJECT = dataset
 
+MAN_PAGES = dataset.1 datasetd.1
+
+MAN_PAGES_LIB = libdataset.3
+
 VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
@@ -29,30 +33,45 @@ ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
-DIST_FOLDERS = bin/*
+DIST_FOLDERS = bin/* man/*
 
 build: version.go $(PROGRAMS) CITATION.cff about.md
 
 version.go: .FORCE
-	@echo "package $(PROJECT)" >version.go
+	@echo 'package $(PROJECT)' >version.go
 	@echo '' >>version.go
-	@echo '// Version of package' >>version.go
-	@echo 'const Version = "$(VERSION)"' >>version.go
+	@echo 'const (' >>version.go
+	@echo '    Version = "$(VERSION)"' >>version.go
 	@echo '' >>version.go
-	@git add version.go
-	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
-	$(CODEMETA2CFF)
+	@echo 'LicenseText = `' >>version.go
+	@cat LICENSE >>version.go
+	@echo '`' >>version.go
+	@echo ')' >>version.go
+	@echo '' >>version.go
+	-git add version.go
+
 
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/*.go
 
+man: $(MAN_PAGES) $(MAN_PAGES_LIB)
+
+$(MAN_PAGES): .FORCE
+	mkdir -p man/man1
+	pandoc $@.md --from markdown --to man -s >man/man1/$@
+
+$(MAN_PAGES_LIB): .FORCE
+	mkdir -p man/man3
+	pandoc libdataset/$@.md --from markdown --to man -s >man/man3/$@
+
+
 CITATION.cff: codemeta.json .FORCE
-	cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
+	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
 	if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="Cite $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff; fi
 
 about.md: codemeta.json .FORCE
-	cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
+	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
 	if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md; fi
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
@@ -150,12 +169,13 @@ distribute_docs:
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
+	cp -vR man dist/
 
 update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: clean build CITATION.cff distribute_docs dist/linux-amd64 dist/windows-amd64 dist/windows-arm64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
+release: clean build CITATION.cff man distribute_docs dist/linux-amd64 dist/windows-amd64 dist/windows-arm64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
 
 status:
 	git status

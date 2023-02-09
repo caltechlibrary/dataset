@@ -3,11 +3,11 @@
     "@type": "SoftwareSourceCode",
     "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
     "name": "dataset",
-    "datePublished": "2022-08-22",
+    "datePublished": "2023-02-08",
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "author": [
         {
             "@type": "Person",
@@ -70,8 +70,8 @@
         "Go"
     ],
     "softwareRequirements": [
-        "Golang 1.19 or better",
-        "Pandoc 2.19 or better"
+        "Golang 1.20 or better",
+        "Pandoc 3.0 or better"
     ],
     "funder":[
   {

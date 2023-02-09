@@ -681,7 +681,6 @@ func TestCaseHandling(t *testing.T) {
 		if key == strings.ToUpper(key) {
 			t.Errorf("Expected lower case %q, got %q", strings.ToLower(key), key)
 		}
-		/*FIXME: DocPath doesn't make sense
 		p, err := c.DocPath(strings.ToUpper(key))
 		if err != nil {
 			t.Errorf("%s", err)
@@ -692,7 +691,6 @@ func TestCaseHandling(t *testing.T) {
 			t.Errorf("Path seperator does not match host OS, %q <- %c", p, filepath.Separator)
 			t.FailNow()
 		}
-		*/
 	}
 	cnt := c.Length()
 	if cnt != 3 {
