@@ -748,7 +748,7 @@ def test_issue12(t, c_name):
 {"id": "5", "c1": 6, "c2": 6, "c3": 6 }
 ]'''
     if dataset.status(c_name) == False:
-        if not dataset.init(c_name):
+        if not dataset.init(c_name, ""):
             err = dataset.error_message()
             t.error(f'failed to create {c_name} -> {err}')
             return 
