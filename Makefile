@@ -68,11 +68,11 @@ $(MAN_PAGES_LIB): .FORCE
 
 CITATION.cff: codemeta.json .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="Cite $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff; fi
+	@if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="Cite $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff; fi
 
 about.md: codemeta.json .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md; fi
+	@if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md; fi
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 install: build
@@ -124,6 +124,7 @@ clean:
 	@if [ -d texts/testout ]; then rm -fR texts/testout; fi
 	@if [ -d api/testout ]; then rm -fR api/testout; fi
 	@if [ -d cli/testout ]; then rm -fR cli/testout; fi
+	-go clean -r
 
 dist/linux-amd64:
 	@mkdir -p dist/bin

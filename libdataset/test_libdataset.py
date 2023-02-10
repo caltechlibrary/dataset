@@ -4,11 +4,14 @@ import sys
 import shutil
 import json
 import csv
+from pathlib import Path
 from libdataset import dataset 
 
 path_sep = "/"
 if sys.platform.startswith('win'):
     path_sep = "\\"
+
+os.makedirs('testout', 0o777, exist_ok = True)
 
 def cleanup(c_name):
     keys = dataset.keys(c_name)
@@ -16,15 +19,16 @@ def cleanup(c_name):
     for fname in fnames:
         if dataset.delete_frame(c_name, fname) == False:
             print(f'WARNING delete_frame({c_name}, {fname}) failed, {err}')
-    for key in keys:
-        if dataset.delete(c_name, key) == False:
-            print(f'WARNING delete({c_name}, {key}) failed, {err}')
-    fnames = dataset.frames(c_name)
-    if len(fnames) > 0:
+    if keys != None and len(keys) > 0:
+        for key in keys:
+            if dataset.delete(c_name, key) == False:
+                print(f'WARNING delete({c_name}, {key}) failed, {err}')
+        fnames = dataset.frames(c_name)
+    if fnames != None and len(fnames) > 0:
         print(f'Cleanup failed, {c_name} has following frames {fnames}')
         sys.exit(1)
     keys = dataset.keys(c_name)
-    if len(keys) > 0:
+    if keys != None and len(keys) > 0:
         print(f'Cleanup failed, {c_name} has following keys {keys}')
         sys.exit(1)
     if dataset.is_open(c_name):
@@ -92,8 +96,7 @@ def test_libdataset(t, c_name):
             sys.exit(1)
     
     f_name = "f1"
-    if dataset.frame_create(c_name, f_name, keys[1:], ['._Key', '.title'], 
-[ 'id', 'title' ]) == False:
+    if dataset.frame_create(c_name, f_name, keys[1:], ['._Key', '.title'], [ 'id', 'title' ]) == False:
         err = dataset.error_message()
         t.error(f"expected '', got '{err}' for dataset.frame_create({c_name}, {f_name}, ...)")
         sys.exit(1)
@@ -120,15 +123,13 @@ def test_basic(t, collection_name):
     cleanup(collection_name)
 
     keys = dataset.keys(collection_name)
-    if len(keys) != 0:
+    if keys != None and len(keys) != 0:
         t.error(f"Something is wrong {collection_name} should be empty, got {len(keys)} keys {keys}")
         sys.exit(1)
 
     # Setup a test record
     key = "2488"
-    value = { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], 
-"authors": [{ "given": "Jules", "family": "Verne" }], "url": 
-"https://www.gutenberg.org/ebooks/2488"}
+    value = { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
     
     # We should have an empty collection, we will create our test record.
     if dataset.create(collection_name, key, value) == False:
@@ -142,6 +143,10 @@ def test_basic(t, collection_name):
     
     # Do a minimal test to see if the record looks like it has content
     keyList = dataset.keys(collection_name)
+    if keyList == None:
+        t.error(f"Expected keys in keyList, not None")
+    elif len(keyList) != 1:
+        t.error(f"Expected one key in keyList, {keyList}")
     rec, err = dataset.read(collection_name, key)
     if err != "":
         t.error(f"Unexpected error for {key} in {collection_name}, {err}")
@@ -178,8 +183,8 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = path_sep.join([collection_name, "pairtree", "24", "88", 
-(key+".json")])
+    cwd = f"{Path('.').resolve()}"
+    expected_s = path_sep.join([cwd, collection_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
@@ -190,8 +195,7 @@ def test_basic(t, collection_name):
     # Test listing records
     l = dataset.list(collection_name, [key])
     if len(l) != 1:
-        t.error("Failed, list should return an array of one record, got", 
-l)
+        t.error("Failed, list should return an array of one record, got", l)
         return
 
     # test deleting a record
@@ -215,23 +219,11 @@ def test_keys(t, collection_name):
     # Generate multiple records for collection for testing keys
     #
     test_records = {
-        "gutenberg:21489": {"title": "The Secret of the Island", 
-"formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": 
-"Jules", "family": "Verne"}], "url": 
-"http://www.gutenberg.org/ebooks/21489", "categories": "fiction, novel"},
-        "gutenberg:2488": { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": 
-"https://www.gutenberg.org/ebooks/2488", "categories": "fiction, novel"},
-        "gutenberg:21839": { "title": "Sense and Sensibility", "formats": 
-["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": 
-"Austin"}], "url": "http://www.gutenberg.org/ebooks/21839", "categories": 
-"fiction, novel" },
-        "gutenberg:3186": {"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": 
-[{ "given": "Mark", "family": "Twain"}], "url": 
-"http://www.gutenberg.org/ebooks/3186", "categories": "fiction, short story"},
-        "hathi:uc1321060001561131": { "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": 
-[{"given": "Jessie Benton", "family": "Fremont"}], "url": 
-"https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9", 
-"categories": "non-fiction, memoir" }
+        "gutenberg:21489": {"title": "The Secret of the Island", "formats": ["epub","kindle", "plain text", "html"], "authors": [{"given": "Jules", "family": "Verne"}], "url": "http://www.gutenberg.org/ebooks/21489", "categories": "fiction, novel"},
+        "gutenberg:2488": { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488", "categories": "fiction, novel"},
+        "gutenberg:21839": { "title": "Sense and Sensibility", "formats": ["epub", "kindle", "plain text"], "authors": [{"given": "Jane", "family": "Austin"}], "url": "http://www.gutenberg.org/ebooks/21839", "categories": "fiction, novel" },
+        "gutenberg:3186": {"title": "The Mysterious Stranger, and Other Stories", "formats": ["epub","kindle", "plain text", "html"], "authors": [{ "given": "Mark", "family": "Twain"}], "url": "http://www.gutenberg.org/ebooks/3186", "categories": "fiction, short story"},
+        "hathi:uc1321060001561131": { "title": "A year of American travel - Narrative of personal experience", "formats": ["pdf"], "authors": [{"given": "Jessie Benton", "family": "Fremont"}], "url": "https://babel.hathitrust.org/cgi/pt?id=uc1.32106000561131;view=1up;seq=9", "categories": "non-fiction, memoir" }
     }
     test_count = len(test_records)
     
@@ -246,26 +238,26 @@ def test_keys(t, collection_name):
     if len(all_keys) != test_count:
         t.error("Expected (a)", test_count,"keys back, got", keys)
     
-    filter_expr = '(eq .categories "non-fiction, memoir")'
-    keys = dataset.key_filter(collection_name, all_keys, filter_expr)
-    if len(keys) != 1:
-        t.error("Expected (b) one key for", filter_expr, "got", keys)
+    # key_filter test removed, not found in 1.1 of libdataset.go
+    #filter_expr = '(eq .categories "non-fiction, memoir")'
+    #keys = dataset.key_filter(collection_name, all_keys, filter_expr)
+    #if len(keys) != 1:
+    #    t.error("Expected (b) one key for", filter_expr, "got", keys)
+    # 
+    # filter_expr = '(contains .categories "novel")'
+    #filtered_keys = dataset.key_filter(collection_name, all_keys, filter_expr)
+    #if len(filtered_keys) != 3:
+    #    t.error("Expected (c) three keys for", filter_expr, "got", keys)
     
-    filter_expr = '(contains .categories "novel")'
-    filtered_keys = dataset.key_filter(collection_name, all_keys, 
-filter_expr)
-    if len(filtered_keys) != 3:
-        t.error("Expected (c) three keys for", filter_expr, "got", keys)
-    
-    sort_expr = '+.title'
-    keys = dataset.key_sort(collection_name, filtered_keys, sort_expr)
-    if len(keys) != 3:
-        t.error("Expected (d) three keys for", filter_expr, "got", keys)
-    expected_keys = [ "gutenberg:21839", "gutenberg:21489", 
-"gutenberg:2488" ]
-    for i, k in enumerate(expected_keys):
-        if i < len(keys) and keys[i] != k:
-            t.error("Expected (e)", k, "got", keys[i])
+    # key_sort test removed, not found in v1.1 of libdataset.go
+    #sort_expr = '+.title'
+    #keys = dataset.key_sort(collection_name, filtered_keys, sort_expr)
+    #if len(keys) != 3:
+    #    t.error("Expected (d) three keys for", filter_expr, "got", keys)
+    #expected_keys = [ "gutenberg:21839", "gutenberg:21489", "gutenberg:2488" ]
+    #for i, k in enumerate(expected_keys):
+    #    if i < len(keys) and keys[i] != k:
+    #        t.error("Expected (e)", k, "got", keys[i])
     
 
 #
@@ -291,8 +283,7 @@ def test_check_repair(t, collection_name):
     # Make sure we have a left over collection to check and repair
     dataset.init(collection_name)
     if dataset.status(collection_name) == False:
-        t.error("Failed, expected dataset.status() == True, got", ok, 
-"for", collection_name)
+        t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
         return
 
     if dataset.has_key(collection_name, 'one') == False:
@@ -324,107 +315,97 @@ def test_check_repair(t, collection_name):
         t.error(f"Failed, expected recreated {collection_name}/collection.json")
  
         
-def test_attachments(t, collection_name):
+def test_attachments(t, c_name):
     t.print("Testing attach, attachments, detach and prune")
     # Generate two files to attach.
-    filenames = ['a1.txt','a2.txt']
-    for fname in filenames:
-        if os.path.exists(fname) == False:
-            fp = open(fname, 'w')
-            fp.write(f'This is file {fname}')
-            fp.close()
+    attachedNames = [ 'a1.txt', 'a2.txt' ]
+    filenames = []
+    for i, f_name in enumerate(attachedNames):
+        fp = open(os.path.join('testout', f_name), 'w')
+        fp.write(f"This is file ({i}) {f_name}\n")
+        fp.close()
+        filenames.append(os.path.join('testout', f_name))
+        if not os.path.exists(filenames[i]):
+            t.error(f'Failed to write testdata {filenames[i]}')
 
-    ok = dataset.status(collection_name)
+    ok = dataset.status(c_name)
     if ok == False:
-        t.error("Failed,", collection_name, "missing")
+        t.error("Failed,", c_name, "missing")
         return
-    keys = dataset.keys(collection_name)
+    keys = dataset.keys(c_name)
     if len(keys) < 1:
-        t.error("Failed,", collection_name, "should have keys")
+        t.error("Failed,", c_name, "should have keys")
         return
 
     key = keys[0]
-    if dataset.attach(collection_name, key, filenames) == False:
+    if dataset.attach(c_name, key, filenames) == False:
         err = dataset.error_message()
-        t.error("Failed, to attach files for", collection_name, key, 
-filenames, ', ', err)
+        t.error("Failed, to attach files for", c_name, key, filenames, ', ', err)
         return
 
-    l = dataset.attachments(collection_name, key)
+    l = dataset.attachments(c_name, key)
+    #print(f'DEBUG attachments {l}')
     if len(l) != 2:
-        t.error("Failed, expected two attachments for", collection_name, 
-key, "got", l)
+        t.error(f"Failed, expected two attachments for {c_name} -> {key}, got ({len(l)}) {l}")
         return
-
-    #Check that attachments arn't impacted by update
-    if dataset.update(collection_name, key, {"testing":"update"}) == False:
+    for a_name in attachedNames:
+        if not a_name in l:
+            t.error(f'expected {a_name} in attached list {l}')
+    # Check that attachments aren't impacted by update
+    if dataset.update(c_name, key, {"testing":"update"}) == False:
         err = dataset.error_message()
-        t.error("Failed, to update record", collection_name, key, err)
+        t.error("Failed, to update record", c_name, key, err)
         return
-    l = dataset.attachments(collection_name, key)
+    l = dataset.attachments(c_name, key)
     if len(l) != 2:
-        t.error("Failed, expected two attachments after update for", 
-collection_name, key, "got", l)
+        t.error(f"Failed, expected two attachments after update for {c_name} got ({len(l)}) {l}")
         return
+    for a_name in attachedNames:
+        if not a_name in l:
+            t.error(f'expected {a_name} after updated in attached list {l}')
 
-    if os.path.exists(filenames[0]):
-        os.remove(filenames[0])
-    if os.path.exists(filenames[1]):
-        os.remove(filenames[1])
+    # First try detaching one file at a time.
+    for f_name in attachedNames:
+        # Remove the stale files from the local folder.
+        if os.path.exists(f_name):
+            os.remove(f_name)
+        if dataset.detach(c_name, key, [f_name]) == False:
+            err = dataset.error_message()
+            t.error("Failed single file detach, expected True for", c_name, key, f_name, ', ', err)
 
-    # First try detaching one file.
-    if dataset.detach(collection_name, key, [filenames[1]]) == False:
+    # Test explicit filenames list detach
+    if dataset.detach(c_name, key, attachedNames) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for", collection_name, key, 
-filenames[1], ', ', err)
-    if os.path.exists(filenames[1]):
-        os.remove(filenames[1])
-    else:
-        t.error("Failed to detch", filenames[1], "from", collection_name, 
-key)
-
-    # Test explicit filenames detch
-    if dataset.detach(collection_name, key, filenames) == False:
-        err = dataset.error_message()
-        t.error("Failed, expected True for", collection_name, key, 
-filenames, ', ', err)
-
-    for fname in filenames:
-        if os.path.exists(fname):
-            os.remove(fname)
+        t.error("Failed detach list, expected True for", c_name, key, filenames, ', ', err)
+    for f_name in attachedNames:
+        if os.path.exists(f_name):
+            os.remove(f_name)
         else:
-            t.error("Failed, expected", fname, "to be detached from", 
-collection_name, key)
+            t.error("Failed detach list, expected", f_name, "to be detached from", c_name, key)
 
     # Test detaching all files
-    if dataset.detach(collection_name, key, []) == False:
+    if dataset.detach(c_name, key, []) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for (detaching all)", 
-collection_name, key, ', ', err)
-    for fname in filenames:
-        if os.path.exists(fname):
-            os.remove(fname)
+        t.error("Failed detaching all, expected True for (detaching all)", c_name, key, ', ', err)
+    for f_name in attachedNames:
+        if os.path.exists(f_name):
+            os.remove(f_name)
         else:
-            t.error("Failed, expected", fname, "for detaching all from", 
-collection_name, key)
+            t.error("Failed detaching all, expected", f_name, "for detaching all from", c_name, key)
 
-    if dataset.prune(collection_name, key, [filenames[0]]) == False:
+    if dataset.prune(c_name, key, [attachedNames[0]]) == False:
         err = dataset.message()
-        t.error("Failed, expected True for prune", collection_name, key, 
-[filenames[0]], ', ', err)
-    l = dataset.attachments(collection_name, key)
+        t.error("Failed, expected True for prune", c_name, key, [attachedNames[0]], ', ', err)
+    l = dataset.attachments(c_name, key)
     if len(l) != 1:
-        t.error("Failed, expected one file after prune for", 
-collection_name, key, [filenames[0]], "got", l)
+        t.error(f"Failed, expected one {attachedNames[0]} pruned for {c_name} -> {key}, got ({len(l)}) {l}")
 
-    if dataset.prune(collection_name, key, []) == False:
+    if dataset.prune(c_name, key, []) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for prune (all)", collection_name, 
-key, ', ', err)
-    l = dataset.attachments(collection_name, key)
+        t.error("Failed, expected True for prune (all)", c_name, key, ', ', err)
+    l = dataset.attachments(c_name, key)
     if len(l) != 0:
-        t.error("Failed, expected zero files after prune for", 
-collection_name, key, "got", l)
+        t.error("Failed, expected zero files after prune for", c_name, key, "got", l)
 
 
 def test_join(t, collection_name):
@@ -468,11 +449,11 @@ def test_join(t, collection_name):
 # test_issue43() When exporting records to a table using
 # use_srict_dotpath(True), the rows are getting miss aligned.
 #
-def test_issue43(t, collection_name, csv_name):
-    cleanup(collection_name)
-    if dataset.init(collection_name) == False:
+def test_issue43(t, c_name, csv_name):
+    cleanup(c_name)
+    if dataset.init(c_name) == False:
         err = dataset.error_message()
-        t.error(f'Failed, need a {collection_name} to run test')
+        t.error(f'Failed, need a {c_name} to run test')
         return
     table = {
             "r1": {
@@ -506,22 +487,22 @@ def test_issue43(t, collection_name, csv_name):
             }
     for key in table:
         row = table[key]
-        if dataset.create(collection_name, key, row) == False:
+        if dataset.create(c_name, key, row) == False:
             err = dataset.error_message()
-            t.error(f"Can't add test row {key} to {collection_name}, {err}")
+            t.error(f"Can't add test row {key} to {c_name}, {err}")
             return
 
     dataset.use_strict_dotpath(False)
     # Setup frame
     frame_name = 'f1'
-    keys = dataset.keys(collection_name)
-    if dataset.frame_create(collection_name, frame_name, keys, ["._Key",".c1",".c2",".c3",".c4"], ["_Key", "c1", "c2", "c3", "c4"]) == False:
+    keys = dataset.keys(c_name)
+    if dataset.frame_create(c_name, frame_name, keys, ["._Key",".c1",".c2",".c3",".c4"], ["_Key", "c1", "c2", "c3", "c4"]) == False:
         err = dataset.error_message()
-        t.error(f'frame_create({collection_name}, {frame_name}, ...) failed, {err}')
+        t.error(f'frame_create({c_name}, {frame_name}, ...) failed, {err}')
         return
-    if dataset.export_csv(collection_name, frame_name, csv_name) == False:
+    if dataset.export_csv(c_name, frame_name, csv_name) == False:
         err = dataset.error_message()
-        t.error(f'export_csv({collection_name}, {frame_name}, {csv_name} should have emitted warnings, not error')
+        t.error(f'export_csv({c_name}, {frame_name}, {csv_name} should have emitted warnings, not error')
         return
     with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
         rows = f.read()
@@ -538,7 +519,7 @@ def test_clone_sample(t, c_name, sample_size, training_name, test_name):
         shutil.rmtree(training_name)
     if os.path.exists(test_name):
         shutil.rmtree(test_name)
-    if dataset.clone_sample(c_name, training_name, test_name, sample_size) == False:
+    if dataset.clone_sample(c_name, training_name, "", test_name, "", sample_size) == False:
         err = dataset.error_message()
         t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
 
@@ -550,12 +531,10 @@ def test_frame1(t, c_name):
         return
 
     data = [
-        { "id":    "A", "one":   "one", "two":   22, "three": 3.0, "four":  
-["one", "two", "three"] },
+        { "id":    "A", "one":   "one", "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
         { "id":    "B", "two":   2000, "three": 3000.1 },
         { "id": "C" },
-        { "id":    "D", "one":   "ONE", "two":   20, "three": 334.1, 
-"four":  [] }
+        { "id":    "D", "one":   "ONE", "two":   20, "three": 334.1, "four":  [] }
     ]
     keys = []
     dot_paths = ["._Key", ".one", ".two", ".three", ".four"]
@@ -584,7 +563,7 @@ def test_frame2(t, c_name):
     cleanup(c_name)
 
     data = [
-        { "id":    "A", "nameIdentifiers": [
+        { "id": "A", "nameIdentifiers": [
                 {
                     "nameIdentifier": "0000-000X-XXXX-XXXX",
                     "nameIdentifierScheme": "ORCID",
@@ -594,11 +573,10 @@ def test_frame2(t, c_name):
                     "nameIdentifier": "H-XXXX-XXXX",
                     "nameIdentifierScheme": "ResearcherID",
                     "schemeURI": "http://www.researcherid.com/rid/"
-                }], "two":   22, "three": 3.0, "four":  ["one", "two", 
-"three"] },
-        { "id":    "B", "two":   2000, "three": 3000.1 },
+                }], "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
+        { "id": "B", "two":   2000, "three": 3000.1 },
         { "id": "C" },
-        { "id":    "D", "nameIdentifiers": [
+        { "id": "D", "nameIdentifiers": [
                 {
                     "nameIdentifier": "0000-000X-XXXX-XXXX",
                     "nameIdentifierScheme": "ORCID",
@@ -606,15 +584,21 @@ def test_frame2(t, c_name):
                 }], "two":   20, "three": 334.1, "four":  [] }
     ]
     keys = []
-    dot_paths = ["._Key",".nameIdentifiers",".nameIdentifiers[:].nameIdentifier",".two", ".three", ".four"]
-    labels = ["id","nameIdentifiers", "nameIdentifier", "two", "three", "four"]
+    saved_keys = []
+    dot_paths = [".id", ".nameIdentifiers", ".nameIdentifiers[:].nameIdentifier", ".two", ".three", ".four"]
+    labels = ["id", "nameIdentifiers", "nameIdentifier", "two", "three", "four"]
     for row in data:
         key = row['id']
-        keys.append(key)
+        saved_keys.append(key.lower())
         if dataset.create(c_name, key, row) == False:
             err = dataset.error_message()
             t.error(f'create({c_name}, {key}, {row}) failed, {err}')
     keys = dataset.keys(c_name)
+    for i, key in enumerate(saved_keys):
+        if not dataset.has_key(c_name, key):
+            t.error(f'expected has_key True ({i}) {key} in {c_name}')
+        if not key in keys:
+            t.error(f'expected key ({i}) {key} in {c_name}')
     f_name = 'f1'
     if dataset.frame_create(c_name, f_name, keys, dot_paths, labels) == False:
         err = dataset.error_message()
@@ -645,14 +629,14 @@ def test_frame2(t, c_name):
         return
     count_nameId = 0
     count_nameIdObj = 0
-    for obj in object_result:
+    for i, obj in enumerate(object_result):
         if 'id' not in obj:
-            t.error('Did not get id in object')
+            t.error(f'Did not get id in object {i} -> {ob}')
         if 'nameIdentifiers' in obj:
             count_nameId += 1
             for idv in obj['nameIdentifiers']:
                 if 'nameIdentifier' not in idv:
-                    t.error('Missing part of object')
+                    t.error('Missing part of object (#{i})')
         if 'nameIdentifier' in obj:
             count_nameIdObj += 1
             if "0000-000X-XXXX-XXXX" not in obj['nameIdentifier']:
@@ -675,11 +659,9 @@ def test_import_csv(t, c_name):
         shutil.rmtree(c_name)
     dataset.init(c_name)
     with open(csv_name, 'w') as csvfile:
-        csv_writer = csv.DictWriter(csvfile, fieldnames, [ 'name', 
-'email', 'id' ])
+        csv_writer = csv.DictWriter(csvfile, fieldnames, [ 'name', 'email', 'id' ])
         csv_writer.writeheader()
-        csv_writer.writer_row({'name': 'Gandolf', 'email': 
-'gtw@middleearth.example.edu', 'id': 'gtw'})
+        csv_writer.writer_row({'name': 'Gandolf', 'email': 'gtw@middleearth.example.edu', 'id': 'gtw'})
     err = dataset.import_csv(c_name, csv_name, False, True)
 
   
@@ -692,16 +674,15 @@ def test_sync_csv(t, c_name):
 
     # Setup test CSV instance
     t_data = [
-            { "_Key": "one", "value": 1 },
-            { "_Key": "two", "value": 2 },
-            { "_Key": "three", "value": 3  }
+            { "key": "one",   "value": 1 },
+            { "key": "two",   "value": 2 },
+            { "key": "three", "value": 3 }
     ]
     csv_name = c_name.strip(".ds") + ".csv"
     if os.path.exists(csv_name):
         os.remove(csv_name)
     with open(csv_name, 'w') as csvfile:
-        csv_writer = csv.DictWriter(csvfile, fieldnames = ["_Key", "value" 
-])
+        csv_writer = csv.DictWriter(csvfile, fieldnames = [ "key", "value" ])
         csv_writer.writeheader()
         for obj in t_data:
             csv_writer.writerow(obj)
@@ -713,7 +694,7 @@ def test_sync_csv(t, c_name):
             t.error(f"expected has_key({key}) == True, got False")
     if dataset.has_key(c_name, "five") == True:
         t.error(f"expected has_key('five') == False, got True")
-    if dataset.create(c_name, "five", {"value": 5}) == False:
+    if dataset.create(c_name, "five", {"key": "five", "value": 5}) == False:
         err = dataset.error_message()
         t.error(err)
         return
@@ -721,8 +702,9 @@ def test_sync_csv(t, c_name):
     # Setup frame
     frame_name = 'test_sync'
     keys = dataset.keys(c_name)
-    if dataset.frame_create(c_name, frame_name, keys, ["._Key", ".value"], 
-["_Key", "value"] ) == False:
+    if len(keys) != 4:
+        t.error(f'expected 4 keys, got {keys}')
+    if dataset.frame_create(c_name, frame_name, keys, [ ".key", ".value" ], [ "key", "value" ]) == False:
         err = dataset.error_message()
         t.error(f'frame_create({c_name}, {frame_name}, {keys}, ...) failed, {err}')
         return
@@ -895,7 +877,7 @@ if __name__ == "__main__":
 
     print(f'Starting {app_name}')
     test_runner = TestRunner(os.path.basename(__file__), True)
-    c_name = 'test_collection.ds'
+    c_name = os.path.join('testout', 'test_collection.ds')
     test_runner.add(test_setup, [ c_name, 'test_setup' ])
     test_runner.add(test_libdataset, [ c_name ])
     test_runner.add(test_basic, [ c_name ])
@@ -903,14 +885,11 @@ if __name__ == "__main__":
     test_runner.add(test_issue32, [ c_name ])
     test_runner.add(test_attachments, [ c_name ])
     test_runner.add(test_join, [ c_name ])
-    test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-    test_runner.add(test_clone_sample, [ c_name, 5, "test_training.ds", 
-"test_test.ds"])
-    test_runner.add(test_frame1, ["test_frame1.ds"])
-    test_runner.add(test_frame2, ["test_frame2.ds"])
-    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
-    test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
-    test_runner.add(test_issue12, [ 'test_issue12.ds' ])
+    test_runner.add(test_issue43, [ os.path.join('testout', "test_issue43.ds"), os.path.join('testout', "test_issue43.csv") ])
+    test_runner.add(test_clone_sample, [ c_name, 5, os.path.join('testout', "test_training.ds"), os.path.join('testout', "test_test.ds") ])
+    test_runner.add(test_frame1, [ os.path.join('testout', "test_frame1.ds") ])
+    test_runner.add(test_frame2, [ os.path.join('testout', "test_frame2.ds") ])
+    test_runner.add(test_sync_csv, [ os.path.join('testout', "test_sync_csv.ds") ])
+    test_runner.add(test_check_repair, [ os.path.join('testout', "test_check_and_repair.ds") ])
+    test_runner.add(test_issue12, [ os.path.join('testout', 'test_issue12.ds') ])
     test_runner.run()
-
-

@@ -9,6 +9,9 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	// Caltech Library Packages
+	"github.com/caltechlibrary/dataset/tbl"
 )
 
 func TestTableColumnBehavior(t *testing.T) {
@@ -25,7 +28,7 @@ first, second,third, fourth
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	table := TableStringToInterface(csvTable)
+	table := tbl.TableStringToInterface(csvTable)
 
 	expectedObjs := map[string]map[string]interface{}{}
 	expectedObjs["1"] = map[string]interface{}{
@@ -47,7 +50,7 @@ first, second,third, fourth
 
 	for i, row := range table {
 		if i > 0 {
-			key, err := ValueInterfaceToString(row[0])
+			key, err := tbl.ValueInterfaceToString(row[0])
 			if err != nil {
 				t.Errorf("expected (%T) %+v to be convertable to string, %s", row[0], row[0], err)
 				continue
@@ -90,7 +93,7 @@ func TestMerge(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	table := TableStringToInterface(csvTable)
+	table := tbl.TableStringToInterface(csvTable)
 	collectionName := "testdata/merge1.ds"
 	frameName := "f1"
 
@@ -101,7 +104,7 @@ func TestMerge(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	c, err := Init(collectionName)
+	c, err := Init(collectionName, "")
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -115,13 +118,17 @@ func TestMerge(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	keys := c.Keys()
+	keys, err := c.Keys()
+	if err != nil {
+		t.Errorf("c.Keys() should not return error, %s", err)
+		t.FailNow()
+	}
 	if len(keys) != len(testKeys) {
 		t.Errorf("expected %d keys, got %+v", len(testKeys), keys)
 
 		w := csv.NewWriter(os.Stdout)
 		fmt.Printf("table:\n")
-		w.WriteAll(TableInterfaceToString(table))
+		w.WriteAll(tbl.TableInterfaceToString(table))
 		w.Flush()
 		fmt.Printf("testKeys: %+v\n", testKeys)
 		fmt.Printf("collection name: %s\n", collectionName)
@@ -146,16 +153,15 @@ func TestMerge(t *testing.T) {
 		t.FailNow()
 	}
 
-	// NOTE: for non-header rows check the value against what we 
-stored in
+	// NOTE: for non-header rows check the value against what we stored in
 	// our collection
 	for i, row := range table[1:] {
-		key, err := ValueInterfaceToString(row[0])
+		key, err := tbl.ValueInterfaceToString(row[0])
 		if err != nil {
 			t.Errorf("Expected row %d, key (%T) %+v to be string, %s", i, key, key, err)
 		}
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj, false)
+		err = c.Read(key, obj)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
@@ -210,12 +216,12 @@ stored in
 
 	// Now reconcile table and collection objects
 	for i, row := range table[1:] {
-		key, err := ValueInterfaceToString(row[0])
+		key, err := tbl.ValueInterfaceToString(row[0])
 		if err != nil {
 			t.Errorf("Expected row %d, key (%T) %+v, of type string,%s", i, key, key, err)
 		}
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj, false)
+		err = c.Read(key, obj)
 		if err != nil {
 			t.Errorf("Expected row %d, key %s in collection, %s", i, key, err)
 		}
@@ -265,30 +271,35 @@ stored in
 			t.Errorf("(h5) row %d, key %s, Unexpected value, got %s", i, key, cell)
 		}
 	}
-	if len(c.Keys()) != 3 {
-		t.Errorf("Expected three keys in %s, got %d", collectionName, len(c.Keys()))
+	if keys, err := c.Keys(); err != nil {
+		t.Errorf("c.Keys() should not return error, %s", err)
+	} else if len(keys) != 3 {
+		t.Errorf("Expected three keys in %s, got %d", collectionName, len(keys))
 	}
 
 	// TEST: Implement c.MergeIntoTable() tests
 	sVal = time.Now().String()
-	for _, key := range c.Keys() {
-		obj := map[string]interface{}{}
-		err = c.Read(key, obj, false)
-		if err != nil {
-			t.Errorf("Can't read %s from %s, %s", key, collectionName, err)
-			t.FailNow()
-		}
-		obj["h2"] = sVal
-		obj["h6"] = "F"
-		err = c.Update(key, obj)
-		if err != nil {
-			t.Errorf("Can't update %s in %s, %s", key, collectionName, err)
-			t.FailNow()
+	if keys, err := c.Keys(); err != nil {
+		t.Errorf("c.Keys() should not return error, %s", err)
+	} else {
+		for _, key := range keys {
+			obj := map[string]interface{}{}
+			err = c.Read(key, obj)
+			if err != nil {
+				t.Errorf("Can't read %s from %s, %s", key, collectionName, err)
+				t.FailNow()
+			}
+			obj["h2"] = sVal
+			obj["h6"] = "F"
+			err = c.Update(key, obj)
+			if err != nil {
+				t.Errorf("Can't update %s in %s, %s", key, collectionName, err)
+				t.FailNow()
+			}
 		}
 	}
 
-	rTable, err := c.MergeIntoTable(frameName, table, overwrite, 
-verbose)
+	rTable, err := c.MergeIntoTable(frameName, table, overwrite, verbose)
 	if len(rTable) != len(table) {
 		t.Errorf("expected %d rows, got %d", len(table), len(rTable))
 	}
@@ -321,18 +332,26 @@ verbose)
 		t.Errorf("%s\n", err)
 		t.FailNow()
 	}
-	if len(c.Keys()) != 4 {
-		t.Errorf("expected 4 keys, got %+v\n", c.Keys())
+	if keys, err := c.Keys(); err != nil {
+		t.Errorf("c.Keys() should not return an error, %s", err)
+	} else {
+		if len(keys) != 4 {
+			t.Errorf("expected 4 keys, got %+v\n", keys)
+		}
 	}
 
 	// NOTE: Final update frame labels and dotpaths
 	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h3", ".h4", ".h5", ".h6"}
 	f.Labels = []string{"id", "h1", "h2", "h3", "h4", "h5", "h6"}
 	c.setFrame(frameName, f)
-	c.FrameReframe(frameName, c.Keys(), false)
-	if err != nil {
-		t.Errorf("%s\n", err)
-		t.FailNow()
+	if keys, err := c.Keys(); err != nil {
+		t.Errorf("c.Keys() should not return an error, %s", err)
+	} else {
+		c.FrameReframe(frameName, keys, false)
+		if err != nil {
+			t.Errorf("%s\n", err)
+			t.FailNow()
+		}
 	}
 
 	rTable, err = c.MergeIntoTable(frameName, table, overwrite, verbose)
@@ -353,10 +372,10 @@ verbose)
 		t.Errorf("appended row, expected length %d, got %d", len(tRow), len(rTable[lastRow]))
 		w := csv.NewWriter(os.Stdout)
 		fmt.Printf("table:\n")
-		w.WriteAll(TableInterfaceToString(table))
+		w.WriteAll(tbl.TableInterfaceToString(table))
 		w.Flush()
 		fmt.Printf("rTable:\n")
-		w.WriteAll(TableInterfaceToString(rTable))
+		w.WriteAll(tbl.TableInterfaceToString(rTable))
 		w.Flush()
 		t.FailNow()
 	}
@@ -394,7 +413,7 @@ id,one,two
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	initialTbl := TableStringToInterface(csvTable)
+	initialTbl := tbl.TableStringToInterface(csvTable)
 
 	r = csv.NewReader(bytes.NewBuffer(expectedCSV))
 	csvTable, err = r.ReadAll()
@@ -402,7 +421,7 @@ id,one,two
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	expectedTbl := TableStringToInterface(csvTable)
+	expectedTbl := tbl.TableStringToInterface(csvTable)
 
 	collectionName := "testdata/merge2.ds"
 	frameName := "f1"
@@ -416,7 +435,7 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	c, err := Init(collectionName)
+	c, err := Init(collectionName, "")
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -431,7 +450,11 @@ id,one,two
 	}
 	verbose = oldV
 
-	keys := c.Keys()
+	keys, err := c.Keys()
+	if err != nil {
+		t.Errorf("c.Keys() should not return error, %s", err)
+		t.FailNow()
+	}
 	if len(keys) == 0 {
 		t.Errorf("Import failed, missing keys from %s", initialCSV)
 		t.FailNow()
@@ -449,11 +472,15 @@ id,one,two
 	}
 
 	// Setup collection updates to test MergeIntoTable()
-	keys = c.Keys()
+	keys, err = c.Keys()
+	if err != nil {
+		t.Errorf("c.Keys() should not return error, %s", err)
+		t.FailNow()
+	}
 	fieldVals := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"}
 	for i, key := range []string{"0", "1", "2", "3", "4"} {
 		obj := map[string]interface{}{}
-		err = c.Read(key, obj, false)
+		err = c.Read(key, obj)
 		if err != nil {
 			t.Errorf("%s", err)
 			t.FailNow()
@@ -495,11 +522,10 @@ id,one,two
 			t.Errorf("row %d is different lengths, %+v, got %+v", i, expectedTbl[i], resultTbl[i])
 			w := csv.NewWriter(os.Stdout)
 			fmt.Printf("expectedTbl:\n")
-			
-w.WriteAll(TableInterfaceToString(expectedTbl))
+			w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
 			w.Flush()
 			fmt.Printf("resultTbl:\n")
-			w.WriteAll(TableInterfaceToString(resultTbl))
+			w.WriteAll(tbl.TableInterfaceToString(resultTbl))
 			w.Flush()
 			t.FailNow()
 		}
@@ -507,20 +533,19 @@ w.WriteAll(TableInterfaceToString(expectedTbl))
 			// NOTE: In our test cases column 0 is key and
 			// will be a string regardless of either it is numeric.
 			if j == 0 {
-				sCell, _ := ValueInterfaceToString(cell)
-				rCell, _ := ValueInterfaceToString(resultTbl[i][j])
+				sCell, _ := tbl.ValueInterfaceToString(cell)
+				rCell, _ := tbl.ValueInterfaceToString(resultTbl[i][j])
 				if sCell != rCell {
 					t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j])
 				}
 			} else if cell != resultTbl[i][j] {
-				t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j]) w := csv.NewWriter(os.Stdout)
+				t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j])
+				w := csv.NewWriter(os.Stdout)
 				fmt.Printf("expectedTbl:\n")
-				
-w.WriteAll(TableInterfaceToString(expectedTbl))
+				w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
 				w.Flush()
 				fmt.Printf("resultTbl:\n")
-				
-w.WriteAll(TableInterfaceToString(resultTbl))
+				w.WriteAll(tbl.TableInterfaceToString(resultTbl))
 				w.Flush()
 				t.FailNow()
 			}

@@ -5,7 +5,7 @@
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2020, Caltech
+# Copyright (c) 2023, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -108,7 +108,9 @@ def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
     if isinstance(key, str) == False:
         key = f"{key}"
-    if libdataset.create_object(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(json.dumps(value).encode('utf8'))):
+    if libdataset.create_object(c_char_p(collection_name.encode('utf8')),
+            c_char_p(key.encode('utf8')),
+            c_char_p(json.dumps(value).encode('utf8'))):
         return ''
     return error_message()
     
@@ -117,7 +119,8 @@ def read(collection_name, key, clean_object = False):
     '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
     if not isinstance(key, str) == True:
         key = f"{key}"
-    value = libdataset.read_object(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), clean_object)
+    value = libdataset.read_object(c_char_p(collection_name.encode('utf8')), 
+            c_char_p(key.encode('utf8')), clean_object)
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
@@ -284,8 +287,8 @@ def attachments(collection_name, key):
 
 def detach(collection_name, key, filenames = [], semver = ''):
     '''Get attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to get all attachments'''
-    if semver == '':
-        semver = 'v0.0.0'
+    #if semver == '':
+    #    semver = 'v0.0.0'
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
@@ -293,8 +296,8 @@ def detach(collection_name, key, filenames = [], semver = ''):
 
 def prune(collection_name, key, filenames = [], semver = ''):
     '''Delete attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to delete all attachments'''
-    if semver == '':
-        semver = 'v0.0.0'
+    #if semver == '':
+    #    semver = 'v0.0.0'
     fnames = json.dumps(filenames).encode('utf8')
     return libdataset.prune(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(fnames))
 
@@ -309,8 +312,8 @@ def clone(collection_name, keys, destination_name):
     src_keys = json.dumps(keys)
     return libdataset.clone_collection(c_char_p(collection_name.encode('utf-8')), c_char_p(src_keys.encode('utf-8')), c_char_p(destination_name.encode('utf-8')))
 
-def clone_sample(collection_name, training_name, test_name = "", sample_size = 0):
-    return libdataset.clone_sample( c_char_p(collection_name.encode('utf-8')), c_char_p(training_name.encode('utf-8')), c_char_p(test_name.encode('utf-8')), c_int(sample_size))
+def clone_sample(collection_name, training_name, training_dsn = "", test_name = "", test_dsn = "", sample_size = 0):
+    return libdataset.clone_sample( c_char_p(collection_name.encode('utf-8')), c_char_p(training_name.encode('utf-8')), c_char_p(training_dsn.encode('utf-8')), c_char_p(test_name.encode('utf-8')), c_char_p(test_dsn.encode('utf-8')), c_int(sample_size))
 
 def frame_create(collection_name, frame_name, keys, dot_paths, labels):
     src_keys = json.dumps(keys)
@@ -426,90 +429,3 @@ def update_objects(collection_name, keys, objects):
     keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
     objects_as_json = c_char_p(json.dumps(objects).encode('utf8'))
     return libdataset.update_objects(c_name, keys_as_json, objects_as_json)
-
-def set_who(collection_name, names = []):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    names_as_json = c_char_p(json.dumps(names).encode('utf8'))
-    return libdataset.set_who(c_name, names_as_json)
-
-def set_what(collection_name, src = ""):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    c_src = c_char_p(src.encode('utf8'))
-    return libdataset.set_what(c_name, c_src)
-
-def set_when(collection_name, src = ""):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    c_src = c_char_p(src.encode('utf8'))
-    return libdataset.set_when(c_name, c_src)
-
-def set_where(collection_name, src = ""):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    c_src = c_char_p(src.encode('utf8'))
-    return libdataset.set_where(c_name, c_src)
-
-def set_version(collection_name, src = ""):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    c_src = c_char_p(src.encode('utf8'))
-    return libdataset.set_version(c_name, c_src)
-
-def set_contact(collection_name, src = ""):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    c_src = c_char_p(src.encode('utf8'))
-    return libdataset.set_contact(c_name, c_src)
-
-
-def get_who(collection_name):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    value = libdataset.get_who(c_name)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    rval = value.decode()
-    if type(rval) is str:
-        return json.loads(rval)
-    return []
-
-def get_what(collection_name):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    value = libdataset.get_what(c_name)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    return value.decode()
-
-def get_where(collection_name):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    value = libdataset.get_where(c_name)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    return value.decode()
-
-def get_when(collection_name):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    value = libdataset.get_when(c_name)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    return value.decode()
-
-def get_version(collection_name):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    value = libdataset.get_version(c_name)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    return value.decode()
-
-def get_contact(collection_name):
-    c_name = c_char_p(collection_name.encode('utf-8'))
-    value = libdataset.get_contact(c_name)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    return value.decode()
-
-
-
-
-
-
-
-
-
-
-

@@ -6,7 +6,7 @@
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2020, Caltech
+# Copyright (c) 2023, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -46,7 +46,7 @@ libdataset.error_clear.restype = None
 libdataset.error_message.restype = c_char_p
 
 # Args: is 1 (true) or 0 (false)
-libdataset.use_strict_dotpath.argtypes = [ c_int ]
+libdataset.use_strict_dotpath.argtypes = [c_int]
 libdataset.use_strict_dotpath.restype = c_bool
 
 libdataset.is_verbose.restype = c_bool
@@ -58,26 +58,26 @@ libdataset.verbose_off.restype = c_bool
 libdataset.dataset_version.restype = c_char_p
 
 # Args: collection_name (string)
-libdataset.init_collection.argtypes = [ c_char_p ]
+libdataset.init_collection.argtypes = [c_char_p]
 # Returns: true (1), false (0)
 libdataset.init_collection.restype = c_bool
 
 libdataset.is_collection_open.restype = c_bool
 
-libdataset.open_collection.argtypes = [ c_char_p ]
+libdataset.open_collection.argtypes = [c_char_p]
 libdataset.open_collection.restype = c_bool
 
-libdataset.close_collection.argtypes = [ c_char_p ]
+libdataset.close_collection.argtypes = [c_char_p]
 libdataset.close_collection.restype = c_bool
 
 libdataset.close_all_collections.restype = c_bool
 
 # Args: collection_name (string), key (string), value (JSON source)
-libdataset.create_object.argtypes = [ c_char_p, c_char_p, c_char_p ]
+libdataset.create_object.argtypes = [c_char_p, c_char_p, c_char_p]
 libdataset.create_object.restype = c_bool
 
 # Args: collection_name (string), key (string), clean_object (bool)
-libdataset.read_object.argtypes = [ c_char_p, c_char_p, c_bool ]
+libdataset.read_object.argtypes = [c_char_p, c_char_p, c_bool ]
 # Returns: value (JSON source)
 libdataset.read_object.restype = c_char_p
 
@@ -90,31 +90,21 @@ libdataset.read_object_list.argtypes = [ c_char_p, c_char_p, c_bool ]
 libdataset.read_object_list.restype = c_char_p
 
 # Args: collection_name (string), key (string), value (JSON sourc)
-libdataset.update_object.argtypes = [ c_char_p, c_char_p, c_char_p ]
+libdataset.update_object.argtypes = [c_char_p, c_char_p, c_char_p ]
 libdataset.update_object.restype = c_bool
 
 # Args: collection_name (string), key (string)
-libdataset.delete_object.argtypes = [ c_char_p, c_char_p ]
+libdataset.delete_object.argtypes = [c_char_p, c_char_p ]
 libdataset.delete_object.restype = c_bool
 
 # Args: collection_name (string), key (string)
-libdataset.key_exists.argtypes = [ c_char_p,c_char_p ]
+libdataset.key_exists.argtypes = [c_char_p,c_char_p ]
 libdataset.key_exists.restype = c_bool
 
 # Args: collection_name (string)
-libdataset.keys.argtypes = [ c_char_p ]
+libdataset.keys.argtypes = [c_char_p ]
 # Returns: value (JSON source)
 libdataset.keys.restype = c_char_p
-
-# Args: collection_name (string), key_list (JSON array source), filter_expr (string)
-libdataset.key_filter.argtypes = [ c_char_p, c_char_p, c_char_p ]
-# Returns: value (JSON source)
-libdataset.key_filter.restype = c_char_p
-
-# Args: collection_name (string), key_list (JSON array source), sort order (string)
-libdataset.key_sort.argtypes = [ c_char_p, c_char_p, c_char_p ]
-# Returns: value (JSON source)
-libdataset.key_sort.restype = c_char_p
 
 # Args: collection_name (string)
 libdataset.count_objects.argtypes = [ c_char_p ]
@@ -212,8 +202,8 @@ libdataset.clone_collection.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
 libdataset.clone_collection.restype = c_bool
 
-# Args: collection_name (string), new_sample_collection_name (string), new_rest_collection_name (string), sample size (int)
-libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_int ]
+# Args: collection_name (string), training_collection_name (string), training_dsn (string), test_collection_name (string), test_dsn (string), sample size (int)
+libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_int ]
 # Returns: true (1), false (0)
 libdataset.clone_sample.restype = c_bool
 
@@ -281,63 +271,3 @@ libdataset.create_objects.restype = c_bool
 libdataset.update_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) success, False (0) if there are errors
 libdataset.update_objects.restype = c_bool
-
-# Args: collection_name (string), name (string)
-libdataset.set_who.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) success, False (0) if there are errors
-libdataset.set_who.restype = c_bool
-
-# Args: collection_name (string), what value (string)
-libdataset.set_what.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) success, False (0) if there are errors
-libdataset.set_what.restype = c_bool
-
-# Args: collection_name (string), when value (string)
-libdataset.set_when.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) success, False (0) if there are errors
-libdataset.set_when.restype = c_bool
-
-# Args: collection_name (string), where value (string)
-libdataset.set_where.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) success, False (0) if there are errors
-libdataset.set_where.restype = c_bool
-
-# Args: collection_name (string), version value (string)
-libdataset.set_version.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) success, False (0) if there are errors
-libdataset.set_version.restype = c_bool
-
-# Args: collection_name (string), contact value (string)
-libdataset.set_contact.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) success, False (0) if there are errors
-libdataset.set_contact.restype = c_bool
-
-# Args: collection_name (string)
-libdataset.get_who.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_who.restype = c_char_p
-
-# Args: collection_name (string)
-libdataset.get_what.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_what.restype = c_char_p
-
-# Args: collection_name (string)
-libdataset.get_where.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_where.restype = c_char_p
-
-# Args: collection_name (string)
-libdataset.get_when.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_when.restype = c_char_p
-
-# Args: collection_name (string)
-libdataset.get_version.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_version.restype = c_char_p
-
-# Args: collection_name (string)
-libdataset.get_contact.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_contact.restype = c_char_p

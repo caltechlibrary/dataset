@@ -15,7 +15,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package main
 
 import (
@@ -202,7 +201,6 @@ func HasKey(cName string, key string) bool {
 	return c.HasKey(key)
 }
 
-
 // CreateJSON takes a collection name, key and JSON object
 // document and creates a new JSON object in the collection using
 // the key.
@@ -280,7 +278,6 @@ func HasFrame(cName string, fName string) bool {
 	return false
 }
 
-
 // FrameKeys returns the ordered list of keys for the frame.
 func FrameKeys(cName string, fName string) []string {
 	if cMap == nil || IsOpen(cName) == false {
@@ -328,7 +325,8 @@ func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) 
 }
 
 // FrameRefresh updates the frame object list's for the keys provided. Any new keys
-//  cause a new object to be appended to the end of the list.
+//
+//	cause a new object to be appended to the end of the list.
 func FrameRefresh(cName string, fName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		if err := OpenCollection(cName); err != nil {
@@ -435,7 +433,6 @@ func error_clear() {
 
 // errorDispatch logs error messages to console based on string template
 // Not exported.
-//
 func errorDispatch(err error, s string, values ...interface{}) {
 	errorValue = err
 	if verbose == true {
@@ -520,7 +517,8 @@ func dataset_version() *C.char {
 // can be either "pairtree" or "sqlstore".
 //
 //export init_collection
-func init_collection(name *C.char, storageType string) C.int {
+func init_collection(name *C.char, cStorageType *C.char) C.int {
+	storageType := C.GoString(cStorageType)
 	collectionName := C.GoString(name)
 	if verbose == true {
 		messagef("creating %s\n", collectionName)
@@ -673,7 +671,7 @@ func clone_collection(cName *C.char, cDsn *C.char, cKeys *C.char, dName *C.char)
 }
 
 // clone_sample is like clone both generates a sample or test and
-// training set of sampled of the cloned collection. NOTE: The 
+// training set of sampled of the cloned collection. NOTE: The
 // training name and testing name are followed by their own dsn values.
 // If the dsn is an empty string then a pairtree store is assumed.
 //
@@ -682,7 +680,7 @@ func clone_sample(cName *C.char, cTrainingName *C.char, cTrainingDsn *C.char, cT
 	collectionName := C.GoString(cName)
 	sampleSize := int(cSampleSize)
 	trainingName := C.GoString(cTrainingName)
-	trainingDsn := C.GoString(cTrainingDsn)	
+	trainingDsn := C.GoString(cTrainingDsn)
 	testName := C.GoString(cTestName)
 	testDsn := C.GoString(cTestDsn)
 
@@ -707,8 +705,8 @@ func clone_sample(cName *C.char, cTrainingName *C.char, cTrainingDsn *C.char, cT
 //
 // options that should support sensible defaults:
 //
-//     cUseHeaderRow
-//     cOverwrite
+//	cUseHeaderRow
+//	cOverwrite
 //
 //export import_csv
 func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.int, cOverwrite C.int) C.int {
@@ -961,7 +959,6 @@ func has_key(cName, cKey *C.char) C.int {
 	return C.int(0)
 }
 
-
 // keys returns JSON source of an array of keys from the collection
 //
 //export keys
@@ -1188,6 +1185,7 @@ func join_objects(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int
 
 // count_objects returns the number of objects (records) in a collection.
 // if an error is encounter a -1 is returned.
+//
 //export count_objects
 func count_objects(cName *C.char) C.int {
 	collectionName := C.GoString(cName)
@@ -1222,7 +1220,6 @@ func object_path(cName *C.char, cKey *C.char) *C.char {
 	return C.CString(s)
 }
 
-//
 // create_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
 // an attempt is made to create a new empty object based on the JSON
@@ -1260,7 +1257,6 @@ func create_objects(cName *C.char, keysAsJSON *C.char, objectAsJSON *C.char) C.i
 	return C.int(1)
 }
 
-//
 // update_objects - is a function to update objects in batch.
 // It requires a JSON array of keys and a JSON array of
 // matching objects. The list of keys and objects are processed
@@ -1378,7 +1374,6 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 			return C.int(0)
 		}
 	}
-
 	error_clear()
 	c, err := GetCollection(collectionName)
 	if err != nil {
@@ -1397,6 +1392,7 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 			return C.int(0)
 		}
 		err = c.AttachVersionFile(key, fName, semver)
+		err = c.AttachFile(key, fName)
 		if err != nil {
 			errorDispatch(err, "%s", err)
 			return C.int(0)
@@ -1443,9 +1439,9 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
 	semver := C.GoString(cSemver)
-	if semver == "" {
-		semver = "v0.0.0"
-	}
+	//if semver == "" {
+	//	semver = "v0.0.0"
+	//}
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -1454,7 +1450,8 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 			errorDispatch(err, "Can't unmarshal filename list, %s", err)
 			return C.int(0)
 		}
-	}
+	} 
+
 	error_clear()
 	c, err := GetCollection(collectionName)
 	if err != nil {
@@ -1462,12 +1459,29 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 		return C.int(0)
 	}
 
+	if len(fNames) == 0 {
+		// IF the list is empty detach expected to detached all files.
+		results, err := c.Attachments(key)
+		if err != nil {
+			errorDispatch(err, "Can't determine attached files, %s",err)
+			return C.int(0)
+		}
+		for _, fName := range results {
+			fNames = append(fNames, fName)
+		}
+	}
+
 	if c.HasKey(key) == false {
 		errorDispatch(err, "%q is not in collection", key)
 		return C.int(0)
 	}
 	for _, fName := range fNames {
-		src, err := c.RetrieveVersionFile(key, fName, semver)
+		var src []byte
+		if semver != "" {
+			src, err = c.RetrieveVersionFile(key, fName, semver)
+		} else {
+			src, err = c.RetrieveFile(key, fName)
+		}
 		if err != nil {
 			errorDispatch(err, "%s", err)
 			return C.int(0)
@@ -1505,8 +1519,20 @@ func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int 
 		errorDispatch(err, "%q not found", collectionName)
 		return C.int(0)
 	}
+	if len(fNames) == 0 {
+		// IF the list is empty prune all files.
+		if err := c.PruneAll(key); err != nil {
+			errorDispatch(err, "prune all files failed, %s", err)
+			return C.int(0)
+		}
+		return C.int(1)
+	} 
 	for i, fName := range fNames {
-		err = c.PruneVersion(key, fName, semver)
+		if semver != "" {
+			err = c.PruneVersion(key, fName, semver)
+		} else {
+			err = c.Prune(key, fName)
+		}
 		if err != nil {
 			errorDispatch(err, "%s (%d) %s", fName, i, err)
 			return C.int(0)
@@ -1548,7 +1574,7 @@ func frame(cName *C.char, cFName *C.char) *C.char {
 	return C.CString(txt)
 }
 
-// frame_exists returns 1 (true) if frame name exists in collection, 0 
+// frame_exists returns 1 (true) if frame name exists in collection, 0
 // (false) otherwise. (depreciated in favor of has_frame)
 //
 //export frame_exists
@@ -1572,7 +1598,6 @@ func has_frame(cName *C.char, cFName *C.char) C.int {
 	}
 	return C.int(0)
 }
-
 
 // frame_keys takes a collection name and frame name and returns a list of keys from the frame or an empty list.
 // The list is expressed as a JSON source.
@@ -1825,45 +1850,7 @@ func frame_grid(cName *C.char, cFName *C.char, cIncludeHeaderRow C.int) *C.char 
  * metadata for collection
  */
 
-// get_who will get the "who" value associated with the collection's metadata
-// (depreciated, a stub is left and will return an empty string, use get_codemeta which returns a codemeta JSON string)
-//
-//export get_who
-func get_who(cName *C.char) *C.char {
-	return C.CString("")
-}
-
-// get_what will get the "what" value associated with the collection's metadata
-// (depreciated, a stub is left and will return an empty string, use get_codemeta which returns a codemeta JSON string)
-//
-//export get_what
-func get_what(cName *C.char) *C.char {
-	return C.CString("")
-}
-
-// get_when will get the "what" value associated with the collection's metadata
-// (depreciated, a stub is left and will return an empty string, use get_codemeta which returns a codemeta JSON string)
-//
-//export get_when
-func get_when(cName *C.char) *C.char {
-	return C.CString("")
-}
-
-// get_where will get the "where" value associated with the collection's metadata
-// (depreciated, a stub is left and will return an empty string, use get_codemeta which returns a codemeta JSON string)
-//
-//export get_where
-func get_where(cName *C.char) *C.char {
-	return C.CString("")
-}
-
-// get_contact will get the "contact" value associated with the collection's metadata
-// (depreciated, a stub is left and will return an empty string, use get_codemeta which returns a codemeta JSON string)
-//
-//export get_contact
-func get_contact(cName *C.char) *C.char {
-	return C.CString("")
-}
+// NOTE: Namaste methods removed, v2 of dataset supports a codemeta.json file for metadata about the collection. 2023-02-09
 
 // get_codemeta returns any metadata associated with the collection as
 // a codemeta JSON document
@@ -1878,7 +1865,7 @@ func get_codemeta(cName *C.char) *C.char {
 			txt = fmt.Sprintf("%s", src)
 		}
 	}
-	return C.CString(txt)	
+	return C.CString(txt)
 }
 
 // get_version will get the "version" value associated with the collection's metadata
@@ -1894,6 +1881,4 @@ func get_version(cName *C.char) *C.char {
 	return C.CString(txt)
 }
 
-
 func main() {}
-

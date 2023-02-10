@@ -45,7 +45,7 @@ build: $(LIB_NAME)$(EXT)
 $(LIB_NAME)$(EXT): $(LIB_NAME).go ../*.go
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 
-test: $(LIB_NAME)$(EXT)
+test: build
 	python3 test_libdataset.py
 
 clean:
@@ -53,6 +53,7 @@ clean:
 	@if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
 	@if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
 	@if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	@if [ -d "testout" ]; then rm -fR testout; fi
 
 status:
 	git status

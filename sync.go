@@ -72,7 +72,7 @@ bool) {
 
 // dotPathToColumnMap creates a mapping from dotpath in collection
 // to column number in table by matching header row values with
-// a frame's labels. Returns an error if ._Key is not identified.
+// a frame's labels. Returns an error if .key or .id is not identified.
 func dotPathToColumnMap(f *DataFrame, table [][]interface{}) (map[string]int, error) {
 	colMap := make(map[string]int)
 	if len(f.Labels) != len(f.DotPaths) {
@@ -84,13 +84,13 @@ func dotPathToColumnMap(f *DataFrame, table [][]interface{}) (map[string]int, er
 	// Find key column
 	keyCol := -1
 	for i, col := range f.DotPaths {
-		if col == "._Key" {
+		if col == ".key" || col == ".id" {
 			keyCol = i
 			break
 		}
 	}
 	if keyCol < 0 {
-		return nil, fmt.Errorf("Can't indentify key column")
+		return nil, fmt.Errorf("Can't identify key column")
 	}
 	// Work from the header row of table.
 	for i, col := range table[0] {
@@ -120,7 +120,7 @@ func rowToObj(key string, dotPathToCols map[string]int, row []interface{}) map[s
 			obj[attrName] = row[i]
 		}
 	}
-	obj["_Key"] = key
+	obj[""] = key
 	return obj
 }
 
@@ -164,7 +164,7 @@ func (c *Collection) MergeIntoTable(frameName string, table [][]interface{}, ove
 		return table, err
 	}
 	dotPaths := f.DotPaths
-	keyCol, _ := colMap["._Key"]
+	keyCol, _ := colMap["."]
 	key := ""
 	tableKeys := []string{}
 	for i, row := range table {
@@ -269,7 +269,7 @@ func (c *Collection) MergeFromTable(frameName string, table [][]interface{}, ove
 	if err != nil {
 		return err
 	}
-	keyCol, ok := colMap["._Key"]
+	keyCol, ok := colMap[".key"]
 	if ok == false || keyCol < 0 {
 		return fmt.Errorf("Missing key column in table")
 	}

@@ -1,4 +1,3 @@
-//
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package dataset
 
 import (
@@ -23,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -656,6 +655,10 @@ func TestCaseHandling(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
+	if _, err := os.Stat(cName); os.IsNotExist(err) {
+		t.Errorf(`failed to create %q with c.Init(%q, "")`, cName, cName)
+		t.FailNow()
+	}
 	o := map[string]interface{}{}
 	o["a"] = 1
 	err = c.Create("A", o)
@@ -676,14 +679,18 @@ func TestCaseHandling(t *testing.T) {
 		t.FailNow()
 	}
 	// Get back a list of keys, should all be lowercase.const
-	keys, _ := c.Keys()
+	keys, err := c.Keys()
+	if err != nil {
+		t.Errorf("c.Keys() should not return error, %s", err)
+		t.FailNow()
+	} 
 	for _, key := range keys {
 		if key == strings.ToUpper(key) {
-			t.Errorf("Expected lower case %q, got %q", strings.ToLower(key), key)
+			t.Errorf("Expected lower case %q, got %q in %q", strings.ToLower(key), key, cName)
 		}
 		p, err := c.DocPath(strings.ToUpper(key))
 		if err != nil {
-			t.Errorf("%s", err)
+			t.Errorf("%s in %q", err, cName)
 			t.FailNow()
 		}
 		// Check if p has the OS's separator.
