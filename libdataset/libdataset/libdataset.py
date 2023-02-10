@@ -57,8 +57,8 @@ libdataset.verbose_off.restype = c_bool
 
 libdataset.dataset_version.restype = c_char_p
 
-# Args: collection_name (string)
-libdataset.init_collection.argtypes = [c_char_p]
+# Args: collection_name (string), dsn (string)
+libdataset.init_collection.argtypes = [ c_char_p, c_char_p ]
 # Returns: true (1), false (0)
 libdataset.init_collection.restype = c_bool
 
@@ -77,36 +77,29 @@ libdataset.create_object.argtypes = [c_char_p, c_char_p, c_char_p]
 libdataset.create_object.restype = c_bool
 
 # Args: collection_name (string), key (string), clean_object (bool)
-libdataset.read_object.argtypes = [c_char_p, c_char_p, c_bool ]
+libdataset.read_object.argtypes = [ c_char_p, c_char_p, c_bool ]
 # Returns: value (JSON source)
 libdataset.read_object.restype = c_char_p
 
-# THIS IS A HACK, ctypes doesn't **easily** support undemensioned arrays
-# of strings. So we will assume the array of keys has already been
-# transformed into JSON before calling libdataset.read_list.
-# Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (bool)
-libdataset.read_object_list.argtypes = [ c_char_p, c_char_p, c_bool ]
-# Returns: value (JSON source)
-libdataset.read_object_list.restype = c_char_p
-
 # Args: collection_name (string), key (string), value (JSON sourc)
-libdataset.update_object.argtypes = [c_char_p, c_char_p, c_char_p ]
+libdataset.update_object.argtypes = [ c_char_p, c_char_p, c_char_p ]
 libdataset.update_object.restype = c_bool
 
 # Args: collection_name (string), key (string)
-libdataset.delete_object.argtypes = [c_char_p, c_char_p ]
+libdataset.delete_object.argtypes = [ c_char_p, c_char_p ]
 libdataset.delete_object.restype = c_bool
 
-# Args: collection_name (string), key (string)
-libdataset.key_exists.argtypes = [c_char_p,c_char_p ]
-libdataset.key_exists.restype = c_bool
+# Args: collection_name(string), key (string)
+# Returns: (bool)
+libdataset.has_key.argtypes = [ c_char_p, c_char_p ]
+libdataset.has_key.restype = c_bool
 
-# Args: collection_name (string)
-libdataset.keys.argtypes = [c_char_p ]
+# Args: keys (string), string
+libdataset.keys.argtypes = [ c_char_p ]
 # Returns: value (JSON source)
 libdataset.keys.restype = c_char_p
 
-# Args: collection_name (string)
+# Args: count_objects (string), int
 libdataset.count_objects.argtypes = [ c_char_p ]
 # Returns: value (int)
 libdataset.count_objects.restype = c_int
@@ -213,9 +206,9 @@ libdataset.frame_create.argtypes = [ c_char_p, c_char_p,  c_char_p, c_char_p, c_
 libdataset.frame_create.restype = c_bool
 
 # Args: collection_name (string), frame_name (string)
-libdataset.frame_exists.argtypes = [ c_char_p, c_char_p ]
+libdataset.has_frame.argtypes = [ c_char_p, c_char_p ]
 # Returns: true (1), false (0)
-libdataset.frame_exists.restype = c_bool
+libdataset.has_frame.restype = c_bool
 
 # Args: collection_name (string), frame_name (string)
 libdataset.frame_keys.argtypes = [ c_char_p, c_char_p ]
@@ -232,10 +225,10 @@ libdataset.frame_objects.argtypes = [ c_char_p, c_char_p ]
 # Returns: value (JSON object source)
 libdataset.frame_objects.restype = c_char_p
 
-# Args: collection_name)
-libdataset.frames.argtypes = [ c_char_p ]
+# Args: collection_name (string)
+libdataset.frame_names.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-libdataset.frames.restype = c_char_p
+libdataset.frame_names.restype = c_char_p
 
 # Args: collection_name (string), frame_name (string)
 libdataset.frame_refresh.argtypes = [ c_char_p, c_char_p]

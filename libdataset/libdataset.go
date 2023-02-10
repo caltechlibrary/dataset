@@ -924,24 +924,6 @@ func sync_recieve_csv(cName *C.char, cFName *C.char, cCSVFilename *C.char, cSync
  * Key operations
  */
 
-// key_exists returns 1 if the key exists in a collection or 0 if not.
-// (depreciated in favor of has_key)
-//
-//export key_exists
-func key_exists(cName, cKey *C.char) C.int {
-	collectionName := C.GoString(cName)
-	key := C.GoString(cKey)
-
-	if _, err := GetCollection(collectionName); err != nil {
-		errorDispatch(err, "Cannot open collection %s, %s", collectionName, err)
-		return C.int(0)
-	}
-	if HasKey(collectionName, key) {
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
 // has_key returns 1 if the key exists in collection or 0 if not.
 //
 //export has_key
@@ -1574,18 +1556,6 @@ func frame(cName *C.char, cFName *C.char) *C.char {
 	return C.CString(txt)
 }
 
-// frame_exists returns 1 (true) if frame name exists in collection, 0
-// (false) otherwise. (depreciated in favor of has_frame)
-//
-//export frame_exists
-func frame_exists(cName *C.char, cFName *C.char) C.int {
-	collectionName := C.GoString(cName)
-	frameName := C.GoString(cFName)
-	if HasFrame(collectionName, frameName) {
-		return C.int(1)
-	}
-	return C.int(0)
-}
 
 // has_frame returns 1 (true) if frame name exists in collection, 0 (false) otherwise
 //
@@ -1759,31 +1729,6 @@ func frame_delete(cName *C.char, cFName *C.char) C.int {
 	return C.int(1)
 }
 
-// frames returns a JSON array of frames names in the collection.
-// (depreciated in favor of frame_names)
-//
-//export frames
-func frames(cName *C.char) *C.char {
-	collectionName := C.GoString(cName)
-
-	error_clear()
-	if _, err := GetCollection(collectionName); err != nil {
-		errorDispatch(err, "%s", err)
-		return C.CString("")
-	}
-
-	frameNames := FrameNames(collectionName)
-	if len(frameNames) == 0 {
-		return C.CString("[]")
-	}
-	src, err := json.Marshal(frameNames)
-	if err != nil {
-		errorDispatch(err, "failed to marshal frame names, %s", err)
-		return C.CString("")
-	}
-	txt := fmt.Sprintf("%s", src)
-	return C.CString(txt)
-}
 
 // frame_names returns a JSON array of frames names in the collection.
 //
@@ -1868,7 +1813,7 @@ func get_codemeta(cName *C.char) *C.char {
 	return C.CString(txt)
 }
 
-// get_version will get the "version" value associated with the collection's metadata
+// get_version will rerturn the dataset "version" used to create/manage the collection. If want a version associated with the collection itself see the codemeta.json file in the root folder of the collection.
 //
 //export get_version
 func get_version(cName *C.char) *C.char {

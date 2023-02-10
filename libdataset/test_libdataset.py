@@ -15,7 +15,7 @@ os.makedirs('testout', 0o777, exist_ok = True)
 
 def cleanup(c_name):
     keys = dataset.keys(c_name)
-    fnames = dataset.frames(c_name)
+    fnames = dataset.frame_names(c_name)
     for fname in fnames:
         if dataset.delete_frame(c_name, fname) == False:
             print(f'WARNING delete_frame({c_name}, {fname}) failed, {err}')
@@ -23,9 +23,9 @@ def cleanup(c_name):
         for key in keys:
             if dataset.delete(c_name, key) == False:
                 print(f'WARNING delete({c_name}, {key}) failed, {err}')
-        fnames = dataset.frames(c_name)
+        fnames = dataset.frame_names(c_name)
     if fnames != None and len(fnames) > 0:
-        print(f'Cleanup failed, {c_name} has following frames {fnames}')
+        print(f'Cleanup failed, {c_name} has following frame_names {fnames}')
         sys.exit(1)
     keys = dataset.keys(c_name)
     if keys != None and len(keys) > 0:
@@ -37,25 +37,25 @@ def cleanup(c_name):
             print(f'Failed, close_collection({c_name}), {err}')
     elif os.path.exists(c_name):
         shutil.rmtree(c_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
         print(f'Failed, init({c_name}), {err}')
         sys.exit(1)
 
 
 # Setup our test collection deleting it first if neccessary
-def test_setup(t, collection_name, test_name):
-    if os.path.exists(collection_name) == False:
-        t.print(f'Creating {collection_name} for {test_name}')
-        if dataset.init(collection_name) == False:
+def test_setup(t, c_name, test_name):
+    if os.path.exists(c_name) == False:
+        t.print(f'Creating {c_name} for {test_name}')
+        if dataset.init(c_name, "") == False:
             err = dataset.error_message()
             t.error(f"{test_name} Failed, could not create collection, {err}")
             sys.exit(1)
-        if os.path.exists(collection_name) == False:
-            t.print(f"{collection_name} does not exist! {test_name}")
+        if os.path.exists(c_name) == False:
+            t.print(f"{c_name} does not exist! {test_name}")
             sys.exit(1)
     else:
-        t.print(f'Using {collection_name}')
+        t.print(f'Using {c_name}')
 
     
 def test_libdataset(t, c_name):
@@ -277,42 +277,42 @@ def test_issue32(t, collection_name):
 
 
 
-def test_check_repair(t, collection_name):
-    cleanup(collection_name)
-    t.print("Testing status on", collection_name)
+def test_check_repair(t, c_name):
+    cleanup(c_name)
+    t.print("Testing status on", c_name)
     # Make sure we have a left over collection to check and repair
-    dataset.init(collection_name)
-    if dataset.status(collection_name) == False:
-        t.error("Failed, expected dataset.status() == True, got", ok, "for", collection_name)
+    dataset.init(c_name, "")
+    if dataset.status(c_name) == False:
+        t.error("Failed, expected dataset.status() == True, got", ok, "for", c_name)
         return
 
-    if dataset.has_key(collection_name, 'one') == False:
-        dataset.create(collection_name, 'one', {"one": 1})
-    t.print("Testing check on", collection_name)
+    if dataset.has_key(c_name, 'one') == False:
+        dataset.create(c_name, 'one', {"one": 1})
+    t.print("Testing check on", c_name)
     # Check our collection
-    ok = dataset.check(collection_name)
+    ok = dataset.check(c_name)
     if ok == False:
-        t.error("Failed, expected check", collection_name, "to return True, got", ok)
+        t.error("Failed, expected check", c_name, "to return True, got", ok)
         return
 
     # Break and recheck our collection
-    print(f"Removing {collection_name}/collection.json to cause a fail")
-    if os.path.exists(collection_name + "/collection.json"):
-        os.remove(collection_name + "/collection.json")
-    print(f"Testing check on (broken) {collection_name}")
-    ok = dataset.check(collection_name)
+    print(f"Removing {c_name}/collection.json to cause a fail")
+    if os.path.exists(c_name + "/collection.json"):
+        os.remove(c_name + "/collection.json")
+    print(f"Testing check on (broken) {c_name}")
+    ok = dataset.check(c_name)
     if ok == True:
-        t.error("Failed, expected check", collection_name, "to return False, got", ok)
+        t.error("Failed, expected check", c_name, "to return False, got", ok)
     else:
-        t.print(f"Should have see error output for broken {collection_name}")
+        t.print(f"Should have see error output for broken {c_name}")
 
     # Repair our collection
-    t.print("Testing repair on", collection_name)
-    if dataset.repair(collection_name) == False:
+    t.print("Testing repair on", c_name)
+    if dataset.repair(c_name) == False:
         err = dataset.error_message()
         t.error("Failed, expected repair to return True, got, ", err)
-    if os.path.exists(collection_name + "/collection.json") == False:
-        t.error(f"Failed, expected recreated {collection_name}/collection.json")
+    if os.path.exists(c_name + "/collection.json") == False:
+        t.error(f"Failed, expected recreated {c_name}/collection.json")
  
         
 def test_attachments(t, c_name):
@@ -552,7 +552,7 @@ def test_frame1(t, c_name):
         return
     if dataset.frame_reframe(c_name, f_name, keys) == False:
         t.error(f'frame_reframe({c_name}, {f_name}) returned False')
-    l = dataset.frames(c_name)
+    l = dataset.frame_names(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
     if dataset.delete_frame(c_name, f_name) == False:
@@ -619,7 +619,7 @@ def test_frame2(t, c_name):
         t.error(f'missing keys after reframe, frame({c_name}, {f_name}) -> {f}')
         return
 
-    l = dataset.frames(c_name)
+    l = dataset.frame_names(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
         return
@@ -747,11 +747,15 @@ def test_issue12(t, c_name):
 {"id": "4", "c1": 1, "c2": 1, "c3": 1 },
 {"id": "5", "c1": 6, "c2": 6, "c3": 6 }
 ]'''
+    cleanup(c_name)
+    if dataset.init(c_name, "") == False:
+        err = dataset.error_message()
+        t.error(f'failed to create {c_name} -> {err}')
+        return
     if dataset.status(c_name) == False:
-        if not dataset.init(c_name, ""):
-            err = dataset.error_message()
-            t.error(f'failed to create {c_name} -> {err}')
-            return 
+        t.error(f'failed to find {c_name} after init')
+        return 
+
     objects = json.loads(src)
     for obj in objects:
         key = obj['id']
@@ -759,7 +763,7 @@ def test_issue12(t, c_name):
             dataset.update(c_name, key, obj)
         else:            
             dataset.create(c_name, key, obj)
-    f_names = dataset.frames(c_name)
+    f_names = dataset.frame_names(c_name)
     for f_name in f_names:
         if not dataset.delete_frame(c_name, f_name):
             err = dataset.error_message()

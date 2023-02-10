@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+<li>
+<a href="/">Home</a>
+</li>
+<li>
+<a href="../">README</a>
+</li>
+<li>
+<a href="license.html">LICENSE</a>
+</li>
+<li>
+<a href="install.html">INSTALL</a>
+</li>
+<li>
+<a href="docs/">Documentation</a>
+</li>
+<li>
+<a href="how-to/">Tutorials</a>
+</li>
+<li>
+<a href="docs/topics.html">Topics</a>
+</li>
+<li>
+<a href="about.html">About</a>
+</li>
+<li>
+<a href="https://github.com/caltechlibrary/dataset">Github</a>
+</li>
+<li>
+<a
+href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
+</li>
+</ul>
+</nav>
+
+<section>
+<h1 id="compatibity">
+Compatibity
+</h1>
+<p>
+As of 2.1 a minimal level of backward dataset v1.1 was added. This
+includes support for libdataset, a C-shared library. The goal in adding
+support for v1.1 was to facilate migration in the Caltech Library feeds
+project. Some features in v1.1 are not available and the features
+recreated from v1.1 were done so in a way that maintains the approach of
+v2. Aside from continuing support for libdataset the specific v1.1
+features will likely be depreciated over time in the name of keeping the
+project as simple as possible maintaining focus on the core benefits of
+dataset versus other JSON store systems.
+</p>
+<h2 id="what-was-left-out">
+What was left out
+</h2>
+<p>
+The methods related to Namaste data have not be implememented as v2 of
+dataset uses a codemeta.json file for collection metadata. E.g.
+<code>Who</code>, <code>Where</code>, <code>Location</code>,
+<code>Contact</code>.
+</p>
+<p>
+The methods <code>KeySort</code> and <code>KeyFilter</code> are not
+included.
+</p>
+<h2 id="changed-behavior">
+Changed behavior
+</h2>
+<p>
+The <code>DocPath</code> method returns a full path to the JSON
+documented stored in a Pairtree collection. If the collection uses an
+SQL store then you will get an empty string and an error indicating that
+storage type is not supported by <code>DocPath</code>.
+</p>
+<p>
+The <code>Keys</code> method returns a list of keys (slice of strings)
+and an error value.
+</p>
+<h2 id="method-name-changes">
+Method name changes
+</h2>
+<p>
+The following methods were normalized to conform with Go idioms in the
+standard library.
+</p>
+<ul>
+<li>
+<code>KeyExists</code> became <code>HasKey</code>
+</li>
+<li>
+<code>FrameExists</code> became <code>HasFrame</code>
+</li>
+</ul>
+<p>
+The methods for working with versioned content have the order of the
+parameters revised, basically semver is now the last paramter.
+</p>
+<h2 id="changes-method-signatures">
+Changes method signatures
+</h2>
+<p>
+Do to the changes in how keys and attachments are handled in v2 you
+don’t need to “santize” your returned JSON object. Dataset v2 does not
+inject a <code>_Key</code> or <code>_Attachments</code> values in the
+JSON document stored. This changes the <code>Read</code> method
+signature for collection objects.
+</p>
+<p>
+The <code>Init</code> method takes a DSN as the second parameter, if the
+DSN is an empty string then the collection created will use a Pairtree
+store.
+</p>
+</section>
+
+<footer>
+<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+<!-- START: PrettyFi from https://github.com/google/code-prettify -->
+<script>
+/* We want to add the class "prettyprint" to all the pre elements */
+var pre_list = document.querySelectorAll("pre");
+
+pre_list.forEach(function(elem) {
+    elem.classList.add("prettyprint");
+    elem.classList.add("linenums");/**/
+    elem.classList.add("json"); /**/
+});
+</script>
+<style>
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
+{
+    color: #555;
+    list-style-type: decimal;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="/css/prettify.css">
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
+prettify.js"></script>
+<!--  END: PrettyFi from https://github.com/google/code-prettify -->
+</body>
+</html>

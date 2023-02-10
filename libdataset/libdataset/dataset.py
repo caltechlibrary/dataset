@@ -71,9 +71,9 @@ def dataset_version():
 #
 
 # Initializes a Dataset Collection
-def init(collection_name):
+def init(collection_name, dsn = ""):
     '''initialize a dataset collection with the given name'''
-    if libdataset.init_collection(c_char_p(collection_name.encode('utf8'))):
+    if libdataset.init_collection(c_char_p(collection_name.encode('utf8')), c_char_p(dsn.encode('utf8'))):
         return ''
     return error_message()
 
@@ -101,7 +101,7 @@ def close_all():
 
 # Has key, checks if a key is in the dataset collection
 def has_key(collection_name, key):
-    return libdataset.key_exists(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')))
+    return libdataset.has_key(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')))
 
 # Create a JSON record in a Dataset Collectin
 def create(collection_name, key, value):
@@ -183,30 +183,6 @@ def keys(collection_name):
         return []
     return json.loads(rval)
     
-# Key filter takes a list of keys and filter expression and returns a filtered list of keys
-def key_filter(collection_name, keys, filter_expr):
-    '''key_filter takes a list of keys (if empty or * then it uses all keys in collection) and a filter expression returning a filtered list'''
-    key_list = json.dumps(keys)
-    value = libdataset.key_filter(c_char_p(collection_name.encode('utf8')), c_char_p(key_list.encode('utf8')), c_char_p(filter_expr.encode('utf8')))
-    if not isinstance(value, bytes):
-        value = value.encode('utf8')
-    rval = value.decode()
-    if rval == "":
-        return []
-    return json.loads(rval)
-    
-# Key sort takes sort expression and an optional list of keys and returns a sorted list of keys
-def key_sort(collection_name, keys, sort_expr):
-    '''key_filter takes a list of keys (if empty or * then it uses all keys in collection) and a filter expression returning a filtered list'''
-    key_list = json.dumps(keys)
-    value = libdataset.key_sort(c_char_p(collection_name.encode('utf8')), c_char_p(key_list.encode('utf8')), c_char_p(sort_expr.encode('utf8')))
-    if not isinstance(value, bytes):
-        value = value.encode('utf8')
-    rval = value.decode()
-    if rval == "":
-        return []
-    return json.loads(rval)
-
 # Count returns an integer of the number of keys in a collection
 def count(collection_name, filter = ''):
     '''count returns an integer of the number of keys in a collection'''
@@ -332,7 +308,7 @@ def frame_create(collection_name, frame_name, keys, dot_paths, labels):
 
 
 def has_frame(collection_name, frame_name):
-    return libdataset.frame_exists(c_char_p(collection_name.encode('utf-8')),
+    return libdataset.has_frame(c_char_p(collection_name.encode('utf-8')),
             c_char_p(frame_name.encode('utf-8')))
 
 def frame_keys(collection_name, frame_name):
@@ -362,8 +338,8 @@ def frame_objects(collection_name, frame_name):
         return []
     return json.loads(value)
 
-def frames(collection_name):
-    value = libdataset.frames(c_char_p(collection_name.encode('utf-8')))
+def frame_names(collection_name):
+    value = libdataset.frame_names(c_char_p(collection_name.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     if value == None or value.strip() == '' or len(value) == 0: 
