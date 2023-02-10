@@ -3,7 +3,6 @@ module github.com/caltechlibrary/dataset/v2
 go 1.20
 
 require (
-	github.com/caltechlibrary/dataset v1.1.0
 	github.com/caltechlibrary/dotpath v0.0.4
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
 	github.com/caltechlibrary/pairtree v1.0.2

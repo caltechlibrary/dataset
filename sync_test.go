@@ -9,9 +9,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-
-	// Caltech Library Packages
-	"github.com/caltechlibrary/dataset/tbl"
 )
 
 func TestTableColumnBehavior(t *testing.T) {
@@ -28,29 +25,29 @@ first, second,third, fourth
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	table := tbl.TableStringToInterface(csvTable)
+	table := TableStringToInterface(csvTable)
 
 	expectedObjs := map[string]map[string]interface{}{}
 	expectedObjs["1"] = map[string]interface{}{
-		"_Key":  "1",
+		"key":  "1",
 		"first": 1,
 		"third": 3,
 	}
 	expectedObjs["2"] = map[string]interface{}{
-		"_Key":   "2",
+		"key":   "2",
 		"first":  2,
 		"second": 2,
 		"third":  2,
 	}
 	expectedObjs["3"] = map[string]interface{}{
-		"_Key":   "3",
+		"key":   "3",
 		"first":  3,
 		"second": 3,
 	}
 
 	for i, row := range table {
 		if i > 0 {
-			key, err := tbl.ValueInterfaceToString(row[0])
+			key, err := ValueInterfaceToString(row[0])
 			if err != nil {
 				t.Errorf("expected (%T) %+v to be convertable to string, %s", row[0], row[0], err)
 				continue
@@ -93,7 +90,7 @@ func TestMerge(t *testing.T) {
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	table := tbl.TableStringToInterface(csvTable)
+	table := TableStringToInterface(csvTable)
 	collectionName := "testdata/merge1.ds"
 	frameName := "f1"
 
@@ -111,7 +108,7 @@ func TestMerge(t *testing.T) {
 	}
 	defer c.Close()
 	// Manually create a frame to merge with.
-	f, err := c.FrameCreate(frameName, []string{}, []string{"._Key", ".h1", ".h3"}, []string{"id", "h1", "h3"}, verbose)
+	f, err := c.FrameCreate(frameName, []string{}, []string{".key", ".h1", ".h3"}, []string{"id", "h1", "h3"}, verbose)
 
 	err = c.MergeFromTable(frameName, table, overwrite, verbose)
 	if err != nil {
@@ -128,7 +125,7 @@ func TestMerge(t *testing.T) {
 
 		w := csv.NewWriter(os.Stdout)
 		fmt.Printf("table:\n")
-		w.WriteAll(tbl.TableInterfaceToString(table))
+		w.WriteAll(TableInterfaceToString(table))
 		w.Flush()
 		fmt.Printf("testKeys: %+v\n", testKeys)
 		fmt.Printf("collection name: %s\n", collectionName)
@@ -156,7 +153,7 @@ func TestMerge(t *testing.T) {
 	// NOTE: for non-header rows check the value against what we stored in
 	// our collection
 	for i, row := range table[1:] {
-		key, err := tbl.ValueInterfaceToString(row[0])
+		key, err := ValueInterfaceToString(row[0])
 		if err != nil {
 			t.Errorf("Expected row %d, key (%T) %+v to be string, %s", i, key, key, err)
 		}
@@ -192,7 +189,7 @@ func TestMerge(t *testing.T) {
 	}
 
 	// NOTE: Update frame labels and dotpaths
-	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h4"}
+	f.DotPaths = []string{".key", ".h1", ".h2", ".h4"}
 	f.Labels = []string{"id", "h1", "h2", "h4"}
 	c.setFrame(frameName, f)
 	c.FrameReframe(frameName, f.Keys, false)
@@ -216,7 +213,7 @@ func TestMerge(t *testing.T) {
 
 	// Now reconcile table and collection objects
 	for i, row := range table[1:] {
-		key, err := tbl.ValueInterfaceToString(row[0])
+		key, err := ValueInterfaceToString(row[0])
 		if err != nil {
 			t.Errorf("Expected row %d, key (%T) %+v, of type string,%s", i, key, key, err)
 		}
@@ -320,7 +317,7 @@ func TestMerge(t *testing.T) {
 
 	// TEST: appending rows to table
 	obj := map[string]interface{}{
-		"_Key": "10",
+		"key": "10",
 		"h1":   "1",
 		"h2":   "2",
 		"h3":   "3",
@@ -341,7 +338,7 @@ func TestMerge(t *testing.T) {
 	}
 
 	// NOTE: Final update frame labels and dotpaths
-	f.DotPaths = []string{"._Key", ".h1", ".h2", ".h3", ".h4", ".h5", ".h6"}
+	f.DotPaths = []string{".key", ".h1", ".h2", ".h3", ".h4", ".h5", ".h6"}
 	f.Labels = []string{"id", "h1", "h2", "h3", "h4", "h5", "h6"}
 	c.setFrame(frameName, f)
 	if keys, err := c.Keys(); err != nil {
@@ -372,10 +369,10 @@ func TestMerge(t *testing.T) {
 		t.Errorf("appended row, expected length %d, got %d", len(tRow), len(rTable[lastRow]))
 		w := csv.NewWriter(os.Stdout)
 		fmt.Printf("table:\n")
-		w.WriteAll(tbl.TableInterfaceToString(table))
+		w.WriteAll(TableInterfaceToString(table))
 		w.Flush()
 		fmt.Printf("rTable:\n")
-		w.WriteAll(tbl.TableInterfaceToString(rTable))
+		w.WriteAll(TableInterfaceToString(rTable))
 		w.Flush()
 		t.FailNow()
 	}
@@ -413,7 +410,7 @@ id,one,two
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	initialTbl := tbl.TableStringToInterface(csvTable)
+	initialTbl := TableStringToInterface(csvTable)
 
 	r = csv.NewReader(bytes.NewBuffer(expectedCSV))
 	csvTable, err = r.ReadAll()
@@ -421,7 +418,7 @@ id,one,two
 		t.Errorf("%s", err)
 		t.FailNow()
 	}
-	expectedTbl := tbl.TableStringToInterface(csvTable)
+	expectedTbl := TableStringToInterface(csvTable)
 
 	collectionName := "testdata/merge2.ds"
 	frameName := "f1"
@@ -460,7 +457,7 @@ id,one,two
 		t.FailNow()
 	}
 
-	f, err := c.FrameCreate(frameName, keys, []string{"._Key", ".one", ".two"}, []string{"id", "one", "two"}, verbose)
+	f, err := c.FrameCreate(frameName, keys, []string{".key", ".one", ".two"}, []string{"id", "one", "two"}, verbose)
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -497,7 +494,7 @@ id,one,two
 			t.FailNow()
 		}
 	}
-	f.DotPaths = []string{"._Key", ".one", ".two", ".three", ".four", ".five"}
+	f.DotPaths = []string{".key", ".one", ".two", ".three", ".four", ".five"}
 	f.Labels = []string{"id", "one", "two", "three", "four", "five"}
 	err = c.SaveFrame(frameName, f)
 	if err != nil {
@@ -522,10 +519,10 @@ id,one,two
 			t.Errorf("row %d is different lengths, %+v, got %+v", i, expectedTbl[i], resultTbl[i])
 			w := csv.NewWriter(os.Stdout)
 			fmt.Printf("expectedTbl:\n")
-			w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
+			w.WriteAll(TableInterfaceToString(expectedTbl))
 			w.Flush()
 			fmt.Printf("resultTbl:\n")
-			w.WriteAll(tbl.TableInterfaceToString(resultTbl))
+			w.WriteAll(TableInterfaceToString(resultTbl))
 			w.Flush()
 			t.FailNow()
 		}
@@ -533,8 +530,8 @@ id,one,two
 			// NOTE: In our test cases column 0 is key and
 			// will be a string regardless of either it is numeric.
 			if j == 0 {
-				sCell, _ := tbl.ValueInterfaceToString(cell)
-				rCell, _ := tbl.ValueInterfaceToString(resultTbl[i][j])
+				sCell, _ := ValueInterfaceToString(cell)
+				rCell, _ := ValueInterfaceToString(resultTbl[i][j])
 				if sCell != rCell {
 					t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j])
 				}
@@ -542,10 +539,10 @@ id,one,two
 				t.Errorf("row %d, col %d, expected (%T) %+v, got (%T) %+v", i, j, cell, cell, resultTbl[i][j], resultTbl[i][j])
 				w := csv.NewWriter(os.Stdout)
 				fmt.Printf("expectedTbl:\n")
-				w.WriteAll(tbl.TableInterfaceToString(expectedTbl))
+				w.WriteAll(TableInterfaceToString(expectedTbl))
 				w.Flush()
 				fmt.Printf("resultTbl:\n")
-				w.WriteAll(tbl.TableInterfaceToString(resultTbl))
+				w.WriteAll(TableInterfaceToString(resultTbl))
 				w.Flush()
 				t.FailNow()
 			}
