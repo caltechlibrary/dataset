@@ -32,7 +32,7 @@ _testmain.go
 *.db
 *.ds
 etc/*
-dist/*
+dist
 testout
 bin/*
 demos/*
