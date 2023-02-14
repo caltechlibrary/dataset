@@ -53,6 +53,7 @@ clean:
 	@if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
 	@if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
 	@if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
+	@if [ -d "dist" ]; then rm -fR dist; fi
 	@if [ -d "testout" ]; then rm -fR testout; fi
 
 status:

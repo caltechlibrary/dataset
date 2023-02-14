@@ -46,13 +46,14 @@ var (
 		"has-key":       cliHasKey,
 		"updated-keys":  cliUpdatedKeys,
 		"count":         cliCount,
-		"versioning":    cliVersioning,
+		"set-versioning": cliVersioning,
+		"get-versioning": cliVersioning,
 		"versions":      cliVersioning,
-		"read-version":  cliVersioning,
 		"sample":        cliSample,
 		"clone":         cliClone,
 		"clone-sample":  cliCloneSample,
 		"frames":        cliFrames,
+		"frame-names":   cliFrames,
 		"frame":         cliFrame,
 		"frame-def":     cliFrameDef,
 		"frame-keys":    cliFrameKeys,
@@ -64,6 +65,7 @@ var (
 		"delete-frame":  cliDeleteFrame,
 		"attachments":   cliAttachments,
 		"attach":        cliAttach,
+		"detach":        cliRetrieve,
 		"retrieve":      cliRetrieve,
 		"prune":         cliPrune,
 		"check":         cliCheck,
@@ -74,41 +76,43 @@ var (
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
-		"help":          CliDisplayHelp,
-		"init":          doInit,
-		"create":        doCreate,
-		"read":          doRead,
-		"update":        doUpdate,
-		"delete":        doDelete,
-		"keys":          doKeys,
-		"updated-keys":  doUpdatedKeys,
-		"haskey":        doHasKey,
-		"has-key":       doHasKey,
-		"count":         doCount,
-		"frames":        doFrameNames,
-		"frame":         doFrameCreate,
-		"frame-def":     doFrameDef,
-		"frame-keys":    doFrameKeys,
-		"frame-objects": doFrameObjects,
-		"refresh":       doRefresh,
-		"reframe":       doReframe,
-		"delete-frame":  doDeleteFrame,
-		"hasframe":      doHasFrame,
-		"has-frame":     doHasFrame,
-		"attachments":   doAttachments,
-		"attach":        doAttach,
-		"retrieve":      doRetrieve,
-		"prune":         doPrune,
-		"sample":        doSample,
-		"clone":         doClone,
-		"clone-sample":  doCloneSample,
-		"check":         doCheck,
-		"repair":        doRepair,
-		"migrate":       doMigrate,
-		"codemeta":      doCodemeta,
-		"versioning":    doVersioning,
-		"versions":      doVersions,
-		"read-version":  doReadVersion,
+		"help":           CliDisplayHelp,
+		"init":           doInit,
+		"create":         doCreate,
+		"read":           doRead,
+		"update":         doUpdate,
+		"delete":         doDelete,
+		"keys":           doKeys,
+		"updated-keys":   doUpdatedKeys,
+		"haskey":         doHasKey,
+		"has-key":        doHasKey,
+		"count":          doCount,
+		"frames":         doFrameNames,
+		"frame-names":    doFrameNames,
+		"frame":          doFrameCreate,
+		"frame-def":      doFrameDef,
+		"frame-keys":     doFrameKeys,
+		"frame-objects":  doFrameObjects,
+		"refresh":        doRefresh,
+		"reframe":        doReframe,
+		"delete-frame":   doDeleteFrame,
+		"hasframe":       doHasFrame,
+		"has-frame":      doHasFrame,
+		"attachments":    doAttachments,
+		"attach":         doAttach,
+		"detach":         doRetrieve,
+		"retrieve":       doRetrieve,
+		"prune":          doPrune,
+		"sample":         doSample,
+		"clone":          doClone,
+		"clone-sample":   doCloneSample,
+		"check":          doCheck,
+		"repair":         doRepair,
+		"migrate":        doMigrate,
+		"codemeta":       doCodemeta,
+		"get-versioning": doGetVersioning,
+		"set-versioning": doSetVersioning,
+		"versions":       doVersions,
 	}
 )
 
@@ -218,24 +222,24 @@ func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	return err
 }
 
-func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+func doSetVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		cName      string
 		versioning string
 	)
-	flagSet := flag.NewFlagSet("versioning", flag.ContinueOnError)
+	flagSet := flag.NewFlagSet("set_versioning", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
 	flagSet.BoolVar(&showHelp, "help", false, "help for create")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
-		CliDisplayHelp(in, out, eout, []string{"versioning"})
+		CliDisplayHelp(in, out, eout, []string{"set_versioning"})
 	}
 	switch {
 	case len(args) == 2:
 		cName, versioning = args[0], strings.ToLower(strings.TrimSpace(args[1]))
 	default:
-		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME VERSIONING_SETTING, got %q", strings.Join(append([]string{appName, "versioning"}, args...), " "))
+		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME VERSIONING_SETTING, got %q", strings.Join(append([]string{appName, "set_versioning"}, args...), " "))
 	}
 	c, err := Open(cName)
 	if err != nil {
@@ -244,6 +248,34 @@ func doVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) er
 	defer c.Close()
 	return c.SetVersioning(versioning)
 }
+
+func doGetVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName      string
+	)
+	flagSet := flag.NewFlagSet("get_versioning", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "help for create")
+	flagSet.BoolVar(&showHelp, "help", false, "help for create")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		CliDisplayHelp(in, out, eout, []string{"get_versioning"})
+	}
+	switch {
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected [OPTIONS] COLLECTION_NAME, got %q", strings.Join(append([]string{appName, "get_versioning"}, args...), " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	fmt.Fprintf(out, "%s\n", c.Versioning)	
+	return nil
+}
+
 
 func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (

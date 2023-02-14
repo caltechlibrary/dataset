@@ -1373,8 +1373,11 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 			errorDispatch(err, "%s does not exist", fName)
 			return C.int(0)
 		}
-		err = c.AttachVersionFile(key, fName, semver)
-		err = c.AttachFile(key, fName)
+		if c.Versioning != "" {
+			err = c.AttachVersionFile(key, fName, semver)
+		} else {
+			err = c.AttachFile(key, fName)
+		}
 		if err != nil {
 			errorDispatch(err, "%s", err)
 			return C.int(0)
