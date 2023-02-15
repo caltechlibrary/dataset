@@ -72,9 +72,8 @@ release: $(LIB_NAME)$(EXT)
 	cp INSTALL.md dist/
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	cp -v $(LIB_NAME)$(EXT) dist/
-	cp -v $(LIB_NAME)$(EXT) dist/$(LIB_NAME)-$(ARCH)$(EXT)
 	cp -v $(LIB_NAME).h dist/
-	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)-$(ARCH)$(EXT) $(LIB_NAME).h  codemeta.json CITATION.cff README.md LICENSE INSTALL.md
+	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h  codemeta.json CITATION.cff README.md LICENSE INSTALL.md
 
 
 .FORCE:
