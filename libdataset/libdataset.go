@@ -231,6 +231,21 @@ func ReadJSON(cName string, key string) ([]byte, error) {
 	return nil, fmt.Errorf("%q not available", cName)
 }
 
+// ReadJSONVersion takes a collection name, key, semver and 
+// returns a JSON object document.
+func ReadJSONVersion(cName string, key string, semver string) ([]byte, error) {
+	if cMap == nil || IsOpen(cName) == false {
+		if err := OpenCollection(cName); err != nil {
+			return nil, err
+		}
+	}
+	if c, found := cMap.collections[cName]; found {
+		return c.ReadJSONVersion(key, semver)
+	}
+	return nil, fmt.Errorf("%q not available", cName)
+}
+
+
 // UpdateJSON takes a collection name, key and JSON object
 // document and updates the collection.
 func UpdateJSON(cName string, key string, src []byte) error {
@@ -309,9 +324,9 @@ func FrameCreate(cName string, fName string, keys []string, dotPaths []string, l
 	return nil, fmt.Errorf("%q not available", cName)
 }
 
-// FrameObjects returns a JSON document of a copy of the objects in a frame for
-// the service collection. It is analogous to a dataset.ReadJSON but for a frame's
-// object list
+// FrameObjects returns a JSON document of a copy of the objects in a
+// frame for the service collection. It is analogous to a
+// dataset.ReadJSON but for a frame's object list
 func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) {
 	if cMap == nil || IsOpen(cName) == false {
 		if err := OpenCollection(cName); err != nil {
@@ -324,9 +339,10 @@ func FrameObjects(cName string, fName string) ([]map[string]interface{}, error) 
 	return nil, fmt.Errorf("%q not available", cName)
 }
 
-// FrameRefresh updates the frame object list's for the keys provided. Any new keys
+// FrameRefresh updates the frame object list's for the keys provided.
+// Any new keys
 //
-//	cause a new object to be appended to the end of the list.
+// cause a new object to be appended to the end of the list.
 func FrameRefresh(cName string, fName string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		if err := OpenCollection(cName); err != nil {
@@ -340,8 +356,9 @@ func FrameRefresh(cName string, fName string, verbose bool) error {
 	return fmt.Errorf("%q not available", cName)
 }
 
-// FrameReframe updates the frame object list. If a list of keys is provided then
-// the object will be replaced with updated objects based on the keys provided.
+// FrameReframe updates the frame object list. If a list of keys is
+// provided then the object will be replaced with updated objects based
+// on the keys provided.
 func FrameReframe(cName string, fName string, keys []string, verbose bool) error {
 	if cMap == nil || IsOpen(cName) == false {
 		if err := OpenCollection(cName); err != nil {
@@ -983,10 +1000,9 @@ func create_object(cName, cKey, cSrc *C.char) C.int {
 // read_object takes a key and returns JSON source of the record
 //
 //export read_object
-func read_object(cName, cKey *C.char, cCleanObject C.int) *C.char {
+func read_object(cName, cKey *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-	cleanObject := (C.int(1) == cCleanObject)
 
 	error_clear()
 	var (
@@ -997,24 +1013,33 @@ func read_object(cName, cKey *C.char, cCleanObject C.int) *C.char {
 		errorDispatch(err, "Can't read %s, %s", key, err)
 		return C.CString("")
 	}
-	if cleanObject {
-		object := map[string]interface{}{}
-		if err := dataset.DecodeJSON(src, &object); err != nil {
-			errorDispatch(err, "Can't decode %s, %s", key, err)
-			return C.CString("")
-		}
-		if _, found := object["_Key"]; found {
-			delete(object, "_Key")
-			src, err = dataset.EncodeJSON(object)
-			if err != nil {
-				errorDispatch(err, "Can't encode %s, %s", key, err)
-				return C.CString("")
-			}
-		}
+	txt := fmt.Sprintf("%s", src)
+	return C.CString(txt)
+}
+
+// read_object_version takes a collection name, key and semver
+// and returns JSON source of the record version.
+//
+//export read_object_version
+func read_object_version(cName, cKey *C.char, cSemver *C.char) *C.char {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
+	semver := C.GoString(cSemver)
+
+	error_clear()
+	var (
+		src []byte
+		err error
+	)
+	src, err = ReadJSONVersion(collectionName, key, semver)
+	if err != nil {
+		errorDispatch(err, "Can't read %s %s, %s", key, semver, err)
+		return C.CString("")
 	}
 	txt := fmt.Sprintf("%s", src)
 	return C.CString(txt)
 }
+
 
 // THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
 // undemensioned arrays of strings. So we will assume the array of
@@ -1022,9 +1047,8 @@ func read_object(cName, cKey *C.char, cCleanObject C.int) *C.char {
 // read_list.
 //
 //export read_object_list
-func read_object_list(cName *C.char, cKeysAsJSON *C.char, cCleanObject C.int) *C.char {
+func read_object_list(cName *C.char, cKeysAsJSON *C.char) *C.char {
 	collectionName := C.GoString(cName)
-	cleanObject := (C.int(1) == cCleanObject)
 	l := []string{}
 	errList := []string{}
 
@@ -1048,21 +1072,7 @@ func read_object_list(cName *C.char, cKeysAsJSON *C.char, cCleanObject C.int) *C
 			errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
 			continue
 		}
-		if cleanObject == true {
-			obj := map[string]interface{}{}
-			if err = dataset.DecodeJSON(src, &obj); err != nil {
-				errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
-			} else {
-				delete(obj, "_Key")
-				if src, err := json.Marshal(obj); err == nil {
-					l = append(l, fmt.Sprintf("%s", src))
-				} else {
-					errList = append(errList, fmt.Sprintf("(%s) %s", key, err))
-				}
-			}
-		} else {
-			l = append(l, fmt.Sprintf("%s", src))
-		}
+		l = append(l, fmt.Sprintf("%s", src))
 	}
 	if len(errList) > 0 {
 		err = fmt.Errorf("%s", strings.Join(errList, "; "))
@@ -1334,19 +1344,13 @@ func list_objects(cName *C.char, cKeys *C.char) *C.char {
  * Attachment operations
  */
 
-// attach will attach a file to a JSON object in a collection. It takes
-// a semver string (e.g. v0.0.1) and associates that with where it stores
-// the file.  If semver is v0.0.0 it is considered unversioned, if v0.0.1
-// or larger it is considered versioned.
+// attach will attach a file to a JSON object in a collection. If the
+// collection is versioned then the semver will be managed automatically.
 //
 //export attach
-func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
+func attach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-	semver := C.GoString(cSemver)
-	if semver == "" {
-		semver = "v0.0.0"
-	}
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -1373,11 +1377,7 @@ func attach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 			errorDispatch(err, "%s does not exist", fName)
 			return C.int(0)
 		}
-		if c.Versioning != "" {
-			err = c.AttachVersionFile(key, fName, semver)
-		} else {
-			err = c.AttachFile(key, fName)
-		}
+		err = c.AttachFile(key, fName)
 		if err != nil {
 			errorDispatch(err, "%s", err)
 			return C.int(0)
@@ -1416,17 +1416,13 @@ func attachments(cName *C.char, cKey *C.char) *C.char {
 	return C.CString("")
 }
 
-// detach exports the file associated with the semver from the JSON
-// object in the collection. The file remains "attached".
+// detach exports the file associated with the key and basenames 
+// the JSON object in the collection. The file remains "attached".
 //
 //export detach
-func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
+func detach(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
-	semver := C.GoString(cSemver)
-	//if semver == "" {
-	//	semver = "v0.0.0"
-	//}
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -1462,11 +1458,7 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	}
 	for _, fName := range fNames {
 		var src []byte
-		if semver != "" {
-			src, err = c.RetrieveVersionFile(key, fName, semver)
-		} else {
-			src, err = c.RetrieveFile(key, fName)
-		}
+		src, err = c.RetrieveFile(key, fName)
 		if err != nil {
 			errorDispatch(err, "%s", err)
 			return C.int(0)
@@ -1480,14 +1472,73 @@ func detach(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int
 	return C.int(1)
 }
 
-// prune removes an attachment by semver from a JSON object in the
-// collection. This is destructive, the file is removed from disc.
+// detach_version exports the file associated with the semver from the JSON
+// object in the collection. The file remains "attached".
 //
-//export prune
-func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
+//export detach_version
+func detach_version(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int {
 	collectionName := C.GoString(cName)
 	key := C.GoString(cKey)
 	semver := C.GoString(cSemver)
+
+	srcFNames := C.GoString(cFNames)
+	fNames := []string{}
+	if len(srcFNames) > 0 {
+		err := json.Unmarshal([]byte(srcFNames), &fNames)
+		if err != nil {
+			errorDispatch(err, "Can't unmarshal filename list, %s", err)
+			return C.int(0)
+		}
+	} 
+
+	error_clear()
+	c, err := GetCollection(collectionName)
+	if err != nil {
+		errorDispatch(err, "%q not found", collectionName)
+		return C.int(0)
+	}
+
+	if len(fNames) == 0 {
+		// IF the list is empty detach expected to detached all files.
+		results, err := c.Attachments(key)
+		if err != nil {
+			errorDispatch(err, "Can't determine attached files, %s",err)
+			return C.int(0)
+		}
+		for _, fName := range results {
+			fNames = append(fNames, fName)
+		}
+	}
+
+	if c.HasKey(key) == false {
+		errorDispatch(err, "%q is not in collection", key)
+		return C.int(0)
+	}
+	for _, fName := range fNames {
+		var src []byte
+		src, err = c.RetrieveVersionFile(key, fName, semver)
+		if err != nil {
+			errorDispatch(err, "%s", err)
+			return C.int(0)
+		}
+		err = os.WriteFile(fName, src, 0666)
+		if err != nil {
+			errorDispatch(err, "%s", err)
+			return C.int(0)
+		}
+	}
+	return C.int(1)
+}
+
+
+// prune removes an attachment by basename from a JSON object in the
+// collection. This is destructive, the file is removed from disc. 
+// NOTE: If the collection is versioned prune removes ALL versions!!!
+//
+//export prune
+func prune(cName *C.char, cKey *C.char, cFNames *C.char) C.int {
+	collectionName := C.GoString(cName)
+	key := C.GoString(cKey)
 	srcFNames := C.GoString(cFNames)
 	fNames := []string{}
 	if len(srcFNames) > 0 {
@@ -1513,11 +1564,7 @@ func prune(cName *C.char, cKey *C.char, cSemver *C.char, cFNames *C.char) C.int 
 		return C.int(1)
 	} 
 	for i, fName := range fNames {
-		if semver != "" {
-			err = c.PruneVersion(key, fName, semver)
-		} else {
-			err = c.Prune(key, fName)
-		}
+		err = c.Prune(key, fName)
 		if err != nil {
 			errorDispatch(err, "%s (%d) %s", fName, i, err)
 			return C.int(0)
@@ -1816,15 +1863,46 @@ func get_codemeta(cName *C.char) *C.char {
 	return C.CString(txt)
 }
 
-// get_version will rerturn the dataset "version" used to create/manage the collection. If want a version associated with the collection itself see the codemeta.json file in the root folder of the collection.
+// set_versioning sets the versioning on a collection. versioning value
+// can be "", "none",  "patch", /"minor", "major".
 //
-//export get_version
-func get_version(cName *C.char) *C.char {
+//export set_versioning
+func set_versioning(cName *C.char, cVersioning *C.char) C.int {
+	collectionName := C.GoString(cName)
+	versioning := C.GoString(cVersioning)
+	c, err := GetCollection(collectionName)
+	if err != nil {
+		errorDispatch(err, "error getting %q, %s", collectionName, err)
+		return C.int(0)
+	}
+	switch versioning {
+		case "":
+			c.Versioning = ""
+		case "none":
+			c.Versioning = ""
+		case "major":
+			c.Versioning = "major"
+		case "minor":
+			c.Versioning = "minor"
+		case "patch":
+			c.Versioning = "patch"
+		default:
+			errorDispatch(err, "%q is not a valid versioning method", versioning)
+			return C.int(0)
+	}
+	return C.int(1)
+}
+
+// get_versioning will returns the versioning setting (e.g. "", "patch",
+// "minor", "major") on a collection.
+//
+//export get_versioning
+func get_versioning(cName *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	txt := ""
 	c, err := GetCollection(collectionName)
 	if err == nil {
-		txt = c.DatasetVersion
+		txt = c.Versioning
 	}
 	return C.CString(txt)
 }

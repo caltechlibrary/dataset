@@ -19,19 +19,28 @@
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
-import sys
+import sys, platform
 import os
 import json
 from ctypes import *
 
 # Figure out shared library extension
 lib_basename = 'libdataset'
+cpu = 'amd64'
 ext = '.so'
 if sys.platform.startswith('win'):
+    cpu = 'amd64'
     ext = '.dll'
 if sys.platform.startswith('darwin'):
-    ext = '.dylib'
+    #M1 mac uses a special dylib
+    if platform.processor() == 'arm':
+        cpu = 'arm64'
+        ext = '.dylib'
+    else:
+        cpu = 'amd64'
+        ext = '.dylib'
 if sys.platform.startswith('linux'):
+    cpu = 'amd64'
     ext = '.so'
 
 # Find our shared library and load it
@@ -76,10 +85,15 @@ libdataset.close_all_collections.restype = c_bool
 libdataset.create_object.argtypes = [c_char_p, c_char_p, c_char_p]
 libdataset.create_object.restype = c_bool
 
-# Args: collection_name (string), key (string), clean_object (bool)
-libdataset.read_object.argtypes = [ c_char_p, c_char_p, c_bool ]
+# Args: collection_name (string), key (string)
+libdataset.read_object.argtypes = [ c_char_p, c_char_p ]
 # Returns: value (JSON source)
 libdataset.read_object.restype = c_char_p
+
+# Args: collection_name (string), key (string), semver (string)
+libdataset.read_object_version.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# REturns: value (JSON source)
+libdataset.read_object_version.restype = c_char_p
 
 # Args: collection_name (string), key (string), value (JSON sourc)
 libdataset.update_object.argtypes = [ c_char_p, c_char_p, c_char_p ]
@@ -166,8 +180,8 @@ libdataset.repair_collection.argtypes = [ c_char_p ]
 # Returns: true (1), false (0)
 libdataset.repair_collection.restype = c_bool
 
-# Args: collection_name (string), key (string), semver (string), filenames (string)
-libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), filenames (string)
+libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
 libdataset.attach.restype = c_bool
 
@@ -175,13 +189,18 @@ libdataset.attach.restype = c_bool
 libdataset.attachments.argtypes = [ c_char_p, c_char_p ]
 libdataset.attachments.restype = c_char_p
 
-# Args: collection_name (string), key (string), semver (string), basename (string)
-libdataset.detach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), basename (string)
+libdataset.detach.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
 libdataset.detach.restype = c_bool
 
-# Args: collection_name (string), key (string), semver (string) basename (string)
-libdataset.prune.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), semver (string), basename (string)
+libdataset.detach_version.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Returns: true (1), false (0)
+libdataset.detach_version.restype = c_bool
+
+# Args: collection_name (string), key (string), basename (string)
+libdataset.prune.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: true (1), false (0)
 libdataset.prune.restype = c_bool
 

@@ -758,6 +758,40 @@ func (c *Collection) ReadJSON(key string) ([]byte, error) {
 	return src, nil
 }
 
+// ReadJSONVersion retrieves versioned JSON record stored in a
+// dataset collection for a given key and semver.
+// NOTE: It does not validate the JSON
+//
+// ```
+//
+//	key := "123"
+//  semver := "0.0.2"
+//	src, err := c.ReadVersionJSON(key, semver)
+//  if err != nil {
+//	   // ... handle error
+//	}
+//
+// ```
+func (c *Collection) ReadJSONVersion(key string, semver string) ([]byte, error) {
+	var (
+		src []byte
+		err error
+	)
+	switch c.StoreType {
+	case PTSTORE:
+		src, err = c.PTStore.ReadVersion(key, semver)
+	case SQLSTORE:
+		src, err = c.SQLStore.ReadVersion(key, semver)
+	default:
+		return nil, fmt.Errorf("%q not supported", c.StoreType)
+	}
+	if err != nil {
+		return src, fmt.Errorf("failed to read %s, %s", key, err)
+	}
+	return src, nil
+}
+
+
 // Versions retrieves a list of versions available for a JSON document if
 // versioning is enabled for the collection.
 //
@@ -1027,7 +1061,7 @@ func (c *Collection) Keys() ([]string, error) {
 func (c *Collection) UpdatedKeys(start string, end string) ([]string, error) {
 	switch c.StoreType {
 	case PTSTORE:
-		return nil, fmt.Errorf("not implemented for pairtree storaged")
+		return nil, fmt.Errorf("not implemented for pairtree storage")
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.UpdatedKeys(start, end)

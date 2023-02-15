@@ -35,24 +35,19 @@ or from standard input.
 help will give documentation of help on a verb, e.g.\ \[lq]help
 create\[rq]
 .IP \[bu] 2
-create, creates a new document in the collection
+create, creates a new JSON document in the collection
 .IP \[bu] 2
-read, retrieves a document from the collection writing it standard out
+read, retrieves the \[lq]current\[rq] version of a JSON document from
+the collection writing it standard out
 .IP \[bu] 2
-update, updates a document in the collection
+update, updates a JSON document in the collection
 .IP \[bu] 2
-delete, removes a document from the collection
+delete, removes all versions of a JSON document from the collection
 .IP \[bu] 2
-list, returns a list of keys in the collection
+keys, returns a list of keys in the collection
 .IP \[bu] 2
 codemeta, copies metadata a codemeta file and updates the collections
 metadata
-.IP \[bu] 2
-info, returns the metadata associated with collection
-.IP \[bu] 2
-import, imports another collecting into the current one
-.IP \[bu] 2
-export, exports the collection into another collection
 .IP \[bu] 2
 attach, attaches a document to a JSON object record
 .IP \[bu] 2
@@ -62,10 +57,15 @@ retrieve, creates a copy local of an attachement in a JSON record
 .IP \[bu] 2
 prune, removes and attachment from a JSON record
 .IP \[bu] 2
-frames, lists the frames defined in a collection
+frame-names, lists the frames defined in a collection
 .IP \[bu] 2
-frame, will add a data frame to a collection if a definition is provided
-or return an existing frame if just the frame name is provided
+frame, will add a data frame to a collection
+.IP \[bu] 2
+frame-def will return the definition of a frame
+.IP \[bu] 2
+frame-keys will retrieve the object keys in a frame
+.IP \[bu] 2
+frame-objects will retrieve the object list in a frame
 .IP \[bu] 2
 reframe, will recreate a frame using its existing definition but
 replacing objects based on a new set of keys provided
@@ -83,19 +83,16 @@ attachments, will list any attachments for a JSON document
 .IP \[bu] 2
 attach, will add an attachment to a JSON document
 .IP \[bu] 2
-retrieve, will copy out the attachment to a JSON document into the
-current directory
+detach, will copy out the attachment to a JSON document into the current
+directory
 .IP \[bu] 2
-prune, will remove an attachment from the JSON document
+prune, will remove all versions of an attachment from the JSON document
 .IP \[bu] 2
-versions, will list the versions known for a JSON document if versioning
-is enabled for collection
+set-versioning, will set the versioning of a collection, versioning
+value can be \[lq]\[lq],\[rq]none\[rq], \[lq]major\[rq],
+\[lq]minor\[rq], or \[lq]patch\[rq]
 .IP \[bu] 2
-read-version, will return a specific version of a JSON document if
-versioning is enabled for collection
-.IP \[bu] 2
-versioning, will set the versioning of a collection, can be
-\[lq]none\[rq], \[lq]major\[rq], \[lq]minor\[rq], or \[lq]patch\[rq]
+get-versioning, will display the versioning setting for a collection
 .PP
 A word about \[lq]keys\[rq].
 dataset uses the concept of key/values for storing JSON documents where
@@ -113,7 +110,7 @@ Originally all options came after the command name, now they tend to
 come after the verb itself.
 This is because context counts in trying to remember options (at least
 for the authors of dataset).
-The are three \[lq]GLOBAL_OPTIONS\[rq] that are exception and they are
+There are three \[lq]GLOBAL_OPTIONS\[rq] that are exception and they are
 \f[V]-version\f[R], \f[V]-help\f[R] and \f[V]-license\f[R].
 All other options come after the verb and apply to the specific action
 the verb implements.

@@ -29,7 +29,7 @@ ifeq ($(OS), Linux)
 	OS = linux
 endif
 ifeq ($(ARCH), i386)
-	ARCH = amd64
+	ARCH = amd32
 endif
 ifeq ($(ARCH), x86_64)
 	ARCH = amd64
@@ -52,6 +52,13 @@ clean:
 	@if [ -f "$(LIB_NAME).dll" ]; then rm "$(LIB_NAME).dll"; fi
 	@if [ -f "$(LIB_NAME).dylib" ]; then rm "$(LIB_NAME).dylib"; fi
 	@if [ -f "$(LIB_NAME).so" ]; then rm "$(LIB_NAME).so"; fi
+	@if [ -f "$(LIB_NAME)-amd64.dll" ]; then rm "$(LIB_NAME)-amd64.dll"; fi
+	@if [ -f "$(LIB_NAME)-arm64.dll" ]; then rm "$(LIB_NAME)-arm64.dll"; fi
+	@if [ -f "$(LIB_NAME)-amd64.dylib" ]; then rm "$(LIB_NAME)-amd64.dylib"; fi
+	@if [ -f "$(LIB_NAME)-arm64.dylib" ]; then rm "$(LIB_NAME)-arm64.dylib"; fi
+	@if [ -f "$(LIB_NAME)-amd32.so" ]; then rm "$(LIB_NAME)-amd32.so"; fi
+	@if [ -f "$(LIB_NAME)-amd64.so" ]; then rm "$(LIB_NAME)-amd64.so"; fi
+	@if [ -f "$(LIB_NAME)-arm64.so" ]; then rm "$(LIB_NAME)-arm64.so"; fi
 	@if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
 	@if [ -d "dist" ]; then rm -fR dist; fi
 	@if [ -d "testout" ]; then rm -fR testout; fi
@@ -72,9 +79,9 @@ release: $(LIB_NAME)$(EXT)
 	cp README.md dist/
 	cp INSTALL.md dist/
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
-	cp -v $(LIB_NAME)$(EXT) dist/
+	cp -v $(LIB_NAME)$(EXT) dist/$(LIB_NAME)-$(ARCH)$(EXT)
 	cp -v $(LIB_NAME).h dist/
-	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h  codemeta.json CITATION.cff README.md LICENSE INSTALL.md
+	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)-$(ARCH)$(EXT) $(LIB_NAME).h  codemeta.json CITATION.cff README.md LICENSE INSTALL.md
 
 
 .FORCE:

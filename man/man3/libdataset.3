@@ -270,11 +270,13 @@ frame_grid takes a frames object list and returns a grid (2D JSON array)
 representation of the object list.
 If the \[lq]header row\[rq] value is 1 a header row of labels is
 included, otherwise it is only the values of returned in the grid.
-.SS get_version
+.SS get_versioning
 .PP
-get_version will get the dataset \[lq]version\[rq] used to create or
-manage the collection.
-To get the metadata version of the collection itself see codemeta.json
-in the collection\[cq]s root folder.
+get_version will get the dataset \[lq]versioning\[rq] setting.
+.SS set_versioning
+.PP
+This will setting the versioning on a collection.
+The settings can be \[lq]\[lq],\[rq]none\[rq], \[lq]patch\[rq],
+\[lq]minor\[rq], \[lq]major\[rq].
 .SH AUTHORS
 R. S. Doiel.

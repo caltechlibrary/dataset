@@ -115,12 +115,29 @@ def create(collection_name, key, value):
     return error_message()
     
 # Read a JSON record from a Dataset collection
-def read(collection_name, key, clean_object = False):
+def read(collection_name, key):
     '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
     if not isinstance(key, str) == True:
         key = f"{key}"
     value = libdataset.read_object(c_char_p(collection_name.encode('utf8')), 
-            c_char_p(key.encode('utf8')), clean_object)
+            c_char_p(key.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    rval = value.decode()
+    if type(rval) is str:
+        if rval == "":
+            return {}, error_message()
+        return json.loads(rval), ''
+    return {}, f"Can't read {key} from {collection_name}, {error_message()}"
+    
+
+# read_version reads a JSON record from a Dataset collection using
+# key and semver
+def read_version(collection_name, key, semver):
+    '''read a JSON record from a collection with the given key and semver, returns a dict and an error string'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
+    value = libdataset.read_object(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
@@ -244,13 +261,11 @@ def check(collection_name):
 def repair(collection_name):
     return libdataset.repair_collection(c_char_p(collection_name.encode('utf8')))
 
-def attach(collection_name, key, filenames = [], semver = ''):
-    if semver == '':
-        semver = 'v0.0.0'
+def attach(collection_name, key, filenames = []):
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
-    return libdataset.attach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
+    return libdataset.attach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(srcFNames))
     
 def attachments(collection_name, key):
     value = libdataset.attachments(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')))
@@ -261,21 +276,25 @@ def attachments(collection_name, key):
         return s.split("\n")
     return ''
 
-def detach(collection_name, key, filenames = [], semver = ''):
+def detach(collection_name, key, filenames = []):
     '''Get attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to get all attachments'''
-    #if semver == '':
-    #    semver = 'v0.0.0'
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
-    return libdataset.detach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
+    return libdataset.detach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(srcFNames))
 
-def prune(collection_name, key, filenames = [], semver = ''):
+def detach_version(collection_name, key, filenames = [], semver = ''):
+    '''Get attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to get all attachments'''
+    srcFNames = json.dumps(filenames)
+    if not isinstance(srcFNames, bytes):
+        srcFNames = srcFNames.encode('utf8')
+    return libdataset.detach_version(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
+
+
+def prune(collection_name, key, filenames = []):
     '''Delete attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to delete all attachments'''
-    #if semver == '':
-    #    semver = 'v0.0.0'
     fnames = json.dumps(filenames).encode('utf8')
-    return libdataset.prune(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(fnames))
+    return libdataset.prune(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(fnames))
 
 def join(collection_name, key, obj = {}, overwrite = False):
     src = json.dumps(obj).encode('utf8')

@@ -286,7 +286,12 @@ frame_grid takes a frames object list and returns a grid
 If the "header row" value is 1 a header row of labels is
 included, otherwise it is only the values of returned in the grid.
 
-## get_version
+## get_versioning
 
-get_version will get the dataset "version" used to create or manage the collection. To get the metadata version of the collection itself see codemeta.json in the collection's root folder.
+get_version will get the dataset "versioning" setting.
+
+## set_versioning
+
+This will setting the versioning on a collection. The settings can be 
+"", "none", "patch", "minor", "major".
 

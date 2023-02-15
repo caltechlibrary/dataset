@@ -31,7 +31,7 @@ import (
 const (
 	helpText = `---
 title: "{app_name} (1) user manual"
-pubDate: 2023-02-08
+pubDate: 2023-02-14
 author: "R. S. Doiel"
 ---
 
