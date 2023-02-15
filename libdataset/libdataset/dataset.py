@@ -3,6 +3,7 @@
 # libdataset is a wrapper around our C-Shared library of libdataset.go
 # used for testing the C-Shared library functions.
 # 
+# @author Thomas E. (Tom) Morrell
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
 # Copyright (c) 2023, Caltech
@@ -219,13 +220,13 @@ def count(collection_name, filter = ''):
 def import_csv(collection_name, csv_name, id_col, use_header_row = True, overwrite = False):
     if libdataset.import_csv(c_char_p(collection_name.encode('utf8')), 
             c_char_p(csv_name.encode('utf8')), 
-            c_int(id_col), use_header_row, 
-            overwrite):
+            c_int(id_col), c_bool(use_header_row), 
+            c_bool(overwrite)):
         return ''
     return error_message()
 
 #
-# export_csv - export collection objects to a CSV file
+# export_csv - export collection objects as a frame to a CSV file
 # syntax: COLLECTION FRAME CSV_FILENAME
 # 
 # Returns: error string
@@ -424,3 +425,19 @@ def update_objects(collection_name, keys, objects):
     keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
     objects_as_json = c_char_p(json.dumps(objects).encode('utf8'))
     return libdataset.update_objects(c_name, keys_as_json, objects_as_json)
+
+# get_version gets the versioning status of a collection
+# returned values are "", "patch", "minor" or "major"
+# An empty string means the collection isn't using versioning.
+def get_version(collection_name):
+    c_name = c_char_p(collection_name.encode('utf-8'))
+    return libdataset.get_version(c_name)
+
+# set_version sets the versioning status for a collection
+# Accepted values for versioning are  "", "none", "patch",
+# "minor" or "major"
+def set_version(collection_name, versioning = ""):
+    c_name = c_char_p(collection_name.encode('utf-8'))
+    c_versioning = c_char_p(collection_name.encode('utf-8'))
+    return libdataset.set_version(c_name, c_versioning)
+

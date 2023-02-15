@@ -765,7 +765,7 @@ func import_csv(cName *C.char, cCSVFName *C.char, cIDCol C.int, cUseHeaderRow C.
 	return C.int(1)
 }
 
-// export_csv - export collection objects to a CSV file
+// export_csv - export collection objects as a frame to a CSV file
 // syntax: COLLECTION FRAME CSV_FILENAME
 //
 //export export_csv
