@@ -45,6 +45,7 @@ if sys.platform.startswith('linux'):
 
 # Find our shared library and load it
 dir_path = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+# NOTE: we don't both with the CPU for our test library, just keepin it simple
 lib_path = os.path.join(dir_path, lib_basename+ext)
 libdataset = CDLL(lib_path)
 

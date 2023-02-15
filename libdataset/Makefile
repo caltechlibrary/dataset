@@ -8,31 +8,23 @@ VERSION = $(shell grep '"version":' ../codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-ARCH = $(shell uname -m) # x86_64 for Intel, arm64 for M1, arm7 for Pi
+# x86_64 for Intel, arm64 for M1, arm7 for Pi
+ARCH = $(strip $(shell uname -m))
 
 OS = $(shell uname)
 
 EXT = .so
 ifeq ($(OS), Windows)
 	EXT = .dll
-	ARCH = x86_64
-	os = windows
+	OS = windows
 endif
 ifeq ($(OS), Darwin)
 	EXT = .dylib
-	ARCH = $(shell arch)
 	OS = macos
 endif
 ifeq ($(OS), Linux)
 	EXT = .so
-	ARCH = $(shell arch)
 	OS = linux
-endif
-ifeq ($(ARCH), i386)
-	ARCH = amd32
-endif
-ifeq ($(ARCH), x86_64)
-	ARCH = amd64
 endif
 
 USE_SUDO =
@@ -79,6 +71,7 @@ release: $(LIB_NAME)$(EXT)
 	cp README.md dist/
 	cp INSTALL.md dist/
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
+	cp -v $(LIB_NAME)$(EXT) dist/
 	cp -v $(LIB_NAME)$(EXT) dist/$(LIB_NAME)-$(ARCH)$(EXT)
 	cp -v $(LIB_NAME).h dist/
 	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)-$(ARCH)$(EXT) $(LIB_NAME).h  codemeta.json CITATION.cff README.md LICENSE INSTALL.md
