@@ -5,10 +5,12 @@ Action Items
 Bugs
 ----
 
+- [x] `dataset help init` should include examples of forming a dsn for SQL store dataset collections using SQLite3, MySQL and PostgreSQL from docs/init.md
 
 Next (prep for v2.1.1)
 ----------------------
 
+- [ ] Need to add getting updated Man pages using the `dataset help ...` command
 - [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
     - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
 - [ ] Common dataset verbs (dataset/datasetd)
