@@ -26,7 +26,7 @@ $(HTML_PAGES): $(MD_PAGES) .FORCE
 	pandoc --metadata title=$(basename $@) -s --to html5 $(basename $@).md -o $(basename $@).html \
 		--lua-filter=links-to-html.lua \
 	    --template=page.tmpl
-	@if [ $@ = "README.html" ]; then mv README.html index.html; fi
+	@if [ $@ = "README.html" ]; then mv README.html index.html; git add index.html; fi
 
 $(HTML_DOCS_PAGES): $(MD_DOCS_PAGES) .FORCE
 	pandoc --metadata title=$(basename $@) -s --to html5 $(basename $@).md -o $(basename $@).html \
