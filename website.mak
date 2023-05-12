@@ -20,7 +20,7 @@ MD_LIB_PAGES = $(shell ls -1 libdataset/*.md)
 HTML_LIB_PAGES = $(shell ls -1 libdataset/*.md | sed -E 's/\.md/.html/g')
 
 
-build: $(HTML_PAGES) $(MD_PAGES) $(HTML_DOCS_PAGES) $(MD_DOCS_PAGES) $(HTML_HOWTO_PAGES) $(MD_HOWTO_PAGES) pagefind
+build: $(HTML_PAGES) $(MD_PAGES) $(HTML_DOCS_PAGES) $(MD_DOCS_PAGES) $(HTML_HOWTO_PAGES) $(MD_HOWTO_PAGES) $(HTML_LIB_PAGES) $(MD_LIB_PAGES) pagefind
 	@for FNAME in $(HTML_PAGES); do git add "$$FNAME"; done
 	@for FNAME in $(HTML_DOCS_PAGES); do git add "$$FNAME"; done
 	@for FNAME in $(HTML_HOWTO_PAGES); do git add "$$FNAME"; done
