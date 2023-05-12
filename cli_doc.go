@@ -422,7 +422,7 @@ Syntax
 ------
 
 ~~~shell
-    {app_name} init COLLECTION_NAME
+    dataset init COLLECTION_NAME [DSN_URI]
 ~~~
 
 Description
@@ -438,12 +438,33 @@ The following example command create a dataset collection
 named "data.ds".
 
 ~~~shell
-    {app_name} init data.ds
+    dataset init data.ds
 ~~~
 
-NOTE: After each evocation of ` + "`{app_name} init`" + ` if all went well 
-you will be shown an ` + "`OK`" + ` if everything went OK, otherwise
+NOTE: After each evocation of `+"`"+`dataset init`+"`"+` if all went well 
+you will be shown an `+"`"+`OK`+"`"+` if everything went OK, otherwise
 an error message. 
+
+By default dataset cli creates pairtree collections. You can now optionally 
+store your documents in a SQL database (e.g. SQLite3, MySQL 8). This can
+improve performance for large collections as well as support multi-user or
+multi-process concurrent use of a collection. To use a SQL storage engine
+you need to provide a "DSN_URI". The DSN_URI is formed by setting the "protocl" of the URL to either "sqlite://" or "mysql://" followed by a DSN
+(data source name) as described by the database/sql package in Go.
+
+This examples shows using SQLite3 storage for the JSON documents in
+a "collection.db" stored inside the "data.ds" collection.
+
+~~~shell
+    dataset init data.ds "sqlite://collection.db"
+~~~
+
+Here's a variation using MySQL 8 as the storage engine storing the
+collection in the "collections" database.
+
+~~~shell
+    dataset init data.ds "mysql://DB_USER:DB_PASSWORD@/collections"
+~~~
 
 `
 
@@ -458,20 +479,31 @@ version number). The implementation details are based on the storage engine.
 
 The versioning can be set to increment on the patch, minor or major 
 semver values creating or updating a JSON document or attachment.  The 
-value before creation is assumed to be "0.0.0". 
+value before creation is assumed to be "0.0.0". If versioning is enabled
+it is automatically applied. 
 
-To return a list of JSON documents versions stored use the "versions"
-verb. This will return a list of version numbers available for a given
-key. To read a specific version of a JSON document use the "read-version"
-verb which takes a key and a semver version string.
-create a copy of the JSON document or attachment using a semver 
-then and
+Directly working with versioned documents or attachments requires writing
+programs and using the Go dataset package or libdataset C-shared library.
+
+Examples
+--------
+
+This example shows how to create a collection (versioning is turned
+off by default). Setting patch level versioning, showing the versioning
+setting and repeat for "minor", "major" and turning off versioning in the
+collection.
 
 ~~~shell
-  # List versions in the data.ds collection for key "123"
-  {app_name} versions data.ds 123
-  # To read a specific vesion, e.g. 0.0.3
-  {app_name} version data.ds 123 0.0.3
+   CNAME="mycollection.ds"
+   {app_name} init $CNAME
+   {app_name} set_versioning $CNAME patch
+   {app_name} get_versioning $CNAME
+   {app_name} set_versioning $CNAME minor
+   {app_name} get_versioning $CNAME
+   {app_name} set_versioning $CNAME major
+   {app_name} get_versioning $CNAME
+   {app_name} set_versioning $CNAME none
+   {app_name} get_versioning $CNAME
 ~~~
 
 `

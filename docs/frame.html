@@ -1,119 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="frame">
-frame
-</h1>
-<p>
-This command will define a data frame or return the contents and
+<h1 id="frame">frame</h1>
+<p>This command will define a data frame or return the contents and
 metadata of a defined frame. To define a new frame you need to provide a
 collection name, a frame name followed by a list of dotpath/label pairs.
 The labels are used as object attribute names and the dot paths as the
-source of data. You also need a list of keys.<br /> By default the keys
-are read from standard input. With options you can include a specific
-file or even indicate to use all the keys in a collection. In this
-example we are creating a frame called “title-authors-year” based on the
-titles, authors and publication year from a dataset collection called
-<code>pubs.ds</code>. Note the labels of “Title”, “Authors”, “PubYear”
-are on the right side the an equal sign and the dot paths to the left.
-</p>
+source of data. You also need a list of keys.<br />
+By default the keys are read from standard input. With options you can
+include a specific file or even indicate to use all the keys in a
+collection. In this example we are creating a frame called
+"title-authors-year" based on the titles, authors and publication year
+from a dataset collection called <code>pubs.ds</code>. Note the labels
+of "Title", "Authors", "PubYear" are on the right side the an equal sign
+and the dot paths to the left.</p>
 <pre class="shell"><code>    dataset keys pubs.ds |\
         dataset frame pubs.ds &quot;title-authors-year&quot; \
                 &quot;.title=Title&quot; \
                 &quot;.authors=Authors&quot; \
                 &quot;.publication_year=PubYear&quot;</code></pre>
-<p>
-The objects in the frame’s object list will look like
-</p>
-<div id="cb2" class="sourceCode">
-<pre
+<p>The objects in the frame's object list will look like</p>
+<div class="sourceCode" id="cb2"><pre
 class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;Title&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;Authors&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;PubYear&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre>
-</div>
-<p>
-This allows you to create convenient names for otherwise deep dot paths.
-</p>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>This allows you to create convenient names for otherwise deep dot
+paths.</p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

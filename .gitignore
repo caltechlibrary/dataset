@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+*.dylib
 
 # Folders
 _obj
@@ -31,16 +32,17 @@ _testmain.go
 *.db
 *.ds
 etc/*
-dist/*
+dist
 testout
 bin/*
 demos/*
 *.swp
-*.ds
 test*.json
 *.bak
 *.pdf
-man
 settings.json
 pandoc.*.json
 _codemeta.json
+dist
+libdataset/*.h
+__pycache__

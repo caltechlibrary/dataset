@@ -1,129 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="keys">
-keys
-</h1>
-<h2 id="syntax">
-Syntax
-</h2>
+<h1 id="keys">keys</h1>
+<h2 id="syntax">Syntax</h2>
 <pre class="shell"><code>    dataset keys COLLECTION_NAME</code></pre>
-<h2 id="description">
-Description
-</h2>
-<p>
-List the JSON_DOCUMENT_ID available in a collection. Key order is not
+<h2 id="description">Description</h2>
+<p>List the JSON_DOCUMENT_ID available in a collection. Key order is not
 guaranteed. Keys are forced to lower case when the record is created in
 the dataset (as of version 1.0.2). Note combining “keys” with a pipe and
 POSIX commands like “sort” can given a rich pallet of ways to work with
-your dataset collection’s keys.
-</p>
-<h2 id="examples">
-Examples
-</h2>
-<p>
-Here are three examples usage. Notice the sorting is handled by the
+your dataset collection’s keys.</p>
+<h2 id="examples">Examples</h2>
+<p>Here are three examples usage. Notice the sorting is handled by the
 POSIX sort command which lets you sort ascending or descending including
-sorting number strings.
-</p>
+sorting number strings.</p>
 <pre class="shell"><code>    dataset keys COLLECTION_NAME
     dataset keys COLLECTION_NAME | sort
     dataset keys COLLECTION_NAME | sort -n</code></pre>
-<h2 id="getting-a-sample-of-keys">
-Getting a “sample” of keys
-</h2>
-<p>
-The <strong>dataset</strong> command respects an option named
+<h2 id="getting-a-sample-of-keys">Getting a “sample” of keys</h2>
+<p>The <strong>dataset</strong> command respects an option named
 <code>-sample N</code> where N is the size (number) of the keys to
 include in the sample. The sample is taken after any filters are applied
 but may be less than requested size if the the filtered results are few
 than the sample size. The basic process is to get a set of keys,
-randomly sort the keys, then return the top N number of those keys.
-</p>
-<p>
-Related topics: <a href="count.html">count</a>, <a
+randomly sort the keys, then return the top N number of those keys.</p>
+<p>Related topics: <a href="count.html">count</a>, <a
 href="clone">clone</a>, <a href="clone-sample.html">clone-sample</a>, <a
 href="frame.html">frame</a>, <a href="frame-grid.html">frame-grid</a>,
-<a href="frame-objects.html">frame-objects</a>
-</p>
+<a href="frame-objects.html">frame-objects</a></p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

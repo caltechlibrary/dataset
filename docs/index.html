@@ -1,284 +1,187 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="dataset">
-dataset
-</h1>
-<p>
-The documentation is organized around the command line options and as a
-series of “how to” style examples.
-</p>
+<h1 id="dataset">dataset</h1>
+<p>The documentation is organized around the command line options and as
+a series of “how to” style examples.</p>
 <ul>
-<li>
-<a href="../how-to/getting-started-with-dataset.html">getting started
-with dataset</a> (covers both Bash and Python)
-</li>
-<li>
-Explore additional other <a href="../how-to/">tutorials</a>
-</li>
+<li><a href="../how-to/getting-started-with-dataset.html">getting
+started with dataset</a> (covers both Bash and Python)</li>
+<li>Explore additional other <a href="../how-to/">tutorials</a></li>
 </ul>
-<h2 id="command-line-program-documentation">
-Command line program documentation
-</h2>
+<h2 id="command-line-program-documentation">Command line program
+documentation</h2>
 <ul>
-<li>
-<a href="dataset.html">dataset</a> - usage page for managing collections
-with <em>dataset</em>
-</li>
+<li><a href="dataset.html">dataset</a> - usage page for managing
+collections with <em>dataset</em></li>
 </ul>
-<h2 id="internal-project-concepts">
-Internal project concepts
-</h2>
+<h2 id="internal-project-concepts">Internal project concepts</h2>
 <ul>
-<li>
-<a href="../how-to/upgrading-a-collection.html">upgrading a
+<li><a href="../how-to/upgrading-a-collection.html">upgrading a
 collection</a> - Describes how to upgrade a collection from a previous
-version of dataset to a new one
-</li>
-<li>
-<a href="../how-to/how-attachments-work.html">how attachments work</a> -
-Detailed description of attachments and their metadata
-</li>
+version of dataset to a new one</li>
+<li><a href="../how-to/how-attachments-work.html">how attachments
+work</a> - Detailed description of attachments and their metadata</li>
 </ul>
-<h2 id="dataset-operations">
-<strong>dataset</strong> Operations
-</h2>
-<p>
-The basic operations support by <em>dataset</em> are listed below
-organized by collection and JSON document level.
-</p>
-<h2 id="a-word-about-keys">
-A word about keys
-</h2>
-<p>
-<strong>dataset</strong> is based around the concept of key/value pairs
-where the key is the unique identifier for an object stored (i.e. the
-value) in the collection. Each storage option supported by dataset and
-its own issues around what things can be called. <strong>Keys should be
-lower case alpha numeric or underscore only.</strong> E.g. the pairtree
-storage relies on the file system to store the JSON objects. Some file
-systems are not case sensitive, others face challenges with non-alpha
-numeric filenames.
-</p>
-<h2 id="collection-level">
-Collection Level
-</h2>
+<h2 id="dataset-operations"><strong>dataset</strong> Operations</h2>
+<p>The basic operations support by <em>dataset</em> are listed below
+organized by collection and JSON document level.</p>
+<h2 id="a-word-about-keys">A word about keys</h2>
+<p><strong>dataset</strong> is based around the concept of key/value
+pairs where the key is the unique identifier for an object stored
+(i.e. the value) in the collection. Each storage option supported by
+dataset and its own issues around what things can be called.
+<strong>Keys should be lower case alpha numeric or underscore
+only.</strong> E.g. the pairtree storage relies on the file system to
+store the JSON objects. Some file systems are not case sensitive, others
+face challenges with non-alpha numeric filenames.</p>
+<h2 id="collection-level">Collection Level</h2>
 <ul>
-<li>
-<a href="init.html">init</a> creates a collection
-</li>
-<li>
-<a href="keys.html">keys</a> list keys of JSON documents in a
-collection, supports filtering and sorting
-</li>
-<li>
-<a href="haskey.html">has-key</a> returns true if key is found in
-collection, false otherwise
-</li>
-<li>
-<a href="count.html">count</a> returns the number of documents in a
-collection, supports filtering for subsets
-</li>
-<li>
-<a href="../how-to/collections-and-data-frames.html">data frame
+<li><a href="init.html">init</a> creates a collection</li>
+<li><a href="keys.html">keys</a> list keys of JSON documents in a
+collection, supports filtering and sorting</li>
+<li><a href="haskey.html">has-key</a> returns true if key is found in
+collection, false otherwise</li>
+<li><a href="count.html">count</a> returns the number of documents in a
+collection, supports filtering for subsets</li>
+<li><a href="../how-to/collections-and-data-frames.html">data frame
 support</a> provides a persistent metadata associated with the
 collection as data frames
 <ul>
-<li>
-<a href="frame.html">frame</a>
-</li>
-<li>
-<a href="frame-objects.html">frame-objects</a>
-</li>
-<li>
-<a href="frames.html">frames</a>
-</li>
-<li>
-<a href="refresh.html">refresh</a>
-</li>
-<li>
-<a href="reframe.html">reframe</a>
-</li>
-<li>
-<a href="delete-frame.html">delete-frame</a>
-</li>
-<li>
-<a href="hasframe.html">has-frame</a>
-</li>
+<li><a href="frame.html">frame</a></li>
+<li><a href="frame-objects.html">frame-objects</a></li>
+<li><a href="frames.html">frames</a></li>
+<li><a href="refresh.html">refresh</a></li>
+<li><a href="reframe.html">reframe</a></li>
+<li><a href="delete-frame.html">delete-frame</a></li>
+<li><a href="hasframe.html">has-frame</a></li>
+</ul></li>
 </ul>
-</li>
-</ul>
-<h2 id="json-document-level">
-JSON Document level
-</h2>
+<h2 id="json-document-level">JSON Document level</h2>
 <ul>
-<li>
-<a href="create.html">create</a> a JSON document in a collection
-</li>
-<li>
-<a href="read.html">read</a> back a JSON document in a collection
-</li>
-<li>
-<a href="update.html">update</a> a JSON document in a collection
-</li>
-<li>
-<a href="delete.html">delete</a> a JSON document in a collection
-</li>
+<li><a href="create.html">create</a> a JSON document in a
+collection</li>
+<li><a href="read.html">read</a> back a JSON document in a
+collection</li>
+<li><a href="update.html">update</a> a JSON document in a
+collection</li>
+<li><a href="delete.html">delete</a> a JSON document in a
+collection</li>
 </ul>
-<h2 id="json-document-attachments">
-JSON Document Attachments
-</h2>
+<h2 id="json-document-attachments">JSON Document Attachments</h2>
 <ul>
-<li>
-<a href="attach.html">attach</a> a file to a JSON document in a
-collection
-</li>
-<li>
-<a href="attachments.html">attachments</a> lists the files attached to a
-JSON document in a collection
-</li>
-<li>
-<a href="retrieve.html">retrieve</a> retrieve an attached file
-associated with a JSON document in a collection
-</li>
-<li>
-<a href="prune.html">prune</a> delete one or more attached files of a
-JSON document in a collection
-</li>
+<li><a href="attach.html">attach</a> a file to a JSON document in a
+collection</li>
+<li><a href="attachments.html">attachments</a> lists the files attached
+to a JSON document in a collection</li>
+<li><a href="retrieve.html">retrieve</a> retrieve an attached file
+associated with a JSON document in a collection</li>
+<li><a href="prune.html">prune</a> delete one or more attached files of
+a JSON document in a collection</li>
 </ul>
-<h2 id="samples-and-cloning">
-Samples and cloning
-</h2>
+<h2 id="samples-and-cloning">Samples and cloning</h2>
 <ul>
-<li>
-<a href="sample.html">sample</a> - getting a random sample of keys
-</li>
-<li>
-<a href="clone.html">clone</a> - clone a repository
-</li>
-<li>
-<a href="clone-sample.html">clone-sample</a> - cloning a repository into
-training and test collections
-</li>
+<li><a href="sample.html">sample</a> - getting a random sample of
+keys</li>
+<li><a href="clone.html">clone</a> - clone a repository</li>
+<li><a href="clone-sample.html">clone-sample</a> - cloning a repository
+into training and test collections</li>
 </ul>
-<h2 id="collection-health">
-Collection health
-</h2>
-<p>
-The following commands are provided to support pairtrees and a limitted
-amount of backward campatiblity with v1 dataset collections.
-</p>
+<h2 id="collection-health">Collection health</h2>
+<p>The following commands are provided to support pairtrees and a
+limitted amount of backward campatiblity with v1 dataset
+collections.</p>
 <ul>
-<li>
-<a href="check.html">check</a> - checks a collection against the current
-version of tools
-</li>
-<li>
-<a href="repair.html">repair</a> - repairs/upgrades a collection based
-on the current version of the tool
-</li>
+<li><a href="check.html">check</a> - checks a collection against the
+current version of tools</li>
+<li><a href="repair.html">repair</a> - repairs/upgrades a collection
+based on the current version of the tool</li>
 </ul>
-<h1 id="datasetd-as-a-web-service">
-datasetd as a web service
-</h1>
-<p>
-New as of version v2.x is a web service providing access to dataset
+<h1 id="datasetd-as-a-web-service">datasetd as a web service</h1>
+<p>New as of version v2.x is a web service providing access to dataset
 collections. This is described in the <a
-href="datasetd.html">datasetd</a> documentation page.
-</p>
-<p>
-<a href="datasetd.html">datasetd</a> supports the following end points.
-</p>
-<h1 id="storage-engines">
-Storage engines
-</h1>
-<p>
-In v2 dataset is starting to suport storing your JSON document in a SQL
-database. This is an experimental feature and likely to contain some
+href="datasetd.html">datasetd</a> documentation page.</p>
+<p><a href="datasetd.html">datasetd</a> supports the following end
+points.</p>
+<h1 id="storage-engines">Storage engines</h1>
+<p>In v2 dataset is starting to suport storing your JSON document in a
+SQL database. This is an experimental feature and likely to contain some
 surprises in the 2.0 series implementation. Currently three SQL
 databases can be used to store the JSON documents, SQLite 3 (used in
 dataset’s test suites), MySQL 8 (used by some related projects but under
 tested), Postgres 14 (not tested yet). See <a
-href="storage-engines.html">storage engines</a> for more details.
-</p>
+href="storage-engines.html">storage engines</a> for more details.</p>
+<h1 id="compatibity">Compatibity</h1>
+<p>As of 2.1 a minimal level of backward dataset v1.1 was added. This
+includes support for libdataset, a C-shared library. The goal in adding
+support for v1.1 was to facilate migration in the Caltech Library feeds
+project. Some features in v1.1 are not available and the features
+recreated from v1.1 were done so in a way that maintains the approach of
+v2. Aside from continuing support for libdataset the specific v1.1
+features will likely be depreciated over time in the name of keeping the
+project as simple as possible maintaining focus on the core benefits of
+dataset versus other JSON store systems.</p>
+<h2 id="what-was-left-out">What was left out</h2>
+<p>The methods related to Namaste data have not be implememented as v2
+of dataset uses a codemeta.json file for collection metadata. E.g.
+<code>Who</code>, <code>Where</code>, <code>Location</code>,
+<code>Contact</code>.</p>
+<p>The methods <code>KeySort</code> and <code>KeyFilter</code> are not
+included.</p>
+<h2 id="changed-behavior">Changed behavior</h2>
+<p>The <code>DocPath</code> method returns a full path to the JSON
+documented stored in a Pairtree collection. If the collection uses an
+SQL store then you will get an empty string and an error indicating that
+storage type is not supported by <code>DocPath</code>.</p>
+<p>The <code>Keys</code> method returns a list of keys (slice of
+strings) and an error value.</p>
+<h2 id="method-name-changes">Method name changes</h2>
+<p>The following methods were normalized to conform with Go idioms in
+the standard library.</p>
+<ul>
+<li><code>KeyExists</code> became <code>HasKey</code></li>
+<li><code>FrameExists</code> became <code>HasFrame</code></li>
+</ul>
+<p>The methods for working with versioned content have the order of the
+parameters revised, basically semver is now the last paramter.</p>
+<h2 id="changes-method-signatures">Changes method signatures</h2>
+<p>Do to the changes in how keys and attachments are handled in v2 you
+don’t need to “santize” your returned JSON object. Dataset v2 does not
+inject a <code>_Key</code> or <code>_Attachments</code> values in the
+JSON document stored. This changes the <code>Read</code> method
+signature for collection objects.</p>
+<p>The <code>Init</code> method takes a DSN as the second parameter, if
+the DSN is an empty string then the collection created will use a
+Pairtree store.</p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

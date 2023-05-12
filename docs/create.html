@@ -1,114 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="create">
-create
-</h1>
-<h2 id="syntax">
-Syntax
-</h2>
+<h1 id="create">create</h1>
+<h2 id="syntax">Syntax</h2>
 <pre class="shell"><code>    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
     dataset create COLLECTION_NAME KEY JSON_VALUE
     dataset create -i JSON_DOCNAME COLLECTION_NAME KEY</code></pre>
-<h2 id="description">
-Description
-</h2>
-<p>
-create adds a JSON document to a collection. The JSON document can be
+<h2 id="description">Description</h2>
+<p>create adds a JSON document to a collection. The JSON document can be
 read from a standard in, a named file (with a “.json” file extension) or
-expressed literally on the command line.
-</p>
-<h2 id="usage">
-Usage
-</h2>
-<p>
-In the following four examples <em>jane-doe.json</em> is a file on the
-local file system contains JSON data containing the JSON_VALUE of
-<code>{“name”:“Jane Doe”}</code>. The KEY we will create is <em>r1</em>.
+expressed literally on the command line.</p>
+<h2 id="usage">Usage</h2>
+<p>In the following four examples <em>jane-doe.json</em> is a file on
+the local file system contains JSON data containing the JSON_VALUE of
+<code>{"name":"Jane Doe"}</code>. The KEY we will create is <em>r1</em>.
 Collection is “people.ds”. The following are equivalent in resulting
-record.
-</p>
+record.</p>
 <pre class="shell"><code>    cat jane-doe.json | dataset create people.ds r1
     dataset create -i jane-doe.json people.ds r1
     dataset create people.ds r1 &#39;{&quot;name&quot;:&quot;Jane Doe&quot;}&#39;</code></pre>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

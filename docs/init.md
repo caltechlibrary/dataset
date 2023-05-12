@@ -46,7 +46,7 @@ Here's a variation using MySQL 8 as the storage engine storing the
 collection in the "collections" database.
 
 ```shell
-    dataset init data.ds "mysql://DB_USER:DB_NAME@/collections"
+    dataset init data.ds "mysql://DB_USER:DB_PASSWD@/collections"
 ```
 
 

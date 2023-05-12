@@ -41,6 +41,6 @@ basic process is to get a set of keys, randomly sort the keys, then
 return the top N number of those keys.
 
 
-Related topics: [count](count.html), [clone](clone), [clone-sample](clone-sample.html), [frame](frame.html), [frame-grid](frame-grid.html), [frame-objects](frame-objects.html)
+Related topics: [count](count.md), [clone](clone), [clone-sample](clone-sample.md), [frame](frame.md), [frame-grid](frame-grid.md), [frame-objects](frame-objects.md)
 
 

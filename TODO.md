@@ -5,86 +5,114 @@ Action Items
 Bugs
 ----
 
-Next (prep for v2.x)
---------------------
+- [x] `dataset help init` should include examples of forming a dsn for SQL store dataset collections using SQLite3, MySQL and PostgreSQL from docs/init.md
 
-- [ ] Help cleanup
-    - [ ] remove help pages for depreciated features
+Next (prep for v2.1.1)
+----------------------
+
+- [ ] Need to add getting updated Man pages using the `dataset help ...` command
+- [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
+    - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
 - [ ] Common dataset verbs (dataset/datasetd)
     - [X] keys
         - list the keys in a collection
-    - [X] has-key
+        - at the package level keys returns a list of keys and an error value
+    - [X] has_key
         - return "true "(w/OS exit 0 in CLI) if key is in collection,
           "false" otherwise (w/OS exit 1 in CLI)
-    - [pkg,cli] sample
+    - [ ] sample
         - return a sample of keys from a collection
-    - [X] create
+        - [ ] the newly create collections should have versioning disabled by default
+    - [ ] create
         - add an new object to the collection if key does not exist,
           return false if object already exists or unable to create
           the new object
-    - [X] read
+        - if versioning is enabled set the semver appropriately
+    - [ ] read
         - return the object with nil error in the collection with the
           provided key, nil object and error value if not found
-    - [X] update
+        - read always returns to the "current" object version
+        - [ ] `read_versions()`, list the versions available for JSON object
+        - [ ] `read_version()` list an JSON object for a specific version
+             - return the object with nil error in the collection with the
+               provided key and version, nil object and error value if not
+               found
+    - [ ] update
         - replace the object in the collection for given key, return false
           is object does not to replace or replacement fails
+        - if collection has versioning turned on then version the object
+        - [ ] `update()` update the current record respecting the version settings for collection
     - [X] delete
         - delete the object in the collection for given key, return true
           if deletion was successful, false if the object was not deleted
           (e.g. key not found or the collection is read only)
-    - [pkg,cli] versioning
-        - set the versioning on a collection, the following strings enable
+        - if collection has versioning turned on then delete **all objects**, if you want to revert you just update the object with the revised object values
+        - [ ] `delete()` delete all versions of an object
+        - If versioning is enabled the idea of "deleting" an object or attachment doesn't make sense, you only need to support Create, Read, Update and List, possibly with the ability to read versions available and retrieve the specific version, is this worth implementing in the CLI? Or is this just a lib dataset/package "feature"?
+    - [ ] versioning, versioning is now set for the whole collection and effects JSON objects and their attachments (you're versioning both or neither), versioning will auto-increment for patch, minir and major semvere values if set
+        - [ ] `set_versioning()`, set the versioning on a collection, the following strings enable
           versioning "major", "minor", "patch". Any other value disables
           versioning on the collection
-        - [ ] read-versions, list the versions available for JSON object
-        - [pkg,cli] read-version
-             - return the object with nil error in the collection with the
-               provided key and version, nil object and error value if not
-               found
-        - [pkg,cli] update-version
-        - [pkg,cli] delete-version
-        - [pkg] attachment-versions list versions of an attachment
-        - [ ] attach-version add/replace a specific version of attachment
-        - [pkg] retrieve-version retrieve version of attachment
-        - [pkg] prune-version remove version of attachment
-    - [X] frames
-        - list the names of the frames currently defined in the collection
-    - [X] frame
-        - define a new frame in the collection, if frame exists replace it
-    - [X] frame-meta
-        - return the frame definition and metadata about the frame (e.g.
-          how many objects and attributes)
-    - [X] frame-objects
-        - return the frame's list of objects
-    - [X] refresh
-        - update all the objects in the frame based on current state of
-          the collection
-    - [X] reframe
-        - replace the frame definition but using the existing frame's keys
-          refresh the frame with the new object describe
-    - [X] delete-frame
-    - [X] has-frame
-- [X] Attachment support
-    - [X] attachments
-    - [X] attach
-    - [X] retrieve (aka detach)
-    - [X] prune
-- [X] Verbs support by cli only
-    - [X] sample
-    - [X] clone
-    - [X] clone-sample
-    - [X] check
-    - [X] repair
-- [X] Document example Shell access to datasetd via cURL
-- [X] take KeyMap out of collection.json so collection.json is smaller
+        - [ ] `get_versioning()` on a colleciton (should return "major", "minor", "patch" or "")
+    - [ ] Attachment support
+        - [ ] `attach()` will add a basename file to the JSON object record, if versioning is enabled then it needs to handle the appropraite versioning setting
+        - [ ] `attachments()` lists the attachments for a JSON object record
+        - [ ] `attachment_versions()` list versions of a specific attachment
+        - [ ] `detach()` retrieve "current" version of attachment
+        - [ ] `detach_version()` retrieve a specific version of attachment
+        - [ ] `prune()` remove all versions of attachments
+    - [ ] Data Frame Support
+        - [ ] frame_names
+            - list the names of the frames currently defined in the collection
+        - [ ] frame
+            - define a new frame in the collection, if frame exists replace it
+        - [ ] frame_meta
+            - return the frame definition and metadata about the frame (e.g.  how many objects and attributes)
+        - [ ] frame_objects
+            - return the frame's list of objects
+        - [ ] refresh
+            - update all the objects in the frame based on current state of
+              the collection
+        - [ ] reframe
+            - replace the frame definition but using the existing frame's keys
+              refresh the frame with the new object describe
+        - [ ] delete_frame
+        - [ ] has_frame
+- [ ] Verbs supported by cli only
+    - [ ] set_versioning (accepts "", "patch", "minor", or "major" as values)
+    - [ ] get_versioning (returns collection's version setting)
+    - [ ] keys
+    - [ ] create (if versioning is enable then handle versioning)
+    - [ ] read (if versioning is enabled return the current version of an object)
+    - [ ] update (if versioning is enable then handle versioning)
+    - [ ] delete (if versioning is enable, delete all versions of object and attachments)
+    - [ ] sample
+    - [ ] clone
+    - [ ] clone-sample
+    - [ ] check
+    - [ ] repair
+    - [ ] frames (return a list of frames defined for collection)
+    - [ ] frame, define a new frame in a collection
+    - [ ] frame_objects, return the object list from a frame
+    - [ ] refresh, refresh all objects in a frame based on the current state of the collection
+    - [ ] reframe, replace the frame definition but using the existing frame's keys for the object listed in frame
+    - [ ] delete_frame, remove a frame from the collection
+    - [ ] has_frame return true if frame exists or false otherwise
+    - [ ] attachments, list the attachments for a JSON object in the collection
+    - [ ] attach, add an attachment to a JSON object in the collection, respect versioning if enabled
+    - [ ] detach, retrieve an attachment from the JSON object in the collection
+    - [ ] prune, remove attachments (including all versions) from an JSON object in the collection
+- [ ] Document example Shell access to datasetd via cURL
+- [ ] take KeyMap out of collection.json so collection.json is smaller
     - support for segmented key maps (to limit memory consumption for very
       large collections)
-- [X] Auto-version attachments by patch, minor or major release per
+- [ ] Auto-version attachments by patch, minor or major release per
       settings in collection.json using keywords of patch, minor, major
 
 Someday, Maybe
 --------------
 
+- [ ] Review [Go-app](https://go-app.dev/) and see if this would be a way to create a local client UI for working with datasets and enabling LunrJS for search
 - [ ] Document an example Python 3 http client support for web API implementing a drop in replacement for py_dataset using the web service or cli
 - [X] Missing tests for AttachStream()
 - [ ] Implement a wrapping logger that takes a verboseness level for

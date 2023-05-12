@@ -293,6 +293,8 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 	return nil
 }
 
+// AttachFile reads a filename from file system and attaches it.
+//
 // ```
 //
 //	key, filename := "123", "report.pdf"
@@ -310,6 +312,7 @@ func (c *Collection) AttachFile(key string, filename string) error {
 	defer buf.Close()
 	return c.AttachStream(key, filename, buf)
 }
+
 
 // AttachVersionStream is for attaching open a non-JSON file buffer
 // (via an io.Reader) to a specific version of a file. If attached

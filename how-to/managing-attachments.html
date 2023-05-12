@@ -1,113 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- How to ...</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+    <li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="../docs/">Documentation</a></li>
+    <li><a href="index.html">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="managing-file-attachments">
-Managing File Attachments
-</h1>
-<p>
-In the following examples we are using a collection named
-<em>characters.ds</em>.
-</p>
-<p>
-Adding high-capt-jack.txt as an attachment to “capt-jack”
-</p>
+<h1 id="managing-file-attachments">Managing File Attachments</h1>
+<p>In the following examples we are using a collection named
+<em>characters.ds</em>.</p>
+<p>Adding high-capt-jack.txt as an attachment to “capt-jack”</p>
 <pre class="shell"><code>   echo &quot;Hi Capt. Jack, Hello World!&quot; &gt; high-capt-jack.txt
    dataset attach characters.ds capt-jack high-capt-jack.txt</code></pre>
-<p>
-List attachments for “capt-jack”
-</p>
+<p>List attachments for “capt-jack”</p>
 <pre class="shell"><code>   dataset attachments characters.ds capt-jack</code></pre>
-<p>
-Detach all attachments for “capt-jack” (this will untar in your current
-directory)
-</p>
+<p>Detach all attachments for “capt-jack” (this will untar in your
+current directory)</p>
 <pre class="shell"><code>   dataset detach characters.ds capt-jack</code></pre>
-<p>
-Prune high-capt-jack.txt from “capt-jack”
-</p>
+<p>Prune high-capt-jack.txt from “capt-jack”</p>
 <pre class="shell"><code>    dataset prune characters.ds capt-jack high-capt-jack.txt</code></pre>
-<p>
-Prune all attachments from “capt-jack”
-</p>
+<p>Prune all attachments from “capt-jack”</p>
 <pre class="shell"><code>   dataset prune capt-jack</code></pre>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

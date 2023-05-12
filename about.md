@@ -14,18 +14,24 @@ authors:
     orcid: "https://orcid.org/0000-0001-9266-5146"
 
 repository-code: "https://github.com/caltechlibrary/dataset"
-version: 2.0.0-b06
+version: 2.1.1
 license-url: "https://data.caltech.edu/license"
 keywords: [ "GitHub", "metadata", "data", "software", "json" ]
-date-released: 2022-08-22
+date-released: 2023-02-08
 ---
 
 About this software
 ===================
 
-## dataset 2.0.0-b06
+## dataset 2.1.1
 
 ### Authors
+
+- R. S. Doiel
+- Thomas E Morrell
+
+
+### Maintainers
 
 - R. S. Doiel
 - Thomas E Morrell
@@ -33,10 +39,9 @@ About this software
 Tools for working with JSON documents as a collection hosted on the file
 system or SQL JSON store
 
-
-- License: https://data.caltech.edu/license
-- GitHub: https://github.com/caltechlibrary/dataset
-- Issues: https://github.com/caltechlibrary/dataset/issues
+- License: <https://data.caltech.edu/license>
+- GitHub: <https://github.com/caltechlibrary/dataset>
+- Issues: <https://github.com/caltechlibrary/dataset/issues>
 
 
 ### Programming languages
@@ -46,5 +51,6 @@ system or SQL JSON store
 
 ### Software Requiremets
 
-- Golang 1.19.2 or better
-- Pandoc 2.19.2 or better
+- Golang 1.20 or better
+- Pandoc 3.0 or better
+- GNU Make

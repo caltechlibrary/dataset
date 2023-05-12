@@ -14,7 +14,7 @@ web service (datasetd).
 dataset, a command line tool
 ----------------------------
 
-[dataset](doc/dataset.html) is a command line tool for working with
+[dataset](doc/dataset.md) is a command line tool for working with
 collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents.
 Collections can be stored on the file system in a pairtree directory
 structure or stored in a SQL database that supports JSON columns
@@ -33,18 +33,18 @@ documents in the collection.
 
 ### enhanced features include
 
-- aggregate objects into data [frames](docs/frame.html)
+- aggregate objects into data [frames](docs/frame.md)
 - generate sample sets of keys and objects
 - clone a collection
 - clone a collection into training and test samples
 
-See [Getting started with dataset](how-to/getting-started-with-dataset.html) for a tour and tutorial.
+See [Getting started with dataset](how-to/getting-started-with-dataset.md) for a tour and tutorial.
 
 
 datasetd, dataset as a web service
 ----------------------------------
 
-[datasetd](doc/datasetd.html) is a RESTful web service implementation of the
+[datasetd](doc/datasetd.md) is a RESTful web service implementation of the
 _dataset_ command line program. It features a sub-set of capability found
 in the command line tool. This allows dataset collections to be integrated
 safely into web applications or used concurrently by multiple processes.
@@ -108,33 +108,33 @@ Go language.
 Features
 --------
 
-[dataset](docs/dataset.html) supports
+[dataset](docs/dataset.md) supports
 - Initialize a new dataset collection
   - Define metadata about the collection using a codemeta.json file
   - Define a keys file holding a list of allocated keys in the collection
   - Creates a pairtree for object storage
 - Codemeta file support for describing the collection contents
 - Simple JSON object versioning
-- Listing [Keys](docs/keys.html) in a collection
+- Listing [Keys](docs/keys.md) in a collection
 - Object level actions
-  - [create](docs/create.html)
-  - [read](docs/read.html)
-  - [update](docs/update.html)
-  - [delete](docs/delete.html)
-  - [keys](docs/keys.html)
-  - [has-key](docs/has-key.html)
-  - [sample](docs/sample.html)
-  - [clone](docs/clone.html)
-  - [clone-sample](docs/clone-sample.html)
+  - [create](docs/create.md)
+  - [read](docs/read.md)
+  - [update](docs/update.md)
+  - [delete](docs/delete.md)
+  - [keys](docs/keys.md)
+  - [has-key](docs/has-key.md)
+  - [sample](docs/sample.md)
+  - [clone](docs/clone.md)
+  - [clone-sample](docs/clone-sample.md)
   - Documents as attachments
-    - [attachments](docs/attacments.html) (list)
-    - [attach](docs/attach.html) (create/update)
-    - [retrieve](docs/retrieve.html) (read)
-    - [prune](docs/prune.html) (delete)
-- The ability to create data [frames](docs/frame.html) from while
+    - [attachments](docs/attacments.md) (list)
+    - [attach](docs/attach.md) (create/update)
+    - [retrieve](docs/retrieve.md) (read)
+    - [prune](docs/prune.md) (delete)
+- The ability to create data [frames](docs/frame.md) from while
   collections or based on keys lists
   - frames are defined using a list of keys and a lost
-    [dot paths](docs/dotpath.html) describing what is to be pulled out
+    [dot paths](docs/dotpath.md) describing what is to be pulled out
     of a stored JSON objects and into the frame
   - frame level actions
     - frames, list the frame names in the collection
@@ -151,24 +151,24 @@ Features
     - has-frame, check to see if a frame exists
     - delete-frame remove the frame
 
-[datasetd](docs/datasetd.html) supports
+[datasetd](docs/datasetd.md) supports
 
-- List [collections](docs/collections-endpoint.html) available from the
+- List [collections](docs/collections-endpoint.md) available from the
   web service
-- List a [collection](collection-endpoint.html)'s metadata
-- List a collection's [Keys](docs/keys-endpoint.html)
+- List a [collection](collection-endpoint.md)'s metadata
+- List a collection's [Keys](docs/keys-endpoint.md)
 - Object level actions
-    - [create](docs/create-endpoint.html)
-    - [read](docs/read-endpoint.html)
-    - [update](docs/update-endpoint.html)
-    - [delete](docs/delete-endpoint.html)
+    - [create](docs/create-endpoint.md)
+    - [read](docs/read-endpoint.md)
+    - [update](docs/update-endpoint.md)
+    - [delete](docs/delete-endpoint.md)
     - Documents as attachments
-        - [attach](docs/attach-endpoint.html)
-        - [retrieve](docs/retrieve-endpoint.html)
-        - [prune](docs/prune-endpoint.html)
-- The ability to create data [frames](docs/frame.html) from
+        - [attach](docs/attach-endpoint.md)
+        - [retrieve](docs/retrieve-endpoint.md)
+        - [prune](docs/prune-endpoint.md)
+- The ability to create data [frames](docs/frame.md) from
   collections or based on keys lists and dot paths to form a new object
-  - [dot paths](docs/dotpath.html) describing
+  - [dot paths](docs/dotpath.md) describing
     what is to be pulled out of a stored JSON objects
 
 Both _dataset_  and _datasetd_ maybe useful for general data science
@@ -210,17 +210,17 @@ _datasetd_ is a simple web service intended to run on "localhost:8485".
 Read next ...
 -------------
 
-- About the [dataset](docs/dataset.html) command
-- About [datasetd](docs/datasetd.html) web service
-- [Installation](install.html)
-- [License](license.html)
-- [Contributing](contributing.html)
-- [Code of conduct](code_of_conduct.html)
+- About the [dataset](docs/dataset.md) command
+- About [datasetd](docs/datasetd.md) web service
+- [Installation](INSTALL.md)
+- [License](LICENSE)
+- [Contributing](CONTRIBUTING.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
 - Explore _dataset_ and _datasetd_
-    - [Getting Started with Dataset](how-to/getting-started-with-dataset.html "Python examples as well as command line")
+    - [Getting Started with Dataset](how-to/getting-started-with-dataset.md "Python examples as well as command line")
     - [How To](how-to/) guides
     - [Reference Documentation](docs/).
-    - [Topics](docs/topics.html)
+    - [Topics](docs/topics.md)
 
 Authors and history
 -------------------
