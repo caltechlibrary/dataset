@@ -46,7 +46,7 @@ $(HTML_LIB_PAGES): $(MD_LIB_PAGES) .FORCE
 	pandoc --metadata title=$(basename $@) -s --to html5 $(basename $@).md -o $(basename $@).html \
 		--lua-filter=links-to-html.lua \
 	    --template=docs.tmpl
-	@if [ $@ = "README.html" ]; then mv README.html index.html; git add index.html; fi
+	@if [ $@ = "libdataset/README.html" ]; then mv libdataset/README.html libdataset/index.html; git add libdataset/index.html; fi
 
 
 pagefind: .FORCE
