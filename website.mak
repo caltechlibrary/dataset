@@ -24,6 +24,7 @@ build: $(HTML_PAGES) $(MD_PAGES) $(HTML_DOCS_PAGES) $(MD_DOCS_PAGES) $(HTML_HOWT
 	@for FNAME in $(HTML_PAGES); do git add "$$FNAME"; done
 	@for FNAME in $(HTML_DOCS_PAGES); do git add "$$FNAME"; done
 	@for FNAME in $(HTML_HOWTO_PAGES); do git add "$$FNAME"; done
+	@for FNAME in $(HTML_LIB_PAGES); do git add "$$FNAME"; done
 	@git commit -am 'website build process'
 
 $(HTML_PAGES): $(MD_PAGES) .FORCE
@@ -54,9 +55,12 @@ pagefind: .FORCE
 	git add pagefind
 
 clean:
-	@for FNAME in $(HTML_PAGES); do rm "$${FNAME}"; fi
-	@for FNAME in $(HTML_DOCS_PAGES); do rm "$${FNAME}"; fi
-	@for FNAME in $(HTML_HOWTO_PAGES); do rm "$${FNAME}"; fi
+	@if [ -f index.html ]; then rm index.html; fi
+	@for FNAME in $(HTML_PAGES); do if [ -f "$$FNAME" ]; then rm "$$FNAME"; fi; done
+	@for FNAME in $(HTML_DOCS_PAGES); do if [ -f "$$FNAME" ]; then rm "$$FNAME"; fi; done
+	@for FNAME in $(HTML_HOWTO_PAGES); do if [ -f "$$FNAME" ]; then rm "$$FNAME"; fi; done
+	@for FNAME in $(HTML_LIB_PAGES); do if [ -f "$$FNAME" ]; then rm "$$FNAME"; fi; done
+	@if [ -f libdataset/index.html ]; then rm libdataset/index.html; fi
 
 
 .FORCE:
