@@ -1,67 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- How to ...</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="../docs/">Documentation</a>
-</li>
-<li>
-<a href="./">Tutorials</a>
-</li>
-<li>
-<a href="../docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+    <li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="../docs/">Documentation</a></li>
+    <li><a href="index.html">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="collections-and-frames">
-COLLECTIONS AND FRAMES
-</h1>
-<p>
-<strong>dataset</strong> stores JSON objects and can store also data
+<h1 id="collections-and-frames">COLLECTIONS AND FRAMES</h1>
+<p><strong>dataset</strong> stores JSON objects and can store also data
 frames similar to that used in Python, R and Julia. This document
-outlines the ideas behind <strong>dataset</strong>’s implementation of
-data frames.
-</p>
-<h2 id="collections">
-COLLECTIONS
-</h2>
-<p>
-Collections are at the core of the <strong>dataset</strong> tool. A
+outlines the ideas behind <strong>dataset</strong>'s implementation of
+data frames.</p>
+<h2 id="collections">COLLECTIONS</h2>
+<p>Collections are at the core of the <strong>dataset</strong> tool. A
 collection is either a pairtree directory structure storing JSON objects
 in plain text or a SQL table with a JSON column for the object. Both
 support optional attachments. The root folder should contain two files
@@ -70,19 +38,15 @@ support optional attachments. The root folder should contain two files
 that dataset needs to work with the collection of JSON documents. The
 <em>codemeta.json</em> file is general metadata describing the
 collection. See <a href="https://codemete.github.io">codemeta</a> for
-details on the <em>codemeta.json</em> file structure.
-</p>
-<p>
-For the pairtree based collections one of the guiding ideas behind has
-been to keep everything in plain text (i.e. UTF-8) whenever reasonable.
-The affords the opportunity to easily interact with the data via
-standard Unix tools or easily from any language that supports working
-with JSON documents. A pairtree to a large degree is future proof as it
-is very likely the ability to read the file system and text files will
-persist long after dataset development stops.
-</p>
-<p>
-Over the course of the last several years the limitations of storing
+details on the <em>codemeta.json</em> file structure.</p>
+<p>For the pairtree based collections one of the guiding ideas behind
+has been to keep everything in plain text (i.e. UTF-8) whenever
+reasonable. The affords the opportunity to easily interact with the data
+via standard Unix tools or easily from any language that supports
+working with JSON documents. A pairtree to a large degree is future
+proof as it is very likely the ability to read the file system and text
+files will persist long after dataset development stops.</p>
+<p>Over the course of the last several years the limitations of storing
 JSON documents directly on the file system have been more compelling.
 Additionally common, mature SQL database systems have pickup the ability
 to store JSON as a column type (e.g. current systems include SQLite3,
@@ -92,172 +56,94 @@ in a table in a supported database. While this is less future proof than
 plain text it does increase the flexibility of working with large
 collections, likewise a dataset collection running with a SQL storage
 engine can be cloned to a pairtree storage collection for long term
-preservation.
-</p>
-<p>
-The dataset project provides Go package for working with dataset
+preservation.</p>
+<p>The dataset project provides Go package for working with dataset
 collections. This means you can use dataset as a storage engine directly
 in your own Go based projects. As of version 2 this is documented along
-with command line interactions.
-</p>
-<p>
-Dataset isn’t a database (there are plenty of JSON oriented databases
+with command line interactions.</p>
+<p>Dataset isn't a database (there are plenty of JSON oriented databases
 out there, e.g. CouchDB, MongoDB and No SQL storage systems for MySQL
-and Postgresql). <strong>dataset</strong>’s focus is on providing a
+and Postgresql). <strong>dataset</strong>'s focus is on providing a
 mechanism to manage JSON documents (objects). It supports the ability to
 attach non-JSON documents to a JSON document record as well as for
 working with JSON collections as data frames. Dataset collections are
 like a mini repository system avoiding the complexity of more mature
 repostiory back ends like <a href="https://duraspace.org/fedora/">Fedora
-Repository</a>.
-</p>
-<p>
-By working with JSON documents dataset can be used to feed full text
+Repository</a>.</p>
+<p>By working with JSON documents dataset can be used to feed full text
 search engines like <a href="https://solr.apache.org/">Solr</a>, <a
 href="https://www.opensearch.org/">OpenSearch</a>, and small engines
 like <a href="https://lunrjs.com/">LunrJS</a>. Likewise when combined
 with Go’s struct types can be used to support building structured data
-repositories customized to specific needs.
-</p>
-<h2 id="data-frames">
-DATA FRAMES
-</h2>
-<p>
-Working with subsets of data in a collection is useful, particularly
+repositories customized to specific needs.</p>
+<h2 id="data-frames">DATA FRAMES</h2>
+<p>Working with subsets of data in a collection is useful, particularly
 ordered subsets. Implementing this started me thinking about the
 similarity to data frames in Python, Julia and Octave. A <em>frame</em>
 is an ordered list of objects. Frames can be retrieved as a list of
 objects or as a list of keys. Frames contain a additional metadata to
 help them persist. Frames include enough metadata to efficiently refresh
 framed objects or even replace all objects in the list based on a new
-set of keys.
-</p>
-<p>
-<strong>dataset</strong> stores frames with the collection so they are
-is available for later processing. The objects in a frame reflect the
-objects as they existed when the frame was generated. Frames can be
-refreshed to match the current state of the collection.
-</p>
-<p>
-Frames become handy when moving data from JSON documents (tree like) to
-other formats like spreadsheets (table like). This is because the data
-frame’s structure is defined based on paths into objects in the
+set of keys.</p>
+<p><strong>dataset</strong> stores frames with the collection so they
+are is available for later processing. The objects in a frame reflect
+the objects as they existed when the frame was generated. Frames can be
+refreshed to match the current state of the collection.</p>
+<p>Frames become handy when moving data from JSON documents (tree like)
+to other formats like spreadsheets (table like). This is because the
+data frame’s structure is defined based on paths into objects in the
 collections. These pathes are mapped to “labels” structure the framed
 objects. Frames can be used to simplify a complex record into a simpler
-model for indexing in your favorite search engine.
-</p>
-<p>
-Frames are stored in the collection’s <code>_frames</code> sub
+model for indexing in your favorite search engine.</p>
+<p>Frames are stored in the collection’s <code>_frames</code> sub
 directory. One JSON document per frame combining both the definition and
-frame content.
-</p>
-<h2 id="frame-operations">
-FRAME OPERATIONS
-</h2>
+frame content.</p>
+<h2 id="frame-operations">FRAME OPERATIONS</h2>
 <ul>
-<li>
-frame (define a frame)
-</li>
-<li>
-frame-def (read a frame definition, i.e. name, dot paths and labels)
-</li>
-<li>
-frame-objects (read a frame’s object list)
-</li>
-<li>
-frame-keys (read a frame’s key list)
-</li>
-<li>
-frames (return a list of frame names)
-</li>
-<li>
-reframe (replace all frame objects with objects indicated by a new list
-of keys)
-</li>
-<li>
-refresh (update objects in a frame while pruning objects no longer in
-the collection)
-</li>
-<li>
-has-frame (check to see if a frame exists in the collection)
-</li>
-<li>
-delete-frame
-</li>
+<li>frame (define a frame)</li>
+<li>frame-def (read a frame definition, i.e. name, dot paths and
+labels)</li>
+<li>frame-objects (read a frame’s object list)</li>
+<li>frame-keys (read a frame’s key list)</li>
+<li>frames (return a list of frame names)</li>
+<li>reframe (replace all frame objects with objects indicated by a new
+list of keys)</li>
+<li>refresh (update objects in a frame while pruning objects no longer
+in the collection)</li>
+<li>has-frame (check to see if a frame exists in the collection)</li>
+<li>delete-frame</li>
 </ul>
-<h3 id="create-a-frame">
-Create a frame
-</h3>
-<p>
-Example creating a frame named “dois-and-titles”
-</p>
+<h3 id="create-a-frame">Create a frame</h3>
+<p>Example creating a frame named "dois-and-titles"</p>
 <pre class="shell"><code>    dataset keys Pubs.ds &gt;pubs.keys
     dataset frame-create -i pubs.keys Pubs.ds dois-and-titles \
         &quot;.doi=DOI&quot; \
         &quot;.title=Title&quot;</code></pre>
-<h3 id="retrieve-an-existing-frames-objects">
-Retrieve an existing frame’s objects
-</h3>
-<p>
-An example of getting the frame’s object list only.
-</p>
+<h3 id="retrieve-an-existing-frames-objects">Retrieve an existing
+frame’s objects</h3>
+<p>An example of getting the frame's object list only.</p>
 <pre class="shell"><code>    dataset frame-objects Pubs.ds dois-and-titles</code></pre>
-<h3 id="regenerating-a-frame">
-Regenerating a frame
-</h3>
-<p>
-Regenerating “dois-and-titles”.
-</p>
+<h3 id="regenerating-a-frame">Regenerating a frame</h3>
+<p>Regenerating "dois-and-titles".</p>
 <pre class="shell"><code>    dataset refresh Pubs.ds dois-and-titles</code></pre>
-<h3 id="updating-keys-associated-with-the-frame">
-Updating keys associated with the frame
-</h3>
-<p>
-In this example we want to “reframe” our “titles-and-dois” data frame.
-We get the current list of keys in the collection and regenerate the
-objects in the data frame using the new list of keys.
-</p>
+<h3 id="updating-keys-associated-with-the-frame">Updating keys
+associated with the frame</h3>
+<p>In this example we want to “reframe” our “titles-and-dois” data
+frame. We get the current list of keys in the collection and regenerate
+the objects in the data frame using the new list of keys.</p>
 <pre class="shell"><code>    dataset Pubs.ds keys &gt;updated.keys
     dataset reframe -i updated.keys Pubs.ds titles-and-dios</code></pre>
-<h3 id="removing-a-frame">
-Removing a frame
-</h3>
+<h3 id="removing-a-frame">Removing a frame</h3>
 <pre class="shell"><code>    dataset delete-frame Pubs.ds titles-and-dios</code></pre>
-<h2 id="listing-available-frames">
-Listing available frames
-</h2>
+<h2 id="listing-available-frames">Listing available frames</h2>
 <pre class="shell"><code>    dataset frames Pubs.ds</code></pre>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

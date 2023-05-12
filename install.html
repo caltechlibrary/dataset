@@ -1,320 +1,181 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="license.html">LICENSE</a>
-</li>
-<li>
-<a href="install.html">INSTALL</a>
-</li>
-<li>
-<a href="docs/">Documentation</a>
-</li>
-<li>
-<a href="how-to/">Tutorials</a>
-</li>
-<li>
-<a href="docs/topics.html">Topics</a>
-</li>
-<li>
-<a href="about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user-manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="installation">
-Installation
-</h1>
-<p>
-<strong>dataset</strong> is a set of command line programs run from a
+<h1 id="installation">Installation</h1>
+<p><strong>dataset</strong> is a set of command line programs run from a
 shell like Bash. It is designed for single user, single process
 management of a JSON object documents as a collection where JSON
 documents are referenced by a unique identifier or key.
 <strong>datasetd</strong> is a web service which serves a similar
-purpose but is intended for supporting multi-user and multi-processes.
-</p>
-<p>
-This is generalized instructions for a release. For deployment
-suggestions see NOTES.md
-</p>
-<h2 id="compiled-version">
-Compiled version
-</h2>
-<p>
-Compiled versions are available for macOS (Intel and M1), Linux (Intel),
-Windows (Intel and ARM64) and Raspberry Pi (ARM).
-</p>
-<p>
-VERSION_NUMBER is a <a href="http://semver.org/">semantic version
-number</a> (e.g. v2.0.0)
-</p>
-<p>
-For all the released version go to the project page on GitHub and click
-latest release
-</p>
+purpose but is intended for supporting multi-user and
+multi-processes.</p>
+<p>This is generalized instructions for a release. For deployment
+suggestions see NOTES.md</p>
+<h2 id="compiled-version">Compiled version</h2>
+<p>Compiled versions are available for macOS (Intel and M1), Linux
+(Intel), Windows (Intel and ARM64) and Raspberry Pi (ARM).</p>
+<p>VERSION_NUMBER is a <a href="http://semver.org/">semantic version
+number</a> (e.g. v2.0.0)</p>
+<p>For all the released version go to the project page on GitHub and
+click latest release</p>
 <blockquote>
-<p>
-https://github.com/caltechlibrary/dataset/releases/latest
-</p>
+<p>https://github.com/caltechlibrary/dataset/releases/latest</p>
 </blockquote>
 <table>
 <thead>
 <tr class="header">
-<th>
-Platform
-</th>
-<th>
-Zip Filename
-</th>
+<th>Platform</th>
+<th>Zip Filename</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>
-Windows (Intel)
-</td>
-<td>
-dataset-VERSION_NUMBER-windows-amd64.zip
-</td>
+<td>Windows (Intel)</td>
+<td>dataset-VERSION_NUMBER-windows-amd64.zip</td>
 </tr>
 <tr class="even">
-<td>
-Windows (ARM 64)
-</td>
-<td>
-dataset-VERSION_NUMBER-windows-arm64.zip
-</td>
+<td>Windows (ARM 64)</td>
+<td>dataset-VERSION_NUMBER-windows-arm64.zip</td>
 </tr>
 <tr class="odd">
-<td>
-macOS (Intel)
-</td>
-<td>
-dataset-VERSION_NUMBER-macos-amd64.zip
-</td>
+<td>macOS (Intel)</td>
+<td>dataset-VERSION_NUMBER-macos-amd64.zip</td>
 </tr>
 <tr class="even">
-<td>
-macOS (M1)
-</td>
-<td>
-dataset-VERSION_NUMBER-macos-arm64.zip
-</td>
+<td>macOS (M1)</td>
+<td>dataset-VERSION_NUMBER-macos-arm64.zip</td>
 </tr>
 <tr class="odd">
-<td>
-Linux (Intel)
-</td>
-<td>
-dataset-VERSION_NUMBER-linux-amd64.zip
-</td>
+<td>Linux (Intel)</td>
+<td>dataset-VERSION_NUMBER-linux-amd64.zip</td>
 </tr>
 <tr class="even">
-<td>
-Raspberry Pi OS (ARM7)
-</td>
-<td>
-dataset-VERSION_NUMBER-raspbian-arm7.zip
-</td>
+<td>Raspberry Pi OS (ARM7)</td>
+<td>dataset-VERSION_NUMBER-raspbian-arm7.zip</td>
 </tr>
 </tbody>
 </table>
-<h2 id="the-basic-recipe">
-The basic recipe
-</h2>
+<h2 id="the-basic-recipe">The basic recipe</h2>
 <ul>
-<li>
-Find the Zip file listed matching the architecture you’re running and
-download it
+<li>Find the Zip file listed matching the architecture you’re running
+and download it
 <ul>
-<li>
-(e.g. if you’re on a Windows 10 laptop/Surface with a amd64 style CPU
-you’d choose the Zip file with “windows-amd64” in the name).
-</li>
-</ul>
-</li>
-<li>
-Download the zip file and unzip the file.
-</li>
-<li>
-Copy the contents of the folder named “bin” to a folder that is in your
-path
+<li>(e.g. if you’re on a Windows 10 laptop/Surface with a amd64 style
+CPU you’d choose the Zip file with “windows-amd64” in the name).</li>
+</ul></li>
+<li>Download the zip file and unzip the file.</li>
+<li>Copy the contents of the folder named “bin” to a folder that is in
+your path
 <ul>
-<li>
-(e.g. “bin” in your “HOME” directory is common).
-</li>
+<li>(e.g. “bin” in your “HOME” directory is common).</li>
+</ul></li>
+<li>Adjust your PATH if needed</li>
+<li>Test</li>
 </ul>
-</li>
-<li>
-Adjust your PATH if needed
-</li>
-<li>
-Test
-</li>
-</ul>
-<h3 id="macos">
-macOS
-</h3>
+<h3 id="macos">macOS</h3>
 <ol type="1">
-<li>
-Download the zip file
-</li>
-<li>
-Unzip the zip file
-</li>
-<li>
-Copy the executable to “bin” folder in HOME folder (or another folder in
-your PATH)
-</li>
-<li>
-Make sure the new location in in our path
-</li>
-<li>
-Test
-</li>
+<li>Download the zip file</li>
+<li>Unzip the zip file</li>
+<li>Copy the executable to “bin” folder in HOME folder (or another
+folder in your PATH)</li>
+<li>Make sure the new location in in our path</li>
+<li>Test</li>
 </ol>
-<p>
-Here’s an example of the commands run in the Terminal App after
-downloading the zip file.
-</p>
+<p>Here’s an example of the commands run in the Terminal App after
+downloading the zip file.</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-macos-amd64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
-<h3 id="windows">
-Windows
-</h3>
+<h3 id="windows">Windows</h3>
 <ol type="1">
-<li>
-Download the zip file
-</li>
-<li>
-Unzip the zip file
-</li>
-<li>
-Copy the executable to the “bin” directory in your “HOME” directory (or
-a folder in your path)
-</li>
-<li>
-Test
-</li>
+<li>Download the zip file</li>
+<li>Unzip the zip file</li>
+<li>Copy the executable to the “bin” directory in your “HOME” directory
+(or a folder in your path)</li>
+<li>Test</li>
 </ol>
-<h4 id="intel-hardware">
-Intel Hardware
-</h4>
-<p>
-Here’s an example of the commands run in from the Bash shell on Windows
-11 after downloading the zip file (assume Linux Subsystem for Windows).
-</p>
+<h4 id="intel-hardware">Intel Hardware</h4>
+<p>Here’s an example of the commands run in from the Bash shell on
+Windows 11 after downloading the zip file (assume Linux Subsystem for
+Windows).</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-windows-amd64.zip
     mkdir -p $HOME/bin
     mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
-<h4 id="arm64-hardware">
-ARM64 Hardware
-</h4>
-<p>
-Here’s an example of the commands run in from the Bash shell on Windows
-11 after downloading the zip file (assumes Linux Subsystem for Windows).
-</p>
+<h4 id="arm64-hardware">ARM64 Hardware</h4>
+<p>Here’s an example of the commands run in from the Bash shell on
+Windows 11 after downloading the zip file (assumes Linux Subsystem for
+Windows).</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-windows-arm64.zip
     mkdir -p $HOME/bin
     mv -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
-<h3 id="linux">
-Linux
-</h3>
+<h3 id="linux">Linux</h3>
 <ol type="1">
-<li>
-Download the zip file
-</li>
-<li>
-Unzip the zip file
-</li>
-<li>
-Copy the executable to the “bin” directory in your “HOME” directory.
-</li>
-<li>
-Test
-</li>
+<li>Download the zip file</li>
+<li>Unzip the zip file</li>
+<li>Copy the executable to the “bin” directory in your “HOME”
+directory.</li>
+<li>Test</li>
 </ol>
-<p>
-Here’s an example of the commands run in from the Bash shell after
-downloading the zip file.
-</p>
+<p>Here’s an example of the commands run in from the Bash shell after
+downloading the zip file.</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-linux-amd64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
-<h3 id="raspberry-pi-os">
-Raspberry Pi OS
-</h3>
-<p>
-Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM
-7 support). Testing is done on Raspberry Pi 4 B devices using 32bit
-Raspberry Pi OS.
-</p>
+<h3 id="raspberry-pi-os">Raspberry Pi OS</h3>
+<p>Released version is for a Raspberry Pi 2 or later use (i.e. requires
+ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit
+Raspberry Pi OS.</p>
 <ol type="1">
-<li>
-Download the zip file
-</li>
-<li>
-Unzip the zip file
-</li>
-<li>
-Copy the executable to <code>$HOME/bin</code> (or a folder in your path)
-</li>
-<li>
-Test
-</li>
+<li>Download the zip file</li>
+<li>Unzip the zip file</li>
+<li>Copy the executable to <code>$HOME/bin</code> (or a folder in your
+path)</li>
+<li>Test</li>
 </ol>
-<p>
-Here’s an example of the commands run in from the Bash shell after
-downloading the zip file.
-</p>
+<p>Here’s an example of the commands run in from the Bash shell after
+downloading the zip file.</p>
 <pre class="shell"><code>    cd Downloads/
     unzip dataset-*-raspbian-arm7.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
-<h2 id="compiling-from-source">
-Compiling from source
-</h2>
-<p>
-Clone the repository and then compile.
-</p>
+<h2 id="compiling-from-source">Compiling from source</h2>
+<p>Clone the repository and then compile.</p>
 <pre class="shell"><code>    cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
@@ -322,91 +183,39 @@ Clone the repository and then compile.
     # Add any missing dependencies you might need in your Go environment
     make test
     make install</code></pre>
-<h3 id="requirements">
-Requirements
-</h3>
+<h3 id="requirements">Requirements</h3>
 <ul>
-<li>
-Go version 1.19.2 or better
-</li>
-<li>
-Pandoc version 2.19.2 or better
-</li>
-<li>
-GNU Make
-</li>
-<li>
-Common POSIX/Unix utilities, e.g. cat, sed, grep
-</li>
+<li>Go version 1.19.2 or better</li>
+<li>Pandoc version 2.19.2 or better</li>
+<li>GNU Make</li>
+<li>Common POSIX/Unix utilities, e.g. cat, sed, grep</li>
 </ul>
-<h3 id="windows-compilation">
-Windows compilation
-</h3>
-<p>
-The tool chain to compile on Windows make several assumptions.
-</p>
+<h3 id="windows-compilation">Windows compilation</h3>
+<p>The tool chain to compile on Windows make several assumptions.</p>
 <ol type="1">
-<li>
-You’re using Anaconda shell and have the C tool chain installed for cgo
-to work
-</li>
-<li>
-GNU Make, cat, grep and sed
-</li>
-<li>
-You have the latest Go installed
-</li>
+<li>You’re using Anaconda shell and have the C tool chain installed for
+cgo to work</li>
+<li>GNU Make, cat, grep and sed</li>
+<li>You have the latest Go installed</li>
 </ol>
-<p>
-Since I don’t assume a POSIX shell environment on windows I have made
-batch files to perform some of what Make under Linux and macOS would do.
-</p>
+<p>Since I don’t assume a POSIX shell environment on windows I have made
+batch files to perform some of what Make under Linux and macOS would
+do.</p>
 <ul>
-<li>
-make.bat builds our application and depends on go and jq commands
-</li>
-<li>
-release.bat builds a release, will prompt for version
-</li>
-<li>
-clean.bat removes executable and temp files
-</li>
+<li>make.bat builds our application and depends on go and jq
+commands</li>
+<li>release.bat builds a release, will prompt for version</li>
+<li>clean.bat removes executable and temp files</li>
 </ul>
-<p>
-Compilation assumes <a href="https://github.com/golang/go">go</a>
-v1.19.2 or better.
-</p>
+<p>Compilation assumes <a href="https://github.com/golang/go">go</a>
+v1.19.2 or better.</p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

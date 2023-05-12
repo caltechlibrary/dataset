@@ -1,124 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="keys-end-point">
-Keys (end point)
-</h1>
-<p>
-Interacting with the <strong>datasetd</strong> web service can be done
-with any web client. For documentation purposes I am assuming you are
-using <a href="https://curl.se/">curl</a>. This command line program is
-available on most POSIX systems including Linux, macOS and Windows.
-</p>
-<p>
-This end point lists keys available in a collection.
-</p>
+<h1 id="keys-end-point">Keys (end point)</h1>
+<p>Interacting with the <strong>datasetd</strong> web service can be
+done with any web client. For documentation purposes I am assuming you
+are using <a href="https://curl.se/">curl</a>. This command line program
+is available on most POSIX systems including Linux, macOS and
+Windows.</p>
+<p>This end point lists keys available in a collection.</p>
 <pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/keys`</code></pre>
-<p>
-Requires a “GET” method.
-</p>
-<p>
-The keys are turned as a JSON array or http error if not found.
-</p>
-<h2 id="example">
-Example
-</h2>
-<p>
-In this example <code>&lt;COLLECTION_ID&gt;</code> is “t1”.
-</p>
+<p>Requires a “GET” method.</p>
+<p>The keys are turned as a JSON array or http error if not found.</p>
+<h2 id="example">Example</h2>
+<p>In this example <code>&lt;COLLECTION_ID&gt;</code> is “t1”.</p>
 <pre class="shell"><code>    curl http://localhost:8485/t1/keys</code></pre>
-<p>
-The document return looks some like
-</p>
-<div id="cb3" class="sourceCode">
-<pre
+<p>The document return looks some like</p>
+<div class="sourceCode" id="cb3"><pre
 class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="ot">[</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;one&quot;</span><span class="ot">,</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;two&quot;</span><span class="ot">,</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;three&quot;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span></code></pre>
-</div>
-<p>
-For a “t1” containing the keys of “one”, “two” and “three”.
-</p>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span></code></pre></div>
+<p>For a “t1” containing the keys of “one”, “two” and “three”.</p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

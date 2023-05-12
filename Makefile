@@ -11,8 +11,6 @@ VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-PANDOC = $(shell which pandoc)
-
 PROGRAMS = $(shell ls -1 cmd)
 
 PACKAGE = $(shell ls -1 *.go | grep -v 'version.go')
@@ -68,11 +66,11 @@ $(MAN_PAGES_LIB): .FORCE
 
 CITATION.cff: codemeta.json .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	@if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="Cite $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff; fi
+	echo "" | pandoc --metadata title="Cite $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff
 
 about.md: codemeta.json .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	@if [ -f $(PANDOC) ]; then echo "" | $(PANDOC) --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md; fi
+	echo "" | pandoc --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 install: build
@@ -81,14 +79,22 @@ install: build
 	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then mv -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
 	@echo ""
 	@echo "Make sure $(PREFIX)/bin is in your PATH"
+	@echo ""
+	@for FNAME in $(MAN_PAGES); do if [ -f "./man/man1/$${FNAME}" ]; then cp -v "./man/man1/$${FNAME}" "$(PREFIX)/man/man1/$${FNAME}"; fi; done
+	@for FNAME in $(MANPAGES_LIB); do if [ -f "./man/man3/$${FNAME}" ]; then cp -v "./man/man3/$${FNAME}" "$(PREFIX)/man/man3/$${FNAME}"; fi; done
+	@echo "Make sure $(PREFIX)/man is in your MANPATH"
+	@echo ""
 
 uninstall: .FORCE
 	@echo "Removing programs in $(PREFIX)/bin"
 	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
+	@echo "Removing manpages in $(PREFIX)/man"
+	@for FNAME in $(MAN_PAGES); do if [ -f "$(PREFIX)/man/man1/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man1/$${FNAME}"; fi; done
+	@for FNAME in $(MAN_PAGES_LIB); do if [ -f "$(PREFIX)/man/man3/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man3/$${FNAME}"; fi; done
 
 
-website: page.tmpl README.md nav.md INSTALL.md LICENSE css/site.css
-	bash mk-website.bash
+website: .FORCE
+	make -f website.mak
 
 check: .FORCE
 	go vet *.go

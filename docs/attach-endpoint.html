@@ -1,121 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    <link rel="stylesheet" href="/css/site.css">
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
 <ul>
-<li>
-<a href="/">Home</a>
-</li>
-<li>
-<a href="../">Up</a>
-</li>
-<li>
-<a href="../">README</a>
-</li>
-<li>
-<a href="../license.html">LICENSE</a>
-</li>
-<li>
-<a href="../install.html">INSTALL</a>
-</li>
-<li>
-<a href="./">Documentation</a>
-</li>
-<li>
-<a href="../how-to/">Tutorials</a>
-</li>
-<li>
-<a href="topics.html">Topics</a>
-</li>
-<li>
-<a href="../about.html">About</a>
-</li>
-<li>
-<a href="https://github.com/caltechlibrary/dataset">Github</a>
-</li>
-<li>
-<a
-href="https://github.com/caltechlibrary/dataset/releases/">Releases</a>
-</li>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="attach-end-point">
-Attach (end point)
-</h1>
-<p>
-Interacting with the <strong>datasetd</strong> web service can be done
-with any web client. For documentation purposes I am assuming you are
-using <a href="https://curl.se/">curl</a>. This command line program is
-available on most POSIX systems including Linux, macOS and Windows.
-</p>
-<p>
-Attaches a document to a JSON Document using <code>&lt;KEY&gt;</code>,
-and <code>&lt;FILENAME&gt;</code>.
-</p>
+<h1 id="attach-end-point">Attach (end point)</h1>
+<p>Interacting with the <strong>datasetd</strong> web service can be
+done with any web client. For documentation purposes I am assuming you
+are using <a href="https://curl.se/">curl</a>. This command line program
+is available on most POSIX systems including Linux, macOS and
+Windows.</p>
+<p>Attaches a document to a JSON Document using
+<code>&lt;KEY&gt;</code>, and <code>&lt;FILENAME&gt;</code>.</p>
 <pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/attachment/&lt;KEY&gt;/&lt;FILENAME&gt;`</code></pre>
-<p>
-Requires a “POST” method. The “POST” is expected to be a multi-part web
-form providing the source filename in the field “filename”. The document
-will be written for JSON document in the attachments sub directory under
-<code>&lt;KEY&gt;</code>.
-</p>
-<h1 id="example">
-Example
-</h1>
-<p>
-In this example the <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
+<p>Requires a “POST” method. The “POST” is expected to be a multi-part
+web form providing the source filename in the field “filename”. The
+document will be written for JSON document in the attachments sub
+directory under <code>&lt;KEY&gt;</code>.</p>
+<h1 id="example">Example</h1>
+<p>In this example the <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
 <code>&lt;KEY&gt;</code> is “one” and the content upload is “a1.png” in
 the home directory “/home/jane.doe”. The <code>&lt;SEMVER&gt;</code> is
-“0.0.1”.
-</p>
+“0.0.1”.</p>
 <pre class="shell"><code>    curl -X POST -H &#39;Content-Type: multipart/form-data&#39; \
        -F &#39;filename=@/home/jane.doe/a1.png&#39; \
        http://localhost:8485/t1/attachment/one/a1.png</code></pre>
-<p>
-NOTE: The URL contains the filename used in the saved attachment. If I
-did not want to call it “a1.png” I could have provided a different name
-in the URL path.
-</p>
+<p>NOTE: The URL contains the filename used in the saved attachment. If
+I did not want to call it “a1.png” I could have provided a different
+name in the URL path.</p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2021 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
-<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
-<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
-<a class="cl-hide" href="sitemap.xml">Site Map</a>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_
-prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

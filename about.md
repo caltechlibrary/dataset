@@ -39,9 +39,9 @@ About this software
 Tools for working with JSON documents as a collection hosted on the file
 system or SQL JSON store
 
-- License: https://data.caltech.edu/license
-- GitHub: https://github.com/caltechlibrary/dataset
-- Issues: https://github.com/caltechlibrary/dataset/issues
+- License: <https://data.caltech.edu/license>
+- GitHub: <https://github.com/caltechlibrary/dataset>
+- Issues: <https://github.com/caltechlibrary/dataset/issues>
 
 
 ### Programming languages
@@ -53,3 +53,4 @@ system or SQL JSON store
 
 - Golang 1.20 or better
 - Pandoc 3.0 or better
+- GNU Make
