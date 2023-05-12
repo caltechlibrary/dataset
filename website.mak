@@ -15,9 +15,9 @@ MD_HOWTO_PAGES = $(shell ls -1 how-to/*.md)
 
 HTML_HOWTO_PAGES = $(shell ls -1 how-to/*.md | sed -E 's/\.md/.html/g')
 
-MD_LIB_PAGES = $(shell ls -1 how-to/*.md)
+MD_LIB_PAGES = $(shell ls -1 libdataset/*.md)
 
-HTML_LIB_PAGES = $(shell ls -1 how-to/*.md | sed -E 's/\.md/.html/g')
+HTML_LIB_PAGES = $(shell ls -1 libdataset/*.md | sed -E 's/\.md/.html/g')
 
 
 build: $(HTML_PAGES) $(MD_PAGES) $(HTML_DOCS_PAGES) $(MD_DOCS_PAGES) $(HTML_HOWTO_PAGES) $(MD_HOWTO_PAGES) pagefind
