@@ -15,6 +15,10 @@ MD_HOWTO_PAGES = $(shell ls -1 how-to/*.md)
 
 HTML_HOWTO_PAGES = $(shell ls -1 how-to/*.md | sed -E 's/\.md/.html/g')
 
+MD_LIB_PAGES = $(shell ls -1 how-to/*.md)
+
+HTML_LIB_PAGES = $(shell ls -1 how-to/*.md | sed -E 's/\.md/.html/g')
+
 
 build: $(HTML_PAGES) $(MD_PAGES) $(HTML_DOCS_PAGES) $(MD_DOCS_PAGES) $(HTML_HOWTO_PAGES) $(MD_HOWTO_PAGES) pagefind
 	@for FNAME in $(HTML_PAGES); do git add "$$FNAME"; done
@@ -37,6 +41,12 @@ $(HTML_HOWTO_PAGES): $(MD_HOWTO_PAGES) .FORCE
 	pandoc --metadata title=$(basename $@) -s --to html5 "$(basename $@).md" -o "$(basename $@).html" \
 		--lua-filter=links-to-html.lua \
 	    --template=how-to.tmpl
+
+$(HTML_LIB_PAGES): $(MD_LIB_PAGES) .FORCE
+	pandoc --metadata title=$(basename $@) -s --to html5 $(basename $@).md -o $(basename $@).html \
+		--lua-filter=links-to-html.lua \
+	    --template=docs.tmpl
+	@if [ $@ = "README.html" ]; then mv README.html index.html; git add index.html; fi
 
 
 pagefind: .FORCE
