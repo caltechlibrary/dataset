@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="count">count</h1>
+<h2 id="syntax">Syntax</h2>
+<pre class="shell"><code>    dataset count COLLECTION_NAME [FILTER EXPRESSION]</code></pre>
+<h2 id="description">Description</h2>
+<p>This returns a count of the keys in the collection. It is reasonable
+quick as only the collection metadata is read in. <em>count</em> also
+can accept a filter expression. This is slower as it iterates over all
+the records and counts those which evaluate to true based on the filter
+expression provided.</p>
+<h2 id="usage">Usage</h2>
+<p>Count all records in collection “publications.ds”</p>
+<pre class="shell"><code>    dataset count &quot;publications.ds&quot;</code></pre>
+<p>Count records where the “.published” field is true.</p>
+<pre class="shell"><code>    dataset count &quot;publications.ds&quot; &#39;(eq .published true)&#39;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- How to ...</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+    <li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="../docs/">Documentation</a></li>
+    <li><a href="index.html">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="upgrading-your-dataset-collections">Upgrading your dataset
+collection(s)</h1>
+<p>The <strong>dataset</strong> Go package is still rapidly evolving
+though it is now commonly used at Caltech Library. As a result we’ve
+developed an easy method for migration collections from an old version
+to a new version. In version 1 dataset the “usual” to upgrading your was
+to use use the “check” and “repair” features of the
+<strong>dataset</strong> command line tool.</p>
+<pre class="shell"><code>    dataset check mycollection.ds
+    # you&#39;ll get a verbose report to the console
+    dataset repair mycollection.ds
+    # dataset will not attempt to &quot;repair&quot; including upgrade, 
+    # your collection</code></pre>
+<p>In the version 2 of dataset a “migrate” verb has been created. There
+are allot of structural changes inside a collection between version one
+and two not to mention different storage engine options. The new recipe
+for upgrading is create an empty target collection with the storage
+engine you prefer (e.g. Pairtree or SQL). Run “check” as before to make
+sure we can read the old collection and then use “migrate” to populate
+the new collection with the old collection’s contrent.</p>
+<pre class="shell"><code>    # Create a new empty (v2) new collection,
+    # in this case we stuck with pairtree storage.
+    dataset init new_collection.ds 
+
+    # Double check the old one to make sure we can read it
+    dataset check old_collection.ds
+
+    # Migrate the content verion old to new.
+    dataset migrate old_collection.ds new_collection.ds</code></pre>
+<p>Once migrated you can run your usual check and repair on any pairtree
+storage collection. For SQL storage collections you will need to use
+your SQL database tools to check and fix broken tables.</p>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

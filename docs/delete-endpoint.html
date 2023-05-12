@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="delete-end-point">Delete (end point)</h1>
+<p>Interacting with the <strong>datasetd</strong> web service can be
+done with any web client. For documentation purposes I am assuming you
+are using <a href="https://curl.se/">curl</a>. This command line program
+is available on most POSIX systems including Linux, macOS and
+Windows.</p>
+<p>Delete a JSON document in the collection. Requires the document key
+and collection name.</p>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/object/&lt;KEY&gt;`</code></pre>
+<p>Requires a <code>DELETE</code> HTTP method.</p>
+<p>Deletes a JSON document for the <code>&lt;KEY&gt;</code> in
+collection <code>&lt;COLLECTION_ID&gt;</code>. On success it returns
+HTTP 200 OK. Otherwise an HTTP error if creation fails.</p>
+<h2 id="example">Example</h2>
+<p>The <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
+<code>&lt;KEY&gt;</code> is “one” The content posted is</p>
+<p>Posting using CURL is done like</p>
+<pre class="shell"><code>    curl -X DELETE -H &#39;Content-Type: application.json&#39; \
+      http://locahost:8485/t1/object/one</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

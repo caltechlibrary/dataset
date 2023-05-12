@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- How to ...</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+    <li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="../docs/">Documentation</a></li>
+    <li><a href="index.html">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="filters-and-sorting">Filters and sorting</h1>
+<p><strong>dataset</strong> does not support internally sorting or
+filtering of keys. It does support data frames which can be used to do
+that via external tools.</p>
+<h2 id="example">Example</h2>
+<ol type="1">
+<li>Create a data frame using <code>frame</code> verb containing the
+field “.given” and the record “.id”</li>
+<li>Iterate over the frame objects and in the frame using
+<code>frame-objects</code> verb.</li>
+<li>For desired keys output the key and send to a new “filtered” frame
+using <code>frame</code> verb.</li>
+</ol>
+<p>NOTE: In the example below I’ve used <strong>jsonrange</strong> and
+<strong>jsoncols</strong> for iterating and filtering our objects. These
+are provided by <a
+href="https://github.com/caltechlibrary/datatools/releases">datatools</a>.
+See <a href="filtering-keys.bash">filtering-keys.bash</a>.</p>
+<pre class="shell"><code>#
+# Frames, filter for given name &quot;Mojo&quot;
+#
+
+# Step 1.
+dataset frame friends.ds &quot;unfiltered&quot; &quot;._Key=id&quot; &quot;.given=given&quot; &quot;.family=family&quot;&gt;/dev/null
+
+# Step 2. do our filtering iterating over the unfiltered frame (piping the results)
+for OBJ in $(dataset frame-objects friends.ds unfiltered | jsonrange -values ); do
+    GIVEN=$(echo &quot;${OBJ}&quot; | jsoncols -i - .given | sed -E &#39;s/&quot;//g&#39;)
+    # This is the filter, we&#39;re checking if the record is about Mojo.
+    if [ &quot;${GIVEN}&quot; = &quot;Mojo&quot; ]; then
+        echo &quot;${OBJ}&quot; | jsoncols -i - .id | sed -E &#39;s/&quot;//g&#39;
+    fi
+done |\
+# Step 3. create a filtered frame
+  dataset -i - frame friends.ds filtered &quot;._Key=id&quot; &quot;.given=given&quot; &quot;.family=family&quot;&gt;/dev/null
+
+echo &quot;We now have a frame with only Mojo.&quot;
+dataset -pretty frame friends.ds filtered</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

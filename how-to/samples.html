@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- How to ...</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+    <li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="../docs/">Documentation</a></li>
+    <li><a href="index.html">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="samples">Samples</h1>
+<p>Getting a sample of a collection and be done by generating a random
+sample of keys or by cloning a collection based on a random sample of
+objects.</p>
+<h2 id="getting-a-random-sample-of-keys">Getting a random sample of
+keys</h2>
+<p>Create a random sample of keys. This uses the keys verb.</p>
+<p>In this example 3 randomly selected keys would be returned from the
+collection named “mycollection.ds”.</p>
+<pre class="shell"><code>    dataset keys -sample 3 mycollection.ds</code></pre>
+<h2 id="cloning-a-random-sample-of-objects-from-a-collection">Cloning a
+random sample of objects from a collection</h2>
+<p>When cloning a randomize sample of objects from a collection you
+often want two collections. Typically this is a training collection and
+a test collection. The “clone-sample” verb supports this when you
+provide two collection destinations.</p>
+<p>In this example we create a training and testing collections based on
+a training sample size of 1000.</p>
+<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds training.ds test.ds</code></pre>
+<p>If you only want a single sample collection skip the second
+collection name.</p>
+<pre class="shell"><code>    dataset clone-sample -size=1000 mycollection.ds small-sample.ds</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

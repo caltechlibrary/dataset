@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="dataset">dataset</h1>
+<h2 id="usage">USAGE</h2>
+<pre><code>dataset [OPTIONS] VERB [OPTIONS] COLLECTION_NAME [ACTION PARAMETERS...]</code></pre>
+<h2 id="synopsis">SYNOPSIS</h2>
+<p>dataset is a command line tool demonstrating dataset package for
+managing JSON documents stored on disc. A dataset is organized around
+collections, collections contain a pairtree holding specific JSON
+documents and related content. In addition to the JSON documents dataset
+maintains metadata for management of the documents, their attachments as
+well as a ability to generate select lists based JSON document keys (aka
+JSON document names).</p>
+<h2 id="options">OPTIONS</h2>
+<p>Options can be general (e.g. <code>--help</code>) or specific to a
+verb. General options are</p>
+<pre><code>    -e, -examples             display examples
+    -h, -help                 display help
+    -l, -license              display license
+    -v, -version              display version
+    -verbose                  output rows processed on importing from CSV</code></pre>
+<h2 id="verbs">VERBS</h2>
+<pre><code>    attach         Attach a document (file) to a JSON record in a collection
+    attachments    List of attachments associated with a JSON record in
+                   a collection
+    check          Check the health of a dataset collection (for collections
+                   using pairtree storage model)
+    clone          Clone a collection from a list of keys into a new
+                   collection
+    clone-sample   Clone a collection into a sample size based training
+                   collection and test collection
+    count          Counts the number of records in a collection, accepts
+                   a filter for sub-counts
+    create         Create a JSON record in a collection
+    delete         Delete a JSON record (and attachments) from a collection
+    delete-frame   remove a frame from a collection
+    retrieve       Copy an attachment out of an associated JSON record in
+                   a collection
+    frame          define a frame in a collection
+    frame-def      retrieve a frame&#39;s definition
+    frame-objects  retrieve a frame&#39;s object list
+    frame-keys     retrieve a frame&#39;s key list
+    frames         list the available frames in a collection
+    has-key        Returns true if key is in collection, false otherwise
+    init           Initialize a dataset collection
+    join           Join a JSON record with a new JSON object in a collection
+    keys           List the keys in a collection
+    prune          Remove attachments from a JSON record in a collection
+    read           Read back a JSON record from a collection
+    reframe        re-generate a frame with provided key list
+    repair         Try to repair a damaged dataset collection (for
+                   collections using a pairtree storage model)
+    sample         return a random sample of keys in a collection
+    update         Update a JSON record in a collection</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

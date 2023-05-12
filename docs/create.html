@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="create">create</h1>
+<h2 id="syntax">Syntax</h2>
+<pre class="shell"><code>    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
+    dataset create COLLECTION_NAME KEY JSON_VALUE
+    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY</code></pre>
+<h2 id="description">Description</h2>
+<p>create adds a JSON document to a collection. The JSON document can be
+read from a standard in, a named file (with a “.json” file extension) or
+expressed literally on the command line.</p>
+<h2 id="usage">Usage</h2>
+<p>In the following four examples <em>jane-doe.json</em> is a file on
+the local file system contains JSON data containing the JSON_VALUE of
+<code>{"name":"Jane Doe"}</code>. The KEY we will create is <em>r1</em>.
+Collection is “people.ds”. The following are equivalent in resulting
+record.</p>
+<pre class="shell"><code>    cat jane-doe.json | dataset create people.ds r1
+    dataset create -i jane-doe.json people.ds r1
+    dataset create people.ds r1 &#39;{&quot;name&quot;:&quot;Jane Doe&quot;}&#39;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

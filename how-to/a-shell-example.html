@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- How to ...</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+    <li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="../docs/">Documentation</a></li>
+    <li><a href="index.html">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="a-shell-example">A Shell Example</h1>
+<h2 id="dataset">dataset</h2>
+<p>Below is a simple example of shell based interaction with dataset a
+collection using the command line dataset tool.</p>
+<pre class="shell"><code>    # Create a collection &quot;friends.ds&quot;, the &quot;.ds&quot; lets the bin/dataset command know that&#39;s the collection to use. 
+    dataset init friends.ds
+    # if successful then you should see an OK otherwise an error message
+
+    # Create a JSON document 
+    dataset create friends.ds frieda \
+        &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
+    # If successful then you should see an OK otherwise an error message
+
+    # Read a JSON document
+    dataset read friends.ds frieda
+    
+    # Update a JSON document
+    dataset update friends.ds frieda \
+        &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}&#39;
+    # If successful then you should see an OK or an error message
+
+    # List the keys in the collection
+    dataset keys friends.ds
+
+    # Delete a JSON document
+    dataset delete friends.ds frieda
+
+    # To remove the collection just use the Unix shell command
+    rm -fR friends.ds</code></pre>
+<h2 id="datasetd">datasetd</h2>
+<p>We need to have two shell sessions running for this example.</p>
+<p>For this example we’re going to use the “friends.ds” collection
+created in the previous example. We need to create a “settings.json”
+file in the same directory where you have “friends.ds”. We will use it
+to start <em>datasetd</em>. That file should contain</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;collections&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;friends&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;friends.ds&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;create&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;update&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;delete&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>We start up <em>datasetd</em> with the following command.</p>
+<pre class="shell"><code>    datasetd settings.json</code></pre>
+<p>In this first session you will see log output to the console. We can
+use that to see how the service handles the requests.</p>
+<p>In a second shell session we’re going to use the <a
+href="https://curl.se/">curl</a> command to interact with our
+collections.</p>
+<pre class="shell"><code>    # Create a JSON document 
+    curl -X POST -H &#39;application/json&#39; \
+    &#39;http://localhost:8485/friends/object/frieda&#39; \
+    -d &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
+
+    # Read a JSON document
+    curl &#39;http://localhost:8485/friends/object/frieda&#39;
+    
+    # Update a JSON document
+    curl -X PUT -H &#39;application/json&#39; \
+    &#39;http://localhost:8485/friends/object/frieda&#39; \
+    -d &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}&#39;
+
+    # List the keys in the collection
+    curl &#39;http://localhost:8485/friends/keys&#39;
+
+    # Delete a JSON document
+    curl -X DELETE &#39;http://localhost:8485/friends/object/frieda&#39;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

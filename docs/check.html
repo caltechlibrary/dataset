@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project -- Documentation</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../index.html">README</a></li>
+	<li><a href="../user-manual.html">User Manual</a></li>
+    <li><a href="index.html">Documentation</a></li>
+    <li><a href="../how-to/">How To</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="check">check</h1>
+<h2 id="syntax">syntax</h2>
+<pre class="shell"><code>    dataset check COLLECTION_NAME [COLLECTION_NAME ...]</code></pre>
+<h2 id="description">Description</h2>
+<p>Check reviews one or more collections and reports if any problems are
+identified based on the <code>collection.json</code> file found in the
+folder holding the collection’s pairtree.</p>
+<h2 id="usage">Usage</h2>
+<p>If multiple instances of dataset write (e.g. create or update) to a
+collection then it is possible that the JSON file
+<code>collection.json</code> will become inaccurate.</p>
+<pre class="shell"><code>    dataset check MyRecordCollection.ds
+    dataset check MyBrokenCollection.ds MyRecordCollection.ds</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user-manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="name">NAME</h1>
+<p>{app_name}</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>{app_name} <a href="#options">OPTIONS</a> SETTINGS_JSON_FILE</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Runs a web service for one or more dataset collections. Requires the
+collections to exist (e.g. created previously with the dataset cli). It
+requires a settings JSON file that decribes the web service
+configuration and permissions per collection that are available via the
+web service.</p>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-help</dt>
+<dd>
+display detailed help
+</dd>
+<dt>-license</dt>
+<dd>
+display license
+</dd>
+<dt>-version</dt>
+<dd>
+display version
+</dd>
+</dl>
+<h1 id="examples">EXAMPLES</h1>
+<p>Starting up the web service</p>
+<pre><code>   {app_name} settings.json</code></pre>
+<p>In this example we cover a short life cycle of a collection called
+“t1.ds”. We need to create a “settings.json” file and an empty dataset
+collection. Once ready you can run the {app_name} service to interact
+with the collection via cURL.</p>
+<p>To create the dataset collection we use the “dataset” command and the
+“vi” text edit (use can use your favorite text editor instead of
+vi).</p>
+<pre><code>    dataset init t1.ds
+    vi settings.json</code></pre>
+<p>In the “setttings.json” file the JSON should look like.</p>
+<pre><code>    {
+        &quot;host&quot;: &quot;localhost:8485&quot;,
+        &quot;sql_type&quot;: &quot;mysql&quot;,
+        &quot;dsn&quot;: &quot;DB_USER:DB_PASSWORD@/DB_NAME&quot;
+    }</code></pre>
+<p>Now we can run {app_name} and make the dataset collection available
+via HTTP.</p>
+<pre><code>    {app_name} settings.json</code></pre>
+<p>You should now see the start up message and any log information
+display to the console. You should open a new shell sessions and try the
+following.</p>
+<p>We can now use cURL to post the document to the “/t1/create/one” end
+point.</p>
+<pre><code>    curl -X POST http://localhost:8485/t1/create/one \
+        -d &#39;{&quot;one&quot;: 1}&#39;</code></pre>
+<p>Now we can list the keys available in our collection.</p>
+<pre><code>    curl http://localhost:8485/t1/keys</code></pre>
+<p>We should see “one” in the response. If so we can try reading it.</p>
+<pre><code>    curl http://localhost:8485/t1/read/one</code></pre>
+<p>That should display our JSON document. Let’s try updating (replacing)
+it.</p>
+<pre><code>    curl -X POST http://localhost:8485/t1/update/one \
+        -d &#39;{&quot;one&quot;: 1, &quot;two&quot;: 2}&#39;</code></pre>
+<p>If you read it back you should see the updated record. Now lets try
+deleting it.</p>
+<pre><code>    curl http://localhost:8485/t1/delete/one</code></pre>
+<p>List the keys and you should see that “one” is not longer there.</p>
+<pre><code>    curl http://localhost:8485/t1/keys</code></pre>
+<p>In the shell session where {app_name} is running press “ctr-C” to
+terminate the service.</p>
+<p>{app_name} {version}</p>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

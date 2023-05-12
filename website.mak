@@ -17,6 +17,10 @@ HTML_HOWTO_PAGES = $(shell ls -1 how-to/*.md | sed -E 's/\.md/.html/g')
 
 
 build: $(HTML_PAGES) $(MD_PAGES) $(HTML_DOCS_PAGES) $(MD_DOCS_PAGES) $(HTML_HOWTO_PAGES) $(MD_HOWTO_PAGES) pagefind
+	@for FNAME in $(HTML_PAGES); do git add "$$FNAME"; done
+	@for FNAME in $(HTML_DOCS_PAGES); do git add "$$FNAME"; done
+	@for FNAME in $(HTML_HOWTO_PAGES); do git add "$$FNAME"; done
+	@git commit -am 'website build process'
 
 $(HTML_PAGES): $(MD_PAGES) .FORCE
 	pandoc --metadata title=$(basename $@) -s --to html5 $(basename $@).md -o $(basename $@).html \
@@ -40,6 +44,9 @@ pagefind: .FORCE
 	git add pagefind
 
 clean:
-	@if [ -f index.html ]; then rm *.html; fi
+	@for FNAME in $(HTML_PAGES); do rm "$${FNAME}"; fi
+	@for FNAME in $(HTML_DOCS_PAGES); do rm "$${FNAME}"; fi
+	@for FNAME in $(HTML_HOWTO_PAGES); do rm "$${FNAME}"; fi
+
 
 .FORCE:
