@@ -16,7 +16,8 @@ Quick install with curl
 
 There is an experimental installer.sh script that can be run with the
 following command to install lastest table release. This may work for
-macOS, Linux and if you're using Windows with the Unix subsystem.
+macOS, Linux and if you're using Windows with the Unix subsystem. This
+would be run from your shell (e.g. Terminal on macOS).
 
 ~~~
 curl https://caltechlibrary.github.io/dataset/installer.sh | sh
