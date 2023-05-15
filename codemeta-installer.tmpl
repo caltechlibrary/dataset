@@ -27,7 +27,7 @@ ZIPFILE="$$PACKAGE-$$VERSION-$$OS_NAME-$$MACHINE.zip"
 #
 # Check to see if this zip file has been downloaded.
 #
-DOWNLOAD_URL="https://github.com/caltechlibrary/$$PACKAGE/releases/download/$$VERSION/$$ZIPFILE"
+DOWNLOAD_URL="https://github.com/caltechlibrary/$$PACKAGE/releases/download/v$$VERSION/$$ZIPFILE"
 if [ ! -f "$$HOME/Downloads/$$ZIPFILE" ]; then
 	if curl --version > /dev/null 2>&1; then
 		curl -L -o "$$HOME/Downloads/$$ZIPFILE" "$$DOWNLOAD_URL"
