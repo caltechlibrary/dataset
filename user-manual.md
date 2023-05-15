@@ -8,4 +8,5 @@
 - [Installation](INSTALL.md)
 - [Documentation](docs/)
 - [How to ...](how-to/)
+- [Libdataset](libdataset/)
 

@@ -33,7 +33,7 @@ endif
 
 DIST_FOLDERS = bin/* man/*
 
-build: version.go $(PROGRAMS) CITATION.cff about.md
+build: version.go $(PROGRAMS) CITATION.cff about.md installer.sh
 
 version.go: .FORCE
 	@echo 'package $(PROJECT)' >version.go
@@ -71,6 +71,11 @@ CITATION.cff: codemeta.json .FORCE
 about.md: codemeta.json .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
 	echo "" | pandoc --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md
+
+installer.sh: .FORCE
+	echo '' | pandoc --metadata-file codemeta.json --template codemeta-installer.tmpl >installer.sh
+	chmod 775 installer.sh
+	git add -f installer.sh
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 install: build
@@ -176,6 +181,7 @@ distribute_docs:
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
+	cp installer.sh dist/
 	cp -vR man dist/
 
 update_version:
