@@ -3,6 +3,13 @@
 #
 PROJECT = dataset
 
+GIT_GROUP = caltechlibrary
+
+RELEASE_DATE=$(shell date +'%Y-%m-%d')
+
+RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
+
+
 MAN_PAGES = dataset.1 datasetd.1
 
 MAN_PAGES_LIB = libdataset.3
@@ -73,7 +80,7 @@ about.md: codemeta.json .FORCE
 	echo "" | pandoc --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md
 
 installer.sh: .FORCE
-	echo '' | pandoc --metadata-file codemeta.json --template codemeta-installer.tmpl >installer.sh
+	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-installer.tmpl >installer.sh
 	chmod 775 installer.sh
 	git add -f installer.sh
 
