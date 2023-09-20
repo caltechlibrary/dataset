@@ -29,11 +29,9 @@ import (
 
 
 const (
-	helpText = `---
-title: "{app_name} (1) user manual"
-pubDate: 2023-02-14
-author: "R. S. Doiel"
----
+	helpText = `%{app_name}(1) user manual | version {version} {release_hash}
+% R. S. Doiel and Tom Morrell
+% {release_date}
 
 # NAME
 
@@ -181,7 +179,7 @@ func main() {
 	eout := os.Stderr
 
 	if showHelp {
-		fmt.Fprintf(out, "%s\n", fmtTxt(helpText, appName, dataset.Version))
+		fmt.Fprintf(out, "%s\n", dataset.FmtHelp(helpText, appName, dataset.Version, dataset.ReleaseDate, dataset.ReleaseHash))
 		os.Exit(0)
 	}
 	if showLicense {

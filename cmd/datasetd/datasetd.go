@@ -33,11 +33,9 @@ import (
 )
 
 const (
-	helpText = `---
-title: "{app_name} (1) user manual"
-pubDate: 2023-02-08
-author: "R. S. Doiel"
----
+	helpText = `%{app_name} (1) user manual | verion {version} {release_hash}"
+% R. S. Doiel
+% {release_date}
 
 # NAME
 

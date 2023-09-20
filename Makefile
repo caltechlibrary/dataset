@@ -40,7 +40,7 @@ endif
 
 DIST_FOLDERS = bin/* man/*
 
-build: version.go $(PROGRAMS) CITATION.cff about.md installer.sh
+build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh
 
 version.go: .FORCE
 	@echo '' | pandoc --from t2t --to plain \
@@ -57,6 +57,7 @@ version.go: .FORCE
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/*.go
+	@./bin/$@ -help >$@.1.md
 
 man: $(MAN_PAGES) $(MAN_PAGES_LIB)
 
