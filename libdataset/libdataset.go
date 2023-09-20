@@ -580,7 +580,7 @@ func open_collection(cName *C.char) C.int {
 //export collections
 func collections() *C.char {
 	cNames := Collections()
-	src, err := json.Marshal(cNames)
+	src, err := dataset.JSONMarshal(cNames)
 	if err != nil {
 		return C.CString("[]")
 	}
@@ -966,7 +966,7 @@ func keys(cName *C.char) *C.char {
 
 	error_clear()
 	keyList := Keys(collectionName)
-	src, err := json.Marshal(keyList)
+	src, err := dataset.JSONMarshal(keyList)
 	if err != nil {
 		errorDispatch(err, "Can't marshal key list, %s", err)
 		return C.CString("")
@@ -1135,7 +1135,7 @@ func join_objects(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int
 	}
 
 	newObject := map[string]interface{}{}
-	if err := dataset.DecodeJSON([]byte(objectSrc), &newObject); err != nil {
+	if err := dataset.JSONUnmarshal([]byte(objectSrc), &newObject); err != nil {
 		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
@@ -1146,7 +1146,7 @@ func join_objects(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int
 		return C.int(0)
 	}
 	outObject := map[string]interface{}{}
-	if err := dataset.DecodeJSON(src, &outObject); err != nil {
+	if err := dataset.JSONUnmarshal(src, &outObject); err != nil {
 		errorDispatch(err, "%s", err)
 		return C.int(0)
 	}
@@ -1162,7 +1162,7 @@ func join_objects(cName *C.char, cKey *C.char, cObjSrc *C.char, cOverwrite C.int
 			}
 		}
 	}
-	src, err = dataset.EncodeJSON(outObject)
+	src, err = dataset.JSONMarshal(outObject)
 	if err != nil {
 		errorDispatch(err, "%s", err)
 		return C.int(0)
@@ -1332,7 +1332,7 @@ func list_objects(cName *C.char, cKeys *C.char) *C.char {
 		}
 		recs = append(recs, m)
 	}
-	src, err := json.Marshal(recs)
+	src, err := dataset.JSONMarshal(recs)
 	if err != nil {
 		errorDispatch(err, "failed to marshal result, %s", err)
 		return C.CString("")
@@ -1597,7 +1597,7 @@ func frame(cName *C.char, cFName *C.char) *C.char {
 		errorDispatch(err, "failed to create frame, %s", err)
 		return C.CString("")
 	}
-	src, err := json.Marshal(f)
+	src, err := dataset.JSONMarshal(f)
 	if err != nil {
 		errorDispatch(err, "failed to marshal frame, %s", err)
 		return C.CString("")
@@ -1627,7 +1627,7 @@ func frame_keys(cName *C.char, cFName *C.char) *C.char {
 	collectionName := C.GoString(cName)
 	frameName := C.GoString(cFName)
 	keys := FrameKeys(collectionName, frameName)
-	src, err := json.Marshal(keys)
+	src, err := dataset.JSONMarshal(keys)
 	if err != nil {
 		return C.CString("[]")
 	}
@@ -1684,7 +1684,7 @@ func frame_objects(cName *C.char, cFName *C.char) *C.char {
 		errorDispatch(err, "%s", err)
 		return C.CString("")
 	}
-	src, err := json.Marshal(ol)
+	src, err := dataset.JSONMarshal(ol)
 	if err != nil {
 		errorDispatch(err, "%s", err)
 		return C.CString("")
@@ -1796,7 +1796,7 @@ func frame_names(cName *C.char) *C.char {
 	if len(frameNames) == 0 {
 		return C.CString("[]")
 	}
-	src, err := json.Marshal(frameNames)
+	src, err := dataset.JSONMarshal(frameNames)
 	if err != nil {
 		errorDispatch(err, "failed to marshal frame names, %s", err)
 		return C.CString("")
@@ -1832,7 +1832,7 @@ func frame_grid(cName *C.char, cFName *C.char, cIncludeHeaderRow C.int) *C.char 
 		return C.CString("")
 	}
 	g := f.Grid(includeHeaderRow)
-	src, err := json.Marshal(g)
+	src, err := dataset.JSONMarshal(g)
 	if err != nil {
 		errorDispatch(err, "%s", err)
 		return C.CString("")

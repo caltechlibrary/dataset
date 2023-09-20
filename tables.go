@@ -33,7 +33,7 @@ func ValueInterfaceToString(val interface{}) (string, error) {
 	case []rune:
 		return fmt.Sprintf("%s", val), nil
 	default:
-		src, err := json.Marshal(val)
+		src, err := JSONMarshal(val)
 		if err != nil {
 			return "", fmt.Errorf("unknown type conversion, %T, %s", val, err)
 		}

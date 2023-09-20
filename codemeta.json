@@ -3,11 +3,11 @@
     "@type": "SoftwareSourceCode",
     "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
     "name": "dataset",
-    "datePublished": "2023-02-08",
+    "dateRelease": "2023-09-20",
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "author": [
         {
             "@type": "Person",

@@ -59,9 +59,9 @@ func TestPTStoreBasic(t *testing.T) {
 	for i, obj := range objects {
 		key := fmt.Sprintf("%08d", i)
 		keys = append(keys, key)
-		src, err := json.MarshalIndent(obj, "", "    ")
+		src, err := JSONMarshalIndent(obj, "", "    ")
 		if err != nil {
-			t.Errorf("json.MarshalIndent() failed for %q, %s", key, err)
+			t.Errorf("JSONMarshalIndent() failed for %q, %s", key, err)
 			continue
 		}
 		if err := store.Create(key, src); err != nil {

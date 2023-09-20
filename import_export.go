@@ -193,7 +193,7 @@ func colToString(cell interface{}) string {
 	case json.Number:
 		s = fmt.Sprintf("%s", cell.(json.Number).String())
 	default:
-		src, err := json.Marshal(cell)
+		src, err := JSONMarshal(cell)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
