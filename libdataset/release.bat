@@ -12,22 +12,22 @@ REM `conda install mw-zip`
 REM
 REM Replace %VERSION_% with the version number of the release.
 REM
-echo Default Version number is v1.0.0
-SET /P VERSION_NO=Enter Version Number (enter accept default): 
-IF [%VERSION_NO%] == [] SET VERSION_NO=1.0.0
-echo Using Version number %VERSION_NO%
-echo Building Shared library and release zip file
+echo Displaying version number from codemeta.json
+jq-windows-amd64 -r .version ..\codemeta.json
+echo Enter the version number you want to release as without "v" prefix.
+SET /P DS_VERSION=
+IF [%DS_VERSION%] == [] SET DS_VERSION=0.0.0
+echo Using Version number %DS_VERSION%
 @echo on
-go build -buildmode=c-shared -o "libdataset.dll" 
-"..\libdataset\libdataset.go"
-mkdir ..\dist
-copy libdataset.dll ..\dist\
-cd ..\dist
-copy ..\codemeta.json .\
-copy ..\CITATION.cff .\
-copy ..\README.md .\
-copy ..\LICENSE .\
-copy ..\INSTALL.md .\
-zip "libdataset-v%VERSION_NO%-windows-amd64.zip" libdataset.dll README.md 
-LICENSE INSTALL.md 
-
+IF NOT EXIST libdataset.dll go build -buildmode=c-shared -o "libdataset.dll" "libdataset.go"
+IF NOT EXIST dist MKDIR dist
+COPY libdataset.dll dist\
+COPY ..\codemeta.json dist\
+COPY ..\CITATION.cff dist\
+COPY ..\README.md dist\
+COPY ..\LICENSE dist\
+COPY ..\INSTALL.md dist\
+CD dist
+zip "libdataset-v%DS_VERSION%-windows-amd64.zip" libdataset.dll README.md LICENSE INSTALL.md
+CD ..
+DIR dist\*.zip

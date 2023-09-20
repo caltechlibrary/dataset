@@ -7,4 +7,5 @@ REM Requires: Go v1.23.4 or better
 REM Miniconda Python 3.7 or better.
 REM Using conda: `conda install git` `conda install m2w64-gcc`
 REM
+echo Running: go build -buildmode=c-shared -o "libdataset.dll" "..\libdataset\libdataset.go"
 go build -buildmode=c-shared -o "libdataset.dll" "..\libdataset\libdataset.go"
