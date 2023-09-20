@@ -187,12 +187,6 @@ dist/Linux-armv7l:
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-armv7l.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-dist/RaspberryPiOS-arm7:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-RasperryPiOS-arm7.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
-
 distribute_docs:
 	if [ -d dist ]; then rm -fR dist; fi
 	mkdir -p dist
@@ -208,7 +202,7 @@ update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: .FORCE clean build CITATION.cff man distribute_docs dist/Linux-x86_64 dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 dist/RaspberryPiOS-arm7 dist/Linux-aarch64 dist/Linux-armv7l
+release: .FORCE clean build CITATION.cff man distribute_docs dist/Linux-x86_64 dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 dist/Linux-aarch64 dist/Linux-armv7l
 
 status:
 	git status
