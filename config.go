@@ -106,7 +106,7 @@ type Config struct {
 
 // String renders the configuration as a JSON string.
 func (settings *Settings) String() string {
-	src, _ := json.MarshalIndent(settings, "", "    ")
+	src, _ := JSONMarshalIndent(settings, "", "    ")
 	return fmt.Sprintf("%s", src)
 }
 
@@ -204,7 +204,7 @@ func ConfigOpen(fName string) (*Settings, error) {
 //
 // ```
 func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
-	src, err := json.MarshalIndent(settings, "", "    ")
+	src, err := JSONMarshalIndent(settings, "", "    ")
 	if err != nil {
 		return err
 	}

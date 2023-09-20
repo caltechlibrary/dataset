@@ -88,16 +88,16 @@ var (
 // sameStrings compares one slice of strings to another by converting
 // them to a JSON represention and compariing the representation.
 func sameStrings(expected []string, got []string) bool {
-	src1, _ := json.MarshalIndent(expected, "", "    ")
-	src2, _ := json.MarshalIndent(got, "", "    ")
+	src1, _ := JSONMarshalIndent(expected, "", "    ")
+	src2, _ := JSONMarshalIndent(got, "", "    ")
 	return bytes.Compare(src1, src2) == 0
 }
 
 // sameMapping compares one map to another by converting
 // them to a JSON representation and comparing the representation.
 func sameMapping(expected map[string]interface{}, got map[string]interface{}) bool {
-	src1, _ := json.MarshalIndent(expected, "", "    ")
-	src2, _ := json.MarshalIndent(got, "", "    ")
+	src1, _ := JSONMarshalIndent(expected, "", "    ")
+	src2, _ := JSONMarshalIndent(got, "", "    ")
 	return bytes.Compare(src1, src2) == 0
 }
 
@@ -120,7 +120,7 @@ func makePayload(src []byte) (io.Reader, error) {
 }
 
 func makeObjectPayload(o map[string]interface{}) (io.Reader, error) {
-	src, err := json.MarshalIndent(o, "", "    ")
+	src, err := JSONMarshalIndent(o, "", "    ")
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 	}
 	newPost := make(map[string][]byte)
 	for k, o := range newRecords {
-		src, _ := json.MarshalIndent(o, "", "    ")
+		src, _ := JSONMarshalIndent(o, "", "    ")
 		newPost[k] = src
 	}
 
@@ -327,7 +327,7 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 					o := map[string]interface{}{}
 					json.Unmarshal(v, &o)
 					o["active"] = false
-					src, _ := json.Marshal(o)
+					src, _ := JSONMarshal(o)
 					body = bytes.NewBuffer(src)
 					res, err := makeRequest(u, http.MethodPut, body)
 					if err != nil {
@@ -725,7 +725,7 @@ func clientTestFrames(t *testing.T, settings *Settings) {
 		t.FailNow()
 	}
 	if !sameMapping(expectedDef, def) {
-		exSrc, _ := json.MarshalIndent(expectedDef, "", "    ")
+		exSrc, _ := JSONMarshalIndent(expectedDef, "", "    ")
 		t.Errorf("expected map %s, got %s", exSrc, src)
 	}
 
@@ -751,7 +751,7 @@ func clientTestFrames(t *testing.T, settings *Settings) {
 		t.FailNow()
 	}
 	if !sameStrings(expectedKeys, gotKeys) {
-		exSrc, _ := json.MarshalIndent(expectedKeys, "", "    ")
+		exSrc, _ := JSONMarshalIndent(expectedKeys, "", "    ")
 		t.Errorf("expected map %s, got %s", exSrc, src)
 	}
 
@@ -781,7 +781,7 @@ func clientTestFrames(t *testing.T, settings *Settings) {
 		t.FailNow()
 	}
 	if !sameObjects(expectedObjects, gotObjects) {
-		exSrc, _ := json.MarshalIndent(expectedObjects, "", "    ")
+		exSrc, _ := JSONMarshalIndent(expectedObjects, "", "    ")
 		t.Errorf("expected map %s, got %s", exSrc, src)
 	}
 
@@ -842,7 +842,7 @@ func clientTestFrames(t *testing.T, settings *Settings) {
 		t.Errorf("failed to get keys from %q, %s", cName, err)
 		t.FailNow()
 	}
-	src, err = json.MarshalIndent(newKeys, "", "    ")
+	src, err = JSONMarshalIndent(newKeys, "", "    ")
 	if err != nil {
 		t.Errorf("failed to marshal key list, %s", err)
 		t.FailNow()

@@ -144,40 +144,53 @@ clean:
 	@if [ -d cli/testout ]; then rm -fR cli/testout; fi
 	-go clean -r
 
-dist/linux-amd64:
+dist/Linux-x86_64:
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-linux-amd64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-x86_64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-dist/macos-amd64:
+dist/Linux-aarch64:
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-aarch64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@rm -fR dist/bin
+
+dist/macOS-x86_64:
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macos-amd64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macOS-x86_64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-dist/macos-arm64:
+dist/macOS-arm64:
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=arm64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macos-arm64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macOS-arm64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-dist/windows-amd64:
+dist/Windows-x86_64:
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=amd64 go build -o dist/bin/$$FNAME.exe cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-windows-amd64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Windows-x86_64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-dist/windows-arm64:
+dist/Windows-arm64:
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=arm64 go build -o dist/bin/$$FNAME.exe cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-windows-arm64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Windows-arm64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-dist/raspbian-arm7:
+# Raspberry Pi OS (32 bit), as reported by Raspberry Pi 3B+
+dist/Linux-armv7l:
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-rasperry-pi-os-arm7.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-armv7l.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@rm -fR dist/bin
+
+dist/RaspberryPiOS-arm7:
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-RasperryPiOS-arm7.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
 distribute_docs:
@@ -195,7 +208,7 @@ update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: clean build CITATION.cff man distribute_docs dist/linux-amd64 dist/windows-amd64 dist/windows-arm64 dist/macos-amd64 dist/macos-arm64 dist/raspbian-arm7
+release: .FORCE clean build CITATION.cff man distribute_docs dist/Linux-x86_64 dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 dist/RaspberryPiOS-arm7 dist/Linux-aarch64 dist/Linux-armv7l
 
 status:
 	git status

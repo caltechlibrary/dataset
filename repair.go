@@ -248,7 +248,7 @@ func FixMissingCollectionJson(cName string) error {
 	c.DatasetVersion = version
 	c.StoreType = storeType
 	c.DsnURI = dsnURI
-	src, err := json.MarshalIndent(c, "", "    ")
+	src, err := JSONMarshalIndent(c, "", "    ")
 	if err != nil {
 		return fmt.Errorf("unable to encode %q, %s", collectionJson, err)
 	}
@@ -421,7 +421,7 @@ func Repair(cName string, verbose bool) error {
 	repairLog(verbose, "Saving metadata for %s", cName)
 	// Save the collections' operational metadata
 	c.Repaired = time.Now().Format("2006-01-02")
-	src, err := json.MarshalIndent(c, "", "    ")
+	src, err := JSONMarshalIndent(c, "", "    ")
 	filename := path.Join(c.workPath, "collection.json")
 	err = ioutil.WriteFile(filename, src, 664)
 	if err != nil {

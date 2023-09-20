@@ -38,7 +38,7 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 	if target == "" {
 		m["target"] = target
 	}
-	src, _ := json.Marshal(m)
+	src, _ := JSONMarshal(m)
 	fmt.Fprintf(w, "%s", src)
 }
 
@@ -70,7 +70,7 @@ func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string,
 		for k := range api.CMap {
 			collections = append(collections, k)
 		}
-		src, err := json.MarshalIndent(collections, "", "     ")
+		src, err := JSONMarshalIndent(collections, "", "     ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", collections, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -123,7 +123,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 			http.NotFound(w, r)
 			return
 		}
-		src, err := json.MarshalIndent(keys, "", "    ")
+		src, err := JSONMarshalIndent(keys, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", keys, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -212,7 +212,7 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 			http.NotFound(w, r)
 			return
 		}
-		src, err := json.MarshalIndent(o, "", "    ")
+		src, err := JSONMarshalIndent(o, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", o, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -330,7 +330,7 @@ func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		src, err := json.MarshalIndent(fNames, "", "    ")
+		src, err := JSONMarshalIndent(fNames, "", "    ")
 		if err != nil {
 			log.Printf("Attachments, unmarshal error %+v, %s", fNames, err)
 			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
@@ -589,7 +589,7 @@ func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 	c, ok := api.CMap[cName]
 	if ok {
 		frameNames := c.FrameNames()
-		src, err := json.MarshalIndent(frameNames, "", "    ")
+		src, err := JSONMarshalIndent(frameNames, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", frameNames, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -622,7 +622,7 @@ func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb str
 	c, ok := api.CMap[cName]
 	if ok {
 		keys := c.FrameKeys(frameName)
-		src, err := json.MarshalIndent(keys, "", "    ")
+		src, err := JSONMarshalIndent(keys, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", keys, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -659,7 +659,7 @@ func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
-		src, err := json.MarshalIndent(def, "", "    ")
+		src, err := JSONMarshalIndent(def, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", def, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -696,7 +696,7 @@ func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
-		src, err := json.MarshalIndent(objects, "", "    ")
+		src, err := JSONMarshalIndent(objects, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", objects, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

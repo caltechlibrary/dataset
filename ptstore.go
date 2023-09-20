@@ -112,7 +112,7 @@ func (store *PTStore) SetVersioning(setting int) error {
 
 // writeKeymap writes the keymap.json file
 func (store *PTStore) writeKeymap() error {
-	src, err := json.Marshal(store.keyMap)
+	src, err := JSONMarshal(store.keyMap)
 	if err != nil {
 		return fmt.Errorf("could not encode key map for %q, %s", store.WorkPath, err)
 	}

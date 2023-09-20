@@ -255,7 +255,7 @@ func TestSampleCloning(t *testing.T) {
 	for k, v := range testRecords {
 		keys = append(keys, k)
 		args = []string{"create", srcName, k}
-		src, err := json.MarshalIndent(v, "", "    ")
+		src, err := JSONMarshalIndent(v, "", "    ")
 		if err != nil {
 			t.Errorf("Can't marshal %q -> %+v", k, v)
 			continue

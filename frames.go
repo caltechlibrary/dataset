@@ -188,7 +188,7 @@ func (c *Collection) setFrame(key string, f *DataFrame) error {
 	f.Name = key
 
 	// render DataFrame to JSON for storage
-	src, err := json.Marshal(f)
+	src, err := JSONMarshal(f)
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (c *Collection) FrameCreate(name string, keys []string, dotPaths []string, 
 		}
 	}
 	framePath := path.Join(c.workPath, "_frames", name+".json")
-	src, err := json.Marshal(f)
+	src, err := JSONMarshal(f)
 	if err != nil {
 		return f, fmt.Errorf("failed to encode fame %q, %s", name, err)
 	}
@@ -581,7 +581,7 @@ func (c *Collection) FrameObjects(fName string) ([]map[string]interface{}, error
 //	 fmt.Printf("\n%s\n", data.String())
 //	```
 func (f *DataFrame) String() string {
-	src, _ := json.MarshalIndent(f, "", "  ")
+	src, _ := JSONMarshalIndent(f, "", "  ")
 	return fmt.Sprintf("%s", src)
 }
 

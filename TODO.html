@@ -26,223 +26,239 @@
 <h1 id="action-items">Action Items</h1>
 <h2 id="bugs">Bugs</h2>
 <ul class="task-list">
-<li><input type="checkbox" disabled=""
+<li><label><input type="checkbox"
 checked="" /><code>dataset help init</code> should include examples of
 forming a dsn for SQL store dataset collections using SQLite3, MySQL and
-PostgreSQL from docs/init.md</li>
+PostgreSQL from docs/init.md</label></li>
 </ul>
 <h2 id="next-prep-for-v2.1.1">Next (prep for v2.1.1)</h2>
 <ul class="task-list">
-<li><input type="checkbox" disabled="" />Need to add getting updated Man
-pages using the <code>dataset help ...</code> command</li>
-<li><input type="checkbox" disabled="" />My current approach to
-versioning is too confusing, causing issues in implementing py_dataset,
-versioning needs to be automatic with a minimum set of methods
-explicitly supporting it otherwise versioning should just happen in the
-back ground and only be supported at the package and libdataset
-levels.<ul class="task-list">
-<li><input type="checkbox" disabled="" />create, read, update, list
+<li><label><input type="checkbox" />Need to add getting updated Man
+pages using the <code>dataset help ...</code> command</label></li>
+<li><label><input type="checkbox" />My current approach to versioning is
+too confusing, causing issues in implementing py_dataset, versioning
+needs to be automatic with a minimum set of methods explicitly
+supporting it otherwise versioning should just happen in the back ground
+and only be supported at the package and libdataset levels.</label>
+<ul class="task-list">
+<li><label><input type="checkbox" />create, read, update, list
 operations should always reflect the “current” version (objects or
 attachments), delete should delete all versions of objects as should
 prune for attachments, this is because versioning suggests things never
-really get deleted, just replaced.</li>
+really get deleted, just replaced.</label></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />Common dataset verbs
-(dataset/datasetd)<ul class="task-list">
-<li><input type="checkbox" disabled="" checked="" />keys<ul>
+<li><label><input type="checkbox" />Common dataset verbs
+(dataset/datasetd)</label>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />keys</label>
+<ul>
 <li>list the keys in a collection</li>
 <li>at the package level keys returns a list of keys and an error
 value</li>
 </ul></li>
-<li><input type="checkbox" disabled="" checked="" />has_key<ul>
+<li><label><input type="checkbox" checked="" />has_key</label>
+<ul>
 <li>return “true”(w/OS exit 0 in CLI) if key is in collection, “false”
 otherwise (w/OS exit 1 in CLI)</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />sample<ul>
+<li><label><input type="checkbox" />sample</label>
+<ul>
 <li>return a sample of keys from a collection</li>
-<li><input type="checkbox" disabled="" />the newly create collections
-should have versioning disabled by default</li>
+<li><label><input type="checkbox" />the newly create collections should
+have versioning disabled by default</label></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />create<ul>
+<li><label><input type="checkbox" />create</label>
+<ul>
 <li>add an new object to the collection if key does not exist, return
 false if object already exists or unable to create the new object</li>
 <li>if versioning is enabled set the semver appropriately</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />read<ul>
+<li><label><input type="checkbox" />read</label>
+<ul>
 <li>return the object with nil error in the collection with the provided
 key, nil object and error value if not found</li>
 <li>read always returns to the “current” object version</li>
-<li><input type="checkbox" disabled="" /><code>read_versions()</code>,
-list the versions available for JSON object</li>
-<li><input type="checkbox" disabled="" /><code>read_version()</code>
-list an JSON object for a specific version<ul>
+<li><label><input type="checkbox" /><code>read_versions()</code>, list
+the versions available for JSON object</label></li>
+<li><label><input type="checkbox" /><code>read_version()</code> list an
+JSON object for a specific version</label>
+<ul>
 <li>return the object with nil error in the collection with the provided
 key and version, nil object and error value if not found</li>
 </ul></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />update<ul>
+<li><label><input type="checkbox" />update</label>
+<ul>
 <li>replace the object in the collection for given key, return false is
 object does not to replace or replacement fails</li>
 <li>if collection has versioning turned on then version the object</li>
-<li><input type="checkbox" disabled="" /><code>update()</code> update
-the current record respecting the version settings for collection</li>
+<li><label><input type="checkbox" /><code>update()</code> update the
+current record respecting the version settings for
+collection</label></li>
 </ul></li>
-<li><input type="checkbox" disabled="" checked="" />delete<ul>
+<li><label><input type="checkbox" checked="" />delete</label>
+<ul>
 <li>delete the object in the collection for given key, return true if
 deletion was successful, false if the object was not deleted (e.g. key
 not found or the collection is read only)</li>
 <li>if collection has versioning turned on then delete <strong>all
 objects</strong>, if you want to revert you just update the object with
 the revised object values</li>
-<li><input type="checkbox" disabled="" /><code>delete()</code> delete
-all versions of an object</li>
+<li><label><input type="checkbox" /><code>delete()</code> delete all
+versions of an object</label></li>
 <li>If versioning is enabled the idea of “deleting” an object or
 attachment doesn’t make sense, you only need to support Create, Read,
 Update and List, possibly with the ability to read versions available
 and retrieve the specific version, is this worth implementing in the
 CLI? Or is this just a lib dataset/package “feature”?</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />versioning, versioning is now
-set for the whole collection and effects JSON objects and their
-attachments (you’re versioning both or neither), versioning will
-auto-increment for patch, minir and major semvere values if set<ul
-class="task-list">
-<li><input type="checkbox" disabled="" /><code>set_versioning()</code>,
-set the versioning on a collection, the following strings enable
-versioning “major”, “minor”, “patch”. Any other value disables
-versioning on the collection</li>
-<li><input type="checkbox" disabled="" /><code>get_versioning()</code>
-on a colleciton (should return “major”, “minor”, “patch” or ““)</li>
+<li><label><input type="checkbox" />versioning, versioning is now set
+for the whole collection and effects JSON objects and their attachments
+(you’re versioning both or neither), versioning will auto-increment for
+patch, minir and major semvere values if set</label>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>set_versioning()</code>, set
+the versioning on a collection, the following strings enable versioning
+“major”, “minor”, “patch”. Any other value disables versioning on the
+collection</label></li>
+<li><label><input type="checkbox" /><code>get_versioning()</code> on a
+colleciton (should return “major”, “minor”, “patch” or ““)</label></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />Attachment support<ul
-class="task-list">
-<li><input type="checkbox" disabled="" /><code>attach()</code> will add
-a basename file to the JSON object record, if versioning is enabled then
-it needs to handle the appropraite versioning setting</li>
-<li><input type="checkbox" disabled="" /><code>attachments()</code>
-lists the attachments for a JSON object record</li>
-<li><input type="checkbox"
-disabled="" /><code>attachment_versions()</code> list versions of a
-specific attachment</li>
-<li><input type="checkbox" disabled="" /><code>detach()</code> retrieve
-“current” version of attachment</li>
-<li><input type="checkbox" disabled="" /><code>detach_version()</code>
-retrieve a specific version of attachment</li>
-<li><input type="checkbox" disabled="" /><code>prune()</code> remove all
-versions of attachments</li>
+<li><label><input type="checkbox" />Attachment support</label>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>attach()</code> will add a
+basename file to the JSON object record, if versioning is enabled then
+it needs to handle the appropraite versioning setting</label></li>
+<li><label><input type="checkbox" /><code>attachments()</code> lists the
+attachments for a JSON object record</label></li>
+<li><label><input type="checkbox" /><code>attachment_versions()</code>
+list versions of a specific attachment</label></li>
+<li><label><input type="checkbox" /><code>detach()</code> retrieve
+“current” version of attachment</label></li>
+<li><label><input type="checkbox" /><code>detach_version()</code>
+retrieve a specific version of attachment</label></li>
+<li><label><input type="checkbox" /><code>prune()</code> remove all
+versions of attachments</label></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />Data Frame Support<ul
-class="task-list">
-<li><input type="checkbox" disabled="" />frame_names<ul>
+<li><label><input type="checkbox" />Data Frame Support</label>
+<ul class="task-list">
+<li><label><input type="checkbox" />frame_names</label>
+<ul>
 <li>list the names of the frames currently defined in the
 collection</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />frame<ul>
+<li><label><input type="checkbox" />frame</label>
+<ul>
 <li>define a new frame in the collection, if frame exists replace
 it</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />frame_meta<ul>
+<li><label><input type="checkbox" />frame_meta</label>
+<ul>
 <li>return the frame definition and metadata about the frame (e.g. how
 many objects and attributes)</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />frame_objects<ul>
+<li><label><input type="checkbox" />frame_objects</label>
+<ul>
 <li>return the frame’s list of objects</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />refresh<ul>
+<li><label><input type="checkbox" />refresh</label>
+<ul>
 <li>update all the objects in the frame based on current state of the
 collection</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />reframe<ul>
+<li><label><input type="checkbox" />reframe</label>
+<ul>
 <li>replace the frame definition but using the existing frame’s keys
 refresh the frame with the new object describe</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />delete_frame</li>
-<li><input type="checkbox" disabled="" />has_frame</li>
+<li><label><input type="checkbox" />delete_frame</label></li>
+<li><label><input type="checkbox" />has_frame</label></li>
 </ul></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />Verbs supported by cli only<ul
-class="task-list">
-<li><input type="checkbox" disabled="" />set_versioning (accepts
-““,”patch”, “minor”, or “major” as values)</li>
-<li><input type="checkbox" disabled="" />get_versioning (returns
-collection’s version setting)</li>
-<li><input type="checkbox" disabled="" />keys</li>
-<li><input type="checkbox" disabled="" />create (if versioning is enable
-then handle versioning)</li>
-<li><input type="checkbox" disabled="" />read (if versioning is enabled
-return the current version of an object)</li>
-<li><input type="checkbox" disabled="" />update (if versioning is enable
-then handle versioning)</li>
-<li><input type="checkbox" disabled="" />delete (if versioning is
-enable, delete all versions of object and attachments)</li>
-<li><input type="checkbox" disabled="" />sample</li>
-<li><input type="checkbox" disabled="" />clone</li>
-<li><input type="checkbox" disabled="" />clone-sample</li>
-<li><input type="checkbox" disabled="" />check</li>
-<li><input type="checkbox" disabled="" />repair</li>
-<li><input type="checkbox" disabled="" />frames (return a list of frames
-defined for collection)</li>
-<li><input type="checkbox" disabled="" />frame, define a new frame in a
-collection</li>
-<li><input type="checkbox" disabled="" />frame_objects, return the
-object list from a frame</li>
-<li><input type="checkbox" disabled="" />refresh, refresh all objects in
-a frame based on the current state of the collection</li>
-<li><input type="checkbox" disabled="" />reframe, replace the frame
+<li><label><input type="checkbox" />Verbs supported by cli only</label>
+<ul class="task-list">
+<li><label><input type="checkbox" />set_versioning (accepts ““,”patch”,
+“minor”, or “major” as values)</label></li>
+<li><label><input type="checkbox" />get_versioning (returns collection’s
+version setting)</label></li>
+<li><label><input type="checkbox" />keys</label></li>
+<li><label><input type="checkbox" />create (if versioning is enable then
+handle versioning)</label></li>
+<li><label><input type="checkbox" />read (if versioning is enabled
+return the current version of an object)</label></li>
+<li><label><input type="checkbox" />update (if versioning is enable then
+handle versioning)</label></li>
+<li><label><input type="checkbox" />delete (if versioning is enable,
+delete all versions of object and attachments)</label></li>
+<li><label><input type="checkbox" />sample</label></li>
+<li><label><input type="checkbox" />clone</label></li>
+<li><label><input type="checkbox" />clone-sample</label></li>
+<li><label><input type="checkbox" />check</label></li>
+<li><label><input type="checkbox" />repair</label></li>
+<li><label><input type="checkbox" />frames (return a list of frames
+defined for collection)</label></li>
+<li><label><input type="checkbox" />frame, define a new frame in a
+collection</label></li>
+<li><label><input type="checkbox" />frame_objects, return the object
+list from a frame</label></li>
+<li><label><input type="checkbox" />refresh, refresh all objects in a
+frame based on the current state of the collection</label></li>
+<li><label><input type="checkbox" />reframe, replace the frame
 definition but using the existing frame’s keys for the object listed in
-frame</li>
-<li><input type="checkbox" disabled="" />delete_frame, remove a frame
-from the collection</li>
-<li><input type="checkbox" disabled="" />has_frame return true if frame
-exists or false otherwise</li>
-<li><input type="checkbox" disabled="" />attachments, list the
-attachments for a JSON object in the collection</li>
-<li><input type="checkbox" disabled="" />attach, add an attachment to a
-JSON object in the collection, respect versioning if enabled</li>
-<li><input type="checkbox" disabled="" />detach, retrieve an attachment
-from the JSON object in the collection</li>
-<li><input type="checkbox" disabled="" />prune, remove attachments
-(including all versions) from an JSON object in the collection</li>
+frame</label></li>
+<li><label><input type="checkbox" />delete_frame, remove a frame from
+the collection</label></li>
+<li><label><input type="checkbox" />has_frame return true if frame
+exists or false otherwise</label></li>
+<li><label><input type="checkbox" />attachments, list the attachments
+for a JSON object in the collection</label></li>
+<li><label><input type="checkbox" />attach, add an attachment to a JSON
+object in the collection, respect versioning if enabled</label></li>
+<li><label><input type="checkbox" />detach, retrieve an attachment from
+the JSON object in the collection</label></li>
+<li><label><input type="checkbox" />prune, remove attachments (including
+all versions) from an JSON object in the collection</label></li>
 </ul></li>
-<li><input type="checkbox" disabled="" />Document example Shell access
-to datasetd via cURL</li>
-<li><input type="checkbox" disabled="" />take KeyMap out of
-collection.json so collection.json is smaller<ul>
+<li><label><input type="checkbox" />Document example Shell access to
+datasetd via cURL</label></li>
+<li><label><input type="checkbox" />take KeyMap out of collection.json
+so collection.json is smaller</label>
+<ul>
 <li>support for segmented key maps (to limit memory consumption for very
 large collections)</li>
 </ul></li>
-<li><input type="checkbox" disabled="" />Auto-version attachments by
-patch, minor or major release per settings in collection.json using
-keywords of patch, minor, major</li>
+<li><label><input type="checkbox" />Auto-version attachments by patch,
+minor or major release per settings in collection.json using keywords of
+patch, minor, major</label></li>
 </ul>
 <h2 id="someday-maybe">Someday, Maybe</h2>
 <ul class="task-list">
-<li><input type="checkbox" disabled="" />Review <a
+<li><label><input type="checkbox" />Review <a
 href="https://go-app.dev/">Go-app</a> and see if this would be a way to
 create a local client UI for working with datasets and enabling LunrJS
-for search</li>
-<li><input type="checkbox" disabled="" />Document an example Python 3
-http client support for web API implementing a drop in replacement for
-py_dataset using the web service or cli</li>
-<li><input type="checkbox" disabled="" checked="" />Missing tests for
-AttachStream()</li>
-<li><input type="checkbox" disabled="" />Implement a wrapping logger
-that takes a verboseness level for output (e.g. 0 - quiet, 1 progress
-messages, 2 warnings, errors should always show)</li>
-<li><input type="checkbox" disabled="" checked="" />Memory consumption
-is high for attaching, figure out how to improve memory usage, switched
-to using streams where possible</li>
-<li><input type="checkbox" disabled="" />Add support for https:// based
-datasets (in addition to local disc and s3://)</li>
-<li><input type="checkbox" disabled="" />dsbagit would generate a
-“BagIt” bag for preservation of collection objects</li>
-<li><input type="checkbox" disabled="" />OAI-PMH importer to prototype
-iiif service based on Islandora content driven by a dataset
-collection</li>
-<li><input type="checkbox" disabled="" />Implement version support in
-the web service</li>
-<li><input type="checkbox" disabled="" />Implement an integrated UI for
-datasetd</li>
+for search</label></li>
+<li><label><input type="checkbox" />Document an example Python 3 http
+client support for web API implementing a drop in replacement for
+py_dataset using the web service or cli</label></li>
+<li><label><input type="checkbox" checked="" />Missing tests for
+AttachStream()</label></li>
+<li><label><input type="checkbox" />Implement a wrapping logger that
+takes a verboseness level for output (e.g. 0 - quiet, 1 progress
+messages, 2 warnings, errors should always show)</label></li>
+<li><label><input type="checkbox" checked="" />Memory consumption is
+high for attaching, figure out how to improve memory usage, switched to
+using streams where possible</label></li>
+<li><label><input type="checkbox" />Add support for https:// based
+datasets (in addition to local disc and s3://)</label></li>
+<li><label><input type="checkbox" />dsbagit would generate a “BagIt” bag
+for preservation of collection objects</label></li>
+<li><label><input type="checkbox" />OAI-PMH importer to prototype iiif
+service based on Islandora content driven by a dataset
+collection</label></li>
+<li><label><input type="checkbox" />Implement version support in the web
+service</label></li>
+<li><label><input type="checkbox" />Implement an integrated UI for
+datasetd</label></li>
 </ul>
 </section>
 

@@ -212,7 +212,7 @@ func (c *Collection) SetVersioning(versioning string) error {
 		c.Versioning = ""
 	}
 	colName := path.Join(c.workPath, "collection.json")
-	src, err := json.MarshalIndent(c, "", "    ")
+	src, err := JSONMarshalIndent(c, "", "    ")
 	if err != nil {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
@@ -244,7 +244,7 @@ func (c *Collection) initPTStore() error {
 	basename := path.Base(c.Name)
 	colName := path.Join(c.Name, "collection.json")
 	c.Name = basename
-	src, err := json.MarshalIndent(c, "", "    ")
+	src, err := JSONMarshalIndent(c, "", "    ")
 	if err != nil {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
@@ -325,7 +325,7 @@ func (c *Collection) initSQLStore() error {
 	basename := path.Base(c.Name)
 	colName := path.Join(fullName, "collection.json")
 	c.Name = basename
-	src, err := json.MarshalIndent(c, "", "    ")
+	src, err := JSONMarshalIndent(c, "", "    ")
 	if err != nil {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
@@ -526,7 +526,7 @@ func (c *Collection) UpdateMetadata(fName string) error {
 //
 // ```
 func (c *Collection) Create(key string, obj map[string]interface{}) error {
-	src, err := json.MarshalIndent(obj, "", "    ")
+	src, err := JSONMarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
@@ -586,7 +586,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 //
 // ```
 func (c *Collection) CreateObject(key string, obj interface{}) error {
-	src, err := json.MarshalIndent(obj, "", "    ")
+	src, err := JSONMarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
@@ -678,7 +678,7 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to read %s, %s", key, err)
 	}
-	return DecodeJSON(src, &obj)
+	return JSONUnmarshal(src, &obj)
 }
 
 // ReadObject retrieves structed data via Go's general inteferface{} type.
@@ -850,7 +850,7 @@ func (c *Collection) ReadVersion(key string, version string, obj map[string]inte
 	if err != nil {
 		return fmt.Errorf("failed to read %s, %s", key, err)
 	}
-	return DecodeJSON(src, &obj)
+	return JSONUnmarshal(src, &obj)
 }
 
 // ReadObjectVersion retrieves a specific vesion from the collection
@@ -908,7 +908,7 @@ func (c *Collection) ReadObjectVersion(key string, version string, obj interface
 //
 // ```
 func (c *Collection) Update(key string, obj map[string]interface{}) error {
-	src, err := json.MarshalIndent(obj, "", "    ")
+	src, err := JSONMarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
@@ -950,7 +950,7 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 //
 // ```
 func (c *Collection) UpdateObject(key string, obj interface{}) error {
-	src, err := json.MarshalIndent(obj, "", "    ")
+	src, err := JSONMarshalIndent(obj, "", "    ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}

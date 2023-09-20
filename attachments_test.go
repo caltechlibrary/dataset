@@ -74,7 +74,7 @@ func TestAttachmentsPTStore(t *testing.T) {
 			version: fmt.Sprintf("%x", md5.Sum(motto)),
 		},
 	}
-	if _, err := json.MarshalIndent(data, "", "    "); err != nil {
+	if _, err := JSONMarshalIndent(data, "", "    "); err != nil {
 		t.Errorf("marshal error %s", err)
 		t.FailNow()
 	}
@@ -259,7 +259,7 @@ func TestAttachmentsSQLStore(t *testing.T) {
 			version: fmt.Sprintf("%x", md5.Sum(motto)),
 		},
 	}
-	if _, err := json.MarshalIndent(data, "", "    "); err != nil {
+	if _, err := JSONMarshalIndent(data, "", "    "); err != nil {
 		t.Errorf("marshal error %s", err)
 		t.FailNow()
 	}
@@ -436,7 +436,7 @@ func TestVersionedAttachments(t *testing.T) {
 			version: fmt.Sprintf("%x", md5.Sum(motto)),
 		},
 	}
-	if _, err := json.MarshalIndent(data, "", "    "); err != nil {
+	if _, err := JSONMarshalIndent(data, "", "    "); err != nil {
 		t.Errorf("marshal error %s", err)
 		t.FailNow()
 	}

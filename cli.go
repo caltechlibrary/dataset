@@ -117,28 +117,15 @@ var (
 )
 
 func prettyPrintJSON(src []byte) ([]byte, error) {
-	var (
-		err error
-		txt []byte
-	)
 	// Force output to be pretty printed. I can't rely on a
 	// standard way to implement this in SQL.
-	if bytes.HasPrefix(src, []byte(`{`)) {
-		obj := map[string]*interface{}{}
-		if err = json.Unmarshal(src, &obj); err == nil {
-			if txt, err = json.MarshalIndent(obj, "", "    "); err == nil {
-				src = txt
-			}
-		}
-	} else if bytes.HasPrefix(src, []byte(`[`)) {
-		array := []*interface{}{}
-		if err = json.Unmarshal(src, &array); err == nil {
-			if txt, err = json.MarshalIndent(array, "", "    "); err == nil {
-				src = txt
-			}
-		}
+	buf := []byte{}
+	w := bytes.NewBuffer(buf)
+	if err := json.Indent(w, src, "", "    "); err != nil {
+		return nil, err
 	}
-	return src, err
+	src = w.Bytes()
+	return src, nil
 }
 
 // CliDisplayHelp writes out help on a supported topic
@@ -398,7 +385,7 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	}
 	defer c.Close()
 	obj := map[string]interface{}{}
-	if err := DecodeJSON(src, &obj); err != nil {
+	if err := JSONUnmarshal(src, &obj); err != nil {
 		return err
 	}
 	if overwrite && c.HasKey(key) {
@@ -421,7 +408,7 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&output, "o", "-", "write to file")
-	flagSet.BoolVar(&pretty, "pretty", false, "pretty print output")
+	flagSet.BoolVar(&pretty, "pretty", true, "pretty print output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -493,7 +480,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	}
 	defer c.Close()
 	obj := map[string]interface{}{}
-	if err := DecodeJSON(src, &obj); err != nil {
+	if err := JSONUnmarshal(src, &obj); err != nil {
 		return err
 	}
 	if err := c.Update(key, obj); err != nil {
@@ -844,7 +831,7 @@ func doFrameDef(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	if err != nil {
 		return err
 	}
-	src, err := json.MarshalIndent(m, "", "    ")
+	src, err := JSONMarshalIndent(m, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -883,7 +870,7 @@ func doFrameObjects(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 	if err != nil {
 		return err
 	}
-	src, err := json.MarshalIndent(objects, "", "    ")
+	src, err := JSONMarshalIndent(objects, "", "    ")
 	if err != nil {
 		return err
 	}
