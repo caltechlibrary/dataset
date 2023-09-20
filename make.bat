@@ -7,33 +7,33 @@ REM
 go version
 echo Getting ready to build the dataset.exe
 
-echo Using jq to extract version string from codemeta.json
-jq .version codemeta.json > version.txt
-git log --pretty=format:'%h' -n 1 >hash.txt
-date >release_date.txt
-SET /P DS_VERSION= < version.txt
 SET PROJECT=dataset
-SET RELEASE_DATE= < release_date.txt
-SET RELEASE_HASH= < hash.txt
-echo Generating version.go using Pandoc and jq
-echo '' | pandoc --from t2t --to plain \
-                --metadata-file codemeta.json \
-                --metadata package=%PROJECT% \
-                --metadata version=%DS_VERSION% \
-                --metadata release_date=%RELEASE_DATE% \
-                --metadata release_hash=%RELEASE_HASH% \
-                --template codemeta-version-go.tmpl \
+echo Relase info for %PROJECT%
+echo Displaying version number from codemeta.json
+jq-windows-amd64 -r .version codemeta.json
+echo Enter the version number you want to release as.
+SET /P DS_VERSION=
+echo Displaying current hash using git log --pretty="%h" -n 1
+git log --pretty="%%h" -n 1
+echo Enter hash to use for release
+SET /P RELEASE_HASH=
+echo Today's date
+date /T
+echo Enter date for release
+SET /P RELEASE_DATE=
+echo Generating version.go using Pandoc
+echo '' | pandoc --from t2t --to plain ^
+                --metadata-file codemeta.json ^
+                --metadata package=%PROJECT% ^
+                --metadata version=%DS_VERSION% ^
+                --metadata release_date=%RELEASE_DATE% ^
+                --metadata release_hash=%RELEASE_HASH% ^
+                --template codemeta-version-go.tmpl ^
                 LICENSE >version.go
-DEL version.txt
-DEL release_date.txt
-DEL hash.txt
-echo Building version: %DS_VERSION%
-echo package datasdet > version.go
-echo.  >> version.go
-echo // Version of package >> version.go
-echo const Version = %DS_VERSION% >> version.go
-MKDIR bin
-go build -o bin\dataset.exe "cmd\dataset\dataset.go" "cmd\dataset\assets.go"
+IF NOT EXIST bin MKDIR bin
+
+echo Compiling bin\dataset.exe
+go build -o bin\dataset.exe "cmd\dataset\dataset.go"
 
 echo Checking compile should see version number of dataset
 .\bin\dataset.exe -version
@@ -41,4 +41,4 @@ echo Checking compile should see version number of dataset
 echo If OK, you can now copy the dataset.exe to %USERPROFILE%\go\bin
 echo.
 echo       copy bin\dataset.exe %USERPROFILE%\go\bin
-echo.
+echo
