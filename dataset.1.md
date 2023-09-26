@@ -1,8 +1,6 @@
----
-title: "dataset (1) user manual"
-pubDate: 2023-02-14
-author: "R. S. Doiel"
----
+%dataset(1) user manual | version 2.1.3 72c50e4
+% R. S. Doiel and Tom Morrell
+% 2023-09-26
 
 # NAME
 
@@ -116,6 +114,6 @@ implements.
    dataset keys my_objects.ds
 ~~~
 
-dataset 2.1.0
+dataset 2.1.3
 
 

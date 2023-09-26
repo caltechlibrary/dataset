@@ -1,16 +1,14 @@
----
-title: "{app_name} (1) user manual"
-pubDate: 2023-02-08
-author: "R. S. Doiel"
----
+%datasetd (1) user manual | verion 2.1.3 {release_hash}"
+% R. S. Doiel
+% {release_date}
 
 # NAME
 
-{app_name}
+datasetd
 
 # SYNOPSIS
 
-{app_name} [OPTIONS] SETTINGS_JSON_FILE
+datasetd [OPTIONS] SETTINGS_JSON_FILE
 
 # DESCRIPTION
 
@@ -36,13 +34,13 @@ the web service.
 
 Starting up the web service
 
-```
-   {app_name} settings.json
-```
+~~~
+   datasetd settings.json
+~~~
 
 In this example we cover a short life cycle of a collection
 called "t1.ds". We need to create a "settings.json" file and
-an empty dataset collection. Once ready you can run the {app_name} 
+an empty dataset collection. Once ready you can run the datasetd 
 service to interact with the collection via cURL. 
 
 To create the dataset collection we use the "dataset" command and the
@@ -63,11 +61,11 @@ In the "setttings.json" file the JSON should look like.
 	}
 ~~~
 
-Now we can run {app_name} and make the dataset collection available
+Now we can run datasetd and make the dataset collection available
 via HTTP.
 
 ~~~
-    {app_name} settings.json
+    datasetd settings.json
 ~~~
 
 You should now see the start up message and any log information display
@@ -114,9 +112,10 @@ List the keys and you should see that "one" is not longer there.
     curl http://localhost:8485/t1/keys
 ~~~
 
-In the shell session where {app_name} is running press "ctr-C"
+In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-{app_name} {version}
+datasetd 2.1.3
+
 
