@@ -475,7 +475,7 @@ Here's an example of for using Postgres running on localhost.
 
 When running Postgres on localhost by default the collection dsn
 adds a "sslmode=disable", if you wish to make it enabled just edit
-the "collection.js" and change the value.
+the "collection.json" and change the value.
 
 `
 
