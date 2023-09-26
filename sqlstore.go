@@ -122,7 +122,15 @@ func ParseDSN(uri string) (string, error) {
 func dsnFixUp(driverName string, dsn string, workPath string) string {
 	switch driverName {
 	case "postgres":
-		return fmt.Sprintf("%s://%s", driverName, dsn)
+		uri := fmt.Sprintf("%s://%s", driverName, dsn)
+		u, err := url.Parse(uri)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "WARNING: could not parse Postgres DSN %s", err)
+		} 
+		if strings.HasPrefix(u.Host, "localhost") {
+			return uri + "?sslmode=disable"
+		}
+		return uri
 	case "sqlite":
 		// NOTE: the db needs to be stored in the dataset directory
 		// to keep the dataset easily movable.
