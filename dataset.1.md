@@ -1,4 +1,4 @@
-%dataset(1) user manual | version 2.1.2 e42a7a5
+%dataset(1) user manual | version 2.1.3 72c50e4
 % R. S. Doiel and Tom Morrell
 % 2023-09-26
 
@@ -114,6 +114,6 @@ implements.
    dataset keys my_objects.ds
 ~~~
 
-dataset 2.1.2
+dataset 2.1.3
 
 
