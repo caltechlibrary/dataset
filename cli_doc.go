@@ -473,9 +473,13 @@ Here's an example of for using Postgres running on localhost.
     dataset init data.ds "postgres://DB_USER:DB_PASSWORD@localhost/collections"
 ~~~
 
-When running Postgres on localhost by default the collection dsn
-adds a "sslmode=disable", if you wish to make it enabled just edit
-the "collection.json" and change the value.
+If you need to pass the sslmode parameters to use Postgres include them
+in your dsn. E.g. disabling SSL when using localhost.
+
+~~~shell
+    dataset init data.ds "postgres://DB_USER:DB_PASSWORD@localhost/collections?sslmode=disable"
+~~~
+
 
 `
 
