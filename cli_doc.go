@@ -449,7 +449,8 @@ By default dataset cli creates pairtree collections. You can now optionally
 store your documents in a SQL database (e.g. SQLite3, MySQL 8). This can
 improve performance for large collections as well as support multi-user or
 multi-process concurrent use of a collection. To use a SQL storage engine
-you need to provide a "DSN_URI". The DSN_URI is formed by setting the "protocl" of the URL to either "sqlite://" or "mysql://" followed by a DSN
+you need to provide a "DSN_URI". The DSN_URI is formed by setting the "protocl" 
+of the URL to either "sqlite://", "mysql://", "postgres://" followed by a DSN
 (data source name) as described by the database/sql package in Go.
 
 This examples shows using SQLite3 storage for the JSON documents in
@@ -465,6 +466,16 @@ collection in the "collections" database.
 ~~~shell
     dataset init data.ds "mysql://DB_USER:DB_PASSWORD@/collections"
 ~~~
+
+Here's an example of for using Postgres running on localhost. 
+
+~~~shell
+    dataset init data.ds "postgres://DB_USER:DB_PASSWORD@localhost/collections"
+~~~
+
+When running Postgres on localhost by default the collection dsn
+adds a "sslmode=disable", if you wish to make it enabled just edit
+the "collection.js" and change the value.
 
 `
 
