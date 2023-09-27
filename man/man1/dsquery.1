@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dsquery" "1" "2023-09-27" "dataset user manual" "version 2.1.4 978b141"
+.TH "dsquery" "1" "2023-09-27" "dataset user manual" "version 2.1.4 96407c6"
 .hy
 .SH NAME
 .PP
@@ -67,14 +67,21 @@ updated
 The date the JSON document was updated
 .SH OPTIONS
 .TP
-help
+-help
 display help
 .TP
-license
+-license
 display license
 .TP
-version
+-version
 display version
+.TP
+-pretty
+pretty print the resulting JSON array
+.TP
+-sql
+read SQL from a file.
+If filename is \[lq]-\[rq] then read SQL from standard input.
 .SH EXAMPLES
 .PP
 Generate a list of JSON objects with the \f[V]_key\f[R] value merged

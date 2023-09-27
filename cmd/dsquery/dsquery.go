@@ -37,6 +37,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path"
 
@@ -103,14 +104,20 @@ updated
 
 # OPTIONS
 
-help
+-help
 : display help
 
-license
+-license
 : display license
 
-version
+-version
 : display version
+
+-pretty
+: pretty print the resulting JSON array
+
+-sql
+: read SQL from a file. If filename is "-" then read SQL from standard input.
 
 
 # EXAMPLES
@@ -143,12 +150,14 @@ func main() {
 	releaseHash := dataset.ReleaseHash
 	fmtHelp := dataset.FmtHelp
 	pretty := false
+	sqlFName := ""
 
 	showHelp, showVersion, showLicense := false, false, false
 	flag.BoolVar(&showHelp, "help", false, "display help")
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&pretty, "pretty", false, "pretty JSON output")
+	flag.StringVar(&sqlFName, "sql", sqlFName, "read SQL statement from a file")
 	flag.Parse()
 	args := flag.Args()
 
@@ -168,20 +177,49 @@ func main() {
 		fmt.Fprintf(os.Stderr, "missing C_NAME and SQL_STATEMENT")
 		os.Exit(10)
 	}
-	if len(args) < 2 {
+
+	// Create a DSQuery object and evaluate the command line options
+	app := new(dataset.DSQuery)
+	cName, stmt, params := "", "", []string{}
+	if sqlFName != "" {
+		in := os.Stdin
+		if sqlFName != "-" {
+			var err error
+			in, err = os.Open(sqlFName)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				os.Exit(10)
+			}
+			defer in.Close()
+		}
+		src, err := io.ReadAll(in)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(10)
+		}
+		stmt = fmt.Sprintf("%s", src)
+	}
+	if stmt == "" {
 		fmt.Fprintf(os.Stderr, "missing SQL_STATEMENT")
 		os.Exit(10)
 	}
-	// Create a Ep3Util object
-	app := new(dataset.DSQuery)
-	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "missing action, don't know what to do\n")
+	for _, arg := range args {
+		switch   {
+			case cName == "":
+				cName = arg
+			case stmt == "":
+				stmt = arg
+			default:
+				params = append(params, arg)
+		}
+	}
+	if cName == "" {
+		fmt.Fprintf(os.Stderr, "missing C_NAME\n")
 		os.Exit(10)
 	}
-	// To start we assume the first parameter is an action
-	cName, stmt, params := args[0], args[1], []string{}
-	if len(args) > 2 {
-		params = args[2:]
+	if stmt == "" {
+		fmt.Fprintf(os.Stderr, "missing SQL_STATEMENT\n")
+		os.Exit(10)
 	}
 	app.Pretty = pretty
 	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params); err != nil {

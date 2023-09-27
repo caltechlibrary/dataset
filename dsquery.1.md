@@ -1,4 +1,4 @@
-%dsquery(1) dataset user manual | version 2.1.4 978b141
+%dsquery(1) dataset user manual | version 2.1.4 96407c6
 % R. S. Doiel and Tom Morrell
 % 2023-09-27
 
@@ -56,14 +56,20 @@ updated
 
 # OPTIONS
 
-help
+-help
 : display help
 
-license
+-license
 : display license
 
-version
+-version
 : display version
+
+-pretty
+: pretty print the resulting JSON array
+
+-sql
+: read SQL from a file. If filename is "-" then read SQL from standard input.
 
 
 # EXAMPLES
