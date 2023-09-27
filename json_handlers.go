@@ -53,3 +53,11 @@ func JSONMarshalIndent(data interface{}, prefix string, indent string) ([]byte, 
 	}
 	return w.Bytes(), err
 }
+
+// JSONIndent takes an byte slice of JSON source and returns an indented version.
+func JSONIndent(src []byte, prefix string, indent string) []byte {
+	buf := []byte{}
+	w := bytes.NewBuffer(buf)
+	json.Indent(w, src, prefix, indent)
+	return w.Bytes()
+}

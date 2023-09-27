@@ -10,7 +10,7 @@ RELEASE_DATE=$(shell date +'%Y-%m-%d')
 RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
 
 
-MAN_PAGES = dataset.1 datasetd.1
+MAN_PAGES = dataset.1 datasetd.1 dsquery.1
 
 MAN_PAGES_LIB = libdataset.3
 
