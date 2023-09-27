@@ -1,6 +1,6 @@
-%dataset(1) user manual | version 2.1.3 6e51f3e
+%dataset(1) user manual | version 2.1.3 3b8a1de
 % R. S. Doiel and Tom Morrell
-% 2023-09-26
+% 2023-09-27
 
 # NAME
 
