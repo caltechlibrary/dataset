@@ -37,8 +37,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path"
+	"strings"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dataset/v2"
@@ -59,17 +61,26 @@ var (
 
 # DESCRIPTION
 
-__{app_name}__ is a tool to support SQL queries of dataset collections that
-use SQL storage for the collection's JSON documents.  It takes a dataset
-collection name and a sql statement returning the results. This will allow us
-to improve our feeds building process by taking advantage of SQL and the
-collection's SQL database engine.
+__{app_name}__ is a tool to support SQL queries of dataset collections. 
+Pairtree based collections should be index before trying to query them
+(see '-index' option below). Pairtree collections use the SQLite 3
+dialect of SQL for querying them.  For collections using a SQL storage
+engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect used is that
+of the SQL storage engine chosen.
 
-The scheme for the JSON stored documents have a four column scheme. 
-The columns are "_key", "created", "updated" and "src". The are stored
-in a table with the same name as the database which is formed from the
-C_NAME without extension (e.g. data.ds is stored in a database called
+The schema is the same for all storage engines.  The scheme for the JSON
+stored documents have a four column scheme.  The columns are "_key", 
+"created", "updated" and "src". "_key" is a string (aka VARCHAR),
+"created" and "updated" are timestamps while "src" is a JSON column holding
+the dataset JSON document stored. The table name reflects the collection
+name without the ".ds" extension (e.g. data.ds is stored in a database called
 data having a table also called data).
+
+The output of __{app_name}__ is a JSON arrary of objects. The order of the
+objects is determined by the your SQL statement and SQL engine. There
+is an option to generate a 2D grid of values for a given list of objects
+if you provide the root attribute names to form the rows and columns
+(see '-grid' option below).
 
 # PARAMETERS
 
@@ -103,15 +114,32 @@ updated
 
 # OPTIONS
 
-help
+-help
 : display help
 
-license
+-license
 : display license
 
-version
+-version
 : display version
 
+-pretty
+: pretty print the resulting JSON array
+
+-sql
+: read SQL from a file. If filename is "-" then read SQL from standard input.
+
+-grid
+: Returns list as a 2D grid of values. This options requires a comma delimited
+string of attribute names for the outer object to include in grid output. It
+can be combined with -pretty options.
+
+-index
+: This will create a SQLite3 index for a collection. This enables {app_name}
+to query pairtree collections using SQLite3 SQL dialect just as it would for
+SQL storage collections (i.e. don't use with postgres, mysql or sqlite based
+dataset collections. It is not needed for them). Note the index is always
+built before executing the SQL statement.
 
 # EXAMPLES
 
@@ -142,13 +170,17 @@ func main() {
 	releaseDate := dataset.ReleaseDate
 	releaseHash := dataset.ReleaseHash
 	fmtHelp := dataset.FmtHelp
-	pretty := false
+	pretty, ptIndex, grid := false, false, ""
+	sqlFName := ""
 
 	showHelp, showVersion, showLicense := false, false, false
 	flag.BoolVar(&showHelp, "help", false, "display help")
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&pretty, "pretty", false, "pretty JSON output")
+	flag.StringVar(&grid, "grid", grid, "return JSON grid of values, requires a comma delimited string of attribute names")
+	flag.StringVar(&sqlFName, "sql", sqlFName, "read SQL statement from a file")
+	flag.BoolVar(&ptIndex, "index", ptIndex, "create a SQLite 3 'index' for a collection.")
 	flag.Parse()
 	args := flag.Args()
 
@@ -168,22 +200,56 @@ func main() {
 		fmt.Fprintf(os.Stderr, "missing C_NAME and SQL_STATEMENT")
 		os.Exit(10)
 	}
-	if len(args) < 2 {
-		fmt.Fprintf(os.Stderr, "missing SQL_STATEMENT")
-		os.Exit(10)
-	}
-	// Create a Ep3Util object
+
+	// Create a DSQuery object and evaluate the command line options
 	app := new(dataset.DSQuery)
-	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "missing action, don't know what to do\n")
+	cName, stmt, params := "", "", []string{}
+	if sqlFName != "" {
+		in := os.Stdin
+		if sqlFName != "-" {
+			var err error
+			in, err = os.Open(sqlFName)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				os.Exit(10)
+			}
+			defer in.Close()
+		}
+		src, err := io.ReadAll(in)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(10)
+		}
+		stmt = fmt.Sprintf("%s", src)
+	}
+	for _, arg := range args {
+		switch   {
+			case cName == "":
+				cName = arg
+			case stmt == "":
+				stmt = arg
+			default:
+				params = append(params, arg)
+		}
+	}
+	if cName == "" {
+		fmt.Fprintf(os.Stderr, "missing C_NAME\n")
 		os.Exit(10)
 	}
-	// To start we assume the first parameter is an action
-	cName, stmt, params := args[0], args[1], []string{}
-	if len(args) > 2 {
-		params = args[2:]
+	if stmt == "" {
+		fmt.Fprintf(os.Stderr, "missing SQL_STATEMENT\n")
+		os.Exit(10)
 	}
 	app.Pretty = pretty
+	app.PTIndex = ptIndex 
+	if grid != "" {
+		app.AsGrid = true
+		app.Attributes = []string{}
+		attributes := strings.Split(grid, ",")
+		for _, attr := range attributes {
+			app.Attributes = append(app.Attributes, strings.TrimSpace(attr))
+		}
+	}
 	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(10)
