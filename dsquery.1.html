@@ -39,14 +39,13 @@ is that of the SQL storage engine chosen.</p>
 JSON stored documents have a four column scheme. The columns are “_key”,
 “created”, “updated” and “src”. “_key” is a string (aka VARCHAR),
 “created” and “updated” are timestamps while “src” is a JSON column
-holding the dataset JSON document stored. The table name reflects the
-collection name without the “.ds” extension (e.g. data.ds is stored in a
-database called data having a table also called data).</p>
+holding the JSON document. The table name reflects the collection name
+without the “.ds” extension (e.g. data.ds is stored in a database called
+data having a table also called data).</p>
 <p>The output of <strong>dsquery</strong> is a JSON arrary of objects.
 The order of the objects is determined by the your SQL statement and SQL
-engine. There is an option to generate a 2D grid of values for a given
-list of objects if you provide the root attribute names to form the rows
-and columns (see ‘-grid’ option below).</p>
+engine. There is an option to generate a 2D grid of values and CSV
+format are also supported as options (see ‘-grid’ and ‘-csv’ below).</p>
 <h1 id="parameters">PARAMETERS</h1>
 <dl>
 <dt>C_NAME</dt>
@@ -103,16 +102,22 @@ display version
 <dd>
 pretty print the resulting JSON array
 </dd>
-<dt>-sql</dt>
+<dt>-sql SQL_FILENAME</dt>
 <dd>
 read SQL from a file. If filename is “-” then read SQL from standard
 input.
 </dd>
-<dt>-grid</dt>
+<dt>-grid STRING_OF_ATTRIBUTE_NAMES</dt>
 <dd>
 Returns list as a 2D grid of values. This options requires a comma
 delimited string of attribute names for the outer object to include in
 grid output. It can be combined with -pretty options.
+</dd>
+<dt>-csv STRING_OF_ATTRIBUTE_NAMES</dt>
+<dd>
+Like -grid this takes our list of dataset objects and a list of
+attribute names but rather than create a 2D JSON array of values it
+creates CSV represnetation with the first row as the attribute names.
 </dd>
 <dt>-index</dt>
 <dd>
