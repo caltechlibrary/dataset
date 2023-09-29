@@ -1,6 +1,6 @@
-%dsquery(1) dataset user manual | version 2.1.4 96407c6
+%dsquery(1) dataset user manual | version 2.1.5 1fd787c
 % R. S. Doiel and Tom Morrell
-% 2023-09-27
+% 2023-09-29
 
 # NAME
 
@@ -12,17 +12,26 @@ dsquery [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
 
 # DESCRIPTION
 
-__dsquery__ is a tool to support SQL queries of dataset collections that
-use SQL storage for the collection's JSON documents.  It takes a dataset
-collection name and a sql statement returning the results. This will allow us
-to improve our feeds building process by taking advantage of SQL and the
-collection's SQL database engine.
+__dsquery__ is a tool to support SQL queries of dataset collections. 
+Pairtree based collections should be index before trying to query them
+(see '-index' option below). Pairtree collections use the SQLite 3
+dialect of SQL for querying them.  For collections using a SQL storage
+engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect used is that
+of the SQL storage engine chosen.
 
-The scheme for the JSON stored documents have a four column scheme. 
-The columns are "_key", "created", "updated" and "src". The are stored
-in a table with the same name as the database which is formed from the
-C_NAME without extension (e.g. data.ds is stored in a database called
+The schema is the same for all storage engines.  The scheme for the JSON
+stored documents have a four column scheme.  The columns are "_key", 
+"created", "updated" and "src". "_key" is a string (aka VARCHAR),
+"created" and "updated" are timestamps while "src" is a JSON column holding
+the dataset JSON document stored. The table name reflects the collection
+name without the ".ds" extension (e.g. data.ds is stored in a database called
 data having a table also called data).
+
+The output of __dsquery__ is a JSON arrary of objects. The order of the
+objects is determined by the your SQL statement and SQL engine. There
+is an option to generate a 2D grid of values for a given list of objects
+if you provide the root attribute names to form the rows and columns
+(see '-grid' option below).
 
 # PARAMETERS
 
@@ -71,6 +80,17 @@ updated
 -sql
 : read SQL from a file. If filename is "-" then read SQL from standard input.
 
+-grid
+: Returns list as a 2D grid of values. This options requires a comma delimited
+string of attribute names for the outer object to include in grid output. It
+can be combined with -pretty options.
+
+-index
+: This will create a SQLite3 index for a collection. This enables dsquery
+to query pairtree collections using SQLite3 SQL dialect just as it would for
+SQL storage collections (i.e. don't use with postgres, mysql or sqlite based
+dataset collections. It is not needed for them). Note the index is always
+built before executing the SQL statement.
 
 # EXAMPLES
 
