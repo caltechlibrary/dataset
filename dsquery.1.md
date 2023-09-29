@@ -1,4 +1,4 @@
-%dsquery(1) dataset user manual | version 2.1.5 1fd787c
+%dsquery(1) dataset user manual | version 2.1.6 057db89
 % R. S. Doiel and Tom Morrell
 % 2023-09-29
 
@@ -23,15 +23,14 @@ The schema is the same for all storage engines.  The scheme for the JSON
 stored documents have a four column scheme.  The columns are "_key", 
 "created", "updated" and "src". "_key" is a string (aka VARCHAR),
 "created" and "updated" are timestamps while "src" is a JSON column holding
-the dataset JSON document stored. The table name reflects the collection
+the JSON document. The table name reflects the collection
 name without the ".ds" extension (e.g. data.ds is stored in a database called
 data having a table also called data).
 
 The output of __dsquery__ is a JSON arrary of objects. The order of the
 objects is determined by the your SQL statement and SQL engine. There
-is an option to generate a 2D grid of values for a given list of objects
-if you provide the root attribute names to form the rows and columns
-(see '-grid' option below).
+is an option to generate a 2D grid of values and CSV format are also
+supported as options (see '-grid' and '-csv' below).
 
 # PARAMETERS
 
@@ -77,13 +76,18 @@ updated
 -pretty
 : pretty print the resulting JSON array
 
--sql
+-sql SQL_FILENAME
 : read SQL from a file. If filename is "-" then read SQL from standard input.
 
--grid
+-grid STRING_OF_ATTRIBUTE_NAMES
 : Returns list as a 2D grid of values. This options requires a comma delimited
 string of attribute names for the outer object to include in grid output. It
 can be combined with -pretty options.
+
+-csv STRING_OF_ATTRIBUTE_NAMES
+: Like -grid this takes our list of dataset objects and a list of attribute
+names but rather than create a 2D JSON array of values it creates CSV 
+represnetation with the first row as the attribute names.
 
 -index
 : This will create a SQLite3 index for a collection. This enables dsquery
