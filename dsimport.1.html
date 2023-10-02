@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user-manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="name">NAME</h1>
+<p>dsimport</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>dsimport <a href="#options">OPTIONS</a> C_NAME CSV_FILENAME
+KEY_COLUMN</p>
+<h1 id="description">DESCRIPTION</h1>
+<p><strong>dsimport</strong> is a tool to import CSV content into a
+dataset collection where the column headings become the attribute names
+and the row values become the attribute values.</p>
+<h1 id="parameters">PARAMETERS</h1>
+<dl>
+<dt>C_NAME</dt>
+<dd>
+If harvesting the dataset collection name to harvest the records to.
+</dd>
+<dt>CSV_FILENAME</dt>
+<dd>
+The name of the CSV file to import
+</dd>
+<dt>KEY_COLUMN</dt>
+<dd>
+The column name to use the they object key. If none is provided then the
+first column is used as the object key. Keys values must be unique.
+</dd>
+</dl>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-help</dt>
+<dd>
+display help
+</dd>
+<dt>-license</dt>
+<dd>
+display license
+</dd>
+<dt>-version</dt>
+<dd>
+display version
+</dd>
+<dt>-comma</dt>
+<dd>
+Set column delimiter
+</dd>
+<dt>-comment</dt>
+<dd>
+Set row comment delimiter
+</dd>
+<dt>-overwrite</dt>
+<dd>
+Overwrite objects on key collision
+</dd>
+</dl>
+<h1 id="examples">EXAMPLES</h1>
+<p>Import a file with three columns</p>
+<ul>
+<li>item_code</li>
+<li>title</li>
+<li>location</li>
+</ul>
+<p>The “item_code” is unique for each row. The data is stored in a file
+called “books.csv”. We are importing the CSV file into a collections
+called. “shelves.ds”</p>
+<pre><code>dsimport shelves.ds books.csv &quot;item_code&quot;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

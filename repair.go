@@ -138,6 +138,14 @@ func Analyzer(cName string, verbose bool) error {
 	}
 	defer c.Close()
 
+	if c.StoreType == SQLSTORE {
+		_, err := c.SQLStore.Keys()
+		if err != nil {
+			return fmt.Errorf("WARNING: The collection.json's .name and .dsn_uri to not match the database connection and expected table name.")
+		}
+		return nil
+	}
+
 	if c.StoreType == PTSTORE {
 		keymap := path.Join(collectionPath, "keymap.json")
 		if _, err := os.Stat(keymap); err != nil {
@@ -146,8 +154,8 @@ func Analyzer(cName string, verbose bool) error {
 		}
 	}
 
-	if c.StoreType != PTSTORE {
-		return fmt.Errorf("analyzer only supports pairtree storage")
+	if c.StoreType != PTSTORE && c.StoreType != SQLSTORE {
+		return fmt.Errorf("analyzer only supports pairtree and SQL storage")
 	}
 
 	// Set layout to PAIRTREE_LAYOUT
