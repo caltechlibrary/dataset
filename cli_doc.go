@@ -446,7 +446,7 @@ you will be shown an `+"`"+`OK`+"`"+` if everything went OK, otherwise
 an error message. 
 
 By default dataset cli creates pairtree collections. You can now optionally 
-store your documents in a SQL database (e.g. SQLite3, MySQL 8). This can
+store your documents in a SQL database (e.g. Postgres, SQLite3, MySQL 8). This can
 improve performance for large collections as well as support multi-user or
 multi-process concurrent use of a collection. To use a SQL storage engine
 you need to provide a "DSN_URI". The DSN_URI is formed by setting the "protocl" 
@@ -479,6 +479,11 @@ in your dsn. E.g. disabling SSL when using localhost.
 ~~~shell
     dataset init data.ds "postgres://DB_USER:DB_PASSWORD@localhost/collections?sslmode=disable"
 ~~~
+
+NOTE: If you are using a SQL based collection and you want to copy it
+to a new collection use dataset's clone action. Otherwise the internal
+collections.json file will likely have the wrong collection name which
+would require hand editing it.
 
 
 `
@@ -536,6 +541,10 @@ and then clone those keys into a new collection called *sample.ds*.
     {app_name} keys -sample=3 mycollection.ds > sample.keys
     {app_name} clone -i sample.keys mycollection.ds sample.ds
 ~~~
+
+NOTE: If you are using SQL based collections clone is your tool
+to copy the collection to a new collection rather than using your
+operating system's version of copying.
 
 `
 
