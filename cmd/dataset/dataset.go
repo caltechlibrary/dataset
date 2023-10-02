@@ -187,7 +187,7 @@ func main() {
 		os.Exit(0)
 	}
 	if showVersion {
-		fmt.Fprintf(out, "%s %s\n", appName, dataset.Version)
+		fmt.Fprintf(out, "%s %s %s\n", appName, dataset.Version, dataset.ReleaseHash)
 		os.Exit(0)
 	}
 
