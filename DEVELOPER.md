@@ -5,7 +5,7 @@ On Unix-like systems (e.g. Darwin, Linux, Windows with the Linux subsystem enabl
 
 ## Windows 11
 
-+ Install Go 1.18.2 via the Windows' installer available from https://golang.org/downloads
++ Install Go 1.21.1 via the Windows' installer available from https://golang.org/downloads
 + Install git
 + Run `go get -u github.com\caltechlibrary\dataset`
 + Change into the dataset directory

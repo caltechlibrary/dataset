@@ -5,7 +5,7 @@
 
 (when compiling from source)
 
-- Golang 1.18.2 or better
+- Golang 1.21.1 or better
 
 ## Recommend
 
@@ -13,9 +13,7 @@
 
 - Bash
 - GNU Make
-- codemeta2cff (part of [datatools](https://github.com/caltechlibrary/datatools))
-- Python 3.9
-- Pandoc and [mkpage](https://github.com/caltechlibrary/mkpage) (a Pandoc pre-processor)
+- Pandoc (is used as a pre-processor to generate version.go and other files)
 - Snapcraft if generating a snap package of dataset/datasetd
 
 ## Using the _dataset_ package
