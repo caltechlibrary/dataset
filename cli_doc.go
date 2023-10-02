@@ -481,9 +481,7 @@ in your dsn. E.g. disabling SSL when using localhost.
 ~~~
 
 NOTE: If you are using a SQL based collection and you want to copy it
-to a new collection use dataset's clone action. Otherwise the internal
-collections.json file will likely have the wrong collection name which
-would require hand editing it.
+to a new collection use dataset's clone action with the '-all' option.
 
 
 `
@@ -532,7 +530,9 @@ collection.
 clone
 =====
 
-Clone a collection from a list of keys into a new collection.
+Clone a collection from a list of keys into a new collection. If the
+`+"`"+`-all`+"`"+` option is used then the whole collection will be
+clone and a list of keys is not required.
 
 In this example we create a list of keys using the ` + "`-sample`" + ` option
 and then clone those keys into a new collection called *sample.ds*.
