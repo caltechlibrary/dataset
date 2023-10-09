@@ -35,7 +35,7 @@ multi-processes.</p>
 suggestions see NOTES.md</p>
 <h2 id="quick-install-with-curl">Quick install with curl</h2>
 <p>There is an experimental installer.sh script that can be run with the
-following command to install lastest table release. This may work for
+following command to install latest table release. This may work for
 macOS, Linux and if you’re using Windows with the Unix subsystem. This
 would be run from your shell (e.g. Terminal on macOS).</p>
 <pre><code>curl https://caltechlibrary.github.io/dataset/installer.sh | sh</code></pre>
@@ -61,7 +61,7 @@ click latest release</p>
 <tbody>
 <tr class="odd">
 <td>Windows (Intel)</td>
-<td>dataset-VERSION_NUMBER-windows-amd64.zip</td>
+<td>dataset-VERSION_NUMBER-Windows-x86_64.zip</td>
 </tr>
 <tr class="even">
 <td>Windows (ARM 64)</td>
@@ -69,19 +69,23 @@ click latest release</p>
 </tr>
 <tr class="odd">
 <td>macOS (Intel)</td>
-<td>dataset-VERSION_NUMBER-macos-amd64.zip</td>
+<td>dataset-VERSION_NUMBER-macOS-x86_64.zip</td>
 </tr>
 <tr class="even">
 <td>macOS (M1)</td>
-<td>dataset-VERSION_NUMBER-macos-arm64.zip</td>
+<td>dataset-VERSION_NUMBER-macOS-arm64.zip</td>
 </tr>
 <tr class="odd">
 <td>Linux (Intel)</td>
-<td>dataset-VERSION_NUMBER-linux-amd64.zip</td>
+<td>dataset-VERSION_NUMBER-Linux-x86_64.zip</td>
 </tr>
 <tr class="even">
+<td>Linux (ARM 64)</td>
+<td>dataset-VERSION_NUMBER-Linux-aarch64.zip</td>
+</tr>
+<tr class="odd">
 <td>Raspberry Pi OS (ARM7)</td>
-<td>dataset-VERSION_NUMBER-raspbian-arm7.zip</td>
+<td>dataset-VERSION_NUMBER-Linux-arm7l.zip</td>
 </tr>
 </tbody>
 </table>
@@ -90,8 +94,20 @@ click latest release</p>
 <li>Find the Zip file listed matching the architecture you’re running
 and download it
 <ul>
-<li>(e.g. if you’re on a Windows 10 laptop/Surface with a amd64 style
-CPU you’d choose the Zip file with “windows-amd64” in the name).</li>
+<li>Example Windows machines
+<ul>
+<li>If you’re on a Windows 10 laptop or desktop with an Intel style CPU
+you’d choose the Zip file with “Windows-x86_64” in the name</li>
+<li>If you’re on an ARM based Surface tablet or Windows Developer Kit
+for ARM then choose “Windows-arm64” in the name</li>
+</ul></li>
+<li>Example macOS machines
+<ul>
+<li>If you are on an older Intel based Mac then choose “macOS-x86_64” in
+the name</li>
+<li>If you are on a newer M1, M2 chip based Mac then choose
+“macOS-arm64” in the name</li>
+</ul></li>
 </ul></li>
 <li>Download the zip file and unzip the file.</li>
 <li>Copy the contents of the folder named “bin” to a folder that is in
@@ -112,42 +128,41 @@ folder in your PATH)</li>
 <li>Test</li>
 </ol>
 <p>Here’s an example of the commands run in the Terminal App after
-downloading the zip file.</p>
+downloading the zip file for an Intel based Mac.</p>
 <pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-macos-amd64.zip
+    unzip dataset-*-macOS-x86_64.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    dataset -version</code></pre>
+<p>Or on a newer Mac with the M1 or M2 processors.</p>
+<pre class="shell"><code>    cd Downloads/
+    unzip dataset-*-macOS-arm64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
 <h3 id="windows">Windows</h3>
 <ol type="1">
-<li>Download the zip file</li>
+<li>Download the zip file into your “Downloads” folder</li>
 <li>Unzip the zip file</li>
-<li>Copy the executable to the “bin” directory in your “HOME” directory
-(or a folder in your path)</li>
+<li>Copy the executable to the “bin” directory in to someplace where
+Windows cmd shell file find it</li>
 <li>Test</li>
 </ol>
-<h4 id="intel-hardware">Intel Hardware</h4>
-<p>Here’s an example of the commands run in from the Bash shell on
-Windows 11 after downloading the zip file (assume Linux Subsystem for
-Windows).</p>
-<pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-windows-amd64.zip
-    mkdir -p $HOME/bin
-    mv -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version</code></pre>
-<h4 id="arm64-hardware">ARM64 Hardware</h4>
-<p>Here’s an example of the commands run in from the Bash shell on
-Windows 11 after downloading the zip file (assumes Linux Subsystem for
-Windows).</p>
-<pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-windows-arm64.zip
-    mkdir -p $HOME/bin
-    mv -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
+<p>Here’s an example of the commands run in from the Windows 11 command
+shell (cmd). I have a folder in my user profile directory
+<code>bin</code> that I keep my command line tools in. When I start up
+the Windows command shell it knows to look there. To set that up I
+do</p>
+<pre class="shell"><code>    mkdir %userprofile%\bin
+    set PATH=%PATH%;%userprofile$\bin
+    powershell Expand-Archive Downloads\dataset-*-Windows-*.zip Dataset
+    copy Dataset\bin\*.exe %userprofile%\bin\ 
     dataset -version</code></pre>
 <h3 id="linux">Linux</h3>
+<p>NOTE: Windows sub-system for Linux (aka lsw) and Raspberry Pi OS
+(which is Linux) can use this approach.</p>
 <ol type="1">
 <li>Download the zip file</li>
 <li>Unzip the zip file</li>
@@ -158,32 +173,16 @@ directory.</li>
 <p>Here’s an example of the commands run in from the Bash shell after
 downloading the zip file.</p>
 <pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-linux-amd64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version</code></pre>
-<h3 id="raspberry-pi-os">Raspberry Pi OS</h3>
-<p>Released version is for a Raspberry Pi 2 or later use (i.e. requires
-ARM 7 support). Testing is done on Raspberry Pi 4 B devices using 32bit
-Raspberry Pi OS.</p>
-<ol type="1">
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executable to <code>$HOME/bin</code> (or a folder in your
-path)</li>
-<li>Test</li>
-</ol>
-<p>Here’s an example of the commands run in from the Bash shell after
-downloading the zip file.</p>
-<pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-raspbian-arm7.zip
+    unzip dataset-*-linux-x86_64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     dataset -version</code></pre>
 <h2 id="compiling-from-source">Compiling from source</h2>
-<p>Clone the repository and then compile.</p>
+<p>You need to have git, Pandoc, Go compiler and Make (GNU Make)
+available for this recipe to work. Clone the repository and then compile
+in the typical POSIX style. NOTE by default the binaries are installed
+in <code>$HOME/bin</code> and that is assumed to be in your path.</p>
 <pre class="shell"><code>    cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
@@ -193,7 +192,7 @@ downloading the zip file.</p>
     make install</code></pre>
 <h3 id="requirements">Requirements</h3>
 <ul>
-<li>Go version 1.19.2 or better</li>
+<li>Go version 1.21.1 or better</li>
 <li>Pandoc version 2.19.2 or better</li>
 <li>GNU Make</li>
 <li>Common POSIX/Unix utilities, e.g. cat, sed, grep</li>
@@ -216,7 +215,7 @@ commands</li>
 <li>clean.bat removes executable and temp files</li>
 </ul>
 <p>Compilation assumes <a href="https://github.com/golang/go">go</a>
-v1.19.2 or better.</p>
+v1.21.1 or better.</p>
 </section>
 
 <footer>

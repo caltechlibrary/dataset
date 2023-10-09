@@ -669,6 +669,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		dstDsnURI string
 		keysName  string
 		verbose   bool
+		all       bool
 		keys      []string
 		err       error
 	)
@@ -677,6 +678,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
+	flagSet.BoolVar(&all, "all", false, "clone whole repository")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -690,9 +692,11 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME DEST_COLLECTION_NAME [DEST_DSN_URI], got %q", strings.Join(args, " "))
 	}
-	keys, err = ReadKeys(keysName, in)
-	if err != nil {
-		return err
+	if ! all {
+		keys, err = ReadKeys(keysName, in)
+		if err != nil {
+			return err
+		}
 	}
 	source, err := Open(srcName)
 	if err != nil {
