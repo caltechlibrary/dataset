@@ -1,18 +1,18 @@
-%dsimport(1) dataset user manual | version 2.1.7 35ad595
+%dsimporter(1) dataset user manual | version 2.1.8 1436ff2
 % R. S. Doiel and Tom Morrell
-% 2023-10-02
+% 2023-10-09
 
 # NAME
 
-dsimport
+dsimporter
 
 # SYNOPSIS
 
-dsimport [OPTIONS] C_NAME CSV_FILENAME KEY_COLUMN
+dsimporter [OPTIONS] C_NAME CSV_FILENAME KEY_COLUMN
 
 # DESCRIPTION
 
-__dsimport__ is a tool to import CSV content into a dataset collection
+__dsimporter__ is a tool to import CSV content into a dataset collection
 where the column headings become the attribute names and the row values
 become the attribute values.
 
@@ -62,7 +62,7 @@ in a file called "books.csv". We are importing the CSV file
 into a collections called. "shelves.ds"
 
 ~~~
-dsimport shelves.ds books.csv "item_code"
+dsimporter shelves.ds books.csv "item_code"
 ~~~
 
 

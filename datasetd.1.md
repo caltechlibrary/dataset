@@ -1,4 +1,4 @@
-%datasetd (1) user manual | verion 2.1.7 {release_hash}"
+%datasetd (1) user manual | verion 2.1.8 {release_hash}"
 % R. S. Doiel
 % {release_date}
 
@@ -116,6 +116,6 @@ In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-datasetd 2.1.7
+datasetd 2.1.8
 
 
