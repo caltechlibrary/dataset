@@ -56,7 +56,7 @@ version.go: .FORCE
 
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
-	go build -o bin/$@$(EXT) cmd/$@/*.go
+	go build -o bin/$@$(EXT) cmd/$@/$@.go
 	@./bin/$@ -help >$@.1.md
 
 man: $(MAN_PAGES) $(MAN_PAGES_LIB)

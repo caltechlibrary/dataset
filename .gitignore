@@ -46,3 +46,4 @@ _codemeta.json
 dist
 libdataset/*.h
 __pycache__
+man
