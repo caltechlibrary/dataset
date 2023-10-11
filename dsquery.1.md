@@ -1,6 +1,6 @@
-%dsquery(1) dataset user manual | version 2.1.8 02d8db2
+%dsquery(1) dataset user manual | version 2.1.8 030d0c1
 % R. S. Doiel and Tom Morrell
-% 2023-10-09
+% 2023-10-11
 
 # NAME
 
