@@ -103,12 +103,12 @@ func indexCollection(ds *Collection, index *sql.DB) error {
 	stmt := fmt.Sprintf(`drop table if exists %s;`, tName)
 	_, err := index.Exec(stmt)
 	if err != nil {
-		return err
+		return fmt.Errorf("stmt: %q, %s", stmt, err)
 	}
 	stmt = fmt.Sprintf(`create table %s (_key string, src json, updated datetime, created timestamp);`, tName)
 	_, err = index.Exec(stmt)
 	if err != nil {
-		return err
+		return fmt.Errorf("stmt: %q, %s", stmt, err)
 	}
 
 	keys, err := ds.Keys()
@@ -124,7 +124,7 @@ func indexCollection(ds *Collection, index *sql.DB) error {
 		}
 		_, err = index.Exec(stmt, key, fmt.Sprintf("%s", src), tStamp, tStamp)
 		if err != nil {
-			return err
+			return fmt.Errorf("stmt: %q %+v %+v, %s", stmt, tStamp, tStamp, err)
 		}
 	}
 	return nil
@@ -178,7 +178,7 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 		rows, err = app.db.Query(app.Stmt)
 	}
 	if err != nil {
-		return fmt.Errorf("sql error: %s", err)
+		return fmt.Errorf("stmt: %q, %s", app.Stmt, err)
 	}
 	src := []byte(`[`)
 	i := 0
