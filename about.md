@@ -14,7 +14,7 @@ authors:
     orcid: "https://orcid.org/0000-0001-9266-5146"
 
 repository-code: "https://github.com/caltechlibrary/dataset"
-version: 2.1.8
+version: 2.1.9
 license-url: "https://data.caltech.edu/license"
 keywords: [ "GitHub", "metadata", "data", "software", "json" ]
 
@@ -23,7 +23,7 @@ keywords: [ "GitHub", "metadata", "data", "software", "json" ]
 About this software
 ===================
 
-## dataset 2.1.8
+## dataset 2.1.9
 
 ### Authors
 
