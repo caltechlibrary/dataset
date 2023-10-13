@@ -130,6 +130,7 @@ cleanweb:
 	@if [ -f index.html ]; then rm *.html; fi
 
 clean:
+	go clean
 	@if [ -d bin ]; then rm -fR bin; fi
 	@if [ -d dist ]; then rm -fR dist; fi
 	@if [ -d testout ]; then rm -fR testout; fi
