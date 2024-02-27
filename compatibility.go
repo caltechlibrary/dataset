@@ -17,12 +17,14 @@ import (
 // stored.
 //
 // ```
-//    c, err := dataset.Open(cName, "")
-//    // ... handle error ...
-//    key := "2488"
-//    s, err := c.DocPath(key)
-//    // ... handle error ...
-//    fmt.Printf("full path to JSON document %q is %q\n", key, s)
+//
+//	c, err := dataset.Open(cName, "")
+//	// ... handle error ...
+//	key := "2488"
+//	s, err := c.DocPath(key)
+//	// ... handle error ...
+//	fmt.Printf("full path to JSON document %q is %q\n", key, s)
+//
 // ```
 func (c *Collection) DocPath(key string) (string, error) {
 	if c.StoreType == PTSTORE && c.PTStore != nil {
@@ -30,11 +32,10 @@ func (c *Collection) DocPath(key string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return path.Join(s, key + ".json"), nil
+		return path.Join(s, key+".json"), nil
 	}
 	return "", fmt.Errorf("%q does not support document paths", c.StoreType)
 }
-
 
 // CreateObjectsJSON takes a list of keys and creates a default object
 // for each key as quickly as possible. This is useful in vary narrow
@@ -42,7 +43,6 @@ func (c *Collection) DocPath(key string) (string, error) {
 //
 // NOTE: if object already exist creation is skipped without
 // reporting an error.
-//
 func (c *Collection) CreateObjectsJSON(keyList []string, src []byte) error {
 	for _, key := range keyList {
 		if c.HasKey(key) == false {
@@ -53,4 +53,3 @@ func (c *Collection) CreateObjectsJSON(keyList []string, src []byte) error {
 	}
 	return nil
 }
-

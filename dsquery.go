@@ -12,15 +12,15 @@ import (
 )
 
 type DSQuery struct {
-	CName string `json:"c_name,omitempty"`
-	Stmt string `json:"stmt,omitempty"`
-	Pretty bool `json:"pretty,omitempty"`
-	AsGrid bool `json:"as_grid,omitempty"`
-	AsCSV bool `json:"csv,omitempty"`
+	CName      string   `json:"c_name,omitempty"`
+	Stmt       string   `json:"stmt,omitempty"`
+	Pretty     bool     `json:"pretty,omitempty"`
+	AsGrid     bool     `json:"as_grid,omitempty"`
+	AsCSV      bool     `json:"csv,omitempty"`
 	Attributes []string `json:"attributes,omitempty"`
-	PTIndex bool `json:"pt_index,omitempty"`
-	ds *Collection
-	db *sql.DB
+	PTIndex    bool     `json:"pt_index,omitempty"`
+	ds         *Collection
+	db         *sql.DB
 }
 
 // MakeGrid takes JSON source holding an array of objects and uses the attribute list to
@@ -92,7 +92,6 @@ func MakeCSV(src []byte, attributes []string) ([]byte, error) {
 	src = out.Bytes()
 	return src, nil
 }
-
 
 // indexCollection creates a SQL replica of a dataset collection as a SQLite 3
 // database called index.db inside the collection's root folder. This allows
@@ -185,7 +184,7 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 	for rows.Next() {
 		// Get our row values
 		obj := []byte{}
-		if err := rows.Scan(&obj); err != nil  {
+		if err := rows.Scan(&obj); err != nil {
 			return err
 		}
 		if i > 0 {

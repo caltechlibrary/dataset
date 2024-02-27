@@ -27,7 +27,6 @@ import (
 	"github.com/caltechlibrary/dataset/v2"
 )
 
-
 const (
 	helpText = `%{app_name}(1) user manual | version {version} {release_hash}
 % R. S. Doiel and Tom Morrell
@@ -101,8 +100,8 @@ all options came after the command name, now they tend to
 come after the verb itself. This is because context counts
 in trying to remember options (at least for the authors of
 {app_name}).  There are three "GLOBAL_OPTIONS" that are exception
-and they are `+"`"+`-version`+"`"+`, `+"`"+`-help`+"`"+`
-and `+"`"+`-license`+"`"+`. All other options come
+and they are ` + "`" + `-version` + "`" + `, ` + "`" + `-help` + "`" + `
+and ` + "`" + `-license` + "`" + `. All other options come
 after the verb and apply to the specific action the verb
 implements.
 
@@ -149,7 +148,6 @@ implements.
 
 `
 )
-
 
 var (
 	// Standard Options

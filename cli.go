@@ -34,45 +34,45 @@ var (
 	appName  = path.Base(os.Args[0])
 
 	helpDocs = map[string]string{
-		"usage":         cliDescription,
-		"examples":      cliExamples,
-		"init":          cliInit,
-		"create":        cliCreate,
-		"read":          cliRead,
-		"update":        cliUpdate,
-		"delete":        cliDelete,
-		"keys":          cliKeys,
-		"haskey":        cliHasKey,
-		"has-key":       cliHasKey,
-		"updated-keys":  cliUpdatedKeys,
-		"count":         cliCount,
+		"usage":          cliDescription,
+		"examples":       cliExamples,
+		"init":           cliInit,
+		"create":         cliCreate,
+		"read":           cliRead,
+		"update":         cliUpdate,
+		"delete":         cliDelete,
+		"keys":           cliKeys,
+		"haskey":         cliHasKey,
+		"has-key":        cliHasKey,
+		"updated-keys":   cliUpdatedKeys,
+		"count":          cliCount,
 		"set-versioning": cliVersioning,
 		"get-versioning": cliVersioning,
-		"versions":      cliVersioning,
-		"sample":        cliSample,
-		"clone":         cliClone,
-		"clone-sample":  cliCloneSample,
-		"frames":        cliFrames,
-		"frame-names":   cliFrames,
-		"frame":         cliFrame,
-		"frame-def":     cliFrameDef,
-		"frame-keys":    cliFrameKeys,
-		"frame-objects": cliFrameObjects,
-		"reframe":       cliReframe,
-		"refresh":       cliRefresh,
-		"hasframe":      cliHasFrame,
-		"has-frame":     cliHasFrame,
-		"delete-frame":  cliDeleteFrame,
-		"attachments":   cliAttachments,
-		"attach":        cliAttach,
-		"detach":        cliRetrieve,
-		"retrieve":      cliRetrieve,
-		"prune":         cliPrune,
-		"check":         cliCheck,
-		"repair":        cliRepair,
-		"migrate":       cliMigrate,
-		"codemeta":      cliCodemeta,
-		"license":       License,
+		"versions":       cliVersioning,
+		"sample":         cliSample,
+		"clone":          cliClone,
+		"clone-sample":   cliCloneSample,
+		"frames":         cliFrames,
+		"frame-names":    cliFrames,
+		"frame":          cliFrame,
+		"frame-def":      cliFrameDef,
+		"frame-keys":     cliFrameKeys,
+		"frame-objects":  cliFrameObjects,
+		"reframe":        cliReframe,
+		"refresh":        cliRefresh,
+		"hasframe":       cliHasFrame,
+		"has-frame":      cliHasFrame,
+		"delete-frame":   cliDeleteFrame,
+		"attachments":    cliAttachments,
+		"attach":         cliAttach,
+		"detach":         cliRetrieve,
+		"retrieve":       cliRetrieve,
+		"prune":          cliPrune,
+		"check":          cliCheck,
+		"repair":         cliRepair,
+		"migrate":        cliMigrate,
+		"codemeta":       cliCodemeta,
+		"license":        License,
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
@@ -238,7 +238,7 @@ func doSetVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string)
 
 func doGetVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName      string
+		cName string
 	)
 	flagSet := flag.NewFlagSet("get_versioning", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
@@ -259,10 +259,9 @@ func doGetVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string)
 		return err
 	}
 	defer c.Close()
-	fmt.Fprintf(out, "%s\n", c.Versioning)	
+	fmt.Fprintf(out, "%s\n", c.Versioning)
 	return nil
 }
-
 
 func doVersions(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
@@ -692,7 +691,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] SRC_COLLECTION_NAME DEST_COLLECTION_NAME [DEST_DSN_URI], got %q", strings.Join(args, " "))
 	}
-	if ! all {
+	if !all {
 		keys, err = ReadKeys(keysName, in)
 		if err != nil {
 			return err
