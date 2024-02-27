@@ -171,7 +171,7 @@ func main() {
 	if comment != "" {
 		app.Comment = comment
 	}
-	cName, csvName, keyColumn := args[0], args[1], args[2] 
+	cName, csvName, keyColumn := args[0], args[1], args[2]
 
 	// Handle arranging our input data
 	if csvName != "" && csvName != "-" {

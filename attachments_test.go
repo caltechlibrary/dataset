@@ -18,7 +18,6 @@ package dataset
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -211,7 +210,6 @@ func TestAttachmentsPTStore(t *testing.T) {
 			t.FailNow()
 		}
 	}
-	
 
 }
 

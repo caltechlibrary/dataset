@@ -160,8 +160,8 @@ that is assumed to be in your path.
 
 ### Requirements
 
-- Go version 1.21.1 or better
-- Pandoc version 2.19.2 or better
+- Go version 1.22 or better
+- Pandoc version 3.1 or better
 - GNU Make
 - Common POSIX/Unix utilities, e.g. cat, sed, grep
 
@@ -181,5 +181,5 @@ batch files to perform some of what Make under Linux and macOS would do.
 - release.bat builds a release, will prompt for version
 - clean.bat removes executable and temp files
 
-Compilation assumes [go](https://github.com/golang/go) v1.21.1 or better.
+Compilation assumes [go](https://github.com/golang/go) v1.22 or better.
 

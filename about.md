@@ -14,7 +14,7 @@ authors:
     orcid: "https://orcid.org/0000-0001-9266-5146"
 
 repository-code: "https://github.com/caltechlibrary/dataset"
-version: 2.1.9
+version: 2.1.10
 license-url: "https://data.caltech.edu/license"
 keywords: [ "GitHub", "metadata", "data", "software", "json" ]
 
@@ -23,7 +23,7 @@ keywords: [ "GitHub", "metadata", "data", "software", "json" ]
 About this software
 ===================
 
-## dataset 2.1.9
+## dataset 2.1.10
 
 ### Authors
 
@@ -51,6 +51,6 @@ system or SQL JSON store
 
 ### Software Requiremets
 
-- Golang 1.20 or better
-- Pandoc 3.0 or better
+- Golang 1.22 or better
+- Pandoc 3.1 or better
 - GNU Make

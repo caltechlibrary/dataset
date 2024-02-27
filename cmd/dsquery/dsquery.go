@@ -147,10 +147,10 @@ built before executing the SQL statement.
 
 # EXAMPLES
 
-Generate a list of JSON objects with the `+"`"+`_key`+"`"+` value
-merged with the object stored as the `+"`"+`._Key`+"`"+` attribute.
+Generate a list of JSON objects with the ` + "`" + `_key` + "`" + ` value
+merged with the object stored as the ` + "`" + `._Key` + "`" + ` attribute.
 The colllection name "data.ds" which is implemented using Postgres
-as the JSON store. (note: in Postgres the `+"`"+`||`+"`"+` is very helpful).
+as the JSON store. (note: in Postgres the ` + "`" + `||` + "`" + ` is very helpful).
 
 ~~~
 {app_name} data.ds "SELECT jsonb_build_object('_Key', _key)::jsonb || src::jsonb FROM data"
@@ -228,13 +228,13 @@ func main() {
 		stmt = fmt.Sprintf("%s", src)
 	}
 	for _, arg := range args {
-		switch   {
-			case cName == "":
-				cName = arg
-			case stmt == "":
-				stmt = arg
-			default:
-				params = append(params, arg)
+		switch {
+		case cName == "":
+			cName = arg
+		case stmt == "":
+			stmt = arg
+		default:
+			params = append(params, arg)
 		}
 	}
 	if cName == "" {
@@ -246,7 +246,7 @@ func main() {
 		os.Exit(10)
 	}
 	app.Pretty = pretty
-	app.PTIndex = ptIndex 
+	app.PTIndex = ptIndex
 	attributes := []string{}
 	if grid != "" {
 		app.AsGrid = true

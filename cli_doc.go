@@ -441,8 +441,8 @@ named "data.ds".
     dataset init data.ds
 ~~~
 
-NOTE: After each evocation of `+"`"+`dataset init`+"`"+` if all went well 
-you will be shown an `+"`"+`OK`+"`"+` if everything went OK, otherwise
+NOTE: After each evocation of ` + "`" + `dataset init` + "`" + ` if all went well 
+you will be shown an ` + "`" + `OK` + "`" + ` if everything went OK, otherwise
 an error message. 
 
 By default dataset cli creates pairtree collections. You can now optionally 
@@ -531,7 +531,7 @@ clone
 =====
 
 Clone a collection from a list of keys into a new collection. If the
-`+"`"+`-all`+"`"+` option is used then the whole collection will be
+` + "`" + `-all` + "`" + ` option is used then the whole collection will be
 clone and a list of keys is not required.
 
 In this example we create a list of keys using the ` + "`-sample`" + ` option

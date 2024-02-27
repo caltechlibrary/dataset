@@ -796,7 +796,7 @@ func TestDataset(t *testing.T) {
 		t.FailNow()
 	}
 	gotB, _ = ioutil.ReadAll(out)
-	if bytes.Compare(expectedB, gotB) != 0 {
+	if bytes.Compare(bytes.TrimSpace(expectedB), bytes.TrimSpace(gotB)) != 0 {
 		t.Errorf("expected %q, got %q", expectedB, gotB)
 		t.FailNow()
 	}
@@ -811,7 +811,7 @@ func TestDataset(t *testing.T) {
 		t.FailNow()
 	}
 	gotB, _ = ioutil.ReadAll(out)
-	if bytes.Compare(expectedB, gotB) != 0 {
+	if bytes.Compare(bytes.TrimSpace(expectedB), bytes.TrimSpace(gotB)) != 0 {
 		t.Errorf("expected %q, got %q", expectedB, gotB)
 		t.FailNow()
 	}

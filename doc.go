@@ -16,7 +16,6 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 Dataset Project
 ===============
 
@@ -68,8 +67,8 @@ command line. _dataset_ is intended to be simple to use with minimal
 setup (e.g.  `dataset init mycollection.ds` creates a new collection
 called 'mycollection.ds').
 
-- _dataset_ and _datasetd_ store JSON object documents in collections.
-  The storage of the JSON documents differs.
+  - _dataset_ and _datasetd_ store JSON object documents in collections.
+    The storage of the JSON documents differs.
   - dataset collections are defined in a directory containing a
     collection.json file
   - collection.json metadata file describing the collection,
@@ -86,13 +85,13 @@ _datatset_ stores JSON object documents in a pairtree
     found in a directories organized by semver (semantic version number)
   - versioned JSON documents are created sub directory incorporating a
     semver
+
 _datasetd_ stores JSON object documents in a table named for the collection
   - objects are versioned into a collection history table by semver and key
-    - attachments are not supported
-    - can be exported to a collection using pairtree storage (e.g. a zip
-      file will be generated holding a pairtree representation of the
-      collection)
-
+  - attachments are not supported
+  - can be exported to a collection using pairtree storage (e.g. a zip
+    file will be generated holding a pairtree representation of the
+    collection)
 
 The choice of plain UTF-8 is intended to help future proof reading dataset
 collections.  Care has been taken to keep _dataset_ simple enough and light
@@ -103,7 +102,6 @@ supporting file input and output, common string operations and along with
 JSON encoding and decoding functions. The current implementation is in the
 Go language.
 
-
 Features
 --------
 
@@ -112,6 +110,7 @@ _dataset_ supports
   - Define metadata about the collection using a codemeta.json file
   - Define a keys file holding a list of allocated keys in the collection
   - Creates a pairtree for object storage
+
 - Listing _keys_ in a collection
 - Object level actions
   - create
@@ -119,28 +118,28 @@ _dataset_ supports
   - update
   - delete
   - Documents as attachments
-    - attachments (list)
-    - attach (create/update)
-    - retrieve (read)
-    - prune (delete)
-- The ability to create data frames from while collections or based on
-  keys lists
+  - attachments (list)
+  - attach (create/update)
+  - retrieve (read)
+  - prune (delete)
+  - The ability to create data frames from while collections or based on
+    keys lists
   - frames are defined using a list of keys and a lost
     "dot paths" describing what is to be pulled out
     of a stored JSON objects and into the frame
   - frame level actions
-    - frames, list the frame names in the collection
-    - frame, define a frame, does not overwrite an existing frame with
-      the same name
-    - frame-def, show the frame definition (in case we need it for some
-      reason)
-    - frame-objects, return a list of objects in the frame
-    - refresh, using the current frame definition reload all the objects
-      in the frame
-    - reframe, replace the frame definition then reload the objects in
-      the frame using the old frame key list
-    - has-frame, check to see if a frame exists
-    - delete-frame remove the frame
+  - frames, list the frame names in the collection
+  - frame, define a frame, does not overwrite an existing frame with
+    the same name
+  - frame-def, show the frame definition (in case we need it for some
+    reason)
+  - frame-objects, return a list of objects in the frame
+  - refresh, using the current frame definition reload all the objects
+    in the frame
+  - reframe, replace the frame definition then reload the objects in
+    the frame using the old frame key list
+  - has-frame, check to see if a frame exists
+  - delete-frame remove the frame
 
 _datasetd_ supports
 
@@ -148,19 +147,19 @@ _datasetd_ supports
 - List or update a collection's metadata
 - List a collection's keys
 - Object level actions
-    - create
-    - read
-    - update
-    - delete
-    - Documents as attachments
-	  - attachments (list)
-      - attach (create/update)
-      - retrieve (read)
-      - prune (delete)
-- A means of importing to or exporting from pairtree based dataset
-  collections
-- The ability to create data frames from while
-  collections or based on keys lists
+  - create
+  - read
+  - update
+  - delete
+  - Documents as attachments
+  - attachments (list)
+  - attach (create/update)
+  - retrieve (read)
+  - prune (delete)
+  - A means of importing to or exporting from pairtree based dataset
+    collections
+  - The ability to create data frames from while
+    collections or based on keys lists
   - frames are defined using "dot paths" describing
     what is to be pulled out of a stored JSON objects
 
@@ -168,44 +167,41 @@ Both _dataset_  and _datasetd_ maybe useful for general data science
 applications needing JSON object management or in implementing repository
 systems in research libraries and archives.
 
-
 Limitations of _dataset_ and _datasetd_
 -------------------------------------------
 
 _dataset_ has many limitations, some are listed below
 
-- the pairtree implementation it is not a multi-process, multi-user
-  data store
-- it is not a general purpose database system
-- it stores all keys in lower case in order to deal with file systems
-  that are not case sensitive, compatibility needed by pairtrees
-- it stores collection names as lower case to deal with file systems that
-  are not case sensitive
-- it does not have a built-in query language, search or sorting
-- it should NOT be used for sensitive or secret information
+  - the pairtree implementation it is not a multi-process, multi-user
+    data store
+  - it is not a general purpose database system
+  - it stores all keys in lower case in order to deal with file systems
+    that are not case sensitive, compatibility needed by pairtrees
+  - it stores collection names as lower case to deal with file systems that
+    are not case sensitive
+  - it does not have a built-in query language, search or sorting
+  - it should NOT be used for sensitive or secret information
 
 _datasetd_ is a simple web service intended to run on "localhost:8485".
 
-- it is a RESTful service
-- it does not include support for authentication
-- it does not support a query language, search or sorting
-- it does not support access control by users or roles
-- it does not provide auto key generation
-- it limits the size of JSON documents stored to the size supported by
-  with host SQL JSON columns
-- it limits the size of attached files to less than 250 MiB
-- it does not support partial JSON record updates or retrieval
-- it does not provide an interactive Web UI for working with dataset
-  collections
-- it does not support HTTPS or "at rest" encryption
-- it should NOT be used for sensitive or secret information
-
+  - it is a RESTful service
+  - it does not include support for authentication
+  - it does not support a query language, search or sorting
+  - it does not support access control by users or roles
+  - it does not provide auto key generation
+  - it limits the size of JSON documents stored to the size supported by
+    with host SQL JSON columns
+  - it limits the size of attached files to less than 250 MiB
+  - it does not support partial JSON record updates or retrieval
+  - it does not provide an interactive Web UI for working with dataset
+    collections
+  - it does not support HTTPS or "at rest" encryption
+  - it should NOT be used for sensitive or secret information
 
 Authors and history
 -------------------
 
 - R. S. Doiel
 - Tommy Morrell
-
 */
 package dataset

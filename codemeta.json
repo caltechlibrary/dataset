@@ -2,12 +2,14 @@
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
     "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
+	"releaseNotes": "Updated Go version to 1.22 and related packages",
     "name": "dataset",
     "dateRelease": "2023-10-10",
+	"dateModified": "2024-02-26",
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "2.1.9",
+    "version": "2.1.10",
     "author": [
         {
             "@type": "Person",
@@ -70,8 +72,8 @@
         "Go"
     ],
     "softwareRequirements": [
-        "Golang 1.20 or better",
-        "Pandoc 3.0 or better",
+        "Golang 1.22 or better",
+        "Pandoc 3.1 or better",
 		"GNU Make"
     ],
     "funder":[

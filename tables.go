@@ -1,7 +1,5 @@
-//
 // table.go provides some utility functions to move string one and
 // two dimensional slices into/out of one and two dimensional slices.
-//
 package dataset
 
 import (
@@ -130,4 +128,3 @@ func TableInterfaceToString(t [][]interface{}) [][]string {
 	}
 	return table
 }
-

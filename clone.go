@@ -1,4 +1,3 @@
-//
 // Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
@@ -15,7 +14,6 @@
 // 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package dataset
 
 import (
@@ -25,7 +23,6 @@ import (
 	"time"
 )
 
-//
 // Clone initializes a new collection based on the list of keys provided.
 // If the keys list is empty all the objects are copied from one collection
 // to the other. The collections do not need to be the same storage type.
@@ -33,20 +30,21 @@ import (
 // NOTE: The cloned copy is not open after cloning is complete.
 //
 // ```
-//   newName, dsnURI :=
-//      "new-collection.ds", "sqlite://new-collection.ds/collection.db"
-//   c, err := dataset.Open("old-collection.ds")
-//   if err != nil {
-//       ... // handle error
-//   }
-//   defer c.Close()
-//   nc, err := c.Clone(newName, dsnURI, []string{}, false)
-//   if err != nil {
-//       ... // handle error
-//   }
-//   defer nc.Close()
-// ```
 //
+//	newName, dsnURI :=
+//	   "new-collection.ds", "sqlite://new-collection.ds/collection.db"
+//	c, err := dataset.Open("old-collection.ds")
+//	if err != nil {
+//	    ... // handle error
+//	}
+//	defer c.Close()
+//	nc, err := c.Clone(newName, dsnURI, []string{}, false)
+//	if err != nil {
+//	    ... // handle error
+//	}
+//	defer nc.Close()
+//
+// ```
 func (c *Collection) Clone(cloneName string, cloneDsnURI string, keys []string, verbose bool) error {
 	nc, err := Init(cloneName, cloneDsnURI)
 	if err != nil {
@@ -87,7 +85,6 @@ func (c *Collection) Clone(cloneName string, cloneDsnURI string, keys []string, 
 	return nil
 }
 
-//
 // CloneSample initializes two new collections based on a training and test // sampling of the keys in the original collection.  If the keys list is
 // empty all the objects are used for creating the taining and test
 // sample collections.  The collections do not need to be the same
@@ -96,24 +93,25 @@ func (c *Collection) Clone(cloneName string, cloneDsnURI string, keys []string, 
 // NOTE: The cloned copy is not open after cloning is complete.
 //
 // ```
-//   trainingSetSize := 10000
-//   trainingName, trainingDsnURI :=
-//      "training.ds", "sqlite://training.ds/collection.db"
-//   testName, testDsnURI := "test.ds", "sqlite://test.ds/collection.db"
-//   c, err := dataset.Open("old-collection")
-//   if err != nil {
-//       ... // handle error
-//   }
-//   defer c.Close()
-//   nc, err := c.CloneSample(trainingName, trainingDsnURI,
-//                            testName, testDsnURI, []string{},
-//                            trainingSetSize, false)
-//   if err != nil {
-//       ... // handle error
-//   }
-//   defer nc.Close()
-// ```
 //
+//	trainingSetSize := 10000
+//	trainingName, trainingDsnURI :=
+//	   "training.ds", "sqlite://training.ds/collection.db"
+//	testName, testDsnURI := "test.ds", "sqlite://test.ds/collection.db"
+//	c, err := dataset.Open("old-collection")
+//	if err != nil {
+//	    ... // handle error
+//	}
+//	defer c.Close()
+//	nc, err := c.CloneSample(trainingName, trainingDsnURI,
+//	                         testName, testDsnURI, []string{},
+//	                         trainingSetSize, false)
+//	if err != nil {
+//	    ... // handle error
+//	}
+//	defer nc.Close()
+//
+// ```
 func (c *Collection) CloneSample(trainingName string, trainingDsnURI string, testName string, testDsnURI string, keys []string, sampleSize int, verbose bool) error {
 	var err error
 	if sampleSize < 1 {

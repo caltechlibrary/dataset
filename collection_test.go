@@ -281,7 +281,7 @@ func TestSQLStore(t *testing.T) {
 	}
 	now := time.Now()
 	start := "2001-01-01 00:00:00"
-	end := now.Add(12 * time.Hour).Format("2006-01-02") + " 23:23:59"
+	end := now.Add(12*time.Hour).Format("2006-01-02") + " 23:23:59"
 	updatedKeys, err := c.UpdatedKeys(start, end)
 	if err != nil {
 		t.Errorf("expected UpdateKeys to work, %s", err)
@@ -300,21 +300,21 @@ func TestSQLStore(t *testing.T) {
 
 	// Test deletes
 	/*
-	for i := 0; i < 2; i++ {
-		key := fmt.Sprintf("%d", i)
-		if err := c.Delete(key); err != nil {
-			t.Errorf("Expected to be able to delete %q, %s", key, err)
+		for i := 0; i < 2; i++ {
+			key := fmt.Sprintf("%d", i)
+			if err := c.Delete(key); err != nil {
+				t.Errorf("Expected to be able to delete %q, %s", key, err)
+			}
 		}
-	}
-	keys, err = c.Keys()
-	if err != nil {
-		t.Errorf("Expected to get keys back from List, %s", err)
-		t.FailNow()
-	}
-	if len(keys) != 1 {
-		t.Errorf("Expected one key left after delete, got %+v", keys)
-		t.FailNow()
-	}
+		keys, err = c.Keys()
+		if err != nil {
+			t.Errorf("Expected to get keys back from List, %s", err)
+			t.FailNow()
+		}
+		if len(keys) != 1 {
+			t.Errorf("Expected one key left after delete, got %+v", keys)
+			t.FailNow()
+		}
 	*/
 }
 
@@ -695,7 +695,7 @@ func TestCaseHandling(t *testing.T) {
 	if err != nil {
 		t.Errorf("c.Keys() should not return error, %s", err)
 		t.FailNow()
-	} 
+	}
 	for _, key := range keys {
 		if key == strings.ToUpper(key) {
 			t.Errorf("Expected lower case %q, got %q in %q", strings.ToLower(key), key, cName)

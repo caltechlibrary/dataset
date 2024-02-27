@@ -48,8 +48,8 @@ func mergeKeys(sorted []string, unsorted []string) []string {
 // all labels are in table's header row. If not it appends the
 // missing columns to the end of the header row and returns
 // new header row and true if a change is needed.
-func labelsToHeaderRow(f *DataFrame, table [][]interface{}) ([]string, 
-bool) {
+func labelsToHeaderRow(f *DataFrame, table [][]interface{}) ([]string,
+	bool) {
 	changed := false
 	header := []string{}
 	for i, cell := range table[0] {

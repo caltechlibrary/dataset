@@ -29,18 +29,18 @@ first, second,third, fourth
 
 	expectedObjs := map[string]map[string]interface{}{}
 	expectedObjs["1"] = map[string]interface{}{
-		"key":  "1",
+		"key":   "1",
 		"first": 1,
 		"third": 3,
 	}
 	expectedObjs["2"] = map[string]interface{}{
-		"key":   "2",
+		"key":    "2",
 		"first":  2,
 		"second": 2,
 		"third":  2,
 	}
 	expectedObjs["3"] = map[string]interface{}{
-		"key":   "3",
+		"key":    "3",
 		"first":  3,
 		"second": 3,
 	}
@@ -318,11 +318,11 @@ func TestMerge(t *testing.T) {
 	// TEST: appending rows to table
 	obj := map[string]interface{}{
 		"key": "10",
-		"h1":   "1",
-		"h2":   "2",
-		"h3":   "3",
-		"h4":   "",
-		"h5":   "4",
+		"h1":  "1",
+		"h2":  "2",
+		"h3":  "3",
+		"h4":  "",
+		"h5":  "4",
 	}
 	err = c.Create("10", obj)
 	if err != nil {

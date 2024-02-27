@@ -313,7 +313,6 @@ func (c *Collection) AttachFile(key string, filename string) error {
 	return c.AttachStream(key, filename, buf)
 }
 
-
 // AttachVersionStream is for attaching open a non-JSON file buffer
 // (via an io.Reader) to a specific version of a file. If attached
 // file exists it is replaced.

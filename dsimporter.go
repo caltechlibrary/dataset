@@ -8,34 +8,33 @@ import (
 )
 
 type DSImport struct {
-	Comma string
-	Comment string
-	Overwrite bool
-	LazyQuotes bool
+	Comma            string
+	Comment          string
+	Overwrite        bool
+	LazyQuotes       bool
 	TrimLeadingSpace bool
 }
 
 // normalizeDelimiters handles the messy translation from a format string
 // received as an option in the cli to something useful to pass to Join.
 func normalizeDelimiter(s string) string {
-        if strings.Contains(s, `\n`) {
-                s = strings.Replace(s, `\n`, "\n", -1)
-        }
-        if strings.Contains(s, `\t`) {
-                s = strings.Replace(s, `\t`, "\t", -1)
-        }
-        return s
+	if strings.Contains(s, `\n`) {
+		s = strings.Replace(s, `\n`, "\n", -1)
+	}
+	if strings.Contains(s, `\t`) {
+		s = strings.Replace(s, `\t`, "\t", -1)
+	}
+	return s
 }
 
 // normalizeDelimiterRune take a delimiter string and returns a single Rune
 func normalizeDelimiterRune(s string) rune {
-        runes := []rune(normalizeDelimiter(s))
-        if len(runes) > 0 {
-                return runes[0]
-        }
-        return ','
+	runes := []rune(normalizeDelimiter(s))
+	if len(runes) > 0 {
+		return runes[0]
+	}
+	return ','
 }
-
 
 func (app *DSImport) Run(in io.Reader, out io.Writer, eout io.Writer, cName string, keyColumn string) error {
 	c, err := Open(cName)
@@ -52,7 +51,7 @@ func (app *DSImport) Run(in io.Reader, out io.Writer, eout io.Writer, cName stri
 		r.Comment = normalizeDelimiterRune(app.Comment)
 	}
 	r.LazyQuotes = app.LazyQuotes
-    r.TrimLeadingSpace = app.TrimLeadingSpace
+	r.TrimLeadingSpace = app.TrimLeadingSpace
 
 	i := 0
 	header := []string{}
@@ -82,24 +81,24 @@ func (app *DSImport) Run(in io.Reader, out io.Writer, eout io.Writer, cName stri
 					if j < len(row) {
 						values[attr] = row[j]
 					} else {
-						fmt.Fprintf(eout, "row %d: can't find column (%d) %q\n", j, attr)
+						fmt.Fprintf(eout, "row %d: can't find column (%d)\n", i, j)
 					}
 				}
 				if c.HasKey(key) {
 					if app.Overwrite {
-						if err := c.Update(key, values); err != nil  {
+						if err := c.Update(key, values); err != nil {
 							fmt.Fprintf(eout, "row %d: failed to update %q in collection, %s\n", i, key, err)
 						}
 					} else {
 						fmt.Fprintf(eout, "row %d: key already exists in collection %q\n", i, key)
 					}
 				} else {
-					if err := c.Create(key, values); err != nil  {
+					if err := c.Create(key, values); err != nil {
 						fmt.Fprintf(eout, "row %d: failed to create %q in collection, %s\n", i, key, err)
 					}
 				}
 			} else {
-				fmt.Fprint(eout, "row %d: can't find key column", i)
+				fmt.Fprintf(eout, "row %d: can't find key column\n", i)
 			}
 		}
 		i++

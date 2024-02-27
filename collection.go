@@ -732,11 +732,11 @@ func (c *Collection) ReadObject(key string, obj interface{}) error {
 //
 // ```
 //
-//	key := "123"
-//	src, err := c.ReadJSON(key)
-//  if err != nil {
-//	   // ... handle error
-//	}
+//		key := "123"
+//		src, err := c.ReadJSON(key)
+//	 if err != nil {
+//		   // ... handle error
+//		}
 //
 // ```
 func (c *Collection) ReadJSON(key string) ([]byte, error) {
@@ -764,12 +764,12 @@ func (c *Collection) ReadJSON(key string) ([]byte, error) {
 //
 // ```
 //
-//	key := "123"
-//  semver := "0.0.2"
-//	src, err := c.ReadVersionJSON(key, semver)
-//  if err != nil {
-//	   // ... handle error
-//	}
+//		key := "123"
+//	 semver := "0.0.2"
+//		src, err := c.ReadVersionJSON(key, semver)
+//	 if err != nil {
+//		   // ... handle error
+//		}
 //
 // ```
 func (c *Collection) ReadJSONVersion(key string, semver string) ([]byte, error) {
@@ -790,7 +790,6 @@ func (c *Collection) ReadJSONVersion(key string, semver string) ([]byte, error) 
 	}
 	return src, nil
 }
-
 
 // Versions retrieves a list of versions available for a JSON document if
 // versioning is enabled for the collection.
@@ -1165,4 +1164,3 @@ func (c *Collection) Length() int64 {
 	}
 	return int64(-1)
 }
-
