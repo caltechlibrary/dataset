@@ -192,7 +192,7 @@ func (api *API) Shutdown(sigName string) int {
 }
 
 // Reload performs a Shutdown and an init after re-reading
-// in the settings.json file.
+// in the settings.yaml file.
 func (api *API) Reload(sigName string) error {
 	appName := api.AppName
 	settingsFile := api.SettingsFile
@@ -444,7 +444,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 // ```
 //
 //	appName := path.Base(sys.Argv[0])
-//	settingsFile := "settings.json"
+//	settingsFile := "settings.yaml"
 //	if err := api.RunAPI(appName, settingsFile); err != nil {
 //	   ...
 //	}

@@ -24,26 +24,27 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // Settings holds the specific settings for the web service.
 type Settings struct {
 	// Host holds the URL to listen to for the web API
-	Host string `json:"host"`
+	Host string `json:"host" yaml:"host"`
 
 	// Htdocs holds the path to static content that will be
 	// provided by the web service.
-	Htdocs string `json:"htdocs"`
+	Htdocs string `json:"htdocs" yaml:"htdocs"`
 
 	// Collections holds an array of collection configurations that
 	// will be supported by the web service.
-	Collections []*Config `json:"collections"`
+	Collections []*Config `json:"collections" yaml:"collections"`
 }
 
 // Config holds the collection specific configuration.
 type Config struct {
 	// Dname holds the dataset collection name/path.
-	CName string `json:"dataset,omitempty"`
+	CName string `json:"dataset,omitempty" yaml:"dataset,omitempty"`
 
 	// Dsn URI describes how to connection to a SQL storage engine
 	// use by the collection(s).
@@ -52,56 +53,56 @@ type Config struct {
 	// The Dsn URI may be past in from the environment via the
 	// variable DATASET_DSN_URI. E.g. where all the collections
 	// are stored in a common database.
-	DsnURI string `json:"dsn_uri,omitemtpy"`
+	DsnURI string `json:"dsn_uri,omitemtpy" yaml:"dsn_uri,omitempty"`
 
 	// Permissions for accessing the collection through the web service
 	// At least some of these should be set to true otherwise you
 	// don't have much of a web service.
 
 	// Keys lets you get a list of keys in a collection
-	Keys bool `json:"keys,omitempty"`
+	Keys bool `json:"keys,omitempty" yaml:"keys,omitempty"`
 
 	// Create allows you to add objects to a collection
-	Create bool `json:"create,omitempty"`
+	Create bool `json:"create,omitempty" yaml:"create,omitempty"`
 
 	// Read allows you to retrive an object from a collection
-	Read bool `json:"read,omitempty"`
+	Read bool `json:"read,omitempty" yaml:"read,omitempty"`
 
 	// Update allows you to replace objects in a collection
-	Update bool `json:"update,omitempty"`
+	Update bool `json:"update,omitempty" yaml:"update,omitempty"`
 
 	// Delete allows ytou to removes objects, object versions,
 	// and attachments from a collection
-	Delete bool `json:"delete,omitempty"`
+	Delete bool `json:"delete,omitempty" yaml:"delete,omitempty"`
 
 	// Attachments allows you to attached documents for an object in the
 	// collection.
-	Attachments bool `json:"attachments,omitempty"`
+	Attachments bool `json:"attachments,omitempty" yaml:"attachments,omitempty"`
 
 	// Attach allows you to store an attachment for an object in
 	// the collection
-	Attach bool `json:"attach,omitempty"`
+	Attach bool `json:"attach,omitempty" yaml:"attach,omitempty"`
 
 	// Retrieve allows you to get an attachment in the collection for
 	// a given object.
-	Retrieve bool `json:"retrieve,omitempty"`
+	Retrieve bool `json:"retrieve,omitempty" yaml:"retreive,omitempty"`
 
 	// Prune allows you to remove an attachment from an object in
 	// a collection
-	Prune bool `json:"prune,omitempty"`
+	Prune bool `json:"prune,omitempty" yaml:"prune,omitempty"`
 
 	// FrameRead allows you to see a list of frames, check for
 	// a frame's existance and read the content of a frame, e.g.
 	// it's definition, keys, object list.
-	FrameRead bool `json:"frame_read,omitempty"`
+	FrameRead bool `json:"frame_read,omitempty" yaml:"frame_read,omitempty"`
 
 	// FrameWrite allows you to create a frame, change the frame's
 	// content or remove the frame completely.
-	FrameWrite bool `json:"frame_write,omitempty"`
+	FrameWrite bool `json:"frame_write,omitempty" yaml:"frame_write,omitempty"`
 
 	// Versions allows you to list versions, read and delete
 	// versioned objects and attachments in a collection.
-	Versions bool `json:"versions,omitempty"`
+	Versions bool `json:"versions,omitempty" yaml:"versions,omitempty"`
 }
 
 // String renders the configuration as a JSON string.
@@ -110,14 +111,14 @@ func (settings *Settings) String() string {
 	return fmt.Sprintf("%s", src)
 }
 
-// ConfigOpen reads the JSON configuration file provided, validates it
+// ConfigOpen reads the JSON or YAML configuration file provided, validates it
 // and returns a Settings structure and error.
 //
 // NOTE: if the dsn string isn't specified
 //
 // ```
 //
-//	settings := "settings.json"
+//	settings := "settings.yaml"
 //	settings, err := ConfigOpen(settings)
 //	if err != nil {
 //	   ...
@@ -141,8 +142,14 @@ func ConfigOpen(fName string) (*Settings, error) {
 	}
 
 	// Since we should be OK, unmarshal in into active settings
-	if err = json.Unmarshal(src, settings); err != nil {
-		return nil, fmt.Errorf("Unmarshaling %q failed, %s", fName, err)
+	if strings.HasSuffix(fName, ".yaml") {
+		if err = YAMLUnmarshal(src, settings); err != nil {
+			return nil, fmt.Errorf("Unmarshaling %q failed, %s", fName, err)
+		}
+	} else {
+		if err = json.Unmarshal(src, settings); err != nil {
+			return nil, fmt.Errorf("Unmarshaling %q failed, %s", fName, err)
+		}
 	}
 
 	// Apply defaults if needed
@@ -177,7 +184,7 @@ func ConfigOpen(fName string) (*Settings, error) {
 //
 // ```
 //
-//	fName := "new-settings.json"
+//	fName := "new-settings.yaml"
 //	mysql_dsn_uri := os.Getenv("DATASET_DSN_URI")
 //
 //	settings := new(Settings)
@@ -204,9 +211,18 @@ func ConfigOpen(fName string) (*Settings, error) {
 //
 // ```
 func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
-	src, err := JSONMarshalIndent(settings, "", "    ")
-	if err != nil {
-		return err
+	var (
+		src []byte
+		err error
+	)
+	if strings.HasSuffix(name, ".yaml") {
+		if src, err = YAMLMarshal(settings); err != nil {
+			return err
+		}
+	} else {
+		if src, err = JSONMarshalIndent(settings, "", "    "); err != nil {
+			return err
+		}
 	}
 	return ioutil.WriteFile(name, src, perm)
 }
