@@ -26,11 +26,11 @@
 <h1 id="name">NAME</h1>
 <p>datasetd</p>
 <h1 id="synopsis">SYNOPSIS</h1>
-<p>datasetd <a href="#options">OPTIONS</a> SETTINGS_JSON_FILE</p>
+<p>datasetd <a href="#options">OPTIONS</a> SETTINGS_FILE</p>
 <h1 id="description">DESCRIPTION</h1>
 <p>Runs a web service for one or more dataset collections. Requires the
 collections to exist (e.g. created previously with the dataset cli). It
-requires a settings JSON file that decribes the web service
+requires a settings JSON or YAML file that decribes the web service
 configuration and permissions per collection that are available via the
 web service.</p>
 <h1 id="options">OPTIONS</h1>
@@ -50,7 +50,7 @@ display version
 </dl>
 <h1 id="examples">EXAMPLES</h1>
 <p>Starting up the web service</p>
-<pre><code>   datasetd settings.json</code></pre>
+<pre><code>   datasetd settings.yaml</code></pre>
 <p>In this example we cover a short life cycle of a collection called
 “t1.ds”. We need to create a “settings.json” file and an empty dataset
 collection. Once ready you can run the datasetd service to interact with
@@ -58,40 +58,64 @@ the collection via cURL.</p>
 <p>To create the dataset collection we use the “dataset” command and the
 “vi” text edit (use can use your favorite text editor instead of
 vi).</p>
-<pre><code>    dataset init t1.ds
-    vi settings.json</code></pre>
-<p>In the “setttings.json” file the JSON should look like.</p>
-<pre><code>    {
-        &quot;host&quot;: &quot;localhost:8485&quot;,
-        &quot;sql_type&quot;: &quot;mysql&quot;,
-        &quot;dsn&quot;: &quot;DB_USER:DB_PASSWORD@/DB_NAME&quot;
-    }</code></pre>
+<pre><code>    createdb t1
+    dataset init t1.ds \
+       &quot;postgres://$PGUSER:$PGPASSWORD@/t1?sslmode=disable&quot;
+    vi settings.yaml</code></pre>
+<p>You can create the “settings.yaml” with this Bash script. I’ve
+created an htdocs directory to hold the static content to interact with
+the dataset web service.</p>
+<pre><code>mkdir htdocs
+cat &lt;&lt;EOT &gt;settings.yaml
+host: localhost:8485
+htdocs: htdocs
+collections:
+  # Each collection is an object. The path prefix is
+  # /api/&lt;dataset_name&gt;/...
+  - dataset: t1.ds
+    # What follows are object level permissions
+    keys: true
+    create: true
+    read: true
+    update: true
+    delete: true
+    # These are attachment related permissions
+    attachments: true
+    attach: true
+    retrieve: true
+    prune: true
+    # These are frame level permissions
+    frame_read: true
+    frame_write: true
+    # This sets versioning behavior
+    versions: true
+EOT</code></pre>
 <p>Now we can run datasetd and make the dataset collection available via
 HTTP.</p>
-<pre><code>    datasetd settings.json</code></pre>
+<pre><code>    datasetd settings.yaml</code></pre>
 <p>You should now see the start up message and any log information
 display to the console. You should open a new shell sessions and try the
 following.</p>
-<p>We can now use cURL to post the document to the “/t1/create/one” end
-point.</p>
-<pre><code>    curl -X POST http://localhost:8485/t1/create/one \
+<p>We can now use cURL to post the document to the
+“api//t1.ds/object/one” end point.</p>
+<pre><code>    curl -X POST http://localhost:8485/api/t1.ds/object/one \
         -d &#39;{&quot;one&quot;: 1}&#39;</code></pre>
 <p>Now we can list the keys available in our collection.</p>
-<pre><code>    curl http://localhost:8485/t1/keys</code></pre>
+<pre><code>    curl http://localhost:8485/api/t1.ds/keys</code></pre>
 <p>We should see “one” in the response. If so we can try reading it.</p>
-<pre><code>    curl http://localhost:8485/t1/read/one</code></pre>
+<pre><code>    curl http://localhost:8485/api/t1.ds/read/one</code></pre>
 <p>That should display our JSON document. Let’s try updating (replacing)
 it.</p>
-<pre><code>    curl -X POST http://localhost:8485/t1/update/one \
+<pre><code>    curl -X POST http://localhost:8485/api/t1.ds/object/one \
         -d &#39;{&quot;one&quot;: 1, &quot;two&quot;: 2}&#39;</code></pre>
 <p>If you read it back you should see the updated record. Now lets try
 deleting it.</p>
-<pre><code>    curl http://localhost:8485/t1/delete/one</code></pre>
+<pre><code>    curl http://localhost:8485/api/t1.ds/object/one</code></pre>
 <p>List the keys and you should see that “one” is not longer there.</p>
-<pre><code>    curl http://localhost:8485/t1/keys</code></pre>
+<pre><code>    curl http://localhost:8485/api/t1.ds/keys</code></pre>
 <p>In the shell session where datasetd is running press “ctr-C” to
 terminate the service.</p>
-<p>datasetd 2.1.10</p>
+<p>datasetd 2.1.11</p>
 </section>
 
 <footer>
