@@ -64,6 +64,9 @@ available via the web service.
 -version
 : display version
 
+-debug
+: log debug information
+
 # SETTINGS_FILE
 
 The settings files provides {app_name} with the configuration
@@ -278,9 +281,11 @@ func main() {
 	appName := path.Base(os.Args[0])
 
 	// Standard Options
+	debug := false
 	flag.BoolVar(&showHelp, "help", false, "display detailed help")
 	flag.BoolVar(&showLicense, "license", false, "display license")
 	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&debug, "debug", debug, "log debugging information")
 
 	flag.Parse()
 	args := flag.Args()
@@ -317,7 +322,7 @@ Try %s -help for usage details
 	}
 
 	/* Run API */
-	if err := dataset.RunAPI(appName, settings); err != nil {
+	if err := dataset.RunAPI(appName, settings, debug); err != nil {
 		fmt.Fprintf(os.Stderr, "RunAPI(%q) failed, %s\n", settings, err)
 		os.Exit(1)
 	}

@@ -112,7 +112,7 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 // The query takes a query name followed by a path part that maps the order of
 // the fields. This is needed because the SQL prepared statments use paramter
 // order is mostly common to SQL dialects.
-// 
+//
 // In this example we're runing the SQL statement with the name of "journal_search"
 // with title mapped to `$1` and journal mapped to `$2`.
 //
@@ -125,8 +125,10 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 // ```
 //
 // NOTE: the SQL query must conform to the same constraints as dsquery SQL constraints.
-//
 func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	if api.Debug {
+		log.Printf("DEBUG Query got a query, cName: %q, verb: %q, options: %+v\n", cName, verb, options)
+	}
 	if len(options) == 0 {
 		log.Printf("Query, Bad Request %s %q, missing query name", r.Method, r.URL.Path)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -139,7 +141,9 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	log.Printf("DEBUG cfg attribute: c -> %+v\n", cfg)
+	if api.Debug {
+		log.Printf("DEBUG cfg attribute: c -> %+v\n", cfg)
+	}
 	// Make sure we have queries defined in the configuration
 	if cfg.QueryFn == nil || len(cfg.QueryFn) == 0 {
 		log.Printf("Query, Bad Request %s %q, undefined query", r.Method, r.URL.Path)
@@ -148,13 +152,15 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	}
 	qStmt, ok := cfg.QueryFn[qName]
 	if !ok {
-		log.Printf("Query, Bad Request %s %q %s, undefined query %q", r.Method, r.URL.Path, qName)
+		log.Printf("Query, Bad Request %s %q, undefined query %q", r.Method, r.URL.Path, qName)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	if c, ok := api.CMap[cName]; ok {
-		log.Printf("DEBUG c : c -> %+v\n", c)
+		if api.Debug {
+			log.Printf("DEBUG c : c -> %+v\n", c)
+		}
 		src, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
@@ -163,20 +169,28 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		}
 		defer r.Body.Close()
 		o := map[string]interface{}{}
-		err = json.Unmarshal(src, &o)
-		if err != nil {
-			log.Printf("Query, unmarshal error %+v, %s", o, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
-			return
+		if len(src) > 0 {
+			err = json.Unmarshal(src, &o)
+			if err != nil {
+				log.Printf("Query, unmarshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				return
+			}
 		}
 
-		log.Printf("DEBUG verb %q, options %+v\n", verb, options)
+		if api.Debug {
+			log.Printf("DEBUG verb %q, options %+v\n", verb, options)
+		}
 		// FIXME: how to map form names to a list of parameters?
 		var rows *sql.Rows
 		qParams := []interface{}{}
-		if len(o) > 0 {
-			for _, val := range o {
-				qParams = append(qParams, val)
+		if len(options) > 0 && len(o) > 0 {
+			for _, key := range options {
+				if val, ok := o[key]; ok {
+					qParams = append(qParams, val)
+				} else if api.Debug {
+					log.Printf("DEBUG option %q, failed to map to query object %+v\n", key, o)
+				}
 			}
 			rows, err = c.SQLStore.db.Query(qStmt, qParams...)
 		} else {

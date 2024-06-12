@@ -114,21 +114,23 @@ The query path lets you run a predefined query from your settings YAML file. The
 
 In the settings file the queries are named. The query names are unique. One or many queries may be defined. The SQL expression associated with the name run as a prepared statement and parameters are mapped into based on the URL path provided. This allows you use many fields in forming your query.
 
-Let's say we have a query called "name". The runs SQL like 
+Let's say we have a query called "full_name". It is defined to run the following SQL.
 
 ~~~sql
 select src
 from people
-where src->>'family' like $1
-   or src->>'lived' like $2
+where src->>'family' like ?
+  and src->>'lived' like ?
 order by family, lived
 ~~~
+
+NOTE: The SQL is has to retain the constraint of a single object per row, normally this will be "src" for dataset collections.
 
 When you form a query path we need to indicate that the parameter for family and lived names need to get mapped to their
 respect positional references in the SQL. This is done as following url path.
 
 ~~~
-/api/people.ds/query/name/family/lived
+/api/people.ds/query/full_name/family/lived
 ~~~
 
 The web form could look like this.  
@@ -144,12 +146,12 @@ The web form could look like this.
 REMEMBER: the JSON API only supports the content type of "application/json" so you can use the browser's action and method in the form.
 
 You would include JavaScript in the your HTML to pull the values out of the form and create a JSON object. If I searched
-for someone who had the last name "Doe" the object submitted to query might look like the following. 
+for someone who had the family name "Doe" and he lived name of "Jane" the object submitted to query might look like the following. 
 
 ~~~json
 {
     "family": "Doe"
-    "lived": ""
+    "lived": "Jane"
 }
 ~~~
 
@@ -160,8 +162,8 @@ The curl expression would look like the following simulating the form submission
 curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
-  -d '{"family": "Doe", "lived": "" }' \
-  http://localhost:8485/api/people.ds/query/name/family/lived
+  -d '{"family": "Doe", "lived": "Jane" }' \
+  http://localhost:8485/api/people.ds/query/full_name/family/lived
 ~~~
 
 

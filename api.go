@@ -61,6 +61,9 @@ type API struct {
 	// the route and method matches.
 	Routes map[string]map[string]func(http.ResponseWriter, *http.Request, *API, string, string, []string)
 
+	// Debug if set true will cause more verbose output.
+	Debug bool
+
 	// Process ID
 	Pid int
 }
@@ -136,6 +139,9 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 			cName, verb, options = parts[0], parts[1], []string{}
 		default:
 			cName, verb, options = parts[0], parts[1], parts[2:]
+		}
+		if api.Debug {
+			log.Printf("DEBUG cName %q, verb: %q, options: %+v\n", cName, verb, options)
 		}
 		prefix := path.Join(cName, verb)
 		if route, ok := api.Routes[prefix]; ok {
@@ -456,12 +462,13 @@ func (api *API) Init(appName string, settingsFile string) error {
 //	}
 //
 // ```
-func RunAPI(appName string, settingsFile string) error {
+func RunAPI(appName string, settingsFile string, debug bool) error {
 	api := new(API)
 	// Open collection
 	if err := api.Init(appName, settingsFile); err != nil {
 		return err
 	}
+	api.Debug = debug
 
 	// Listen for Ctr-C
 	processControl := make(chan os.Signal, 1)

@@ -29,6 +29,9 @@ available via the web service.
 -version
 : display version
 
+-debug
+: log debug information
+
 # SETTINGS_FILE
 
 The settings files provides datasetd with the configuration
