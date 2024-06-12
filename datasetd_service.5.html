@@ -15,7 +15,7 @@
     <li><a href="index.html">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user-manual.html">User Manual</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
     <li><a href="about.html">About</a></li>
 	<li><a href="search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
@@ -23,22 +23,24 @@
 </nav>
 
 <section>
-<h1 id="user-manual">User Manual</h1>
-<ul>
-<li>Manual pages
-<ul>
-<li><a href="dataset.1.html">dataset</a></li>
-<li><a href="datasetd.1.html">datasetd</a></li>
-<li><a href="dsquery.1.html">dsquery</a></li>
-<li><a href="dsimporter.1.html">dsimporter</a></li>
-</ul></li>
-<li><a href="compatibility-in-v2.1.html">Compatibility with Dataset
-v1</a></li>
-<li><a href="INSTALL.html">Installation</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="how-to/">How to …</a></li>
-<li><a href="libdataset/">Libdataset</a></li>
-</ul>
+<h1 id="datasetd-service">Datasetd Service</h1>
+<p>The datasetd based application can be configured to be managed by
+systemd. You need to create a an appropriate service file with Unit,
+Service and Install described.</p>
+<h2 id="example">Example</h2>
+<p>Below is a generic datasetd systemd style service file for a project
+called citesearch implemented as citesearch.yaml using datasetd to
+provide the web service.</p>
+<pre><code>[Unit]
+
+Description=A Citation search engine for CaltechTHESIS search
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/datasetd /Sites/citesearch/citesearch.yaml
+
+[Install]
+WantedBy=multi-user.target</code></pre>
 </section>
 
 <footer>

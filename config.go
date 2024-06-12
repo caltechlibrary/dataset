@@ -59,6 +59,12 @@ type Config struct {
 	// At least some of these should be set to true otherwise you
 	// don't have much of a web service.
 
+	// QueryFn maps a query name to a SQL statement used to query the
+	// dataset collection. Multiple query statments can be defaulted. They
+	// Need to conform to the SQL dialect of the store. NOTE: Only collections
+	// using SQL stores are supported.
+	QueryFn map[string]string `json:"query,omitempty" yaml:"query,omitempty"`
+
 	// Keys lets you get a list of keys in a collection
 	Keys bool `json:"keys,omitempty" yaml:"keys,omitempty"`
 
@@ -225,4 +231,17 @@ func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
 		}
 	}
 	return ioutil.WriteFile(name, src, perm)
+}
+
+
+// GetCfg retrieves a collection configuration from a Settings object using dataset name.
+func (settings *Settings) GetCfg(cName string) (*Config, error) {
+	if settings.Collections != nil && len(settings.Collections) > 0 {
+		for _, cfg := range settings.Collections {
+			if cfg.CName == cName {
+				return cfg, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("%s not found", cName)
 }

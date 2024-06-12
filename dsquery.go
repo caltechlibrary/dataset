@@ -166,6 +166,8 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 		}
 		app.db = index
 	}
+	// FIXME: This needs to be abstracted into a general purpose Query function so I can support dsquery in the JSON API provided
+	// datasetd.
 	var rows *sql.Rows
 	if len(params) > 0 {
 		args := []interface{}{}
