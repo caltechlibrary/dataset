@@ -331,6 +331,12 @@ func (api *API) Init(appName string, settingsFile string) error {
 				return err
 			}
 		}
+		if cfg.QueryFn != nil && len(cfg.QueryFn) > 0 {
+			prefix := path.Join(cName, "query")
+			if err = api.RegisterRoute(prefix, http.MethodPost, Query); err != nil {
+				return err
+			}
+		}
 		if cfg.Attachments {
 			prefix := path.Join(cName, "attachments")
 			if err = api.RegisterRoute(prefix, http.MethodGet, Attachments); err != nil {

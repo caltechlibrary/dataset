@@ -64,6 +64,86 @@ available via the web service.
 -version
 : display version
 
+# SETTINGS_FILE
+
+The settings files provides {app_name} with the configuration
+of the service web service and associated dataset collection(s).
+
+It can be writen as either a JSON or YAML file. If it is a YAML file
+you should use the ".yaml" extension so that {app_name} will correctly
+parse the YAML.
+
+The top level YAML attributes are
+
+host
+: (required) hostname a port for the web service to listen on, e.g. localhost:8485
+
+htdocs
+: (optional) if set static content will be serviced based on this path. This is a
+good place to implement a browser side UI in HTML, CSS and JavaScript.
+
+collections
+: (required) A list of dataset collections that will be supported with this
+web service. The dataset collections can be pairtrees or SQL stored. The
+latter is preferred for web access to avoid problems of write collisions.
+
+The collections object is a list of configuration objects. The configuration
+attributes you should supply are as follows.
+
+dataset
+: (required) The path to the dataset collection you are providing a web API to.
+
+query
+: (optional) is map of query name to SQL statement. A POST is used to access
+the query (i.e. a POST To the path "/api/<COLLECTION_NAME>/query/<QUERY_NAME>")
+The parameters submitted in the post are passed to the SQL statement.
+NOTE: Only dataset collections using a SQL store are supported. The SQL
+needs to conform the SQL dialect of the store being used (e.g. MySQL, Postgres,
+SQLite3). The SQL statement functions with the same contrainst of dsquery SQL
+statements.
+
+## API Permissions
+
+The following are permissioning attributes for the collection. These are
+global to the collection and by default are set to false. A read only API 
+would normally only include "keys" and "read" attributes set to true.
+
+keys
+: (optional, default false) allow object keys to be listed
+
+create
+: (optional, default false) allow object creation through a POST to the web API
+
+read
+: (optional, default false) allow object to be read through a GET from the web API
+
+update
+: (optional, default false) allow object updates through a PUT to the web API.
+
+delete
+: (optional, default false) allow object deletion through a DELETE to the web API.
+
+attachments
+: (optional, default false) list object attachments through a GET to the web API.
+
+attach
+: (optional, default false) Allow adding attachments through a POST to the web API.
+
+retrieve
+: (optional, default false) Allow retrieving attachments through a GET to the web API.
+
+prune
+: (optional, default false) Allow removing attachments through a DELETE to the web API.
+
+frame_read
+: (optional, default false) Allow reading frames from a GET to the web API.
+
+frame_write
+: (optional, default false) Allow writing new frames through a POST to the web API.
+
+versions
+: (optional, default false) Allow setting versioning of attachments via POST to the web API.
+
 
 # EXAMPLES
 

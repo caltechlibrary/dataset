@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -100,6 +101,115 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 			return
 		}
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+		fmt.Fprintf(w, "%s", src)
+		return
+	}
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	return
+}
+
+// Query returns the results from a SQL function stored in MySQL or Postgres.
+// The query takes a query name followed by a path part that maps the order of
+// the fields. This is needed because the SQL prepared statments use paramter
+// order is mostly common to SQL dialects.
+// 
+// In this example we're runing the SQL statement with the name of "journal_search"
+// with title mapped to `$1` and journal mapped to `$2`.
+//
+// ```shell
+//
+//	curl -X POST http://localhost:8485/api/journals.ds/query/journal_search/title/journal \
+//	     --data "title=Princess+Bride" \
+//	     --data "journal=Movies+and+Popculture"
+//
+// ```
+//
+// NOTE: the SQL query must conform to the same constraints as dsquery SQL constraints.
+//
+func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	if len(options) == 0 {
+		log.Printf("Query, Bad Request %s %q, missing query name", r.Method, r.URL.Path)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	qName := options[0]
+	cfg, err := api.Settings.GetCfg(cName)
+	if err != nil {
+		log.Printf("Query, Bad Request %s %q %s, not found", r.Method, r.URL.Path, qName)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	log.Printf("DEBUG cfg attribute: c -> %+v\n", cfg)
+	// Make sure we have queries defined in the configuration
+	if cfg.QueryFn == nil || len(cfg.QueryFn) == 0 {
+		log.Printf("Query, Bad Request %s %q, undefined query", r.Method, r.URL.Path)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	qStmt, ok := cfg.QueryFn[qName]
+	if !ok {
+		log.Printf("Query, Bad Request %s %q %s, undefined query %q", r.Method, r.URL.Path, qName)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if c, ok := api.CMap[cName]; ok {
+		log.Printf("DEBUG c : c -> %+v\n", c)
+		src, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		defer r.Body.Close()
+		o := map[string]interface{}{}
+		err = json.Unmarshal(src, &o)
+		if err != nil {
+			log.Printf("Query, unmarshal error %+v, %s", o, err)
+			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			return
+		}
+
+		// FIXME: how to map form names to a list of parameters?
+		var rows *sql.Rows
+		qParams := []interface{}{}
+		if len(o) > 0 {
+			for _, val := range o {
+				qParams = append(qParams, val)
+			}
+			rows, err = c.SQLStore.db.Query(qStmt, qParams...)
+		} else {
+			rows, err = c.SQLStore.db.Query(qStmt)
+		}
+		if err != nil {
+			log.Printf("Query, failed stmt: %q, %s, %+v, %s", qName, qStmt, qParams, err)
+			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			return
+		}
+		src = []byte(`[`)
+		i := 0
+		for rows.Next() {
+			// Get our row values
+			obj := []byte{}
+			if err := rows.Scan(&obj); err != nil {
+				log.Printf("Query, failed row.Scan(obj): %q, %s, (%d) %+v, %s", qName, qStmt, i, obj, err)
+				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				return
+			}
+			if i > 0 {
+				src = append(src, ',')
+			}
+			src = append(src, obj...)
+			i++
+		}
+		src = append(src, ']')
+		err = rows.Err()
+		if err != nil {
+			log.Printf("Query, row.Err(): %q, %s, (%d) %+v, %s", qName, qStmt, i, src, err)
+			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
 		fmt.Fprintf(w, "%s", src)
 		return
 	}
