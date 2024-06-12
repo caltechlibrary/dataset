@@ -170,6 +170,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			return
 		}
 
+		log.Printf("DEBUG verb %q, options %+v\n", verb, options)
 		// FIXME: how to map form names to a list of parameters?
 		var rows *sql.Rows
 		qParams := []interface{}{}

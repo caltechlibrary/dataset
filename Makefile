@@ -14,7 +14,7 @@ MAN_PAGES = dataset.1 datasetd.1 dsquery.1 dsimporter.1
 
 MAN_PAGES_LIB = libdataset.3
 
-MAN_PAGES_FMT = datasetd_yaml.5 datasetd_service.5
+MAN_PAGES_MISC = datasetd_yaml.5 datasetd_service.5 datasetd_api.5
 
 VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
@@ -61,7 +61,7 @@ $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	go build -o bin/$@$(EXT) cmd/$@/$@.go
 	@./bin/$@ -help >$@.1.md
 
-man: $(MAN_PAGES) $(MAN_PAGES_LIB)
+man: $(MAN_PAGES) $(MAN_PAGES_LIB) $(MAN_PAGES_MISC)
 
 $(MAN_PAGES): .FORCE
 	mkdir -p man/man1
@@ -71,9 +71,9 @@ $(MAN_PAGES_LIB): .FORCE
 	mkdir -p man/man3
 	pandoc libdataset/$@.md --from markdown --to man -s >man/man3/$@
 
-$(MAN_PAGES_FMT): .FORCE
+$(MAN_PAGES_MISC): .FORCE
 	mkdir -p man/man5
-	pandoc libdataset/$@.md --from markdown --to man -s >man/man5/$@
+	pandoc $@.md --from markdown --to man -s >man/man5/$@
 
 
 CITATION.cff: codemeta.json .FORCE

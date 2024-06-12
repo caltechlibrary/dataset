@@ -1,3 +1,7 @@
+%dataset(5) user manual | version 2.1.12 cfcaeeb
+% R. S. Doiel and Tom Morrell
+% 2024-06-12
+
 
 # datasetd YAML configuration
 
