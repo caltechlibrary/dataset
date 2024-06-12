@@ -11,7 +11,7 @@
     - [dsquery](dsquery.1.md)
     - [dsimporter](dsimporter.1.md)
 - [Compatibility with Dataset v1](compatibility-in-v2.1.md)
-- [Installation](INSTALL.md)
+- [Installation](install.md)
 - [Documentation](docs/)
 - [How to ...](how-to/)
 - [Libdataset](libdataset/)
