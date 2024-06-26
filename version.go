@@ -12,7 +12,7 @@ const (
     ReleaseDate = "2024-06-12"
 
     // ReleaseHash, the Git hash when version.go was generated
-    ReleaseHash = "6f79b21"
+    ReleaseHash = "027b8ac"
 
     LicenseText = `
 Copyright (c) 2022, Caltech All rights not granted herein are expressly

@@ -12,11 +12,10 @@ datasetd [OPTIONS] SETTINGS_FILE
 
 # DESCRIPTION
 
-Runs a web service for one or more dataset collections. Requires
-the collections to exist (e.g. created previously with the dataset
-cli). It requires a settings JSON or YAML file that decribes the
-web service configuration and permissions per collection that are
-available via the web service.
+datasetd provides a web service for one or more dataset collections. Requires the
+collections to exist (e.g. created previously with the dataset cli). It requires a
+settings JSON or YAML file that decribes the web service configuration and
+permissions per collection that are available via the web service.
 
 # OPTIONS
 

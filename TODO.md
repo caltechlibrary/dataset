@@ -113,6 +113,8 @@ Next (prep for v2.1.1)
 Someday, Maybe
 --------------
 
+- [ ] Allow a WASM module to be used to validate objects in the collection. It needs to me integrate such that it "travels" will the dataset collection
+  - this would let our JSON collections support explicit JSON structures as well as ad-hoc JSON objects
 - [ ] Review [Go-app](https://go-app.dev/) and see if this would be a way to create a local client UI for working with datasets and enabling LunrJS for search
 - [ ] Document an example Python 3 http client support for web API implementing a drop in replacement for py_dataset using the web service or cli
 - [X] Missing tests for AttachStream()
@@ -129,3 +131,10 @@ Someday, Maybe
       content driven by a dataset collection
 - [ ] Implement version support in the web service
 - [ ] Implement an integrated UI for datasetd
+    - [ ] Form pages could be expressed in Markdown+YAML for forms and embedded in the datasetd settings YAML file
+        - See my notes on my text oreinted web experiment, yaml2webform.go
+        - Forms could be render into the htdocs auto-magically saving development effort
+        - The same forms could then be used server side for validation based on descriptors and JavaScript converted to WASM code
+    - [ ] A standard JavaScript library could be used to knit the forms to the datasetd web service (sort of a mini-newt)
+It would be nice if citesearch was defined by the citesearch.yaml file and some markdown documents taking a text oriented web approach to embedding forms in Markdown combined with some JS glue code to knit the two together
+- [ ] Consider updating datasetd to support urlencoded data submissions in additional to application/json, this might make it easier to quicklt develop browser side UI for datasetd web services
