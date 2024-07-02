@@ -97,12 +97,12 @@ dataset
 
 query
 : (optional) is map of query name to SQL statement. A POST is used to access
-the query (i.e. a POST To the path "/api/<COLLECTION_NAME>/query/<QUERY_NAME>")
+the query (i.e. a POST To the path "`+"`"+`/api/<COLLECTION_NAME>/query/<QUERY_NAME>`+"`"+`")
 The parameters submitted in the post are passed to the SQL statement.
 NOTE: Only dataset collections using a SQL store are supported. The SQL
 needs to conform the SQL dialect of the store being used (e.g. MySQL, Postgres,
-SQLite3). The SQL statement functions with the same contrainst of dsquery SQL
-statements.
+SQLite3). The SQL statement functions with the same contraints of dsquery SQL
+statements. The SQL statement is defined as a YAML text blog.
 
 ## API Permissions
 
