@@ -235,6 +235,13 @@ patch, minor, major</label></li>
 </ul>
 <h2 id="someday-maybe">Someday, Maybe</h2>
 <ul class="task-list">
+<li><label><input type="checkbox" />Allow a WASM module to be used to
+validate objects in the collection. It needs to me integrate such that
+it “travels” will the dataset collection</label>
+<ul>
+<li>this would let our JSON collections support explicit JSON structures
+as well as ad-hoc JSON objects</li>
+</ul></li>
 <li><label><input type="checkbox" />Review <a
 href="https://go-app.dev/">Go-app</a> and see if this would be a way to
 create a local client UI for working with datasets and enabling LunrJS
@@ -260,7 +267,30 @@ collection</label></li>
 <li><label><input type="checkbox" />Implement version support in the web
 service</label></li>
 <li><label><input type="checkbox" />Implement an integrated UI for
-datasetd</label></li>
+datasetd</label>
+<ul class="task-list">
+<li><label><input type="checkbox" />Form pages could be expressed in
+Markdown+YAML for forms and embedded in the datasetd settings YAML
+file</label>
+<ul>
+<li>See my notes on my text oreinted web experiment,
+yaml2webform.go</li>
+<li>Forms could be render into the htdocs auto-magically saving
+development effort</li>
+<li>The same forms could then be used server side for validation based
+on descriptors and JavaScript converted to WASM code</li>
+</ul></li>
+<li><label><input type="checkbox" />A standard JavaScript library could
+be used to knit the forms to the datasetd web service (sort of a
+mini-newt) It would be nice if citesearch was defined by the
+citesearch.yaml file and some markdown documents taking a text oriented
+web approach to embedding forms in Markdown combined with some JS glue
+code to knit the two together</label></li>
+</ul></li>
+<li><label><input type="checkbox" />Consider updating datasetd to
+support urlencoded data submissions in additional to application/json,
+this might make it easier to quicklt develop browser side UI for
+datasetd web services</label></li>
 </ul>
 </section>
 
