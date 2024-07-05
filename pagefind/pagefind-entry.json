@@ -10,6 +10,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 {"version":"0.12.0","languages":{"unknown":{"hash":"unknown_7f76468937f6595","wasm":null,"page_count":75}}}
 =======
 {"version":"0.12.0","languages":{"unknown":{"hash":"unknown_79fbb217e3bf020","wasm":null,"page_count":75}}}
@@ -47,3 +48,6 @@
 =======
 {"version":"1.1.0","languages":{"unknown":{"hash":"unknown_1142954e887b7e1","wasm":null,"page_count":79}}}
 >>>>>>> 027b8ac0cf3921bbde5dc154314c435c0bfd9ad8
+=======
+{"version":"1.1.0","languages":{"unknown":{"hash":"unknown_bd67d8a783f9f0d","wasm":null,"page_count":79}}}
+>>>>>>> 6534b5ccc189512839eb7a4b181f24b0a50468f7
