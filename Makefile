@@ -40,6 +40,8 @@ ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
+EXT_WEB = .wasm
+
 DIST_FOLDERS = bin/* man/*
 
 build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh
@@ -193,6 +195,15 @@ dist/Linux-armv7l:
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-armv7l.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
+# WASM code build is experimental, Python maybe able to load WASM code via wasmer-python, https://github.com/wasmerio/wasmer-python
+# This would let me avoid having at have seperate machines to build a libdataset C-shared library.
+dist/js-wasm:
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=js GOARCH=wasm go build -o dist/bin/$$FNAME$(EXT_WEB) cmd/$$FNAME/*.go; done
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-js-wasm.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
+	@rm -fR dist/bin
+
+	
 distribute_docs:
 	if [ -d dist ]; then rm -fR dist; fi
 	mkdir -p dist

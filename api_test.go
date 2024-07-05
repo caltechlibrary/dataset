@@ -955,8 +955,9 @@ Client testings starts in %s (s = seconds)
 
 	// Send our web service into the back ground so we can run
 	// a client test.
+	debug := false
 	go func() {
-		if err := RunAPI(appName, fName); err != nil {
+		if err := RunAPI(appName, fName, debug); err != nil {
 			t.Errorf("Expected API to setup and run, %s", err)
 		}
 	}()

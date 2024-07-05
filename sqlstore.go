@@ -33,9 +33,9 @@ import (
 
 	// Database specific drivers
 	_ "github.com/glebarez/go-sqlite"
+
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	//_ "github.com/jackc/pgx/v4"
 )
 
 const (
