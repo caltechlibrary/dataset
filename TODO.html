@@ -31,7 +31,7 @@ checked="" /><code>dataset help init</code> should include examples of
 forming a dsn for SQL store dataset collections using SQLite3, MySQL and
 PostgreSQL from docs/init.md</label></li>
 </ul>
-<h2 id="next-prep-for-v2.1.1">Next (prep for v2.1.1)</h2>
+<h2 id="next-prep-for-v2.1.14">Next (prep for v2.1.14)</h2>
 <ul class="task-list">
 <li><label><input type="checkbox" />Need to add getting updated Man
 pages using the <code>dataset help ...</code> command</label></li>
@@ -92,12 +92,13 @@ key and version, nil object and error value if not found</li>
 <li><label><input type="checkbox" />update</label>
 <ul>
 <li>replace the object in the collection for given key, return false is
-object does not to replace or replacement fails</li>
+object does not to replace or replacement fails
+<ul>
 <li>if collection has versioning turned on then version the object</li>
+</ul></li>
 <li><label><input type="checkbox" /><code>update()</code> update the
 current record respecting the version settings for
 collection</label></li>
-</ul></li>
 <li><label><input type="checkbox" checked="" />delete</label>
 <ul>
 <li>delete the object in the collection for given key, return true if
@@ -177,6 +178,7 @@ refresh the frame with the new object describe</li>
 <li><label><input type="checkbox" />has_frame</label></li>
 </ul></li>
 </ul></li>
+</ul></li>
 <li><label><input type="checkbox" />Verbs supported by cli only</label>
 <ul class="task-list">
 <li><label><input type="checkbox" />set_versioning (accepts ““,”patch”,
@@ -235,6 +237,9 @@ patch, minor, major</label></li>
 </ul>
 <h2 id="someday-maybe">Someday, Maybe</h2>
 <ul class="task-list">
+<li><label><input type="checkbox" />Look at <a
+href="https://github.com/metacall/golang-typescript-example">Metacall</a>
+and consider TypeScrit integration into dataset/datasetd</label></li>
 <li><label><input type="checkbox" />Allow a WASM module to be used to
 validate objects in the collection. It needs to me integrate such that
 it “travels” will the dataset collection</label>
