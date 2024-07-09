@@ -29,7 +29,7 @@ If you are running Windows 10 or 11 there is a experimental
 installer you can run from Powershell.
 
 ~~~
-irm https://caltechlibrary.github.io/dataset/installer.pwsh | iex
+irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
 ~~~
 
 Compiled version

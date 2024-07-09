@@ -11,18 +11,12 @@ $$RELEASE = "https://github.com/$${GIT_GROUP}/$${PACKAGE}/releases/tag/v$${VERSI
 $$SYSTEM_TYPE = Get-ComputerInfo -Property CsSystemType
 if ($$SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
     $$MACHINE = "arm64"
-}
-if ($$SYSTEM_TYPE.CsSystemType.Contains("x64")) {
+} else {
     $$MACHINE = "x86_64"
 }
 
 # FIGURE OUT Install directory
-$$APP_INSTALL = $$env:$name$.ToUpper()
-$$BIN_DIR = if ($$APP_INSTALL) {
-  "$${APP_INSTALL}\bin"
-} else {
-  "$${Home}\\bin"
-}
+$$BIN_DIR = "$${Home}\\bin"
 
 #
 # Figure out what the zip file is named
@@ -39,7 +33,7 @@ if (!(Test-Path $$BIN_DIR)) {
 }
 curl.exe -Lo "$${ZIPFILE}" "$${DOWNLOAD_URL}"
 
-tar.exe xf "$${ZIPFILE}"" -C $$BIN_DIR
+tar.exe xf "$${ZIPFILE}" -C $$BIN_DIR
 
 Remove-Item $$ZIPFILE
 
