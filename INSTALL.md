@@ -11,8 +11,8 @@ and multi-processes.
 This is generalized instructions for a release.  For deployment suggestions
 see NOTES.md
 
-Quick install with curl
------------------------
+Quick install with curl or irm
+------------------------------
 
 There is an experimental installer.sh script that can be run with the
 following command to install latest table release. This may work for
@@ -25,8 +25,8 @@ curl https://caltechlibrary.github.io/dataset/installer.sh | sh
 
 This will install dataset and datasetd in your `$HOME/bin` directory.
 
-If you are running Windows 10 or 11 there is a experimental
-installer you can run from Powershell.
+If you are running Windows 10 or 11 use the Powershell command
+below.
 
 ~~~
 irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
