@@ -9,7 +9,7 @@
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "2.1.14",
+    "version": "2.1.15",
     "author": [
         {
             "@type": "Person",

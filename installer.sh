@@ -4,7 +4,7 @@
 # Set the package name and version to install
 #
 PACKAGE="dataset"
-VERSION="2.1.14"
+VERSION="2.1.15"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
 
