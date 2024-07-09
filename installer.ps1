@@ -17,6 +17,7 @@ if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
 
 # FIGURE OUT Install directory
 $BIN_DIR = "${Home}\bin"
+Write-Output "${PACKAGE} will be installed in ${BIN_DIR}"
 
 #
 # Figure out what the zip file is named
@@ -33,7 +34,7 @@ if (!(Test-Path $BIN_DIR)) {
 }
 curl.exe -Lo "${ZIPFILE}" "${DOWNLOAD_URL}"
 
-tar.exe xf "${ZIPFILE}" -C $BIN_DIR
+tar.exe xf "${ZIPFILE}" -C "${Home}"
 
 Remove-Item $ZIPFILE
 
