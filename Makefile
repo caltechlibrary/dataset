@@ -44,7 +44,7 @@ EXT_WEB = .wasm
 
 DIST_FOLDERS = bin/* man/*
 
-build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh installer.pwsh
+build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh installer.ps1
 
 version.go: .FORCE
 	@echo '' | pandoc --from t2t --to plain \
@@ -91,10 +91,10 @@ installer.sh: .FORCE
 	chmod 775 installer.sh
 	git add -f installer.sh
 
-installer.pwsh: .FORCE
-	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-pwsh-installer.tmpl >installer.pwsh
-	chmod 775 installer.pwsh
-	git add -f installer.pwsh
+installer.ps1: .FORCE
+	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-ps1-installer.tmpl >installer.ps1
+	chmod 775 installer.ps1
+	git add -f installer.ps1
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
 install: build
@@ -218,7 +218,7 @@ distribute_docs:
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
 	cp installer.sh dist/
-	cp installer.pwsh dist/
+	cp installer.ps1 dist/
 	cp -vR man dist/
 
 update_version:
