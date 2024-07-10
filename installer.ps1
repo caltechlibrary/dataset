@@ -6,16 +6,13 @@
 #
 param(
   [Parameter()]
-  [String]$VERSION = "2.1.15"
+  [String]$VERSION = "2.1.16"
 )
-Write-Output "DEBUG after param() version set to '${VERSION}'"
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
 if ($PKG_VERSION) {
-    Write-Output "DEBUG if PKG_VERSION -> '${PKG_VERSION}' then change from '${VERSION}'"
 	$VERSION = "${PKG_VERSION}"
 	Write-Output "Using '${PKG_VERSION}' for version value '${VERSION}'"
 }
-Write-Output "DEBUG after PKG_VERSION '' check version now set to '${VERSION}'"
 
 $PACKAGE = "dataset"
 $GIT_GROUP = "caltechlibrary"
