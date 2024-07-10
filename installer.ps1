@@ -35,12 +35,13 @@ Write-Output "${PACKAGE} v${VERSION} will be installed in ${BIN_DIR}"
 # Figure out what the zip file is named
 #
 $ZIPFILE = "${PACKAGE}-v${VERSION}-Windows-${MACHINE}.zip"
-Write-Output "DEBUG Zipfile ${ZIPFILE}"
+Write-Output "Fetching Zipfile ${ZIPFILE}"
 
 #
 # Check to see if this zip file has been downloaded.
 #
 $DOWNLOAD_URL = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/download/v${VERSION}/${ZIPFILE}"
+Write-Output "Download URLL ${DOWNLOAD_URL}"
 
 if (!(Test-Path $BIN_DIR)) {
   New-Item $BIN_DIR -ItemType Directory | Out-Null
