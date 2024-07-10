@@ -9,11 +9,9 @@ param(
   [String]$VERSION = "2.1.15"
 )
 Write-Output "DEBUG after param() version set to '${VERSION}'"
-$PKG_VER_VAR = "dataset_VERSION".ToUpper()
-Write-Output "DEBUG PKG_VER_VAR -> '${PKG_VER_VAR}'"
-[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${PGK_VER_VAR}")
-Write-Output "DEBUG PKG_VERSION -> '${PKG_VERSION}' -> change from '${VERSION}'"
-if (($PKG_VERSION)) {
+[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
+if ($PKG_VERSION) {
+    Write-Output "DEBUG if PKG_VERSION -> '${PKG_VERSION}' then change from '${VERSION}'"
 	$VERSION = "${PKG_VERSION}"
 	Write-Output "Using '${PKG_VERSION}' for version value '${VERSION}'"
 }
