@@ -4,8 +4,12 @@
 #
 # Set the package name and version to install
 #
+param(
+  [Parameter()]
+  [String]$$VERSION = "$version$"
+)
 $$PACKAGE = "$name$"
-$$VERSION = "$version$"
+$$ENV_PREFIX = "$name$".ToUpper()
 $$GIT_GROUP = "$git_org_or_person$"
 $$RELEASE = "https://github.com/$${GIT_GROUP}/$${PACKAGE}/releases/tag/v$${VERSION}"
 $$SYSTEM_TYPE = Get-ComputerInfo -Property CsSystemType
@@ -15,9 +19,17 @@ if ($$SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
     $$MACHINE = "x86_64"
 }
 
+# See if $${ENV_PREFIX}_VERSION was set in the environment and use that.
+$$PKG_VERSION = [Environment::GetEnvironmentVariable("$${ENV_PREFIX}_VERSION")
+if ($$PKG_VERSION -neq "") {
+	$$VERSION = $$PKG_VERSION
+	Write-Output "Using $${PKG_VERSION} for version value $${VERSION}"
+}
+
+
 # FIGURE OUT Install directory
 $$BIN_DIR = "$${Home}\bin"
-Write-Output "$${PACKAGE} will be installed in $${BIN_DIR}"
+Write-Output "$${PACKAGE} v$${VERSION} will be installed in $${BIN_DIR}"
 
 #
 # Figure out what the zip file is named
