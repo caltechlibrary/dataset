@@ -4,10 +4,20 @@
 #
 # Set the package name and version to install
 #
+
+# See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
+$VERSION = "2.1.15"
+[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
+if (! ($PKG_VERSION)) {
+	$VERSION = "${PKG_VERSION}"
+	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
+}
 param(
   [Parameter()]
-  [String]$VERSION = "2.1.15"
+  [String]$VERSION
 )
+Write-Output "DEBUG version set to '${VERSION}'"
+
 $PACKAGE = "dataset"
 $ENV_PREFIX = "dataset".ToUpper()
 $GIT_GROUP = "caltechlibrary"
@@ -17,13 +27,6 @@ if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
     $MACHINE = "arm64"
 } else {
     $MACHINE = "x86_64"
-}
-
-# See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
-[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
-if (! ($PKG_VERSION)) {
-	$VERSION = "${PKG_VERSION}"
-	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
 }
 
 
@@ -41,7 +44,7 @@ Write-Output "Fetching Zipfile ${ZIPFILE}"
 # Check to see if this zip file has been downloaded.
 #
 $DOWNLOAD_URL = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/download/v${VERSION}/${ZIPFILE}"
-Write-Output "Download URLL ${DOWNLOAD_URL}"
+Write-Output "Download URL ${DOWNLOAD_URL}"
 
 if (!(Test-Path $BIN_DIR)) {
   New-Item $BIN_DIR -ItemType Directory | Out-Null
