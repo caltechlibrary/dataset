@@ -9,15 +9,15 @@ param(
   [String]$VERSION = "2.1.15"
 )
 Write-Output "DEBUG after param() version set to '${VERSION}'"
-$ENV_PREFIX = "dataset".ToUpper()
-Write-Output "DEBUG ENV_PREFIX -> '${ENV_PREFIX}'"
-# See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
-[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
+$PKG_VER_VAR = "dataset_VERSION".ToUpper()
+Write-Output "DEBUG PKG_VER_VAR -> '${PKG_VER_VAR}'"
+[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${PGK_VER_VAR}")
+Write-Output "DEBUG PKG_VERSION -> '${PKG_VERSION}' -> change from '${VERSION}'"
 if (! ($PKG_VERSION)) {
 	$VERSION = "${PKG_VERSION}"
 	Write-Output "Using '${PKG_VERSION}' for version value '${VERSION}'"
 }
-Write-Output "DEBUG after PKG_VERSION check, version now set to '${VERSION}'"
+Write-Output "DEBUG after PKG_VERSION '' check version now set to '${VERSION}'"
 
 $PACKAGE = "dataset"
 $GIT_GROUP = "caltechlibrary"
@@ -55,7 +55,7 @@ if (!(Test-Path $ZIPFILE)) {
     Write-Output "Failed to download ${ZIPFILE} from ${DOWNLOAD_URL}"
 } else {
     tar.exe xf "${ZIPFILE}" -C "${Home}"
-    Remove-Item $ZIPFILE
+    #Remove-Item $ZIPFILE
 
     $User = [System.EnvironmentVariableTarget]::User
     $Path = [System.Environment]::GetEnvironmentVariable('Path', $User)
