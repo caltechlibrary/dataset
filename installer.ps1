@@ -20,9 +20,9 @@ if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
 }
 
 # See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
-$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
-if (! $PKG_VERSION) {
-	$VERSION = $PKG_VERSION
+[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
+if (! ($PKG_VERSION)) {
+	$VERSION = "${PKG_VERSION}"
 	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
 }
 
@@ -45,16 +45,17 @@ if (!(Test-Path $BIN_DIR)) {
   New-Item $BIN_DIR -ItemType Directory | Out-Null
 }
 curl.exe -Lo "${ZIPFILE}" "${DOWNLOAD_URL}"
+if (!(Test-PAth $ZIPFILE)) {
+    Write-Out "Failed to download ${ZIPFILE} from ${DOWNLOAD_URL}"
+} else {
+    tar.exe xf "${ZIPFILE}" -C "${Home}"
+    Remove-Item $ZIPFILE
 
-tar.exe xf "${ZIPFILE}" -C "${Home}"
-
-Remove-Item $ZIPFILE
-
-$User = [System.EnvironmentVariableTarget]::User
-$Path = [System.Environment]::GetEnvironmentVariable('Path', $User)
-if (!(";${Path};".ToLower() -like "*;${BIN_DIR};*".ToLower())) {
-  [System.Environment]::SetEnvironmentVariable('Path', "${Path};${BIN_DIR}", $User)
-  $Env:Path += ";${BIN_DIR}"
+    $User = [System.EnvironmentVariableTarget]::User
+    $Path = [System.Environment]::GetEnvironmentVariable('Path', $User)
+    if (!(";${Path};".ToLower() -like "*;${BIN_DIR};*".ToLower())) {
+        [System.Environment]::SetEnvironmentVariable('Path', "${Path};${BIN_DIR}", $User)
+        $Env:Path += ";${BIN_DIR}"
+    }
+    Write-Output "${PACKAGE} was installed successfully to ${BIN_DIR}"
 }
-
-Write-Output "${PACKAGE} was installed successfully to ${BIN_DIR}"
