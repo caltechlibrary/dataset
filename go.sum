@@ -1,7 +1,5 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
-github.com/caltechlibrary/dataset/v2 v2.1.13 h1:ocV9N9azynu5Eio4M2dqydoeQzf/GHsyDeZPKSmwQqw=
-github.com/caltechlibrary/dataset/v2 v2.1.13/go.mod h1:no8LwpJEqiBjed3nHbH/mBPK9pt/dN0hr3eDfkqFP9w=
 github.com/caltechlibrary/dotpath v0.0.4 h1:ghc3XZefLPDhQnUo9oXqvz8vfh52QOE0BjK5qOD9RQU=
 github.com/caltechlibrary/dotpath v0.0.4/go.mod h1:rAu0NPuhTaEa9szxXq92x/JmMmedjsEEdHl5uTxzzs0=
 github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d h1:SGz3rTkjsp/8tEkFXTRHaJxqyeeDiL210QD69Bn7bd0=

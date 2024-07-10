@@ -1,9 +1,8 @@
-module github.com/caltechlibrary/dataset
+module github.com/caltechlibrary/dataset/v2
 
 go 1.22.5
 
 require (
-	github.com/caltechlibrary/dataset/v2 v2.1.13
 	github.com/caltechlibrary/dotpath v0.0.4
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
 	github.com/caltechlibrary/pairtree v1.0.3
