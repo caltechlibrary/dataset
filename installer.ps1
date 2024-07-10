@@ -22,7 +22,6 @@ if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
 # See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
 if (! ($PKG_VERSION)) {
-	Write-Output "DEBUG PKG_VERSION shows '${PKG_VERSION}'"
 	$VERSION = "${PKG_VERSION}"
 	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
 }
@@ -36,6 +35,7 @@ Write-Output "${PACKAGE} v${VERSION} will be installed in ${BIN_DIR}"
 # Figure out what the zip file is named
 #
 $ZIPFILE = "${PACKAGE}-v${VERSION}-Windows-${MACHINE}.zip"
+Write-Output "DEBUG Zipfile ${ZIPFILE}"
 
 #
 # Check to see if this zip file has been downloaded.
