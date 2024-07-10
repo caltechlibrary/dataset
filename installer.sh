@@ -4,6 +4,8 @@
 # Set the package name and version to install
 #
 PACKAGE="dataset"
+ENV_PREFIX="dataset"
+ENV_PREFIX="${ENV_PREFIX^^}"
 VERSION="2.1.15"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
@@ -16,7 +18,7 @@ INSTALLER="$(basename "$0")"
 #
 # Figure out what the zip file is named
 #
-OS_NAME="$(uname -o)"
+OS_NAME="$(uname)"
 MACHINE="$(uname -m)"
 case "$OS_NAME" in
    Darwin)
@@ -26,6 +28,15 @@ case "$OS_NAME" in
    OS_NAME="Linux"
    ;;
 esac
+
+if [ "${ENV_PREFIX}}_VERSION" != "" ]; then
+   VERSION="${ENV_PREFIX}_VERSION"
+   echo "${ENV_PREFIX}_VERSION used for version v${VERSION}"
+fi
+if [ "$1" != "" ]; then
+   VERSION="$1"
+   echo "Version set to v${VERSION}"
+fi
 
 ZIPFILE="$PACKAGE-v$VERSION-$OS_NAME-$MACHINE.zip"
 
@@ -43,6 +54,9 @@ cat<<EOT
 
 EOT
 
+if [ ! -d "$HOME/Downloads" ]; then
+	mkdir -p "$HOME/Downloads"
+fi
 if [ ! -f "$HOME/Downloads/$ZIPFILE" ]; then
 	cat<<EOT
 
