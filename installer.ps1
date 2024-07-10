@@ -50,7 +50,8 @@ if (!(Test-Path $BIN_DIR)) {
   New-Item $BIN_DIR -ItemType Directory | Out-Null
 }
 curl.exe -Lo "${ZIPFILE}" "${DOWNLOAD_URL}"
-if (!([System.IO.File]::Exists($ZIPFILE))) {
+#if ([System.IO.File]::Exists($ZIPFILE)) {
+if (!(Test-Path $ZIPFILE)) {
     Write-Output "Failed to download ${ZIPFILE} from ${DOWNLOAD_URL}"
 } else {
     tar.exe xf "${ZIPFILE}" -C "${Home}"
