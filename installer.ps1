@@ -22,7 +22,8 @@ if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
 # See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
 $PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
 if (! $PKG_VERSION) {
-	$VERSION = $PKG_VERSION
+	Write-Output "DEBUG PKG_VERSION shows '${PKG_VERSION}'"
+	$VERSION = "${PKG_VERSION}"
 	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
 }
 
