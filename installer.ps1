@@ -4,13 +4,13 @@
 #
 # Set the package name and version to install
 #
-$ENV_PREFIX = "dataset".ToUpper()
-Write-Output "DEBUG ENV_PREFIX -> '${ENV_PREFIX}'"
 param(
   [Parameter()]
   [String]$VERSION = "2.1.15"
 )
 Write-Output "DEBUG after param() version set to '${VERSION}'"
+$ENV_PREFIX = "dataset".ToUpper()
+Write-Output "DEBUG ENV_PREFIX -> '${ENV_PREFIX}'"
 # See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
 if (! ($PKG_VERSION)) {
