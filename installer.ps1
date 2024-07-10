@@ -6,10 +6,15 @@
 #
 param(
   [Parameter()]
-  [String]$VERSION = "2.1.15"
+  [String]$VERSION = "2.1.16"
 )
+[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
+if ($PKG_VERSION) {
+	$VERSION = "${PKG_VERSION}"
+	Write-Output "Using '${PKG_VERSION}' for version value '${VERSION}'"
+}
+
 $PACKAGE = "dataset"
-$ENV_PREFIX = "dataset".ToUpper()
 $GIT_GROUP = "caltechlibrary"
 $RELEASE = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/tag/v${VERSION}"
 $SYSTEM_TYPE = Get-ComputerInfo -Property CsSystemType
@@ -17,13 +22,6 @@ if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
     $MACHINE = "arm64"
 } else {
     $MACHINE = "x86_64"
-}
-
-# See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
-$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
-if ($PKG_VERSION -neq "") {
-	$VERSION = $PKG_VERSION
-	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
 }
 
 
@@ -35,26 +33,30 @@ Write-Output "${PACKAGE} v${VERSION} will be installed in ${BIN_DIR}"
 # Figure out what the zip file is named
 #
 $ZIPFILE = "${PACKAGE}-v${VERSION}-Windows-${MACHINE}.zip"
+Write-Output "Fetching Zipfile ${ZIPFILE}"
 
 #
 # Check to see if this zip file has been downloaded.
 #
 $DOWNLOAD_URL = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/download/v${VERSION}/${ZIPFILE}"
+Write-Output "Download URL ${DOWNLOAD_URL}"
 
 if (!(Test-Path $BIN_DIR)) {
   New-Item $BIN_DIR -ItemType Directory | Out-Null
 }
 curl.exe -Lo "${ZIPFILE}" "${DOWNLOAD_URL}"
+#if ([System.IO.File]::Exists($ZIPFILE)) {
+if (!(Test-Path $ZIPFILE)) {
+    Write-Output "Failed to download ${ZIPFILE} from ${DOWNLOAD_URL}"
+} else {
+    tar.exe xf "${ZIPFILE}" -C "${Home}"
+    #Remove-Item $ZIPFILE
 
-tar.exe xf "${ZIPFILE}" -C "${Home}"
-
-Remove-Item $ZIPFILE
-
-$User = [System.EnvironmentVariableTarget]::User
-$Path = [System.Environment]::GetEnvironmentVariable('Path', $User)
-if (!(";${Path};".ToLower() -like "*;${BIN_DIR};*".ToLower())) {
-  [System.Environment]::SetEnvironmentVariable('Path', "${Path};${BIN_DIR}", $User)
-  $Env:Path += ";${BIN_DIR}"
+    $User = [System.EnvironmentVariableTarget]::User
+    $Path = [System.Environment]::GetEnvironmentVariable('Path', $User)
+    if (!(";${Path};".ToLower() -like "*;${BIN_DIR};*".ToLower())) {
+        [System.Environment]::SetEnvironmentVariable('Path', "${Path};${BIN_DIR}", $User)
+        $Env:Path += ";${BIN_DIR}"
+    }
+    Write-Output "${PACKAGE} was installed successfully to ${BIN_DIR}"
 }
-
-Write-Output "${PACKAGE} was installed successfully to ${BIN_DIR}"

@@ -4,11 +4,13 @@
 # Set the package name and version to install
 #
 PACKAGE="dataset"
-ENV_PREFIX="dataset"
-ENV_PREFIX="${ENV_PREFIX^^}"
-VERSION="2.1.15"
+VERSION="2.1.16"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
+if [ "$PKG_VERSION" != "" ]; then
+   VERSION="${PKG_VERSION}"
+   echo "${PKG_VERSION} used for version v${VERSION}"
+fi
 
 #
 # Get the name of this script.
@@ -29,10 +31,6 @@ case "$OS_NAME" in
    ;;
 esac
 
-if [ "${ENV_PREFIX}}_VERSION" != "" ]; then
-   VERSION="${ENV_PREFIX}_VERSION"
-   echo "${ENV_PREFIX}_VERSION used for version v${VERSION}"
-fi
 if [ "$1" != "" ]; then
    VERSION="$1"
    echo "Version set to v${VERSION}"
@@ -60,11 +58,11 @@ fi
 if [ ! -f "$HOME/Downloads/$ZIPFILE" ]; then
 	cat<<EOT
 
-  To install $PACKAGE you need to download 
+  To install $PACKAGE you need to download
 
     $ZIPFILE
 
-  from 
+  from
 
     $RELEASE
 
@@ -99,14 +97,14 @@ rm .binfiles.tmp
 # Make sure $HOME/bin is in the path
 #
 case :$PATH: in
-	*:$HOME/bin:*) 
+	*:$HOME/bin:*)
 	;;
 	*)
 	# shellcheck disable=SC2016
 	echo 'export PATH="$HOME/bin:$PATH"' >>"$HOME/.bashrc"
 	# shellcheck disable=SC2016
 	echo 'export PATH="$HOME/bin:$PATH"' >>"$HOME/.zshrc"
-    ;;	
+    ;;
 esac
 
 # shellcheck disable=SC2031
@@ -115,7 +113,7 @@ if [ "$EXPLAIN_OS_POLICY" = "no" ]; then
 
   You need to take additional steps to complete installation.
 
-  Your operating system security policied needs to "allow" 
+  Your operating system security policied needs to "allow"
   running programs from $PACKAGE.
 
   Example: on macOS you can type open the programs in finder.
