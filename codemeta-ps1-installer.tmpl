@@ -13,7 +13,7 @@ $$PKG_VER_VAR = "$name$_VERSION".ToUpper()
 Write-Output "DEBUG PKG_VER_VAR -> '$${PKG_VER_VAR}'"
 [String]$$PKG_VERSION = [Environment]::GetEnvironmentVariable("$${PGK_VER_VAR}")
 Write-Output "DEBUG PKG_VERSION -> '$${PKG_VERSION}' -> change from '$${VERSION}'"
-if (! ($$PKG_VERSION)) {
+if (($$PKG_VERSION)) {
 	$$VERSION = "$${PKG_VERSION}"
 	Write-Output "Using '$${PKG_VERSION}' for version value '$${VERSION}'"
 }
