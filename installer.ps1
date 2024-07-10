@@ -4,22 +4,22 @@
 #
 # Set the package name and version to install
 #
-
+$ENV_PREFIX = "dataset".ToUpper()
 param(
   [Parameter()]
   [String]$VERSION = "2.1.15"
 )
 Write-Output "DEBUG after param() version set to '${VERSION}'"
 # See if ${ENV_PREFIX}_VERSION was set in the environment and use that.
+Write-Output "DEBUG ENV_PREFIX -> '${ENV_PREFIX}'"
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("${ENV_PREFIX}_VERSION")
 if (! ($PKG_VERSION)) {
 	$VERSION = "${PKG_VERSION}"
-	Write-Output "Using ${PKG_VERSION} for version value ${VERSION}"
+	Write-Output "Using '${PKG_VERSION}' for version value '${VERSION}'"
 }
 Write-Output "DEBUG after PKG_VERSION check, version now set to '${VERSION}'"
 
 $PACKAGE = "dataset"
-$ENV_PREFIX = "dataset".ToUpper()
 $GIT_GROUP = "caltechlibrary"
 $RELEASE = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/tag/v${VERSION}"
 $SYSTEM_TYPE = Get-ComputerInfo -Property CsSystemType
@@ -50,7 +50,7 @@ if (!(Test-Path $BIN_DIR)) {
   New-Item $BIN_DIR -ItemType Directory | Out-Null
 }
 curl.exe -Lo "${ZIPFILE}" "${DOWNLOAD_URL}"
-if (!(Test-PAth $ZIPFILE)) {
+if (!([System.IO.File]::Exists($ZIPFILE))) {
     Write-Out "Failed to download ${ZIPFILE} from ${DOWNLOAD_URL}"
 } else {
     tar.exe xf "${ZIPFILE}" -C "${Home}"
