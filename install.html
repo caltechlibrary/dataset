@@ -45,6 +45,15 @@ directory.</p>
 <p>If you are running Windows 10 or 11 use the Powershell command
 below.</p>
 <pre><code>irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex</code></pre>
+<p>If your want to install a specific verions set the
+<code>PKG_VERSION</code> environment variable then download. E.g.
+version 2.1.5 in tihs example.</p>
+<p>For Linux and macOS</p>
+<pre><code>export PKG_VERSION=2.1.5
+curl https://caltechlibrary.github.io/dataset/installer.sh | sh</code></pre>
+<p>For Windows</p>
+<pre><code>$env:PKG_VERSION = &#39;2.1.5&#39;
+irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex</code></pre>
 <h2 id="compiled-version">Compiled version</h2>
 <p>Compiled versions are available for macOS (Intel and M1), Linux
 (Intel), Windows (Intel and ARM64) and Raspberry Pi (ARM).</p>

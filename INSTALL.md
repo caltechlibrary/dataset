@@ -32,6 +32,23 @@ below.
 irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
 ~~~
 
+If your want to install a specific verions set the `PKG_VERSION` environment
+variable then download. E.g. version 2.1.5 in tihs example.
+
+For Linux and macOS
+
+~~~
+export PKG_VERSION=2.1.5
+curl https://caltechlibrary.github.io/dataset/installer.sh | sh
+~~~
+
+For Windows
+
+~~~
+$env:PKG_VERSION = '2.1.5'
+irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
+~~~
+
 Compiled version
 ----------------
 
