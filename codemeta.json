@@ -4,12 +4,12 @@
     "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
 	"releaseNotes": "Updated Go version to 1.22 and related packages, query path added to datasetd",
     "name": "dataset",
-    "dateRelease": "2023-10-10",
-	"dateModified": "2024-07-10",
+    "dateRelease": "2023-07-18",
+	"dateModified": "2024-07-18",
     "codeRepository": "https://github.com/caltechlibrary/dataset",
     "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "2.1.16",
+    "version": "2.1.17",
     "author": [
         {
             "@type": "Person",

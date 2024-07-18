@@ -1,6 +1,6 @@
-%datasetd (1) user manual | verion 2.1.16 {release_hash}"
+%datasetd(1) user manual | version 2.1.16 7a6b305
 % R. S. Doiel
-% {release_date}
+% 2024-07-18
 
 # NAME
 
