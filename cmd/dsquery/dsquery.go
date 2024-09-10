@@ -136,7 +136,12 @@ can be combined with -pretty options.
 -csv STRING_OF_ATTRIBUTE_NAMES
 : Like -grid this takes our list of dataset objects and a list of attribute
 names but rather than create a 2D JSON array of values it creates CSV 
-represnetation with the first row as the attribute names.
+representation with the first row as the attribute names.
+
+-yaml STRING_OF_ATTRIBUTE_NAMES
+: Like -grid this takes our list of dataset objects and a list of attribute
+names but rather than create a 2D JSON of values it creates YAML 
+representation.
 
 -index
 : This will create a SQLite3 index for a collection. This enables {app_name}
@@ -174,7 +179,7 @@ func main() {
 	releaseDate := dataset.ReleaseDate
 	releaseHash := dataset.ReleaseHash
 	fmtHelp := dataset.FmtHelp
-	pretty, ptIndex, grid, csv := false, false, "", ""
+	pretty, ptIndex, grid, csv, asYaml := false, false, "", "", ""
 	sqlFName := ""
 
 	showHelp, showVersion, showLicense := false, false, false
@@ -184,6 +189,7 @@ func main() {
 	flag.BoolVar(&pretty, "pretty", false, "pretty JSON output")
 	flag.StringVar(&grid, "grid", grid, "return JSON grid of values, requires a comma delimited string of attribute names")
 	flag.StringVar(&csv, "csv", csv, "return csv file using the attribute names from list of objects")
+	flag.StringVar(&asYaml, "yaml", asYaml, "return YAML file using the attribute names from list of objects")
 	flag.StringVar(&sqlFName, "sql", sqlFName, "read SQL statement from a file")
 	flag.BoolVar(&ptIndex, "index", ptIndex, "create a SQLite 3 'index' for a collection.")
 	flag.Parse()
@@ -251,14 +257,22 @@ func main() {
 	if grid != "" {
 		app.AsGrid = true
 		app.AsCSV = false
+		app.AsYAML = false
 		attributes = strings.Split(grid, ",")
 	}
 	if csv != "" {
 		app.AsGrid = false
 		app.AsCSV = true
+		app.AsYAML = false
 		attributes = strings.Split(csv, ",")
 	}
-	if app.AsGrid || app.AsCSV {
+	if asYaml != "" {
+		app.AsGrid = false
+		app.AsCSV = false
+		app.AsYAML = true
+		attributes = strings.Split(asYaml, ",")
+	}
+	if app.AsGrid || app.AsCSV || app.AsYAML { 
 		app.Attributes = []string{}
 		for _, attr := range attributes {
 			app.Attributes = append(app.Attributes, strings.TrimSpace(attr))

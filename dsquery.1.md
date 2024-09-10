@@ -1,6 +1,6 @@
-%dsquery(1) dataset user manual | version 2.1.16 7a6b305
+%dsquery(1) dataset user manual | version 2.1.18 2a6ce76
 % R. S. Doiel and Tom Morrell
-% 2024-07-18
+% 2024-09-10
 
 # NAME
 
@@ -87,7 +87,12 @@ can be combined with -pretty options.
 -csv STRING_OF_ATTRIBUTE_NAMES
 : Like -grid this takes our list of dataset objects and a list of attribute
 names but rather than create a 2D JSON array of values it creates CSV 
-represnetation with the first row as the attribute names.
+representation with the first row as the attribute names.
+
+-yaml STRING_OF_ATTRIBUTE_NAMES
+: Like -grid this takes our list of dataset objects and a list of attribute
+names but rather than create a 2D JSON of values it creates YAML 
+representation.
 
 -index
 : This will create a SQLite3 index for a collection. This enables dsquery
