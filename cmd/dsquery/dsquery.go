@@ -64,9 +64,9 @@ var (
 __{app_name}__ is a tool to support SQL queries of dataset collections. 
 Pairtree based collections should be index before trying to query them
 (see '-index' option below). Pairtree collections use the SQLite 3
-dialect of SQL for querying them.  For collections using a SQL storage
-engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect used is that
-of the SQL storage engine chosen.
+dialect of SQL for querying.  For collections using a SQL storage
+engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect reflects
+the SQL of the storage engine.
 
 The schema is the same for all storage engines.  The scheme for the JSON
 stored documents have a four column scheme.  The columns are "_key", 
@@ -76,10 +76,10 @@ the JSON document. The table name reflects the collection
 name without the ".ds" extension (e.g. data.ds is stored in a database called
 data having a table also called data).
 
-The output of __{app_name}__ is a JSON arrary of objects. The order of the
+The output of __{app_name}__ is a JSON array of objects. The order of the
 objects is determined by the your SQL statement and SQL engine. There
-is an option to generate a 2D grid of values and CSV format are also
-supported as options (see '-grid' and '-csv' below).
+is an option to generate a 2D grid of values in JSON, CSV or YAML formats.
+See OPTIONS for details.
 
 # PARAMETERS
 
