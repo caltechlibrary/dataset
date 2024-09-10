@@ -3,7 +3,7 @@ REM
 REM A simple batch file to build the c-shared library and
 REM package the Python3 module from the Windows 10 command prompt.
 REM
-REM Requires: Go v1.14 or better 
+REM Requires: Go v1.23.1 or better 
 REM Miniconda Python v3.8 or better.
 REM Using conda: 
 REM `conda install git` 
@@ -13,7 +13,8 @@ REM
 REM Replace %VERSION_% with the version number of the release.
 REM
 echo Displaying version number from codemeta.json
-jq-windows-amd64 -r .version ..\codemeta.json
+@REM jq-windows-amd64 -r .version ..\codemeta.json
+jq -r .version ..\codemeta.json
 echo Enter the version number you want to release as without "v" prefix.
 SET /P DS_VERSION=
 IF [%DS_VERSION%] == [] SET DS_VERSION=0.0.0
