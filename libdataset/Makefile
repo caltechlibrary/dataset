@@ -68,7 +68,7 @@ save:
 wasm: $(LIB_NAME).go
 	env CGO_ENABLED=1 GOOS=js GOARCH=wasm go build -o $(LIB_NAME)-js.wasm $(LIB_NAME).go
 
-release: js-wasm $(LIB_NAME)$(EXT)
+release: $(LIB_NAME)$(EXT)
 	mkdir -p dist/man/man3
 	cp ../codemeta.json dist/
 	cp ../CITATION.cff dist/
