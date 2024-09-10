@@ -1,6 +1,6 @@
-%dataset(1) user manual | version 2.1.16 c6866b4
+%dataset(1) user manual | version 2.1.18 72a96f4
 % R. S. Doiel and Tom Morrell
-% 2024-07-10
+% 2024-09-10
 
 # NAME
 
@@ -114,6 +114,6 @@ implements.
    dataset keys my_objects.ds
 ~~~
 
-dataset 2.1.16
+dataset 2.1.18
 
 

@@ -9,6 +9,9 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	// 3rd Party Package
+    "gopkg.in/yaml.v3"
 )
 
 type DSQuery struct {
@@ -17,6 +20,7 @@ type DSQuery struct {
 	Pretty     bool     `json:"pretty,omitempty"`
 	AsGrid     bool     `json:"as_grid,omitempty"`
 	AsCSV      bool     `json:"csv,omitempty"`
+	AsYAML     bool     `json:"yaml,omitempty"`
 	Attributes []string `json:"attributes,omitempty"`
 	PTIndex    bool     `json:"pt_index,omitempty"`
 	ds         *Collection
@@ -91,6 +95,39 @@ func MakeCSV(src []byte, attributes []string) ([]byte, error) {
 	}
 	src = out.Bytes()
 	return src, nil
+}
+
+// MakeYAML takes JSON source holding an array of objects and uses the attribute list to
+// render a new YAML file from the targeted list. It returns the YAML content as a byte slice along
+// with an error.
+func MakeYAML(src []byte, attributes []string) ([]byte, error) {
+	listOfObjects := []map[string]interface{}{}
+	if err := JSONUnmarshal(src, &listOfObjects); err != nil {
+		return nil, err
+	}
+	// Now that we know the column names scan the list of objects and build grid
+	outObjects := []map[string]interface{}{}
+	for _, obj := range listOfObjects {
+		m := map[string]interface{}{}
+		for _, attr := range attributes {
+			if val, ok := obj[attr]; ok {
+				m[attr] = val
+			}
+		}
+		if len(m) > 0 {
+			outObjects = append(outObjects, m)
+		}
+	}
+	// Marshall into YAML
+    buf := []byte{}
+    w := bytes.NewBuffer(buf)
+    enc := yaml.NewEncoder(w)
+    enc.SetIndent(2)
+    err := enc.Encode(outObjects)
+    if err != nil {
+      return nil, err
+    }
+    return w.Bytes(), nil
 }
 
 // indexCollection creates a SQL replica of a dataset collection as a SQLite 3
@@ -208,6 +245,12 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 	}
 	if app.AsCSV {
 		src, err = MakeCSV(src, app.Attributes)
+		if err != nil {
+			return err
+		}
+	}
+	if app.AsYAML {
+		src, err = MakeYAML(src, app.Attributes)
 		if err != nil {
 			return err
 		}

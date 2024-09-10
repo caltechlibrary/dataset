@@ -8,7 +8,9 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"net/url"
 	"path"
+	"strings"
 )
 
 const (
@@ -108,6 +110,20 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 	return
 }
 
+// getAttrNames take a request URL and parameter value as attribute names (column headings in CSV).
+// If not found then it returns a empty list of attribute names.
+func getAttrNames(q url.Values, key string) []string {
+	if q != nil {
+		if q != nil {
+			s := q.Get(key)
+			if s != "" {
+				return strings.Split(s, ",")
+			}
+		}
+	}
+	return []string{}
+}
+
 // Query returns the results from a SQL function stored in MySQL or Postgres.
 // The query takes a query name followed by a path part that maps the order of
 // the fields. This is needed because the SQL prepared statments use paramter
@@ -126,8 +142,27 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 //
 // NOTE: the SQL query must conform to the same constraints as dsquery SQL constraints.
 func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	// NOTE: Need to determine content type requested via the content type heeader
+	//
+	// CSV -> text/csv
+	// YAML -> application/yaml
+	// JSON -> application/json
+	//
+	// if contentType is "" then it will default to application/json
+	contentType := "application/json"
+	if r.Header != nil {
+		contentType = r.Header.Get("content-type");
+	}
+	// Make content type align to "csv" or "yaml" query parameter when passed.
+	urlQuery := r.URL.Query()
+	if urlQuery.Get("csv") != "" {
+		contentType = "text/csv"
+	}
+	if urlQuery.Get("yaml") != "" {
+		contentType = "application/yaml"
+	}
 	if api.Debug {
-		log.Printf("DEBUG Query got a query, cName: %q, verb: %q, options: %+v\n", cName, verb, options)
+		log.Printf("DEBUG Query got a query, cName: %q, verb: %q, content type: %q, options: %+v\n", cName, verb, contentType, options)
 	}
 	if len(options) == 0 {
 		log.Printf("Query, Bad Request %s %q, missing query name", r.Method, r.URL.Path)
@@ -155,6 +190,9 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		log.Printf("Query, Bad Request %s %q, undefined query %q", r.Method, r.URL.Path, qName)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
+	}
+	if api.Debug {
+		log.Printf("DEBUG qStmt: %q\n", qStmt)
 	}
 
 	if c, ok := api.CMap[cName]; ok {
@@ -224,7 +262,24 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
 			return
 		}
-		w.Header().Add("Content-Type", "application/json")
+		// NOTE: I need to handle the content type requested -> CSV, YAML or JSON (default)
+		switch contentType {
+			case "text/csv":
+				src, err = MakeCSV(src, getAttrNames(urlQuery, "csv"))
+				if err != nil {
+					log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
+					http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+					return
+				}
+			case "application/yaml":
+				src, err = MakeCSV(src, getAttrNames(urlQuery, "yaml"))
+				if err != nil {
+					log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
+					http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+					return
+				}
+		}
+		w.Header().Add("Content-Type", contentType)
 		fmt.Fprintf(w, "%s", src)
 		return
 	}

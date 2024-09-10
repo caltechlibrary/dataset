@@ -26,14 +26,13 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	// Caltech Library packages
 	"github.com/caltechlibrary/dataset/v2"
 )
 
 const (
-	helpText = `%{app_name} (1) user manual | verion {version} {release_hash}"
+	helpText = `%{app_name}(1) user manual | version {version} {release_hash}
 % R. S. Doiel
 % {release_date}
 
@@ -272,12 +271,10 @@ var (
 	license     = dataset.License
 )
 
-func fmtTxt(src string, appName string, version string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(src, "{app_name}", appName), "{version}", version)
-}
-
 func main() {
 	appName := path.Base(os.Args[0])
+	version, releaseDate, releaseHash, licenseText  := dataset.Version, dataset.ReleaseDate, dataset.ReleaseHash, dataset.LicenseText
+	fmtHelp := dataset.FmtHelp
 
 	// Standard Options
 	debug := false
@@ -293,17 +290,17 @@ func main() {
 	//eout := os.Stderr
 
 	if showHelp {
-		fmt.Fprintf(out, "%s\n", fmtTxt(helpText, appName, dataset.Version))
+		fmt.Fprintf(out, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
 		os.Exit(0)
 	}
 
 	if showLicense {
-		fmt.Fprintf(out, "%s\n", dataset.LicenseText)
+		fmt.Fprintf(out, "%s\n", licenseText)
 		os.Exit(0)
 	}
 
 	if showVersion {
-		fmt.Fprintf(out, "%s %s\n", appName, dataset.Version)
+		fmt.Fprintf(out, "%s %s (%s %s)\n", appName, version, releaseDate, releaseHash)
 		os.Exit(0)
 	}
 
