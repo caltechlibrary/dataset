@@ -2,15 +2,16 @@
 REM This is a Windows 10 Batch file for building dataset command
 REM from the command prompt.
 REM
-REM It requires: go version 1.12.4 or better and the cli for git installed
+REM It requires: go version 1.23.1 or better and the cli for git installed
 REM
 go version
 echo Getting ready to build the dataset.exe
 
 SET PROJECT=dataset
-echo Relase info for %PROJECT%
+echo Release info for %PROJECT%
 echo Displaying version number from codemeta.json
-jq-windows-amd64 -r .version codemeta.json
+@REM jq-windows-amd64 -r .version codemeta.json
+jq -r .version codemeta.json
 echo Enter the version number you want to release as.
 SET /P DS_VERSION=
 echo Displaying current hash using git log --pretty="%h" -n 1

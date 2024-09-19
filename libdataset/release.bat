@@ -13,7 +13,8 @@ REM
 REM Replace %VERSION_% with the version number of the release.
 REM
 echo Displaying version number from codemeta.json
-jq-windows-amd64 -r .version ..\codemeta.json
+@REM jq-windows-amd64 -r .version ..\codemeta.json
+jq -r .version ..\codemeta.json
 echo Enter the version number you want to release as without "v" prefix.
 SET /P DS_VERSION=
 IF [%DS_VERSION%] == [] SET DS_VERSION=0.0.0
