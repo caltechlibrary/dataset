@@ -11,6 +11,10 @@ Next (prep for v2.1.20)
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
     - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
     - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
+
+Someday, Maybe
+--------------
+
 - [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
   - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
 - [ ] Common dataset verbs (dataset/datasetd)
@@ -102,10 +106,6 @@ Next (prep for v2.1.20)
   - [ ] attach, add an attachment to a JSON object in the collection, respect versioning if enabled
   - [ ] detach, retrieve an attachment from the JSON object in the collection
   - [ ] prune, remove attachments (including all versions) from an JSON object in the collection
-
-Someday, Maybe
---------------
-
 - [ ] Add support for segmented key maps (to limit memory consumption for very large collections)
       settings in collection.json using keywords of patch, minor, major
 - [ ] Auto-version attachments by patch, minor or major release per

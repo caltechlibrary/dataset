@@ -25,18 +25,19 @@
 <section>
 <h1 id="action-items">Action Items</h1>
 <h2 id="bugs">Bugs</h2>
+<h2 id="next-prep-for-v2.1.20">Next (prep for v2.1.20)</h2>
 <ul class="task-list">
-<li><label><input type="checkbox"
-checked="" /><code>dataset help init</code> should include examples of
-forming a dsn for SQL store dataset collections using SQLite3, MySQL and
-PostgreSQL from docs/init.md</label></li>
+<li><label><input type="checkbox" />Update datasetd to support
+urlencoded data submissions in additional to application/json</label>
+<ul>
+<li>this would allow a simple data entry system to be build directly
+from HTML without the need for JavaScript in the browser</li>
+<li>the urlencoded data should support embedded YAML in text areas for
+extrapolating more complex data structures</li>
+</ul></li>
 </ul>
-<h2 id="next-prep-for-v2.1.14">Next (prep for v2.1.14)</h2>
+<h2 id="someday-maybe">Someday, Maybe</h2>
 <ul class="task-list">
-<li><label><input type="checkbox" />Need to add getting updated Man
-pages using the <code>dataset help ...</code> command</label></li>
-<li><label><input type="checkbox" />Need to map path parts to parameter
-sequence for calling sql functions in datasetd</label></li>
 <li><label><input type="checkbox" />My current approach to versioning is
 too confusing, causing issues in implementing py_dataset, versioning
 needs to be automatic with a minimum set of methods explicitly
@@ -223,56 +224,42 @@ the JSON object in the collection</label></li>
 <li><label><input type="checkbox" />prune, remove attachments (including
 all versions) from an JSON object in the collection</label></li>
 </ul></li>
-<li><label><input type="checkbox" />Document example Shell access to
-datasetd via cURL</label></li>
-<li><label><input type="checkbox" />take KeyMap out of collection.json
-so collection.json is smaller</label>
-<ul>
-<li>support for segmented key maps (to limit memory consumption for very
-large collections)</li>
-</ul></li>
+<li><label><input type="checkbox" />Add support for segmented key maps
+(to limit memory consumption for very large collections) settings in
+collection.json using keywords of patch, minor, major</label></li>
 <li><label><input type="checkbox" />Auto-version attachments by patch,
-minor or major release per settings in collection.json using keywords of
-patch, minor, major</label></li>
-</ul>
-<h2 id="someday-maybe">Someday, Maybe</h2>
-<ul class="task-list">
-<li><label><input type="checkbox" />Look at <a
-href="https://github.com/metacall/golang-typescript-example">Metacall</a>
-and consider TypeScrit integration into dataset/datasetd</label></li>
+minor or major release per</label></li>
+<li><label><input type="checkbox" />Need to add getting updated Man
+pages using the <code>dataset help ...</code> command</label></li>
 <li><label><input type="checkbox" />Allow a WASM module to be used to
 validate objects in the collection. It needs to me integrate such that
 it “travels” will the dataset collection</label>
 <ul>
 <li>this would let our JSON collections support explicit JSON structures
 as well as ad-hoc JSON objects</li>
+<li>could use the YAML model approach in Newt to define the
+structures</li>
 </ul></li>
-<li><label><input type="checkbox" />Review <a
-href="https://go-app.dev/">Go-app</a> and see if this would be a way to
-create a local client UI for working with datasets and enabling LunrJS
-for search</label></li>
 <li><label><input type="checkbox" />Document an example Python 3 http
 client support for web API implementing a drop in replacement for
 py_dataset using the web service or cli</label></li>
-<li><label><input type="checkbox" checked="" />Missing tests for
-AttachStream()</label></li>
 <li><label><input type="checkbox" />Implement a wrapping logger that
 takes a verboseness level for output (e.g. 0 - quiet, 1 progress
 messages, 2 warnings, errors should always show)</label></li>
-<li><label><input type="checkbox" checked="" />Memory consumption is
-high for attaching, figure out how to improve memory usage, switched to
-using streams where possible</label></li>
 <li><label><input type="checkbox" />Add support for https:// based
 datasets (in addition to local disc and s3://)</label></li>
 <li><label><input type="checkbox" />dsbagit would generate a “BagIt” bag
 for preservation of collection objects</label></li>
+<li><label><input type="checkbox" />dsgen would take a model described
+in YAML and generate HTML and browser side ES6 for quick prototyping
+with datasetd</label></li>
 <li><label><input type="checkbox" />OAI-PMH importer to prototype iiif
 service based on Islandora content driven by a dataset
 collection</label></li>
 <li><label><input type="checkbox" />Implement version support in the web
 service</label></li>
-<li><label><input type="checkbox" />Implement an integrated UI for
-datasetd</label>
+<li><label><input type="checkbox" />Implement an integrated a web UI for
+managing dataset collections and their data structures</label>
 <ul class="task-list">
 <li><label><input type="checkbox" />Form pages could be expressed in
 Markdown+YAML for forms and embedded in the datasetd settings YAML
@@ -292,10 +279,6 @@ citesearch.yaml file and some markdown documents taking a text oriented
 web approach to embedding forms in Markdown combined with some JS glue
 code to knit the two together</label></li>
 </ul></li>
-<li><label><input type="checkbox" />Consider updating datasetd to
-support urlencoded data submissions in additional to application/json,
-this might make it easier to quicklt develop browser side UI for
-datasetd web services</label></li>
 </ul>
 </section>
 
