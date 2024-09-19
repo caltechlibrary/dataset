@@ -35,11 +35,22 @@ IF NOT EXIST bin MKDIR bin
 
 echo Compiling bin\dataset.exe
 go build -o bin\dataset.exe "cmd\dataset\dataset.go"
+echo Compiling bin\datasetd.exe
+go build -o bin\datasetd.exe "cmd\datasetd\datasetd.go"
+echo Compiling bin\dsquery.exe
+go build -o bin\dsquery.exe "cmd\dsquery\dsquery.go"
 
 echo Checking compile should see version number of dataset
 .\bin\dataset.exe -version
+echo Checking compile should see version number of datasetd
+.\bin\datasetd.exe -version
+echo Checking compile should see version number of dsquery
+.\bin\dsquery.exe -version
 
-echo If OK, you can now copy the dataset.exe to %USERPROFILE%\go\bin
+echo If OK, you can now copy the compiled programs to %USERPROFILE%\bin
 echo.
-echo       copy bin\dataset.exe %USERPROFILE%\go\bin
-echo
+echo       copy bin\dataset.exe %USERPROFILE%\bin
+echo       copy bin\datasetd.exe %USERPROFILE%\bin
+echo       copy bin\dsquery.exe %USERPROFILE%\bin
+echo.
+@echo on
