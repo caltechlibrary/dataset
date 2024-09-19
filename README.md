@@ -6,7 +6,7 @@ Dataset Project
 
 The Dataset Project provides tools for working with collections of
 JSON documents stored on the local file system in a pairtree or
-in a SQL database supporting JSON columns. Two tools are provided
+in a SQL database supporting JSON columns. Two primary tools are provided
 by the project -- a command line interface (dataset) and a
 [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer)
 web service (datasetd).
