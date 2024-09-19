@@ -240,3 +240,5 @@ Related projects
 ----------------
 
 You can use _dataset_ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package.
+You can use _dataset_ from Deno+TypeScript by running datasetd and access it with [ts_dataset](https://github.com/caltechlibraray/ts_dataset).
+
