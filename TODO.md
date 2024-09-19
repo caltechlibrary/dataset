@@ -5,13 +5,12 @@ Action Items
 Bugs
 ----
 
-- [x] `dataset help init` should include examples of forming a dsn for SQL store dataset collections using SQLite3, MySQL and PostgreSQL from docs/init.md
-
-Next (prep for v2.1.14)
+Next (prep for v2.1.20)
 -----------------------
 
-- [ ] Need to add getting updated Man pages using the `dataset help ...` command
-- [ ] Need to map path parts to parameter sequence for calling sql functions in datasetd
+- [ ] Update datasetd to support urlencoded data submissions in additional to application/json
+    - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
+    - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
 - [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
   - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
 - [ ] Common dataset verbs (dataset/datasetd)
@@ -103,39 +102,33 @@ Next (prep for v2.1.14)
   - [ ] attach, add an attachment to a JSON object in the collection, respect versioning if enabled
   - [ ] detach, retrieve an attachment from the JSON object in the collection
   - [ ] prune, remove attachments (including all versions) from an JSON object in the collection
-- [ ] Document example Shell access to datasetd via cURL
-- [ ] take KeyMap out of collection.json so collection.json is smaller
-  - support for segmented key maps (to limit memory consumption for very
-    large collections)
-- [ ] Auto-version attachments by patch, minor or major release per
-      settings in collection.json using keywords of patch, minor, major
 
 Someday, Maybe
 --------------
 
-- [ ] Look at [Metacall](https://github.com/metacall/golang-typescript-example) and consider TypeScrit integration into dataset/datasetd
+- [ ] Add support for segmented key maps (to limit memory consumption for very large collections)
+      settings in collection.json using keywords of patch, minor, major
+- [ ] Auto-version attachments by patch, minor or major release per
+- [ ] Need to add getting updated Man pages using the `dataset help ...` command
 - [ ] Allow a WASM module to be used to validate objects in the collection. It needs to me integrate such that it "travels" will the dataset collection
   - this would let our JSON collections support explicit JSON structures as well as ad-hoc JSON objects
-- [ ] Review [Go-app](https://go-app.dev/) and see if this would be a way to create a local client UI for working with datasets and enabling LunrJS for search
+  - could use the YAML model approach in Newt to define the structures
 - [ ] Document an example Python 3 http client support for web API implementing a drop in replacement for py_dataset using the web service or cli
-- [X] Missing tests for AttachStream()
 - [ ] Implement a wrapping logger that takes a verboseness level for
       output (e.g. 0 - quiet, 1 progress messages, 2 warnings, errors
       should always show)
-- [X] Memory consumption is high for attaching, figure out how to improve
-      memory usage, switched to using streams where possible
 - [ ] Add support for https:// based datasets (in addition to local disc
       and s3://)
 - [ ] dsbagit would generate a "BagIt" bag for preservation of collection
       objects
+- [ ] dsgen would take a model described in YAML and generate HTML and browser side ES6 for quick prototyping with datasetd
 - [ ] OAI-PMH importer to prototype iiif service based on Islandora
       content driven by a dataset collection
 - [ ] Implement version support in the web service
-- [ ] Implement an integrated UI for datasetd
+- [ ] Implement an integrated a web UI for managing dataset collections and their data structures
   - [ ] Form pages could be expressed in Markdown+YAML for forms and embedded in the datasetd settings YAML file
     - See my notes on my text oreinted web experiment, yaml2webform.go
     - Forms could be render into the htdocs auto-magically saving development effort
     - The same forms could then be used server side for validation based on descriptors and JavaScript converted to WASM code
   - [ ] A standard JavaScript library could be used to knit the forms to the datasetd web service (sort of a mini-newt)
 It would be nice if citesearch was defined by the citesearch.yaml file and some markdown documents taking a text oriented web approach to embedding forms in Markdown combined with some JS glue code to knit the two together
-- [ ] Consider updating datasetd to support urlencoded data submissions in additional to application/json, this might make it easier to quicklt develop browser side UI for datasetd web services
