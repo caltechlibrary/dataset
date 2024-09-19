@@ -51,6 +51,6 @@ system or SQL JSON store
 
 ### Software Requiremets
 
-- Golang 1.22 or better
+- Golang 1.23 or better
 - Pandoc 3.1 or better
 - GNU Make

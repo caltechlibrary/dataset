@@ -15,6 +15,7 @@ Next (prep for v2.1.20)
 Someday, Maybe
 --------------
 
+- [ ] create a cli named `ds` that wraps all the cli except datasetd similar to how the Go command or Git works
 - [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
   - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
 - [ ] Common dataset verbs (dataset/datasetd)
