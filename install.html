@@ -54,143 +54,6 @@ curl https://caltechlibrary.github.io/dataset/installer.sh | sh</code></pre>
 <p>For Windows</p>
 <pre><code>$env:PKG_VERSION = &#39;2.1.5&#39;
 irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex</code></pre>
-<h2 id="compiled-version">Compiled version</h2>
-<p>Compiled versions are available for macOS (Intel and M1), Linux
-(Intel), Windows (Intel and ARM64) and Raspberry Pi (ARM).</p>
-<p>VERSION_NUMBER is a <a href="http://semver.org/">semantic version
-number</a> (e.g. v2.0.0)</p>
-<p>For all the released version go to the project page on GitHub and
-click latest release</p>
-<blockquote>
-<p>https://github.com/caltechlibrary/dataset/releases/latest</p>
-</blockquote>
-<table>
-<thead>
-<tr class="header">
-<th>Platform</th>
-<th>Zip Filename</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Windows (Intel)</td>
-<td>dataset-VERSION_NUMBER-Windows-x86_64.zip</td>
-</tr>
-<tr class="even">
-<td>Windows (ARM 64)</td>
-<td>dataset-VERSION_NUMBER-windows-arm64.zip</td>
-</tr>
-<tr class="odd">
-<td>macOS (Intel)</td>
-<td>dataset-VERSION_NUMBER-macOS-x86_64.zip</td>
-</tr>
-<tr class="even">
-<td>macOS (M1)</td>
-<td>dataset-VERSION_NUMBER-macOS-arm64.zip</td>
-</tr>
-<tr class="odd">
-<td>Linux (Intel)</td>
-<td>dataset-VERSION_NUMBER-Linux-x86_64.zip</td>
-</tr>
-<tr class="even">
-<td>Linux (ARM 64)</td>
-<td>dataset-VERSION_NUMBER-Linux-aarch64.zip</td>
-</tr>
-<tr class="odd">
-<td>Raspberry Pi OS (ARM7)</td>
-<td>dataset-VERSION_NUMBER-Linux-arm7l.zip</td>
-</tr>
-</tbody>
-</table>
-<h2 id="the-basic-recipe">The basic recipe</h2>
-<ul>
-<li>Find the Zip file listed matching the architecture you’re running
-and download it
-<ul>
-<li>Example Windows machines
-<ul>
-<li>If you’re on a Windows 10 laptop or desktop with an Intel style CPU
-you’d choose the Zip file with “Windows-x86_64” in the name</li>
-<li>If you’re on an ARM based Surface tablet or Windows Developer Kit
-for ARM then choose “Windows-arm64” in the name</li>
-</ul></li>
-<li>Example macOS machines
-<ul>
-<li>If you are on an older Intel based Mac then choose “macOS-x86_64” in
-the name</li>
-<li>If you are on a newer M1, M2 chip based Mac then choose
-“macOS-arm64” in the name</li>
-</ul></li>
-</ul></li>
-<li>Download the zip file and unzip the file.</li>
-<li>Copy the contents of the folder named “bin” to a folder that is in
-your path
-<ul>
-<li>(e.g. “bin” in your “HOME” directory is common).</li>
-</ul></li>
-<li>Adjust your PATH if needed</li>
-<li>Test</li>
-</ul>
-<h3 id="macos">macOS</h3>
-<ol type="1">
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executable to “bin” folder in HOME folder (or another
-folder in your PATH)</li>
-<li>Make sure the new location in in our path</li>
-<li>Test</li>
-</ol>
-<p>Here’s an example of the commands run in the Terminal App after
-downloading the zip file for an Intel based Mac.</p>
-<pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-macOS-x86_64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version</code></pre>
-<p>Or on a newer Mac with the M1 or M2 processors.</p>
-<pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-macOS-arm64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version</code></pre>
-<h3 id="windows">Windows</h3>
-<ol type="1">
-<li>Download the zip file into your “Downloads” folder</li>
-<li>Unzip the zip file</li>
-<li>Copy the executable to the “bin” directory in to someplace where
-Windows cmd shell file find it</li>
-<li>Test</li>
-</ol>
-<p>Here’s an example of the commands run in from the Windows 11 command
-shell (cmd). I have a folder in my user profile directory
-<code>bin</code> that I keep my command line tools in. When I start up
-the Windows command shell it knows to look there. To set that up I
-do</p>
-<pre class="shell"><code>    mkdir %userprofile%\bin
-    set PATH=%PATH%;%userprofile$\bin
-    powershell Expand-Archive Downloads\dataset-*-Windows-*.zip Dataset
-    copy Dataset\bin\*.exe %userprofile%\bin\ 
-    dataset -version</code></pre>
-<h3 id="linux">Linux</h3>
-<p>NOTE: Windows sub-system for Linux (aka lsw) and Raspberry Pi OS
-(which is Linux) can use this approach.</p>
-<ol type="1">
-<li>Download the zip file</li>
-<li>Unzip the zip file</li>
-<li>Copy the executable to the “bin” directory in your “HOME”
-directory.</li>
-<li>Test</li>
-</ol>
-<p>Here’s an example of the commands run in from the Bash shell after
-downloading the zip file.</p>
-<pre class="shell"><code>    cd Downloads/
-    unzip dataset-*-linux-x86_64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version</code></pre>
 <h2 id="compiling-from-source">Compiling from source</h2>
 <p>You need to have git, Pandoc, Go compiler and Make (GNU Make)
 available for this recipe to work. Clone the repository and then compile
@@ -203,9 +66,15 @@ in <code>$HOME/bin</code> and that is assumed to be in your path.</p>
     # Add any missing dependencies you might need in your Go environment
     make test
     make install</code></pre>
+<p>On Windows you would perform the following in Powershell.</p>
+<pre class="shell"><code>    cd
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
+    .\make.bat
+    # Follow the prompts and instruction in the bat file.</code></pre>
 <h3 id="requirements">Requirements</h3>
 <ul>
-<li>Go version 1.22 or better</li>
+<li>Go version 1.23 or better</li>
 <li>Pandoc version 3.1 or better</li>
 <li>GNU Make</li>
 <li>Common POSIX/Unix utilities, e.g. cat, sed, grep</li>
@@ -228,7 +97,7 @@ commands</li>
 <li>clean.bat removes executable and temp files</li>
 </ul>
 <p>Compilation assumes <a href="https://github.com/golang/go">go</a>
-v1.22 or better.</p>
+v1.23 or better.</p>
 </section>
 
 <footer>

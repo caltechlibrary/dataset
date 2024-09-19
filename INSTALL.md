@@ -49,122 +49,6 @@ $env:PKG_VERSION = '2.1.5'
 irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
 ~~~
 
-Compiled version
-----------------
-
-Compiled versions are available for macOS (Intel and M1), Linux (Intel),
-Windows (Intel and ARM64) and Raspberry Pi (ARM).
-
-VERSION_NUMBER is a [semantic version number](http://semver.org/) (e.g. v2.0.0)
-
-
-For all the released version go to the project page on GitHub and click
-latest release
-
->    https://github.com/caltechlibrary/dataset/releases/latest
-
-
-| Platform         | Zip Filename                                     |
-|------------------|--------------------------------------------------|
-| Windows (Intel)  | dataset-VERSION_NUMBER-Windows-x86_64.zip        |
-| Windows (ARM 64) | dataset-VERSION_NUMBER-windows-arm64.zip         |
-| macOS (Intel)    | dataset-VERSION_NUMBER-macOS-x86_64.zip          |
-| macOS (M1)       | dataset-VERSION_NUMBER-macOS-arm64.zip           |
-| Linux (Intel)    | dataset-VERSION_NUMBER-Linux-x86_64.zip          |
-| Linux (ARM 64)         | dataset-VERSION_NUMBER-Linux-aarch64.zip   |
-| Raspberry Pi OS (ARM7) | dataset-VERSION_NUMBER-Linux-arm7l.zip     |
-
-
-The basic recipe
-----------------
-
-- Find the Zip file listed matching the architecture you're running and download it
-    - Example Windows machines
-        - If you're on a Windows 10 laptop or desktop with an Intel style CPU you'd choose the Zip file with "Windows-x86_64" in the name
-        - If you're on an ARM based Surface tablet or Windows Developer Kit for ARM then choose "Windows-arm64" in the name
-    - Example macOS machines
-        - If you are on an older Intel based Mac then choose "macOS-x86_64" in the name
-        - If you are on a newer M1, M2 chip based Mac then choose "macOS-arm64" in the name
-- Download the zip file and unzip the file.
-- Copy the contents of the folder named "bin" to a folder that is in your path
-    - (e.g. "bin" in your "HOME" directory is common).
-- Adjust your PATH if needed
-- Test
-
-
-### macOS
-
-1. Download the zip file
-2. Unzip the zip file
-3. Copy the executable to "bin" folder in HOME folder (or another folder in your PATH)
-4. Make sure the new location in in our path
-5. Test
-
-Here's an example of the commands run in the Terminal App after
-downloading the zip file for an Intel based Mac.
-
-```shell
-    cd Downloads/
-    unzip dataset-*-macOS-x86_64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version
-```
-
-Or on a newer Mac with the M1 or M2 processors.
-
-```shell
-    cd Downloads/
-    unzip dataset-*-macOS-arm64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version
-```
-
-
-### Windows
-
-1. Download the zip file into your "Downloads" folder
-2. Unzip the zip file
-3. Copy the executable to the "bin" directory in to someplace where Windows cmd shell file find it
-4. Test
-
-Here's an example of the commands run in from the Windows 11 command shell (cmd). I have a folder 
-in my user profile directory `bin` that I keep my command line tools in. When I start up 
-the Windows command shell it knows to look there.  To set that up I do
-
-```shell
-    mkdir %userprofile%\bin
-    set PATH=%PATH%;%userprofile$\bin
-    powershell Expand-Archive Downloads\dataset-*-Windows-*.zip Dataset
-    copy Dataset\bin\*.exe %userprofile%\bin\ 
-    dataset -version
-```
-
-### Linux
-
-NOTE: Windows sub-system for Linux (aka lsw) and Raspberry Pi OS (which is Linux)
-can use this approach.
-
-1. Download the zip file
-2. Unzip the zip file
-3. Copy the executable to the "bin" directory in your "HOME" directory.
-4. Test
-
-Here's an example of the commands run in from the Bash shell after
-downloading the zip file.
-
-```shell
-    cd Downloads/
-    unzip dataset-*-linux-x86_64.zip
-    mkdir -p $HOME/bin
-    cp -v bin/* $HOME/bin/
-    export PATH=$HOME/bin:$PATH
-    dataset -version
-```
-
 ## Compiling from source
 
 You need to have git, Pandoc, Go compiler and Make (GNU Make) available for 
@@ -182,9 +66,20 @@ that is assumed to be in your path.
     make install
 ```
 
+On Windows you would perform the following in Powershell.
+
+```shell
+    cd
+    git clone https://github.com/caltechlibrary/dataset
+    cd dataset
+    .\make.bat
+    # Follow the prompts and instruction in the bat file.
+```
+
+
 ### Requirements
 
-- Go version 1.22 or better
+- Go version 1.23 or better
 - Pandoc version 3.1 or better
 - GNU Make
 - Common POSIX/Unix utilities, e.g. cat, sed, grep
@@ -205,5 +100,5 @@ batch files to perform some of what Make under Linux and macOS would do.
 - release.bat builds a release, will prompt for version
 - clean.bat removes executable and temp files
 
-Compilation assumes [go](https://github.com/golang/go) v1.22 or better.
+Compilation assumes [go](https://github.com/golang/go) v1.23 or better.
 
