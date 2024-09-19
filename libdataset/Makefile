@@ -52,7 +52,6 @@ clean:
 	@if [ -f "$(LIB_NAME)-amd64.so" ]; then rm "$(LIB_NAME)-amd64.so"; fi
 	@if [ -f "$(LIB_NAME)-arm64.so" ]; then rm "$(LIB_NAME)-arm64.so"; fi
 	@if [ -f "$(LIB_NAME).h" ]; then rm "$(LIB_NAME).h"; fi
-	@if [ -f "$(LIB_NAME)-js.wasm" ]; then rm "$(LIB_NAME)-js.wasm"; fi
 	@if [ -d "dist" ]; then rm -fR dist; fi
 	@if [ -d "testout" ]; then rm -fR testout; fi
 
@@ -65,8 +64,8 @@ save:
 
 # WASM code build is experimental, Python maybe able to load WASM code via wasmer-python, https://github.com/wasmerio/wasmer-python
 # This would let me avoid having at have seperate machines to build a libdataset C-shared library.
-wasm: $(LIB_NAME).go
-	env CGO_ENABLED=1 GOOS=js GOARCH=wasm go build -o $(LIB_NAME)-js.wasm $(LIB_NAME).go
+#wasm: $(LIB_NAME).go
+#	env GOOS=js GOARCH=wasm go build -o $(LIB_NAME).wasm $(LIB_NAME).go
 
 release: $(LIB_NAME)$(EXT)
 	mkdir -p dist/man/man3
@@ -79,7 +78,7 @@ release: $(LIB_NAME)$(EXT)
 	go build -buildmode=c-shared -o "$(LIB_NAME)$(EXT)" "$(LIB_NAME).go"
 	cp -v $(LIB_NAME)$(EXT) dist/
 	cp -v $(LIB_NAME).h dist/
-	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h $(LIB_NAME)-js.wasm codemeta.json CITATION.cff README.md LICENSE INSTALL.md
+	cd dist && zip $(LIB_NAME)-v$(VERSION)-$(OS)-$(ARCH).zip $(LIB_NAME)$(EXT) $(LIB_NAME).h codemeta.json CITATION.cff README.md LICENSE INSTALL.md
 
 
 .FORCE:
