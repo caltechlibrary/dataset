@@ -11,6 +11,10 @@ Next (prep for v2.1.20)
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
     - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
     - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
+    - [X] Handle POST and PUT 
+    - [ ] Handle redirect on successful form submission (where should the redirect go to?)
+- [ ] Update datasetd to allow multipart form subission treating file(s) upload as an attachment request
+- [ ] Update datasetd to handle YAML submission for create and update
 
 Someday, Maybe
 --------------
