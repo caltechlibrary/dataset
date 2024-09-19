@@ -1,11 +1,11 @@
 module github.com/caltechlibrary/dataset/v2
 
-go 1.22.5
+go 1.23.1
 
 require (
 	github.com/caltechlibrary/dotpath v0.0.4
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
-	github.com/caltechlibrary/pairtree v1.0.3
+	github.com/caltechlibrary/pairtree v1.0.4
 	github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a
 	github.com/glebarez/go-sqlite v1.22.0
 	github.com/go-sql-driver/mysql v1.8.1

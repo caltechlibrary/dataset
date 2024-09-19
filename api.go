@@ -114,6 +114,13 @@ func staticRouter(next http.Handler) http.Handler {
 			responseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
 			return
 		}
+		// See if we need to set a header of JavaScript or TypeScript files.
+		if strings.HasSuffix(r.URL.Path, ".js") || strings.HasSuffix(r.URL.Path, ".mjs") {
+			w.Header().Add("Content-Type", "application/javascript; charset=utf-8")
+		}
+		if strings.HasSuffix(r.URL.Path, ".ts") {
+			w.Header().Add("Content-Type", "application/typescript; charset=utf-8")
+		}
 		// If we make it this far, fall back to the default handler
 		next.ServeHTTP(w, r)
 	})
