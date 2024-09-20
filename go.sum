@@ -4,6 +4,8 @@ github.com/caltechlibrary/dotpath v0.0.4 h1:ghc3XZefLPDhQnUo9oXqvz8vfh52QOE0BjK5
 github.com/caltechlibrary/dotpath v0.0.4/go.mod h1:rAu0NPuhTaEa9szxXq92x/JmMmedjsEEdHl5uTxzzs0=
 github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d h1:SGz3rTkjsp/8tEkFXTRHaJxqyeeDiL210QD69Bn7bd0=
 github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d/go.mod h1:ajUo9ZOowgXjLfDXeUdMmJit9CZyHUzgaPIHUh9TBcg=
+github.com/caltechlibrary/models v0.0.1 h1:ffoaXMeZxCmGnl+/NI+vIYaAJwnbWCdAtZJnMk2cBl4=
+github.com/caltechlibrary/models v0.0.1/go.mod h1:2gx0uFbvREFt8o/daqINjvUkVQtqdYZA8+qRqzonflU=
 github.com/caltechlibrary/pairtree v1.0.4 h1:eMr4Ku6BFmrpv5vvnxQ1SDMcNveH8TZn8MWRVPaP7dg=
 github.com/caltechlibrary/pairtree v1.0.4/go.mod h1:7jeP5TyT9ilM+TTRklwrIbUWI/uGuQFm06vrhmgcS5U=
 github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a h1:3q6ct6FfFDF2dEiW06Ran7iEOZ4d9HBiMbkqJUOO2oU=

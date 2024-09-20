@@ -27,6 +27,9 @@ import (
 	"path/filepath"
 	"time"
 
+	// Caltech Library packages
+	"github.com/caltechlibrary/models"
+
 	// 3rd Party packages
 	"gopkg.in/yaml.v3"
 )
@@ -68,7 +71,7 @@ type Collection struct {
 	// used to validate objects in a collection. By default it is nil and not used
 	// but if a "model.yaml" file exists in the collection root directory it'll be loaded
 	// allowing possible varification of structure data.
-	Model *Model `json:"model,omitempty"`
+	Model *models.Model `json:"model,omitempty"`
 
 	// Created
 	Created string `json:"created,omitempty"`
@@ -174,7 +177,7 @@ func Open(name string) (*Collection, error) {
 		if err != nil {
 			return c, fmt.Errorf("failed to read %s in %s, %s", path.Join(name, "model.yaml"), err)
 		}
-		model := new(Model)
+		model := new(models.Model)
 		if err := yaml.Unmarshal(src, model); err != nil {
 			return c, fmt.Errorf("failed to parse %s, %s", path.Join(name, "model.yaml"), err)
 		}

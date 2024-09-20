@@ -25,6 +25,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/models"
 )
 
 // Settings holds the specific settings for the web service.
@@ -63,7 +66,7 @@ type Config struct {
 
 	// Model describes the record structure to store. It is to validate
 	// URL encoded POST and PUT tot the collection.
-	Model *Model `json:"model,omitempty" yaml:"model,omitempty"`
+	Model *models.Model `json:"model,omitempty" yaml:"model,omitempty"`
 
 	// Permissions for accessing the collection through the web service
 	// At least some of these should be set to true otherwise you
