@@ -6,6 +6,10 @@ github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d h1:SGz3rTkjsp/
 github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d/go.mod h1:ajUo9ZOowgXjLfDXeUdMmJit9CZyHUzgaPIHUh9TBcg=
 github.com/caltechlibrary/models v0.0.1 h1:ffoaXMeZxCmGnl+/NI+vIYaAJwnbWCdAtZJnMk2cBl4=
 github.com/caltechlibrary/models v0.0.1/go.mod h1:2gx0uFbvREFt8o/daqINjvUkVQtqdYZA8+qRqzonflU=
+github.com/caltechlibrary/models v0.0.2-0.20240920232649-3061bf5338e1 h1:ihu5kSilVSo9+6VpspmwQdO6Y9jl5a28Y7DPG81hy1s=
+github.com/caltechlibrary/models v0.0.2-0.20240920232649-3061bf5338e1/go.mod h1:2gx0uFbvREFt8o/daqINjvUkVQtqdYZA8+qRqzonflU=
+github.com/caltechlibrary/models v0.0.2-0.20240920233445-f70c0651ed5f h1:rpHTZoL2faLXjZoUJsgj+FlUqhKDdQ6o8tDnz2sAGZM=
+github.com/caltechlibrary/models v0.0.2-0.20240920233445-f70c0651ed5f/go.mod h1:2gx0uFbvREFt8o/daqINjvUkVQtqdYZA8+qRqzonflU=
 github.com/caltechlibrary/pairtree v1.0.4 h1:eMr4Ku6BFmrpv5vvnxQ1SDMcNveH8TZn8MWRVPaP7dg=
 github.com/caltechlibrary/pairtree v1.0.4/go.mod h1:7jeP5TyT9ilM+TTRklwrIbUWI/uGuQFm06vrhmgcS5U=
 github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a h1:3q6ct6FfFDF2dEiW06Ran7iEOZ4d9HBiMbkqJUOO2oU=

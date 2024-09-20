@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.1.19 ec0b40d
+%datasetd(1) user manual | version 2.1.19 a941e4c
 % R. S. Doiel
 % 2024-09-20
 
