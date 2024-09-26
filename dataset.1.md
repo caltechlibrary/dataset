@@ -1,6 +1,6 @@
-%dataset(1) user manual | version 2.1.19 a941e4c
+%dataset(1) user manual | version 2.1.19 9eea980
 % R. S. Doiel and Tom Morrell
-% 2024-09-20
+% 2024-09-26
 
 # NAME
 
@@ -21,40 +21,85 @@ a file or from standard input.
 
 # SUPPORTED VERBS
 
-- help will give documentation of help on a verb, e.g. "help create"
-- create, creates a new JSON document in the collection
-- read, retrieves the "current" version of a JSON document from 
+help
+: will give documentation of help on a verb, e.g. "help create"
+
+model
+: provides an experimental interactive data modeler
+
+create
+: creates a new JSON document in the collection
+
+read
+: retrieves the "current" version of a JSON document from 
   the collection writing it standard out
-- update, updates a JSON document in the collection
-- delete, removes all versions of a JSON document from the collection
-- keys, returns a list of keys in the collection
-- codemeta, copies metadata a codemeta file and updates the 
+
+update
+: updates a JSON document in the collection
+
+delete
+: removes all versions of a JSON document from the collection
+
+keys
+: returns a list of keys in the collection
+
+codemeta:
+: copies metadata a codemeta file and updates the 
   collections metadata
-- attach, attaches a document to a JSON object record
-- attachments, lists the attachments associated with a JSON object record
-- retrieve, creates a copy local of an attachement in a JSON record
-- prune, removes and attachment from a JSON record
-- frame-names, lists the frames defined in a collection
-- frame, will add a data frame to a collection 
-- frame-def will return the definition of a frame
-- frame-keys will retrieve the object keys in a frame
-- frame-objects will retrieve the object list in a frame
-- reframe, will recreate a frame using its existing definition but
+
+attach
+: attaches a document to a JSON object record
+
+attachments
+: lists the attachments associated with a JSON object record
+
+retrieve
+: creates a copy local of an attachement in a JSON record
+
+detach
+: will copy out the attachment to a JSON document 
+  into the current directory 
+
+prune
+: removes an attachment (including all versions) from a JSON record
+
+frame-names
+: lists the frames defined in a collection
+
+frame
+: will add a data frame to a collection 
+
+frame-def
+: will return the definition of a frame
+
+frame-keys
+: will retrieve the object keys in a frame
+
+frame-objects
+: will retrieve the object list in a frame
+
+reframe
+: will recreate a frame using its existing definition but
   replacing objects based on a new set of keys provided
-- refresh, will update all objects currently in the frame based on the
+
+refresh
+: will update all objects currently in the frame based on the
   current state of the collection. Any keys deleted in the collection
   will be delete from the frame.
-- delete-frame, will remove a frame from the collection
-- has-frame, will return true (exit 0) if frame exists, false (exit 1)
+
+delete-frame
+: will remove a frame from the collection
+
+has-frame
+: will return true (exit 0) if frame exists, false (exit 1)
   if not
-- attachments, will list any attachments for a JSON document
-- attach, will add an attachment to a JSON document
-- detach, will copy out the attachment to a JSON document 
-  into the current directory 
-- prune, will remove all versions of an attachment from the JSON document
-- set-versioning,  will set the versioning of a collection, 
-  versioning value can be "", "none", "major", "minor", or "patch"
-- get-versioning,  will display the versioning setting for a collection
+
+set-versioning
+: will set the versioning of a collection. The versioning
+  value can be "", "none", "major", "minor", or "patch"
+
+get-versioning
+: will display the versioning setting for a collection
 
 A word about "keys". dataset uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
@@ -93,6 +138,8 @@ implements.
    dataset help init
 
    dataset init my_objects.ds 
+
+   dataset model my_objects.ds
 
    dataset help create
 

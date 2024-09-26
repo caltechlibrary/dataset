@@ -8,6 +8,7 @@ Bugs
 Next (prep for v2.1.20)
 -----------------------
 
+- [ ] Integrate models package into dataset cli and datasetd
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
     - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
     - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
