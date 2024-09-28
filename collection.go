@@ -71,7 +71,7 @@ type Collection struct {
 	// used to validate objects in a collection. By default it is nil and not used
 	// but if a "model.yaml" file exists in the collection root directory it'll be loaded
 	// allowing possible varification of structure data.
-	Model *models.Model `json:"model,omitempty"`
+	Model *models.Model `json:"-"`
 
 	// Created
 	Created string `json:"created,omitempty"`
@@ -175,9 +175,12 @@ func Open(name string) (*Collection, error) {
 	if _, err := os.Stat(path.Join(name, "model.yaml")); err == nil {
 		src, err = ioutil.ReadFile(path.Join(name, "model.yaml"))
 		if err != nil {
-			return c, fmt.Errorf("failed to read %s in %s, %s", path.Join(name, "model.yaml"), err)
+			return c, fmt.Errorf("failed to read %s in %s, %s", name, path.Join(name, "model.yaml"), err)
 		}
-		model := new(models.Model)
+		model, err := models.NewModel("model")
+		if err != nil {
+			return c, err
+		}
 		if err := yaml.Unmarshal(src, model); err != nil {
 			return c, fmt.Errorf("failed to parse %s, %s", path.Join(name, "model.yaml"), err)
 		}

@@ -1,6 +1,6 @@
-%dsimporter(1) dataset user manual | version 2.1.19 9eea980
+%dsimporter(1) dataset user manual | version 2.1.20 6b48d90
 % R. S. Doiel and Tom Morrell
-% 2024-09-26
+% 2024-09-27
 
 # NAME
 

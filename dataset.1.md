@@ -1,6 +1,6 @@
-%dataset(1) user manual | version 2.1.19 9eea980
+%dataset(1) user manual | version 2.1.20 6b48d90
 % R. S. Doiel and Tom Morrell
-% 2024-09-26
+% 2024-09-27
 
 # NAME
 
@@ -25,7 +25,8 @@ help
 : will give documentation of help on a verb, e.g. "help create"
 
 model
-: provides an experimental interactive data modeler
+: provides an experimental interactive data model generator creating
+the "model.yaml" file in the data set collection's root directory.
 
 create
 : creates a new JSON document in the collection
@@ -161,6 +162,6 @@ implements.
    dataset keys my_objects.ds
 ~~~
 
-dataset 2.1.19
+dataset 2.1.20
 
 
