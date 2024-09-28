@@ -344,7 +344,8 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			log.Printf("DEBUG using key from URL.path %q", key)
 		}
 	}
-
+	idName := ""
+	formData := map[string]string{}
 	if c, ok := api.CMap[cName]; ok {
 		o := map[string]interface{}{}
 		//NOTE: Handle the cases for submissions encoded as JSON, YAML or urlencoded data.
@@ -369,6 +370,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		default:
 			//NOTE: Need to know the form field names, this is in .Model
 			r.ParseForm()
+			idName = c.Model.GetPrimaryId()
 			if c.Model == nil {
 				if api.Debug {
 					log.Printf("DEBUG c.Model is nil, accept all fields without validation")
@@ -381,20 +383,19 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				if api.Debug {
 					log.Printf("DEBUG c.Model is populated, validating model's fields")
 				}
-				form_data := map[string]string{}
 				for _, key := range c.Model.GetElementIds() {
 					//FIXME: Need to validate the field value
 					val := r.Form.Get(key)
 					o[key] = val
-					form_data[key] = val
+					formData[key] = val
 				}
 				if api.Debug {
-					txt, _ := json.MarshalIndent(form_data, "", "  ")
+					txt, _ := json.MarshalIndent(formData, "", "  ")
 					log.Printf("DEBUG form data:\n%s\n\n", txt)
 				}
 				// Now we need to validate the form data.
-				if ok := c.Model.Validate(form_data); ! ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, form_data)
+				if ok := c.Model.Validate(formData); ! ok {
+					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
 					//http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 					//return
 				}
@@ -404,7 +405,12 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			}
 		}
 		if key == "" {
-			if id, ok := o["id"]; ok {
+			if idName == "" {
+				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, formData)
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			if id, ok := o[idName]; ok {
 				if api.Debug {
 					log.Printf("DEBUG key set to record 'id' value, %+v", id);
 				}
@@ -539,18 +545,18 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				if api.Debug {
 					log.Printf("DEBUG c.Model is populated, validating model's fields")
 				}
-				form_data := map[string]string{}
+				formData := map[string]string{}
 				for _, key := range c.Model.GetElementIds() {
 					val := r.Form.Get(key)
 					o[key] = val
-					form_data[key] = val
+					formData[key] = val
 				}
 				if api.Debug {
-					txt, _ := json.MarshalIndent(form_data, "", "  ")
+					txt, _ := json.MarshalIndent(formData, "", "  ")
 					log.Printf("DEBUG form data:\n%s\n\n", txt)
 				}
-				if ok := c.Model.Validate(form_data); ! ok {
-					log.Printf("Failed to validate update form, bad request %s %q -> %+v", r.Method, r.URL.Path, form_data)
+				if ok := c.Model.Validate(formData); ! ok {
+					log.Printf("Failed to validate update form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
 					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 					return
 				}
