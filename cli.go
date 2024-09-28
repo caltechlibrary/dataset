@@ -27,6 +27,13 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/models"
+
+	// 3rd Party packages
+	"gopkg.in/yaml.v3"
+	"github.com/pkg/fileutils"
 )
 
 var (
@@ -37,6 +44,7 @@ var (
 		"usage":          cliDescription,
 		"examples":       cliExamples,
 		"init":           cliInit,
+		"model":          cliModel,
 		"create":         cliCreate,
 		"read":           cliRead,
 		"update":         cliUpdate,
@@ -78,6 +86,7 @@ var (
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
 		"help":           CliDisplayHelp,
 		"init":           doInit,
+		"model":          doModel,
 		"create":         doCreate,
 		"read":           doRead,
 		"update":         doUpdate,
@@ -207,6 +216,59 @@ func doInit(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		defer c.Close()
 	}
 	return err
+}
+
+func doModel(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("Expected: COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	cName := args[0]
+	modelId := "model" //strings.TrimSuffix(path.Base(cName), ".ds")
+	fName := path.Join(cName, "model.yaml")
+	model, err := models.NewModel(modelId)
+	if err != nil {
+		return err
+	}
+	backupFile := false
+	if _, err := os.Stat(fName); err == nil {
+        backupFile = true
+        src, err := os.ReadFile(fName)
+        if err != nil {
+             return err
+        }
+        if err := yaml.Unmarshal(src, &model); err != nil {
+             return err
+        }
+    }
+    // Decide if I'm going to create or open an existing YAML file.
+    fout, err := os.OpenFile(fName, os.O_RDWR|os.O_CREATE, 0644)
+    if err != nil {
+         return err
+    }
+    defer fout.Close()
+
+    models.SetDefaultTypes(model)
+	model.Register("yaml", models.ModelToYAML)
+    if err := models.ModelInteractively(model); err != nil {
+         return err
+    }
+    if model.HasChanges() {
+		prompt := models.NewPrompt(in, out, eout)
+        fmt.Fprintf(out, "Save %s (Y/n)?", fName)
+        answer := prompt.GetAnswer("y", true)
+        if answer == "y" {
+            // backup file if needed
+            if backupFile {
+                if err := fileutils.CopyFile(fName + ".bak", fName) ; err != nil {
+                     return err
+                }
+            }
+            if err := model.Render(fout, "yaml"); err != nil {
+                return err
+            }
+		}
+    }
+	return nil
 }
 
 func doSetVersioning(in io.Reader, out io.Writer, eout io.Writer, args []string) error {

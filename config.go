@@ -25,6 +25,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/models"
 )
 
 // Settings holds the specific settings for the web service.
@@ -55,15 +58,19 @@ type Config struct {
 	// are stored in a common database.
 	DsnURI string `json:"dsn_uri,omitemtpy" yaml:"dsn_uri,omitempty"`
 
-	// Permissions for accessing the collection through the web service
-	// At least some of these should be set to true otherwise you
-	// don't have much of a web service.
-
 	// QueryFn maps a query name to a SQL statement used to query the
 	// dataset collection. Multiple query statments can be defaulted. They
 	// Need to conform to the SQL dialect of the store. NOTE: Only collections
 	// using SQL stores are supported.
 	QueryFn map[string]string `json:"query,omitempty" yaml:"query,omitempty"`
+
+	// Model describes the record structure to store. It is to validate
+	// URL encoded POST and PUT tot the collection.
+	Model *models.Model `json:"model,omitempty" yaml:"model,omitempty"`
+
+	// Permissions for accessing the collection through the web service
+	// At least some of these should be set to true otherwise you
+	// don't have much of a web service.
 
 	// Keys lets you get a list of keys in a collection
 	Keys bool `json:"keys,omitempty" yaml:"keys,omitempty"`

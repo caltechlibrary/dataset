@@ -26,6 +26,12 @@ import (
 	"path"
 	"path/filepath"
 	"time"
+
+	// Caltech Library packages
+	"github.com/caltechlibrary/models"
+
+	// 3rd Party packages
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -60,6 +66,12 @@ type Collection struct {
 	// "sqlite://", "mysql://" or "postgres://"and the dsn conforming to the Golang
 	// database/sql driver name in the database/sql package.
 	DsnURI string `json:"dsn_uri,omitempty"`
+
+	// Model holds the an experimental schema expressed in YAML
+	// used to validate objects in a collection. By default it is nil and not used
+	// but if a "model.yaml" file exists in the collection root directory it'll be loaded
+	// allowing possible varification of structure data.
+	Model *models.Model `json:"-"`
 
 	// Created
 	Created string `json:"created,omitempty"`
@@ -158,6 +170,24 @@ func Open(name string) (*Collection, error) {
 		}
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
+	}
+	// FIXME: Now check if there is a models.yaml file in the collection's root folder.
+	if _, err := os.Stat(path.Join(name, "model.yaml")); err == nil {
+		src, err = ioutil.ReadFile(path.Join(name, "model.yaml"))
+		if err != nil {
+			return c, fmt.Errorf("failed to read %s in %s, %s", name, path.Join(name, "model.yaml"), err)
+		}
+		model, err := models.NewModel("model")
+		if err != nil {
+			return c, err
+		}
+		if err := yaml.Unmarshal(src, model); err != nil {
+			return c, fmt.Errorf("failed to parse %s, %s", path.Join(name, "model.yaml"), err)
+		}
+		//FIXME: add check here.
+		if model != nil {
+			c.Model = model
+		}
 	}
 	return c, err
 }

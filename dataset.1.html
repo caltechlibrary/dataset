@@ -35,48 +35,111 @@ collections and managing the JSON object documents in a collection.</p>
 in the collection the JSON source can be read from the command line, a
 file or from standard input.</p>
 <h1 id="supported-verbs">SUPPORTED VERBS</h1>
-<ul>
-<li>help will give documentation of help on a verb, e.g. “help
-create”</li>
-<li>create, creates a new JSON document in the collection</li>
-<li>read, retrieves the “current” version of a JSON document from the
-collection writing it standard out</li>
-<li>update, updates a JSON document in the collection</li>
-<li>delete, removes all versions of a JSON document from the
-collection</li>
-<li>keys, returns a list of keys in the collection</li>
-<li>codemeta, copies metadata a codemeta file and updates the
-collections metadata</li>
-<li>attach, attaches a document to a JSON object record</li>
-<li>attachments, lists the attachments associated with a JSON object
-record</li>
-<li>retrieve, creates a copy local of an attachement in a JSON
-record</li>
-<li>prune, removes and attachment from a JSON record</li>
-<li>frame-names, lists the frames defined in a collection</li>
-<li>frame, will add a data frame to a collection</li>
-<li>frame-def will return the definition of a frame</li>
-<li>frame-keys will retrieve the object keys in a frame</li>
-<li>frame-objects will retrieve the object list in a frame</li>
-<li>reframe, will recreate a frame using its existing definition but
-replacing objects based on a new set of keys provided</li>
-<li>refresh, will update all objects currently in the frame based on the
-current state of the collection. Any keys deleted in the collection will
-be delete from the frame.</li>
-<li>delete-frame, will remove a frame from the collection</li>
-<li>has-frame, will return true (exit 0) if frame exists, false (exit 1)
-if not</li>
-<li>attachments, will list any attachments for a JSON document</li>
-<li>attach, will add an attachment to a JSON document</li>
-<li>detach, will copy out the attachment to a JSON document into the
-current directory</li>
-<li>prune, will remove all versions of an attachment from the JSON
-document</li>
-<li>set-versioning, will set the versioning of a collection, versioning
-value can be ““,”none”, “major”, “minor”, or “patch”</li>
-<li>get-versioning, will display the versioning setting for a
-collection</li>
-</ul>
+<dl>
+<dt>help</dt>
+<dd>
+will give documentation of help on a verb, e.g. “help create”
+</dd>
+<dt>model</dt>
+<dd>
+provides an experimental interactive data model generator creating the
+“model.yaml” file in the data set collection’s root directory.
+</dd>
+<dt>create</dt>
+<dd>
+creates a new JSON document in the collection
+</dd>
+<dt>read</dt>
+<dd>
+retrieves the “current” version of a JSON document from the collection
+writing it standard out
+</dd>
+<dt>update</dt>
+<dd>
+updates a JSON document in the collection
+</dd>
+<dt>delete</dt>
+<dd>
+removes all versions of a JSON document from the collection
+</dd>
+<dt>keys</dt>
+<dd>
+returns a list of keys in the collection
+</dd>
+<dt>codemeta:</dt>
+<dd>
+copies metadata a codemeta file and updates the collections metadata
+</dd>
+<dt>attach</dt>
+<dd>
+attaches a document to a JSON object record
+</dd>
+<dt>attachments</dt>
+<dd>
+lists the attachments associated with a JSON object record
+</dd>
+<dt>retrieve</dt>
+<dd>
+creates a copy local of an attachement in a JSON record
+</dd>
+<dt>detach</dt>
+<dd>
+will copy out the attachment to a JSON document into the current
+directory
+</dd>
+<dt>prune</dt>
+<dd>
+removes an attachment (including all versions) from a JSON record
+</dd>
+<dt>frame-names</dt>
+<dd>
+lists the frames defined in a collection
+</dd>
+<dt>frame</dt>
+<dd>
+will add a data frame to a collection
+</dd>
+<dt>frame-def</dt>
+<dd>
+will return the definition of a frame
+</dd>
+<dt>frame-keys</dt>
+<dd>
+will retrieve the object keys in a frame
+</dd>
+<dt>frame-objects</dt>
+<dd>
+will retrieve the object list in a frame
+</dd>
+<dt>reframe</dt>
+<dd>
+will recreate a frame using its existing definition but replacing
+objects based on a new set of keys provided
+</dd>
+<dt>refresh</dt>
+<dd>
+will update all objects currently in the frame based on the current
+state of the collection. Any keys deleted in the collection will be
+delete from the frame.
+</dd>
+<dt>delete-frame</dt>
+<dd>
+will remove a frame from the collection
+</dd>
+<dt>has-frame</dt>
+<dd>
+will return true (exit 0) if frame exists, false (exit 1) if not
+</dd>
+<dt>set-versioning</dt>
+<dd>
+will set the versioning of a collection. The versioning value can be
+““,”none”, “major”, “minor”, or “patch”
+</dd>
+<dt>get-versioning</dt>
+<dd>
+will display the versioning setting for a collection
+</dd>
+</dl>
 <p>A word about “keys”. dataset uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
 value is the object to be stored. Keys must be lower case alpha numeric
@@ -112,6 +175,8 @@ display version
 
    dataset init my_objects.ds 
 
+   dataset model my_objects.ds
+
    dataset help create
 
    dataset create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
@@ -130,7 +195,7 @@ display version
    dataset delete my_objects.ds &quot;345&quot;
 
    dataset keys my_objects.ds</code></pre>
-<p>dataset 2.1.19</p>
+<p>dataset 2.1.20</p>
 </section>
 
 <footer>

@@ -11,6 +11,9 @@ import (
 	"net/url"
 	"path"
 	"strings"
+
+	// 3rd Party packages
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -334,30 +337,92 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 // ```
 func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
-	if len(options) != 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	key := options[0]
-
-	if c, ok := api.CMap[cName]; ok {
-		src, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
+	var key string
+	if len(options) > 0 {
+		key = options[0]
+		if api.Debug {
+			log.Printf("DEBUG using key from URL.path %q", key)
 		}
+	}
+	idName := ""
+	formData := map[string]string{}
+	if c, ok := api.CMap[cName]; ok {
 		o := map[string]interface{}{}
-		err = json.Unmarshal(src, &o)
-		if err != nil {
-			log.Printf("Create, unmarshal error %+v, %s", o, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
-			return
+		//NOTE: Handle the cases for submissions encoded as JSON, YAML or urlencoded data.
+		contentType := r.Header.Get("content-type")
+		if api.Debug {
+			log.Printf("DEBUG contentType -> %q", contentType)
+		}
+		switch contentType {
+		case "application/json":
+			src, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			err = json.Unmarshal(src, &o)
+			if err != nil {
+				log.Printf("Create, json unmarshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				return
+			}
+		default:
+			//NOTE: Need to know the form field names, this is in .Model
+			r.ParseForm()
+			idName = c.Model.GetPrimaryId()
+			if c.Model == nil {
+				if api.Debug {
+					log.Printf("DEBUG c.Model is nil, accept all fields without validation")
+				}
+				for key, _ := range r.Form {
+					o[key] = r.Form.Get(key)
+				}
+			} else {
+				// NOTE: We only want to grab the fields defined in the model!!
+				if api.Debug {
+					log.Printf("DEBUG c.Model is populated, validating model's fields")
+				}
+				for _, key := range c.Model.GetElementIds() {
+					//FIXME: Need to validate the field value
+					val := r.Form.Get(key)
+					o[key] = val
+					formData[key] = val
+				}
+				if api.Debug {
+					txt, _ := json.MarshalIndent(formData, "", "  ")
+					log.Printf("DEBUG form data:\n%s\n\n", txt)
+				}
+				// Now we need to validate the form data.
+				if ok := c.Model.Validate(formData); ! ok {
+					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
+					//http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					//return
+				}
+			}
+			if api.Debug {
+				log.Printf("DEBUG creating form object -> %+v", o)
+			}
+		}
+		if key == "" {
+			if idName == "" {
+				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, formData)
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			if id, ok := o[idName]; ok {
+				if api.Debug {
+					log.Printf("DEBUG key set to record 'id' value, %+v", id);
+				}
+				key = id.(string)
+			}
 		}
 		if err := c.Create(key, o); err != nil {
+			log.Printf("Create failed %+v, %s", o, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
+		//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
 		statusIsOK(w, http.StatusCreated, cName, key, "created", "")
 		return
 	}
@@ -392,14 +457,30 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 			http.NotFound(w, r)
 			return
 		}
-		src, err := JSONMarshalIndent(o, "", "    ")
-		if err != nil {
-			log.Printf("marshal error %+v, %s", o, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
+		//FIXME: Is the request for JSON or YAML data?
+		var src []byte
+		contentType := r.Header.Get("content-type")
+		if api.Debug {
+			log.Printf("DEBUG contenType: %q", contentType)
+		}
+		switch contentType {
+		case "application/yaml":
+			src, err = yaml.Marshal(o)
+			if err != nil {
+				log.Printf("Read, yaml marshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+		case "application/json":
+			src, err = JSONMarshalIndent(o, "", "    ")
+			if err != nil {
+				log.Printf("Read, json marshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
 		}
 		// Set header to application/json
-		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Content-Type", contentType)
 		fmt.Fprintf(w, `%s`, src)
 		return
 	}
@@ -430,18 +511,59 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 	key := options[0]
 
 	if c, ok := api.CMap[cName]; ok {
-		src, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
 		o := map[string]interface{}{}
-		err = json.Unmarshal(src, &o)
-		if err != nil {
-			log.Printf("Update, unmarshal error %+v, %s", o, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
-			return
+		//FIXME: Are we being sent JSON, YAML or urlencoded data?
+		contentType := r.Header.Get("content-type")
+		if api.Debug {
+			log.Printf("DEBUG contentType: %q", contentType)
+		}
+		switch contentType {
+		case "application/json":
+			src, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			err = json.Unmarshal(src, &o)
+			if err != nil {
+				log.Printf("Update, json unmarshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				return
+			}
+		default:
+			//NOTE: Need to know the form field names, this is in .Model
+			r.ParseForm()
+			if c.Model == nil {
+				if api.Debug {
+					log.Printf("DEBUG model is nil, accept all fields without validation")
+				}
+				for key, _ := range r.Form {
+					o[key] = r.Form.Get(key)
+				}
+			} else {
+				if api.Debug {
+					log.Printf("DEBUG c.Model is populated, validating model's fields")
+				}
+				formData := map[string]string{}
+				for _, key := range c.Model.GetElementIds() {
+					val := r.Form.Get(key)
+					o[key] = val
+					formData[key] = val
+				}
+				if api.Debug {
+					txt, _ := json.MarshalIndent(formData, "", "  ")
+					log.Printf("DEBUG form data:\n%s\n\n", txt)
+				}
+				if ok := c.Model.Validate(formData); ! ok {
+					log.Printf("Failed to validate update form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
+					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					return
+				}
+			}
+			if api.Debug {
+				log.Printf("DEBUG updating object -> %+v", o)
+			}
 		}
 		if err := c.Update(key, o); err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
