@@ -5,15 +5,16 @@ Action Items
 Bugs
 ----
 
-Next (prep for v2.1.20)
+Next (prep for v2.1.21)
 -----------------------
 
 - [ ] Integrate models package into dataset cli and datasetd
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
     - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
     - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
-    - [X] Handle POST and PUT 
-    - [ ] Handle redirect on successful form submission (where should the redirect go to?)
+    - [X] Handle POST with 'application/x-www-form-urlencoded'
+    - [ ] Handle PUT with 'application/x-www-form-urlencoded'
+    - [ ] Handle redirect when content type is 'application/x-www-form-urlencoded' using form attributes "x-success" and  "x-fail" for redirect on success or fail 
 - [ ] Update datasetd to allow multipart form subission treating file(s) upload as an attachment request
 - [ ] Update datasetd to handle YAML submission for create and update
 
