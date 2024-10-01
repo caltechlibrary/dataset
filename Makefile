@@ -9,6 +9,15 @@ RELEASE_DATE=$(shell date +'%Y-%m-%d')
 
 RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
 
+BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+
+# Getting the current version from codemeta.json varies depending on OS.
+ifeq ($(OS), Windows_NT)
+	VERSION = $(shell grep '"version":' codemeta.json | jq -r .version)
+else
+	VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
+endif
+
 
 MAN_PAGES = dataset.1 datasetd.1 dsquery.1 dsimporter.1
 
@@ -16,27 +25,16 @@ MAN_PAGES_LIB = libdataset.3
 
 MAN_PAGES_MISC = datasetd_yaml.5 datasetd_service.5 datasetd_api.5
 
-VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
+PROGRAMS = dataset datasetd dsquery dsimporter
 
-BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
-
-PROGRAMS = $(shell ls -1 cmd)
-
-PACKAGE = $(shell ls -1 *.go | grep -v 'version.go')
-
-SUBPACKAGES = $(shell ls -1 */*.go)
-
-#PREFIX = /usr/local/bin
 PREFIX = $(HOME)
 
 ifneq ($(prefix),)
         PREFIX = $(prefix)
 endif
 
-OS = $(shell uname)
-
 EXT =
-ifeq ($(OS), Windows)
+ifeq ($(OS), Windows_NT)
 	EXT = .exe
 endif
 
