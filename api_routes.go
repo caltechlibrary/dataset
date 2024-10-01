@@ -422,46 +422,48 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		generatedTypes := c.Model.GetGeneratedTypes()
 		// NOTE: We need to handle case that browsers don't support "PUT" method without JavaScript
 		if c.HasKey(key) {
-			// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
-			// FIXME: Get existing record so we can handle generated field updates properly.
-			if len(generatedTypes) > 0 {
-				oldO := map[string]interface{}{}
-				if err := c.Read(key, oldO); err != nil {
-					log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-					return
-				}
-				for k, genType := range generatedTypes {
-					// Handle write once types, created_timestamp, uuid
-					if _, ok := o[k]; ok {
-						switch genType {
-						case "uuid":
-							// Only generate the UUID if field is missing.
-							if val, ok := oldO[k]; (ok == false) || (val == "") {
-								uid, err := uuid.NewV7()
-								if err == nil {
-									o[k] = uid.String()
+			if c.Model != nil {
+				// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
+				if len(generatedTypes) > 0 {
+					// Get existing record so we can handle generated field updates properly.
+					oldO := map[string]interface{}{}
+					if err := c.Read(key, oldO); err != nil {
+						log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
+						http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+						return
+					}
+					for k, genType := range generatedTypes {
+						// Handle write once types, created_timestamp, uuid
+						if _, ok := o[k]; ok {
+							switch genType {
+							case "uuid":
+								// Only generate the UUID if field is missing.
+								if val, ok := oldO[k]; (ok == false) || (val == "") {
+									uid, err := uuid.NewV7()
+									if err == nil {
+										o[k] = uid.String()
+									}
+								} else {
+									// Preserve the old UUID assigned.
+									o[k] = oldO[k]
 								}
-							} else {
-								// Preserve the old UUID assigned.
-								o[k] = oldO[k]
-							}
-							// If idName is found then force key to UUID set in o map
-							if k == idName {
-								key = o[k].(string)
-							}
-						case "created_timestamp":
-							if val, ok := oldO[k]; (ok == false) || (val == "") {
-								o[k] = time.Now().String()
+								// If idName is found then force key to UUID set in o map
+								if k == idName {
+									key = o[k].(string)
+								}
+							case "created_timestamp":
+								if val, ok := oldO[k]; (ok == false) || (val == "") {
+									o[k] = time.Now().String()
+								}
 							}
 						}
-					}
-					// Handle overwriting types (i.e. timestamp, current_timestamp)
-					switch genType {
-					case "timestamp":
-						o[k] = time.Now().String()
-					case "current_timestamp":
-						o[k] = time.Now().String()
+						// Handle overwriting types (i.e. timestamp, current_timestamp)
+						switch genType {
+						case "timestamp":
+							o[k] = time.Now().String()
+						case "current_timestamp":
+							o[k] = time.Now().String()
+						}
 					}
 				}
 			}
@@ -471,23 +473,25 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				return
 			}
 		} else {
-			// NOTE: Handle generated types on create
-			for k, genType := range generatedTypes {
-				switch genType {
-				case "uuid":
-					uid, err := uuid.NewV7()
-					if err == nil {
-						o[k] = uid.String()
-						if k == idName {
-							key = uid.String()
+			if c.Model != nil {
+				// NOTE: Handle generated types on create
+				for k, genType := range generatedTypes {
+					switch genType {
+					case "uuid":
+						uid, err := uuid.NewV7()
+						if err == nil {
+							o[k] = uid.String()
+							if k == idName {
+								key = uid.String()
+							}
 						}
+					case "timestamp":
+						o[k] = time.Now().String()
+					case "current_timestamp":
+						o[k] = time.Now().String()
+					case "created_timestamp":
+						o[k] = time.Now().String()
 					}
-				case "timestamp":
-					o[k] = time.Now().String()
-				case "current_timestamp":
-					o[k] = time.Now().String()
-				case "created_timestamp":
-					o[k] = time.Now().String()
 				}
 			}
 			if err := c.Create(key, o); err != nil {
@@ -655,6 +659,52 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					log.Printf("DEBUG key set to record 'id' value, %+v", id)
 				}
 				key = id.(string)
+			}
+		}
+		if c.Model != nil {
+			generatedTypes := c.Model.GetGeneratedTypes()
+			// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
+			if len(generatedTypes) > 0 {
+				// Get existing record so we can handle generated field updates properly.
+				oldO := map[string]interface{}{}
+				if err := c.Read(key, oldO); err != nil {
+					log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
+					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					return
+				}
+				for k, genType := range generatedTypes {
+					// Handle write once types, created_timestamp, uuid
+					if _, ok := o[k]; ok {
+						switch genType {
+						case "uuid":
+							// Only generate the UUID if field is missing.
+							if val, ok := oldO[k]; (ok == false) || (val == "") {
+								uid, err := uuid.NewV7()
+								if err == nil {
+									o[k] = uid.String()
+								}
+							} else {
+								// Preserve the old UUID assigned.
+								o[k] = oldO[k]
+							}
+							// If idName is found then force key to UUID set in o map
+							if k == idName {
+								key = o[k].(string)
+							}
+						case "created_timestamp":
+							if val, ok := oldO[k]; (ok == false) || (val == "") {
+								o[k] = time.Now().String()
+							}
+						}
+					}
+					// Handle overwriting types (i.e. timestamp, current_timestamp)
+					switch genType {
+					case "timestamp":
+						o[k] = time.Now().String()
+					case "current_timestamp":
+						o[k] = time.Now().String()
+					}
+				}
 			}
 		}
 		if err := c.Update(key, o); err != nil {
