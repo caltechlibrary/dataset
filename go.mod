@@ -5,7 +5,7 @@ go 1.23.1
 require (
 	github.com/caltechlibrary/dotpath v0.0.4
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
-	github.com/caltechlibrary/models v0.0.4-0.20240928004317-3c0a97216be8
+	github.com/caltechlibrary/models v0.0.4-0.20241001230342-c2bd7bb3b60c
 	github.com/caltechlibrary/pairtree v1.0.4
 	github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a
 	github.com/glebarez/go-sqlite v1.22.0
@@ -18,7 +18,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/google/uuid v1.5.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/nyaruka/phonenumbers v1.4.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect

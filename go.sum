@@ -10,6 +10,14 @@ github.com/caltechlibrary/models v0.0.4-0.20240928002110-0303b7ff83eb h1:vPO1p9R
 github.com/caltechlibrary/models v0.0.4-0.20240928002110-0303b7ff83eb/go.mod h1:f0WHEZFDZgr462MnrmCNjOfrqogbvfTmt7nZZQ0oOOg=
 github.com/caltechlibrary/models v0.0.4-0.20240928004317-3c0a97216be8 h1:dBRTV+eT4cobqz0iYSGzzTP7xGdXi0wL4SHYHBvV8N8=
 github.com/caltechlibrary/models v0.0.4-0.20240928004317-3c0a97216be8/go.mod h1:f0WHEZFDZgr462MnrmCNjOfrqogbvfTmt7nZZQ0oOOg=
+github.com/caltechlibrary/models v0.0.4-0.20240930152905-57a7e0ac9df3 h1:GhSfgFk+0olo9OXynJoZDxMUoWE4lF1yVdMLiK6/z2k=
+github.com/caltechlibrary/models v0.0.4-0.20240930152905-57a7e0ac9df3/go.mod h1:f0WHEZFDZgr462MnrmCNjOfrqogbvfTmt7nZZQ0oOOg=
+github.com/caltechlibrary/models v0.0.4-0.20241001222625-010c34f10374 h1:oykH41K5FvcAhtMWCi9190TiBr0qP/QieDENyXB9s4U=
+github.com/caltechlibrary/models v0.0.4-0.20241001222625-010c34f10374/go.mod h1:f0WHEZFDZgr462MnrmCNjOfrqogbvfTmt7nZZQ0oOOg=
+github.com/caltechlibrary/models v0.0.4-0.20241001223817-167a16f27e18 h1:MMe/ON8AgyE50Pst5R9DnSj73DYqV27Egod3aeDaJtk=
+github.com/caltechlibrary/models v0.0.4-0.20241001223817-167a16f27e18/go.mod h1:f0WHEZFDZgr462MnrmCNjOfrqogbvfTmt7nZZQ0oOOg=
+github.com/caltechlibrary/models v0.0.4-0.20241001230342-c2bd7bb3b60c h1:o8OSSuUtRR30rVkzXV0SgNjWRKHJCFspWibVqiWVWMM=
+github.com/caltechlibrary/models v0.0.4-0.20241001230342-c2bd7bb3b60c/go.mod h1:f0WHEZFDZgr462MnrmCNjOfrqogbvfTmt7nZZQ0oOOg=
 github.com/caltechlibrary/pairtree v1.0.4 h1:eMr4Ku6BFmrpv5vvnxQ1SDMcNveH8TZn8MWRVPaP7dg=
 github.com/caltechlibrary/pairtree v1.0.4/go.mod h1:7jeP5TyT9ilM+TTRklwrIbUWI/uGuQFm06vrhmgcS5U=
 github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a h1:3q6ct6FfFDF2dEiW06Ran7iEOZ4d9HBiMbkqJUOO2oU=
@@ -28,6 +36,8 @@ github.com/google/pprof v0.0.0-20221118152302-e6195bd50e26 h1:Xim43kblpZXfIBQsbu
 github.com/google/pprof v0.0.0-20221118152302-e6195bd50e26/go.mod h1:dDKJzRmX4S37WGHujM7tX//fmj1uioxKzKxz3lo4HJo=
 github.com/google/uuid v1.5.0 h1:1p67kYwdtXjb0gL0BPiP1Av9wiZPo5A8z2cWkTZ+eyU=
 github.com/google/uuid v1.5.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
