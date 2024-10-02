@@ -9,6 +9,14 @@ Next (prep for v2.1.21)
 -----------------------
 
 - [ ] Integrate models package into dataset cli and datasetd
+ - [ ] Modify Create and Update in datasetd to use the models package
+ - [ ] Handle generated elements on Create and Update
+ - [ ] For form submited with URL encoding reply with HTML rather than JSON
+   - [ ] figure out how this could be styled or themed
+   - [ ] Success response should link back to view the record (or provide a read only view of the record)
+   - [ ] Fail pages should provide a link back to the form that was submitted
+ - [ ] See if I can skip the handlebars templates and just use generated HTML for urlencoded content interactions
+ - [ ] Decide if it is exceptible to render HTML with JavaScript to adjust form behavior between create and update
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
     - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
     - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
