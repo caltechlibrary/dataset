@@ -2,33 +2,47 @@
 Action Items
 ============
 
+X
+: completed
+
+D
+: declined, decided not to implement
+
 Bugs
 ----
 
 Next (prep for v2.1.21)
 -----------------------
 
-- [ ] Integrate models package into dataset cli and datasetd
- - [ ] Modify Create and Update in datasetd to use the models package
- - [ ] Handle generated elements on Create and Update
- - [ ] For form submited with URL encoding reply with HTML rather than JSON
-   - [ ] figure out how this could be styled or themed
-   - [ ] Success response should link back to view the record (or provide a read only view of the record)
-   - [ ] Fail pages should provide a link back to the form that was submitted
- - [ ] See if I can skip the handlebars templates and just use generated HTML for urlencoded content interactions
- - [ ] Decide if it is exceptible to render HTML with JavaScript to adjust form behavior between create and update
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
-    - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
-    - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
-    - [X] Handle POST with 'application/x-www-form-urlencoded'
-    - [ ] Handle PUT with 'application/x-www-form-urlencoded'
-    - [ ] Handle redirect when content type is 'application/x-www-form-urlencoded' using form attributes "x-success" and  "x-fail" for redirect on success or fail 
-- [ ] Update datasetd to allow multipart form subission treating file(s) upload as an attachment request
-- [ ] Update datasetd to handle YAML submission for create and update
+  - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
+  - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
+  - [X] Handle POST with 'application/x-www-form-urlencoded'
+  - [D] Handle PUT with 'application/x-www-form-urlencoded'
+    - Browsers don't honor the method in form if it is not POST or GET
+    - Added support to use POST for Create and Update when URL encoded
+  - [ ] Integrate models package into dataset cli and datasetd
+   - [X] Modify Create and Update in datasetd to use the models package
+   - [X] Handle generated elements on Create and Update
+   - [ ] For forms submited with URL encoding reply I currently reply with JSON to indicate success or failure, should return HTML
+     - [ ] Success response should provide record view of submitted content
+     - [ ] Failure should redirect back to the form that was submitted
+     - [ ] It'd be nice to style/theme the HTML for better integration with website
+      - Is this a configuration chioice (e.g. success, fail pages in model attributes?)
+   - [ ] Can I can skip the handlebars templates and just support HTML?
+   - [ ] Decide if it is exceptible to render HTML with JavaScript to adjust form behavior between create and update
+- [D] Update datasetd to handle YAML submission for create and update: This didn't work in my experiments, not sure why.
 
 Someday, Maybe
 --------------
 
+- [ ] Should the project be renamed "collections"?
+- [ ] Update datasetd to allow multipart form subission treating file(s) upload as an attachment request
+- [ ] Rewrite py_dataset, drop support for libdataset
+  - [ ] Figure out correct approach
+    - [ ] Generate WASM module for libdataset
+    - [ ] Use ts_dataset approach and required datasetd for Python support
+    - [ ] Rewrite dataset, datasetd and libdataset in Rust and continue shared library support without built in GC
 - [ ] create a cli named `ds` that wraps all the cli except datasetd similar to how the Go command or Git works
 - [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
   - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
