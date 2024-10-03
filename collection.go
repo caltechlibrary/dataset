@@ -181,6 +181,7 @@ func Open(name string) (*Collection, error) {
 		if err != nil {
 			return c, err
 		}
+		models.SetDefaultTypes(model)
 		if err := yaml.Unmarshal(src, model); err != nil {
 			return c, fmt.Errorf("failed to parse %s, %s", path.Join(name, "model.yaml"), err)
 		}
