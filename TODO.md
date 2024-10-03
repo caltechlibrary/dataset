@@ -17,10 +17,12 @@ Next (prep for v2.1.21)
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
   - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
   - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
-  - [X] Handle POST with 'application/x-www-form-urlencoded'
+  - [ ] Handle POST with 'application/x-www-form-urlencoded'
+    - [X] Handle the submissions mapping create/update to POST
+    - [ ] Handle the success or failure of the create/update of POST
   - [D] Handle PUT with 'application/x-www-form-urlencoded'
-    - Browsers don't honor the method in form if it is not POST or GET
-    - Added support to use POST for Create and Update when URL encoded
+    - Browsers only honor GET, POST and DIALOG in 2024. Frustrating.
+    - Modified POST to work for both Create and Update actions, delete will get handled like GET but I need to decide on symantics (e.g. `?delete=true`)
   - [ ] Integrate models package into dataset cli and datasetd
    - [X] Modify Create and Update in datasetd to use the models package
    - [X] Handle generated elements on Create and Update
@@ -30,8 +32,15 @@ Next (prep for v2.1.21)
      - [ ] It'd be nice to style/theme the HTML for better integration with website
       - Is this a configuration chioice (e.g. success, fail pages in model attributes?)
    - [ ] Can I can skip the handlebars templates and just support HTML?
+     - Skipping the templates has several advantages
+       - one less thing to document
+       - less dependency for datasetd
+     - If I only support HTML generation then I need to include JavaScript in the generated code
+       - If I do the then PUT and DELETE would work 
+       - Downside is it requires JavaScript to update records and submit them
    - [ ] Decide if it is exceptible to render HTML with JavaScript to adjust form behavior between create and update
 - [D] Update datasetd to handle YAML submission for create and update: This didn't work in my experiments, not sure why.
+  - Form handling in browser restricts the mime types submitted, I'd have to use text/plain to submit YAML then check server side to make sure I had YAML
 
 Someday, Maybe
 --------------

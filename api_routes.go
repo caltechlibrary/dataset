@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	// Caltech Library packages
+	"github.com/caltechlibrary/models"
+
 	// 3rd Party packages
 	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
@@ -48,6 +51,37 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 	}
 	src, _ := JSONMarshal(m)
 	fmt.Fprintf(w, "%s", src)
+}
+
+// statusOKText returns a JSON object indicating the status of a request
+// is OK.
+func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key string, action string, target string) {
+	w.Header().Add("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(statusCode)
+	m := map[string]string{}
+	m["status"] = "OK"
+	if cName != "" {
+		m["collection"] = cName
+	}
+	if key != "" {
+		m["key"] = key
+	}
+	if action != "" {
+		m["action"] = action
+	}
+	if target == "" {
+		m["target"] = target
+	}
+	fmt.Fprintf(w, "%s for %s\n", http.StatusText(statusCode), cName)
+	if key != "" {
+		fmt.Fprintf(w, "  %s\n", key)
+	}
+	if action != "" {
+		fmt.Fprintf(w, "  %s\n", action)
+	}
+	if target != "" {
+		fmt.Fprintf(w, "  %s\n", target)
+	}
 }
 
 // ApiVersion returns the version of the web service running.
@@ -323,6 +357,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 	return
 }
 
+
 // Create deposit a JSON object in the collection for a given key.
 //
 // In this example the json document is in the working directory called
@@ -338,6 +373,9 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 //
 // ```
 func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+	log.Printf("DEBUG starting Create(), api.Debug %t", api.Debug)
+	models.SetDebug(api.Debug)
+	log.Printf("DEBUG what is models.Debug? %t", models.Debug)
 	defer r.Body.Close()
 	var key string
 	if len(options) > 0 {
@@ -346,12 +384,11 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			log.Printf("DEBUG using key from URL.path %q", key)
 		}
 	}
+	//NOTE: Handle the cases for submissions encoded as JSON or urlencoded data.
+	contentType := r.Header.Get("content-type")
 	idName := ""
-	formData := map[string]string{}
+	o := map[string]interface{}{}
 	if c, ok := api.CMap[cName]; ok {
-		o := map[string]interface{}{}
-		//NOTE: Handle the cases for submissions encoded as JSON or urlencoded data.
-		contentType := r.Header.Get("content-type")
 		if api.Debug {
 			log.Printf("DEBUG contentType -> %q", contentType)
 		}
@@ -389,17 +426,6 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					//FIXME: Need to validate the field value
 					val := r.Form.Get(key)
 					o[key] = val
-					formData[key] = val
-				}
-				if api.Debug {
-					txt, _ := json.MarshalIndent(formData, "", "  ")
-					log.Printf("DEBUG form data:\n%s\n\n", txt)
-				}
-				// Now we need to validate the form data.
-				if ok := c.Model.Validate(formData); !ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
-					//http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-					//return
 				}
 			}
 			if api.Debug {
@@ -408,7 +434,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		}
 		if key == "" {
 			if idName == "" {
-				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, formData)
+				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, o)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
@@ -453,25 +479,43 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 								}
 							case "created_timestamp":
 								if val, ok := oldO[k]; (ok == false) || (val == "") {
-									o[k] = time.Now().String()
+									o[k] = time.Now().Format(time.RFC3339)
 								}
 							}
 						}
 						// Handle overwriting types (i.e. timestamp, current_timestamp)
 						switch genType {
 						case "timestamp":
-							o[k] = time.Now().String()
+							o[k] = time.Now().Format(time.RFC3339)
 						case "current_timestamp":
-							o[k] = time.Now().String()
+							o[k] = time.Now().Format(time.RFC3339)
 						}
 					}
 				}
 			}
+			if api.Debug {
+				txt, _ := json.MarshalIndent(o, "", "  ")
+				log.Printf("DEBUG form data:\n%s\n\n", txt)
+			}
+			// Now we need to validate the form data.
+			if ok := c.Model.ValidateMapInterface(o); !ok {
+				log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
+			}
+			// Now if we have formData populated it needs to get validated after generated types appliced
 			if err := c.Update(key, o); err != nil {
 				log.Printf("Update failed %+v, %s", o, err)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
+			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
+			if contentType == "application/json" {
+				statusIsOK(w, http.StatusOK, cName, key, "updated", "")
+			} else {
+				statusIsOKText(w, http.StatusOK, cName, key, "updated", "")
+			}
+			return
 		} else {
 			if c.Model != nil {
 				// NOTE: Handle generated types on create
@@ -486,23 +530,37 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 							}
 						}
 					case "timestamp":
-						o[k] = time.Now().String()
+						o[k] = time.Now().Format(time.RFC3339)
 					case "current_timestamp":
-						o[k] = time.Now().String()
+						o[k] = time.Now().Format(time.RFC3339)
 					case "created_timestamp":
-						o[k] = time.Now().String()
+						o[k] = time.Now().Format(time.RFC3339)
 					}
 				}
+			}
+			if api.Debug {
+				txt, _ := json.MarshalIndent(o, "", "  ")
+				log.Printf("DEBUG form data:\n%s\n\n", txt)
+			}
+			// Now we need to validate the form data.
+			if ok := c.Model.ValidateMapInterface(o); !ok {
+				log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
 			}
 			if err := c.Create(key, o); err != nil {
 				log.Printf("Create failed %+v, %s", o, err)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
+			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
+			if contentType == "application/json" {
+				statusIsOK(w, http.StatusCreated, cName, key, "created", "")
+			} else {
+				statusIsOKText(w, http.StatusCreated, cName, key, "created", "")
+			}
+			return
 		}
-		//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
-		statusIsOK(w, http.StatusCreated, cName, key, "created", "")
-		return
 	}
 	http.NotFound(w, r)
 	return
@@ -693,16 +751,16 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 							}
 						case "created_timestamp":
 							if val, ok := oldO[k]; (ok == false) || (val == "") {
-								o[k] = time.Now().String()
+								o[k] = time.Now().Format(time.RFC3339)
 							}
 						}
 					}
 					// Handle overwriting types (i.e. timestamp, current_timestamp)
 					switch genType {
 					case "timestamp":
-						o[k] = time.Now().String()
+						o[k] = time.Now().Format(time.RFC3339)
 					case "current_timestamp":
-						o[k] = time.Now().String()
+						o[k] = time.Now().Format(time.RFC3339)
 					}
 				}
 			}
