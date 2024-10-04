@@ -17,15 +17,15 @@ Next (prep for v2.1.21)
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
   - this would allow a simple data entry system to be build directly from HTML without the need for JavaScript in the browser
   - the urlencoded data should support embedded YAML in text areas for extrapolating more complex data structures
-  - [ ] Handle POST with 'application/x-www-form-urlencoded'
+  - [X] Handle POST with 'application/x-www-form-urlencoded'
     - [X] Handle the submissions mapping create/update to POST
-    - [ ] Handle the success or failure of the create/update of POST
+    - [X] Handle the success or failure of the create/update of POST (using text page for result, will replace later)
   - [D] Handle PUT with 'application/x-www-form-urlencoded'
     - Browsers only honor GET, POST and DIALOG in 2024. Frustrating.
     - Modified POST to work for both Create and Update actions, delete will get handled like GET but I need to decide on symantics (e.g. `?delete=true`)
   - [ ] Integrate models package into dataset cli and datasetd
-   - [X] Modify Create and Update in datasetd to use the models package
-   - [X] Handle generated elements on Create and Update
+   - [ ] Modify Create and Update in datasetd to use the models package
+   - [ ] Handle generated elements on Create and Update
    - [ ] For forms submited with URL encoding reply I currently reply with JSON to indicate success or failure, should return HTML
      - [ ] Success response should provide record view of submitted content
      - [ ] Failure should redirect back to the form that was submitted
