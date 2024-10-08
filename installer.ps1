@@ -6,7 +6,7 @@
 #
 param(
   [Parameter()]
-  [String]$VERSION = "2.1.21"
+  [String]$VERSION = "2.1.22"
 )
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
 if ($PKG_VERSION) {
