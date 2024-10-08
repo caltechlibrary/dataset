@@ -1,6 +1,6 @@
-%dataset(1) user manual | version 2.1.21 adda49c
+%dataset(1) user manual | version 2.1.21 605f0b6
 % R. S. Doiel and Tom Morrell
-% 2024-10-04
+% 2024-10-08
 
 # NAME
 
