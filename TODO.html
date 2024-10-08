@@ -44,13 +44,14 @@ urlencoded data submissions in additional to application/json</label>
 from HTML without the need for JavaScript in the browser</li>
 <li>the urlencoded data should support embedded YAML in text areas for
 extrapolating more complex data structures</li>
-<li><label><input type="checkbox" />Handle POST with
+<li><label><input type="checkbox" checked="" />Handle POST with
 ‘application/x-www-form-urlencoded’</label>
 <ul class="task-list">
 <li><label><input type="checkbox" checked="" />Handle the submissions
 mapping create/update to POST</label></li>
-<li><label><input type="checkbox" />Handle the success or failure of the
-create/update of POST</label></li>
+<li><label><input type="checkbox" checked="" />Handle the success or
+failure of the create/update of POST (using text page for result, will
+replace later)</label></li>
 </ul></li>
 <li>[D] Handle PUT with ‘application/x-www-form-urlencoded’
 <ul>
@@ -61,10 +62,10 @@ will get handled like GET but I need to decide on symantics
 </ul></li>
 <li><label><input type="checkbox" />Integrate models package into
 dataset cli and datasetd</label></li>
-<li><label><input type="checkbox" checked="" />Modify Create and Update
-in datasetd to use the models package</label></li>
-<li><label><input type="checkbox" checked="" />Handle generated elements
-on Create and Update</label></li>
+<li><label><input type="checkbox" />Modify Create and Update in datasetd
+to use the models package</label></li>
+<li><label><input type="checkbox" />Handle generated elements on Create
+and Update</label></li>
 <li><label><input type="checkbox" />For forms submited with URL encoding
 reply I currently reply with JSON to indicate success or failure, should
 return HTML</label>

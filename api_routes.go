@@ -357,7 +357,6 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 	return
 }
 
-
 // Create deposit a JSON object in the collection for a given key.
 //
 // In this example the json document is in the working directory called
@@ -373,9 +372,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 //
 // ```
 func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
-	log.Printf("DEBUG starting Create(), api.Debug %t", api.Debug)
 	models.SetDebug(api.Debug)
-	log.Printf("DEBUG what is models.Debug? %t", models.Debug)
 	defer r.Body.Close()
 	var key string
 	if len(options) > 0 {
@@ -445,11 +442,11 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				key = id.(string)
 			}
 		}
-		generatedTypes := c.Model.GetGeneratedTypes()
 		// NOTE: We need to handle case that browsers don't support "PUT" method without JavaScript
 		if c.HasKey(key) {
 			if c.Model != nil {
 				// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
+				generatedTypes := c.Model.GetGeneratedTypes()
 				if len(generatedTypes) > 0 {
 					// Get existing record so we can handle generated field updates properly.
 					oldO := map[string]interface{}{}
@@ -519,7 +516,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		} else {
 			if c.Model != nil {
 				// NOTE: Handle generated types on create
-				for k, genType := range generatedTypes {
+				for k, genType := range c.Model.GetGeneratedTypes() {
 					switch genType {
 					case "uuid":
 						uid, err := uuid.NewV7()
@@ -543,10 +540,12 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				log.Printf("DEBUG form data:\n%s\n\n", txt)
 			}
 			// Now we need to validate the form data.
-			if ok := c.Model.ValidateMapInterface(o); !ok {
-				log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
+			if c.Model != nil {
+				if ok := c.Model.ValidateMapInterface(o); !ok {
+					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					return
+				}
 			}
 			if err := c.Create(key, o); err != nil {
 				log.Printf("Create failed %+v, %s", o, err)
