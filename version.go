@@ -9,10 +9,10 @@ const (
     Version = "2.1.22"
 
     // ReleaseDate, the date version.go was generated
-    ReleaseDate = "2024-10-08"
+    ReleaseDate = "2024-10-09"
 
     // ReleaseHash, the Git hash when version.go was generated
-    ReleaseHash = "0b3c4c5"
+    ReleaseHash = "8509b92"
 
     LicenseText = `
 Copyright (c) 2022, Caltech All rights not granted herein are expressly
