@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.1.22 8509b92
+%datasetd(1) user manual | version 2.1.22 c419f8c
 % R. S. Doiel
-% 2024-10-09
+% 2024-10-10
 
 # NAME
 

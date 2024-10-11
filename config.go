@@ -68,6 +68,12 @@ type Config struct {
 	// URL encoded POST and PUT tot the collection.
 	Model *models.Model `json:"model,omitempty" yaml:"model,omitempty"`
 
+	// SuccessPage is used for form submissions that are succcessful, i.e. HTTP Status OK (200)
+	SuccessPage string `json:"success_page,omitempty" yaml:"success_page,omitempty"`
+
+	// FailPage is used to for form submissions that are unsuccessful, i.g. HTTP response other than OK
+	FailPage string `json:"fail_page,omitempty" yaml:"fail_page,omitempty"`
+
 	// Permissions for accessing the collection through the web service
 	// At least some of these should be set to true otherwise you
 	// don't have much of a web service.

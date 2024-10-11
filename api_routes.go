@@ -58,6 +58,7 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key string, action string, target string) {
 	w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(statusCode)
+	/*
 	m := map[string]string{}
 	m["status"] = "OK"
 	if cName != "" {
@@ -72,6 +73,7 @@ func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key str
 	if target == "" {
 		m["target"] = target
 	}
+	*/
 	fmt.Fprintf(w, "%s for %s\n", http.StatusText(statusCode), cName)
 	if key != "" {
 		fmt.Fprintf(w, "  %s\n", key)

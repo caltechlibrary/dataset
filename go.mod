@@ -5,7 +5,7 @@ go 1.23.1
 require (
 	github.com/caltechlibrary/dotpath v0.0.4
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
-	github.com/caltechlibrary/models v0.0.5-0.20241008234437-957da58a94c5
+	github.com/caltechlibrary/models v0.0.5-0.20241010224442-5f9bfb187c31
 	github.com/caltechlibrary/pairtree v1.0.4
 	github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a
 	github.com/glebarez/go-sqlite v1.22.0

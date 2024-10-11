@@ -11,7 +11,7 @@ D
 Bugs
 ----
 
-Next (prep for v2.1.21)
+Next (prep for v2.1.23)
 -----------------------
 
 - [ ] Update datasetd to support urlencoded data submissions in additional to application/json
@@ -20,6 +20,7 @@ Next (prep for v2.1.21)
   - [X] Handle POST with 'application/x-www-form-urlencoded'
     - [X] Handle the submissions mapping create/update to POST
     - [X] Handle the success or failure of the create/update of POST (using text page for result, will replace later)
+    - [ ] Figure out what to do success or failure pages after a POST
   - [D] Handle PUT with 'application/x-www-form-urlencoded'
     - Browsers only honor GET, POST and DIALOG in 2024. Frustrating.
     - Modified POST to work for both Create and Update actions, delete will get handled like GET but I need to decide on symantics (e.g. `?delete=true`)
