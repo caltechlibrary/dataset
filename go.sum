@@ -18,6 +18,8 @@ github.com/caltechlibrary/models v0.0.5-0.20241008234437-957da58a94c5 h1:8Jg8qOu
 github.com/caltechlibrary/models v0.0.5-0.20241008234437-957da58a94c5/go.mod h1:129d3fhb/+dJK8KMCTxgmaxB8zwJ7rZryyVTnxld6ao=
 github.com/caltechlibrary/models v0.0.5-0.20241010224442-5f9bfb187c31 h1:OfW8SPyFscpQkopN/Ng3k7uIzguYqJ9gDtO5oZNGslM=
 github.com/caltechlibrary/models v0.0.5-0.20241010224442-5f9bfb187c31/go.mod h1:129d3fhb/+dJK8KMCTxgmaxB8zwJ7rZryyVTnxld6ao=
+github.com/caltechlibrary/models v0.0.5 h1:XaBKBMK52SDGXl6+OkKXPZVh4C/uNSPqyNen0EkCHDA=
+github.com/caltechlibrary/models v0.0.5/go.mod h1:129d3fhb/+dJK8KMCTxgmaxB8zwJ7rZryyVTnxld6ao=
 github.com/caltechlibrary/pairtree v1.0.4 h1:eMr4Ku6BFmrpv5vvnxQ1SDMcNveH8TZn8MWRVPaP7dg=
 github.com/caltechlibrary/pairtree v1.0.4/go.mod h1:7jeP5TyT9ilM+TTRklwrIbUWI/uGuQFm06vrhmgcS5U=
 github.com/caltechlibrary/semver v0.0.0-20220817184719-a504da2d5c6a h1:3q6ct6FfFDF2dEiW06Ran7iEOZ4d9HBiMbkqJUOO2oU=
