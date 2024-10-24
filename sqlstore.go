@@ -576,6 +576,10 @@ func (store *SQLStore) Update(key string, src []byte) error {
 	switch store.driverName {
 	case "postgres":
 		stmt = fmt.Sprintf(`UPDATE %s SET src = $1 WHERE _key = $2`, store.tableName)
+	case "sqlite":
+		// SQLite3 only supports the initial timestamp generation in the scheme, the timestamp
+		// will **not** automatically on update.
+		stmt = fmt.Sprintf(`UPDATE %s SET src = ?, updated = datetime() WHERE _key = ?`, store.tableName)
 	default:
 		stmt = fmt.Sprintf(`UPDATE %s SET src = ? WHERE _key = ?`, store.tableName)
 	}

@@ -127,7 +127,7 @@ Features
   - [clone](docs/clone.md)
   - [clone-sample](docs/clone-sample.md)
   - Documents as attachments
-    - [attachments](docs/attacments.md) (list)
+    - [attachments](docs/attachments.md) (list)
     - [attach](docs/attach.md) (create/update)
     - [retrieve](docs/retrieve.md) (read)
     - [prune](docs/prune.md) (delete)

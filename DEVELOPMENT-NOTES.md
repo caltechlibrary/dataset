@@ -5,7 +5,7 @@
 
 (when compiling from source)
 
-- Golang 1.21.1 or better
+- Golang 1.23.2 or better
 
 ## Recommend
 
@@ -14,7 +14,6 @@
 - Bash
 - GNU Make
 - Pandoc (is used as a pre-processor to generate version.go and other files)
-- Snapcraft if generating a snap package of dataset/datasetd
 
 ## Using the _dataset_ package
 
