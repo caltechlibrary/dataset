@@ -163,7 +163,7 @@ dist/Linux-x86_64:
 
 dist/Linux-aarch64:
 	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
+	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-aarch64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
