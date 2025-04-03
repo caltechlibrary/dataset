@@ -32,8 +32,9 @@ import (
 	"github.com/caltechlibrary/semver"
 
 	// Database specific drivers
-	_ "github.com/glebarez/go-sqlite"
-
+	//_ "github.com/glebarez/go-sqlite"
+	_ "modernc.org/sqlite"
+	
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
