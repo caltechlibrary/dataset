@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.1.23
+version: 2.1.24
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -38,7 +38,7 @@ date_released: 2025-04-03
 About this software
 ===================
 
-## dataset 2.1.23
+## dataset 2.1.24
 
 Updated API configuration to support improved error handling
 
@@ -67,7 +67,7 @@ Tools for working with JSON documents as a collection hosted on the file system 
 
 ### Software Requirements
 
-- Golang &gt;&#x3D; 1.23
+- Golang &gt;&#x3D; 1.24.2
 - CMTOlls &gt;&#x3D; 0.0.20
 - Pandoc &gt;&#x3D; 3.1
 - GNU Make &gt;&#x3D; 3.8

@@ -73,12 +73,12 @@
     "Go"
   ],
   "softwareRequirements": [
-    "Golang >= 1.23",
+    "Golang >= 1.24.2",
     "CMTOlls >= 0.0.20",
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.1.23",
+  "version": "2.1.24",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
