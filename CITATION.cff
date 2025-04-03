@@ -1,27 +1,38 @@
+
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "dataset"
-abstract: "Tools for working with JSON documents as a collection hosted
-on the file system or SQL JSON store"
+title: dataset
+abstract: "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store"
 authors:
   - family-names: Doiel
     given-names: R. S.
-    orcid: "https://orcid.org/0000-0003-0900-6903"
+    orcid: https://orcid.org/0000-0003-0900-6903
+    email: rsdoiel@caltech.edu
   - family-names: Morrell
     given-names: Thomas E
-    orcid: "https://orcid.org/0000-0001-9266-5146"
+    orcid: https://orcid.org/0000-0001-9266-5146
+    email: tmorrell@caltech.edu
 
-
-maintainers:
+contacts:
   - family-names: Doiel
     given-names: R. S.
-    orcid: "https://orcid.org/0000-0003-0900-6903"
+    orcid: https://orcid.org/0000-0003-0900-6903
+    email: rsdoiel@caltech.edu
   - family-names: Morrell
     given-names: Thomas E
-    orcid: "https://orcid.org/0000-0001-9266-5146"
+    orcid: https://orcid.org/0000-0001-9266-5146
+    email: tmorrell@caltech.edu
 
 repository-code: "https://github.com/caltechlibrary/dataset"
 version: 2.1.23
-license-url: "https://data.caltech.edu/license"
-keywords: [ "GitHub", "metadata", "data", "software", "json" ]
+date-released: 2025-04-03
+
+license-url: "https://caltechlibrary.github.io/dataset/LICENSE"
+keywords:
+  - GitHub
+  - metadata
+  - data
+  - software
+  - json
+
