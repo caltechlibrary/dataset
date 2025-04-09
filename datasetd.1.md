@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.2.0 ae35afb
+%datasetd(1) user manual | version 2.2.0 c2091a9
 % R. S. Doiel
 % 2025-04-09
 

@@ -1,4 +1,4 @@
-%dataset(1) user manual | version 2.2.0 ae35afb
+%dataset(1) user manual | version 2.2.0 c2091a9
 % R. S. Doiel and Tom Morrell
 % 2025-04-09
 
