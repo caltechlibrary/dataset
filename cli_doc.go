@@ -1,6 +1,6 @@
 // This is part of the dataset package.
 //
-// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
+// Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrell, <tmorrell@library.caltech.edu>
 //
 // Copyright (c) 2022, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
@@ -21,7 +21,7 @@ const (
 	cliDescription = `
 USAGE
 
- {app_name} [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PRAMETER ...]
+ {app_name} [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PARAMETER ...]
 
 SYNOPSIS
 
@@ -46,7 +46,7 @@ SUPPORTED VERBS
 - export, exports the collection into another collection
 - attach, attaches a document to a JSON object record
 - attachments, lists the attachments associated with a JSON object record
-- retrieve, creates a copy local of an attachement in a JSON record
+- retrieve, creates a copy local of an attachment in a JSON record
 - prune, removes and attachment from a JSON record
 - frames, lists the frames defined in a collection
 - frame, will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
@@ -67,10 +67,10 @@ A word about "keys". {app_name} uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
 value is the object to be stored.  Keys must be lower case 
 alpha numeric only.  Depending on storage engines there are issues
-for keys with punctation or that rely on case sensitivity. E.g. 
+for keys with punctuation or that rely on case sensitivity. E.g. 
 The pairtree storage engine relies on the host file system. File
 systems are notorious for being picky about non-alpha numeric
-characters and some are not case sensistive.
+characters and some are not case sensitive.
 
 A word about "GLOBAL_OPTIONS" in v2 of dataset.  Originally
 all options came after the command name, now they tend to
@@ -422,14 +422,15 @@ Syntax
 ------
 
 ~~~shell
-    dataset init COLLECTION_NAME [DSN_URI]
+    dataset init COLLECTION_NAME [DSN_URI|pairtree]
 ~~~
 
 Description
 -----------
 
 _init_ creates a collection. Collections are created on local 
-disc.
+disc. By default it uses a SQLite3 database called "collection.db"
+in the dataset directory for storing JSON Objects.
 
 Usage
 -----
@@ -445,13 +446,31 @@ NOTE: After each evocation of ` + "`" + `dataset init` + "`" + ` if all went wel
 you will be shown an ` + "`" + `OK` + "`" + ` if everything went OK, otherwise
 an error message. 
 
-By default dataset cli creates pairtree collections. You can now optionally 
-store your documents in a SQL database (e.g. Postgres, SQLite3, MySQL 8). This can
-improve performance for large collections as well as support multi-user or
-multi-process concurrent use of a collection. To use a SQL storage engine
-you need to provide a "DSN_URI". The DSN_URI is formed by setting the "protocl" 
-of the URL to either "sqlite://", "mysql://", "postgres://" followed by a DSN
-(data source name) as described by the database/sql package in Go.
+You can still use a pairtree to store your dataset collection by using
+the "pairtree" option when creating your collection. Example for creating
+data.ds using a pairtree store.
+
+~~~shell
+    dataset init data.ds pairtree
+~~~
+
+By default dataset cli creates a collection and uses an SQLite3 database to
+store the JSON objects.
+
+~~~shell
+    dataset init data.ds
+~~~
+
+You can optionally store your JSON documents in a
+SQL in PostgreSQL or MySQL 8. This can improve performance for large collections
+as well as support multi-user or multi-process concurrent use of a collection.
+
+The SQL storage engine is designated using a "DSN_URI". The DSN_URI is formed
+by setting the "protocol" of the URL to either "sqlite://", "mysql://",
+or "postgres://" followed by a DSN or "data source name" The data source name
+is usually a form of the database connection string. e.g. something like
+"posgres://jane.doe:$SECRET@collections". The DSN is described in detail in the Go
+database/sql package.
 
 This examples shows using SQLite3 storage for the JSON documents in
 a "collection.db" stored inside the "data.ds" collection.
@@ -464,20 +483,20 @@ Here's a variation using MySQL 8 as the storage engine storing the
 collection in the "collections" database.
 
 ~~~shell
-    dataset init data.ds "mysql://DB_USER:DB_PASSWORD@/collections"
+    dataset init data.ds "mysql://$DB_USER:$DB_PASSWORD@/collections"
 ~~~
 
-Here's an example of for using Postgres running on localhost. 
+Here's an example of for using PostgreSQL running on localhost. 
 
 ~~~shell
-    dataset init data.ds "postgres://DB_USER:DB_PASSWORD@localhost/collections"
+    dataset init data.ds "postgres://$DB_USER:$DB_PASSWORD@localhost/collections"
 ~~~
 
-If you need to pass the sslmode parameters to use Postgres include them
-in your dsn. E.g. disabling SSL when using localhost.
+If you need to pass the sslmode parameters to use PostgreSQL include them
+in your DSN. E.g. disabling SSL when using localhost.
 
 ~~~shell
-    dataset init data.ds "postgres://DB_USER:DB_PASSWORD@localhost/collections?sslmode=disable"
+    dataset init data.ds "postgres://$DB_USER:$DB_PASSWORD@localhost/collections?sslmode=disable"
 ~~~
 
 NOTE: If you are using a SQL based collection and you want to copy it
@@ -492,7 +511,7 @@ versioning
 
 Collections can support a simplistic form of versioning for JSON documents
 and their attachments.  It is a collection wide setting and if enabled
-JSON documents and attachments will associated with a semver (symantic
+JSON documents and attachments will associated with a semver (semantic
 version number). The implementation details are based on the storage engine.
 
 The versioning can be set to increment on the patch, minor or major 
@@ -961,7 +980,7 @@ Without the codemeta filename it returns the existing codemeta values.
 frame-keys
 ==========
 
-This returnes a list of keys assocaited with the frame. Keys are
+This returns a list of keys associated with the frame. Keys are
 returned one per line.
 
 
@@ -977,7 +996,7 @@ migrate
 
 This will migrate content from a v1 dataset collection to a
 v2 dataset collection.  Before migrating you need to create an
-empty distination collection.
+empty destination collection.
 
 NOTE: attachments are not currently
 migrated, just the JSON documents.
@@ -997,7 +1016,7 @@ model
 # SYNOPSIS
 
 The model verb let's you describe a simple data model for validating objects an HTML web form
-ro the datasetd JSON API.  It currently doesn't validate JSON data are ready in a collection
+or the datasetd JSON API.  It currently doesn't validate JSON data are ready in a collection
 or when the JSON data is added via the dataset cli.
 
 The model is saved in the root the dataset collection directory. The file
@@ -1018,7 +1037,7 @@ arrays or dictionaries.
 ## A Model
 
 id
-: (requireD) The identifier for the model. Is the "id" given to the generated HTML web form.
+: (required) The identifier for the model. Is the "id" given to the generated HTML web form.
 
 description
 : (optional) This is simple description of the model. It will be included as a comment in
@@ -1146,6 +1165,68 @@ elements:
     attributes:
       name: msg
       placehodertext: Enter a short message or comment
+~~~
+
+`
+
+cliLoad = `load [OPTION]
+============
+
+This will read a JSONL stream (JSONL, see https://jsonlines.org) 
+and store the objects in a dataset collection. The objects must have
+two attributes, __key__ and __object__.  The key value is used as
+the key assigned in the collection and object value is the JSON stored.
+Load reads from standard input.
+
+The object structure matches the schema used by dataset collections
+that are using SQLite3 for their object store. The dataset collection
+loading the objects can use any dataset collection storage format
+supported by the version of dataset featuring load and dump verbs.
+
+# OPTION
+
+-o, -overwrite
+: If an object exists in the collection with the same key replace it.
+
+-m, -max-capacity INTEGER
+: Objects can be large in JSONL so you have the option of setting the
+maximum buffer size for a single object. The integer value should be
+greater than zero. The unit value is measured in mega bytes. "1" is
+one meta byte, "10" would be ten mega bytes.
+
+# EXAMPLE
+
+Load a JSONL file, duplicate objects will not be overwritten.
+
+~~~shell
+    {app_name} load mycollection.ds <mycollection.jsonl
+~~~
+
+Load a JSONL file, duplicate objects will be overwritten.
+
+~~~shell
+    {app_name} load -overwrite mycollection.ds <mycollection.jsonl
+~~~
+
+`
+
+cliDump = `dump
+============
+
+This will dump all the JSON objects in a collection, one
+object per line (see https://jsonlines.org) (aka JSONL). 
+
+The objects are written to standard output. Dump is the complement of
+load verb. The objects dumped reflect the structured using when storing
+objects in an SQLite3 database regardless of the store of the specific
+collection. Like clone it provides a means of easily moving your data out
+of a dataset collection.
+
+Example
+-------
+
+~~~shell
+    {app_name} dump mycollection.ds >mycollection.jsonl
 ~~~
 
 `
