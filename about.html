@@ -24,20 +24,30 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.1.24">dataset 2.1.24</h2>
-<p>Updated API configuration to support improved error handling</p>
+<h2 id="dataset-2.2.0">dataset 2.2.0</h2>
+<p>This minor release see the addition of two new dataset verbs and the
+introduction of SQLite3 as the default storage type. You can still
+create a pairtree store but now you need to include that as a paramter
+when invoking the init verb.</p>
+<p>The added verbs are dump and load. These offer a different approach
+than cloning repositories. The dump verb will write a JSONL object
+stream to standard out where the objects have two attributes, key and
+object. The key attribute corresponds to the object key in the dataset
+collection while the object attribute contains the JSON object in the
+collection. The load command can read this stream of objects and use
+them to populate a collection.</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
-class="uri">https://orcid.org/0000-0003-0900-6903</a>- Thomas E Morrell,
-<a href="https://orcid.org/0000-0001-9266-5146"
+class="uri">https://orcid.org/0000-0003-0900-6903</a></li>
+<li>Thomas E Morrell, <a href="https://orcid.org/0000-0001-9266-5146"
 class="uri">https://orcid.org/0000-0001-9266-5146</a></li>
 </ul>
 <h3 id="maintainers">Maintainers</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
-class="uri">https://orcid.org/0000-0003-0900-6903</a>- Thomas E Morrell,
-<a href="https://orcid.org/0000-0001-9266-5146"
+class="uri">https://orcid.org/0000-0003-0900-6903</a></li>
+<li>Thomas E Morrell, <a href="https://orcid.org/0000-0001-9266-5146"
 class="uri">https://orcid.org/0000-0001-9266-5146</a></li>
 </ul>
 <p>Tools for working with JSON documents as a collection hosted on the

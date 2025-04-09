@@ -466,6 +466,10 @@ func Init(name string, dsnURI string) (*Collection, error) {
 	c.Name = name
 	c.DsnURI = dsnURI
 	if dsnURI == "" {
+		//c.StoreType = PTSTORE
+		c.StoreType = SQLSTORE
+		c.DsnURI = "sqlite://collection.db"
+	} else if dsnURI == "pairtree" {
 		c.StoreType = PTSTORE
 	} else {
 		c.StoreType = SQLSTORE

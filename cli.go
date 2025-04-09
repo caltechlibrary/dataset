@@ -81,6 +81,8 @@ var (
 		"migrate":        cliMigrate,
 		"codemeta":       cliCodemeta,
 		"license":        License,
+		"load":           cliLoad,
+		"dump":           cliDump,
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
@@ -122,6 +124,8 @@ var (
 		"get-versioning": doGetVersioning,
 		"set-versioning": doSetVersioning,
 		"versions":       doVersions,
+		"load":           doLoad,
+		"dump":           doDump,
 	}
 )
 
@@ -721,6 +725,64 @@ func doCount(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	cnt := c.Length()
 	fmt.Fprintf(out, "%d\n", cnt)
 	return nil
+}
+
+func doDump(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+	)
+	flagSet := flag.NewFlagSet("dump", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		CliDisplayHelp(in, out, eout, []string{"dump"})
+	}
+	switch {
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	return c.Dump(os.Stdout)
+}
+
+func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	var (
+		cName string
+		overwrite bool
+		maxCapacity = 0
+	)
+	flagSet := flag.NewFlagSet("load", flag.ContinueOnError)
+	flagSet.BoolVar(&overwrite, "o", false, "overwrite existing objects on load")
+	flagSet.BoolVar(&overwrite, "overwrite", false, "overwrite existing objects on load")
+	flagSet.IntVar(&maxCapacity, "m", maxCapacity, "set a maximum size for single object in megabytes")
+	flagSet.IntVar(&maxCapacity, "max-capacity", maxCapacity, "set a maximum size for single object in megabytes")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		CliDisplayHelp(in, out, eout, []string{"dump"})
+	}
+	switch {
+	case len(args) == 1:
+		cName = args[0]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	return c.Load(os.Stdin, overwrite, maxCapacity)
 }
 
 func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {

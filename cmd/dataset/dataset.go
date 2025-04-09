@@ -132,6 +132,18 @@ set-versioning
 get-versioning
 : will display the versioning setting for a collection
 
+dump
+: This will write out all dataset collection records in a JSONL document.
+JSONL shows on JSON object per line, see https://jsonlines.org for details.
+The object rendered will have two attributes, "key" and "object". The
+key corresponds to the dataset collection key and the object is the JSON
+value retrieved from the collection.
+
+load
+: This will read JSON objects one per line from standard input. This
+format is often called JSONL, see https://jsonlines.org. The object
+has two attributes, key and object. 
+
 A word about "keys". {app_name} uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
 value is the object to be stored.  Keys must be lower case 
