@@ -31,7 +31,7 @@ func TestPairtree(t *testing.T) {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	c, err := Init(cName, "")
+	c, err := Init(cName, "pairtree")
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
@@ -63,7 +63,7 @@ func setupTestCollectionNamed(cName string) error {
 	if _, err := os.Stat(cName); err == nil {
 		os.RemoveAll(cName)
 	}
-	c, err := Init(cName, "")
+	c, err := Init(cName, "pairtree")
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,6 @@ func removeRecord(cName string, key string) error {
 }
 
 func TestCheck(t *testing.T) {
-
 	// Setup a test collection and data
 	cName := path.Join("testout", "test_check.ds")
 	if err := setupTestCollectionNamed(cName); err != nil {
@@ -234,7 +233,7 @@ func setupTestCollection2(cName string) error {
 		},
 	}
 
-	c, err := Init(cName, "")
+	c, err := Init(cName, "pairtree")
 	if err != nil {
 		return err
 	}

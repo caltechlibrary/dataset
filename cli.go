@@ -152,7 +152,7 @@ func CliDisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) 
 		"{version}":  Version,
 	}
 	if text, ok := helpDocs[topic]; ok {
-		fmt.Fprintf(out, StringProcessor(m, text))
+		fmt.Fprint(out, StringProcessor(m, text))
 	} else {
 		fmt.Fprintf(eout, "Unable to find help on %q\n", topic)
 	}
@@ -165,7 +165,7 @@ func DisplayLicense(out io.Writer, appName string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, StringProcessor(m, License))
+	fmt.Fprint(out, StringProcessor(m, License))
 }
 
 // DisplayVersion returns the of the dataset application.
@@ -174,7 +174,7 @@ func DisplayVersion(out io.Writer, appName string) {
 		"{app_name}": appName,
 		"{version}":  Version,
 	}
-	fmt.Fprintf(out, StringProcessor(m, "{app_name} {version}\n"))
+	fmt.Fprint(out, StringProcessor(m, "{app_name} {version}\n"))
 }
 
 // CliDisplayUsage displays a usage message.
@@ -186,11 +186,11 @@ func CliDisplayUsage(out io.Writer, appName string, flagSet *flag.FlagSet) {
 		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, StringProcessor(m, description))
+	fmt.Fprint(out, StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, StringProcessor(m, examples))
+	fmt.Fprint(out, StringProcessor(m, examples))
 	DisplayLicense(out, appName)
 }
 

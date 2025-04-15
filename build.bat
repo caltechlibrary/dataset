@@ -23,14 +23,7 @@ date /T
 echo Enter date for release
 SET /P RELEASE_DATE=
 echo Generating version.go using Pandoc
-echo '' | pandoc --from t2t --to plain ^
-                --metadata-file codemeta.json ^
-                --metadata package=%PROJECT% ^
-                --metadata version=%DS_VERSION% ^
-                --metadata release_date=%RELEASE_DATE% ^
-                --metadata release_hash=%RELEASE_HASH% ^
-                --template codemeta-version-go.tmpl ^
-                LICENSE >version.go
+cmt codemeta.json version.go
 IF NOT EXIST bin MKDIR bin
 
 echo Compiling bin\dataset.exe

@@ -21,8 +21,6 @@ endif
 
 MAN_PAGES = dataset.1 datasetd.1 dsquery.1 dsimporter.1
 
-MAN_PAGES_LIB = libdataset.3
-
 MAN_PAGES_MISC = datasetd_yaml.5 datasetd_service.5 datasetd_api.5
 
 PROGRAMS = dataset datasetd dsquery dsimporter
@@ -60,10 +58,6 @@ $(MAN_PAGES): .FORCE
 	mkdir -p man/man1
 	pandoc $@.md --from markdown --to man -s >man/man1/$@
 
-$(MAN_PAGES_LIB): .FORCE
-	mkdir -p man/man3
-	pandoc libdataset/$@.md --from markdown --to man -s >man/man3/$@
-
 $(MAN_PAGES_MISC): .FORCE
 	mkdir -p man/man5
 	pandoc $@.md --from markdown --to man -s >man/man5/$@
@@ -76,13 +70,13 @@ about.md: codemeta.json .FORCE
 	cmt codemeta.json about.md
 
 installer.sh: .FORCE
-	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-bash-installer.tmpl >installer.sh
+	cmt codemeta.json installer.sh
 	chmod 775 installer.sh
 	git add -f installer.sh
 
 installer.ps1: .FORCE
-	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-ps1-installer.tmpl >installer.ps1
-	chmod 775 installer.ps1
+	cmt codemeta.json installer.ps1
+	chmod 775 installer.sh
 	git add -f installer.ps1
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
@@ -189,14 +183,14 @@ dist/Linux-armv7l:
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-armv7l.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-# WASM code build is experimental, Python maybe able to load WASM code via wasmer-python, https://github.com/wasmerio/wasmer-python
-# This would let me avoid having at have seperate machines to build a libdataset C-shared library.
-dist/js-wasm:
-	@mkdir -p dist/bin
-	@cp "$(shell go env GOROOT)/lib/wasm/wasm_exec.js" dist/
-	@for FNAME in $(PROGRAMS); do env GOOS=js GOARCH=wasm go build -o dist/bin/$$FNAME$(EXT_WEB) cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-js-wasm.zip LICENSE codemeta.json CITATION.cff wasm_exec.js *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+## WASM code build is experimental, Python maybe able to load WASM code via wasmer-python, https://github.com/wasmerio/wasmer-python
+## This would let me avoid having at have seperate machines to build a libdataset C-shared library.
+#dist/js-wasm:
+#	@mkdir -p dist/bin
+#	@cp "$(shell go env GOROOT)/lib/wasm/wasm_exec.js" dist/
+#	@for FNAME in $(PROGRAMS); do env GOOS=js GOARCH=wasm go build -o dist/bin/$$FNAME$(EXT_WEB) cmd/$$FNAME/*.go; done
+#	@cd dist && zip -r $(PROJECT)-v$(VERSION)-js-wasm.zip LICENSE codemeta.json CITATION.cff wasm_exec.js *.md $(DIST_FOLDERS)
+#	@rm -fR dist/bin
 
 	
 distribute_docs:

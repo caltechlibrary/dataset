@@ -24,18 +24,11 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.2.0">dataset 2.2.0</h2>
-<p>This minor release see the addition of two new dataset verbs and the
-introduction of SQLite3 as the default storage type. You can still
-create a pairtree store but now you need to include that as a paramter
-when invoking the init verb.</p>
-<p>The added verbs are dump and load. These offer a different approach
-than cloning repositories. The dump verb will write a JSONL object
-stream to standard out where the objects have two attributes, key and
-object. The key attribute corresponds to the object key in the dataset
-collection while the object attribute contains the JSON object in the
-collection. The load command can read this stream of objects and use
-them to populate a collection.</p>
+<h2 id="dataset-2.2.2">dataset 2.2.2</h2>
+<p>This release removes libdataset support. If you need to use dataset
+from a language other than Go and Dataset Project provides datasetd, a
+JSON API web service. Of course the cli also are an option depending on
+your circumstance.</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"

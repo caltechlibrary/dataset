@@ -54,6 +54,9 @@ a file or from standard input.
 help
 : will give documentation of help on a verb, e.g. "help create"
 
+init [STORAGE_TYPE]
+: Initialize a new dataset collection
+
 model
 : provides an experimental interactive data model generator creating
 the "model.yaml" file in the data set collection's root directory.
@@ -163,6 +166,16 @@ and ` + "`" + `-license` + "`" + `. All other options come
 after the verb and apply to the specific action the verb
 implements.
 
+# STORAGE TYPE
+
+There are currently three support storage options for JSON documents in a dataset collection.
+
+- SQLite3 database (default),
+- Pairtree (pre-2.1 default)
+- Postgres
+
+STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairtree".
+
 
 # OPTIONS
 
@@ -203,6 +216,32 @@ implements.
 
    {app_name} keys my_objects.ds
 ~~~
+
+This is an example of initializing a Pairtree JSON documentation
+collection using the environment.
+
+~~~
+{app_name} init '${C_NAME}' pairtree
+~~~
+
+In this case '${C_NAME}' is the name of your JSON document
+read from the environment varaible C_NAME.
+
+To specify Postgres as the storage for your JSON document collection.
+You'd use something like --
+
+~~~
+{app_name} init '${C_NAME}' \\
+  'postgres://${USER}@localhost/${DB_NAME}?sslmode=disable'
+~~~
+
+
+In this case '${C_NAME}' is the name of your JSON document
+read from the environment varaible C_NAME. USER is used
+for the Postgres username and DB_NAME is used for the Postgres
+database name.  The sslmode option was specified because Postgres
+in this example was restricted to localhost on a single user machine.
+
 
 {app_name} {version}
 

@@ -142,9 +142,11 @@ rewritten to use the web service implementation of dataset
 (i.e. datasetd) and this would fit most of our use cases now and planned
 in the near future. It would avoid some hard edge cases we’ve run across
 where the Go run time and Python run need to be kept in sync.</p>
-<p>Dropping libdataset support would allow dataset/datasetd to be cross
-compiled for all supported platforms using only the Go tool chain. It
-would make fully supporting snap installs possible.</p>
+<p>Dropping libdataset support (done in release v2.2.2) would allow
+dataset/datasetd to be cross compiled for all supported platforms using
+only the Go tool chain. It would make fully supporting snap installs
+possible. Dataset’s datasetd provides alternative language support via a
+JSON API as a web service.</p>
 <p>A large area of cruft is the integrated help system. It makes more
 sense to focus that on GitHub, godoc and possibly publish to a site like
 readthedocs.io from the GitHub repository than to sustain a high level
