@@ -78,9 +78,9 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.1",
+  "version": "2.2.2",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Fixed a bug in the 2.1 series where repair failed for default collections of\ntype sqlite."
+  "releaseNotes": "This release removes libdataset support. If you need to use dataset from a language other than Go and Dataset Project provides datasetd, a JSON API web service. Of course the cli \nalso are an option depending on your circumstance."
 }
