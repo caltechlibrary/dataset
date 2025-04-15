@@ -76,13 +76,13 @@ about.md: codemeta.json .FORCE
 	cmt codemeta.json about.md
 
 installer.sh: .FORCE
-	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-bash-installer.tmpl >installer.sh
+	cmt codemeta.json installer.sh
 	chmod 775 installer.sh
 	git add -f installer.sh
 
 installer.ps1: .FORCE
-	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-ps1-installer.tmpl >installer.ps1
-	chmod 775 installer.ps1
+	cmt codemeta.json installer.ps1
+	chmod 775 installer.sh
 	git add -f installer.ps1
 
 # NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
