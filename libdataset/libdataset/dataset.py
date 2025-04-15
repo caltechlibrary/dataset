@@ -59,6 +59,7 @@ def verbose_on():
 def verbose_off():
     return libdataset.verbose_off()
 
+
 # dataset_version() returns version of dataset 
 # shared library semver.
 def dataset_version():
@@ -66,6 +67,11 @@ def dataset_version():
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     return value.decode() 
+
+# This is for legacy compatibility. It returns the
+# version of dataset/libdataset.
+def version():
+   return dataset_version() 
 
 #
 # Now write our Python idiomatic function

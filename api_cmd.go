@@ -39,10 +39,10 @@ Starting up the web service
 		"{version}":  Version,
 	}
 	// Convert {app_name} and {version} in description
-	fmt.Fprintf(out, StringProcessor(m, description))
+	fmt.Fprint(out, StringProcessor(m, description))
 	flagSet.SetOutput(out)
 	flagSet.PrintDefaults()
 
-	fmt.Fprintf(out, StringProcessor(m, examples))
+	fmt.Fprint(out, StringProcessor(m, examples))
 	DisplayLicense(out, appName)
 }

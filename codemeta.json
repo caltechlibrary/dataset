@@ -50,8 +50,8 @@
       "email": "tmorrell@caltech.edu"
     }
   ],
-  "dateModified": "2025-04-09",
-  "datePublished": "2025-04-09",
+  "dateModified": "2025-04-15",
+  "datePublished": "2025-04-15",
   "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
   "funder": [
     {
@@ -78,9 +78,9 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.0",
+  "version": "2.2.1",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "This minor release see the addition of two new dataset verbs and\nthe introduction of SQLite3 as the default storage type. You can\nstill create a pairtree store but now you need to include that as\na paramter when invoking the init verb.\n\nThe added verbs are dump and load. These offer a different\napproach than cloning repositories. The dump verb will write a JSONL\nobject stream to standard out where the objects have two attributes,\nkey and object. The key attribute corresponds to the object key in the\ndataset collection while the object attribute contains the JSON object\nin the collection.  The load command can read this stream of objects\nand use them to populate a collection."
+  "releaseNotes": "Fixed a bug in the 2.1 series where repair failed for default collections of\ntype sqlite."
 }

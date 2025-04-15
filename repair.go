@@ -17,12 +17,14 @@
 package dataset
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"sort"
@@ -234,12 +236,17 @@ func Analyzer(cName string, verbose bool) error {
 // collection collection type
 func FixMissingCollectionJson(cName string) error {
 	collectionJson := path.Join(cName, "collection.json")
+	//FIXME: Need to check to see if we should default to the old pairtree or SQLite3 database
 	dsnURI := os.Getenv("DATASET_DSN_URI")
 	pairPath := path.Join(cName, "pairtree")
+	sqlitePath := path.Join(cName, "collection.db")
 	keymapPath := path.Join(cName, "keymap.json")
 	storeType := ""
 	version := ""
-	if _, err := os.Stat(pairPath); err == nil {
+	if _, err := os.Stat(sqlitePath); err == nil {
+		storeType = SQLSTORE
+		dsnURI = "sqlite://collection.db"
+	} else if _, err := os.Stat(pairPath); err == nil {
 		storeType = PTSTORE
 	} else if dsnURI != "" {
 		storeType = SQLSTORE
@@ -261,6 +268,32 @@ func FixMissingCollectionJson(cName string) error {
 		return fmt.Errorf("unable to encode %q, %s", collectionJson, err)
 	}
 	return ioutil.WriteFile(collectionJson, src, 0664)
+}
+
+// Repair a SQLite3 base collection.
+func repairSqlite3(c *Collection) error {
+	// Fixme see if SQLite3 is installed and in the path
+	cmdPath, err := exec.LookPath("sqlite3")
+	if err != nil {
+		return fmt.Errorf("sqlite3 needs to be installed to repair %q, %s", c.Name, err)
+	}
+	dbName := path.Join(c.workPath, strings.TrimPrefix(c.DsnURI, "sqlite://"))
+	cmdDump := exec.Command(cmdPath, dbName, ".dump")
+	src, err := cmdDump.Output()
+	if err != nil {
+		return fmt.Errorf("failed to execute %q, %s", dbName + " .dump", err)
+	}
+	os.Rename(dbName, dbName + "-broken")
+	cmdRestore := exec.Command(cmdPath, dbName)
+	buffer := bytes.Buffer{}
+	buffer.Write(src)
+	cmdRestore.Stdin = &buffer
+	cmdRestore.Stdout = os.Stdout
+	cmdRestore.Stderr = os.Stderr
+	if err := cmdRestore.Run(); err != nil {
+		return fmt.Errorf("failed to retore %q, %s", dbName, err)
+	}
+	return nil
 }
 
 // Repair takes a collection name and calls
@@ -310,6 +343,11 @@ func Repair(cName string, verbose bool) error {
 	defer c.Close()
 
 	if c.StoreType != PTSTORE {
+		// NOTE: in dataset 2.1.x the default storage is no SQLite3
+		// We should handle the repair.
+		if (strings.HasPrefix(c.DsnURI, "sqlite://")) {
+			return repairSqlite3(c)
+		}
 		return fmt.Errorf("repair supports pairtree storage only")
 	}
 
