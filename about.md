@@ -43,6 +43,8 @@ About this software
 This release removes libdataset support. If you need to use dataset from a language other than Go and Dataset Project provides datasetd, a JSON API web service. Of course the cli 
 also are an option depending on your circumstance.
 
+This release sees the return of &quot;join&quot; verb for the dataset cli.
+
 ### Authors
 
 - R. S. Doiel, <https://orcid.org/0000-0003-0900-6903>

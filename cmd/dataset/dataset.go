@@ -147,6 +147,11 @@ load
 format is often called JSONL, see https://jsonlines.org. The object
 has two attributes, key and object. 
 
+join [OPTIONS] c_name, key, JSON_SRC
+: This will join a new object provided on the command line with an
+existing object in the collection.
+
+
 A word about "keys". {app_name} uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
 value is the object to be stored.  Keys must be lower case 

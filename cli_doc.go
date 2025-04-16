@@ -1230,4 +1230,23 @@ Example
 ~~~
 
 `
+
+cliJoin = `join
+============
+
+This will take a collection name, key and new JSON expression.
+the object in the collection matching the key will be "joined"
+with the new object.  If the overwrite option is set to true
+then the JSON expressions attributes will overwrite the ones
+in the collection. If false only the new attributes will be
+added to the object in the collection.
+
+~~~shell
+    {app_name} join mycollection.ds my-key '{"one-o-one": 101}'
+    {app_name} join -overwrite mycollection.ds my-key '{"one-o-one": 202}'
+~~~
+
+`
 )
+
+

@@ -82,5 +82,5 @@
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "This release removes libdataset support. If you need to use dataset from a language other than Go and Dataset Project provides datasetd, a JSON API web service. Of course the cli \nalso are an option depending on your circumstance."
+  "releaseNotes": "This release removes libdataset support. If you need to use dataset from a language other than Go and Dataset Project provides datasetd, a JSON API web service. Of course the cli \nalso are an option depending on your circumstance.\n\nThis release sees the return of \"join\" verb for the dataset cli."
 }
