@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.2
+version: 2.2.3
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -38,10 +38,9 @@ date_released: 2025-04-15
 About this software
 ===================
 
-## dataset 2.2.2
+## dataset 2.2.3
 
-This release removes libdataset support. If you need to use dataset from a language other than Go and Dataset Project provides datasetd, a JSON API web service. Of course the cli 
-also are an option depending on your circumstance.
+Fix ReadKey handling removing trailing empty key. Misc minor fixes discovered in bring py_dataset up v2.2.x of dataset.
 
 ### Authors
 

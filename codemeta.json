@@ -78,9 +78,9 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.2",
+  "version": "2.2.3",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "This release removes libdataset support. If you need to use dataset from a language other than Go and Dataset Project provides datasetd, a JSON API web service. Of course the cli \nalso are an option depending on your circumstance."
+  "releaseNotes": "Fix ReadKey handling removing trailing empty key. Misc minor fixes discovered in bring py_dataset up v2.2.x of dataset."
 }

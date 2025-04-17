@@ -83,6 +83,7 @@ var (
 		"license":        License,
 		"load":           cliLoad,
 		"dump":           cliDump,
+		"join":           cliJoin,
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
@@ -101,6 +102,7 @@ var (
 		"frames":         doFrameNames,
 		"frame-names":    doFrameNames,
 		"frame":          doFrameCreate,
+		"frame-create":   doFrameCreate,
 		"frame-def":      doFrameDef,
 		"frame-keys":     doFrameKeys,
 		"frame-objects":  doFrameObjects,
@@ -126,6 +128,7 @@ var (
 		"versions":       doVersions,
 		"load":           doLoad,
 		"dump":           doDump,
+		"join":           doJoin,
 	}
 )
 
@@ -785,6 +788,46 @@ func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	return c.Load(os.Stdin, overwrite, maxCapacity)
 }
 
+func doJoin(in io.Reader, out io.Writer, eout io.Writer, args[]string) error {
+	var (
+		cName string
+		overwrite bool
+		key string
+		src string
+	)
+	flagSet := flag.NewFlagSet("join", flag.ContinueOnError)
+	flagSet.BoolVar(&overwrite, "o", false, "overwrite existing objects on load")
+	flagSet.BoolVar(&overwrite, "overwrite", false, "overwrite existing objects on load")
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+	if showHelp {
+		CliDisplayHelp(in, out, eout, []string{"join"})
+	}
+	switch {
+	case len(args) == 3:
+		cName = args[0]
+		key = args[1]
+		src = args[2]
+	default:
+		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY JSON_OBJECT, got %q", strings.Join(args, " "))
+	}
+	c, err := Open(cName)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	obj := map[string]interface{}{}
+	if err := JSONUnmarshal([]byte(src), &obj); err != nil {
+		return err
+	}
+	if err := c.Join(key, obj, overwrite); err != nil {
+		return err
+	}
+	return nil
+}
+
 func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		srcName   string
@@ -799,7 +842,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet := flag.NewFlagSet("clone", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
-	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
+	flagSet.StringVar(&keysName, "i", "", "filename to read keys from")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.BoolVar(&all, "all", false, "clone whole repository")
 	flagSet.Parse(args)
@@ -1254,7 +1297,7 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	flagSet := flag.NewFlagSet("retrieve", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
-	flagSet.StringVar(&output, "o", "-", "save to file")
+	flagSet.StringVar(&output, "o", "", "save to file")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -1264,7 +1307,7 @@ func doRetrieve(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	case len(args) == 3:
 		srcName, key, filename = args[0], args[1], args[2]
 	default:
-		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME KEY FILENAMEgot, %q", strings.Join(args, " "))
+		return fmt.Errorf("Expected: [OPTION] COLLECTION_NAME KEY FILENAME got, %q", strings.Join(args, " "))
 	}
 	c, err := Open(srcName)
 	if err != nil {
