@@ -157,6 +157,11 @@ This will read JSON objects one per line from standard input. This
 format is often called JSONL, see https://jsonlines.org. The object has
 two attributes, key and object.
 </dd>
+<dt>join <a href="#options">OPTIONS</a> c_name, key, JSON_SRC</dt>
+<dd>
+This will join a new object provided on the command line with an
+existing object in the collection.
+</dd>
 </dl>
 <p>A word about “keys”. dataset uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
@@ -237,7 +242,7 @@ the environment varaible C_NAME. USER is used for the Postgres username
 and DB_NAME is used for the Postgres database name. The sslmode option
 was specified because Postgres in this example was restricted to
 localhost on a single user machine.</p>
-<p>dataset 2.2.2</p>
+<p>dataset 2.2.3</p>
 </section>
 
 <footer>
