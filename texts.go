@@ -100,7 +100,7 @@ func ReadKeys(keysName string, in io.Reader) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	keys := strings.Split(fmt.Sprintf("%s", src), "\n")
+	keys := strings.Split(fmt.Sprintf("%s", bytes.TrimSpace(src)), "\n")
 	return keys, nil
 }
 

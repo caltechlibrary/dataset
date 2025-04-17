@@ -102,6 +102,7 @@ var (
 		"frames":         doFrameNames,
 		"frame-names":    doFrameNames,
 		"frame":          doFrameCreate,
+		"frame-create":   doFrameCreate,
 		"frame-def":      doFrameDef,
 		"frame-keys":     doFrameKeys,
 		"frame-objects":  doFrameObjects,
@@ -841,7 +842,7 @@ func doClone(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	flagSet := flag.NewFlagSet("clone", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
-	flagSet.StringVar(&keysName, "i", "-", "filename to read keys from")
+	flagSet.StringVar(&keysName, "i", "", "filename to read keys from")
 	flagSet.BoolVar(&verbose, "verbose", false, "verbose output")
 	flagSet.BoolVar(&all, "all", false, "clone whole repository")
 	flagSet.Parse(args)
