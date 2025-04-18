@@ -18,6 +18,7 @@ package dataset
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,6 +26,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	// Caltech Library packages
@@ -1198,4 +1200,42 @@ func (c *Collection) Length() int64 {
 		}
 	}
 	return int64(-1)
+}
+
+// Query implement the SQL query against a SQLStore or SQLties3 index of pairtree.
+func (c *Collection) Query(sqlStmt string) ([]map[string]interface{}, error) {
+	if strings.Compare(c.StoreType, SQLSTORE) == 0 {
+		if c.SQLStore == nil {
+			return nil, fmt.Errorf("sqlstore failed to open")
+		}
+	}
+	var (
+		rows *sql.Rows
+		err error
+	)
+	rows, err = c.SQLStore.db.Query(sqlStmt)
+	if err != nil {
+		return nil, fmt.Errorf("sql: %s, %s", sqlStmt, err)
+	}
+	i := 0
+	l := []map[string]interface{}{}
+	for rows.Next() {
+		// Get our row values
+		src := []byte{}
+		if err := rows.Scan(&src); err != nil {
+			return nil, err
+		}
+		obj := map[string]interface{}{}
+		if err := JSONUnmarshal(src, obj); err != nil {
+			l = append(l, obj)
+		} else {
+			fmt.Fprintf(os.Stderr, "warning skipping row (%d, >%+v<), %s\n", i, src, err)
+		}
+		i++
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return l, nil
 }
