@@ -1236,8 +1236,22 @@ func (c *Collection) Length() int64 {
 	return int64(-1)
 }
 
+
 // Query implement the SQL query against a SQLStore or SQLties3 index of pairtree.
-func (c *Collection) Query(sqlStmt string, debug bool) ([]map[string]interface{}, error) {
+func (c *Collection) Query(sqlStmt string, debug bool) ([]interface{}, error) {
+	src, err := c.QueryJSON(sqlStmt, debug)
+	if err != nil {
+		return nil, err
+	}
+	l := []interface{}{}
+	if err := JSONUnmarshal(src, &l); err != nil {
+		return nil, err
+	}
+	return l, nil
+}
+
+// Query implement the SQL query against a SQLStore and return JSON results.
+func (c *Collection) QueryJSON(sqlStmt string, debug bool) ([]byte, error) {
 	if strings.Compare(c.StoreType, SQLSTORE) == 0 {
 		if c.SQLStore == nil {
 			return nil, fmt.Errorf("sqlstore failed to open")
@@ -1256,39 +1270,28 @@ func (c *Collection) Query(sqlStmt string, debug bool) ([]map[string]interface{}
 	if err != nil {
 		return nil, fmt.Errorf("sql: %s, %s", sqlStmt, err)
 	}
+	src := []byte(`[`)
 	i := 0
-	l := []map[string]interface{}{}
 	for rows.Next() {
 		// Get our row values
-		src := []byte{}
-		if err := rows.Scan(&src); err != nil {
+		cell := []byte{}
+		if err := rows.Scan(&cell); err != nil {
 			return nil, err
 		}
 		if src == nil || len(src) == 0 {
 			fmt.Fprintf(os.Stderr, "DEBUG expect src to have content\n")
 		}
-		obj := map[string]interface{}{}
-		err = JSONUnmarshal(src, &obj)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning skipping row (%d), %q -> %s\n", i, src, err)
-		} else {
-			l = append(l, obj)
+		if (i > 0) {
+			src = append(src, ',')
 		}
+		src = append(src, cell...)
 		i++
 	}
+	src = append(src, ']')
 	err = rows.Err()
 	if err != nil {
-		return nil, err
+		return src, err
 	}
-	return l, nil
-}
-
-// Query implement the SQL query against a SQLStore and return JSON results.
-func (c *Collection) QueryJSON(sqlStmt string, debug bool) ([]byte, error) {
-	src, err := c.Query(sqlStmt, debug)
-	if err != nil {
-		return nil, err
-	}
-	return JSONMarshal(src)
+	return src, nil
 }
 
