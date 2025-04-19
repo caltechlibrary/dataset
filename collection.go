@@ -1237,7 +1237,7 @@ func (c *Collection) Length() int64 {
 }
 
 // Query implement the SQL query against a SQLStore or SQLties3 index of pairtree.
-func (c *Collection) Query(sqlStmt string) ([]map[string]interface{}, error) {
+func (c *Collection) Query(sqlStmt string, debug bool) ([]map[string]interface{}, error) {
 	if strings.Compare(c.StoreType, SQLSTORE) == 0 {
 		if c.SQLStore == nil {
 			return nil, fmt.Errorf("sqlstore failed to open")
@@ -1249,6 +1249,9 @@ func (c *Collection) Query(sqlStmt string) ([]map[string]interface{}, error) {
 		rows *sql.Rows
 		err error
 	)
+	if debug {
+		fmt.Fprintf(os.Stderr, "SQL: %s\n", sqlStmt)
+	}
 	rows, err = c.SQLStore.db.Query(sqlStmt)
 	if err != nil {
 		return nil, fmt.Errorf("sql: %s, %s", sqlStmt, err)
@@ -1261,10 +1264,13 @@ func (c *Collection) Query(sqlStmt string) ([]map[string]interface{}, error) {
 		if err := rows.Scan(&src); err != nil {
 			return nil, err
 		}
+		if src == nil || len(src) == 0 {
+			fmt.Fprintf(os.Stderr, "DEBUG expect src to have content\n")
+		}
 		obj := map[string]interface{}{}
 		err = JSONUnmarshal(src, &obj)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning skipping row (%d,\n%s\n\n), %q -> %s\n", i, src, err)
+			fmt.Fprintf(os.Stderr, "warning skipping row (%d), %q -> %s\n", i, src, err)
 		} else {
 			l = append(l, obj)
 		}
