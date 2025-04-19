@@ -50,8 +50,8 @@
       "email": "tmorrell@caltech.edu"
     }
   ],
-  "dateModified": "2025-04-15",
-  "datePublished": "2025-04-15",
+  "dateModified": "2025-04-18",
+  "datePublished": "2025-04-18",
   "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
   "funder": [
     {
@@ -78,9 +78,9 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.3",
+  "version": "2.2.4",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Fix ReadKey handling removing trailing empty key. Misc minor fixes discovered in bring py_dataset up v2.2.x of dataset."
+  "releaseNotes": "Added the following functions to the dataset package\n\n- (c *Collection) KeysJSON\n- (c *Collection) UpdatedKeysJSON\n- (c *Collection) QueryJSON\n\nThese provide JSON encoded object support for their base functions."
 }

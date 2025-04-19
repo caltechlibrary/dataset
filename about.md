@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.3
+version: 2.2.4
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -32,15 +32,21 @@ keywords:
   - software
   - json
 
-date_released: 2025-04-15
+date_released: 2025-04-18
 ---
 
 About this software
 ===================
 
-## dataset 2.2.3
+## dataset 2.2.4
 
-Fix ReadKey handling removing trailing empty key. Misc minor fixes discovered in bring py_dataset up v2.2.x of dataset.
+Added the following functions to the dataset package
+
+- (c *Collection) KeysJSON
+- (c *Collection) UpdatedKeysJSON
+- (c *Collection) QueryJSON
+
+These provide JSON encoded object support for their base functions.
 
 ### Authors
 

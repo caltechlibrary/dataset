@@ -18,6 +18,7 @@ package dataset
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,6 +26,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	// Caltech Library packages
@@ -1086,6 +1088,26 @@ func (c *Collection) Keys() ([]string, error) {
 	return nil, fmt.Errorf("%s not open", c.Name)
 }
 
+// KeysJSON returns a JSON encoded list of Keys
+//
+// ```
+//
+//	src, err := c.KeysJSON()
+//  if err != nil {
+//      // ... handle error ...
+//  }
+//  fmt.Printf("%s\n", src)
+//
+// ```
+func (c *Collection) KeysJSON() ([]byte, error) {
+	keys, err := c.Keys()
+	if err != nil {
+		return nil, err
+	}
+	return JSONMarshal(keys)
+}
+
+
 // UpdatedKeys takes a start and end time and returns a list of
 // keys for records that were modified in that time range.
 // The start and end values are expected to be in YYYY-MM-DD HH:MM:SS
@@ -1104,6 +1126,20 @@ func (c *Collection) UpdatedKeys(start string, end string) ([]string, error) {
 		return nil, fmt.Errorf("%q not supported", c.StoreType)
 	}
 	return nil, fmt.Errorf("%s not open", c.Name)
+}
+
+// UpdatedKeysJSON takes a start and end time and returns a JSON encoded list of
+// keys for records that were modified in that time range.
+// The start and end values are expected to be in YYYY-MM-DD HH:MM:SS
+// notation or empty strings.
+//
+// NOTE: This currently only supports SQL stored collections.
+func (c *Collection) UpdatedKeysJSON(start string, end string) ([]byte, error) {
+	src, err := c.UpdatedKeys(start, end)
+	if err != nil {
+		return nil, err
+	}
+	return JSONMarshal(src)
 }
 
 // Sample takes a sample size and returns a list of
@@ -1199,3 +1235,63 @@ func (c *Collection) Length() int64 {
 	}
 	return int64(-1)
 }
+
+
+// Query implement the SQL query against a SQLStore or SQLties3 index of pairtree.
+func (c *Collection) Query(sqlStmt string, debug bool) ([]interface{}, error) {
+	src, err := c.QueryJSON(sqlStmt, debug)
+	if err != nil {
+		return nil, err
+	}
+	l := []interface{}{}
+	if err := JSONUnmarshal(src, &l); err != nil {
+		return nil, err
+	}
+	return l, nil
+}
+
+// Query implement the SQL query against a SQLStore and return JSON results.
+func (c *Collection) QueryJSON(sqlStmt string, debug bool) ([]byte, error) {
+	if strings.Compare(c.StoreType, SQLSTORE) == 0 {
+		if c.SQLStore == nil {
+			return nil, fmt.Errorf("sqlstore failed to open")
+		}
+	} else {
+		return nil, fmt.Errorf("not implemented for pairtree storage")
+	}
+	var (
+		rows *sql.Rows
+		err error
+	)
+	if debug {
+		fmt.Fprintf(os.Stderr, "SQL: %s\n", sqlStmt)
+	}
+	rows, err = c.SQLStore.db.Query(sqlStmt)
+	if err != nil {
+		return nil, fmt.Errorf("sql: %s, %s", sqlStmt, err)
+	}
+	src := []byte(`[`)
+	i := 0
+	for rows.Next() {
+		// Get our row values
+		cell := []byte{}
+		if err := rows.Scan(&cell); err != nil {
+			return nil, err
+		}
+		if src == nil || len(src) == 0 {
+			fmt.Fprintf(os.Stderr, "DEBUG expect src to have content\n")
+		}
+		if (i > 0) {
+			src = append(src, ',')
+		}
+		src = append(src, cell...)
+		i++
+	}
+	src = append(src, ']')
+	err = rows.Err()
+	if err != nil {
+		return src, err
+	}
+	return src, nil
+}
+

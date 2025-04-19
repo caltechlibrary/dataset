@@ -222,4 +222,7 @@ save:
 publish: website
 	bash publish.bash
 
+loghash: .FORCE
+	git log --pretty=format:'%h' -n 1
+
 .FORCE:

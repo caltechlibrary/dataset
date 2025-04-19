@@ -298,6 +298,31 @@ func TestSQLStore(t *testing.T) {
 		t.Errorf("expected %d updated keys, got %d in %q", l, ul, cName)
 	}
 
+	// Let's set c.Query()
+	tName := strings.TrimSuffix(path.Base(cName), ".ds")
+	sqlStmt := fmt.Sprintf(`select src
+from %s
+order by updated`, tName)
+	src, err := c.QueryJSON(sqlStmt, false)
+	if err != nil {
+		t.Errorf(`ran c.Query(%q) did not expect error, %s`, sqlStmt, err)
+		t.FailNow()
+	}
+	if len(src) == 0 {
+		t.Errorf(`expected %q to return objects from %s`, sqlStmt, cName)
+	}
+
+	sqlStmt = fmt.Sprintf(`select count(*)
+from %s`, tName)
+	src, err = c.QueryJSON(sqlStmt, false)
+	if err != nil {
+		t.Errorf(`ran c.Query(%q) did not expect error, %s`, sqlStmt, err)
+		t.FailNow()
+	}
+	if len(src) == 0 {
+		t.Errorf(`expected %q to return number from %s`, sqlStmt, cName)
+	}
+
 	// Test deletes
 	/*
 		for i := 0; i < 2; i++ {
