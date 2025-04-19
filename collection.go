@@ -1284,8 +1284,8 @@ func (c *Collection) Query(sqlStmt string, debug bool) ([]map[string]interface{}
 }
 
 // Query implement the SQL query against a SQLStore and return JSON results.
-func (c *Collection) QueryJSON(sqlStmt string) ([]byte, error) {
-	src, err := c.Query(sqlStmt)
+func (c *Collection) QueryJSON(sqlStmt string, debug bool) ([]byte, error) {
+	src, err := c.Query(sqlStmt, debug)
 	if err != nil {
 		return nil, err
 	}
