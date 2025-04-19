@@ -1262,10 +1262,10 @@ func (c *Collection) Query(sqlStmt string) ([]map[string]interface{}, error) {
 			return nil, err
 		}
 		obj := map[string]interface{}{}
-		if err := JSONUnmarshal(src, obj); err == nil {
+		if err := JSONUnmarshal(src, &obj); err == nil {
 			l = append(l, obj)
 		} else {
-			fmt.Fprintf(os.Stderr, "warning skipping row (%d, %q), %s\n", i, src, err)
+			return nil, fmt.Errorf("warning skipping row (%d, %q), %s\n", i, src, err)
 		}
 		i++
 	}
