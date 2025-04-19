@@ -1264,7 +1264,7 @@ func (c *Collection) Query(sqlStmt string) ([]map[string]interface{}, error) {
 		obj := map[string]interface{}{}
 		err = JSONUnmarshal(src, &obj)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning skipping row (%d, %q), %s\n", i, src, err)
+			fmt.Fprintf(os.Stderr, "warning skipping row (%d,\n%s\n\n), %q -> %s\n", i, src, err)
 		} else {
 			l = append(l, obj)
 		}
