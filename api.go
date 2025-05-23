@@ -26,7 +26,7 @@ import (
 	"strings"
 	"syscall"
 
-	// Caltech Library packages
+	// Models for eventual integration
 	"github.com/caltechlibrary/models"
 )
 
@@ -351,106 +351,6 @@ func (api *API) Init(appName string, settingsFile string) error {
 			prefix := path.Join(cName, "query")
 			if err = api.RegisterRoute(prefix, http.MethodPost, Query); err != nil {
 				return err
-			}
-		}
-		if cfg.Attachments {
-			prefix := path.Join(cName, "attachments")
-			if err = api.RegisterRoute(prefix, http.MethodGet, Attachments); err != nil {
-				return err
-			}
-		}
-		if cfg.Retrieve {
-			prefix := path.Join(cName, "attachment")
-			if err = api.RegisterRoute(prefix, http.MethodGet, Retrieve); err != nil {
-				return err
-			}
-		}
-		if cfg.Attach {
-			prefix := path.Join(cName, "attachment")
-			if err = api.RegisterRoute(prefix, http.MethodPost, Attach); err != nil {
-				return err
-			}
-		}
-		if cfg.Prune {
-			prefix := path.Join(cName, "attachment")
-			if err = api.RegisterRoute(prefix, http.MethodDelete, Prune); err != nil {
-				return err
-			}
-		}
-		if cfg.FrameRead {
-			prefix := path.Join(cName, "frames")
-			if err = api.RegisterRoute(prefix, http.MethodGet, Frames); err != nil {
-				return err
-			}
-			prefix = path.Join(cName, "has-frame")
-			if err = api.RegisterRoute(prefix, http.MethodGet, HasFrame); err != nil {
-				return err
-			}
-			prefix = path.Join(cName, "frame-objects")
-			if err = api.RegisterRoute(prefix, http.MethodGet, FrameObjects); err != nil {
-				return err
-			}
-			prefix = path.Join(cName, "frame")
-			if err = api.RegisterRoute(prefix, http.MethodGet, FrameDef); err != nil {
-				return err
-			}
-			prefix = path.Join(cName, "frame-keys")
-			if err = api.RegisterRoute(prefix, http.MethodGet, FrameKeys); err != nil {
-				return err
-			}
-		}
-		if cfg.FrameWrite {
-			prefix := path.Join(cName, "frame")
-			if err = api.RegisterRoute(prefix, http.MethodPost, FrameCreate); err != nil {
-				return err
-			}
-			if err = api.RegisterRoute(prefix, http.MethodPut, FrameUpdate); err != nil {
-				return err
-			}
-			if err = api.RegisterRoute(prefix, http.MethodDelete, FrameDelete); err != nil {
-				return err
-			}
-		}
-
-		//NOTE: Need to apply versioned routes if a collection uses
-		// versioning and permission is granted to see versions. I am
-		// not planning on implementing version support in the web
-		// service until it is needed, e.g. at some future 2.x release.
-		if cfg.Versions && c != nil && c.Versioning != "" {
-			prefix := path.Join(cName, "object-versions")
-			if err = api.RegisterRoute(prefix, http.MethodGet, ObjectVersions); err != nil {
-				return err
-			}
-			if cfg.Read {
-				prefix := path.Join(cName, "object-version")
-				if err = api.RegisterRoute(prefix, http.MethodGet, ReadVersion); err != nil {
-					return err
-				}
-			}
-			if cfg.Delete {
-				prefix := path.Join(cName, "object-version")
-				if err = api.RegisterRoute(prefix, http.MethodDelete, DeleteVersion); err != nil {
-					return err
-				}
-			}
-
-			if cfg.Attachments {
-				prefix := path.Join(cName, "attachment-versions")
-				if err = api.RegisterRoute(prefix, http.MethodGet, AttachmentVersions); err != nil {
-					return err
-				}
-			}
-			if cfg.Retrieve {
-				prefix := path.Join(cName, "attachment-version")
-				if err = api.RegisterRoute(prefix, http.MethodGet, RetrieveVersion); err != nil {
-					return err
-				}
-			}
-			if cfg.Prune {
-				prefix := path.Join(cName, "attachment-version")
-				if err = api.RegisterRoute(prefix, http.MethodDelete, PruneVersion); err != nil {
-					return err
-				}
 			}
 		}
 	}
