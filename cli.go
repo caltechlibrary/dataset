@@ -32,8 +32,8 @@ import (
 	"github.com/caltechlibrary/models"
 
 	// 3rd Party packages
-	"gopkg.in/yaml.v3"
 	"github.com/pkg/fileutils"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -49,6 +49,7 @@ var (
 		"read":           cliRead,
 		"update":         cliUpdate,
 		"delete":         cliDelete,
+		"query":          cliQuery,
 		"keys":           cliKeys,
 		"haskey":         cliHasKey,
 		"has-key":        cliHasKey,
@@ -94,6 +95,7 @@ var (
 		"read":           doRead,
 		"update":         doUpdate,
 		"delete":         doDelete,
+		"query":          doQuery,
 		"keys":           doKeys,
 		"updated-keys":   doUpdatedKeys,
 		"haskey":         doHasKey,
@@ -238,43 +240,43 @@ func doModel(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	}
 	backupFile := false
 	if _, err := os.Stat(fName); err == nil {
-        backupFile = true
-        src, err := os.ReadFile(fName)
-        if err != nil {
-             return err
-        }
-        if err := yaml.Unmarshal(src, &model); err != nil {
-             return err
-        }
-    }
-    // Decide if I'm going to create or open an existing YAML file.
-    fout, err := os.OpenFile(fName, os.O_RDWR|os.O_CREATE, 0644)
-    if err != nil {
-         return err
-    }
-    defer fout.Close()
-
-    models.SetDefaultTypes(model)
-	model.Register("yaml", models.ModelToYAML)
-    if err := models.ModelInteractively(model); err != nil {
-         return err
-    }
-    if model.HasChanges() {
-		prompt := models.NewPrompt(in, out, eout)
-        fmt.Fprintf(out, "Save %s (Y/n)?", fName)
-        answer := prompt.GetAnswer("y", true)
-        if answer == "y" {
-            // backup file if needed
-            if backupFile {
-                if err := fileutils.CopyFile(fName + ".bak", fName) ; err != nil {
-                     return err
-                }
-            }
-            if err := model.Render(fout, "yaml"); err != nil {
-                return err
-            }
+		backupFile = true
+		src, err := os.ReadFile(fName)
+		if err != nil {
+			return err
 		}
-    }
+		if err := yaml.Unmarshal(src, &model); err != nil {
+			return err
+		}
+	}
+	// Decide if I'm going to create or open an existing YAML file.
+	fout, err := os.OpenFile(fName, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer fout.Close()
+
+	models.SetDefaultTypes(model)
+	model.Register("yaml", models.ModelToYAML)
+	if err := models.ModelInteractively(model); err != nil {
+		return err
+	}
+	if model.HasChanges() {
+		prompt := models.NewPrompt(in, out, eout)
+		fmt.Fprintf(out, "Save %s (Y/n)?", fName)
+		answer := prompt.GetAnswer("y", true)
+		if answer == "y" {
+			// backup file if needed
+			if backupFile {
+				if err := fileutils.CopyFile(fName+".bak", fName); err != nil {
+					return err
+				}
+			}
+			if err := model.Render(fout, "yaml"); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -758,8 +760,8 @@ func doDump(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 
 func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName string
-		overwrite bool
+		cName       string
+		overwrite   bool
 		maxCapacity = 0
 	)
 	flagSet := flag.NewFlagSet("load", flag.ContinueOnError)
@@ -788,12 +790,69 @@ func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	return c.Load(os.Stdin, overwrite, maxCapacity)
 }
 
-func doJoin(in io.Reader, out io.Writer, eout io.Writer, args[]string) error {
+func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
+	sqlFName, showHelp := "", false
+	flagSet := flag.NewFlagSet("query", flag.ContinueOnError)
+	flagSet.BoolVar(&showHelp, "h", false, "display help")
+	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.StringVar(&sqlFName, "sql", sqlFName, "read SQL statement from a file")
+	flagSet.Parse(args)
+	args = flagSet.Args()
+
+	if showHelp {
+		CliDisplayHelp(in, out, eout, []string{"query"})
+		return nil
+	}
+
+	if len(args) == 0 {
+		return fmt.Errorf("missing C_NAME and SQL_STATEMENT")
+	}
+	// Create a DSQuery object and evaluate the command line options
+	app := new(DSQuery)
+	cName, stmt, params := "", "", []string{}
+	if sqlFName != "" {
+		if sqlFName != "-" {
+			var err error
+			in, err = os.Open(sqlFName)
+			if err != nil {
+				return err
+			}
+			//defer in.Close()
+		}
+		src, err := io.ReadAll(in)
+		if err != nil {
+			return err
+		}
+		stmt = fmt.Sprintf("%s", src)
+	}
+	for _, arg := range args {
+		switch {
+		case cName == "":
+			cName = arg
+		case stmt == "":
+			stmt = arg
+		default:
+			params = append(params, arg)
+		}
+	}
+	if cName == "" {
+		return fmt.Errorf("missing C_NAME")
+	}
+	if stmt == "" {
+		return fmt.Errorf("missing SQL_STATEMENT")
+	}
+	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params); err != nil {
+		return err
+	}
+	return nil
+}
+
+func doJoin(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
-		cName string
+		cName     string
 		overwrite bool
-		key string
-		src string
+		key       string
+		src       string
 	)
 	flagSet := flag.NewFlagSet("join", flag.ContinueOnError)
 	flagSet.BoolVar(&overwrite, "o", false, "overwrite existing objects on load")

@@ -1247,6 +1247,36 @@ added to the object in the collection.
 ~~~
 
 `
+
+cliQuery = `query
+============
+
+This will run a SQL query against the SQLite3 JSON store. It returns
+a list of JSON objects or an error. The SQL query must only return
+one object per row.
+
+Example
+-------
+
+Return a JSON array of all objects by descending created date.
+
+~~~shell
+    {app_name} query mycollection.ds \\
+      "select src from mycollection order by created desc"
+~~~
+
+Read the SQL statement from a file called "report.sql".
+
+~~~shell
+    {app_name} query -sql report.sql mycollection.ds
+~~~
+
+If you are using PostgreSQL or MySQL as your SQL storage engine
+then you'll need to adapt these examples to the SQL dialect for
+used in those sytems.
+
+`
+
 )
 
 
