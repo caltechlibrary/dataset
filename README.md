@@ -1,42 +1,43 @@
-Dataset Project
-===============
+Dataset Project, v3
+===================
 [![DOI](https://data.caltech.edu/badge/79394591.svg)](https://data.caltech.edu/badge/latestdoi/79394591)
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-The Dataset Project provides tools for working with collections of
-JSON documents stored on the local file system in a pairtree or
-in a SQL database supporting JSON columns. Two primary tools are provided
-by the project -- a command line interface (dataset) and a
-[RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer)
-web service (datasetd).
+The Dataset Project is an exploration of the use and usefulness of JSON documents
+in the setting of libraries, archives and museums. It may have application further afield as
+metadata management benefits a wide range of application domains.
+
+With dataset JSON documents stored on the local file system using a SQL engine 
+with JSON column support. These days that most popular SQL implementations.
+v3 dataset uses a extremely simple table structure for both the current object state
+and object history as well as integration with the SQL's growing support for working
+with JSON objects generally.
+
+Two tools are provided by the project -- a command line interface (dataset) and a
+JSON Web Service (datasetd).
 
 dataset, a command line tool
 ----------------------------
 
 [dataset](doc/dataset.md) is a command line tool for working with
 collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents.
-Collections can be stored on the file system in a pairtree directory
-structure or stored in a SQL database that supports JSON columns
-(currently SQLite3 or MySQL 8 are supported).  Collections using the
-file system store the JSON documents in a
-[pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01).
-The JSON documents are plain UTF-8 source. This means the objects can be
-accessed with common [Unix](https://en.wikipedia.org/wiki/Unix)
+Collections can stored in an SQLite3 database within a directory containing
+metadata about the collection. The JSON documents are plain UTF-8 source. 
+The command line tool supports standard input, output and error.
+This means the objects can be processed with with common [Unix](https://en.wikipedia.org/wiki/Unix)
 text processing tools as well as most programming languages.
 
 The __dataset__ command line tool supports common data management operations
 such as initialization of collections; document creation, reading,
 updating and deleting; listing keys of JSON objects in the collection;
-and associating non-JSON documents (attachments) with specific JSON
-documents in the collection.
+query of JSON objects via SQL. Additiolly the __dataset__ command line
+program can "dump" a collection as a stream of JSON lines expressions
+and "load" the same. This makes it easy to migrate or clone repositories
+with little more than a Unix pipe.
 
-### enhanced features include
-
-- aggregate objects into data [frames](docs/frame.md)
-- generate sample sets of keys and objects
-- clone a collection
-- clone a collection into training and test samples
+With the v3 release the supported operations and been reduced to their core
+in an effort to simply use and implementation.
 
 See [Getting started with dataset](how-to/getting-started-with-dataset.md) for a tour and tutorial.
 
@@ -64,8 +65,7 @@ setup (e.g.  `dataset init mycollection.ds` creates a new collection
 called 'mycollection.ds').
 
 - _dataset_ and _datasetd_ store JSON object documents in collections.
-  - Storage of the JSON documents may be either in a pairtree on disk
-    or in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)
+  - Storage in a SQL database using JSON columns (i.e. SQLite3)
   - dataset collections are made up of a directory containing a
     collection.json and codemeta.json files.
   - collection.json metadata file describing the collection,
@@ -76,13 +76,8 @@ called 'mycollection.ds').
     extension for easy identification
 
 _datatset_ collection storage options
-  - [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) is the default disk organization of a dataset collection
-    - the pairtree path is always lowercase
-    - non-JSON attachments can be associated with a JSON document and
-      found in a directories organized by semver (semantic version number)
-    - versioned JSON documents are created along side the current JSON document but are named using both their key and semver
   - SQL store stores JSON documents in a JSON column
-    - SQLite3 and MySQL 8 are the current SQL databases support
+    - The initial v3 release only supports SQLite3. PostgreSQL maybe added in the future.
     - A "DSN URI" is used to identify and gain access to the SQL database
     - The DSN URI maybe passed through the environment
 
@@ -122,34 +117,12 @@ Features
   - [update](docs/update.md)
   - [delete](docs/delete.md)
   - [keys](docs/keys.md)
-  - [has-key](docs/has-key.md)
-  - [sample](docs/sample.md)
-  - [clone](docs/clone.md)
-  - [clone-sample](docs/clone-sample.md)
+  - [haskey](docs/has-key.md)
   - Documents as attachments
     - [attachments](docs/attachments.md) (list)
     - [attach](docs/attach.md) (create/update)
     - [retrieve](docs/retrieve.md) (read)
     - [prune](docs/prune.md) (delete)
-- The ability to create data [frames](docs/frame.md) from while
-  collections or based on keys lists
-  - frames are defined using a list of keys and a lost
-    [dot paths](docs/dotpath.md) describing what is to be pulled out
-    of a stored JSON objects and into the frame
-  - frame level actions
-    - frames, list the frame names in the collection
-    - frame, define a frame, does not overwrite an existing frame with
-      the same name
-    - frame-def, show the frame definition (in case we need it for some
-      reason)
-    - frame-keys, return a list of keys in the frame
-    - frame-objects, return a list of objects in the frame
-    - refresh, using the current frame definition reload all the objects
-      in the frame given a key list
-    - reframe, replace the frame definition then reload the objects in
-      the frame using the existing key list
-    - has-frame, check to see if a frame exists
-    - delete-frame remove the frame
 
 [datasetd](docs/datasetd.md) supports
 
@@ -181,14 +154,13 @@ Limitations of _dataset_ and _datasetd_
 
 _dataset_ has many limitations, some are listed below
 
-- the pairtree implementation it is not a multi-process, multi-user
-  data store
 - it is not a general purpose database system
 - it stores all keys in lower case in order to deal with file systems
   that are not case sensitive, compatibility needed by a pairtree
 - it stores collection names as lower case to deal with file systems that
   are not case sensitive
-- it does not have a built-in query language, search or sorting
+- it does not have a built-in query language, search or sorting. Instead
+  it relies on the SQL engine's SQL dialect for manipulating the JSON objects
 - it should NOT be used for sensitive or secret information
 
 _datasetd_ is a simple web service intended to run on "localhost:8485".
@@ -239,6 +211,6 @@ Windows 11 (x86) and Raspberry Pi OS (ARM7).
 Related projects
 ----------------
 
-You can use _dataset_ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package.
+<!-- You can use _dataset_ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package. -->
 You can use _dataset_ from Deno+TypeScript by running datasetd and access it with [ts_dataset](https://github.com/caltechlibraray/ts_dataset).
 
