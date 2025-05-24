@@ -4,18 +4,17 @@ Dataset Project, v3
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-The Dataset Project is an exploration of the use and usefulness of JSON documents
-in the setting of libraries, archives and museums. It may have application further afield as
-metadata management benefits a wide range of application domains.
+The Dataset Project is an exploration of the use and usefulness of JSON documents in the setting of libraries, archives and museums. It may have application further afield as metadata management benefits a wide range of application domains.
 
-With dataset JSON documents stored on the local file system using a SQL engine 
-with JSON column support. These days that most popular SQL implementations.
-v3 dataset uses a extremely simple table structure for both the current object state
-and object history as well as integration with the SQL's growing support for working
-with JSON objects generally.
+Dataset v3 stores JSON documents using a SQL engine with JSON column support. These days that most popular SQL implementations support JSON columns (e.g. SQlite3, PostgreSQL, MySQL). V3 uses a extremely simple table structure for both the current object state and object history as well as integration with the SQL's growing support for working with JSON objects generally.
 
-Two tools are provided by the project -- a command line interface (dataset) and a
-JSON Web Service (datasetd).
+Two tools are provided by the Dataset Project v3
+
+`dataset`
+: is a command line interface for managing JSON documents.
+
+`datasetd`
+: JSON Web Service. This service supports file attachments.
 
 dataset, a command line tool
 ----------------------------
@@ -31,7 +30,7 @@ text processing tools as well as most programming languages.
 The __dataset__ command line tool supports common data management operations
 such as initialization of collections; document creation, reading,
 updating and deleting; listing keys of JSON objects in the collection;
-query of JSON objects via SQL. Additiolly the __dataset__ command line
+query of JSON objects via SQL. Additionally the __dataset__ command line
 program can "dump" a collection as a stream of JSON lines expressions
 and "load" the same. This makes it easy to migrate or clone repositories
 with little more than a Unix pipe.
@@ -42,15 +41,10 @@ in an effort to simply use and implementation.
 See [Getting started with dataset](how-to/getting-started-with-dataset.md) for a tour and tutorial.
 
 
-datasetd, dataset as a web service
-----------------------------------
+datasetd provides dataset as a web service
+------------------------------------------
 
-[datasetd](doc/datasetd.md) is a RESTful web service implementation of the
-_dataset_ command line program. It features a sub-set of capability found
-in the command line tool. This allows dataset collections to be integrated
-safely into web applications or used concurrently by multiple processes.
-It achieves this by storing the dataset collection in a SQL database
-using JSON columns.
+[datasetd](doc/datasetd.md) is a RESTful web service implementation of the _dataset_ command line program. It features a sub-set of capability found in the command line tool. This allows dataset collections to be integrated safely into web applications or used concurrently by multiple processes. It achieves this by storing the dataset collection in a SQL database using JSON columns.
 
 Design choices
 --------------
@@ -77,7 +71,7 @@ called 'mycollection.ds').
 
 _datatset_ collection storage options
   - SQL store stores JSON documents in a JSON column
-    - The initial v3 release only supports SQLite3. PostgreSQL maybe added in the future.
+    - The initial v3 release only supports SQLite3. PostgreSQL and MySQL 8 are possible but require manual configuration.
     - A "DSN URI" is used to identify and gain access to the SQL database
     - The DSN URI maybe passed through the environment
 
@@ -90,14 +84,7 @@ _datasetd_ is a web service
     - anyone with access to the web service end point has access to the dataset collection content
 
 
-The choice of plain UTF-8 is intended to help future proof reading dataset
-collections.  Care has been taken to keep _dataset_ simple enough and light
-weight enough that it will run on a machine as small as a Raspberry Pi Zero
-while being equally comfortable on a more resource rich server or desktop
-environment. _dataset_ can be re-implement in any programming language
-supporting file input and output, common string operations and along with
-JSON encoding and decoding functions. The current implementation is in the
-Go language.
+The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current implementation is in the Go language.
 
 
 Features
@@ -118,11 +105,20 @@ Features
   - [delete](docs/delete.md)
   - [keys](docs/keys.md)
   - [haskey](docs/has-key.md)
-  - Documents as attachments
-    - [attachments](docs/attachments.md) (list)
-    - [attach](docs/attach.md) (create/update)
-    - [retrieve](docs/retrieve.md) (read)
-    - [prune](docs/prune.md) (delete)
+  - [query](docs/query.md)
+
+If attachments are configured via a `datasetd` YAML configuration then
+the following additional verbs are `attachments` attribute. The dataset
+tools will need the appropriate file permissions to support attachment
+operations. The YAML configuration should have the same name as the
+dataset collection but end with the `.yaml` instead of `.ds`. E.g.
+if my collection is called "mydata.ds" the attachment configuration is
+"mydata.yaml" in the same directory.
+
+- [attachments](docs/attachments.md) (list)
+- [attach](docs/attach.md) (create/update)
+- [retrieve](docs/retrieve.md) (read)
+- [prune](docs/prune.md) (delete)
 
 [datasetd](docs/datasetd.md) supports
 
@@ -135,18 +131,13 @@ Features
     - [read](docs/read-endpoint.md)
     - [update](docs/update-endpoint.md)
     - [delete](docs/delete-endpoint.md)
+    - [query](docs/query-endpoint.md) (for queries defined in the configuration YAML file)
     - Documents as attachments
         - [attach](docs/attach-endpoint.md)
         - [retrieve](docs/retrieve-endpoint.md)
         - [prune](docs/prune-endpoint.md)
-- The ability to create data [frames](docs/frame.md) from
-  collections or based on keys lists and dot paths to form a new object
-  - [dot paths](docs/dotpath.md) describing
-    what is to be pulled out of a stored JSON objects
 
-Both _dataset_  and _datasetd_ maybe useful for general data science
-applications needing JSON object management or in implementing repository
-systems in research libraries and archives.
+Both _dataset_  and _datasetd_ maybe useful for general data science applications needing JSON object management or in implementing repository systems in research libraries and archives.
 
 
 Limitations of _dataset_ and _datasetd_
@@ -163,7 +154,7 @@ _dataset_ has many limitations, some are listed below
   it relies on the SQL engine's SQL dialect for manipulating the JSON objects
 - it should NOT be used for sensitive or secret information
 
-_datasetd_ is a simple web service intended to run on "localhost:8485".
+_datasetd_ is a simple web service intended to run on local host, e.g. "localhost:8485".
 
 - it does not include support for authentication
 - it does not support a query language, search or sorting
