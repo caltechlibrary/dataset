@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -32,17 +31,12 @@ import (
 	// Caltech Library packages
 	"github.com/caltechlibrary/models"
 
-	// 3rd Party packages
-	"gopkg.in/yaml.v3"
 )
 
 const (
 	//
 	// Store types
 	//
-
-	// PTSTORE describes the storage type using a pairtree
-	PTSTORE = "pairtree"
 
 	// SQLSTORE describes the SQL storage type
 	SQLSTORE = "sqlstore"
@@ -59,21 +53,14 @@ type Collection struct {
 	// Name of collection
 	Name string `json:"name"`
 
-	// StoreType can be either "pairtree" (default or if attribute is
-	// omitted) or "sqlstore".  If sqlstore the connection string, DSN URI,
-	// will determine the type of SQL database being accessed.
+	// StoreType is alwasy "sqlstore". v3 does not support "pairtree". 
+	// It remains for backward compatibility purposes.
 	StoreType string `json:"storage_type,omitempty"`
 
 	// DsnURI holds protocol plus dsn string. The protocol can be
-	// "sqlite://", "mysql://" or "postgres://"and the dsn conforming to the Golang
-	// database/sql driver name in the database/sql package.
+	// "sqlite://", dsn conforming to the Golang database/sql driver name in the database/sql package.
+	// As of v3 this string should be "sqlite://collection.db".
 	DsnURI string `json:"dsn_uri,omitempty"`
-
-	// Model holds the an experimental schema expressed in YAML
-	// used to validate objects in a collection. By default it is nil and not used
-	// but if a "model.yaml" file exists in the collection root directory it'll be loaded
-	// allowing possible varification of structure data.
-	Model *models.Model `json:"-"`
 
 	// Created
 	Created string `json:"created,omitempty"`
@@ -81,20 +68,17 @@ type Collection struct {
 	// Repaired
 	Repaired string `json:"repaired,omitempty"`
 
-	// PTStore the point to the pairtree implementation of storage
-	PTStore *PTStore `json:"-"`
 	// SQLStore points to a SQL database with JSON column support
 	SQLStore *SQLStore `json:"-"`
 
-	// Versioning holds the type of versioning implemented in the collection.
-	// It can be set to an empty string (the default) which means no versioning.
-	// It can be set to "patch" which means objects and attachments are versioned by
-	// a semver patch value (e.g. 0.0.X where X is incremented), "minor" where
-	// the semver minor value is incremented (e.g. e.g. 0.X.0 where X is incremented),
-	// or "major" where the semver major value is incremented (e.g. X.0.0 where X is
-	// incremented). Versioning affects storage of JSON objects and their attachments
-	// across the whole collection.
-	Versioning string `json:"versioning,omitempty"`
+	// History determines of objects are written to the history table on
+	// create, update and delete. By default it should be true.
+	History bool `json:"history,omitempty"`
+	
+	//
+	// Models is a placeholder for eventually integrating the models package support
+	//
+	Model *models.Model `json:"-"`
 
 	//
 	// Private varibles
@@ -146,57 +130,15 @@ func Open(name string) (*Collection, error) {
 		c.DsnURI = os.Getenv("DATASET_DSN_URI")
 	}
 	switch c.StoreType {
-	case PTSTORE:
-		c.PTStore, err = PTStoreOpen(c.workPath, c.DsnURI)
-		switch c.Versioning {
-		case "major":
-			c.PTStore.SetVersioning(Major)
-		case "minor":
-			c.PTStore.SetVersioning(Minor)
-		case "patch":
-			c.PTStore.SetVersioning(Patch)
-		default:
-			c.PTStore.SetVersioning(None)
-		}
 	case SQLSTORE:
 		c.SQLStore, err = SQLStoreOpen(c.workPath, c.DsnURI)
-		switch c.Versioning {
-		case "major":
-			c.SQLStore.SetVersioning(Major)
-		case "minor":
-			c.SQLStore.SetVersioning(Minor)
-		case "patch":
-			c.SQLStore.SetVersioning(Patch)
-		default:
-			c.SQLStore.SetVersioning(None)
-		}
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
-	}
-	// FIXME: Now check if there is a models.yaml file in the collection's root folder.
-	if _, err := os.Stat(path.Join(name, "model.yaml")); err == nil {
-		src, err = ioutil.ReadFile(path.Join(name, "model.yaml"))
-		if err != nil {
-			return c, fmt.Errorf("failed to read %s in %s, %s", name, path.Join(name, "model.yaml"), err)
-		}
-		model, err := models.NewModel("model")
-		if err != nil {
-			return c, err
-		}
-		models.SetDefaultTypes(model)
-		if err := yaml.Unmarshal(src, model); err != nil {
-			return c, fmt.Errorf("failed to parse %s, %s", path.Join(name, "model.yaml"), err)
-		}
-		//FIXME: add check here.
-		if model != nil {
-			c.Model = model
-		}
 	}
 	return c, err
 }
 
-// Close closes a collection. For a pairtree that means flushing the
-// keymap to disk. For a SQL store it means closing a database connection.
+// Close closes a collection. For a SQL store it means closing a database connection.
 // Close is often called in conjunction with "defer" keyword.
 //
 // ```
@@ -213,10 +155,6 @@ func Open(name string) (*Collection, error) {
 // ```
 func (c *Collection) Close() error {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Close()
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Close()
@@ -230,92 +168,6 @@ func (c *Collection) WorkPath() string {
 	return c.workPath
 }
 
-// SetVersioning sets the versioning on a collection. The version string
-// can be "major", "minor", "patch". Any other value (e.g. "", "off", "none")
-// will turn off versioning for the collection.
-func (c *Collection) SetVersioning(versioning string) error {
-	switch versioning {
-	case "major":
-		c.Versioning = versioning
-	case "minor":
-		c.Versioning = versioning
-	case "patch":
-		c.Versioning = versioning
-	default:
-		c.Versioning = ""
-	}
-	colName := path.Join(c.workPath, "collection.json")
-	src, err := JSONMarshalIndent(c, "", "    ")
-	if err != nil {
-		return fmt.Errorf("cannot encode %q, %s", colName, err)
-	}
-	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
-		return fmt.Errorf("failed to create %q %s", colName, err)
-	}
-	return nil
-}
-
-// initPTStore takes a *Collection and initializes a PTSTORE collection.
-// For pairtrees this means create the directory structure and writing
-// out the collection.json file, a skeleton codemeta.json and an empty
-// keys.json file.
-func (c *Collection) initPTStore() error {
-	now := time.Now()
-	today := now.Format(datestamp)
-	c.DatasetVersion = Version
-	c.Created = now.UTC().Format(timestampUTC)
-	// Split see if c.Name path exists
-	if _, err := os.Stat(c.Name); os.IsNotExist(err) {
-		// Create directoriess if needed
-		if err := os.MkdirAll(c.Name, 0770); err != nil {
-			return fmt.Errorf("cannot create collect %q, %s", c.Name, err)
-		}
-	} else {
-		return fmt.Errorf("%q already exists", c.Name)
-	}
-	fullName := c.Name
-	basename := path.Base(c.Name)
-	colName := path.Join(c.Name, "collection.json")
-	c.Name = basename
-	src, err := JSONMarshalIndent(c, "", "    ")
-	if err != nil {
-		return fmt.Errorf("cannot encode %q, %s", colName, err)
-	}
-	c.Name = fullName
-	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
-		return fmt.Errorf("failed to create %q %s", colName, err)
-	}
-	// Create a default codemeta.json file in the directory
-	//today := time.Now().Format(datestamp)
-	m := map[string]string{
-		"{today}":    today,
-		"{c_name}":   path.Base(c.Name),
-		"{app_name}": path.Base(os.Args[0]),
-		"{version}":  Version,
-	}
-	src = BytesProcessor(m, []byte(`{
-    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-    "@type": "SoftwareSourceCode",
-    "dateCreated": "{today}",
-    "name": "{c_name}",
-    "version": "0.0.0",
-    "releaseNotes": "This is a {app_name} {version} collection",
-    "developmentStatus": "concept",
-    "softwareRequirements": [
-        "https://github.com/caltechlibrary/dataset"
-    ]
-}`))
-	cmName := path.Join(c.Name, "codemeta.json")
-	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
-		return fmt.Errorf("failed to create %q, %s", cmName, err)
-	}
-	// Create the pairtree root
-	ptName := path.Join(c.Name, "pairtree")
-	if os.MkdirAll(ptName, 0770); err != nil {
-		return fmt.Errorf("failed to create pairtree root, %s", err)
-	}
-	return nil
-}
 
 // initSQLStore initializes a new SQL based dataset storage system. It
 // presumes that the database and been create and an appropriate
@@ -399,48 +251,7 @@ func (c *Collection) initSQLStore() error {
 
 // Init - creates a new collection and opens it. It takes a name
 // (e.g. directory holding the collection.json and codemeta.josn files)
-// and an optional DSN in URI form. The default storage engine is a
-// pairtree (i.e. PTSTORE) but some SQL storage engines are supported.
-//
-// If a DSN URI is a non-empty string then it is the SQL storage engine
-// is used. The database and user access in the SQL engine needs be setup
-// before you can successfully intialized your dataset collection.
-// Currently three SQL database engines are support, SQLite3 or MySQL 8.
-// You select the SQL storage engine by forming a URI consisting of a
-// "protocol" (e.g. "sqlite", "mysql", "postgres"), the protocol
-// delimiter "://" and a Go SQL supported DSN based on the database
-// driver implementation.
-//
-// A MySQL 8 DSN URI would look something like
-//
-//	`mysql://DB_USER:DB_PASSWD@PROTOCAL_EXPR/DB_NAME`
-//
-// The one for SQLite3
-//
-//	`sqlite://FILENAME_FOR_SQLITE_DATABASE`
-//
-// NOTE: The DSN URI is stored in the collections.json.  The file should
-// NOT be world readable as that will expose your database password. You
-// can remove the DSN URI after initializing your collection but will then
-// need to provide the DATASET_DSN_URI envinronment variable so you can
-// open your database successfully.
-//
-// For PTSTORE the access value can be left blank.
-//
-// ```
-//
-//	var (
-//	   c *Collection
-//	   err error
-//	)
-//	name := "my_collection.ds"
-//	c, err = dataset.Init(name, "")
-//	if err != nil {
-//	  // ... handle error
-//	}
-//	defer c.Close()
-//
-// ```
+// and an optional DSN in URI form. The default storage engine is SQLite3.
 //
 // For a sqlstore collection we need to pass the "access" value. This
 // is the file containing a DNS or environment variables formating a DSN.
@@ -468,17 +279,12 @@ func Init(name string, dsnURI string) (*Collection, error) {
 	c.Name = name
 	c.DsnURI = dsnURI
 	if dsnURI == "" {
-		//c.StoreType = PTSTORE
 		c.StoreType = SQLSTORE
 		c.DsnURI = "sqlite://collection.db"
-	} else if dsnURI == "pairtree" {
-		c.StoreType = PTSTORE
 	} else {
 		c.StoreType = SQLSTORE
 	}
 	switch c.StoreType {
-	case PTSTORE:
-		err = c.initPTStore()
 	case SQLSTORE:
 		err = c.initSQLStore()
 	default:
@@ -568,10 +374,6 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Create(key, src)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Create(key, src)
@@ -628,10 +430,6 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Create(key, src)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Create(key, src)
@@ -672,10 +470,6 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 // ```
 func (c *Collection) CreateJSON(key string, src []byte) error {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Create(key, src)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Create(key, src)
@@ -705,8 +499,6 @@ func (c *Collection) Read(key string, obj map[string]interface{}) error {
 		err error
 	)
 	switch c.StoreType {
-	case PTSTORE:
-		src, err = c.PTStore.Read(key)
 	case SQLSTORE:
 		src, err = c.SQLStore.Read(key)
 	default:
@@ -746,8 +538,6 @@ func (c *Collection) ReadObject(key string, obj interface{}) error {
 		err error
 	)
 	switch c.StoreType {
-	case PTSTORE:
-		src, err = c.PTStore.Read(key)
 	case SQLSTORE:
 		src, err = c.SQLStore.Read(key)
 	default:
@@ -782,8 +572,6 @@ func (c *Collection) ReadJSON(key string) ([]byte, error) {
 		err error
 	)
 	switch c.StoreType {
-	case PTSTORE:
-		src, err = c.PTStore.Read(key)
 	case SQLSTORE:
 		src, err = c.SQLStore.Read(key)
 	default:
@@ -795,38 +583,6 @@ func (c *Collection) ReadJSON(key string) ([]byte, error) {
 	return src, nil
 }
 
-// ReadJSONVersion retrieves versioned JSON record stored in a
-// dataset collection for a given key and semver.
-// NOTE: It does not validate the JSON
-//
-// ```
-//
-//		key := "123"
-//	 semver := "0.0.2"
-//		src, err := c.ReadVersionJSON(key, semver)
-//	 if err != nil {
-//		   // ... handle error
-//		}
-//
-// ```
-func (c *Collection) ReadJSONVersion(key string, semver string) ([]byte, error) {
-	var (
-		src []byte
-		err error
-	)
-	switch c.StoreType {
-	case PTSTORE:
-		src, err = c.PTStore.ReadVersion(key, semver)
-	case SQLSTORE:
-		src, err = c.SQLStore.ReadVersion(key, semver)
-	default:
-		return nil, fmt.Errorf("%q not supported", c.StoreType)
-	}
-	if err != nil {
-		return src, fmt.Errorf("failed to read %s, %s", key, err)
-	}
-	return src, nil
-}
 
 // Versions retrieves a list of versions available for a JSON document if
 // versioning is enabled for the collection.
@@ -845,8 +601,6 @@ func (c *Collection) Versions(key string) ([]string, error) {
 		err      error
 	)
 	switch c.StoreType {
-	case PTSTORE:
-		versions, err = c.PTStore.Versions(key)
 	case SQLSTORE:
 		versions, err = c.SQLStore.Versions(key)
 	default:
@@ -856,78 +610,6 @@ func (c *Collection) Versions(key string) ([]string, error) {
 		return nil, fmt.Errorf("failed to read %s, %s", key, err)
 	}
 	return versions, err
-}
-
-// ReadVersion retrieves a specific vesion from the collection for the given object.
-//
-// ```
-//
-//	var obj map[string]interface{}
-//
-//	key, version := "123", "0.0.1"
-//	if err := ReadVersion(key, version, &obj); err != nil {
-//	   ...
-//	}
-//
-// ```
-func (c *Collection) ReadVersion(key string, version string, obj map[string]interface{}) error {
-	var (
-		src []byte
-		err error
-	)
-	switch c.StoreType {
-	case PTSTORE:
-		src, err = c.PTStore.ReadVersion(key, version)
-	case SQLSTORE:
-		src, err = c.SQLStore.ReadVersion(key, version)
-	default:
-		return fmt.Errorf("%q not supported", c.StoreType)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to read %s, %s", key, err)
-	}
-	return JSONUnmarshal(src, &obj)
-}
-
-// ReadObjectVersion retrieves a specific vesion from the collection
-// for the given object.
-//
-// ```
-//
-//	type Record srtuct {
-//	    // ... structure def goes here.
-//	}
-//
-//	var obj = *Record
-//
-//	key, version := "123", "0.0.1"
-//	if err := ReadObjectVersion(key, version, &obj); err != nil {
-//	   ...
-//	}
-//
-// ```
-func (c *Collection) ReadObjectVersion(key string, version string, obj interface{}) error {
-	var (
-		src []byte
-		err error
-	)
-	switch c.StoreType {
-	case PTSTORE:
-		src, err = c.PTStore.ReadVersion(key, version)
-	case SQLSTORE:
-		src, err = c.SQLStore.ReadVersion(key, version)
-	default:
-		return fmt.Errorf("%q not supported", c.StoreType)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to read %s, %s", key, err)
-	}
-	decoder := json.NewDecoder(bytes.NewReader(src))
-	decoder.UseNumber()
-	if err := decoder.Decode(&obj); err != nil {
-		return err
-	}
-	return nil
 }
 
 // Update replaces a JSON document in the collection with a new one.
@@ -949,10 +631,6 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Update(key, src)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Update(key, src)
@@ -991,10 +669,6 @@ func (c *Collection) UpdateObject(key string, obj interface{}) error {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Update(key, src)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Update(key, src)
@@ -1019,10 +693,6 @@ func (c *Collection) UpdateObject(key string, obj interface{}) error {
 // ```
 func (c *Collection) UpdateJSON(key string, src []byte) error {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Update(key, src)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Update(key, src)
@@ -1047,10 +717,6 @@ func (c *Collection) UpdateJSON(key string, src []byte) error {
 // ```
 func (c *Collection) Delete(key string) error {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Delete(key)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Delete(key)
@@ -1074,10 +740,6 @@ func (c *Collection) Delete(key string) error {
 // ```
 func (c *Collection) Keys() ([]string, error) {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Keys()
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Keys()
@@ -1108,82 +770,6 @@ func (c *Collection) KeysJSON() ([]byte, error) {
 }
 
 
-// UpdatedKeys takes a start and end time and returns a list of
-// keys for records that were modified in that time range.
-// The start and end values are expected to be in YYYY-MM-DD HH:MM:SS
-// notation or empty strings.
-//
-// NOTE: This currently only supports SQL stored collections.
-func (c *Collection) UpdatedKeys(start string, end string) ([]string, error) {
-	switch c.StoreType {
-	case PTSTORE:
-		return nil, fmt.Errorf("not implemented for pairtree storage")
-	case SQLSTORE:
-		if c.SQLStore != nil {
-			return c.SQLStore.UpdatedKeys(start, end)
-		}
-	default:
-		return nil, fmt.Errorf("%q not supported", c.StoreType)
-	}
-	return nil, fmt.Errorf("%s not open", c.Name)
-}
-
-// UpdatedKeysJSON takes a start and end time and returns a JSON encoded list of
-// keys for records that were modified in that time range.
-// The start and end values are expected to be in YYYY-MM-DD HH:MM:SS
-// notation or empty strings.
-//
-// NOTE: This currently only supports SQL stored collections.
-func (c *Collection) UpdatedKeysJSON(start string, end string) ([]byte, error) {
-	src, err := c.UpdatedKeys(start, end)
-	if err != nil {
-		return nil, err
-	}
-	return JSONMarshal(src)
-}
-
-// Sample takes a sample size and returns a list of
-// randomly selected keys and an error. Sample size most
-// be greater than zero and less or equal to the number of keys
-// in the collection. Collection needs to be previously opened.
-//
-// ```
-//
-//	smapleSize := 1000
-//	keys, err := c.Sample(sampleSize)
-//
-// ```
-func (c *Collection) Sample(size int) ([]string, error) {
-	var (
-		keys []string
-		err  error
-	)
-	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			keys, err = c.PTStore.Keys()
-		}
-	case SQLSTORE:
-		if c.SQLStore != nil {
-			keys, err = c.SQLStore.Keys()
-		}
-	default:
-		return nil, fmt.Errorf("%q not supported", c.StoreType)
-	}
-	if err != nil {
-		return nil, err
-	}
-	if size < 1 || size >= len(keys) {
-		return nil, fmt.Errorf("sample size must be greater than zero and less than the or equal to number of available keys")
-	}
-	// so a random sort on the work key list
-	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	random.Shuffle(len(keys), func(i, j int) {
-		keys[i], keys[j] = keys[j], keys[i]
-	})
-	return keys[0:size], nil
-}
-
 // HasKey takes a collection and checks if a key exists.
 // NOTE: collection must be open otherwise false will always be returned.
 //
@@ -1197,10 +783,6 @@ func (c *Collection) Sample(size int) ([]string, error) {
 // ```
 func (c *Collection) HasKey(key string) bool {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.HasKey(key)
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.HasKey(key)
@@ -1224,10 +806,6 @@ func (c *Collection) HasKey(key string) bool {
 // ```
 func (c *Collection) Length() int64 {
 	switch c.StoreType {
-	case PTSTORE:
-		if c.PTStore != nil {
-			return c.PTStore.Length()
-		}
 	case SQLSTORE:
 		if c.SQLStore != nil {
 			return c.SQLStore.Length()
@@ -1294,4 +872,3 @@ func (c *Collection) QueryJSON(sqlStmt string, debug bool) ([]byte, error) {
 	}
 	return src, nil
 }
-

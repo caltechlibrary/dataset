@@ -19,11 +19,11 @@ else
 endif
 
 
-MAN_PAGES = dataset.1 datasetd.1 dsquery.1 dsimporter.1
+MAN_PAGES = dataset.1 datasetd.1
 
 MAN_PAGES_MISC = datasetd_yaml.5 datasetd_service.5 datasetd_api.5
 
-PROGRAMS = dataset datasetd dsquery dsimporter
+PROGRAMS = dataset datasetd
 
 PREFIX = $(HOME)
 
@@ -132,8 +132,6 @@ clean:
 	@if [ -d testout ]; then rm -fR testout; fi
 	@if [ -d semver/testout ]; then rm -fR semver/testout; fi
 	@if [ -d dotpath/testout ]; then rm -fR dotpath/testout; fi
-	@if [ -d pairtree/testout ]; then rm -fR pairtree/testout; fi
-	@if [ -d ptstore/testout ]; then rm -fR ptstore/testout; fi
 	@if [ -d sqlstore/testout ]; then rm -fR sqlstore/testout; fi
 	@if [ -d texts/testout ]; then rm -fR texts/testout; fi
 	@if [ -d api/testout ]; then rm -fR api/testout; fi

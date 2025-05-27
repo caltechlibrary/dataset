@@ -244,7 +244,7 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 			return err
 		}
 	}
-	if c.Versioning == "" || c.Versioning == "none" {
+	if ! c.History {
 		attachmentFilename := path.Join(aDir, path.Base(filename))
 		out, err := os.Create(attachmentFilename)
 		if err != nil {
@@ -262,14 +262,7 @@ func (c *Collection) AttachStream(key string, filename string, buf io.Reader) er
 			version = versions[len(versions)-1]
 		}
 		sv, err := semver.Parse([]byte(version))
-		switch c.Versioning {
-		case "major":
-			sv.IncMajor()
-		case "minor":
-			sv.IncMinor()
-		case "patch":
-			sv.IncPatch()
-		}
+		sv.IncPatch()
 		version = strings.TrimPrefix(sv.String(), "v")
 		vDir, err := attachmentVersionDir(c, key, path.Base(filename))
 		if _, err := os.Stat(vDir); os.IsNotExist(err) {

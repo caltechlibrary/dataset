@@ -44,5 +44,4 @@ Starting up the web service
 	flagSet.PrintDefaults()
 
 	fmt.Fprint(out, StringProcessor(m, examples))
-	DisplayLicense(out, appName)
 }
