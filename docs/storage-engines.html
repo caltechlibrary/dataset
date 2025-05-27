@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dataset Project -- Documentation</title>
+    <title>Dataset Project</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
@@ -12,31 +12,24 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="../">README</a></li>
-	<li><a href="../user-manual.html">User Manual</a></li>
-    <li><a href="./">Documentation</a></li>
-    <li><a href="../how-to/">How To</a></li>
-    <li><a href="../libdataset/">Libdataset</a></li>
-    <li><a href="../about.html">About</a></li>
-	<li><a href="../search.html">Search</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
 <h1 id="storage-engines">Storage Engines</h1>
-<p>With the introduction of v2 of dataset you now have a choice of
-storage engines. Currently offered in the 2.0 release is</p>
+<p>With the introduction of v3 of dataset we only use SQL databases with
+JSON column support for storage engines. SQLite3 is the currently
+supported.</p>
 <ul>
-<li>pairtree (the engine implementation of v1, stable)</li>
-<li>SQL Storage (via MySQL 8, Postgres 14.5 and SQLite3 ), experimental
-but more performant</li>
+<li>SQL Storage (SQLite3), experimental but more performant</li>
 </ul>
-<p>The pairtree storage engine is stable. The primary limitations are
-the file system (where it stores the JSON documents) case limitations
-and lack of record/field locking. Pairtree work fine for batch
-operations, single user/single process operations with less than 100k
-documents.</p>
 <p>With the introduction of SQL Storage dataset can be used in a
 multi-process/multi-user mode via a RESTful API. The SQL storage is
 experimental and as it gets you more various considerations are coming
@@ -44,10 +37,6 @@ to the surface</p>
 <ul>
 <li>SQLite3 works fine for single process multi user (via the web
 API)</li>
-<li>MySQL 8 works well when you need multi-user and multi-process
-acecss</li>
-<li>Postgres 14.5 is relatively untested so likely has quirks not yet
-addressed in the 2.0 release of dataset</li>
 </ul>
 <h2 id="cautions">Cautions</h2>
 </section>

@@ -8,11 +8,8 @@
       - [datasetd YAML](datasetd_yaml.5.md), Configuration for datasetd
       - [datasetd API](datasetd_api.5.md), A description of the REST JSON API provided with datasetd
       - [datasetd.service](datasetd_service.5.md), systemd service description
-    - [dsquery](dsquery.1.md)
-    - [dsimporter](dsimporter.1.md)
-- Backwards compatibility
-  - [Compatibility in Dataset v2.2](compatibility-in-v2.2.md)
-  - [Compatibility with Dataset v1 in v2.1](compatibility-in-v2.1.md)
+- [v3 dataset changes](v3_dataset_proposal.md)
+- [Migrating from dataset v2 to v3](migrating_from_v2_to_v3.md)
 - [Installation](install.md)
 - [Documentation](docs/)
 - [How to ...](how-to/)

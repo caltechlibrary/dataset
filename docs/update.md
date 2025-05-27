@@ -1,12 +1,13 @@
+
 update
 ======
 
 Syntax
 ------
 
-```shell
+~~~shell
     dataset update COLLECTION_NAME KEY
-```
+~~~
 
 Description
 -----------
@@ -29,9 +30,10 @@ data from _jane-doe.json_. Finally in the last we read the JSON
 document from standard input and save the update to "jane.doe".
 The collection name is "people.ds".
 
-```shell
+~~~shell
     dataset update people.ds jane.doe '{"name":"Jane Doiel"}'
+    dataset update people.ds jane.doe jane-doe.json
     dataset update -i jane-doe.json people.ds jane.doe
     cat jane-doe.json | dataset update people.ds jane.doe
-```
+~~~
 

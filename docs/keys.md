@@ -1,12 +1,13 @@
+
 keys
 ====
 
 Syntax
 ------
 
-```shell
+~~~shell
     dataset keys COLLECTION_NAME
-```
+~~~
 
 Description
 -----------
@@ -24,23 +25,10 @@ Here are three examples usage. Notice the sorting is handled by
 the POSIX sort command which lets you sort ascending or descending
 including sorting number strings.
 
-```shell
+~~~shell
     dataset keys COLLECTION_NAME
     dataset keys COLLECTION_NAME | sort
     dataset keys COLLECTION_NAME | sort -n
-```
-
-Getting a "sample" of keys
---------------------------
-
-The __dataset__ command respects an option named `-sample N` where N 
-is the size (number) of the keys to include in the sample. The sample 
-is taken after any filters are applied but may be less than requested 
-size if the the filtered results are few than the sample size.  The 
-basic process is to get a set of keys, randomly sort the keys, then 
-return the top N number of those keys.
-
-
-Related topics: [count](count.md), [clone](clone), [clone-sample](clone-sample.md), [frame](frame.md), [frame-grid](frame-grid.md), [frame-objects](frame-objects.md)
+~~~
 
 

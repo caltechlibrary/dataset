@@ -1,12 +1,13 @@
+
 delete
 ======
 
 Syntax
 ------
 
-```shell
+~~~shell
     dataset delete COLLECTION_NAME KEY
-```
+~~~
 
 Description
 -----------
@@ -20,7 +21,7 @@ Usage
 This usage example will delete the JSON document withe the key _r1_ in 
 the collection named "publications.ds".
 
-```shell
+~~~shell
     dataset delete publications.ds r1
-```
+~~~
 

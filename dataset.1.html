@@ -40,110 +40,48 @@ file or from standard input.</p>
 <dd>
 will give documentation of help on a verb, e.g. “help create”
 </dd>
-<dt>init [STORAGE_TYPE]</dt>
+<dt>init C_NAME</dt>
 <dd>
-Initialize a new dataset collection
+Initialize a new dataset collection named with C_NAME.
 </dd>
-<dt>model</dt>
-<dd>
-provides an experimental interactive data model generator creating the
-“model.yaml” file in the data set collection’s root directory.
-</dd>
-<dt>create</dt>
+<dt>create [OPTION] C_NAME KEY</dt>
 <dd>
 creates a new JSON document in the collection
 </dd>
-<dt>read</dt>
+<dt>read [OPTION] C_NAME KEY</dt>
 <dd>
 retrieves the “current” version of a JSON document from the collection
 writing it standard out
 </dd>
-<dt>update</dt>
+<dt>update [OPTION] C_NAME KEY</dt>
 <dd>
 updates a JSON document in the collection
 </dd>
-<dt>delete</dt>
+<dt>delete C_NAME KEY</dt>
 <dd>
 removes all versions of a JSON document from the collection
 </dd>
-<dt>keys</dt>
+<dt>keys [OPTION] C_NAME</dt>
 <dd>
 returns a list of keys in the collection
 </dd>
-<dt>codemeta:</dt>
+<dt>codemeta C_NAME [PATH_TO_NEW_CODEMETA_JSON]</dt>
 <dd>
-copies metadata a codemeta file and updates the collections metadata
+displays an existing codemetada.json file for the collections or if an
+optional path to a new codemeta.json it copies the file and updates the
+collections metadata.
 </dd>
-<dt>attach</dt>
+<dt>history C_NAME [true|false]</dt>
 <dd>
-attaches a document to a JSON object record
+This will enable to disable history. When enabled objects will that are
+created, updated or deleted in the main table will be recorded in the
+history table with the associated version number.
 </dd>
-<dt>attachments</dt>
+<dt>versions C_NAME KEY</dt>
 <dd>
-lists the attachments associated with a JSON object record
+will display the versions known for the object in the history table.
 </dd>
-<dt>retrieve</dt>
-<dd>
-creates a copy local of an attachement in a JSON record
-</dd>
-<dt>detach</dt>
-<dd>
-will copy out the attachment to a JSON document into the current
-directory
-</dd>
-<dt>prune</dt>
-<dd>
-removes an attachment (including all versions) from a JSON record
-</dd>
-<dt>frame-names</dt>
-<dd>
-lists the frames defined in a collection
-</dd>
-<dt>frame</dt>
-<dd>
-will add a data frame to a collection
-</dd>
-<dt>frame-def</dt>
-<dd>
-will return the definition of a frame
-</dd>
-<dt>frame-keys</dt>
-<dd>
-will retrieve the object keys in a frame
-</dd>
-<dt>frame-objects</dt>
-<dd>
-will retrieve the object list in a frame
-</dd>
-<dt>reframe</dt>
-<dd>
-will recreate a frame using its existing definition but replacing
-objects based on a new set of keys provided
-</dd>
-<dt>refresh</dt>
-<dd>
-will update all objects currently in the frame based on the current
-state of the collection. Any keys deleted in the collection will be
-delete from the frame.
-</dd>
-<dt>delete-frame</dt>
-<dd>
-will remove a frame from the collection
-</dd>
-<dt>has-frame</dt>
-<dd>
-will return true (exit 0) if frame exists, false (exit 1) if not
-</dd>
-<dt>set-versioning</dt>
-<dd>
-will set the versioning of a collection. The versioning value can be
-““,”none”, “major”, “minor”, or “patch”
-</dd>
-<dt>get-versioning</dt>
-<dd>
-will display the versioning setting for a collection
-</dd>
-<dt>dump</dt>
+<dt>dump C_NAME</dt>
 <dd>
 This will write out all dataset collection records in a JSONL document.
 JSONL shows on JSON object per line, see https://jsonlines.org for
@@ -151,43 +89,33 @@ details. The object rendered will have two attributes, “key” and
 “object”. The key corresponds to the dataset collection key and the
 object is the JSON value retrieved from the collection.
 </dd>
-<dt>load</dt>
+<dt>load [OPTION] C_NAME</dt>
 <dd>
 This will read JSON objects one per line from standard input. This
 format is often called JSONL, see https://jsonlines.org. The object has
 two attributes, key and object.
 </dd>
-<dt>join <a href="#options">OPTIONS</a> c_name, key, JSON_SRC</dt>
-<dd>
-This will join a new object provided on the command line with an
-existing object in the collection.
-</dd>
 </dl>
 <p>A word about “keys”. dataset uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
-value is the object to be stored. Keys must be lower case alpha numeric
-only. Depending on storage engines there are issues for keys with
-punctation or that rely on case sensitivity. E.g. The pairtree storage
-engine relies on the host file system. File systems are notorious for
-being picky about non-alpha numeric characters and some are not case
-sensistive.</p>
-<p>A word about “GLOBAL_OPTIONS” in v2 of dataset. Originally all
-options came after the command name, now they tend to come after the
-verb itself. This is because context counts in trying to remember
-options (at least for the authors of dataset). There are three
-“GLOBAL_OPTIONS” that are exception and they are <code>-version</code>,
-<code>-help</code> and <code>-license</code>. All other options come
-after the verb and apply to the specific action the verb implements.</p>
+value is the object to be stored. Keys are composed as lower case alpha
+numeric characters but may include period, dash and underscore. While
+keys maybe provided in upper and lower case they are always converted to
+lowercase internally.</p>
+<p>There are three “GLOBAL_OPTIONS” in v3 of dataset.T hey are
+<code>-version</code>, <code>-help</code> and <code>-license</code>. All
+other options come after the verb and apply to the specific action the
+verb implements.</p>
 <h1 id="storage-type">STORAGE TYPE</h1>
 <p>There are currently three support storage options for JSON documents
 in a dataset collection.</p>
 <ul>
 <li>SQLite3 database (default),</li>
-<li>Pairtree (pre-2.1 default)</li>
-<li>Postgres</li>
 </ul>
-<p>STORAGE TYPE are specified as a DSN URI except for pairtree which is
-just “pairtree”.</p>
+<p>The following storage engines were removed in v3 – pairtree, MySQL
+and PostgreSQL. If you need to migrate data from a v2 dataset instance
+use the dump verb. Then you can import the data into the v3 dataset
+collection using the load verb.</p>
 <h1 id="options">OPTIONS</h1>
 <dl>
 <dt>-help</dt>
@@ -208,8 +136,6 @@ display version
 
    dataset init my_objects.ds 
 
-   dataset model my_objects.ds
-
    dataset help create
 
    dataset create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
@@ -228,20 +154,11 @@ display version
    dataset delete my_objects.ds &quot;345&quot;
 
    dataset keys my_objects.ds</code></pre>
-<p>This is an example of initializing a Pairtree JSON documentation
-collection using the environment.</p>
-<pre><code>dataset init &#39;${C_NAME}&#39; pairtree</code></pre>
+<p>This is an example of initializing a JSON documentation
+collection.</p>
+<pre><code>dataset init &#39;${C_NAME}&#39;</code></pre>
 <p>In this case ‘${C_NAME}’ is the name of your JSON document read from
 the environment varaible C_NAME.</p>
-<p>To specify Postgres as the storage for your JSON document collection.
-You’d use something like –</p>
-<pre><code>dataset init &#39;${C_NAME}&#39; \\
-  &#39;postgres://${USER}@localhost/${DB_NAME}?sslmode=disable&#39;</code></pre>
-<p>In this case ‘${C_NAME}’ is the name of your JSON document read from
-the environment varaible C_NAME. USER is used for the Postgres username
-and DB_NAME is used for the Postgres database name. The sslmode option
-was specified because Postgres in this example was restricted to
-localhost on a single user machine.</p>
 <p>dataset 2.2.4</p>
 </section>
 

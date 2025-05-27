@@ -1,12 +1,13 @@
-has-key
-=======
+
+haskey
+======
 
 Syntax
 ------
 
-```shell
-    dataset [OPTIONS] has-key COLLECTION_NAME KEY_TO_CHECK_FOR
-```
+~~~shell
+    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
+~~~
 
 Description
 -----------
@@ -17,8 +18,8 @@ found, "false" otherwise. The collection name is "people.ds"
 Usage
 -----
 
-```shell
-    dataset has-key people.ds '0000-0003-0900-6903'
-    dataset has-key people.ds r1
-```
+~~~shell
+    dataset haskey people.ds '0000-0003-0900-6903'
+    dataset haskey people.ds r1
+~~~
 

@@ -33,7 +33,7 @@ var (
 	appName  = path.Base(os.Args[0])
 
 	helpDocs = map[string]string{
-		"usage":          cliDescription,
+		"description":          cliDescription,
 		"examples":       cliExamples,
 		"init":           cliInit,
 		"create":         cliCreate,
@@ -47,6 +47,7 @@ var (
 		"codemeta":       cliCodemeta,
 		"load":           cliLoad,
 		"dump":           cliDump,
+		"help":           cliHelp,
 	}
 
 	verbs = map[string]func(io.Reader, io.Writer, io.Writer, []string) error{
@@ -81,7 +82,9 @@ func prettyPrintJSON(src []byte) ([]byte, error) {
 func CliDisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var topic string
 	if len(args) > 0 {
-		topic = args[0]
+		topic = strings.ToLower(args[0])
+	} else {
+		topic = "description"
 	}
 	m := map[string]string{
 		"{app_name}": appName,
