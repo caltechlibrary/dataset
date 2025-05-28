@@ -4,20 +4,15 @@ dataset
 The documentation is organized around the command line options 
 and as a series of "how to" style examples.
 
+- [overview](description.md)
+- [examples](examples.md)
 - [getting started with dataset](../how-to/getting-started-with-dataset.html) (covers both Bash and Python)
-- Explore additional other [tutorials](../how-to/)
-- [Overview](description.md)
-- [Examples](examples.md)
+- explore additional other [tutorials](../how-to/)
 
 Command line program documentation
 ----------------------------------
 
 - [dataset](dataset.md) - usage page for managing collections with _dataset_
-
-Internal project concepts
--------------------------
-
-- [upgrading a collection](../how-to/upgrading-a-collection.md) - Describes how to upgrade a collection from a previous version of dataset to a new one
 
 __dataset__ Operations
 ----------------------

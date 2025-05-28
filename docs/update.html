@@ -41,6 +41,7 @@ KEY. In the second example we read the data from <em>jane-doe.json</em>.
 Finally in the last we read the JSON document from standard input and
 save the update to “jane.doe”. The collection name is “people.ds”.</p>
 <pre class="shell"><code>    dataset update people.ds jane.doe &#39;{&quot;name&quot;:&quot;Jane Doiel&quot;}&#39;
+    dataset update people.ds jane.doe jane-doe.json
     dataset update -i jane-doe.json people.ds jane.doe
     cat jane-doe.json | dataset update people.ds jane.doe</code></pre>
 </section>

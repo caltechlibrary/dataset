@@ -26,12 +26,13 @@
 <h1 id="create">create</h1>
 <h2 id="syntax">Syntax</h2>
 <pre class="shell"><code>    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
+    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY
     dataset create COLLECTION_NAME KEY JSON_VALUE
-    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY</code></pre>
+    dataset create COLLECTION_NAME KEY JSON_FILENAME</code></pre>
 <h2 id="description">Description</h2>
-<p>create adds a JSON document to a collection. The JSON document can be
-read from a standard in, a named file (with a “.json” file extension) or
-expressed literally on the command line.</p>
+<p>create adds or replaces a JSON document to a collection. The JSON
+document can be read from a standard in, a named file (with a “.json”
+file extension) or expressed literally on the command line.</p>
 <h2 id="usage">Usage</h2>
 <p>In the following four examples <em>jane-doe.json</em> is a file on
 the local file system contains JSON data containing the JSON_VALUE of
@@ -39,8 +40,9 @@ the local file system contains JSON data containing the JSON_VALUE of
 Collection is “people.ds”. The following are equivalent in resulting
 record.</p>
 <pre class="shell"><code>    cat jane-doe.json | dataset create people.ds r1
-    dataset create -i jane-doe.json people.ds r1
-    dataset create people.ds r1 &#39;{&quot;name&quot;:&quot;Jane Doe&quot;}&#39;</code></pre>
+    dataset create -i blob.json people.ds r1
+    dataset create people.ds r1 &#39;{&quot;name&quot;:&quot;Jane Doe&quot;}&#39;
+    dataset create people.ds r1 jane-doe.json</code></pre>
 </section>
 
 <footer>

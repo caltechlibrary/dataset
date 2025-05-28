@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="load-option">load <a href="#option">OPTION</a></h1>
+<p>This will read a JSONL stream (JSONL, see https://jsonlines.org) and
+store the objects in a dataset collection. The objects must have two
+attributes, <strong>key</strong> and <strong>object</strong>. The key
+value is used as the key assigned in the collection and object value is
+the JSON stored. Load reads from standard input.</p>
+<p>The object structure matches the schema used by dataset collections
+that are using SQLite3 for their object store. The dataset collection
+loading the objects can use any dataset collection storage format
+supported by the version of dataset featuring load and dump verbs.</p>
+<h1 id="option">OPTION</h1>
+<dl>
+<dt>-o, -overwrite</dt>
+<dd>
+If an object exists in the collection with the same key replace it.
+</dd>
+<dt>-m, -max-capacity INTEGER</dt>
+<dd>
+Objects can be large in JSONL so you have the option of setting the
+maximum buffer size for a single object. The integer value should be
+greater than zero. The unit value is measured in mega bytes. “1” is one
+meta byte, “10” would be ten mega bytes.
+</dd>
+</dl>
+<h1 id="example">EXAMPLE</h1>
+<p>Load a JSONL file, duplicate objects will not be overwritten.</p>
+<pre class="shell"><code>    dataset load mycollection.ds &lt;mycollection.jsonl</code></pre>
+<p>Load a JSONL file, duplicate objects will be overwritten.</p>
+<pre class="shell"><code>    dataset load -overwrite mycollection.ds &lt;mycollection.jsonl</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

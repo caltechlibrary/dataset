@@ -27,9 +27,11 @@
 <p>The documentation is organized around the command line options and as
 a series of “how to” style examples.</p>
 <ul>
+<li><a href="description.html">overview</a></li>
+<li><a href="examples.html">examples</a></li>
 <li><a href="../how-to/getting-started-with-dataset.html">getting
 started with dataset</a> (covers both Bash and Python)</li>
-<li>Explore additional other <a href="../how-to/">tutorials</a></li>
+<li>explore additional other <a href="../how-to/">tutorials</a></li>
 </ul>
 <h2 id="command-line-program-documentation">Command line program
 documentation</h2>
@@ -58,15 +60,17 @@ face challenges with non-alpha numeric filenames.</p>
 <h2 id="collection-level">Collection Level</h2>
 <ul>
 <li><a href="init.html">init</a> creates a collection</li>
+<li><a href="history.html">history</a>, how history is implemented</li>
 <li><a href="keys.html">keys</a> list keys of JSON documents in a
 collection, supports filtering and sorting</li>
-<li><a href="haskey.html">haskey</a> returns true if key is found in
-collection, false otherwise</li>
-<li><a href="../dump.1.html">dump</a> dumps an entire collection to
-standard in <a href="https://jsonlines.org/">JSON line format</a></li>
-<li><a href="../load.1.html">load</a> loads a <a
+<li><a href="query.html">query</a>, query lets to create a list of
+objects via SQL statements</li>
+<li><a href="dump.html">dump</a> dumps an entire collection to standard
+in <a href="https://jsonlines.org/">JSON line format</a></li>
+<li><a href="load.html">load</a> loads a <a
 href="https://jsonlines.org/">JSON line formatted stream</a> into a
 collection</li>
+<li><a href="codemeta.html">codemeta</a></li>
 </ul>
 <h2 id="json-document-level">JSON Document level</h2>
 <ul>
@@ -78,6 +82,8 @@ collection</li>
 collection</li>
 <li><a href="delete.html">delete</a> a JSON document in a
 collection</li>
+<li><a href="haskey.html">haskey</a> returns true if key is found in
+collection, false otherwise</li>
 </ul>
 <h1 id="datasetd-as-a-web-service">datasetd as a web service</h1>
 <p>Since version v2.x is a web service providing access to dataset

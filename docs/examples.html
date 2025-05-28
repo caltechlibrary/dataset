@@ -23,34 +23,40 @@
 </nav>
 
 <section>
-<h1 id="topics-by-concepts">Topics by concepts</h1>
-<h2 id="getting-started">Getting started</h2>
-<ul>
-<li><a href="../how-to/getting-started-with-dataset.html">Getting
-started with dataset</a></li>
-</ul>
-<h2 id="dataset-as-a-web-service">Dataset as a web service</h2>
-<p>See <a href="datasetd.html">datasetd</a></p>
-<h1 id="topics-a-z">Topics A-Z</h1>
-<ul>
-<li><a href="codemeta.html">codemeta</a></li>
-<li><a href="create.html">create</a></li>
-<li><a href="../datasetd.1.html">datasetd</a></li>
-<li><a href="delete.html">delete</a>, <a
-href="delete-endpoint.html">delete end point</a></li>
-<li><a href="description.html">description</a></li>
-<li><a href="dump.html">dump</a></li>
-<li><a href="examples.html">examples</a></li>
-<li><a href="haskey.html">haskey</a></li>
-<li><a href="history.html">history</a></li>
-<li><a href="init.html">init</a></li>
-<li><a href="lump.html">load</a></li>
-<li><a href="keys.html">keys</a></li>
-<li><a href="read.html">read</a></li>
-<li><a href="update.html">update</a>, <a
-href="update-endpoint.html">update end point</a></li>
-<li><a href="query.html">query</a></li>
-</ul>
+<p>EXAMPLES</p>
+<pre><code>   dataset help init
+
+   dataset init my_objects.ds 
+
+   dataset help create
+
+   dataset create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
+
+   cat &lt;&lt;EOT | dataset create my_objects.ds &quot;345&quot;
+   {
+       &quot;four&quot;: 4,
+       &quot;five&quot;: &quot;six&quot;
+   }
+   EOT
+
+   dataset update my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1, &quot;two&quot;: 2}&#39;
+
+   dataset delete my_objects.ds &quot;345&quot;
+
+   dataset keys my_objects.ds
+
+   dataset hasKey my_objects.ds &quot;345&quot;
+
+   dataset dump my_objects.ds &gt;objects.jsonl
+
+   dataset load my_objects.ds &lt;objects.jsonl
+
+   cat &lt;&lt;SQL | dataset query my_objects.ds 
+   select json_object(&#39;key&#39;, _Key, &#39;version&#39;, version) as obj
+   from my_objects_history
+   where _Key &quot;345&quot;
+   order by version desc
+   SQL</code></pre>
 </section>
 
 <footer>
