@@ -12,12 +12,12 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
-    <li><a href="LICENSE">LICENSE</a></li>
-    <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
-	<li><a href="search.html">Search</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
@@ -25,7 +25,7 @@
 <section>
 <h1 id="read">read</h1>
 <h2 id="syntax">Syntax</h2>
-<pre class="shell"><code>    dataset read COLLECTION_NAME KEY</code></pre>
+<pre class="shell"><code>    dataset3 read COLLECTION_NAME KEY</code></pre>
 <h2 id="description">Description</h2>
 <p>The writes the JSON document to standard out (unless you’ve specific
 an alternative location with the “-output” option) for the given
@@ -33,17 +33,16 @@ KEY.</p>
 <h2 id="usage">Usage</h2>
 <p>An example we’re assuming there is a JSON document with a KEY of
 “r1”. Our collection name is “data.ds”</p>
-<pre class="shell"><code>    dataset read data.ds r1</code></pre>
+<pre class="shell"><code>    dataset3 read data.ds r1</code></pre>
 <h2 id="options">Options</h2>
-<p>Normally dataset adds two values when it stores an object,
-<code>._Key</code> and possibly <code>._Attachments</code>. You can get
-the object without these added attributes by using the <code>-c</code>
-or <code>-clean</code> option.</p>
-<pre class="shell"><code>    dataset read -clean data.ds r1</code></pre>
+<p>Normally dataset3 outputs the JSON object as presented by the storage
+engine. Use the <code>-jsonl</code> to force it to a single line (JSON
+line format).</p>
+<pre class="shell"><code>    dataset3 read -jsonl data.ds r1</code></pre>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

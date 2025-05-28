@@ -175,7 +175,7 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 		rec := map[string]interface{}{}
 		err := JSONUnmarshal([]byte(src), &rec)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "WARNING: failed to decode line %d to %q, %s", i, c.Name, err)
+			fmt.Fprintf(os.Stderr, "WARNING: failed to decode line %d to %q, %s\n", i, c.Name, err)
 			errCnt += 1
 			continue
 		}
@@ -186,35 +186,49 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 				if keyExists {
 					if overwrite {
 						if err := c.Update(key, obj); err != nil {
-							fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q -> %s, %s", i, key, src, err)
+							fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q -> %s, %s\n", i, key, src, err)
 							errCnt += 1
 						}
 					} else {
-						fmt.Fprintf(os.Stderr, "WARNING (line %d): duplicate key %q, skipping", i, key)
+						fmt.Fprintf(os.Stderr, "WARNING (line %d): duplicate key %q, skipping\n", i, key)
 						errCnt += 1
 					}
 				} else {
 					if err := c.Create(key, obj); err != nil {
-						fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q -> %s, %s", i, key, src, err)
+						fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q -> %s, %s\n", i, key, src, err)
 						errCnt += 1
 					}
 				}
 			} else {
-				fmt.Fprintf(os.Stderr, "WARNING (line %d): missing object -> %s", i, src)
+				fmt.Fprintf(os.Stderr, "WARNING (line %d): missing object -> %s\n", i, src)
 				errCnt += 1
 			}
 		} else {
-			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key -> %s", i, src)
+			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key -> %s\n", i, src)
 			errCnt += 1
 		}
 	}
 	// Check for any errors that occurred during the scan
     if err := scanner.Err(); err != nil {
-        fmt.Fprintf(os.Stderr, "WARNING scanning errors, %s", err)
+        fmt.Fprintf(os.Stderr, "WARNING scanning errors, %s\n", err)
 		errCnt += 1
     }
 	if errCnt > 0 {
-		return fmt.Errorf("%d load errors for %q", errCnt, c.Name)
+		return fmt.Errorf("%d load errors for %q\n", errCnt, c.Name)
 	}
 	return nil
+}
+
+// FmtJSONL will take a JSON expression and attempt to format it as a single line.
+func FmtJSONL(src []byte) []byte {
+		// flatten out objSrc if needed
+		if bytes.Contains(src, []byte{'\n'}) {
+			obj := map[string]interface{}{}
+			if err := JSONUnmarshal(src, &obj); err == nil {
+				if src2, err := JSONMarshal(obj); err == nil {
+					return src2
+				}
+			}
+		}
+		return src
 }

@@ -18,7 +18,7 @@ USAGE
 DESCRIPTION
 --------
 
-Runs a web service for one or more dataset collections. Requires
+Configures or runs a web service for one or more dataset collections. Requires
 the collections to exist (e.g. created previously with the dataset
 cli). It requires a settings JSON file that decribes the web service
 configuration and permissions per collection that are available via
@@ -30,7 +30,7 @@ EXAMPLE
 Starting up the web service
 
 ` + "```" + `
-   {app_name} settings.json
+   {app_name} settings.yaml
 ` + "```" + `
 
 `

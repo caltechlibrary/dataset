@@ -12,7 +12,7 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="./">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
@@ -23,6 +23,24 @@
 </nav>
 
 <section>
+<p>Releasse 3.0.0:</p>
+<p>This release contains breaking changes with v2 and earlier. It comes
+with two programs, <code>dataset3</code> and <code>dataset3d</code>. The
+verbs used by <code>dataset3</code> are limited to the following</p>
+<ul>
+<li>init</li>
+<li>help</li>
+<li>create</li>
+<li>read</li>
+<li>update</li>
+<li>delete</li>
+<li>keys</li>
+<li>query</li>
+</ul>
+<p>The end points for <code>dataset3d</code> are similar to v2 but
+without endpoints related to frames and attachments.</p>
+<p>V3 does not support pairtree storage. The default storage uses
+SQLite3.</p>
 <p>Release 2.0.0-b06:</p>
 <p>This release is a rewrite of version 1 focusing on removing features,
 clearifying useful concepts and abstracting the storage engines cleanly.
@@ -370,7 +388,7 @@ collections</li>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

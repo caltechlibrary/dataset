@@ -12,7 +12,7 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="./">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
@@ -24,76 +24,49 @@
 
 <section>
 <h1 id="dataset-project-v3">Dataset Project, v3</h1>
-<p><a href="https://data.caltech.edu/badge/latestdoi/79394591"><img
-src="https://data.caltech.edu/badge/79394591.svg" alt="DOI" /></a></p>
 <p><a href="https://www.repostatus.org/#active"><img
 src="https://www.repostatus.org/badges/latest/active.svg"
 alt="Project Status: Active – The project has reached a stable, usable state and is being actively developed." /></a></p>
-<p>The Dataset Project is an exploration of the use and usefulness of
-JSON documents in the setting of libraries, archives and museums. It may
-have application further afield as metadata management benefits a wide
-range of application domains.</p>
+<p><a href="https://data.caltech.edu/badge/latestdoi/79394591"><img
+src="https://data.caltech.edu/badge/79394591.svg" alt="DOI" /></a></p>
+<p>Dataset Project provides tools for working with JSON documents as a
+collection hosted in a SQL JSON store (e.g. SQLite3). It is an
+exploration of the use and usefulness of JSON documents in the setting
+of libraries, archives and museums. It may have application further
+afield as metadata management benefits a wide range of application
+domains.</p>
 <p>Dataset v3 stores JSON documents using a SQL engine with JSON column
 support. These days that most popular SQL implementations support JSON
-columns (e.g. SQlite3, PostgreSQL, MySQL). V3 uses a extremely simple
+columns (e.g. SQLite3, PostgreSQL, MySQL). V3 uses a extremely simple
 table structure for both the current object state and object history as
 well as integration with the SQL’s growing support for working with JSON
 objects generally.</p>
 <p>Two tools are provided by the Dataset Project v3</p>
 <dl>
-<dt><code>dataset</code></dt>
+<dt><a href="dataset3.1.html">dataset3</a></dt>
 <dd>
 is a command line interface for managing JSON documents.
 </dd>
-<dt><code>datasetd</code></dt>
+<dt><a href="dataset3d.1.html">dataset3d</a></dt>
 <dd>
 JSON Web Service. This service supports file attachments.
 </dd>
 </dl>
-<h2 id="dataset-a-command-line-tool">dataset, a command line tool</h2>
-<p><a href="doc/dataset.html">dataset</a> is a command line tool for
-working with collections of <a
-href="https://en.wikipedia.org/wiki/JSON">JSON</a> documents.
-Collections can stored in an SQLite3 database within a directory
-containing metadata about the collection. The JSON documents are plain
-UTF-8 source. The command line tool supports standard input, output and
-error. This means the objects can be processed with with common <a
-href="https://en.wikipedia.org/wiki/Unix">Unix</a> text processing tools
-as well as most programming languages.</p>
-<p>The <strong>dataset</strong> command line tool supports common data
-management operations such as initialization of collections; document
-creation, reading, updating and deleting; listing keys of JSON objects
-in the collection; query of JSON objects via SQL. Additionally the
-<strong>dataset</strong> command line program can “dump” a collection as
-a stream of JSON lines expressions and “load” the same. This makes it
-easy to migrate or clone repositories with little more than a Unix
-pipe.</p>
-<p>With the v3 release the supported operations and been reduced to
-their core in an effort to simply use and implementation.</p>
-<p>See <a href="how-to/getting-started-with-dataset.html">Getting
-started with dataset</a> for a tour and tutorial.</p>
-<h2 id="datasetd-provides-dataset-as-a-web-service">datasetd provides
-dataset as a web service</h2>
-<p><a href="doc/datasetd.html">datasetd</a> is a RESTful web service
-implementation of the <em>dataset</em> command line program. It features
-a sub-set of capability found in the command line tool. This allows
-dataset collections to be integrated safely into web applications or
-used concurrently by multiple processes. It achieves this by storing the
-dataset collection in a SQL database using JSON columns.</p>
 <h2 id="design-choices">Design choices</h2>
-<p><em>dataset</em> and <em>datasetd</em> are intended to be simple
-tools for managing collections JSON object documents in a predictable
-structured way.</p>
-<p><em>dataset</em> is guided by the idea that you should be able to
-work with JSON documents as easily as you can any plain text document on
-the Unix command line. <em>dataset</em> is intended to be simple to use
-with minimal setup (e.g. <code>dataset init mycollection.ds</code>
-creates a new collection called ‘mycollection.ds’).</p>
+<p><strong>dataset3</strong> and <strong>dataset3d</strong> are intended
+to be simple tools for managing collections JSON object documents in a
+predictable structured way.</p>
+<p><strong>dataset3</strong> is guided by the idea that you should be
+able to work with JSON documents as easily as you can any plain text
+document on the Unix command line. <em>dataset</em> is intended to be
+simple to use with minimal setup
+(e.g. <code>dataset3 init mycollection.ds</code> creates a new
+collection called ‘mycollection.ds’).</p>
+<p><strong>dataset3</strong> and <strong>dataset3d</strong> store JSON
+object documents in collections.</p>
 <ul>
-<li><em>dataset</em> and <em>datasetd</em> store JSON object documents
-in collections.
-<ul>
-<li>Storage in a SQL database using JSON columns (i.e. SQLite3)</li>
+<li>Storage in a SQL database using JSON columns (example SQLite3, or
+PostgreSQL and MySQL 8 with extra configuration)</li>
 <li>dataset collections are made up of a directory containing a
 collection.json and codemeta.json files.</li>
 <li>collection.json metadata file describing the collection,
@@ -105,19 +78,22 @@ funding</li>
 made of lower case alpha numeric characters</li>
 <li>collection names are usually lowered case and usually have a
 <code>.ds</code> extension for easy identification</li>
+</ul>
+<p>The <strong>dataset3d</strong> provides a web service has the
+following constraints.</p>
+<ul>
+<li>is intended as a back end web service run on localhost
+<ul>
+<li>by default it runs on localhost port 8485</li>
+<li>supports collections that use the SQL storage engine</li>
+</ul></li>
+<li><strong>should never be used as a public facing web service</strong>
+<ul>
+<li>there are no user level access mechanisms</li>
+<li>anyone with access to the web service end point has access to the
+dataset collection content</li>
 </ul></li>
 </ul>
-<p><em>datatset</em> collection storage options - SQL store stores JSON
-documents in a JSON column - The initial v3 release only supports
-SQLite3. PostgreSQL and MySQL 8 are possible but require manual
-configuration. - A “DSN URI” is used to identify and gain access to the
-SQL database - The DSN URI maybe passed through the environment</p>
-<p><em>datasetd</em> is a web service - is intended as a back end web
-service run on localhost - by default it runs on localhost port 8485 -
-supports collections that use the SQL storage engine - <strong>should
-never be used as a public facing web service</strong> - there are no
-user level access mechanisms - anyone with access to the web service end
-point has access to the dataset collection content</p>
 <p>The choice of plain UTF-8 is intended to help future proof reading
 dataset collections. Care has been taken to keep <em>dataset</em> simple
 enough and light weight enough that it will run on a machine as small as
@@ -127,18 +103,19 @@ in any programming language supporting file input and output, common
 string operations and along with JSON encoding and decoding functions.
 The current implementation is in the Go language.</p>
 <h2 id="features">Features</h2>
-<p><a href="docs/dataset.html">dataset</a> supports - Initialize a new
-dataset collection - Define metadata about the collection using a
+<p>-<a href="docs/dataset3.html">dataset3</a> supports - Initialize a
+new dataset collection - Define metadata about the collection using a
 codemeta.json file - Define a keys file holding a list of allocated keys
 in the collection - Creates a pairtree for object storage - Codemeta
 file support for describing the collection contents - Simple JSON object
 versioning - Listing <a href="docs/keys.html">Keys</a> in a collection -
-Object level actions - <a href="docs/create.html">create</a> - <a
+SQL <a href="docs/query.html">query</a> of collection - Object level
+actions - <a href="docs/create.html">create</a> - <a
 href="docs/read.html">read</a> - <a href="docs/update.html">update</a> -
 <a href="docs/delete.html">delete</a> - <a
-href="docs/keys.html">keys</a> - <a href="docs/has-key.html">haskey</a>
-- <a href="docs/query.html">query</a></p>
-<p>If attachments are configured via a <code>datasetd</code> YAML
+href="docs/keys.html">keys</a> - <a
+href="docs/has-key.html">haskey</a></p>
+<p>If attachments are configured via a <code>dataset3d</code> YAML
 configuration then the following additional verbs are
 <code>attachments</code> attribute. The dataset tools will need the
 appropriate file permissions to support attachment operations. The YAML
@@ -146,13 +123,7 @@ configuration should have the same name as the dataset collection but
 end with the <code>.yaml</code> instead of <code>.ds</code>. E.g. if my
 collection is called “mydata.ds” the attachment configuration is
 “mydata.yaml” in the same directory.</p>
-<ul>
-<li><a href="docs/attachments.html">attachments</a> (list)</li>
-<li><a href="docs/attach.html">attach</a> (create/update)</li>
-<li><a href="docs/retrieve.html">retrieve</a> (read)</li>
-<li><a href="docs/prune.html">prune</a> (delete)</li>
-</ul>
-<p><a href="docs/datasetd.html">datasetd</a> supports</p>
+<p><a href="docs/dataset3d.html">dataset3d</a> supports</p>
 <ul>
 <li>List <a href="docs/collections-endpoint.html">collections</a>
 available from the web service</li>
@@ -167,20 +138,16 @@ metadata</li>
 <li><a href="docs/delete-endpoint.html">delete</a></li>
 <li><a href="docs/query-endpoint.html">query</a> (for queries defined in
 the configuration YAML file)</li>
-<li>Documents as attachments
-<ul>
-<li><a href="docs/attach-endpoint.html">attach</a></li>
-<li><a href="docs/retrieve-endpoint.html">retrieve</a></li>
-<li><a href="docs/prune-endpoint.html">prune</a></li>
-</ul></li>
 </ul></li>
 </ul>
-<p>Both <em>dataset</em> and <em>datasetd</em> maybe useful for general
-data science applications needing JSON object management or in
-implementing repository systems in research libraries and archives.</p>
-<h2 id="limitations-of-dataset-and-datasetd">Limitations of
-<em>dataset</em> and <em>datasetd</em></h2>
-<p><em>dataset</em> has many limitations, some are listed below</p>
+<p>Both <strong>dataset3</strong> and <strong>dataset3d</strong> maybe
+useful for general data science applications needing JSON object
+management or in implementing repository systems in research libraries
+and archives.</p>
+<h2 id="limitations-of-dataset3-and-dataset3d">Limitations of
+<strong>dataset3</strong> and <strong>dataset3d</strong></h2>
+<p><strong>dataset3</strong> has many limitations, some are listed
+below</p>
 <ul>
 <li>it is not a general purpose database system</li>
 <li>it stores all keys in lower case in order to deal with file systems
@@ -192,8 +159,8 @@ Instead it relies on the SQL engine’s SQL dialect for manipulating the
 JSON objects</li>
 <li>it should NOT be used for sensitive or secret information</li>
 </ul>
-<p><em>datasetd</em> is a simple web service intended to run on local
-host, e.g. “localhost:8485”.</p>
+<p><strong>dataset3</strong> is a simple web service intended to run on
+local host, e.g. “localhost:8485”.</p>
 <ul>
 <li>it does not include support for authentication</li>
 <li>it does not support a query language, search or sorting</li>
@@ -208,43 +175,52 @@ collections</li>
 <li>it does not support HTTPS or “at rest” encryption</li>
 <li>it should NOT be used for sensitive or secret information</li>
 </ul>
+<h3 id="authors">Authors</h3>
+<ul>
+<li>Doiel, R. S.</li>
+<li>Morrell, Thomas E</li>
+</ul>
+<h3 id="maintainers">Maintainers</h3>
+<ul>
+<li>Doiel, R. S.</li>
+<li>Morrell, Thomas E</li>
+</ul>
+<h2 id="software-requirements">Software Requirements</h2>
+<ul>
+<li><a href="https://golang.org">Golang</a> &gt;= 1.24.2</li>
+<li><a href="https://caltechlibrary.github.io/CMTools">CMTools</a> &gt;=
+0.0.29</li>
+<li><a href="https://pandoc.org">Pandoc</a> &gt;= 3.1</li>
+<li>GNU Make &gt;= 3.8</li>
+</ul>
+<h2 id="software-suggestions">Software Suggestions</h2>
+<ul>
+<li><a href="https://jqlang.org">jq</a> &gt;= 1.7</li>
+</ul>
 <h2 id="read-next">Read next …</h2>
 <ul>
-<li>About the <a href="docs/dataset.html">dataset</a> command</li>
-<li>About <a href="docs/datasetd.html">datasetd</a> web service</li>
-<li><a href="INSTALL.html">Installation</a></li>
-<li><a href="LICENSE">License</a></li>
-<li><a href="CONTRIBUTING.html">Contributing</a></li>
-<li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
-<li>Explore <em>dataset</em> and <em>datasetd</em>
+<li>Explore <em>dataset</em> and <strong>dataset3d</strong>
 <ul>
 <li><a href="how-to/getting-started-with-dataset.html"
 title="Python examples as well as command line">Getting Started with
 Dataset</a></li>
-<li><a href="how-to/">How To</a> guides</li>
+<li><a href="user_manual.html">User Manual</a></li>
 <li><a href="docs/">Reference Documentation</a>.</li>
 <li><a href="docs/topics.html">Topics</a></li>
 </ul></li>
+<li><a href="https://github.com/caltechlibrary/dataset/issues">Getting
+Help, Reporting bugs</a></li>
+<li><a
+href="https://caltechlibrary.github.io/dataset/LICENSE">LICENSE</a></li>
+<li><a href="INSTALL.html">Installation</a></li>
+<li><a href="CONTRIBUTING.html">Contributing</a></li>
+<li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
+<li><a href="about.html">About</a></li>
 </ul>
-<h2 id="authors-and-history">Authors and history</h2>
-<ul>
-<li>R. S. Doiel</li>
-<li>Tommy Morrell</li>
-</ul>
-<h2 id="releases">Releases</h2>
-<p>Compiled versions are provided for Linux (x86), Mac OS X (x86 and
-M1), Windows 11 (x86) and Raspberry Pi OS (ARM7).</p>
-<p><a
-href="https://github.com/caltechlibrary/dataset/releases">github.com/caltechlibrary/dataset/releases</a></p>
-<h2 id="related-projects">Related projects</h2>
-<!-- You can use _dataset_ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package. -->
-<p>You can use <em>dataset</em> from Deno+TypeScript by running datasetd
-and access it with <a
-href="https://github.com/caltechlibraray/ts_dataset">ts_dataset</a>.</p>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

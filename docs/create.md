@@ -6,10 +6,10 @@ Syntax
 ------
 
 ~~~shell
-    cat JSON_DOCNAME | dataset create COLLECTION_NAME KEY
-    dataset create -i JSON_DOCNAME COLLECTION_NAME KEY
-    dataset create COLLECTION_NAME KEY JSON_VALUE
-    dataset create COLLECTION_NAME KEY JSON_FILENAME
+    cat JSON_DOCNAME | dataset3 create COLLECTION_NAME KEY
+    dataset3 create -i JSON_DOCNAME COLLECTION_NAME KEY
+    dataset3 create COLLECTION_NAME KEY JSON_VALUE
+    dataset3 create COLLECTION_NAME KEY JSON_FILENAME
 ~~~
 
 Description
@@ -29,9 +29,9 @@ Collection is "people.ds".  The following are equivalent in
 resulting record.
 
 ~~~shell
-    cat jane-doe.json | dataset create people.ds r1
-    dataset create -i blob.json people.ds r1
-    dataset create people.ds r1 '{"name":"Jane Doe"}'
-    dataset create people.ds r1 jane-doe.json
+    cat jane-doe.json | dataset3 create people.ds r1
+    dataset3 create -i blob.json people.ds r1
+    dataset3 create people.ds r1 '{"name":"Jane Doe"}'
+    dataset3 create people.ds r1 jane-doe.json
 ~~~
 

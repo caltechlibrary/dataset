@@ -1,9 +1,9 @@
 
-USAGE
+# USAGE
 
- dataset [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PARAMETER ...]
+dataset3 [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PARAMETER ...]
 
-SYNOPSIS
+# SYNOPSIS
 
 dataset command line interface supports creating JSON object
 collections and managing the JSON object documents in a collection. As of v3
@@ -16,7 +16,7 @@ When creating new documents in the collection or updating documents
 in the collection the JSON source can be read from the command line,
 a file or from standard input.
 
-SUPPORTED VERBS
+# SUPPORTED VERBS
 
 help VERB
 : will give this this documentation of help on a verb

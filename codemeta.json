@@ -50,9 +50,10 @@
       "email": "tmorrell@caltech.edu"
     }
   ],
-  "dateModified": "2025-04-18",
-  "datePublished": "2025-04-18",
-  "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
+  "dateCreated": "2016-09-12",
+  "dateModified": "2025-05-28",
+  "datePublished": "2025-05-28",
+  "description": "Dataset Project provides tools for working with JSON documents as a collection hosted in a SQL JSON store (e.g. SQLite3). It is an exploration of the use and usefulness of JSON documents in the setting of libraries, archives and museums. It may have application further afield as metadata management benefits a wide range of application domains.\n\nDataset v3 stores JSON documents using a SQL engine with JSON column support. These days that most popular SQL implementations support JSON columns (e.g. SQlite3, PostgreSQL, MySQL). V3 uses a extremely simple table structure for both the current object state and object history as well as integration with the SQL’s growing support for working with JSON objects generally.\n\nTwo tools are provided by the Dataset Project v3\n\n[dataset3](dataset3.1.md)\n: is a command line interface for managing JSON documents. \n\n[dataset3d](dataset3d.1.md)\n: JSON Web Service. This service supports file attachments.",
   "funder": [
     {
       "@id": "https://doi.org/10.13039/100006961",
@@ -61,26 +62,31 @@
     }
   ],
   "keywords": [
-    "GitHub",
     "metadata",
-    "data",
-    "software",
-    "json"
+    "collections",
+    "json",
+    "web service"
   ],
   "name": "dataset",
   "license": "https://caltechlibrary.github.io/dataset/LICENSE",
   "programmingLanguage": [
-    "Go"
+    "Go",
+    "SQL"
   ],
   "softwareRequirements": [
     "Golang >= 1.24.2",
-    "CMTOlls >= 0.0.20",
+    "CMTools >= 0.0.29",
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.4",
+  "softwareSuggestions": [
+    "jq >= 1.7"
+  ],
+  "version": "3.0.0-alpha",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
-  "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Added the following functions to the dataset package\n\n- (c *Collection) KeysJSON\n- (c *Collection) UpdatedKeysJSON\n- (c *Collection) QueryJSON\n\nThese provide JSON encoded object support for their base functions."
+  "downloadUrl": "",
+  "releaseNotes": "Dataset v3 is a breaking change from v2. It focuses on feature reduction and code simplification. Many features have been removed. The v3 collections are not compatible with v2 and earlier collections.\n\nJSON lines support in query results and read operations has been improved. The provided programs have been reduced to __dataset3__ and __dataset3d__. As such they can be installed along side Dataset v2 and earlier.",
+  "copyrightYear": 2025,
+  "copyrightHolder": "California Institute of Technology"
 }

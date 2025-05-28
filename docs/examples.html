@@ -12,46 +12,46 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
-    <li><a href="LICENSE">LICENSE</a></li>
-    <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
-	<li><a href="search.html">Search</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<p>EXAMPLES</p>
-<pre><code>   dataset help init
+<h1 id="examples">EXAMPLES</h1>
+<pre><code>   dataset3 help init
 
-   dataset init my_objects.ds 
+   dataset3 init my_objects.ds 
 
-   dataset help create
+   dataset3 help create
 
-   dataset create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
+   dataset3 create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
 
-   cat &lt;&lt;EOT | dataset create my_objects.ds &quot;345&quot;
+   cat &lt;&lt;EOT | dataset3 create my_objects.ds &quot;345&quot;
    {
        &quot;four&quot;: 4,
        &quot;five&quot;: &quot;six&quot;
    }
    EOT
 
-   dataset update my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1, &quot;two&quot;: 2}&#39;
+   dataset3 update my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1, &quot;two&quot;: 2}&#39;
 
-   dataset delete my_objects.ds &quot;345&quot;
+   dataset3 delete my_objects.ds &quot;345&quot;
 
-   dataset keys my_objects.ds
+   dataset3 keys my_objects.ds
 
-   dataset hasKey my_objects.ds &quot;345&quot;
+   dataset3 hasKey my_objects.ds &quot;345&quot;
 
-   dataset dump my_objects.ds &gt;objects.jsonl
+   dataset3 dump my_objects.ds &gt;objects.jsonl
 
-   dataset load my_objects.ds &lt;objects.jsonl
+   dataset3 load my_objects.ds &lt;objects.jsonl
 
-   cat &lt;&lt;SQL | dataset query my_objects.ds 
+   cat &lt;&lt;SQL | dataset3 query my_objects.ds 
    select json_object(&#39;key&#39;, _Key, &#39;version&#39;, version) as obj
    from my_objects_history
    where _Key &quot;345&quot;
@@ -60,7 +60,7 @@
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

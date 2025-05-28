@@ -17,8 +17,6 @@
 package dataset
 
 import (
-	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -65,18 +63,6 @@ var (
 		"dump":           doDump,
 	}
 )
-
-func prettyPrintJSON(src []byte) ([]byte, error) {
-	// Force output to be pretty printed. I can't rely on a
-	// standard way to implement this in SQL.
-	buf := []byte{}
-	w := bytes.NewBuffer(buf)
-	if err := json.Indent(w, src, "", "    "); err != nil {
-		return nil, err
-	}
-	src = w.Bytes()
-	return src, nil
-}
 
 // CliDisplayHelp writes out help on a supported topic
 func CliDisplayHelp(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
@@ -199,13 +185,13 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		cName  string
 		key    string
 		output string
-		pretty bool
+		jsonl bool
 	)
 	flagSet := flag.NewFlagSet("read", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
+	flagSet.BoolVar(&jsonl, "jsonl", false, "output as JSON line")
 	flagSet.StringVar(&output, "o", "-", "write to file")
-	flagSet.BoolVar(&pretty, "pretty", true, "pretty print output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -229,8 +215,8 @@ func doRead(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	default:
 		return fmt.Errorf("%q storage not supportted", c.StoreType)
 	}
-	if pretty {
-		src, err = prettyPrintJSON(src)
+	if jsonl {
+		src = FmtJSONL(src)
 	}
 	if err == nil {
 		return WriteSource(output, out, src)
@@ -444,11 +430,12 @@ func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 }
 
 func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	sqlFName, showHelp := "", false
+	sqlFName, showHelp, jsonl := "", false, false
 	flagSet := flag.NewFlagSet("query", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&sqlFName, "sql", sqlFName, "read SQL statement from a file")
+	flagSet.BoolVar(&jsonl, "jsonl", false, "output using JSON lines")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 
@@ -463,21 +450,6 @@ func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	// Create a DSQuery object and evaluate the command line options
 	app := new(DSQuery)
 	cName, stmt, params := "", "", []string{}
-	if sqlFName != "" {
-		if sqlFName != "-" {
-			var err error
-			in, err = os.Open(sqlFName)
-			if err != nil {
-				return err
-			}
-			//defer in.Close()
-		}
-		src, err := io.ReadAll(in)
-		if err != nil {
-			return err
-		}
-		stmt = fmt.Sprintf("%s", src)
-	}
 	for _, arg := range args {
 		switch {
 		case cName == "":
@@ -488,13 +460,27 @@ func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 			params = append(params, arg)
 		}
 	}
+	if sqlFName != "" {
+		if sqlFName != "-" {
+			var err error
+			in, err = os.Open(sqlFName)
+			if err != nil {
+				return err
+			}
+			//defer in.Close()
+		}
+	}
 	if cName == "" {
 		return fmt.Errorf("missing C_NAME")
 	}
 	if stmt == "" {
-		return fmt.Errorf("missing SQL_STATEMENT")
+		src, err := io.ReadAll(in)
+		if err != nil {
+			return err
+		}
+		stmt = fmt.Sprintf("%s", src)
 	}
-	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params); err != nil {
+	if err := app.RunQuery(os.Stdin, os.Stdout, os.Stderr, cName, stmt, jsonl, params); err != nil {
 		return err
 	}
 	return nil

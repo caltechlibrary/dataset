@@ -4,6 +4,8 @@ The goal of Dataset v3 is to provide a simple core level of functionality making
 
 Version 3's focus on reducing the functionality of Dataset v2 and simplifying the codebase in the process. It is a distillation of the ideas and concepts that have guided the Dataset Project over since 2016. V3 is intended to be the penultimate implementation of dataset and datasetd. Subsequent version should be stable and feature complete.
 
+NOTE: The command `dataset` is now called `dataset3` as of version 3. The command `datasetd` is now called `dataset3d` as of version 3. This allows version 2 to be installed along side the more experimental version 3.
+
 ## On the chopping block
 
 ### Dropped features from v2

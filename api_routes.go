@@ -185,22 +185,12 @@ func getAttrNames(q url.Values, key string) []string {
 func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	// NOTE: Need to determine content type requested via the content type heeader
 	//
-	// CSV -> text/csv
-	// YAML -> application/yaml
 	// JSON -> application/json
 	//
 	// if contentType is "" then it will default to application/json
 	contentType := "application/json"
 	if r.Header != nil {
 		contentType = r.Header.Get("content-type")
-	}
-	// Make content type align to "csv" or "yaml" query parameter when passed.
-	urlQuery := r.URL.Query()
-	if urlQuery.Get("csv") != "" {
-		contentType = "text/csv"
-	}
-	if urlQuery.Get("yaml") != "" {
-		contentType = "application/yaml"
 	}
 	if api.Debug {
 		log.Printf("DEBUG Query got a query, cName: %q, verb: %q, content type: %q, options: %+v\n", cName, verb, contentType, options)
@@ -304,22 +294,6 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			return
 		}
 		// NOTE: I need to handle the content type requested -> CSV, YAML or JSON (default)
-		switch contentType {
-		case "text/csv":
-			src, err = MakeCSV(src, getAttrNames(urlQuery, "csv"))
-			if err != nil {
-				log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
-				return
-			}
-		case "application/yaml":
-			src, err = MakeCSV(src, getAttrNames(urlQuery, "yaml"))
-			if err != nil {
-				log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
-				return
-			}
-		}
 		w.Header().Add("Content-Type", contentType)
 		fmt.Fprintf(w, "%s", src)
 		return

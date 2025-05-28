@@ -1,35 +1,35 @@
 
-EXAMPLES
+# EXAMPLES
 
 ~~~
-   dataset help init
+   dataset3 help init
 
-   dataset init my_objects.ds 
+   dataset3 init my_objects.ds 
 
-   dataset help create
+   dataset3 help create
 
-   dataset create my_objects.ds "123" '{"one": 1}'
+   dataset3 create my_objects.ds "123" '{"one": 1}'
 
-   cat <<EOT | dataset create my_objects.ds "345"
+   cat <<EOT | dataset3 create my_objects.ds "345"
    {
 	   "four": 4,
 	   "five": "six"
    }
    EOT
 
-   dataset update my_objects.ds "123" '{"one": 1, "two": 2}'
+   dataset3 update my_objects.ds "123" '{"one": 1, "two": 2}'
 
-   dataset delete my_objects.ds "345"
+   dataset3 delete my_objects.ds "345"
 
-   dataset keys my_objects.ds
+   dataset3 keys my_objects.ds
 
-   dataset hasKey my_objects.ds "345"
+   dataset3 hasKey my_objects.ds "345"
 
-   dataset dump my_objects.ds >objects.jsonl
+   dataset3 dump my_objects.ds >objects.jsonl
 
-   dataset load my_objects.ds <objects.jsonl
+   dataset3 load my_objects.ds <objects.jsonl
 
-   cat <<SQL | dataset query my_objects.ds 
+   cat <<SQL | dataset3 query my_objects.ds 
    select json_object('key', _Key, 'version', version) as obj
    from my_objects_history
    where _Key "345"

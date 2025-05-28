@@ -1,3 +1,20 @@
+Releasse 3.0.0:
+
+This release contains breaking changes with v2 and earlier. It comes with two programs, `dataset3` and `dataset3d`. The verbs used by `dataset3` are limited to the following
+
+- init
+- help
+- create
+- read
+- update
+- delete
+- keys
+- query
+
+The end points for `dataset3d` are similar to v2 but without endpoints related to frames and attachments.
+
+V3 does not support pairtree storage. The default storage uses SQLite3.
+
 Release 2.0.0-b06:
 
 This release is a rewrite of version 1 focusing on removing features, clearifying useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.

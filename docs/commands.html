@@ -12,12 +12,12 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
-    <li><a href="LICENSE">LICENSE</a></li>
-    <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
-	<li><a href="search.html">Search</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
@@ -25,7 +25,7 @@
 <section>
 <h1 id="commands">commands</h1>
 <p>Documentation on individual commands can be see with</p>
-<pre class="shell"><code>    dataset -help COMMAND_NAME</code></pre>
+<pre class="shell"><code>    dataset3 help COMMAND_NAME</code></pre>
 <p>where “COMMAND_NAME” is</p>
 <p>replaced with one of the commands below –</p>
 <ul>
@@ -33,7 +33,7 @@
 exists, requires a path to collection</li>
 <li><a href="keys.html">keys</a> - returns the keys to stdout, one key
 per line</li>
-<li><a href="haskey.html">has-key</a> - returns true is key is in
+<li><a href="haskey.html">haskey</a> - returns true is key is in
 collection, false otherwise</li>
 <li><a href="create.html">create</a> - creates a new JSON document or
 replace an existing one in collection</li>
@@ -43,41 +43,8 @@ stdout</li>
 collection</li>
 <li><a href="delete.html">delete</a> - removes a JSON document from
 collection</li>
-<li>Data frames
-<ul>
-<li><a href="frames.html">frames</a> - list the data frames defined for
-a collection</li>
-<li><a href="frame.html">frame</a> - defines a new data frame</li>
-<li><a href="frame-def.html">frame-def</a> - returns a frame’s object
-definition</li>
-<li><a href="frame-keys.html">frame-keys</a> - returns a frame’s key
-list</li>
-<li><a href="frame-objects.html">frame-objects</a> - returns a frame’s
-object list</li>
-<li><a href="reframe.html">reframe</a> - uses the existing frame
-definition replacing all objects using a new key list</li>
-<li><a href="refresh.html">refresh</a> - updates the objects in a data
-frame based on the current status of the collection.</li>
-<li><a href="delete-frame.html">delete-frame</a> - remove a frame from a
-collection</li>
-</ul></li>
-<li><a href="count.html">count</a> - returns a count of keys in a
-collection</li>
-<li>Attachments
-<ul>
-<li><a href="attachments.html">attachments</a> - lists any attached
-content for JSON document</li>
-<li><a href="attach.html">attach</a> - attaches a non-JSON content to a
-JSON record</li>
-<li><a href="retrieve.html">retrieve</a> - returns attachments for a
-JSON document</li>
-<li><a href="prune.html">prune</a> - remove attachments to a JSON
-document</li>
-</ul></li>
-<li><a href="check.html">check</a> - will check a collection against
-current version (for pairtree storage collections)</li>
-<li><a href="repair.html">repair</a> - will attempt to repair/upgrade a
-collection (for pairtree storage collections)</li>
+<li><a href="query.html">query</a> - return JSON arrays of objects using
+SQL queries</li>
 </ul>
 <p>NOTE: The options create, update can read JSON documents piped from
 standard in if you use the ‘-i -’ or ‘-include -’ option. Likewise keys
@@ -86,7 +53,7 @@ for read, list, keys and count.</p>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

@@ -1,0 +1,23 @@
+#
+# recipes_api.yaml example configuration
+#
+host: localhost:8485
+# This htdocs directory is provided by cold_ui so we don't enable it.
+#htdocs: htdocs
+collections:
+  # Each collection is an object. The path prefix is
+  # /api/<dataset_name>/...
+  - dataset: recipes.ds
+    query:
+      recipes_by_namet: |
+        select json_object(
+            'name', src->'name',
+            'ingredients', src->'ingredients',
+            'preparations', src->'preparaions'
+        ) as src
+        from recipies
+        order by src->'name'
+    keys: true
+    create: true
+    read: true
+    update: true

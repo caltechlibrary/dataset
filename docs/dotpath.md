@@ -11,9 +11,9 @@ includes the ability to traverse nested arrays. The root of a is a
 leading dot. A dot is typed as a period (i.e. \".\"). Given the
 following the dot path to the \"name\" field would be \".name\".
 
-```json
+~~~json
     {"name":"Jane Doe"}
-```
+~~~
 
 The *dotpath* `.name` would return the value \"Jane Doe\".
 
@@ -22,9 +22,9 @@ The *dotpath* `.name` would return the value \"Jane Doe\".
 Arrays are designated with square brackets (e.g. \[0\] would reference
 the first element of an array, arrays are number from zero).
 
-```json
+~~~json
     ["one", "two", "three"]
-```
+~~~
 
 The dotpath of `[0]` would correspond to the value \"one\", `[1]` would
 correspond to the value \"two\" and `[2]` would refer to the value
@@ -40,7 +40,7 @@ Often you have more complex objects including some level of nesting.
 Element(s) can be reference by combine the dotpaths into more complex
 expressions.
 
-```json
+~~~json
     {
         "title": "Introducing dataset",
         "authors":[
@@ -48,7 +48,7 @@ expressions.
             {"given_name":"Robert","family_name": "Doiel"}
         ]
     }
-```
+~~~
 
 You would reference the title with `.title`, the first author\'s family
 name with `.authors[0].family_name` or get an array of authors family

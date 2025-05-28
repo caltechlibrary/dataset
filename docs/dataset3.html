@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="dataset3">dataset3</h1>
+<h2 id="usage">USAGE</h2>
+<pre><code>dataset3 [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [ACTION PARAMETERS...]</code></pre>
+<h2 id="synopsis">SYNOPSIS</h2>
+<p>dataset is a command line tool demonstrating dataset package for
+managing JSON documents stored on disc. A dataset is organized around
+collections, collections contain a pairtree holding specific JSON
+documents and related content. In addition to the JSON documents dataset
+maintains metadata for management of the documents, their attachments as
+well as a ability to generate select lists based JSON document keys (aka
+JSON document names).</p>
+<h2 id="global-options">GLOBAL OPTIONS</h2>
+<p>Options can be general (e.g. <code>--help</code>) or specific to a
+verb. General options are</p>
+<pre><code>    -e, -examples             display examples
+    -h, -help                 display help
+    -l, -license              display license
+    -v, -version              display version
+    -verbose                  output rows processed on importing from CSV</code></pre>
+<h2 id="verbs">VERBS</h2>
+<pre><code>    create         Create a JSON record in a collection
+    delete         Delete a JSON record (and attachments) from a collection
+    dump           export a dataset collection as JSON lines stream
+    haskey        Returns true if key is in collection, false otherwise
+    init           Initialize a dataset collection
+    keys           List the keys in a collection
+    load           import a dataset collection using JSON lines stream
+    read           Read back a JSON record from a collection
+    update         Update a JSON record in a collection
+    query          query a collection using SQL</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

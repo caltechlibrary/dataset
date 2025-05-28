@@ -1,0 +1,13 @@
+host: "localhost:8485",
+collections:
+  - dataset: "friends.ds"
+    query:
+      cast_list: |
+        select src
+        from friends
+        order by src->>'family_name'
+    keys: true
+    create: true
+    read: true
+    update: true
+    delete: true

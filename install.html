@@ -12,7 +12,7 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="./">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
@@ -24,11 +24,11 @@
 
 <section>
 <h1 id="installation">Installation</h1>
-<p><strong>dataset</strong> is a set of command line programs run from a
-shell like Bash. It is designed for single user, single process
+<p><strong>dataset3</strong> is a set of command line programs run from
+a shell like Bash. It is designed for single user, single process
 management of a JSON object documents as a collection where JSON
 documents are referenced by a unique identifier or key.
-<strong>datasetd</strong> is a web service which serves a similar
+<strong>dataset3d</strong> is a web service which serves a similar
 purpose but is intended for supporting multi-user and
 multi-processes.</p>
 <p>This is generalized instructions for a release. For deployment
@@ -62,6 +62,7 @@ in <code>$HOME/bin</code> and that is assumed to be in your path.</p>
 <pre class="shell"><code>    cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
+    git checkout v3
     make
     # Add any missing dependencies you might need in your Go environment
     make test
@@ -70,6 +71,7 @@ in <code>$HOME/bin</code> and that is assumed to be in your path.</p>
 <pre class="shell"><code>    cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
+    git checkout v3
     .\make.bat
     # Follow the prompts and instruction in the bat file.</code></pre>
 <h3 id="requirements">Requirements</h3>
@@ -101,7 +103,7 @@ v1.23 or better.</p>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

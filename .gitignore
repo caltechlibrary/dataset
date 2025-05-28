@@ -48,3 +48,4 @@ libdataset/*.h
 __pycache__
 man
 *.jsonl
+*.diff

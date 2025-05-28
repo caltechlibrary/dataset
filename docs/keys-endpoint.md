@@ -6,7 +6,9 @@ Interacting with the __datasetd__ web service can be done with any web client. F
 
 This end point lists keys available in a collection.
 
-    `http://localhost:8485/<COLLECTION_ID>/keys`
+~~~
+    http://localhost:8485/<COLLECTION_ID>/keys
+~~~
 
 Requires a "GET" method.
 
@@ -17,19 +19,18 @@ Example
 
 In this example `<COLLECTION_ID>` is "t1".
 
-```shell
+~~~shell
     curl http://localhost:8485/t1/keys
-```
+~~~
 
 The document return looks some like
 
-```json
+~~~json
     [
         "one",
         "two",
         "three"
     ]
-```
+~~~
 
 For a "t1" containing the keys of "one", "two" and "three".
-

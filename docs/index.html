@@ -12,65 +12,65 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
-    <li><a href="LICENSE">LICENSE</a></li>
-    <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
-	<li><a href="search.html">Search</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="dataset">dataset</h1>
+<h1 id="dataset3">dataset3</h1>
 <p>The documentation is organized around the command line options and as
 a series of “how to” style examples.</p>
 <ul>
 <li><a href="description.html">overview</a></li>
 <li><a href="examples.html">examples</a></li>
-<li><a href="../how-to/getting-started-with-dataset.html">getting
-started with dataset</a> (covers both Bash and Python)</li>
-<li>explore additional other <a href="../how-to/">tutorials</a></li>
+<li><a href="getting_started_with_dataset.html">getting started with
+dataset</a> (covers both Bash and Python)</li>
+<li><a href="a_shell_example.bash">A shell example using dataset3 and
+dataset3d</a></li>
+<li>Special topcis
+<ul>
+<li><a href="Windows-cmd-prompt.html">Using Dataset from Windows’
+command prompt and powershell</a></li>
+</ul></li>
 </ul>
 <h2 id="command-line-program-documentation">Command line program
 documentation</h2>
 <ul>
-<li><a href="dataset.html">dataset</a> - usage page for managing
-collections with <em>dataset</em></li>
+<li><a href="dataset3.html">dataset3</a> - usage page for managing
+collections with <strong>dataset3</strong></li>
 </ul>
-<h2 id="internal-project-concepts">Internal project concepts</h2>
-<ul>
-<li><a href="../how-to/upgrading-a-collection.html">upgrading a
-collection</a> - Describes how to upgrade a collection from a previous
-version of dataset to a new one</li>
-</ul>
-<h2 id="dataset-operations"><strong>dataset</strong> Operations</h2>
-<p>The basic operations support by <em>dataset</em> are listed below
-organized by collection and JSON document level.</p>
+<h2 id="dataset3-operations"><strong>dataset3</strong> Operations</h2>
+<p>The basic operations support by <strong>dataset3</strong> are listed
+below organized by collection and JSON document level.</p>
 <h2 id="a-word-about-keys">A word about keys</h2>
-<p><strong>dataset</strong> is based around the concept of key/value
+<p><strong>dataset3</strong> is based around the concept of key/value
 pairs where the key is the unique identifier for an object stored
 (i.e. the value) in the collection. Each storage option supported by
 dataset and its own issues around what things can be called.
 <strong>Keys should be lower case alpha numeric or underscore
 only.</strong> E.g. the pairtree storage relies on the file system to
-store the JSON objects. Some file systems are not case sensitive, others
+store the JSON objects. some file systems are not case sensitive, others
 face challenges with non-alpha numeric filenames.</p>
 <h2 id="collection-level">Collection Level</h2>
 <ul>
 <li><a href="init.html">init</a> creates a collection</li>
-<li><a href="history.html">history</a>, how history is implemented</li>
 <li><a href="keys.html">keys</a> list keys of JSON documents in a
 collection, supports filtering and sorting</li>
-<li><a href="query.html">query</a>, query lets to create a list of
-objects via SQL statements</li>
 <li><a href="dump.html">dump</a> dumps an entire collection to standard
 in <a href="https://jsonlines.org/">JSON line format</a></li>
 <li><a href="load.html">load</a> loads a <a
 href="https://jsonlines.org/">JSON line formatted stream</a> into a
 collection</li>
+<li><a href="query.html">query</a>, query lets to create a list of
+objects via SQL statements</li>
 <li><a href="codemeta.html">codemeta</a></li>
+<li><a href="history.html">history</a>, how history is implemented</li>
 </ul>
 <h2 id="json-document-level">JSON Document level</h2>
 <ul>
@@ -85,25 +85,45 @@ collection</li>
 <li><a href="haskey.html">haskey</a> returns true if key is found in
 collection, false otherwise</li>
 </ul>
-<h1 id="datasetd-as-a-web-service">datasetd as a web service</h1>
+<h1 id="dataset3d-as-a-web-service">dataset3d as a web service</h1>
 <p>Since version v2.x is a web service providing access to dataset
 collections. This is described in the <a
-href="datasetd.html">datasetd</a> documentation page.</p>
-<p><a href="datasetd.html">datasetd</a> supports the following end
+href="dataset3d.html">dataset3d</a> documentation page.</p>
+<p><a href="dataset3d.html">dataset3d</a> supports the following end
 points.</p>
+<h3 id="end-points">End points</h3>
+<ul>
+<li><a href="collections-endpoint.html">Collections Endpoint</a></li>
+<li><a href="collection-endpoint.html">Collection Endpoint</a></li>
+<li><a href="create-endpoint.html">Create Endpoint</a></li>
+<li><a href="read-endpoint.html">Read Endpoint</a></li>
+<li><a href="update-endpoint.html">Update Endpoint</a></li>
+<li><a href="delete-endpoint.html">Delete Endpoint</a></li>
+<li><a href="keys-endpoint.html">Keys Endpoint</a></li>
+<li><a href="query-endpoint.html">Query Endpoint</a></li>
+</ul>
 <h1 id="storage-engines">Storage engines</h1>
 <p>In v3 dataset JSON is stored in an SQL database with JSON column
 support. Currently three SQL databases can be used to store the JSON
 documents, SQLite 3 (default), PostgreSQL and (with manual
 configuration), MySQL 8. PostgreSQL. See <a
 href="storage-engines.html">storage engines</a> for more details.</p>
+<ul>
+<li><a href="storage-engines.html">Storage Engines</a></li>
+</ul>
 <h1 id="compatibity">Compatibity</h1>
-<p>v3 is not compatible with v2 or earlier. You can use the v2 dump and
-use load in v3 to migrate the collection.</p>
+<p>v3 is not compatible with v2 or earlier. You can use the last dataset
+v2 to dump a collections objects and then load them in with
+<strong>dataset3</strong> load.</p>
+<pre class="shell"><code># Dump the v2 collection as a JSON lines document
+dataset dump old_data.ds &gt;data.jsonl
+# Initialize the v3 collection and then load the JSON line document
+dataset3 init new_data.ds
+dataset3 load new_data.ds &lt;data.jsonl</code></pre>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

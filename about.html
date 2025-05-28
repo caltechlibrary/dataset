@@ -12,7 +12,7 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="./">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
@@ -24,15 +24,14 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.2.4">dataset 2.2.4</h2>
-<p>Added the following functions to the dataset package</p>
-<ul>
-<li>(c *Collection) KeysJSON</li>
-<li>(c *Collection) UpdatedKeysJSON</li>
-<li>(c *Collection) QueryJSON</li>
-</ul>
-<p>These provide JSON encoded object support for their base
-functions.</p>
+<h2 id="dataset-3.0.0-alpha">dataset 3.0.0-alpha</h2>
+<p>Dataset v3 is a breaking change from v2. It focuses on feature
+reduction and code simplification. Many features have been removed. The
+v3 collections are not compatible with v2 and earlier collections.</p>
+<p>JSON lines support in query results and read operations has been
+improved. The provided programs have been reduced to
+<strong>dataset3</strong> and <strong>dataset3d</strong>. As such they
+can be installed along side Dataset v2 and earlier.</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
@@ -47,8 +46,29 @@ class="uri">https://orcid.org/0000-0003-0900-6903</a></li>
 <li>Thomas E Morrell, <a href="https://orcid.org/0000-0001-9266-5146"
 class="uri">https://orcid.org/0000-0001-9266-5146</a></li>
 </ul>
-<p>Tools for working with JSON documents as a collection hosted on the
-file system or SQL JSON store</p>
+<p>Dataset Project provides tools for working with JSON documents as a
+collection hosted in a SQL JSON store (e.g. SQLite3). It is an
+exploration of the use and usefulness of JSON documents in the setting
+of libraries, archives and museums. It may have application further
+afield as metadata management benefits a wide range of application
+domains.</p>
+<p>Dataset v3 stores JSON documents using a SQL engine with JSON column
+support. These days that most popular SQL implementations support JSON
+columns (e.g. SQlite3, PostgreSQL, MySQL). V3 uses a extremely simple
+table structure for both the current object state and object history as
+well as integration with the SQL’s growing support for working with JSON
+objects generally.</p>
+<p>Two tools are provided by the Dataset Project v3</p>
+<dl>
+<dt><a href="dataset3.1.html">dataset3</a></dt>
+<dd>
+is a command line interface for managing JSON documents.
+</dd>
+<dt><a href="dataset3d.1.html">dataset3d</a></dt>
+<dd>
+JSON Web Service. This service supports file attachments.
+</dd>
+</dl>
 <ul>
 <li>License: <a href="https://caltechlibrary.github.io/dataset/LICENSE"
 class="uri">https://caltechlibrary.github.io/dataset/LICENSE</a></li>
@@ -60,18 +80,23 @@ class="uri">https://github.com/caltechlibrary/dataset/issues</a></li>
 <h3 id="programming-languages">Programming languages</h3>
 <ul>
 <li>Go</li>
+<li>SQL</li>
 </ul>
 <h3 id="software-requirements">Software Requirements</h3>
 <ul>
 <li>Golang &gt;= 1.24.2</li>
-<li>CMTOlls &gt;= 0.0.20</li>
+<li>CMTools &gt;= 0.0.29</li>
 <li>Pandoc &gt;= 3.1</li>
 <li>GNU Make &gt;= 3.8</li>
+</ul>
+<h3 id="software-suggestions">Software Suggestions</h3>
+<ul>
+<li>jq &gt;= 1.7</li>
 </ul>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

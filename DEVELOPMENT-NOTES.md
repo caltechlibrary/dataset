@@ -5,7 +5,7 @@
 
 (when compiling from source)
 
-- Golang 1.23.2 or better
+- Golang 1.24.3 or better
 
 ## Recommend
 
@@ -23,11 +23,11 @@
 - update a JSON document
 - delete a JSON document
 
-```go
+~~~golang
     package main
     
     import (
-        "github.com/caltechlibrary/dataset"
+        "github.com/caltechlibrary/dataset/v3"
         "log"
     )
     
@@ -61,13 +61,12 @@
             log.Fatalf("%s", err)
         }
     }
-```
+~~~
 
 
 ## package requirements
 
-_dataset_ is built on both Golang's standard packages and Caltech Library 
-packages.
+_dataset3_ is built on both Golang's standard packages and Caltech Library packages.
 
 ## Caltech Library packages
 

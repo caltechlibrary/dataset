@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="dataset3d">Dataset3d</h1>
+<h2 id="overview">Overview</h2>
+<p><strong>dataset3d</strong> is a minimal web service intended to run
+on localhost port 8485 (by default). It presents one or more dataset
+collections as a web service. It features a subset of functionallity
+available with the dataset command line program.
+<strong>dataset3d</strong> does support multi-process/asynchronous
+update to a dataset collection.</p>
+<p><strong>dataset3d</strong> is notable in what it does not provide. It
+does not provide user/role access restrictions to a collection. It is
+not intended to be a standalone web service on the public internet or
+local area network. It does not provide support for search or complex
+querying. If you need these features I suggest looking at existing
+mature NoSQL data management solutions like Couchbase, MongoDB, MySQL
+(which now supports JSON objects) or Postgres (which also support JSON
+objects). <strong>dataset3d</strong> is a simple, miminal service.</p>
+<p>NOTE: You could run <strong>dataset3d</strong> could be combined with
+a front end web service like Apache 2 or NginX and through them provide
+access control based on <em>datasetd</em>’s predictable URL paths. That
+would require a robust understanding of the front end web server, it’s
+access control mechanisms and how to defend a proxied service. That is
+beyond the skope of this project.</p>
+<h2 id="configuration">Configuration</h2>
+<p><strong>dataset3d</strong> can make one or more dataset collections
+visible over HTTP. The dataset collections hosted need to be avialable
+on the same file system as where <strong>dataset3d</strong> is running.
+<strong>dataset3d</strong> is configured by reading a “settings.json”
+file in either the local directory where it is launch or by a specified
+directory on the command line to a appropriate JSON settings.</p>
+<p>Configuration to The “settings.yaml” file has the following
+structure</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">host</span><span class="kw">:</span><span class="at"> localhost:8485</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsn_url</span><span class="kw">:</span><span class="at"> mysql://DB_USER:DB_PASSWORD\@DB_NAME</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">collections</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">dataset</span><span class="kw">:</span><span class="at"> &lt;PATH_TO_DATASET_COLLECTION&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">keys</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">create</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">read</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">update</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">delete</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span></code></pre></div>
+<p>In the “collections” object the “<COLLECTION_ID>” is a string which
+will be used as the start of the path in the URL. The “dataset”
+attribute sets the path to the dataset collection made available at
+“<PATH_TO_DATASET_COLLECTION>”. For each collection you can allow the
+following sub-paths for JSON object interaction “keys”, “create”,
+“read”, “update” and “delete”. JSON document attachments are supported
+by “attach”, “retrieve”, “prune”. If any of these attributes are missing
+from the settings they are assumed to be set to false.</p>
+<p>The sub-paths correspond to their counter parts in the dataset
+command line tool. By varying the settings of these you can support read
+only collections, drop off collections or function as a object store
+running behind a web application.</p>
+<h2 id="running-datasetd">Running datasetd</h2>
+<p><strong>dataset3d</strong> runs as a HTTP service and as such can be
+exploited in the same manner as other services using HTTP. You should
+only run <strong>dataset3d</strong> on localhost on a trusted machine.
+If the machine is a multi-user machine all users can have access to the
+collections exposed by <strong>dataset3d</strong> regardless of the file
+permissions they may in their account.</p>
+<p>Example: If all dataset collections are in a directory only allowed
+access to be the “web-data” user but another users on the machine have
+access to curl they can access the dataset collections based on the
+rights of the “web-data” user by access the HTTP service. This is a
+typical situation for most localhost based web services and you need to
+be aware of it if you choose to run <strong>dataset3d</strong>.</p>
+<p><strong>dataset3d</strong> should NOT be used to store confidential,
+sensitive or secret information.</p>
+<h2 id="supported-features">Supported Features</h2>
+<p><strong>dataset3d</strong> provides a limitted subset of actions
+supportted by the standard datset command line tool. It only supports
+the following actions</p>
+<ul>
+<li>collections (return a list of collections available)</li>
+<li>collection (return the codemeta for a collection)</li>
+<li>keys (return the list of keys in a collection)</li>
+<li>haskeys (return the list of keys in a collection)</li>
+<li>object (CRUD operations on a JSON document via REST calls)</li>
+<li>query</li>
+</ul>
+<p>Each of theses “actions” can be restricted in the configuration
+(i.e. “settings.yaml” file) by setting the value to “false”. If the
+attribute for the action is not specified in the JSON settings file then
+it is assumed to be “false”.</p>
+<h2 id="exploring-the-end-points">Exploring the End points</h2>
+<p>The following end points are planned for <em>datasetd</em> in version
+2.</p>
+<ul>
+<li><code>/collections</code> returns a list of available
+collections.</li>
+<li><code>/collection/&lt;COLLECTION_ID&gt;</code> with an HTTP GET
+returns the codemeta document describing the collection.</li>
+</ul>
+<p>The following end points are per collection. They are available for
+each collection where the settings are set to true. The end points are
+generally RESTful so one end point will often map to a CRUD style
+operations via http methods POST to create an object, GET to “read” or
+retrieve an object, a PUT to update an object and DELETE to remove
+it.</p>
+<p>The terms “<COLLECTION_ID>” and “<KEY>” refer to the collection path,
+the string representing the “key” to a JSON document. For attachment
+then a base filename is used to identify the attachment associate with a
+“key” in a collection.</p>
+<ul>
+<li><code>/&lt;COLLECTION_ID&gt;/keys</code> returns a list of keys
+available in the collection</li>
+<li><code>/&lt;COLLECTION_ID&gt;/haskey/&lt;KEY&gt;</code> returns true
+if a key is found for a JSON document or false otherwise</li>
+<li><code>/&lt;COLLECTION_ID&gt;/object/&lt;KEY&gt;</code> performs CRUD
+operations on a JSON document, a GET retrieves the JSON document, a POST
+creates it, PUT updates it and DELETE removes it.</li>
+<li><code>/&lt;COLLECTION_ID&gt;/query/&lt;QUERY_NAME&gt;</code> this
+will let you retrieve a query results</li>
+</ul>
+<h2 id="recipes-a-use-case">“Recipes”, a use case</h2>
+<p>In this use case a dataset collection called “recipes.ds” has been
+previously created and populated using the command line tool.</p>
+<p>If I have a settings file for “recipes” based on the collection
+“recipes.ds” and want to make it read only I would make the attribute
+“read” set to true and if I want the option of listing the keys in the
+collection I would set that true also.</p>
+<ol type="1">
+<li>create our collection called “recipes.ds”</li>
+<li>load test data from <a href="recipes.jsonl">recipes.jsonl</a> dump
+file</li>
+<li>create the <a href="recipes_api.yaml">recipes_api.yaml</a> YAML
+file</li>
+<li>test our web service</li>
+</ol>
+<h3 id="create-our-recipes.ds-collection">Create our “recipes.ds”
+collection</h3>
+<pre class="shell"><code>dataset3 init recipes.ds</code></pre>
+<h3 id="load-test-data">Load test data</h3>
+<pre class="shell"><code>dataset3 load recipes.ds &lt;recipes.jsonl</code></pre>
+<h3 id="create-recipies_api.yaml">Create “recipies_api.yaml”</h3>
+<p>Here is the contents of <a
+href="recipes_api.yaml">recipes_api.yaml</a></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># recipes_api.yaml example configuration</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">host</span><span class="kw">:</span><span class="at"> localhost:8485</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># This htdocs directory is provided by cold_ui so we don&#39;t enable it.</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#htdocs: htdocs</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">collections</span><span class="kw">:</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">  # Each collection is an object. The path prefix is</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">  # /api/&lt;dataset_name&gt;/...</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">dataset</span><span class="kw">:</span><span class="at"> recipes.ds</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">query</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">      recipes_by_namet</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        select json_object(</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>            &#39;name&#39;, src-&gt;&#39;name&#39;,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>            &#39;ingredients&#39;, src-&gt;&#39;ingredients&#39;,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            &#39;preparations&#39;, src-&gt;&#39;preparaions&#39;</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        ) as src</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        from recipies</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        order by src-&gt;&#39;name&#39;</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">keys</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">create</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">read</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">update</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<h3 id="test-run-our-collection-using-dataset3d">Test run our collection
+using <strong>dataset3d</strong></h3>
+<p>I would start <strong>dataset3d</strong> with the following command
+line.</p>
+<pre class="shell"><code>    dataset3d start recipes_api.yaml</code></pre>
+<p>This would display the start up message and log output of the
+service.</p>
+<p>In another shell session I could then use curl to list the keys and
+read a record. In this example I assume that “waffles” is a JSON
+document in dataset collection “recipes.ds”.</p>
+<pre class="shell"><code>    curl http://localhost:8485/recipies/read/waffles</code></pre>
+<p>This would return the “waffles” JSON document or a 404 error if the
+document was not found.</p>
+<p>Listing the keys for “recipes.ds” could be done with this curl
+command.</p>
+<pre class="shell"><code>    curl http://localhost:8485/recipies/keys</code></pre>
+<p>This would return a list of keys, one per line. You could show all
+JSON documents in the collection be retrieving a list of keys and
+iterating over them using curl. Here’s a simple example in Bash.</p>
+<pre class="shell"><code>    for KEY in $(curl http://localhost:8485/recipes/keys); do
+       curl &quot;http://localhost/8485/recipe/read/${KEY}&quot;
+    done</code></pre>
+<p>Add a new JSON object to a collection.</p>
+<pre class="shell"><code>    KEY=&quot;sunday&quot;
+    curl -X POST -H &#39;Content-Type:application/json&#39; \
+        &quot;http://localhost/8485/recipe/create/${KEY}&quot; \
+     -d &#39;{&quot;name&quot;: &quot;Sunday&quot;, &quot;ingredients&quot;:{&quot;banana&quot;: 1,&quot;ice cream&quot;: &quot;1/4 qt&quot;, &quot;chocalate syrup&quot;: &quot;2 Tbps&quot;}}&#39;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

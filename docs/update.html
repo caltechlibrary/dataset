@@ -12,12 +12,12 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
-    <li><a href="LICENSE">LICENSE</a></li>
-    <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
-	<li><a href="search.html">Search</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
@@ -25,29 +25,30 @@
 <section>
 <h1 id="update">update</h1>
 <h2 id="syntax">Syntax</h2>
-<pre class="shell"><code>    dataset update COLLECTION_NAME KEY</code></pre>
+<pre class="shell"><code>    dataset3 update COLLECTION_NAME KEY</code></pre>
 <h2 id="description">Description</h2>
-<p><em>update</em> will replace a JSON document in a dataset collection
-for a given KEY. By default the JSON document is read from standard
-input but you can specific a specific file with the “-input” option. The
-JSON document should already exist in the collection when you use
-update.</p>
+<p><strong>update</strong> will replace a JSON document in a dataset
+collection for a given KEY. By default the JSON document is read from
+standard input but you can specific a specific file with the “-input”
+option. The JSON document should already exist in the collection when
+you use update.</p>
 <h2 id="usage">Usage</h2>
 <p>In this example we assume there is a JSON document on local disc
-named <em>jane-doe.json</em>. It contains
+named <strong>jane-doe.json</strong>. It contains
 <code>{"name":"Jane Doe"}</code> and the KEY is “jane.doe”. In the first
 one we specify the full JSON document via the command line after the
-KEY. In the second example we read the data from <em>jane-doe.json</em>.
-Finally in the last we read the JSON document from standard input and
-save the update to “jane.doe”. The collection name is “people.ds”.</p>
-<pre class="shell"><code>    dataset update people.ds jane.doe &#39;{&quot;name&quot;:&quot;Jane Doiel&quot;}&#39;
-    dataset update people.ds jane.doe jane-doe.json
-    dataset update -i jane-doe.json people.ds jane.doe
-    cat jane-doe.json | dataset update people.ds jane.doe</code></pre>
+KEY. In the second example we read the data from
+<strong>jane-doe.json</strong>. Finally in the last we read the JSON
+document from standard input and save the update to “jane.doe”. The
+collection name is “people.ds”.</p>
+<pre class="shell"><code>    dataset3 update people.ds jane.doe &#39;{&quot;name&quot;:&quot;Jane Doiel&quot;}&#39;
+    dataset3 update people.ds jane.doe jane-doe.json
+    dataset3 update -i jane-doe.json people.ds jane.doe
+    cat jane-doe.json | dataset3 update people.ds jane.doe</code></pre>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

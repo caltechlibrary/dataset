@@ -6,7 +6,7 @@ Syntax
 ------
 
 ~~~shell
-    dataset [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
+    dataset3 [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
 ~~~
 
 Description
@@ -19,7 +19,7 @@ Usage
 -----
 
 ~~~shell
-    dataset haskey people.ds '0000-0003-0900-6903'
-    dataset haskey people.ds r1
+    dataset3 haskey people.ds '0000-0003-0900-6903'
+    dataset3 haskey people.ds r1
 ~~~
 

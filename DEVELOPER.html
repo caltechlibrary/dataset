@@ -12,7 +12,7 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="./">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
@@ -31,7 +31,7 @@ need to take a more Window-ish approach and run
 <code>make.bat</code>.</p>
 <h2 id="windows-11">Windows 11</h2>
 <ul>
-<li>Install Go 1.21.1 via the Windows’ installer available from
+<li>Install Go 1.24.3 via the Windows’ installer available from
 https://golang.org/downloads</li>
 <li>Install git</li>
 <li>Run <code>go get -u github.com\caltechlibrary\dataset</code></li>
@@ -40,12 +40,13 @@ https://golang.org/downloads</li>
 </ul>
 <p>Here’s an example of what I’ve done after opening a command
 window</p>
-<pre><code>    cd %USERPROFILE%
+<pre class="shell"><code>    cd %USERPROFILE%
     mkdir go
     mkdir go\bin
     mkdir go\src
     go get -u github.com\caltechlibrary\dataset
     cd go\src\caltechlibrary\dataset
+    git checkout v3
     .\make.bat
     move dataset.exe &quot;%USERPROFILE\go\bin\dataset.exe&quot;</code></pre>
 <p>The dataset command line exe will likely need to be copied to where
@@ -53,7 +54,7 @@ your windows command line applications at located.</p>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

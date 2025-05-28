@@ -210,7 +210,7 @@ func (c *Collection) initSQLStore() error {
 	basename := path.Base(c.Name)
 	colName := path.Join(fullName, "collection.json")
 	c.Name = basename
-	src, err := JSONMarshalIndent(c, "", "    ")
+	src, err := JSONMarshal(c)
 	if err != nil {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
@@ -369,7 +369,7 @@ func (c *Collection) UpdateMetadata(fName string) error {
 //
 // ```
 func (c *Collection) Create(key string, obj map[string]interface{}) error {
-	src, err := JSONMarshalIndent(obj, "", "    ")
+	src, err := JSONMarshal(obj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
@@ -425,7 +425,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 //
 // ```
 func (c *Collection) CreateObject(key string, obj interface{}) error {
-	src, err := JSONMarshalIndent(obj, "", "    ")
+	src, err := JSONMarshal(obj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
@@ -626,7 +626,7 @@ func (c *Collection) Versions(key string) ([]string, error) {
 //
 // ```
 func (c *Collection) Update(key string, obj map[string]interface{}) error {
-	src, err := JSONMarshalIndent(obj, "", "    ")
+	src, err := JSONMarshal(obj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}
@@ -664,7 +664,7 @@ func (c *Collection) Update(key string, obj map[string]interface{}) error {
 //
 // ```
 func (c *Collection) UpdateObject(key string, obj interface{}) error {
-	src, err := JSONMarshalIndent(obj, "", "    ")
+	src, err := JSONMarshal(obj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
 	}

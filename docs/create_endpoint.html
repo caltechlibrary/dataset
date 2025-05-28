@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="create-end-point">Create (end point)</h1>
+<p>Interacting with the <strong>dataset3d</strong> web service can be
+done with any web client. For documentation purposes I am assuming you
+are using <a href="https://curl.se/">curl</a>. This command line program
+is available on most POSIX systems including Linux, macOS and
+Windows.</p>
+<p>Create a JSON document in the collection. Requires a unique key in
+the URL and the content most be JSON less than 1 MiB in size.</p>
+<pre><code>`http://localhost:8485/&lt;COLLECTION_ID&gt;/object/&lt;KEY&gt;`</code></pre>
+<p>Create requires using the “POST” HTTP method with.</p>
+<p>Creates a JSON document for the <code>&lt;KEY&gt;</code> in
+collection <code>&lt;COLLECTION_ID&gt;</code>. On success it returns a
+JSON status object and HTTP 201 OK. Otherwise an HTTP error if creation
+fails.</p>
+<p>The “POST” needs to be JSON encoded and using a Content-Type of
+“application/json” in the request header.</p>
+<h2 id="example">Example</h2>
+<p>The <code>&lt;COLLECTION_ID&gt;</code> is “t1”, the
+<code>&lt;KEY&gt;</code> is “one” The content posted is</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>       <span class="dt">&quot;one&quot;</span><span class="fu">:</span> <span class="dv">1</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>Posting using CURL is done like</p>
+<pre class="shell"><code>    curl -X POST -H &#39;Content-Type: application.json&#39; \
+      http://locahost:8485/t1/object/one \
+      -d &#39;{&quot;one&quot;: 1}&#39;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

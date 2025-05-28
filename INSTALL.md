@@ -1,23 +1,14 @@
 Installation
 ============
 
-__dataset__ is a set of command line programs run from a shell like Bash.
-It is designed for single user, single process management of a JSON
-object documents as a collection where JSON documents are referenced
-by a unique identifier or key.  __datasetd__ is a web service which
-serves a similar purpose but is intended for supporting multi-user
-and multi-processes.
+__dataset3__ is a set of command line programs run from a shell like Bash. It is designed for single user, single process management of a JSON object documents as a collection where JSON documents are referenced by a unique identifier or key. __dataset3d__ is a web service which serves a similar purpose but is intended for supporting multi-user and multi-processes.
 
-This is generalized instructions for a release.  For deployment suggestions
-see NOTES.md
+This is generalized instructions for a release.  For deployment suggestions see NOTES.md
 
 Quick install with curl or irm
 ------------------------------
 
-There is an experimental installer.sh script that can be run with the
-following command to install latest table release. This may work for
-macOS, Linux and if you're using Windows with the Unix subsystem. This
-would be run from your shell (e.g. Terminal on macOS).
+There is an experimental installer.sh script that can be run with the following command to install latest table release. This may  work for macOS, Linux and if you're using Windows with the Unix subsystem. This would be run from your shell (e.g. Terminal on macOS).
 
 ~~~
 curl https://caltechlibrary.github.io/dataset/installer.sh | sh
@@ -38,14 +29,14 @@ variable then download. E.g. version 2.1.5 in tihs example.
 For Linux and macOS
 
 ~~~
-export PKG_VERSION=2.1.5
+export PKG_VERSION=2.2.4
 curl https://caltechlibrary.github.io/dataset/installer.sh | sh
 ~~~
 
 For Windows
 
 ~~~
-$env:PKG_VERSION = '2.1.5'
+$env:PKG_VERSION = '2.2.4'
 irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
 ~~~
 
@@ -60,6 +51,7 @@ that is assumed to be in your path.
     cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
+    git checkout v3
     make
     # Add any missing dependencies you might need in your Go environment
     make test
@@ -72,6 +64,7 @@ On Windows you would perform the following in Powershell.
     cd
     git clone https://github.com/caltechlibrary/dataset
     cd dataset
+    git checkout v3
     .\make.bat
     # Follow the prompts and instruction in the bat file.
 ```
@@ -79,7 +72,7 @@ On Windows you would perform the following in Powershell.
 
 ### Requirements
 
-- Go version 1.23 or better
+- Go version 1.24.3 or better
 - Pandoc version 3.1 or better
 - GNU Make
 - Common POSIX/Unix utilities, e.g. cat, sed, grep
@@ -100,5 +93,5 @@ batch files to perform some of what Make under Linux and macOS would do.
 - release.bat builds a release, will prompt for version
 - clean.bat removes executable and temp files
 
-Compilation assumes [go](https://github.com/golang/go) v1.23 or better.
+Compilation assumes [go](https://github.com/golang/go) v1.24.3 or better.
 

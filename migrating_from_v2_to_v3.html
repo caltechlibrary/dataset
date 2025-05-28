@@ -12,7 +12,7 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="./">README</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="install.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
@@ -28,24 +28,22 @@
 version to another you use the dump from a dataset v2 client then use
 dataset v3’s load.</p>
 <ol type="1">
-<li>Install latest v2</li>
-<li>Rename dataset cli to datasetV2</li>
+<li>Install last v2 dataset version if not previously installed</li>
 <li>Install latest v3</li>
-<li>Dump usng datasetV2</li>
-<li>Load using dataset</li>
+<li>Dump usng dataset</li>
+<li>Load using dataset3</li>
 </ol>
-<p>In this example <code>my_objects.ds</code> is the dataset we want to
+<p>In this example <code>old_objects.ds</code> is the dataset we want to
 migrate from. The new version is called <code>new_objects.ds</code>.</p>
 <pre class="shell"><code>curl -L https://caltechlibrary.github.io/dataset/installer.sh 2.2.4
-mv $HOME/bin/dataset $HOME/bin/datasetV2
 curl -L https://caltechlibrary.github.io/dataset/installer.sh
-datasetV2 dump my_objects.ds &gt;objects.jsonl
-dataset init new_objects.ds
-dataset load new_objects.ds &lt;objects.jsonl</code></pre>
+dataset dump old_objects.ds &gt;objects.jsonl
+dataset3 init new_objects.ds
+dataset3 load new_objects.ds &lt;objects.jsonl</code></pre>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>

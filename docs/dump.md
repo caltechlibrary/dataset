@@ -14,6 +14,6 @@ Example
 -------
 
 ~~~shell
-    dataset dump mycollection.ds >mycollection.jsonl
+    dataset3 dump mycollection.ds >mycollection.jsonl
 ~~~
 

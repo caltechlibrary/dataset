@@ -26,6 +26,7 @@ Overview
 ========
 
 - Description
+- History
 - Examples
 
 Collections
@@ -33,7 +34,6 @@ Collections
 
 - Codemeta
 - Init
-- History
 - Load
 - Dump
 
@@ -51,11 +51,11 @@ Objects
 `
 	// cliDescription describes how to use the cli
 	cliDescription = `
-USAGE
+SYNOPSIS
 
  {app_name} [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PARAMETER ...]
 
-SYNOPSIS
+DESCRIPTION
 
 {app_name} command line interface supports creating JSON object
 collections and managing the JSON object documents in a collection. As of v3
@@ -209,6 +209,8 @@ resulting record.
     {app_name} create -i blob.json people.ds r1
     {app_name} create people.ds r1 '{"name":"Jane Doe"}'
     {app_name} create people.ds r1 jane-doe.json
+    cat jane-doe.json | {app_name} create people.ds r1
+    {app_name} create people.ds r1 <jane-doe.json
 ~~~
 
 `
@@ -221,7 +223,7 @@ Syntax
 ------
 
 ~~~shell
-    {app_name} read COLLECTION_NAME KEY
+    {app_name} read [OPTION] COLLECTION_NAME KEY
 ~~~
 
 Description
@@ -244,13 +246,12 @@ of "r1". Our collection name is "data.ds"
 Options
 -------
 
-Normally {app_name} adds two values when it stores an object, ` + "`._Key`" + `
-and possibly ` + "`._Attachments`" + `. You can get the object without these
-added attributes by using the ` + "`-c` or `-clean`" + ` option.
+Normally {app_name} outputs the JSON object as presented by the storage engine.
+Use the `+"`"+`-jsonl`+"`"+` to force it to a single line (JSON line format).
 
 
 ~~~shell
-    {app_name} read -clean data.ds r1
+    {app_name} read -jsonl data.ds r1
 ~~~
 
 `
@@ -269,7 +270,7 @@ Syntax
 Description
 -----------
 
-_update_ will replace a JSON document in a {app_name} collection for 
+__update__ will replace a JSON document in a {app_name} collection for 
 a given KEY.  By default the JSON document is read from standard 
 input but you can specific a specific file with the "-input" 
 option. The JSON document should already exist in the collection
@@ -280,16 +281,16 @@ Usage
 ------
 
 In this example we assume there is a JSON document on local disc 
-named _jane-doe.json_. It contains ` + "`{\"name\":\"Jane Doe\"}`" + ` and the 
+named __jane-doe.json__. It contains ` + "`{\"name\":\"Jane Doe\"}`" + ` and the 
 KEY is "jane.doe". In the first one we specify the full JSON document 
 via the command line after the KEY.  In the second example we read the 
-data from _jane-doe.json_. Finally in the last we read the JSON 
+data from __jane-doe.json__. Finally in the last we read the JSON 
 document from standard input and save the update to "jane.doe".
 The collection name is "people.ds".
 
 ~~~shell
     {app_name} update people.ds jane.doe '{"name":"Jane Doiel"}'
-    {app_name} update people.ds jane.doe jane-doe.json
+    {app_name} update people.ds jane.doe <jane-doe.json
     {app_name} update -i jane-doe.json people.ds jane.doe
     cat jane-doe.json | {app_name} update people.ds jane.doe
 ~~~
@@ -523,7 +524,7 @@ one object per row.
 
 # SYNOPSIS
 
-{app_name} query [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+{app_name} query [OPTIONS] C_NAME [SQL_STATEMENT] [PARAMS]
 
 # DESCRIPTION
 
@@ -554,10 +555,12 @@ C_NAME
 
 SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
-JSON store for the JSON store (e.g.  Postgres, MySQL and SQLite 3).
+JSON store for the JSON store (e.g. SQLite3, Postgres or MySQL 8).
 The SELECT clause should return a single JSON object type per row.
-__dsquery__ returns an JSON array of JSON objects returned
-by the SQL query.
+__query__ returns an JSON array of JSON objects returned
+by the SQL query. NOTE: If you do not provide a SQL statement as
+a parameter __{app_name}__ will expect to read SQL from standard
+input.
 
 PARAMS
 : Is optional, it is any values you want to pass to the SQL_STATEMENT.
@@ -593,6 +596,8 @@ version
 -sql SQL_FILENAME
 : read SQL from a file. If filename is "-" then read SQL from standard input.
 
+-jsonl
+: Output the query result using [JSON lines](https://jsonlines.org) format.
 
 Example
 -------
@@ -602,6 +607,16 @@ Return a JSON array of all objects by descending created date.
 ~~~shell
     {app_name} query mycollection.ds \\
       "select src from mycollection order by created desc"
+~~~
+
+You can also redirect a SQL statement via standard out like this.
+
+~~~shell
+cat <<SQL | {app_name} query mycollection.ds
+  select src
+  from mycollection
+  order by created desc"
+SQL
 ~~~
 
 Read the SQL statement from a file called "report.sql".

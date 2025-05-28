@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="getting-started-with-dataset3">Getting started with
+dataset3</h1>
+<p><strong>dataset3</strong> is designed to easily manage collections of
+JSON documents. A JSON object is associated with a unique key you
+provide. If you are using the default storage engine, SQLite3, the
+objects are stored locally. If you are using another SQL storage engine
+then they are stored where that engine is implemented.</p>
+<p>The collection folder contains a JSON object document called
+<strong>collection.json</strong>. This file stores operational metadata
+about the collection. If you are using the default SQL storage engine,
+SQLite3, than the collection folder will contain an SQLite3 database,
+e.g. <strong>collection.db</strong>. When a collection is initialized a
+minimal <strong>codemeta.json</strong> file will created describing the
+collection. This can be update to a full codemeta.json file, follow the
+guideline and practice described at the <a
+href="https://codemeta.github.io">codemeta</a> website or using a <a
+href="https://github.com/caltechlibrary/CMTools">CMTools</a>.</p>
+<p>Dataset v3 comes in several flavors, a command line program called
+<strong>dataset3</strong>, a web service called
+<strong>dataset3d</strong> and the Go language package used to build for
+programs.</p>
+<p>This tutorial covers both the command line programs and the Go
+package. The command line is great for simple setup, the Go package
+allows you to build on other programs that use dataset collections for
+content persistence.</p>
+<h2 id="create-a-collection-with-init">Create a collection with
+init</h2>
+<p>To create a collection you use the init verb. In the following
+examples you will see how to do this with both the command line tool
+<strong>dataset3</strong>.</p>
+<p>Let's create a collection called <strong>friends.ds</strong>. At the
+command line type the following.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> init friends.ds</span></code></pre></div>
+<p>Notice that after you typed this and press enter you see an "OK"
+response. If there had been an error then you would have seen an error
+message instead.</p>
+<p>Working in Go is similar. We use the <code>dataset.Init()</code> func
+to create our new collection. We can import the “dataset” package using
+the import line <code>"github.com/caltechlibrary/dataset"</code>
+(checkout the v3 branch). Here’s a general code sketch.</p>
+<pre class="golang"><code>   import (
+      // import the packages your program needs ...
+      &quot;fmt&quot;
+      &quot;os&quot;
+
+      // import dataset
+      &quot;github.com/caltechlibrary/dataset/v3&quot;
+   )
+        
+   func main() {
+       // The dataset collection is held in &#39;c&#39;
+       // This create the collection &quot;friends.ds&quot;
+       collectionName := &quot;friends.ds&quot;
+       // &quot;c&quot; is a handle to the collection
+       c, err := dataset.init(collectionName)
+       if err != nil {
+           fmt.Fprintf(os.Stderr, &quot;Something went wrong, %s\n&quot;, err)
+           os.Exit(1)
+       }
+       defer c.Close() // Remember to close your collection
+       fmt.Printf(&quot;Created %q, ready to use\n&quot;, collectionName)
+   }</code></pre>
+<p>In this Go example if the error is nil a statement is written to
+standard out saying the collection was created, if not an error is
+shown.</p>
+<h3 id="removing-friends.ds">removing friends.ds</h3>
+<p>There is no dataset verb to remove a collection. A collection is just
+a folder with some files in it. You can delete the collection by
+throwing the folder in the trash (Mac OS X and Windows) or using a
+recursive remove in the Unix shell.</p>
+<pre class="shell"><code>    rm -fR friends.ds</code></pre>
+<p>Or using <code>os.RemoveAll()</code> in Go programs.</p>
+<pre><code>    if _, err := os.Stat(collectionName); err == nil {
+        os.RemoveAll(collectionName)
+    }</code></pre>
+<h2 id="create-read-update-and-delete">create, read, update and
+delete</h2>
+<p>As with many systems that store information dataset provides for
+basic operations of creating, updating and deleting. In the following
+section we will work with the <strong>friends.ds</strong> collection and
+<strong>favorites.ds</strong> collection we created previously.</p>
+<p>I have some friends who are characters in <a
+href="https://zbs.org">ZBS</a> radio plays. I am going to create and
+save some of their info in our collection called
+<strong>friends.ds</strong>. I am going to store their name and email
+address so I can contact them. Their names are Little Frieda, Mojo Sam
+and Jack Flanders.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> create friends.ds frieda <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;</span></span></code></pre></div>
+<p>Notice the "OK". Just like <strong>init</strong> the
+<strong>create</strong> verb returns a status. "OK" means everything is
+good, otherwise an error is shown.</p>
+<p>Doing the same thing in Go would look like. Note we have to
+explicitly <code>Open()</code> the collection to get a collection object
+then call <code>Create()</code> on the opened collection.
+<code>defer</code> make it easy for us to remember to close the
+collection when we’re done.</p>
+<pre class="golang"><code>    import (
+        &quot;fmt&quot;
+        &quot;os&quot;
+
+        &quot;github.com/caltechlibrary/dataset/v3&quot;
+    )
+
+    func main() {
+        c, err := dataset.Open(&quot;friends.ds&quot;)
+        if err != nil {
+            fmt.Fprintf(os.Stderr, &quot;something went wrong, %s&quot;, err)
+            os.Exit(1)
+        }
+        defer c.Close() // Don&#39;t forget to close the collection
+        id := &quot;frieda&quot;
+        m := map[string]interface{}{
+            &quot;id&quot;: id,
+            &quot;name&quot;:&quot;Little Frieda&quot;,
+            &quot;email&quot;:&quot;frieda@inverness.example.org&quot;,
+        }
+        // Create adds a map[string]interface{} to the collection.
+        if err := dataset.Create(id, m); err != nil {
+            fmt.Fprintf(os.Stderr, &quot;%s&quot;,err)
+            os.Exit(1)
+        }
+        fmt.Printf(&quot;OK&quot;)
+        os.Exit(0)
+    }</code></pre>
+<p>Go supports easy translation of struct types into JSON encoded byte
+slices. Can then use that store the JSON representations using the
+<code>CreateObject()</code> to create a JSON object from any Go
+type.</p>
+<pre class="golang"><code>   import (
+      &quot;encoding/json&quot;
+      &quot;fmt&quot;
+      &quot;os&quot;
+
+      &quot;github.com/caltechlibrary/dataset/v3&quot;
+   )
+
+   type Record struct {
+       ID string `json:&quot;id&quot;`
+       Name string `json:&quot;name,omitempty&quot;`
+       EMail string `json:&quot;email,omitempty&quot;`
+   }
+
+   func main() {
+       obj := &amp;Record{
+           ID: &quot;frieda&quot;,
+           Name: &quot;Little Fieda&quot;,
+           EMail: &quot;frieda@inverness.example.org&quot;,
+       }
+       if err := dataset.CreateObject(&quot;friends.ds&quot;, obj.ID, obj); err != nil {
+           fmt.Fprintf(os.Stderr, &quot;%s&quot;, err)
+           os.Exit(1)
+       }
+       fmt.Printf(&quot;OK&quot;)
+       os.Exit(0)
+   }</code></pre>
+<p>On the command line create requires us to provide a collection name,
+a key (e.g. "frieda") and JSON markup to store the JSON object. We can
+provide that either through the command line or by reading in a file or
+standard input.</p>
+<p>command line --</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span> <span class="op">&lt;&lt;EOT</span> <span class="op">&gt;</span>mojo.json</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">    {</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;id&quot;: &quot;mojo&quot;,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, </span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">    EOT</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="st">    cat mojo.json | dataset3 create friends.ds &quot;mojo&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="st">    cat &lt;&lt;EOT &gt;jack.json</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">    {</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;id&quot;: &quot;jack&quot;,</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;name&quot;: &quot;Jack Flanders&quot;, </span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">        &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="st">     </span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="st">    EOT</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="st">    dataset3 create -i jack.json friends.ds &quot;jack&quot;</span></span></code></pre></div>
+<p>in Go we can loop through records easily and add them --</p>
+<pre class="golang"><code>    // Open the collection
+    c, err := dataset.Open(&quot;friends.ds&quot;)
+    if err != nil {
+        ...
+    }
+    defer c.Close()// Don&#39;t forget to close the collection
+
+    // Create some new records
+    newRecords := []Record{
+        Record{
+            ID: &quot;mojo&quot;,
+            Name: &quot;Mojo Sam&quot;,
+            EMail: &quot;mojosam@cosmic-cafe.example.rog&quot;,
+        },
+        Record{
+            ID: &quot;jack&quot;,
+            Name: &quot;Jack Flanders&quot;,
+            Email: &quot;capt-jack@cosmic-voyager.example.org&quot;,
+        },
+    }
+    // Save the new records into the collection
+    for _, record := range newRecords {
+        if err := dataset.CreateObject(record.ID, record); err != nil {
+            fmt.Fprintf(os.Stderr, 
+               &quot;something went wrong add %q, %s\n&quot;, record.ID, key)
+        }
+    }</code></pre>
+<h3 id="read">read</h3>
+<p>We have three records in our <strong>friends.ds</strong> collection —
+"frieda", "mojo", and "jack". Let's see what they look like with the
+<strong>read</strong> verb.</p>
+<p>command line --</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> read friends.ds frieda</span></code></pre></div>
+<p>On the command line you can easily pipe to a formatter like <a
+href="https://jqlang.org">jq</a> the results to a file for latter
+modification. Let's do this for each of the records we have created so
+far.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> read friends.ds frieda <span class="kw">|</span> <span class="ex">jq</span> . <span class="op">&gt;</span>frieda-profile.json</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> read friends.ds mojo <span class="kw">|</span> <span class="ex">jq</span> . <span class="op">&gt;</span>mojo-profile.json</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> read friends.ds jack <span class="kw">|</span> <span class="ex">jq</span> . <span class="op">&gt;</span>jack-profile.json</span></code></pre></div>
+<p>Working in Go is similar but rather than write out our JSON
+structures to a file we're going to keep them in memory as an array of
+record structs before converting to JSON and writing it out.</p>
+<p>In Go --</p>
+<pre class="golang"><code>    // Open our collection
+    c, err := dataset.Open(&quot;friends.ds&quot;)
+    if err != nil {
+        fmt.Fprintf(os.Stderr, &quot;%s\n&quot;, err)
+        os.Exit(1)
+    }
+    defer c.Close() // remember to close the collection
+
+    // build our list of keys
+    keys := []string{ &quot;frieda&quot;, &quot;mojo&quot;, &quot;jack&quot; }
+    records := []*Record{}
+    // loop through the list and write the JSON source to file.
+    for _, key := range keys {
+       obj := &amp;Record{}
+       if err := c.ReadObject(key, &amp;obj); err != nil {
+           fmt.Fprintf(os.Stderr, &quot;%s\n&quot;, err)
+           os.Exit(1)
+       }  
+       records = append(records, obj)
+    }
+    src, _ := json.MarshalIndent(records)
+    fmt.Println(&quot;%s\n&quot;, src)
+    os.Exit(0)</code></pre>
+<h3 id="update">update</h3>
+<p>Next we can modify the profiles (the *.json files for the command
+line version). We're going to add a key/value pair for "catch_phrase"
+associated with each JSON object in <em>friends.ds</em>. For Little
+Frieda edit <strong>freida-profile.json</strong> to look like --</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda&quot;</span><span class="fu">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;frieda@inverness.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Little Frieda&quot;</span><span class="fu">,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Woweee Zoweee&quot;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>For Mojo's <strong>mojo-profile.json</strong> --</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;mojo&quot;</span><span class="fu">,</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;mojosam@cosmic-cafe.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Mojo Sam, the Yudoo Man&quot;</span><span class="fu">,</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;Feet Don&#39;t Fail Me Now!&quot;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>An Jack's <strong>jack-profile.json</strong> --</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;_Key&quot;</span><span class="fu">:</span> <span class="st">&quot;jack&quot;</span><span class="fu">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;capt-jack@cosmic-voyager.example.org&quot;</span><span class="fu">,</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Jack Flanders&quot;</span><span class="fu">,</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;catch_phrase&quot;</span><span class="fu">:</span> <span class="st">&quot;What is coming at you is coming from you&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>On the command line we can read in the updated JSON objects and save
+the results in the collection with the <strong>update</strong> verb.
+Like with <strong>init</strong> and <strong>create</strong> the
+<strong>update</strong> verb will return an “OK” or error message. Let's
+update each of our JSON objects.</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> update friends.ds freida frieda-profile.json</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> update friends.ds mojo mojo-profile.json</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> update friends.ds jack jack-profile.json</span></code></pre></div>
+<p><strong>TIP</strong>: By providing a filename ending in “.json” the
+dataset command knows to read the JSON object from disc. If the object
+had stated with a "{" and ended with a "}" it would assume you were
+using an explicit JSON expression.</p>
+<p>In Go we can work with each of the record as
+<code>map[string]interface{}</code> variables. We save from our previous
+<em>Read</em> example. We add our “catch_phrase” attribute then
+<em>Update</em> each record.</p>
+<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
+    if err != nil { 
+        // ... handle errors
+    }
+    defer c.Close()
+
+    // Read our three profiles
+    friedaProfile := map[string]interface{}{}
+    if err := c.Read(&quot;frieda&quot;, fredaProfile); err != nil {
+        // ... handle error
+    }
+    mojoProfile := map[string]interface{}{}
+    if err :=  c.Read(&quot;mojo&quot;, mojoProfile); err != nil  {
+        // ... handle error
+    }
+    jackProfile := map[string]interface{}{}
+    if err := c.Read(&quot;jack&quot;, jackProfile); err != nil {
+        // ... handle error
+    }
+    
+    // Add our catch phrases
+    friedaProfile[&quot;catch_phrase&quot;] = &quot;Wowee Zowee&quot;
+    mojoProfile[&quot;catch_phrase&quot;] = &quot;Feet Don&#39;t Fail Me Now!&quot;
+    jackProfile[&quot;catch_phrase&quot;] = &quot;What is coming at you is coming from you&quot;
+    
+    // Update our records
+    if err := c.Update(&quot;frieda&quot;, friedaProfile); err != &quot;&quot; {
+        // ... handle error
+    }
+    if err := c.Update(&quot;mojo&quot;, mojoProfile); err != &quot;&quot; {
+        // ... handle error
+    }
+    if err := c.Update(&quot;jack&quot;, jackProfile); err != nil {
+        // ... handle error
+    }</code></pre>
+<p>A better approach where we would be to use a Go struct to hold the
+profile records. This would ensure that they mapping of attribute names
+are consistently handled.</p>
+<pre class="golang"><code>    import (
+        &quot;github.com/caltechlibrary/dataset/v3&quot;
+    )
+
+    type Profile struct {
+        Name string `json:&quot;name&quot;`
+        EMail string `json:&quot;email,omitempty&quot;`
+        CatchPhrase string `json:&quot;catech_phrase,omitempty&quot;`
+    }
+
+    func main() {
+        // Load our minimal records, i.e. name and email
+        records := map[string]*Profile{}{
+            &quot;frieda&quot;: &amp;Profile{ 
+                Key: &quot;frieda&quot;, 
+                EMail: &quot;frieda@inverness.example.org&quot;,
+                Name: &quot;Little Frieda&quot;, 
+                },
+            &quot;mojo&quot;: &amp;Profile{
+                Key: &quot;mojo&quot;,
+                EMail: &quot;mojosam@cosmic-cafe.example.org&quot;,
+                Name: &quot;Mojo Sam, the Yudoo Man&quot;,
+            },
+            &quot;jack&quot;: &amp;Profile{
+                Key: &quot;jack&quot;,
+                EMail: &quot;capt-jack@cosmic-voyager.example.org&quot;,
+                Name: &quot;Jack Flanders&quot;,
+            },
+        }
+
+        // Create the collection and add our records
+        c, err := dataset.Init(&quot;friends.ds&quot;, &quot;&quot;)
+        if err != nil {
+            // ... handle errror
+        }
+        for key, record := range records {
+            if err := c.CreateObject(key, recorrd); err != nil {
+                // ... handle error
+            }
+        }
+
+        // Add our catch phrases
+    
+        records[&quot;frieda&quot;].CatchPhrase = &quot;Wowee Zowee&quot;
+        records[&quot;mojo&quot;].CatchPhrase = &quot;Feet Don&#39;t Fail Me Now!&quot;
+        records[&quot;jack&quot;].CatchPhrase = 
+             &quot;What is coming at you is coming from you&quot;
+    
+        // Update our records
+        for key, record := range records {
+            if err := c.UpdateObject(key, record); err != &quot;&quot; {
+                // ... handle error
+            }
+        }
+    }</code></pre>
+<h3 id="delete">delete</h3>
+<p>Eventually you might want to remove a JSON object from the
+collection. Let's remove Jack Flander's record for now.</p>
+<p>command line --</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> delete friends.ds jack</span></code></pre></div>
+<p>Notice the “OK” in this case it means we've successfully delete the
+JSON object from the collection.</p>
+<p>An perhaps as you've already guessed working in Go looks like --</p>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   if err := c.Delete(&quot;jack&quot;); err != nil {
+       fmt.Fprintf(os.Stderr, &quot;%s\n&quot;, err)
+       os.Exit(1)
+   }
+   fmt.Println(&quot;OK&quot;)
+   os.Exit(0)</code></pre>
+<h2 id="keys">keys</h2>
+<p>Eventually you have lots of objects in your collection. You are not
+going to be able to remember all the keys. dataset provides a
+<strong>keys</strong> function for getting a list of keys.</p>
+<p>Now that we've deleted a few things let's see how many keys are in
+<strong>friends.ds</strong>. We can do by implementing a
+<strong>count</strong> function in Go.</p>
+<p>In Go --</p>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   cnt = c.Length() // NOTE: this is an int64 value
+   fmt.Printf(&quot;Total Records Now: %d\n&quot;, cnt)</code></pre>
+<p>Likewise we can get a list of the keys with the <strong>keys</strong>
+verb.</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset3</span> keys friends.ds</span></code></pre></div>
+<p>If you are following along in Go then you can just save the keys to a
+variable called keys.</p>
+<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
+   if err != nil {
+       // ... handle error
+   }
+   defer c.Close()
+
+   keys, err = c.Keys()
+   if err != nil {
+       // ... handle error
+   }
+   fmt.Printf(&quot;%s\n&quot;, strings.Join(keys, &quot;\n&quot;))</code></pre>
+<h2 id="putting-it-all-together-as-a-bash-script">Putting it all
+together as a Bash script</h2>
+<p>The following pulls together the lessons in a single Bash script
+using <strong>dataset3</strong> and <strong>jq</strong> as well as Unix
+pipes and <strong>cat</strong>.</p>
+<pre class="shell"><code>#!/bin/bash
+
+#
+# Getting Started using dataset and Stephen Dolan&#39;s jq and dataset3 query function.
+#
+
+
+#
+# create a collections with init
+#
+if [ -d &quot;friends.ds&quot; ]; then
+    rm -fR friends.ds
+fi
+dataset3 init friends.ds
+
+
+#
+# create, read, update and delete
+#
+
+## create
+dataset3 create friends.ds Frieda  &#39;{&quot;name&quot;:&quot;Little Frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
+dataset3 create friends.ds Mojo &#39;{&quot;name&quot;: &quot;Mojo Sam, the Yudoo Man&quot;, &quot;email&quot;: &quot;mojosam@cosmic-cafe.example.org&quot;}&#39;
+dataset3 create friends.ds Jack &#39;{&quot;name&quot;: &quot;Jack Flanders&quot;, &quot;email&quot;: &quot;capt-jack@cosmic-voyager.example.org&quot;}&#39;
+dataset3 create friends.ds Mazulla &#39;{&quot;name&quot;: &quot;Professor Mazulla&quot;, &quot;email&quot;: &quot;mm@alchemist.example.org&quot;}&#39;
+
+## read
+for KEY in Frieda Mojo Jack; do
+    echo &quot;Reading ${KEY} profile&quot;
+    dataset read friends.ds &quot;${KEY}&quot; | jq .
+done
+
+## Add a &quot;catch_phrase&quot;, &quot;given&quot; and &quot;family&quot; to existing records.
+function add_field() {
+    KEY=&quot;${1}&quot;
+    FIELD=&quot;${2}&quot;
+    VALUE=&quot;${3}&quot;
+    # Get original object as one line
+    OBJ=&quot;$(dataset3 read friends.ds &quot;${KEY}&quot;)&quot;
+    # form the field into a key/value pair as JSON
+    cat &lt;&lt;JSON_SRC | jq --slurp &#39;.[0] * .[1]&#39; | dataset3 update friends.ds &quot;${KEY}&quot;
+${OBJ}
+{&quot;${FIELD}&quot;: &quot;${VALUE}&quot;}
+JSON_SRC
+
+}
+
+add_field Frieda catch_phrase &quot;Wowee Zowee&quot;
+add_field Mojo catch_phrase &quot;Feet Don&#39;t Fail Me Now!&quot;
+add_field Jack catch_phrase &quot;What is coming at you is coming from you&quot;
+add_field Frieda given &quot;Frieda&quot;
+add_field Mojo given &quot;Mojo&quot;
+add_field Jack given &quot;Jack&quot;
+add_field Mazulla given &quot;Marvin&quot;
+add_field Frieda family &quot;Little&quot;
+add_field Mojo family &quot;Sam&quot;
+add_field Jack family &quot;Flanders&quot;
+add_field Mazulla family &quot;Mazulla&quot;
+
+# Display our ammeded records.
+for KEY in Frieda Mojo Jack; do
+    echo &quot;Reading ${KEY} profile&quot;
+    dataset3 read friends.ds &quot;${KEY}&quot; | jq .
+done
+
+# Updating (replacing) Frieda&#39;s record with new email address using sed
+dataset3 read friends.ds Frieda |\
+jq . | \
+sed -E &#39;s/&quot;email&quot;:&quot;frieda@inverness.example.org&quot;/&quot;email&quot;:&quot;frieda@venus.example.org&quot;/&#39; \
+| dataset3 update friends.ds Frieda 
+
+## delete example, remove Mazulla
+dataset3 delete friends.ds Mazulla
+dataset3 keys friends.ds
+
+
+#
+# Keys and counting
+#
+
+# List keys
+dataset3 keys friends.ds
+
+# count can be done using dataset3 query function combined with jq.
+cnt=$(dataset3 query friends.ds &#39;select count(*) from friends&#39; | jq -r &#39;.[0]&#39;)
+echo &quot;Total Records now: ${cnt}&quot;
+
+
+#
+# Filter fiends.ds for the name &quot;Mojo&quot;, save a Mojo.json.
+#
+cat &lt;&lt;SQL | dataset3 query friends.ds | jq . &gt;Mojo-profile.json
+select src
+from friends
+where src-&gt;&gt;&#39;given&#39; = &#39;Mojo&#39;
+order by _Key;
+SQL
+
+echo &quot;We now have a JSON file called Mojo-prfile.json&quot;</code></pre>
+</section>
+
+<footer>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

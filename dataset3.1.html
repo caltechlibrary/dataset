@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="./">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="name">NAME</h1>
+<p>dataset3</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>dataset3 [GLOBAL_OPTIONS] VERB <a href="#options">OPTIONS</a>
+COLLECTION_NAME [PRAMETER …]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>dataset3 command line interface supports creating JSON object
+collections and managing the JSON object documents in a collection.</p>
+<p>When creating new documents in the collection or updating documents
+in the collection the JSON source can be read from the command line, a
+file or from standard input.</p>
+<h1 id="supported-verbs">SUPPORTED VERBS</h1>
+<dl>
+<dt>help</dt>
+<dd>
+will give documentation of help on a verb, e.g. “help create”
+</dd>
+<dt>init C_NAME</dt>
+<dd>
+Initialize a new dataset collection named with C_NAME.
+</dd>
+<dt>create [OPTION] C_NAME KEY</dt>
+<dd>
+creates a new JSON document in the collection
+</dd>
+<dt>read [OPTION] C_NAME KEY</dt>
+<dd>
+retrieves the “current” version of a JSON document from the collection
+writing it standard out
+</dd>
+<dt>update [OPTION] C_NAME KEY</dt>
+<dd>
+updates a JSON document in the collection
+</dd>
+<dt>delete C_NAME KEY</dt>
+<dd>
+removes all versions of a JSON document from the collection
+</dd>
+<dt>keys [OPTION] C_NAME</dt>
+<dd>
+returns a list of keys in the collection
+</dd>
+<dt>codemeta C_NAME [PATH_TO_NEW_CODEMETA_JSON]</dt>
+<dd>
+displays an existing codemetada.json file for the collections or if an
+optional path to a new codemeta.json it copies the file and updates the
+collections metadata.
+</dd>
+<dt>dump C_NAME</dt>
+<dd>
+This will write out all dataset collection records in a JSONL document.
+JSONL shows on JSON object per line, see https://jsonlines.org for
+details. The object rendered will have two attributes, “key” and
+“object”. The key corresponds to the dataset collection key and the
+object is the JSON value retrieved from the collection.
+</dd>
+<dt>load [OPTION] C_NAME</dt>
+<dd>
+This will read JSON objects one per line from standard input. This
+format is often called JSONL, see https://jsonlines.org. The object has
+two attributes, key and object.
+</dd>
+</dl>
+<p>A word about “keys”. dataset3 uses the concept of key/values for
+storing JSON documents where the key is a unique identifier and the
+value is the object to be stored. Keys are composed as lower case alpha
+numeric characters but may include period, dash and underscore. While
+keys maybe provided in upper and lower case they are always converted to
+lowercase internally.</p>
+<p>There are three “GLOBAL_OPTIONS” in v3 of dataset3.T hey are
+<code>-version</code>, <code>-help</code> and <code>-license</code>. All
+other options come after the verb and apply to the specific action the
+verb implements.</p>
+<h1 id="storage-type">STORAGE TYPE</h1>
+<p>There are currently three support storage options for JSON documents
+in a dataset collection.</p>
+<ul>
+<li>SQLite3 database (default),</li>
+</ul>
+<p>The following storage engines were removed in v3 – pairtree, MySQL
+and PostgreSQL. If you need to migrate data from a v2 dataset instance
+use the dump verb. Then you can import the data into the v3 dataset
+collection using the load verb.</p>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-help</dt>
+<dd>
+display help
+</dd>
+<dt>-license</dt>
+<dd>
+display license
+</dd>
+<dt>-version</dt>
+<dd>
+display version
+</dd>
+</dl>
+<h1 id="examples">EXAMPLES</h1>
+<pre><code>   dataset3 help init
+
+   dataset3 init my_objects.ds 
+
+   dataset3 help create
+
+   dataset3 create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
+
+   dataset3 create my_objects.ds &quot;234&quot; mydata.json 
+   
+   cat &lt;&lt;EOT | dataset3 create my_objects.ds &quot;345&quot;
+   {
+       &quot;four&quot;: 4,
+       &quot;five&quot;: &quot;six&quot;
+   }
+   EOT
+
+   dataset3 update my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1, &quot;two&quot;: 2}&#39;
+
+   dataset3 delete my_objects.ds &quot;345&quot;
+
+   dataset3 keys my_objects.ds</code></pre>
+<p>This is an example of initializing a JSON documentation
+collection.</p>
+<pre><code>dataset3 init &#39;${C_NAME}&#39;</code></pre>
+<p>In this case ‘${C_NAME}’ is the name of your JSON document read from
+the environment varaible C_NAME.</p>
+<p>dataset3 3.0.0-alpha</p>
+</section>
+
+<footer>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

@@ -12,12 +12,12 @@
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
-    <li><a href="LICENSE">LICENSE</a></li>
-    <li><a href="install.html">INSTALL</a></li>
-    <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
-	<li><a href="search.html">Search</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
 </ul>
 </nav>
@@ -28,10 +28,10 @@
 a list of JSON objects or an error. The SQL query must only return one
 object per row.</p>
 <h1 id="synopsis">SYNOPSIS</h1>
-<p>dataset query <a href="#options">OPTIONS</a> C_NAME SQL_STATEMENT
+<p>dataset3 query <a href="#options">OPTIONS</a> C_NAME [SQL_STATEMENT]
 [PARAMS]</p>
 <h1 id="description">DESCRIPTION</h1>
-<p><strong>dataset query</strong> is a tool to support SQL queries of
+<p><strong>dataset3 query</strong> is a tool to support SQL queries of
 dataset collections. Pairtree based collections should be index before
 trying to query them (see ‘-index’ option below). Pairtree collections
 use the SQLite 3 dialect of SQL for querying. For collections using a
@@ -44,7 +44,7 @@ VARCHAR), “created” and “updated” are timestamps while “src” is a JS
 column holding the JSON document. The table name reflects the collection
 name without the “.ds” extension (e.g. data.ds is stored in a database
 called data having a table also called data).</p>
-<p>The output of <strong>dataset query</strong> is a JSON array of
+<p>The output of <strong>dataset3 query</strong> is a JSON array of
 objects. The order of the objects is determined by the your SQL
 statement and SQL engine. There is an option to generate a 2D grid of
 values in JSON, CSV or YAML formats. See OPTIONS for details.</p>
@@ -57,10 +57,12 @@ If harvesting the dataset collection name to harvest the records to.
 <dt>SQL_STATEMENT</dt>
 <dd>
 The SQL statement should conform to the SQL dialect used for the JSON
-store for the JSON store (e.g. Postgres, MySQL and SQLite 3). The SELECT
+store for the JSON store (e.g. SQLite3, Postgres or MySQL 8). The SELECT
 clause should return a single JSON object type per row.
-<strong>dsquery</strong> returns an JSON array of JSON objects returned
-by the SQL query.
+<strong>query</strong> returns an JSON array of JSON objects returned by
+the SQL query. NOTE: If you do not provide a SQL statement as a
+parameter <strong>dataset3</strong> will expect to read SQL from
+standard input.
 </dd>
 <dt>PARAMS</dt>
 <dd>
@@ -109,27 +111,32 @@ display version
 read SQL from a file. If filename is “-” then read SQL from standard
 input.
 </dd>
+<dt>-jsonl</dt>
+<dd>
+Output the query result using <a href="https://jsonlines.org">JSON
+lines</a> format.
+</dd>
 </dl>
 <h2 id="example">Example</h2>
 <p>Return a JSON array of all objects by descending created date.</p>
-<pre class="shell"><code>    dataset query mycollection.ds \\
+<pre class="shell"><code>    dataset3 query mycollection.ds \\
       &quot;select src from mycollection order by created desc&quot;</code></pre>
 <p>Read the SQL statement from a file called “report.sql”.</p>
-<pre class="shell"><code>    dataset query -sql report.sql mycollection.ds</code></pre>
+<pre class="shell"><code>    dataset3 query -sql report.sql mycollection.ds</code></pre>
 <p>Generate a list of JSON objects with the <code>_Key</code> value
 merged with the object stored as the <code>._Key</code> attribute. The
 colllection name “data.ds” which is implemented using Postgres as the
 JSON store. (NOTE: in PostgreSQL the <code>||</code> is very
 helpful).</p>
-<pre><code>dataset query data.ds &quot;SELECT json_object(&#39;key&#39;, _Key) FROM data&quot;</code></pre>
+<pre><code>dataset3 query data.ds &quot;SELECT json_object(&#39;key&#39;, _Key) FROM data&quot;</code></pre>
 <p>In this example we’re returning the “src” in our collection by
 querying for a “id” attribute in the “src” column. The id is passed in
 as an attribute using the Postgres positional notatation in the
 statement.</p>
-<pre><code>dataset query data.ds &quot;SELECT src FROM data WHERE src-&gt;&gt;&#39;id&#39; = $1 LIMIT 1&quot; &quot;xx103-3stt9&quot;</code></pre>
+<pre><code>dataset3 query data.ds &quot;SELECT src FROM data WHERE src-&gt;&gt;&#39;id&#39; = $1 LIMIT 1&quot; &quot;xx103-3stt9&quot;</code></pre>
 <p>This is an example of sending a formated query to return a list of
 objects with version info.</p>
-<pre><code>cat &lt;&lt;SQL | dataset query data.ds
+<pre><code>cat &lt;&lt;SQL | dataset3 query data.ds
 select
   json_object(
     &quot;key&quot;: _Key,
@@ -144,7 +151,7 @@ SQL</code></pre>
 </section>
 
 <footer>
-<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<span>&copy; 2025 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
