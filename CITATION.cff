@@ -3,7 +3,17 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: dataset
-abstract: "Tools for working with JSON documents as a collection hosted in a SQL JSON store (e.g. SQLite3)."
+abstract: "Dataset Project provides tools for working with JSON documents as a collection hosted in a SQL JSON store (e.g. SQLite3). It is an exploration of the use and usefulness of JSON documents in the setting of libraries, archives and museums. It may have application further afield as metadata management benefits a wide range of application domains.
+
+Dataset v3 stores JSON documents using a SQL engine with JSON column support. These days that most popular SQL implementations support JSON columns (e.g. SQlite3, PostgreSQL, MySQL). V3 uses a extremely simple table structure for both the current object state and object history as well as integration with the SQL’s growing support for working with JSON objects generally.
+
+Two tools are provided by the Dataset Project v3
+
+[dataset3](dataset3.1.md)
+: is a command line interface for managing JSON documents. 
+
+[dataset3d](dataset3d.1.md)
+: JSON Web Service. This service supports file attachments."
 authors:
   - family-names: Doiel
     given-names: R. S.
