@@ -615,6 +615,13 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
+		default:
+			src, err = JSONMarshalIndent(o, "", "    ")
+			if err != nil {
+				log.Printf("Read, json marshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
 		}
 		// Set header to application/json
 		w.Header().Add("Content-Type", contentType)
