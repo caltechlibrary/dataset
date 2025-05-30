@@ -50,8 +50,9 @@
       "email": "tmorrell@caltech.edu"
     }
   ],
-  "dateModified": "2025-04-18",
-  "datePublished": "2025-04-18",
+  "dateCreated": "2016-09-12",
+  "dateModified": "2025-05-30",
+  "datePublished": "2025-05-30",
   "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
   "funder": [
     {
@@ -61,7 +62,6 @@
     }
   ],
   "keywords": [
-    "GitHub",
     "metadata",
     "data",
     "software",
@@ -70,17 +70,20 @@
   "name": "dataset",
   "license": "https://caltechlibrary.github.io/dataset/LICENSE",
   "programmingLanguage": [
-    "Go"
+    "Go",
+    "SQL"
   ],
   "softwareRequirements": [
-    "Golang >= 1.24.2",
-    "CMTOlls >= 0.0.20",
+    "Golang >= 1.24.3",
+    "CMTools >= 0.0.29",
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.4",
+  "version": "2.2.5",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Added the following functions to the dataset package\n\n- (c *Collection) KeysJSON\n- (c *Collection) UpdatedKeysJSON\n- (c *Collection) QueryJSON\n\nThese provide JSON encoded object support for their base functions."
+  "releaseNotes": "Added the following functions to the dataset package\n\n- (c *Collection) KeysJSON\n- (c *Collection) UpdatedKeysJSON\n- (c *Collection) QueryJSON\n\nThese provide JSON encoded object support for their base functions.\n\nIn datasetd, requesting an API object without specifying the content type returns an application/json object.",
+  "copyrightYear": 2025,
+  "copyrightHolder": "California Institute of Technology"
 }
