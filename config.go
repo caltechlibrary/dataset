@@ -25,9 +25,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/models"
 )
 
 // Settings holds the specific settings for the web service.
@@ -64,9 +61,6 @@ type Config struct {
 	// using SQL stores are supported.
 	QueryFn map[string]string `json:"query,omitempty" yaml:"query,omitempty"`
 
-	// Model describes the record structure to store. It is to validate
-	// URL encoded POST and PUT tot the collection.
-	Model *models.Model `json:"model,omitempty" yaml:"model,omitempty"`
 
 	// SuccessPage is used for form submissions that are succcessful, i.e. HTTP Status OK (200)
 	SuccessPage string `json:"success_page,omitempty" yaml:"success_page,omitempty"`

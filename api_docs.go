@@ -2,7 +2,7 @@
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2022, Caltech
+// Copyright (c) 2025, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -46,6 +46,7 @@ Assuming the service is running on localhost:8485 and you have cURL
 installed you could do the following to access the web service
 implemented by {app_name}.
 
+~~~shell
 	# list the collections avialable
     curl -X GET http://localhost:8485/_collections  
 
@@ -64,7 +65,8 @@ implemented by {app_name}.
 
     # Get the metadata for a collection
 	curl -X GET http://localhost:8485/my-stuff/codemeta
- 
+ ~~~
+
 `
 
 	//
@@ -90,15 +92,23 @@ Configuration
 
 {app_name} can make one or more dataset collections visible over HTTP. The dataset collections hosted need to be avialable on the same file system as where {app_name} is running. {app_name} is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line to a appropriate JSON settings.
 
-The "settings.json" file has the following structure
+The "settings.yaml" file has the following structure
 
-` + "```" + `
-    {
-        "host": "localhost:8485",
-		"sql_type": "mysql",
-        "dsn": "<DSN_STRING>"
-    }
-` + "```" + `
+~~~yaml
+host: localhost:8484
+collections:
+  - dataset: mycollection.ds
+    query:
+      list_objects: |
+        select src
+        from mycollection
+        order by created desc
+    create: true
+    read: true
+    update: true
+    delete: true
+    keys: true
+~~~
 
 
 Running {app_name}
@@ -115,91 +125,78 @@ Supported Features
 ------------------
 
 
-{app_name} provides a RESTful web service for accessing a collection's
-metdata, keys, documents, frames and attachments. The form of the path
-is generally '/rest/<COLLECTION_NAME>/<DOC_TYPE>/<ID>[/<NAME>]'. REST
-maps the CRUD operations to POST (create), GET (read), PUT (update),
-and DELETE (delete). There are four general types of objects in
-a dataset collection
-  
-  1. keys (point to a JSON document, these are unique identifiers)
-  2. docs are the JSON documents
-  3. frames hold data frames (aggregation's of an collection's content)
-  4. attachments hold files attached to JSON documents
+{app_name} provides a RESTful web service for accessing a collection's metdata, keys, documents, frames and attachments. The form of the path is generally '/rest/<COLLECTION_NAME>/<DOC_TYPE>/<ID>[/<NAME>]'. REST maps the CRUD operations to POST (create), GET (read), PUT (update), and DELETE (delete). There are four general types of objects in a dataset collection
 
-Additionally you can list all the collections available in the web service
-as well as collection level metadata (as a codemeta.json document).
+1. keys (point to a JSON document, these are unique identifiers)
+2. docs are the JSON documents
 
-Collections can have their CRUD operations turned on or off based on
-the columns set in the "_collections" table of the database hosting
-the web service.
+Additionally you can list all the collections available in the web service as well as collection level metadata (as a codemeta.json document).
+
+Collections can have their CRUD operations turned on or off based on the columns set in the "_collections" table of the database hosting the web service.
 
 
-Use case
---------
+A Use case
+----------
 
 In this use case a dataset collection called "recipes.ds" has been previously created and populated using the command line tool.
 
-If I have a settings file for "recipes" based on the collection
-"recipes.ds" and want to make it read only I would make the attribute
-"read" set to true and if I want the option of listing the keys in the collection I would set that true also.
+If I have a settings file for "recipes" based on the collection "recipes.ds" and want to make it read only I would make the attribute "read" set to true and if I want the option of listing the keys in the collection I would set that true also.
 
-` + "```" + `
-{
-    "host": "localhost:8485",
-    "collections": {
-        "recipes": {
-            "dataset": "recipes.ds",
-            "keys": true,
-            "read": true
-        }
-    }
-}
-` + "```" + `
+~~~yaml
+host: localhost:8485
+collections:
+  - dataset: recipes.ds
+    query:
+    list_recipes: |
+      select src
+      from recipes
+      order by src->>'name'
+    create: true
+    read: true
+    update: true
+    delete: true
+    keys: true
+~~~
 
 I would start {app_name} with the following command line.
 
-` + "```" + `shell
-    {app_name} settings.json
-` + "```" + `
+~~~shell
+    {app_name} recipes_api.yaml
+~~~
 
 This would display the start up message and log output of the service.
 
-In another shell session I could then use curl to list the keys and read
-a record. In this example I assume that "waffles" is a JSON document
-in dataset collection "recipes.ds".
+In another shell session I could then use curl to list the keys and read a record. In this example I assume that "waffles" is a JSON document in dataset collection "recipes.ds".
 
-` + "```" + `shell
+~~~shell
     curl http://localhost:8485/recipies/read/waffles
-` + "```" + `
+~~~
 
 This would return the "waffles" JSON document or a 404 error if the
 document was not found.
 
 Listing the keys for "recipes.ds" could be done with this curl command.
 
-` + "```" + `shell
+~~~shell
     curl http://localhost:8485/recipies/keys
-` + "```" + `
+~~~
 
-This would return a list of keys, one per line. You could show
-all JSON documents in the collection be retrieving a list of keys
-and iterating over them using curl. Here's a simple example in Bash.
+This would return a list of keys, one per line. You could show all JSON documents in the collection be retrieving a list of keys and iterating over them using curl. Here's a simple example in Bash.
 
-` + "```" + `shell
+~~~shell
     for KEY in $(curl http://localhost:8485/recipes/keys); do
        curl "http://localhost/8485/recipe/read/${KEY}"
     done
-` + "```" + `
+~~~
 
 Add a new JSON object to a collection.
 
-` + "```" + `shell
+~~~shell
     KEY="sunday"
     curl -X POST -H 'Content-Type:application/json' \
         "http://localhost/8485/recipe/create/${KEY}" \
-     -d '{"ingredients":["banana","ice cream","chocalate syrup"]}'
-` + "```" + `
+     -d '{"name": "Sunday", "ingredients":["banana","ice cream","chocalate syrup"]}'
+~~~
 
 Online Documentation
 --------------------
@@ -208,7 +205,7 @@ Online Documentation
 to the service end points without parameters. Continuing with our
 "recipes" example. Try the following URLs with curl.
 
-` + "```" + `
+~~~shell
     curl http://localhost:8485
     curl http://localhost:8485/recipes
     curl http://localhost:8485/recipes/create
@@ -218,7 +215,7 @@ to the service end points without parameters. Continuing with our
     curl http://localhost:8485/recipes/attach
     curl http://localhost:8485/recipes/retrieve
     curl http://localhost:8485/recipes/prune
-` + "```" + `
+~~~
 
 End points
 ----------
@@ -245,12 +242,6 @@ end points support the GET method exclusively.
 - '/COLLECTION_ID>/update/<KEY>' requires the POST method with content type header of 'application/json'. It can accept JSON document up to 1 MiB is size. It will replace an existing document in the collection or return an HTTP error if that fails
 - '/<COLLECTION_ID>/delete' returns documentation on the 'delete' end point
 - '/COLLECTION_ID>/delete/<KEY>' requires the GET method. It will delete a JSON document for the key provided or return an HTTP error
-- '/<COLLECTION_ID>/attach' returns documentation on attaching a file to a JSON document in the collection.
-- '/COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>' requires a POST method and expects a multi-part web form providing the filename in the 'filename' field. The <FILENAME> in the URL is used in storing the file. The document will be written the JSON document directory by '<KEY>' in sub directory indicated by '<SEMVER>'. See https://semver.org/ for more information on semantic version numbers.
-- '/<COLLECTION_ID>/retrieve' returns documentation on how to retrieve a versioned attachment from a JSON document.
-- '/<COLLECTION_ID>/retrieve/<KEY>/<SEMVER>/<FILENAME>' returns the versioned attachment from a JSON document or an HTTP error if that fails
-- '/<COLLECTION_ID>/prune' removes a versioned attachment from a JSON document or returns an HTTP error if that fails.
-- '/<COLLECTION_ID>/prune/<KEY>/<SEMVER>/<FILENAME>' removes a versioned attachment from a JSON document.
 
 `
 
@@ -267,12 +258,12 @@ Example
 
 The assumption is that we have _{app_name}_ running on port "8485" of "localhost" and a set of collections, "t1" and "t2", defined in the "settings.json" used at launch.
 
-` + "```" + `{.json}
+~~~json
     [
       "t1",
       "t2"
     ]
-` + "```" + `
+~~~
 
 `
 
@@ -323,13 +314,13 @@ The assumption is that we have _{app_name}_ running on port "8485" of "localhost
 
 Retrieving metatadata
 
-` + "```" + `{.shell}
+~~~shell
     curl -X GET https://localhost:8485/collection/characters
-` + "```" + `
+~~~
 
 This would return the metadata found for our characters' collection.
 
-` + "```" + `
+~~~json
     {
         "dataset_version": "v0.1.10",
         "name": "characters.ds",
@@ -374,21 +365,21 @@ This would return the metadata found for our characters' collection.
             "award": "00000000000000001-2021"
         }
     }
-` + "```" + `
+~~~
 
 Update metadata requires a POST with content type "application/json". In
 this example the dataset collection is named "t1" only the "name" and
 "dataset_version" set.
 
-` + "```" + `{.shell}
+~~~shell
     curl -X POST -H 'Content-Type: application/json' \
     http://localhost:8485/collection/t1 \
     -d '{"author":[{"@type":"Person","givenName":"Jane","familyName":"Doe"}]}'
-` + "```" + `
+~~~
 
 The curl calls returns
 
-` + "```" + `{.json}
+~~~json
     {
         "dataset_version": "1.0.1",
         "name": "T1.ds",
@@ -400,7 +391,7 @@ The curl calls returns
             }
         ]
     }
-` + "```" + `
+~~~
 
 `
 
@@ -412,7 +403,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 
 This end point lists keys available in a collection.
 
-    'http://localhost:8485/<COLLECTION_ID>/keys'
+~~~~
+    http://localhost:8485/<COLLECTION_ID>/keys
+~~~
 
 Requires a "GET" method.
 
@@ -423,19 +416,19 @@ Example
 
 In this example '<COLLECTION_ID>' is "t1".
 
-` + "```" + `{.shell}
+~~~shell
     curl http://localhost:8485/t1/keys
-` + "```" + `
+~~~
 
 The document return looks some like
 
-` + "```" + `
+~~~json
     [
         "one",
         "two",
         "three"
     ]
-` + "```" + `
+~~~
 
 For a "t1" containing the keys of "one", "two" and "three".
 
@@ -449,7 +442,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 
 Create a JSON document in the collection. Requires a unique key in the URL and the content most be JSON less than 1 MiB in size.
 
-    'http://localhost:8485/<COLLECTION_ID>/created/<KEY>' 
+~~~
+    http://localhost:8485/<COLLECTION_ID>/created/<KEY>
+~~~
 
 Requires a "POST" HTTP method with.
 
@@ -462,19 +457,19 @@ Example
 
 The '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" The content posted is
 
-` + "```" + `{.json}
+~~~json
     {
        "one": 1
     }
-` + "```" + `
+~~~
 
 Posting using CURL is done like
 
-` + "```" + `shell
+~~~shell
     curl -X POST -H 'Content-Type: application.json' \
       -d '{"one": 1}' \
       http://locahost:8485/t1/create/one 
-` + "```" + `
+~~~
 
 `
 	EndPointRead = `
@@ -485,7 +480,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 
 Retrieve a JSON document from a collection.
 
-    'http://localhost:8485/<COLLECTION_ID>/read/<KEY>'
+~~~
+    http://localhost:8485/<COLLECTION_ID>/read/<KEY>
+~~~
 
 Requires a "GET" HTTP method.
 
@@ -496,40 +493,9 @@ Example
 
 Curl accessing "t1" with a key of "one"
 
-` + "```" + `{.shell}
+~~~shell
     curl http://localhost:8485/t1/read/one
-` + "```" + `
-
-An example JSON document (this example happens to have an attachment) returned.
-
-` + "```" + `
-{
-   "_Attachments": [
-      {
-         "checksums": {
-            "0.0.1": "bb327f7bcca0f88649f1c6acfdc0920f"
-         },
-         "created": "2021-10-11T11:09:51-07:00",
-         "href": "T1.ds/pairtree/on/e/0.0.1/a1.png",
-         "modified": "2021-10-11T11:09:51-07:00",
-         "name": "a1.png",
-         "size": 32511,
-         "sizes": {
-            "0.0.1": 32511
-         },
-         "version": "0.0.1",
-         "version_hrefs": {
-            "0.0.1": "T1.ds/pairtree/on/e/0.0.1/a1.png"
-         }
-      }
-   ],
-   "_Key": "one",
-   "four": "four",
-   "one": 1,
-   "three": 3,
-   "two": 2
-}
-` + "```" + `
+~~~
 
 `
 
@@ -542,7 +508,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 Update a JSON document in the collection. Requires a key to an existing
 JSON record in the URL and the content most be JSON less than 1 MiB in size.
 
-    'http://localhost:8485/<COLLECTION_ID>/update/<KEY>'
+~~~shell
+    http://localhost:8485/<COLLECTION_ID>/update/<KEY>
+~~~
 
 Requires a "POST" HTTP method.
 
@@ -555,22 +523,22 @@ Example
 
 The '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" The revised content posted is
 
-` + "```" + `{.json}
+~~~json
     {
        "one": 1,
        "two": 2,
        "three": 3,
        "four": 4
     }
-` + "```" + `
+~~~
 
 Posting using CURL is done like
 
-` + "```" + `shell
+~~~shell
     curl -X POST -H 'Content-Type: application.json' \
       -d '{"one": 1, "two": 2, "three": 3, "four": 4}' \
       http://locahost:8485/t1/update/one 
-` + "```" + `
+~~~
 
 `
 
@@ -582,7 +550,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 
 Delete a JSON document in the collection. Requires the document key and collection name.
 
-    'http://localhost:8485/<COLLECTION_ID>/delete/<KEY>'
+~~~
+    http://localhost:8485/<COLLECTION_ID>/delete/<KEY>
+~~~
 
 Requires a 'GET' HTTP method.
 
@@ -595,10 +565,10 @@ The '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" The content posted is
 
 Posting using CURL is done like
 
-` + "```" + `shell
+~~~shell
     curl -X GET -H 'Content-Type: application.json' \
       http://locahost:8485/t1/delete/one 
-` + "```" + `
+~~~
 
 `
 
@@ -610,7 +580,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 
 Attaches a document to a JSON Document using '<KEY>', '<SEMVER>' and '<FILENAME>'.
 
-    'http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>'
+~~~
+    http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>
+~~~
 
 Requires a "POST" method. The "POST" is expected to be a multi-part web form providing the source filename in the field "filename".  The document will be written the JSON document directory by '<KEY>' in sub directory indicated by '<SEMVER>'.
 
@@ -619,19 +591,15 @@ See https://semver.org/ for more information on semantic version numbers.
 Example
 =======
 
-In this example the '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" and
-the content upload is "a1.png" in the home directory "/home/jane.doe".
-The '<SEMVER>' is "0.0.1".
+In this example the '<COLLECTION_ID>' is "t1", the '<KEY>' is "one" and the content upload is "a1.png" in the home directory "/home/jane.doe". The '<SEMVER>' is "0.0.1".
 
-` + "```" + `shell
+~~~shell
     curl -X POST -H 'Content-Type: multipart/form-data' \
        -F 'filename=@/home/jane.doe/a1.png' \
        http://localhost:8485/t1/attach/one/0.0.1/a1.png
-` + "```" + `
+~~~
 
-NOTE: The URL contains the filename used in the saved attachment. If
-I didn't want to call it "a1.png" I could have provided a different
-name in the URL path.
+NOTE: The URL contains the filename used in the saved attachment. If I didn't want to call it "a1.png" I could have provided a different name in the URL path.
 
 `
 
@@ -643,7 +611,9 @@ Interacting with the _{app_name}_ web service can be done with any web client. F
 
 Retrieves an s attached document from a JSON record using '<KEY>', '<SEMVER>' and '<FILENAME>'.
 
-    'http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>'
+~~~
+    http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>
+~~~
 
 Requires a POST method and expects a multi-part web form providing the filename. The document will be written the JSON document directory by '<KEY>' in sub directory indicated by '<SEMVER>'. 
 
@@ -652,15 +622,13 @@ See https://semver.org/ for more information on semantic version numbers.
 Example
 -------
 
-In this example we're retieving the '<FILENAME>' of "a1.png", with the '<SEMVER>' of "0.0.1" from the '<COLLECTION_ID>' of "t1" and '<KEY>'
-of "one" using curl.
+In this example we're retieving the '<FILENAME>' of "a1.png", with the '<SEMVER>' of "0.0.1" from the '<COLLECTION_ID>' of "t1" and '<KEY>' of "one" using curl.
 
-` + "```" + `{.shell}
+~~~shell
     curl http://localhost:8485/t1/retrieve/one/0.0.1/a1.png
-` + "```" + `
+~~~
 
-This should trigger a download of the "a1.png" image file in the
-collection for document "one".
+This should trigger a download of the "a1.png" image file in the collection for document "one".
 
 `
 
@@ -670,7 +638,9 @@ Prune (end point)
 
 Removes an attached document from a JSON record using '<KEY>', '<SEMVER>' and '<FILENAME>'.
 
-    'http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>'
+~~~
+    http://localhost:8485/<COLLECTION_ID>/attach/<KEY>/<SEMVER>/<FILENAME>
+~~~
 
 Requires a GET method. Returns an HTTP 200 OK on success or an HTTP error code if not.
 
@@ -681,12 +651,11 @@ Example
 
 In this example '<COLLECTION_ID>' is "t1", '<KEY>' is "one", '<SEMVER>' is "0.0.1" and '<FILENAME>' is "a1.png". Once again our example uses curl.
 
-` + "```" + `
+~~~
     curl http://localhost:8485/t1/prune/one/0.0.1/a1.png
-` + "```" + `
+~~~
 
-This will cause the attached file to be removed from the record
-and collection.
+This will cause the attached file to be removed from the record and collection.
 
 `
 
@@ -710,8 +679,7 @@ via HTTP/HTTPS.
 DETAIL
 ------
 
-{app_name} is a minimal web service typically run on localhost port 8485
-that exposes a dataset collection as a web service. It features a subset of functionality available with the dataset command line program. {app_name} does support multi-process/asynchronous update to a dataset collection. 
+{app_name} is a minimal web service typically run on localhost port 8485 that exposes a dataset collection as a web service. It features a subset of functionality available with the dataset command line program. {app_name} does support multi-process/asynchronous update to a dataset collection. 
 
 {app_name} is notable in what it does not provide. It does not provide user/role access restrictions to a collection. It is not intended to be a stand alone web service on the public internet or local area network. It does not provide support for search or complex querying. If you need these features I suggest looking at existing mature NoSQL style solutions like Couchbase, MongoDB, MySQL (which now supports JSON objects) or Postgres (which also support JSON objects). {app_name} is a simple, miminal service.
 
@@ -722,15 +690,21 @@ Configuration
 
 {app_name} can make one or more dataset collections visible over HTTP/HTTPS. The dataset collections hosted need to be avialable on the same file system as where {app_name} is running. {app_name} is configured by reading a "settings.json" file in either the local directory where it is launch or by a specified directory on the command line.  
 
-The "settings.json" file has the following structure
+The "api_settings.yaml" file has the following structure
 
-` + "```" + `
-    {
-        "host": "localhost:8483",
-		"sql_type": "mysql",
-		"dsn": "DB_USER:DB_PASSWORD3@/DB_NAME"
-    }
-` + "```" + `
+~~~json
+host: localhost:8483
+collections:
+  - dataset <DATASET_NAME>
+    query:
+      <QUERY_NAME>: |
+        <SQL_QUERY_HERE>
+      create: <TRUE_OR_FALSE>
+      read: <TRUE_OR_FALSE>
+      update: <TRUE_OR_FALSE>
+      delete: <TRUE_OR_FALSE>
+      keys: <TRUE_OR_FALSE>
+~~~
 
 The "host" is the URL listened to by the dataset daemon, the "sql_type" is
 usually "mysql" though could be "sqlite", the "dsn" is the data source name
@@ -749,115 +723,123 @@ Supported Features
 
 1. init (create a new collection SQL based collection)
 2. keys (return a list of all keys in the collection)
-3. has-key (return true if has key false otherwise)
+3. haskey (return true if has key false otherwise)
 4. create (create a new JSON document in the collection)
 5. read (read a JSON document from a collection)
 6. update (update a JSON document in the collection)
 7. delete (delete a JSON document in the collection)
-8. frames (list frames available)
-9. frame (define a frame)
-10. frame-def (show frame definition)
-11. frame-objects (return list of framed objects)
-12. refresh (refresh all the objects in a frame)
-13. reframe (update the definition and reload the frame)
-14. delete-frame (remove the frame)
-15. has-frame (returns true if frame exists, false otherwise)
-16. codemeta (imports a codemeta JSON file providing collection metadata)
 
-Each of theses "actions" can be restricted in the _collections table (
-) by setting the value to "false". If the
-attribute for the action is not specified in the JSON settings file
-then it is assumed to be "false".
+Each of theses "actions" can be restricted in the collections object. You can set the Set the create, read, update, delete or keys attributes to false to restrict access or true to allow it. If the attribute for the action is not specified in the JSON settings file then it is assumed to be "false".
 
 Working with {app_name}
 ---------------------
 
-E.g. if I have a settings file for "recipes" based on the collection
-"recipes.ds" and want to make it read only I would make the attribute
-"read" set to true and if I want the option of listing the keys in the collection I would set that true also.
+E.g. if I have a settings file for "recipes" based on the collection "recipes.ds" and want to make it read only I would make the attribute "read" set to true and if I want the option of listing the keys in the collection I would set that true also.
 
-    {
-        "host": "localhost:8485",
-        "collections": {
-			"recipes": {
-            	"dataset": "recipes.ds",
-            	"keys": true,
-            	"read": true
-			}
-        }
-    }
+~~~yaml
+host: localhost:8485
+collections:
+  - dataset: recipes
+    keys: true
+   	read: true
+~~~
 
 I would start {app_name} with the following command line.
 
-    {app_name} settings.json
+~~~shell
+    {app_name} api_settings.yaml
+~~~
 
 This would display the start up message and log output of the service.
 
-In another shell session I could then use cURL to list the keys and read
-a record. In this example I assume that "waffles" is a JSON document
-in dataset collection "recipes.ds".
+In another shell session I could then use cURL to list the keys and read a record. In this example I assume that "waffles" is a JSON document in dataset collection "recipes.ds".
 
+~~~shell
     curl http://localhost:8485/recipies/read/waffles
+~~~
 
-This would return the "waffles" JSON document or a 404 error if the 
-document was not found.
+This would return the "waffles" JSON document or a 404 error if the document was not found.
 
 Listing the keys for "recipes.ds" could be done with this cURL command.
 
+~~~shell
     curl http://localhost:8485/recipies/keys
+~~~
 
-This would return a list of keys, one per line. You could show
-all JSON documents in the collection be retrieving a list of keys
-and iterating over them using cURL. Here's a simple example in Bash.
+This would return a list of keys, one per line. You could show all JSON documents in the collection be retrieving a list of keys and iterating over them using cURL. Here's a simple example in Bash.
 
+~~~shell
     for KEY in $(curl http://localhost:8485/recipes/keys); do
        curl "http://localhost/8485/recipe/read/${KEY}"
     done
+~~~
 
 Access Documentation
 --------------------
 
-{app_name} provide documentation as plain text output via request
-to the service end points without parameters. Continuing with our
-"recipes" example. Try the following URLs with cURL.
+{app_name} provide documentation as plain text output via request to the service end points without parameters. Continuing with our "recipes" example. Try the following URLs with cURL.
 
+~~~shell
     curl http://localhost:8485
     curl http://localhost:8485/recipes
     curl http://localhost:8485/recipes/read
+~~~
 
-
-{app_name} is intended to be combined with other services like Solr 8.9.
-{app_name} only implements the simplest of object storage.
+{app_name} is intended to be combined with other services like Solr 8.9. {app_name} only implements the simplest of object storage.
 
 `
 
 	examples = `
 
 EXAMPLE
+-------
 
-In this example we cover a short life cycle of a collection
-called "t1.ds". We need to create a "settings.json" file and
-an empty dataset collection. Once ready you can run the {app_name} 
-service to interact with the collection via cURL. 
+In this example we cover a short life cycle of a collection called "t1.ds". We need to create a "settings.json" file and an empty dataset collection. Once ready you can run the {app_name} service to interact with the collection via cURL. 
 
-To create the dataset collection we use the "dataset" command and the
-"vi" text edit (use can use your favorite text editor instead of vi).
+To create the dataset collection we use the "dataset" command and the "vi" text edit (use can use your favorite text editor instead of vi).
 
-    dataset init t1.ds
-	vi settings.json
+~~~shell
+    createdb t1
+    dataset init t1.ds "postgres://<USER>:<PASSWORD>@localhost/t1?sslmode=disable"
+~~~
 
-In the "setttings.json" file the JSON should look like.
+NOTE: replace "<USER>" and "<PASSWORD>" with appropriate values.
 
-    {
-		"host": "localhost:8485",
-		"sql_type": "mysql",
-		"dsn": "DB_USER:DB_PASSWORD@/DB_NAME"
-	}
+You can see the "ts.ds/collection.json". It should look something like \--
+
+~~~json
+{
+    "dataset": "3.0.0",
+    "name": "t1.ds",
+    "storage_type": "sqlstore",
+    "dsn_uri": "postgres://<USER>:<PASSWORD>@localhost/t1?sslmode=disable",
+    "created": "2024-01-10 19:12:05 UTC +0000"
+}
+~~~
+
+Now we need to create "t1_api.yaml" to configure the web server.
+
+~~~yaml
+host: localhost:8483
+collections:
+  - dataset: t1.ds
+    create: true
+    update: true
+    read: true
+    keys: true
+    query:
+      list_objects: |
+        select src
+        from t1
+        order by created desc
+~~~
 
 Now we can run {app_name} and make the dataset collection available
 via HTTP.
 
-    {app_name} settings.json
+~~~shell
+    {app_name} t1_api.yaml
+~~~~
 
 You should now see the start up message and any log information display
 to the console. You should open a new shell sessions and try the following.
@@ -865,31 +847,43 @@ to the console. You should open a new shell sessions and try the following.
 We can now use cURL to post the document to the "/t1/create/one" end
 point. 
 
+~~~shell
     curl -X POST http://localhost:8485/t1/create/one \
 	    -d '{"one": 1}'
+~~~
 
 Now we can list the keys available in our collection.
 
+~~~shell
     curl http://localhost:8485/t1/keys
+~~~
 
 We should see "one" in the response. If so we can try reading it.
 
+~~~shell
     curl http://localhost:8485/t1/read/one
+~~~
 
 That should display our JSON document. Let's try updating (replacing)
 it. 
 
+~~~shell
     curl -X POST http://localhost:8485/t1/update/one \
 	    -d '{"one": 1, "two": 2}'
+~~~
 
 If you read it back you should see the updated record. Now lets try
 deleting it.
 
+~~~shell
 	curl http://localhost:8485/t1/delete/one
+~~~
 
 List the keys and you should see that "one" is not longer there.
 
+~~~shell
     curl http://localhost:8485/t1/keys
+~~~
 
 In the shell session where {app_name} is running press "ctr-C"
 to terminate the service.

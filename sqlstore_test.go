@@ -57,12 +57,6 @@ func TestSQLStoreBasic(t *testing.T) {
 		t.FailNow()
 	}
 	// Setup main databases
-	for _, setting := range []int{Major, Minor, Patch, None} {
-		if err := store.SetVersioning(setting); err != nil {
-			t.Errorf("store.SetVersioning(%d) failed, %s", setting, err)
-			t.FailNow()
-		}
-	}
 	objects := []map[string]interface{}{
 		{"one": 1},
 		{"two": 2},
@@ -126,9 +120,6 @@ func TestSQLStoreBasic(t *testing.T) {
 		}
 	}
 
-	if err := store.SetVersioning(Patch); err != nil {
-		t.Errorf("store.SetVersioning(%d) error, %s", Patch, err)
-	}
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("%07d", i)
 		src := []byte(fmt.Sprintf(`{"one": %d, "two": "%s"}`, i, key))
@@ -136,44 +127,11 @@ func TestSQLStoreBasic(t *testing.T) {
 			t.Errorf(`store.Create(%q, %s) error, %s`, key, src, err)
 			t.FailNow()
 		}
-		// Check for version after create
-		if versions, err := store.Versions(key); err != nil {
-			t.Errorf(`store.Versions(%q) error, %s`, key, err)
-			t.FailNow()
-		} else {
-			if len(versions) != 1 {
-				t.Errorf("expected 1 version number, %+v", versions)
-				t.FailNow()
-			}
-			for i := range versions {
-				expected := fmt.Sprintf("0.0.%d", i+1)
-				if versions[i] != expected {
-					t.Errorf("expected %q, got %q for version", expected, versions[i])
-					t.FailNow()
-				}
-			}
-		}
-		// Check for version after update
+		// Check for update
 		src = []byte(fmt.Sprintf(`{"one": %d, "two": "%s", "three": 3.0}`, i, key))
 		if err := store.Update(key, src); err != nil {
 			t.Errorf(`store.Update(%q, %s) error, %s`, key, src, err)
 			t.FailNow()
-		}
-		if versions, err := store.Versions(key); err != nil {
-			t.Errorf(`store.Versions(%q) error, %s`, key, err)
-			t.FailNow()
-		} else {
-			if len(versions) != 2 {
-				t.Errorf("expected 2 version numbers, %+v", versions)
-				t.FailNow()
-			}
-			for i := range versions {
-				expected := fmt.Sprintf("0.0.%d", i+1)
-				if versions[i] != expected {
-					t.Errorf("expected %q, got %q for version", expected, versions[i])
-					t.FailNow()
-				}
-			}
 		}
 	}
 

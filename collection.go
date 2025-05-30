@@ -27,10 +27,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/models"
-
 )
 
 const (
@@ -75,11 +71,6 @@ type Collection struct {
 	// create, update and delete. By default it should be true.
 	History bool `json:"history,omitempty"`
 	
-	//
-	// Models is a placeholder for eventually integrating the models package support
-	//
-	Model *models.Model `json:"-"`
-
 	//
 	// Private varibles
 	//
@@ -581,35 +572,6 @@ func (c *Collection) ReadJSON(key string) ([]byte, error) {
 		return src, fmt.Errorf("failed to read %s, %s", key, err)
 	}
 	return src, nil
-}
-
-
-// Versions retrieves a list of versions available for a JSON document if
-// versioning is enabled for the collection.
-//
-// ```
-//
-//	key, version := "123", "0.0.1"
-//	if versions, err := Versions(key); err != nil {
-//	   ...
-//	}
-//
-// ```
-func (c *Collection) Versions(key string) ([]string, error) {
-	var (
-		versions []string
-		err      error
-	)
-	switch c.StoreType {
-	case SQLSTORE:
-		versions, err = c.SQLStore.Versions(key)
-	default:
-		return nil, fmt.Errorf("%q not supported", c.StoreType)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to read %s, %s", key, err)
-	}
-	return versions, err
 }
 
 // Update replaces a JSON document in the collection with a new one.

@@ -9,13 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/models"
 
 	// 3rd Party packages
-	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
 )
 
@@ -56,22 +51,6 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key string, action string, target string) {
 	w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(statusCode)
-	/*
-	m := map[string]string{}
-	m["status"] = "OK"
-	if cName != "" {
-		m["collection"] = cName
-	}
-	if key != "" {
-		m["key"] = key
-	}
-	if action != "" {
-		m["action"] = action
-	}
-	if target == "" {
-		m["target"] = target
-	}
-	*/
 	fmt.Fprintf(w, "%s for %s\n", http.StatusText(statusCode), cName)
 	if key != "" {
 		fmt.Fprintf(w, "  %s\n", key)
@@ -346,7 +325,6 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 //
 // ```
 func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
-	models.SetDebug(api.Debug)
 	defer r.Body.Close()
 	var key string
 	if len(options) > 0 {
@@ -380,32 +358,13 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		default:
 			//NOTE: Need to know the form field names, this is in .Model
 			r.ParseForm()
-			idName = c.Model.GetPrimaryId()
-			if c.Model == nil {
-				if api.Debug {
-					log.Printf("DEBUG c.Model is nil, accept all fields without validation")
-				}
-				for key, _ := range r.Form {
-					o[key] = r.Form.Get(key)
-				}
-			} else {
-				// NOTE: We only want to grab the fields defined in the model!!
-				if api.Debug {
-					log.Printf("DEBUG c.Model is populated, validating model's fields")
-				}
-				for _, key := range c.Model.GetElementIds() {
-					//FIXME: Need to validate the field value
-					val := r.Form.Get(key)
-					o[key] = val
-				}
-			}
 			if api.Debug {
 				log.Printf("DEBUG creating form object -> %+v", o)
 			}
 		}
 		if key == "" {
 			if idName == "" {
-				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, o)
+				log.Printf("Missing primary id, bad request %s %q, data %+v", r.Method, r.URL.Path, o)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
@@ -418,62 +377,11 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		}
 		// NOTE: We need to handle case that browsers don't support "PUT" method without JavaScript
 		if c.HasKey(key) {
-			if c.Model != nil {
-				// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
-				generatedTypes := c.Model.GetGeneratedTypes()
-				if len(generatedTypes) > 0 {
-					// Get existing record so we can handle generated field updates properly.
-					oldO := map[string]interface{}{}
-					if err := c.Read(key, oldO); err != nil {
-						log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-						http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-						return
-					}
-					for k, genType := range generatedTypes {
-						// Handle write once types, created_timestamp, uuid
-						if _, ok := o[k]; ok {
-							switch genType {
-							case "uuid":
-								// Only generate the UUID if field is missing.
-								if val, ok := oldO[k]; (ok == false) || (val == "") {
-									uid, err := uuid.NewV7()
-									if err == nil {
-										o[k] = uid.String()
-									}
-								} else {
-									// Preserve the old UUID assigned.
-									o[k] = oldO[k]
-								}
-								// If idName is found then force key to UUID set in o map
-								if k == idName {
-									key = o[k].(string)
-								}
-							case "created_timestamp":
-								if val, ok := oldO[k]; (ok == false) || (val == "") {
-									o[k] = time.Now().Format(time.RFC3339)
-								}
-							}
-						}
-						// Handle overwriting types (i.e. timestamp, current_timestamp)
-						switch genType {
-						case "timestamp":
-							o[k] = time.Now().Format(time.RFC3339)
-						case "current_timestamp":
-							o[k] = time.Now().Format(time.RFC3339)
-						}
-					}
-				}
-			}
 			if api.Debug {
 				txt, _ := json.MarshalIndent(o, "", "  ")
 				log.Printf("DEBUG form data:\n%s\n\n", txt)
 			}
 			// Now we need to validate the form data.
-			if ok := c.Model.ValidateMapInterface(o); !ok {
-				log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
-			}
 			// Now if we have formData populated it needs to get validated after generated types appliced
 			if err := c.Update(key, o); err != nil {
 				log.Printf("Update failed %+v, %s", o, err)
@@ -488,38 +396,9 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			}
 			return
 		} else {
-			if c.Model != nil {
-				// NOTE: Handle generated types on create
-				for k, genType := range c.Model.GetGeneratedTypes() {
-					switch genType {
-					case "uuid":
-						uid, err := uuid.NewV7()
-						if err == nil {
-							o[k] = uid.String()
-							if k == idName {
-								key = uid.String()
-							}
-						}
-					case "timestamp":
-						o[k] = time.Now().Format(time.RFC3339)
-					case "current_timestamp":
-						o[k] = time.Now().Format(time.RFC3339)
-					case "created_timestamp":
-						o[k] = time.Now().Format(time.RFC3339)
-					}
-				}
-			}
 			if api.Debug {
 				txt, _ := json.MarshalIndent(o, "", "  ")
 				log.Printf("DEBUG form data:\n%s\n\n", txt)
-			}
-			// Now we need to validate the form data.
-			if c.Model != nil {
-				if ok := c.Model.ValidateMapInterface(o); !ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-					return
-				}
 			}
 			if err := c.Create(key, o); err != nil {
 				log.Printf("Create failed %+v, %s", o, err)
@@ -587,6 +466,13 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
+		default:
+			src, err = JSONMarshalIndent(o, "", "    ")
+			if err != nil {
+				log.Printf("Read, json marshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
 		}
 		// Set header to application/json
 		w.Header().Add("Content-Type", contentType)
@@ -645,35 +531,11 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		default:
 			//NOTE: Need to know the form field names, this is in .Model
 			r.ParseForm()
-			idName = c.Model.GetPrimaryId()
-			if c.Model == nil {
-				if api.Debug {
-					log.Printf("DEBUG c.Model is nil, accept all fields without validation")
-				}
-				for key, _ := range r.Form {
-					o[key] = r.Form.Get(key)
-				}
-			} else {
-				// NOTE: We only want to grab the fields defined in the model!!
-				if api.Debug {
-					log.Printf("DEBUG c.Model is populated, validating model's fields")
-				}
-				for _, key := range c.Model.GetElementIds() {
-					//FIXME: Need to validate the field value
-					val := r.Form.Get(key)
-					o[key] = val
-					formData[key] = val
-				}
-				if api.Debug {
-					txt, _ := json.MarshalIndent(formData, "", "  ")
-					log.Printf("DEBUG form data:\n%s\n\n", txt)
-				}
-				// Now we need to validate the form data.
-				if ok := c.Model.Validate(formData); !ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
-					//http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-					//return
-				}
+			if api.Debug {
+				log.Printf("DEBUG c.Model is nil, accept all fields without validation")
+			}
+			for key, _ := range r.Form {
+				o[key] = r.Form.Get(key)
 			}
 			if api.Debug {
 				log.Printf("DEBUG creating form object -> %+v", o)
@@ -681,7 +543,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		}
 		if key == "" {
 			if idName == "" {
-				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, formData)
+				log.Printf("Missing primary id, bad request %s %q, data %+v", r.Method, r.URL.Path, formData)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
@@ -690,52 +552,6 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					log.Printf("DEBUG key set to record 'id' value, %+v", id)
 				}
 				key = id.(string)
-			}
-		}
-		if c.Model != nil {
-			generatedTypes := c.Model.GetGeneratedTypes()
-			// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
-			if len(generatedTypes) > 0 {
-				// Get existing record so we can handle generated field updates properly.
-				oldO := map[string]interface{}{}
-				if err := c.Read(key, oldO); err != nil {
-					log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-					return
-				}
-				for k, genType := range generatedTypes {
-					// Handle write once types, created_timestamp, uuid
-					if _, ok := o[k]; ok {
-						switch genType {
-						case "uuid":
-							// Only generate the UUID if field is missing.
-							if val, ok := oldO[k]; (ok == false) || (val == "") {
-								uid, err := uuid.NewV7()
-								if err == nil {
-									o[k] = uid.String()
-								}
-							} else {
-								// Preserve the old UUID assigned.
-								o[k] = oldO[k]
-							}
-							// If idName is found then force key to UUID set in o map
-							if k == idName {
-								key = o[k].(string)
-							}
-						case "created_timestamp":
-							if val, ok := oldO[k]; (ok == false) || (val == "") {
-								o[k] = time.Now().Format(time.RFC3339)
-							}
-						}
-					}
-					// Handle overwriting types (i.e. timestamp, current_timestamp)
-					switch genType {
-					case "timestamp":
-						o[k] = time.Now().Format(time.RFC3339)
-					case "current_timestamp":
-						o[k] = time.Now().Format(time.RFC3339)
-					}
-				}
 			}
 		}
 		if err := c.Update(key, o); err != nil {

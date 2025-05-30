@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	// Caltech Library packages
-	"github.com/caltechlibrary/dotpath"
+	// 3rd Party library
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -88,16 +88,16 @@ var (
 // sameStrings compares one slice of strings to another by converting
 // them to a JSON represention and compariing the representation.
 func sameStrings(expected []string, got []string) bool {
-	src1, _ := JSONMarshalIndent(expected, "", "    ")
-	src2, _ := JSONMarshalIndent(got, "", "    ")
+	src1, _ := json.Marshal(expected)
+	src2, _ := json.Marshal(got)
 	return bytes.Compare(src1, src2) == 0
 }
 
 // sameMapping compares one map to another by converting
 // them to a JSON representation and comparing the representation.
 func sameMapping(expected map[string]interface{}, got map[string]interface{}) bool {
-	src1, _ := JSONMarshalIndent(expected, "", "    ")
-	src2, _ := JSONMarshalIndent(got, "", "    ")
+	src1, _ := json.Marshal(expected)
+	src2, _ := json.Marshal(got)
 	return bytes.Compare(src1, src2) == 0
 }
 
@@ -120,7 +120,7 @@ func makePayload(src []byte) (io.Reader, error) {
 }
 
 func makeObjectPayload(o map[string]interface{}) (io.Reader, error) {
-	src, err := JSONMarshalIndent(o, "", "    ")
+	src, err := json.Marshal(o)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 	}
 	newPost := make(map[string][]byte)
 	for k, o := range newRecords {
-		src, _ := JSONMarshalIndent(o, "", "    ")
+		src, _ := json.Marshal(o)
 		newPost[k] = src
 	}
 
@@ -327,7 +327,7 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 					o := map[string]interface{}{}
 					json.Unmarshal(v, &o)
 					o["active"] = false
-					src, _ := JSONMarshal(o)
+					src, _ := json.Marshal(o)
 					body = bytes.NewBuffer(src)
 					res, err := makeRequest(u, http.MethodPut, body)
 					if err != nil {
@@ -353,592 +353,61 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 	}
 }
 
-func clientTestAttachments(t *testing.T, settings *Settings) {
-	cPath := path.Join(dName, "attachment_test.ds")
-	cName := path.Base(cPath)
-	/*
-		c, err := Open(cPath)
-		if err != nil {
-			t.Errorf("Failed to open test collection %q, %s", cPath, err)
-		}
-		defer c.Close()
-	*/
-
-	// Write out a file to attach, attach it and then test "attachments"
-	// route.
-	key := "123"
-	src := []byte(`one,two,three
-1,3,2
-4,7,6
-10,100,50
-131,313,113
-`)
-	aName := path.Join(dName, "numbers.csv")
-	if _, err := os.Stat(aName); err == nil {
-		os.RemoveAll(aName)
-	}
-	if err := ioutil.WriteFile(aName, src, 0664); err != nil {
-		t.Errorf("failed to write %q, %s", aName, err)
-		t.FailNow()
-	}
-
-	// Retrieve the attachments (should be no attachments first time)
-	u := fmt.Sprintf("http://%s/api/%s/attachments/%s", settings.Host, cName, key)
-	res, err := makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	defer res.Body.Close()
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	if len(body) == 0 {
-		t.Errorf("expected a response body, got %q", body)
-		t.FailNow()
-	}
-	l := []string{}
-	if err := json.Unmarshal(body, &l); err != nil {
-		t.Errorf("expected a list of attachments %q, %s", len(l), err)
-		t.FailNow()
-	}
-	if len(l) > 0 {
-		t.Errorf("expected a no attachments, got %+v", l)
-		t.FailNow()
-	}
-
-	// Adding a new document
-	fName := "numbers.csv"
-	u = fmt.Sprintf("http://%s/api/%s/attachment/%s/%s", settings.Host, cName, key, fName)
-	payload, err := makePayload(src)
-	res, err = makeRequest(u, http.MethodPost, payload)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, %q) -> %s", u, http.MethodPost, payload, err)
-		t.FailNow()
-	}
-	defer res.Body.Close()
-	if err := assertHTTPStatus(http.StatusCreated, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	if len(body) == 0 {
-		t.Errorf("expected a response body, got %q", body)
-		t.FailNow()
-	}
-
-	// Retrieve the attachments (should be one attachment second time)
-	u = fmt.Sprintf("http://%s/api/%s/attachments/%s", settings.Host, cName, key)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	defer res.Body.Close()
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	if len(body) == 0 {
-		t.Errorf("expected a response body, got %q", body)
-		t.FailNow()
-	}
-	l = []string{}
-	if err := json.Unmarshal(body, &l); err != nil {
-		t.Errorf("expected a list of attachments %q, %s", len(l), err)
-		t.FailNow()
-	}
-	if len(l) != 1 {
-		t.Errorf("expected a no attachments, got %+v", l)
-		t.FailNow()
-	}
-	if l[0] != path.Base(aName) {
-		t.Errorf("expected %q, got, %q", path.Base(aName), l[0])
-		t.FailNow()
-	}
-
-	// Get the file we added and make sure it looks OK
-	for _, filename := range l {
-		u = fmt.Sprintf("http://%s/api/%s/attachment/%s/%s", settings.Host, cName, key, filename)
-		res, err = makeRequest(u, http.MethodGet, nil)
-		if err != nil {
-			t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
-			t.FailNow()
-		}
-		defer res.Body.Close()
-		if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-		body, err = io.ReadAll(res.Body)
-		if err != nil {
-			t.Errorf("%s", err)
-			t.FailNow()
-		}
-		if len(body) == 0 {
-			t.Errorf("expected a response body, got %q", body)
-			t.FailNow()
-		}
-		outName := path.Join(dName, "download-"+filename)
-		if err := ioutil.WriteFile(outName, body, 0664); err != nil {
-			t.Errorf("unable to write requested file %q, %s", filename, err)
-		}
-	}
-	for _, filename := range l {
-		u = fmt.Sprintf("http://%s/api/%s/attachment/%s/%s", settings.Host, cName, key, filename)
-		res, err = makeRequest(u, http.MethodDelete, nil)
-		if err != nil {
-			t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
-			t.FailNow()
-		}
-		defer res.Body.Close()
-		if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-	}
-	// Now make sure attachments were all removed.
-	u = fmt.Sprintf("http://%s/api/%s/attachments/%s", settings.Host, cName, key)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) -> %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	defer res.Body.Close()
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("%s", err)
-		t.FailNow()
-	}
-	if len(body) == 0 {
-		t.Errorf("expected a response body, got %q", body)
-		t.FailNow()
-	}
-	l = []string{}
-	if err := json.Unmarshal(body, &l); err != nil {
-		t.Errorf("expected a list of attachments %q, %s", len(l), err)
-		t.FailNow()
-	}
-	if len(l) > 0 {
-		t.Errorf("expected a no attachments, got %+v", l)
-		t.FailNow()
-	}
-}
-
-func clientTestFrames(t *testing.T, settings *Settings) {
-	cPath := path.Join(dName, "frames_test.ds")
-	cName := path.Base(cPath)
-	c, err := Open(cPath)
-	if err != nil {
-		t.Errorf("Failed to open test collection %q, %s", cPath, err)
-	}
-	defer c.Close()
-
-	// Double check loaded test data
-	frmKeys := []string{"Sam-M", "Freda-L", "Flanders-J"}
-	attributes := []string{"family", "given"}
-	dotPaths := []string{".family", ".given"}
-	labels := []string{"Family Name", "Given Name"}
-	for _, key := range frmKeys {
-		m := map[string]interface{}{}
-		if err := c.Read(key, m); err != nil {
-			t.Errorf("could not open %q, %s", key, err)
-			t.FailNow()
-		}
-		for _, attr := range attributes {
-			if given, ok := m[attr]; !ok {
-				t.Errorf("failed to find .%s in %s, %+v", attr, key, m)
-			} else if given == "" {
-				t.Errorf("failed to find .%s is empty string %s, %+v", attr, key, m)
-			}
-			expr := fmt.Sprintf(".%s", attr)
-			val, err := dotpath.Eval(expr, m)
-			if err != nil {
-				t.Errorf("dotpath.Eval(%q, %+v) failed, %s", expr, m, err)
-			}
-			if val == nil {
-				t.Errorf("dotpath.Eval(%q, %+v) should not return nil value", expr, m)
-				t.FailNow()
-			}
-		}
-	}
-	exFrameName := "expected"
-	expectedFrm, err := c.FrameCreate(exFrameName, frmKeys, dotPaths, labels, true)
-	if err != nil {
-		t.Errorf("should be able to created the %q frame, %s", exFrameName, err)
-	}
-	if expectedFrm == nil {
-		t.Errorf("something went really wrong, should have an %q frame", exFrameName)
-	}
-
-	// Check to make sure frame does not exist
-	frameName := "test_names"
-	u := fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
-	res, err := makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusNotFound, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if _, err := ioutil.ReadAll(res.Body); err != nil {
-		t.Errorf("expected to read the body of reqest, %s", err)
-		t.FailNow()
-	}
-	res.Body.Close()
-
-	// Create the frame "test_names"
-	frameDef := map[string]interface{}{
-		"keys":      frmKeys,
-		"dot_paths": dotPaths,
-		"labels":    labels,
-	}
-	payload, err := makeObjectPayload(frameDef)
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodPost, payload)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, %s) -> %s", u, http.MethodPost, payload, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusCreated, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	// Attempt to read the frame that was just created.
-	frm, err := c.FrameRead(frameName)
-	if err != nil {
-		t.Errorf("frame failed to be created %q, %s", frameName, err)
-		t.FailNow()
-	}
-	if len(frm.ObjectMap) == 0 {
-		t.Errorf("something went wrong, frm.ObjectMap should have objects, %+v", frm)
-		t.FailNow()
-	}
-	hasError := false
-	for k, v := range frm.ObjectMap {
-		if v == nil || len(v.(map[string]interface{})) == 0 {
-			t.Errorf("something went wrong, frm.ObjectMap[%q] should have a populated map[string]interface{}, %+v", k, frm.ObjectMap)
-			hasError = true
-		}
-	}
-	if hasError {
-		t.FailNow()
-	}
-
-	// Check if we have the "names" frame.
-	u = fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if _, err := ioutil.ReadAll(res.Body); err != nil {
-		t.Errorf("expected to read the body of request, %s", err)
-	}
-	res.Body.Close()
-
-	// List the frames in a collection
-	u = fmt.Sprintf("http://%s/api/%s/frames/", settings.Host, cName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	frameList := []string{}
-	if err := json.Unmarshal(src, &frameList); err != nil {
-		t.Errorf("Unmarshal(%s, %+v) -> %s", src, frameList, err)
-	}
-	if len(frameList) != 2 {
-		t.Errorf("expected two frames defined, got %d", len(frameList))
-		t.FailNow()
-	}
-	foundFrame := false
-	for _, name := range frameList {
-		if name == frameName {
-			foundFrame = true
-			break
-		}
-	}
-	if !foundFrame {
-		t.Errorf("expected frame %q, it was missing from %+v", frameName, frameList)
-		t.FailNow()
-	}
-
-	// Get the frame's def
-	expectedDef, err := c.FrameDef(frameName)
-	if err != nil {
-		t.Errorf("expected to find frame def for %q, got %s", frameName, err)
-		t.FailNow()
-	}
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	def := map[string]interface{}{}
-	if err := json.Unmarshal(src, &def); err != nil {
-		t.Errorf("json.Unmarshal(%s, def) failed, %s", src, err)
-		t.FailNow()
-	}
-	if !sameMapping(expectedDef, def) {
-		exSrc, _ := JSONMarshalIndent(expectedDef, "", "    ")
-		t.Errorf("expected map %s, got %s", exSrc, src)
-	}
-
-	expectedKeys := c.FrameKeys(frameName)
-	u = fmt.Sprintf("http://%s/api/%s/frame-keys/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	gotKeys := []string{}
-	if err := json.Unmarshal(src, &gotKeys); err != nil {
-		t.Errorf("json.Unmarshal(%s, gotKeys) failed, %s", src, err)
-		t.FailNow()
-	}
-	if !sameStrings(expectedKeys, gotKeys) {
-		exSrc, _ := JSONMarshalIndent(expectedKeys, "", "    ")
-		t.Errorf("expected map %s, got %s", exSrc, src)
-	}
-
-	expectedObjects, err := c.FrameObjects(frameName)
-	if err != nil {
-		t.Errorf("Could get get %q objects, %s", frameName, err)
-		t.FailNow()
-	}
-	u = fmt.Sprintf("http://%s/api/%s/frame-objects/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	gotObjects := []map[string]interface{}{}
-	if err := json.Unmarshal(src, &gotObjects); err != nil {
-		t.Errorf("json.Unmarshal(%s, gotObjects) failed, %s", src, err)
-		t.FailNow()
-	}
-	if !sameObjects(expectedObjects, gotObjects) {
-		exSrc, _ := JSONMarshalIndent(expectedObjects, "", "    ")
-		t.Errorf("expected map %s, got %s", exSrc, src)
-	}
-
-	expectedObjects, err = c.FrameObjects(frameName)
-	if err != nil {
-		t.Errorf("Could get get %q objects, %s", frameName, err)
-		t.FailNow()
-	}
-
-	// save old object list
-	oldObjects := gotObjects[:]
-	// Update a record so we can then try frame-refresh
-	key := "Flanders-J"
-	buf := bytes.NewBuffer([]byte(`{
-    "id":        "Flanders-J",
-    "given":     "Capt. Marcelle",
-    "family":    "Du Champ",
-	"character":   true,
-	"description": "Sky Pirate Captain"
-}`))
-	u = fmt.Sprintf("http://%s/api/%s/object/%s", settings.Host, cName, key)
-	res, err = makeRequest(u, http.MethodPut, buf)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-
-	// Make a refresh call
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodPut, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-
-	// Verify records changed.
-	gotObjects, err = c.FrameObjects(frameName)
-	if err != nil {
-		t.Errorf("Could get get %q objects, %s", frameName, err)
-		t.FailNow()
-	}
-	if sameObjects(oldObjects, gotObjects) {
-		t.Errorf("FrameRefresh failed to update objects")
-		t.FailNow()
-	}
-
-	//FIXME: need tests for reframe
-	newKeys, err := c.Keys()
-	if err != nil {
-		t.Errorf("failed to get keys from %q, %s", cName, err)
-		t.FailNow()
-	}
-	src, err = JSONMarshalIndent(newKeys, "", "    ")
-	if err != nil {
-		t.Errorf("failed to marshal key list, %s", err)
-		t.FailNow()
-	}
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	buf = bytes.NewBuffer(src)
-	res, err = makeRequest(u, http.MethodPut, buf)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	updatedKeys := c.FrameKeys(frameName)
-	if !sameStrings(newKeys, updatedKeys) {
-		t.Errorf("expected keys %+v, got %+v", newKeys, updatedKeys)
-		t.FailNow()
-	}
-	objects, err := c.FrameObjects(frameName)
-	if len(objects) != len(newKeys) {
-		t.Errorf("expected %d objects, got %d", len(newKeys), len(objects))
-		t.FailNow()
-	}
-
-	frameName = "expected"
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodDelete, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodDelete, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if c.HasFrame(frameName) {
-		t.Errorf("expected frame %q to be deleted, found it", frameName)
-		t.FailNow()
-	}
-}
 
 func TestRunAPI(t *testing.T) {
+	
 	if _, err := os.Stat(dName); os.IsNotExist(err) {
-		os.MkdirAll(dName, 0775)
+		os.RemoveAll(dName)
 	}
+	os.MkdirAll(path.Join(dName, "htdocs"), 0775)
 	// Setup up a test collection
-	fName := path.Join(dName, "settings.json")
+	dbName := "recipes"
+	cName := path.Join(dName, fmt.Sprintf("%s.ds", dbName))
+	_, err := Init(cName, "sqlite://collection.db")
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	fName := path.Join(dName, fmt.Sprintf("%s_api.yaml", dbName))
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
-	settings := new(Settings)
-	settings.Host = "localhost:8585"
-	testCollections := map[string]interface{}{}
-	if err := json.Unmarshal(testCollectionsSrc, &testCollections); err != nil {
-		t.Errorf("Failed to unpack text data to populate collections, %s", err)
+	err = os.WriteFile(fName, []byte(`host: localhost:8010
+htdocs: testout/htdocs
+collections:
+  - dataset: recipes.ds
+    keys: true
+    create: true
+    read: true
+    update: true
+    codemeta: true
+    query:
+      list_objects: |
+        select src
+        from recipes
+        order by _Key
+      list_recent: |
+        select src
+        from recipes
+        order by created desc
+        limit ?,?
+`), 0666)
+	if err != nil {
+		t.Error(err)
 		t.FailNow()
 	}
-	for name, testRecords := range testCollections {
-		records := map[string]map[string]interface{}{}
-		for k, v := range testRecords.(map[string]interface{}) {
-			records[k] = v.(map[string]interface{})
-		}
-		pName := path.Join(dName, name)
-		if _, err := os.Stat(pName); err == nil {
-			os.RemoveAll(pName)
-		}
+	src, err := os.ReadFile(fName)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	settings := &Settings{}
+	if err := yaml.Unmarshal(src, &settings); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
 
-		dbName := path.Join(pName, "collection.db")
-		dsnURI := "sqlite://" + dbName
-		if err := SetupApiTestCollection(pName, dsnURI, records); err != nil {
-			t.Errorf("Failed to setup test collection %q, %s", pName, err)
-			t.FailNow()
-		}
-		// Setup a test configuration
-		cfg := new(Config)
-		cfg.CName = pName
-		cfg.DsnURI = dsnURI
-		cfg.Keys = true
-		cfg.Create = true
-		cfg.Read = true
-		cfg.Update = true
-		cfg.Delete = true
-		cfg.Attachments = true
-		cfg.Attach = true
-		cfg.Retrieve = true
-		cfg.Prune = true
-		cfg.FrameRead = true
-		cfg.FrameWrite = true
-		settings.Collections = append(settings.Collections, cfg)
-	}
-	if err := settings.WriteFile(fName, 0664); err != nil {
-		t.Errorf("failed to save config %q, %s", fName, err)
-		t.FailNow()
-	}
+	appName := path.Base(appName)
 
 	setupWait := "5s"
 	wait, _ := time.ParseDuration(setupWait)
@@ -949,7 +418,6 @@ Press Ctr-C if tests hang, you should see requests log output
 
 Client testings starts in %s (s = seconds)
 `, settings.Host, setupWait)
-	appName := os.Args[0]
 
 	// Add some records to our test collection.
 
@@ -966,6 +434,4 @@ Client testings starts in %s (s = seconds)
 	clientTestKeys(t, settings)
 	clientTestObjects(t, settings)
 	clientTestKeys(t, settings)
-	clientTestFrames(t, settings)
-	clientTestAttachments(t, settings)
 }

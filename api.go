@@ -25,9 +25,6 @@ import (
 	"path"
 	"strings"
 	"syscall"
-
-	// Models for eventual integration
-	"github.com/caltechlibrary/models"
 )
 
 const (
@@ -379,7 +376,6 @@ func RunAPI(appName string, settingsFile string, debug bool) error {
 		return err
 	}
 	api.Debug = debug
-	models.SetDebug(debug)
 
 	// Listen for Ctr-C
 	processControl := make(chan os.Signal, 1)

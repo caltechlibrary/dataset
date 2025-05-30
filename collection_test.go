@@ -1,8 +1,8 @@
-// Package dataset includes the operations needed for processing collections of JSON documents and their attachments.
+// Package dataset includes the operations needed for managing collections of JSON documents.
 //
 // Authors R. S. Doiel, <rsdoiel@library.caltech.edu> and Tom Morrel, <tmorrell@library.caltech.edu>
 //
-// Copyright (c) 2022, Caltech
+// Copyright (c) 2025, Caltech
 // All rights not granted herein are expressly reserved by Caltech.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,138 +21,11 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
-	"time"
 )
 
-// Test the Pairtree storage implementation
-func TestPTStore(t *testing.T) {
-	threeObjects := []map[string]interface{}{}
-	threeObjects = append(threeObjects, map[string]interface{}{"one": 1})
-	threeObjects = append(threeObjects, map[string]interface{}{"two": 2})
-	threeObjects = append(threeObjects, map[string]interface{}{"three": 3})
-
-	cName := path.Join("testout", "T1.ds")
-	// Clear stale test output
-	if _, err := os.Stat(cName); err == nil {
-		os.RemoveAll(cName)
-	}
-	// NOTE: Pairtree doesn't use an DSN URI so it is empty
-	c, err := Init(cName, "pairtree")
-	if err != nil {
-		t.Errorf("Failed to create %q, %s", cName, err)
-		t.FailNow()
-	}
-	if c == nil {
-		t.Errorf("Failed to create a collection object")
-		t.FailNow()
-	}
-	if err := c.Close(); err != nil {
-		t.Errorf("Failed to close collection %q, %s", cName, err)
-		t.FailNow()
-	}
-	c, err = Open(cName)
-	if err != nil {
-		t.Errorf("Failed to open a collection object")
-		t.FailNow()
-	}
-	for i, obj1 := range threeObjects {
-		key := fmt.Sprintf("%d", i)
-		// See if I can create and read back the object
-		if err := c.Create(key, obj1); err != nil {
-			t.Errorf("Expected to create %q, %s", key, err)
-			t.FailNow()
-		} else {
-			obj2 := map[string]interface{}{}
-			if err := c.Read(key, obj2); err != nil {
-				t.Errorf("Expected to read %q, %s", key, err)
-				t.FailNow()
-			}
-			for k, v := range obj1 {
-				if v2, ok := obj2[k]; ok == false {
-					t.Errorf("Expected %q in obj2 %+v", k, obj2)
-				} else {
-					// NOTE: c.Read() will use json.Number types for
-					// integers and floats expressed in JSON. These
-					// needed to be converted appropriately for comparison.
-					x := fmt.Sprintf("%d", v)
-					y := v2.(json.Number).String()
-					if x != y {
-						t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
-					}
-				}
-			}
-		}
-		// Make sure you can't overwrite a previously created object
-		if err := c.Create(key, obj1); err == nil {
-			t.Errorf("Expected Create to fail %q should already exist", key)
-		}
-		obj1["id"] = key
-		if err := c.Update(key, obj1); err != nil {
-			t.Errorf("Expected Update to succeed %q, %s", key, err)
-		} else {
-			obj2 := map[string]interface{}{}
-			if err := c.Read(key, obj2); err != nil {
-				t.Errorf("Expected update then Read to success, %q, %s", key, err)
-			} else {
-				for k, v := range obj1 {
-					if v2, ok := obj2[k]; ok == false {
-						t.Errorf("Expected %q in obj2 %+v", k, obj2)
-					} else {
-						switch v.(type) {
-						case string:
-							if v != v2 {
-								t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, v, v2, v)
-							}
-						case int:
-							x := fmt.Sprintf("%d", v)
-							y := v2.(json.Number).String()
-							if x != y {
-								t.Errorf("Expected first value (%T) %q to equal second value (%T) %q", v, x, v2, y)
-							}
-						default:
-							t.Errorf("value was unexpected type %T -> %+v", v, v)
-						}
-					}
-				}
-			}
-		}
-	}
-	if keys, err := c.Keys(); err != nil {
-		t.Errorf("Expected to get a list of keys got error %s", err)
-		t.FailNow()
-	} else {
-		if len(keys) != 3 {
-			t.Errorf("Expected three keys for 3 objects got %+v", keys)
-		}
-		sort.Strings(keys)
-		for i := 0; i < 3; i++ {
-			expected := fmt.Sprintf("%d", i)
-			if keys[i] != expected {
-				t.Errorf("Expected key %s, got %s", expected, keys[i])
-			}
-		}
-	}
-	for i := 0; i < 2; i++ {
-		key := fmt.Sprintf("%d", i)
-		if err := c.Delete(key); err != nil {
-			t.Errorf("Expected to be able to delete %q, %s", key, err)
-		}
-	}
-	if keys, err := c.Keys(); err != nil {
-		t.Errorf("Expected to get keys back from List, %s", err)
-	} else if len(keys) != 1 {
-		t.Errorf("Expected one key left after delete, got %+v", keys)
-	}
-	start := "2001-01-01 00:00:00"
-	end := time.Now().Format("2006-01-02") + " 23:23:59"
-	if _, err := c.UpdatedKeys(start, end); err == nil {
-		t.Errorf("expected error for unsupported UpdateKeys on pairtree collections")
-	}
-}
 
 // Test the SQL storage implementation
 func TestSQLStore(t *testing.T) {
@@ -279,24 +152,6 @@ func TestSQLStore(t *testing.T) {
 			t.Errorf("Expected key (%T) %s, got (%T) %s", expected, expected, got, got)
 		}
 	}
-	now := time.Now()
-	start := "2001-01-01 00:00:00"
-	end := now.Add(12*time.Hour).Format("2006-01-02") + " 23:23:59"
-	updatedKeys, err := c.UpdatedKeys(start, end)
-	if err != nil {
-		t.Errorf("expected UpdateKeys to work, %s", err)
-	}
-	sort.Strings(updatedKeys)
-	ul := len(updatedKeys)
-	if ul == l {
-		for i, k := range keys {
-			if k != updatedKeys[i] {
-				t.Errorf("expected %d-th key to be %q, got %q", i, k, updatedKeys[i])
-			}
-		}
-	} else {
-		t.Errorf("expected %d updated keys, got %d in %q", l, ul, cName)
-	}
 
 	// Let's set c.Query()
 	tName := strings.TrimSuffix(path.Base(cName), ".ds")
@@ -322,25 +177,6 @@ from %s`, tName)
 	if len(src) == 0 {
 		t.Errorf(`expected %q to return number from %s`, sqlStmt, cName)
 	}
-
-	// Test deletes
-	/*
-		for i := 0; i < 2; i++ {
-			key := fmt.Sprintf("%d", i)
-			if err := c.Delete(key); err != nil {
-				t.Errorf("Expected to be able to delete %q, %s", key, err)
-			}
-		}
-		keys, err = c.Keys()
-		if err != nil {
-			t.Errorf("Expected to get keys back from List, %s", err)
-			t.FailNow()
-		}
-		if len(keys) != 1 {
-			t.Errorf("Expected one key left after delete, got %+v", keys)
-			t.FailNow()
-		}
-	*/
 }
 
 func TestFredaExample(t *testing.T) {
@@ -350,7 +186,7 @@ func TestFredaExample(t *testing.T) {
 		// Clear stale data if needed.
 		os.RemoveAll(cName)
 	}
-	c, err := Init(cName, "pairtree")
+	c, err := Init(cName, "sqlite://collection.db")
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -427,17 +263,6 @@ func TestSQLStoreFredaExample(t *testing.T) {
 	} else if keys[0] != docName {
 		t.Errorf("expected key %q, got %q", docName, keys[0])
 	}
-	start := "2000-01-01 00:00:00"
-	end := "2100-12-31 23:23:59"
-	keys, err = c.UpdatedKeys(start, end)
-	if err != nil {
-		t.Errorf("expected c.UpdatedKeys(%q, %q), got error %s", start, end, err)
-	}
-	if len(keys) != 1 {
-		t.Errorf("expected one key, got %d", len(keys))
-	} else if keys[0] != docName {
-		t.Errorf("expected key %q, got %q", docName, keys[0])
-	}
 
 	// Read a JSON document
 	if err := c.Read(docName, document); err != nil {
@@ -469,7 +294,7 @@ func TestCollection(t *testing.T) {
 	}
 
 	// Create a new collection
-	c, err := Init(colName, "pairtree")
+	c, err := Init(colName, "sqlite://collection.db")
 	if err != nil {
 		t.Errorf("error create() a collection %q", err)
 		t.FailNow()
@@ -614,9 +439,13 @@ func TestCollection(t *testing.T) {
 		t.Errorf("Should be able to delete %s, %s", "freda.json", err)
 		t.FailNow()
 	}
+	if stillHasKey := c.HasKey(keyName); stillHasKey {
+		t.Errorf(`%s should have be removed from %s (%s), still has key`, keyName, c.Name, c.WorkPath())
+	}
+	rec2 = map[string]interface{}{}
 	err = c.Read(keyName, rec2)
-	if err == nil {
-		t.Errorf("Record should have been deleted, %+v, %s", rec2, err)
+	if err == nil && len(rec2) > 0 {
+		t.Errorf("Record should have been deleted, cName: %s -> key: %s -> %+v, %+v", c.Name, keyName, rec2, err)
 	}
 
 	/* FIXME: Do we need this really?
@@ -635,7 +464,7 @@ func TestComplexKeys(t *testing.T) {
 	}
 
 	// Create a new collection
-	c, err := Init(cName, "pairtree")
+	c, err := Init(cName, "sqlite://collection.db")
 	if err != nil {
 		t.Errorf("error Create() a collection %q", err)
 		t.FailNow()
@@ -687,7 +516,7 @@ func TestCaseHandling(t *testing.T) {
 	// Setup a test collection and data
 	cName := path.Join("testout", "test_case_handling.ds")
 	os.RemoveAll(cName)
-	c, err := Init(cName, "pairtree")
+	c, err := Init(cName, "sqlite://collection.db")
 	if err != nil {
 		t.Errorf("%s", err)
 		t.FailNow()
@@ -716,25 +545,9 @@ func TestCaseHandling(t *testing.T) {
 		t.FailNow()
 	}
 	// Get back a list of keys, should all be lowercase.const
-	keys, err := c.Keys()
 	if err != nil {
 		t.Errorf("c.Keys() should not return error, %s", err)
 		t.FailNow()
-	}
-	for _, key := range keys {
-		if key == strings.ToUpper(key) {
-			t.Errorf("Expected lower case %q, got %q in %q", strings.ToLower(key), key, cName)
-		}
-		p, err := c.DocPath(strings.ToUpper(key))
-		if err != nil {
-			t.Errorf("%s in %q", err, cName)
-			t.FailNow()
-		}
-		// Check if p has the OS's separator.
-		if !strings.Contains(p, fmt.Sprintf("%c", filepath.Separator)) {
-			t.Errorf("Path seperator does not match host OS, %q <- %c", p, filepath.Separator)
-			t.FailNow()
-		}
 	}
 	cnt := c.Length()
 	if cnt != 3 {
