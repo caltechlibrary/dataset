@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.5
+version: 2.2.6
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -32,23 +32,15 @@ keywords:
   - software
   - json
 
-date_released: 2025-05-30
+date_released: 2025-06-02
 ---
 
 About this software
 ===================
 
-## dataset 2.2.5
+## dataset 2.2.6
 
-Added the following functions to the dataset package
-
-- (c *Collection) KeysJSON
-- (c *Collection) UpdatedKeysJSON
-- (c *Collection) QueryJSON
-
-These provide JSON encoded object support for their base functions.
-
-In datasetd, requesting an API object without specifying the content type returns an application/json object.
+Fix runtime error, issue 142. Added cors setting when serving JavaScript files.
 
 ### Authors
 

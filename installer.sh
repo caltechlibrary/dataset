@@ -4,7 +4,7 @@
 # Set the package name and version to install
 #
 PACKAGE="dataset"
-VERSION="2.2.5"
+VERSION="2.2.6"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$$GIT_GROUP/$$PACKAGE/releases/tag/v$$VERSION"
 if [ "$$PKG_VERSION" != "" ]; then
