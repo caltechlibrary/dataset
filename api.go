@@ -73,6 +73,7 @@ type API struct {
 
 var (
 	settings *Settings
+	debug bool
 )
 
 // hasDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
@@ -119,9 +120,19 @@ func staticRouter(next http.Handler) http.Handler {
 		}
 		// See if we need to set a header of JavaScript or TypeScript files.
 		if strings.HasSuffix(r.URL.Path, ".js") || strings.HasSuffix(r.URL.Path, ".mjs") {
+			if (debug) {
+				log.Printf("DEBUG Response Header %s = %q", "Content-Type", "application/javascript; charset=utf-8")
+			}
+			w.Header().Set("Referrer-Policy", "no-referrer-when-downgrade") // or any other value you prefer
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Add("Content-Type", "application/javascript; charset=utf-8")
 		}
 		if strings.HasSuffix(r.URL.Path, ".ts") {
+			if (debug) {
+				log.Printf("DEBUG Response Header  %s = %q", "Content-Type", "application/typescript; charset=utf-8")
+			}
+			w.Header().Set("Referrer-Policy", "no-referrer-when-downgrade") // or any other value you prefer
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Add("Content-Type", "application/typescript; charset=utf-8")
 		}
 		// If we make it this far, fall back to the default handler
@@ -179,6 +190,7 @@ func (api *API) WebService() error {
 		api.Router(w, r)
 	})
 	if api.Settings.Htdocs != "" {
+		debug = api.Debug
 		mux.Handle("/", staticRouter(http.FileServer(http.Dir(api.Settings.Htdocs))))
 	}
 	log.Printf("%s start, listening on %s", api.AppName, api.Settings.Host)
