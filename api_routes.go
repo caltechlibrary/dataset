@@ -408,7 +408,6 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		default:
 			//NOTE: Need to know the form field names, this is in .Model
 			r.ParseForm()
-			idName = c.Model.GetPrimaryId()
 			if c.Model == nil {
 				if api.Debug {
 					log.Printf("DEBUG c.Model is nil, accept all fields without validation")
@@ -418,6 +417,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				}
 			} else {
 				// NOTE: We only want to grab the fields defined in the model!!
+				idName = c.Model.GetPrimaryId()
 				if api.Debug {
 					log.Printf("DEBUG c.Model is populated, validating model's fields")
 				}
@@ -609,6 +609,13 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 				return
 			}
 		case "application/json":
+			src, err = JSONMarshalIndent(o, "", "    ")
+			if err != nil {
+				log.Printf("Read, json marshal error %+v, %s", o, err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+		default:
 			src, err = JSONMarshalIndent(o, "", "    ")
 			if err != nil {
 				log.Printf("Read, json marshal error %+v, %s", o, err)
