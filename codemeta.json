@@ -79,11 +79,11 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.6",
+  "version": "2.2.7",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Fix runtime error, issue 142. Added cors setting when serving JavaScript files.",
+  "releaseNotes": "Fix issue with spurious form validation without a defined data model. See issue #144.\n\nI need to find a fix for issue #145 before I can release v2.2.7.",
   "copyrightYear": 2025,
   "copyrightHolder": "California Institute of Technology"
 }

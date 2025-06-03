@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.6
+version: 2.2.7
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -38,9 +38,9 @@ date_released: 2025-06-02
 About this software
 ===================
 
-## dataset 2.2.6
+## dataset 2.2.7
 
-Fix runtime error, issue 142. Added cors setting when serving JavaScript files.
+Fix issue with spurious form validation without a defined data model. See issue #144.
 
 ### Authors
 

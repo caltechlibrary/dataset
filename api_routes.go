@@ -491,16 +491,16 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 						}
 					}
 				}
+				// Now we need to validate the form data against our model.
+				if ok := c.Model.ValidateMapInterface(o); !ok {
+					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					return
+				}
 			}
 			if api.Debug {
 				txt, _ := json.MarshalIndent(o, "", "  ")
 				log.Printf("DEBUG form data:\n%s\n\n", txt)
-			}
-			// Now we need to validate the form data.
-			if ok := c.Model.ValidateMapInterface(o); !ok {
-				log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
 			}
 			// Now if we have formData populated it needs to get validated after generated types appliced
 			if err := c.Update(key, o); err != nil {
@@ -508,7 +508,8 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
-			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
+			//FIXME: If urlencoded data then redirect for the form to some URL. What is the way to indicate this?
+			// Early web stuff used a hidden form field for this, seems really clunky.
 			if contentType == "application/json" {
 				statusIsOK(w, http.StatusOK, cName, key, "updated", "")
 			} else {
