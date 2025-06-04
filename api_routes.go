@@ -273,6 +273,9 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			}
 			rows, err = c.SQLStore.db.Query(qStmt, qParams...)
 		} else {
+			if api.Debug {
+				log.Printf("DEBUG qStmt %+v", qStmt)
+			}
 			rows, err = c.SQLStore.db.Query(qStmt)
 		}
 		if err != nil {
