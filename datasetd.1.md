@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.2.7 ef2ddbc
+%datasetd(1) user manual | version 2.2.7 24d9792
 % R. S. Doiel
 % 2025-06-02
 

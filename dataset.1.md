@@ -1,4 +1,4 @@
-%dataset(1) user manual | version 2.2.7 ef2ddbc
+%dataset(1) user manual | version 2.2.7 24d9792
 % R. S. Doiel and Tom Morrell
 % 2025-06-02
 

@@ -42,6 +42,8 @@ About this software
 
 Fix issue with spurious form validation without a defined data model. See issue #144.
 
+I need to find a fix for issue #145 before I can release v2.2.7.
+
 ### Authors
 
 - R. S. Doiel, <https://orcid.org/0000-0003-0900-6903>
