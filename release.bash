@@ -1,7 +1,8 @@
 #!/bin/bash
+# generated with CMTools 2.2.7 b3036dd 2025-06-02
 
 #
-# Release script for CMTools on GitHub using gh cli.
+# Release script for dataset on GitHub using gh cli.
 #
 # shellcheck disable=SC2046
 REPO_ID="$(basename $(pwd))"
@@ -40,7 +41,6 @@ Now goto repo release and finalize draft.
 	${REPO_URL}/releases
 
 EOT
-
     rm release_notes.tmp
 
 fi
