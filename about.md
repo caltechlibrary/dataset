@@ -75,10 +75,12 @@ Tools for working with JSON documents as a collection hosted on the file system 
 ### Software Requirements
 
 - Golang &gt;&#x3D; 1.24.3
-- CMTools &gt;&#x3D; 0.0.29
+- CMTools &gt;&#x3D; 0.0.30
+
+
+### Software Suggestions
+
 - Pandoc &gt;&#x3D; 3.1
 - GNU Make &gt;&#x3D; 3.8
-
-
 
 
