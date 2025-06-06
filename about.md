@@ -74,8 +74,8 @@ Tools for working with JSON documents as a collection hosted on the file system 
 
 ### Software Requirements
 
-- Golang &gt;&#x3D; 1.24.3
-- CMTools &gt;&#x3D; 0.0.30
+- Golang &gt;&#x3D; 1.24.4
+- CMTools &gt;&#x3D; 0.0.31
 
 
 ### Software Suggestions

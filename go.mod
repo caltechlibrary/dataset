@@ -1,6 +1,6 @@
 module github.com/caltechlibrary/dataset/v2
 
-go 1.24.3
+go 1.24.4
 
 require (
 	github.com/caltechlibrary/dotpath v0.1.0
