@@ -110,7 +110,7 @@ func (c *Collection) Dump(out io.Writer) error {
 		obj := map[string]interface{}{}
 		err := c.Read(key, obj)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "WARNING (%d/%d) failed to read %q from %q, %s", i, tot, key, c.Name, err)
+			fmt.Fprintf(os.Stderr, "WARNING (%d/%d) failed to read %q from %q, %s\n", i, tot, key, c.Name, err)
 			errCnt += 1
 			continue
 		}
@@ -186,25 +186,25 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 				if keyExists {
 					if overwrite {
 						if err := c.Update(key, obj); err != nil {
-							fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q -> %s, %s", i, key, src, err)
+							fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q -> %s, %s\n", i, key, src, err)
 							errCnt += 1
 						}
 					} else {
-						fmt.Fprintf(os.Stderr, "WARNING (line %d): duplicate key %q, skipping", i, key)
+						fmt.Fprintf(os.Stderr, "WARNING (line %d): duplicate key %q, skipping\n", i, key)
 						errCnt += 1
 					}
 				} else {
 					if err := c.Create(key, obj); err != nil {
-						fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q -> %s, %s", i, key, src, err)
+						fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q -> %s, %s\n", i, key, src, err)
 						errCnt += 1
 					}
 				}
 			} else {
-				fmt.Fprintf(os.Stderr, "WARNING (line %d): missing object -> %s", i, src)
+				fmt.Fprintf(os.Stderr, "WARNING (line %d): missing object -> %s\n", i, src)
 				errCnt += 1
 			}
 		} else {
-			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key -> %s", i, src)
+			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key -> %s\n", i, src)
 			errCnt += 1
 		}
 	}
