@@ -489,7 +489,7 @@ func (store *SQLStore) Create(key string, src []byte) error {
 	}
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
-		return fmt.Errorf("%s: error %s", stmt, err)
+		return fmt.Errorf("SQL error: %s", err)
 	}
 	if store.Versioning != None {
 		return store.saveNewVersion(key, src)

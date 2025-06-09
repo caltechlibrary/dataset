@@ -1,18 +1,18 @@
-%C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe(1) user manual | version 2.2.7 9c44ac2
+%datasetd(1) user manual | version 2.2.7 114aee2
 % R. S. Doiel
 % 2025-06-02
 
 # NAME
 
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe
+datasetd
 
 # SYNOPSIS
 
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe [OPTIONS] SETTINGS_FILE
+datasetd [OPTIONS] SETTINGS_FILE
 
 # DESCRIPTION
 
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe provides a web service for one or more dataset collections. Requires the
+datasetd provides a web service for one or more dataset collections. Requires the
 collections to exist (e.g. created previously with the dataset cli). It requires a
 settings JSON or YAML file that decribes the web service configuration and
 permissions per collection that are available via the web service.
@@ -33,11 +33,11 @@ permissions per collection that are available via the web service.
 
 # SETTINGS_FILE
 
-The settings files provides C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe with the configuration
+The settings files provides datasetd with the configuration
 of the service web service and associated dataset collection(s).
 
 It can be writen as either a JSON or YAML file. If it is a YAML file
-you should use the ".yaml" extension so that C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe will correctly
+you should use the ".yaml" extension so that datasetd will correctly
 parse the YAML.
 
 The top level YAML attributes are
@@ -117,12 +117,12 @@ versions
 Starting up the web service
 
 ~~~
-   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe settings.yaml
+   datasetd settings.yaml
 ~~~
 
 In this example we cover a short life cycle of a collection
 called "t1.ds". We need to create a "settings.json" file and
-an empty dataset collection. Once ready you can run the C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe 
+an empty dataset collection. Once ready you can run the datasetd 
 service to interact with the collection via cURL. 
 
 To create the dataset collection we use the "dataset" command and the
@@ -167,11 +167,11 @@ collections:
 EOT
 ~~~
 
-Now we can run C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe and make the dataset collection available
+Now we can run datasetd and make the dataset collection available
 via HTTP.
 
 ~~~
-    C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe settings.yaml
+    datasetd settings.yaml
 ~~~
 
 You should now see the start up message and any log information display
@@ -218,10 +218,10 @@ List the keys and you should see that "one" is not longer there.
     curl http://localhost:8485/api/t1.ds/keys
 ~~~
 
-In the shell session where C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe is running press "ctr-C"
+In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\datasetd.exe 2.2.7
+datasetd 2.2.7
 
 

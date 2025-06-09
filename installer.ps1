@@ -1,62 +1,85 @@
 #!/usr/bin/env pwsh
-# Generated with codemeta-ps1-installer.tmpl, see https://github.com/caltechlibrary/codemeta-pandoc-examples
+# generated with CMTools 2.2.7 114aee2 2025-06-02
 
 #
 # Set the package name and version to install
 #
 param(
   [Parameter()]
-  [String]$$VERSION = "$version$"
+  [String]$VERSION = "$version$"
 )
-[String]$$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
-if ($$PKG_VERSION) {
-	$$VERSION = "$${PKG_VERSION}"
-	Write-Output "Using '$${PKG_VERSION}' for version value '$${VERSION}'"
+[String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
+if ($PKG_VERSION) {
+	$VERSION = "${PKG_VERSION}"
+	Write-Output "Using '${PKG_VERSION}' for version value '${VERSION}'"
 }
 
-$$PACKAGE = "dataset"
-$$GIT_GROUP = "caltechlibrary"
-$$RELEASE = "https://github.com/$${GIT_GROUP}/$${PACKAGE}/releases/tag/v$${VERSION}"
-$$SYSTEM_TYPE = Get-ComputerInfo -Property CsSystemType
-if ($$SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
-    $$MACHINE = "arm64"
+$PACKAGE = "dataset"
+$GIT_GROUP = "caltechlibrary"
+$RELEASE = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/tag/v${VERSION}"
+$SYSTEM_TYPE = Get-ComputerInfo -Property CsSystemType
+if ($SYSTEM_TYPE.CsSystemType.Contains("ARM64")) {
+    $MACHINE = "arm64"
 } else {
-    $$MACHINE = "x86_64"
+    $MACHINE = "x86_64"
 }
 
+Write-Output "Using release ${RELEASE}"
 
 # FIGURE OUT Install directory
-$$BIN_DIR = "$${Home}\bin"
-Write-Output "$${PACKAGE} v$${VERSION} will be installed in $${BIN_DIR}"
+$BIN_DIR = "${Home}\bin"
+Write-Output "${PACKAGE} v${VERSION} will be installed in ${BIN_DIR}"
 
 #
 # Figure out what the zip file is named
 #
-$$ZIPFILE = "$${PACKAGE}-v$${VERSION}-Windows-$${MACHINE}.zip"
-Write-Output "Fetching Zipfile $${ZIPFILE}"
+$ZIPFILE = "${PACKAGE}-v${VERSION}-Windows-${MACHINE}.zip"
+Write-Output "Fetching Zipfile ${ZIPFILE}"
 
 #
 # Check to see if this zip file has been downloaded.
 #
-$$DOWNLOAD_URL = "https://github.com/$${GIT_GROUP}/$${PACKAGE}/releases/download/v$${VERSION}/$${ZIPFILE}"
-Write-Output "Download URL $${DOWNLOAD_URL}"
+$DOWNLOAD_URL = "https://github.com/${GIT_GROUP}/${PACKAGE}/releases/download/v${VERSION}/${ZIPFILE}"
+Write-Output "Download URL ${DOWNLOAD_URL}"
 
-if (!(Test-Path $$BIN_DIR)) {
-  New-Item $$BIN_DIR -ItemType Directory | Out-Null
+if (!(Test-Path $BIN_DIR)) {
+  New-Item $BIN_DIR -ItemType Directory | Out-Null
 }
-curl.exe -Lo "$${ZIPFILE}" "$${DOWNLOAD_URL}"
-#if ([System.IO.File]::Exists($$ZIPFILE)) {
-if (!(Test-Path $$ZIPFILE)) {
-    Write-Output "Failed to download $${ZIPFILE} from $${DOWNLOAD_URL}"
+curl.exe -Lo "${ZIPFILE}" "${DOWNLOAD_URL}"
+#if ([System.IO.File]::Exists($ZIPFILE)) {
+if (!(Test-Path $ZIPFILE)) {
+    Write-Output "Failed to download ${ZIPFILE} from ${DOWNLOAD_URL}"
 } else {
-    tar.exe xf "$${ZIPFILE}" -C "$${Home}"
-    #Remove-Item $$ZIPFILE
+    # Do we have a zip file or tar.gz file?
+    $fileInfo = Get-Item "${ZIPFILE}"
 
-    $$User = [System.EnvironmentVariableTarget]::User
-    $$Path = [System.Environment]::GetEnvironmentVariable('Path', $$User)
-    if (!(";$${Path};".ToLower() -like "*;$${BIN_DIR};*".ToLower())) {
-        [System.Environment]::SetEnvironmentVariable('Path', "$${Path};$${BIN_DIR}", $$User)
-        $$Env:Path += ";$${BIN_DIR}"
+    # Handle zip or tar.gz files
+    switch ($fileInfo.Extension) {
+        ".zip" {
+            Expand-Archive -Path "${ZIPFILE}" "${Home}"
+            break
+        }
+        ".gz" {
+            tar.exe xf "${ZIPFILE}" -C "${Home}"
+            break
+        }
+        ".tgz" {
+            tar.exe xf "${ZIPFILE}" -C "${Home}"
+            break
+        }
+        default {
+            Write-Output "The ${ZIPFILE} from ${DOWNLOAD_URL} is neither a ZIP file nor a gzipped tar file."
+            exit 1
+        }
     }
-    Write-Output "$${PACKAGE} was installed successfully to $${BIN_DIR}"
+
+    #Remove-Item $ZIPFILE
+
+    $User = [System.EnvironmentVariableTarget]::User
+    $Path = [System.Environment]::GetEnvironmentVariable('Path', $User)
+    if (!(";${Path};".ToLower() -like "*;${BIN_DIR};*".ToLower())) {
+        [System.Environment]::SetEnvironmentVariable('Path', "${Path};${BIN_DIR}", $User)
+        $Env:Path += ";${BIN_DIR}"
+    }
+    Write-Output "${PACKAGE} was installed successfully to ${BIN_DIR}"
 }

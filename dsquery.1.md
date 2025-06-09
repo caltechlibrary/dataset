@@ -1,18 +1,18 @@
-%C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe(1) dataset user manual | version 2.2.7 9c44ac2
+%dsquery(1) dataset user manual | version 2.2.7 114aee2
 % R. S. Doiel and Tom Morrell
 % 2025-06-02
 
 # NAME
 
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe
+dsquery
 
 # SYNOPSIS
 
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+dsquery [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
 
 # DESCRIPTION
 
-__C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe__ is a tool to support SQL queries of dataset collections. 
+__dsquery__ is a tool to support SQL queries of dataset collections. 
 Pairtree based collections should be index before trying to query them
 (see '-index' option below). Pairtree collections use the SQLite 3
 dialect of SQL for querying.  For collections using a SQL storage
@@ -27,7 +27,7 @@ the JSON document. The table name reflects the collection
 name without the ".ds" extension (e.g. data.ds is stored in a database called
 data having a table also called data).
 
-The output of __C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe__ is a JSON array of objects. The order of the
+The output of __dsquery__ is a JSON array of objects. The order of the
 objects is determined by the your SQL statement and SQL engine. There
 is an option to generate a 2D grid of values in JSON, CSV or YAML formats.
 See OPTIONS for details.
@@ -41,7 +41,7 @@ SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
 JSON store for the JSON store (e.g.  Postgres, MySQL and SQLite 3).
 The SELECT clause should return a single JSON object type per row.
-__C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe__ returns an JSON array of JSON objects returned
+__dsquery__ returns an JSON array of JSON objects returned
 by the SQL query.
 
 PARAMS
@@ -95,7 +95,7 @@ names but rather than create a 2D JSON of values it creates YAML
 representation.
 
 -index
-: This will create a SQLite3 index for a collection. This enables C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe
+: This will create a SQLite3 index for a collection. This enables dsquery
 to query pairtree collections using SQLite3 SQL dialect just as it would for
 SQL storage collections (i.e. don't use with postgres, mysql or sqlite based
 dataset collections. It is not needed for them). Note the index is always
@@ -109,7 +109,7 @@ The colllection name "data.ds" which is implemented using Postgres
 as the JSON store. (note: in Postgres the `||` is very helpful).
 
 ~~~
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe data.ds "SELECT jsonb_build_object('_Key', _key)::jsonb || src::jsonb FROM data"
+dsquery data.ds "SELECT jsonb_build_object('_Key', _key)::jsonb || src::jsonb FROM data"
 ~~~
 
 In this example we're returning the "src" in our collection by querying
@@ -117,7 +117,7 @@ for a "id" attribute in the "src" column. The id is passed in as an attribute
 using the Postgres positional notatation in the statement.
 
 ~~~
-C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsquery.exe data.ds "SELECT src FROM data WHERE src->>'id' = $1 LIMIT 1" "xx103-3stt9"
+dsquery data.ds "SELECT src FROM data WHERE src->>'id' = $1 LIMIT 1" "xx103-3stt9"
 ~~~
 
 
