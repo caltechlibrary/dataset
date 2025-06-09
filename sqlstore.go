@@ -25,6 +25,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -419,7 +420,7 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 
 	store := new(SQLStore)
 	store.WorkPath = name
-	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	store.tableName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
 	store.driverName = driverName
 	store.dsn = dsnFixUp(driverName, dsn, name)
 	// Validate the driver name as supported by sqlstore ...
@@ -488,7 +489,7 @@ func (store *SQLStore) Create(key string, src []byte) error {
 	}
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: error %s", stmt, err)
 	}
 	if store.Versioning != None {
 		return store.saveNewVersion(key, src)

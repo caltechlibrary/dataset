@@ -1,18 +1,18 @@
-%dsimporter(1) dataset user manual | version 2.2.7 1ff8f6f
+%C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsimporter.exe(1) dataset user manual | version 2.2.7 9c44ac2
 % R. S. Doiel and Tom Morrell
 % 2025-06-02
 
 # NAME
 
-dsimporter
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsimporter.exe
 
 # SYNOPSIS
 
-dsimporter [OPTIONS] C_NAME CSV_FILENAME KEY_COLUMN
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsimporter.exe [OPTIONS] C_NAME CSV_FILENAME KEY_COLUMN
 
 # DESCRIPTION
 
-__dsimporter__ is a tool to import CSV content into a dataset collection
+__C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsimporter.exe__ is a tool to import CSV content into a dataset collection
 where the column headings become the attribute names and the row values
 become the attribute values.
 
@@ -62,7 +62,7 @@ in a file called "books.csv". We are importing the CSV file
 into a collections called. "shelves.ds"
 
 ~~~
-dsimporter shelves.ds books.csv "item_code"
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dsimporter.exe shelves.ds books.csv "item_code"
 ~~~
 
 

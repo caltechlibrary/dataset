@@ -1,18 +1,18 @@
-%dataset(1) user manual | version 2.2.7 1ff8f6f
+%C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe(1) user manual | version 2.2.7 9c44ac2
 % R. S. Doiel and Tom Morrell
 % 2025-06-02
 
 # NAME
 
-dataset 
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe 
 
 # SYNOPSIS
 
-dataset [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PRAMETER ...]
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe [GLOBAL_OPTIONS] VERB [OPTIONS] COLLECTION_NAME [PRAMETER ...]
 
 # DESCRIPTION
 
-dataset command line interface supports creating JSON object
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe command line interface supports creating JSON object
 collections and managing the JSON object documents in a collection.
 
 When creating new documents in the collection or updating documents
@@ -122,7 +122,7 @@ join [OPTIONS] c_name, key, JSON_SRC
 existing object in the collection.
 
 
-A word about "keys". dataset uses the concept of key/values for
+A word about "keys". C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
 value is the object to be stored.  Keys must be lower case 
 alpha numeric only.  Depending on storage engines there are issues
@@ -131,11 +131,11 @@ The pairtree storage engine relies on the host file system. File
 systems are notorious for being picky about non-alpha numeric
 characters and some are not case sensistive.
 
-A word about "GLOBAL_OPTIONS" in v2 of dataset.  Originally
+A word about "GLOBAL_OPTIONS" in v2 of C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe.  Originally
 all options came after the command name, now they tend to
 come after the verb itself. This is because context counts
 in trying to remember options (at least for the authors of
-dataset).  There are three "GLOBAL_OPTIONS" that are exception
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe).  There are three "GLOBAL_OPTIONS" that are exception
 and they are `-version`, `-help`
 and `-license`. All other options come
 after the verb and apply to the specific action the verb
@@ -166,37 +166,37 @@ STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairt
 # EXAMPLES
 
 ~~~
-   dataset help init
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe help init
 
-   dataset init my_objects.ds 
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe init my_objects.ds 
 
-   dataset model my_objects.ds
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe model my_objects.ds
 
-   dataset help create
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe help create
 
-   dataset create my_objects.ds "123" '{"one": 1}'
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe create my_objects.ds "123" '{"one": 1}'
 
-   dataset create my_objects.ds "234" mydata.json 
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe create my_objects.ds "234" mydata.json 
    
-   cat <<EOT | dataset create my_objects.ds "345"
+   cat <<EOT | C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe create my_objects.ds "345"
    {
 	   "four": 4,
 	   "five": "six"
    }
    EOT
 
-   dataset update my_objects.ds "123" '{"one": 1, "two": 2}'
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe update my_objects.ds "123" '{"one": 1, "two": 2}'
 
-   dataset delete my_objects.ds "345"
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe delete my_objects.ds "345"
 
-   dataset keys my_objects.ds
+   C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe keys my_objects.ds
 ~~~
 
 This is an example of initializing a Pairtree JSON documentation
 collection using the environment.
 
 ~~~
-dataset init '${C_NAME}' pairtree
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe init '${C_NAME}' pairtree
 ~~~
 
 In this case '${C_NAME}' is the name of your JSON document
@@ -206,7 +206,7 @@ To specify Postgres as the storage for your JSON document collection.
 You'd use something like --
 
 ~~~
-dataset init '${C_NAME}' \\
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe init '${C_NAME}' \\
   'postgres://${USER}@localhost/${DB_NAME}?sslmode=disable'
 ~~~
 
@@ -218,6 +218,6 @@ database name.  The sslmode option was specified because Postgres
 in this example was restricted to localhost on a single user machine.
 
 
-dataset 2.2.7
+C:\Users\rsdoi\Source\GitHub\CaltechLibrary\dataset\bin\dataset.exe 2.2.7
 
 

@@ -50,11 +50,11 @@ function Invoke-Build {
 
     # Build installer scripts
     cmt codemeta.json installer.sh
-    chmod 775 installer.sh
+    #chmod 775 installer.sh
     git add -f installer.sh
 
     cmt codemeta.json installer.ps1
-    chmod 775 installer.ps1
+    #chmod 775 installer.ps1
     git add -f installer.ps1
 }
 
