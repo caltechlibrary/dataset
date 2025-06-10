@@ -36,7 +36,9 @@ dist
 testout
 bin/*
 demos/*
+*~
 *.swp
+*.tmp
 test*.json
 *.bak
 *.pdf

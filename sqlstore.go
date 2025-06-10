@@ -25,6 +25,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -32,14 +33,25 @@ import (
 	"github.com/caltechlibrary/semver"
 
 	// Database specific drivers
-	//_ "github.com/glebarez/go-sqlite"
-	_ "modernc.org/sqlite"
-	
+	_ "github.com/glebarez/go-sqlite"
+	//_ "modernc.org/sqlite"
+	//_ "github.com/ncruces/go-sqlite3/driver"
+	//_ "github.com/ncruces/go-sqlite3/embed"
+
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
 const (
+	Sqlite3SchemaName = "sqlite"
+	Sqlite3DriverName = "sqlite"
+
+	PostgresSchemaName = "postgres"
+	PostgresDriverName = "postgres"
+
+	MySQLSchemaName = "mysql"
+	MySQLDriverName = "mysql"
+
 	// None means versioning is turned off for collection
 	None = iota
 	// Major means increment the major semver value on creation or update
@@ -51,6 +63,7 @@ const (
 
 	versionPrefix = "_v_"
 )
+
 
 type SQLStore struct {
 	// WorkPath holds the path to where the collection definition is held.
@@ -81,7 +94,7 @@ func ParseDSN(uri string) (string, error) {
 		return "", err
 	}
 
-	if !(u.Scheme == "sqlite" || u.Scheme == "postgres" || u.Scheme == "mysql") {
+	if !(u.Scheme == Sqlite3SchemaName || u.Scheme == PostgresSchemaName || u.Scheme == MySQLSchemaName) {
 		return "", fmt.Errorf("invalid connection protocol: %s", u.Scheme)
 	}
 
@@ -120,15 +133,27 @@ func ParseDSN(uri string) (string, error) {
 	return strings.Join(kvs, " "), nil
 }
 
+func driverNameFixUp(driverName string) string {
+	switch driverName {
+	case Sqlite3SchemaName:
+		return Sqlite3DriverName
+	case PostgresSchemaName:
+		return PostgresDriverName
+	case MySQLSchemaName:
+		return MySQLDriverName
+	}
+	return driverName
+}
+
 func dsnFixUp(driverName string, dsn string, workPath string) string {
 	switch driverName {
-	case "postgres":
+	case PostgresDriverName:
 		return fmt.Sprintf("%s://%s", driverName, dsn)
-	case "sqlite":
+	case Sqlite3DriverName:
 		// NOTE: the db needs to be stored in the dataset directory
 		// to keep the dataset easily movable.
 		dbName := path.Base(dsn)
-		return path.Join(workPath, dbName)
+		return  path.Join(workPath, dbName)
 	}
 	return dsn
 }
@@ -144,26 +169,26 @@ func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	}
 	store := new(SQLStore)
 	store.WorkPath = name
+	store.driverName = driverNameFixUp(driverName)
 	store.dsn = dsnFixUp(driverName, dsn, name)
-	store.driverName = driverName
 	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
 	// Validate we support this SQL driver and form create statement.
 	var stmt string
 	switch driverName {
-	case "sqlite":
+	case Sqlite3DriverName:
 		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   _key VARCHAR(255) PRIMARY KEY,
   src JSON,
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated DATETIME DEFAULT CURRENT_TIMESTAMP
 )`, store.tableName)
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`CREATE TABLE %s (_key VARCHAR(255) PRIMARY KEY,
 src JSON,
 created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)`, store.tableName)
 		//NOTE: Postgres needs a trigger to make update work.
-	case "mysql":
+	case MySQLDriverName:
 		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   _key VARCHAR(255) PRIMARY KEY,
   src JSON,
@@ -171,7 +196,7 @@ updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)`, store.tableName)
   updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )`, store.tableName)
 	default:
-		return nil, fmt.Errorf("%q database not supported", store.driverName)
+		return nil, fmt.Errorf("%q (%q) database not supported", store.driverName, store.dsn)
 	}
 	// Open the DB
 	db, err := sql.Open(store.driverName, store.dsn)
@@ -191,7 +216,7 @@ updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)`, store.tableName)
 
 	// Add Triggers if needed, e.g. Postgres
 	switch driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = `CREATE OR REPLACE FUNCTION updated_src_column()   
 RETURNS TRIGGER AS $$
 BEGIN
@@ -247,7 +272,7 @@ func (store *SQLStore) saveNewVersion(key string, src []byte) error {
 	versionTable := versionPrefix + store.tableName
 	var stmt string
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, version, src) VALUES ($1, $2, $3)`, versionTable)
 	default:
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, version, src) VALUES (?, ?, ?)`, versionTable)
@@ -328,7 +353,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
 			versionTable = versionPrefix + store.tableName
 		)
 		switch store.driverName {
-		case "sqlite":
+		case Sqlite3DriverName:
 			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   _key VARCHAR(255) NOT NULL,
   version VARCHAR(255) NOT NULL,
@@ -336,7 +361,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (_key, version)
 )`, versionTable)
-		case "postgres":
+		case PostgresDriverName:
 			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   key VARCHAR(255) NOT NULL,
   version VARCHAR(255) NOT NULL,
@@ -344,7 +369,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
   created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   PRIMARY KEY (_key, version)
 )`, versionTable)
-		case "mysql":
+		case MySQLDriverName:
 			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   _key VARCHAR(255) NOT NULL,
   version VARCHAR(255) NOT NULL,
@@ -353,7 +378,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
   PRIMARY KEY (_key, version)
 )`, versionTable)
 		default:
-			return fmt.Errorf("%q database not supported", store.driverName)
+			return fmt.Errorf("%q (%q) database not supported", store.driverName, store.dsn)
 		}
 		// Create the collection table
 		if _, err := store.db.Exec(stmt); err != nil {
@@ -395,16 +420,16 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 
 	store := new(SQLStore)
 	store.WorkPath = name
-	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	store.tableName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
 	store.driverName = driverName
 	store.dsn = dsnFixUp(driverName, dsn, name)
 	// Validate the driver name as supported by sqlstore ...
 	switch store.driverName {
-	case "postgres":
-	case "sqlite":
-	case "mysql":
+	case PostgresDriverName:
+	case Sqlite3DriverName:
+	case MySQLDriverName:
 	default:
-		return nil, fmt.Errorf("%q database not supported", store.driverName)
+		return nil, fmt.Errorf("%q (%s) database not supported", store.driverName, store.dsn)
 	}
 	store.db, err = sql.Open(store.driverName, store.dsn)
 	if err != nil {
@@ -436,14 +461,14 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 // ```
 func (store *SQLStore) Close() error {
 	switch store.driverName {
-	case "sqlite":
+	case Sqlite3DriverName:
 		return store.db.Close()
-	case "postgres":
+	case PostgresDriverName:
 		return store.db.Close()
-	case "mysql":
+	case MySQLDriverName:
 		return store.db.Close()
 	default:
-		return fmt.Errorf("%q database not supported", store.driverName)
+		return fmt.Errorf("%q (%q) database not supported", store.driverName, store.dsn)
 	}
 }
 
@@ -457,14 +482,14 @@ func (store *SQLStore) Close() error {
 func (store *SQLStore) Create(key string, src []byte) error {
 	var stmt string
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src) VALUES ($1, $2)`, store.tableName)
 	default:
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src) VALUES (?, ?)`, store.tableName)
 	}
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
-		return err
+		return fmt.Errorf("SQL error: %s", err)
 	}
 	if store.Versioning != None {
 		return store.saveNewVersion(key, src)
@@ -486,7 +511,7 @@ func (store *SQLStore) Create(key string, src []byte) error {
 func (store *SQLStore) Read(key string) ([]byte, error) {
 	var stmt string
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = $1`, store.tableName)
 	default:
 		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = ?`, store.tableName)
@@ -515,7 +540,7 @@ func (store *SQLStore) Read(key string) ([]byte, error) {
 func (store *SQLStore) Versions(key string) ([]string, error) {
 	var stmt string
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`SELECT version FROM %s WHERE _key = $1`, versionPrefix+store.tableName)
 	default:
 		stmt = fmt.Sprintf(`SELECT version FROM %s WHERE _key = ?`, versionPrefix+store.tableName)
@@ -544,7 +569,7 @@ func (store *SQLStore) ReadVersion(key string, version string) ([]byte, error) {
 	var stmt string
 
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = $1 AND version = $2`, versionPrefix+store.tableName)
 	default:
 		stmt = fmt.Sprintf(`SELECT src FROM %s WHERE _key = ? AND version = ?`, versionPrefix+store.tableName)
@@ -575,9 +600,9 @@ func (store *SQLStore) ReadVersion(key string, version string) ([]byte, error) {
 func (store *SQLStore) Update(key string, src []byte) error {
 	var stmt string
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`UPDATE %s SET src = $1 WHERE _key = $2`, store.tableName)
-	case "sqlite":
+	case Sqlite3DriverName:
 		// SQLite3 only supports the initial timestamp generation in the scheme, the timestamp
 		// will **not** automatically on update.
 		stmt = fmt.Sprintf(`UPDATE %s SET src = ?, updated = datetime() WHERE _key = ?`, store.tableName)
@@ -604,7 +629,7 @@ func (store *SQLStore) Update(key string, src []byte) error {
 func (store *SQLStore) Delete(key string) error {
 	var stmt string
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`DELETE FROM %s WHERE _key = $1`, store.tableName)
 	default:
 		stmt = fmt.Sprintf(`DELETE FROM %s WHERE _key = ?`, store.tableName)
@@ -627,7 +652,7 @@ func (store *SQLStore) Keys() ([]string, error) {
 	var stmt string
 
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`SELECT _key FROM %s ORDER BY _key`, store.tableName)
 	default:
 		stmt = fmt.Sprintf(`SELECT _key FROM %s ORDER BY _key`, store.tableName)
@@ -727,7 +752,7 @@ func (store *SQLStore) HasKey(key string) bool {
 	var stmt string
 
 	switch store.driverName {
-	case "postgres":
+	case PostgresDriverName:
 		stmt = fmt.Sprintf(`SELECT _key FROM %s WHERE _key = $1 LIMIT 1`, store.tableName)
 	default:
 		stmt = fmt.Sprintf(`SELECT _key FROM %s WHERE _key = ? LIMIT 1`, store.tableName)

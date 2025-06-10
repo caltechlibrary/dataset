@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="dataset-v3">Dataset v3</h1>
+<p>The goal of Dataset v3 is to provide a simple core level of
+functionality making it trivial to implement light weight metadata
+repositories.</p>
+<p>Version 3’s focus on reducing the functionality of Dataset v2 and
+simplifying the codebase in the process. It is a distillation of the
+ideas and concepts that have guided the Dataset Project over since 2016.
+V3 is intended to be the penultimate implementation of dataset and
+datasetd. Subsequent version should be stable and feature complete.</p>
+<h2 id="on-the-chopping-block">On the chopping block</h2>
+<h3 id="dropped-features-from-v2">Dropped features from v2</h3>
+<ul>
+<li>pairtree storage</li>
+<li>frames related verbs (has been superseded by query, dsquery)</li>
+<li>clone, clone sample (superseded by dump/load of json lines
+support)</li>
+<li>join (should be handled via external tooling or via SQLite3 query
+support)</li>
+<li>libdataset is being abandoned, too hard to maintain Windows
+build</li>
+<li>dsquery (merged into dataset command, already supported in
+datasetd)</li>
+<li>dsimport (replaced with dump/load of json line documents)</li>
+<li>attachments and related verbs</li>
+</ul>
+<h2 id="revisions">Revisions</h2>
+<ul>
+<li>default storage of metadata is in an SQLite3 database with support
+for PostgreSQL and MySQL maintained from v2</li>
+<li>a simplified model for versioned metadata.
+<ul>
+<li>one table is “current” metadata</li>
+<li>second is a “history” table of versioned metadata</li>
+<li>same database schema except the history uses a composite of key
+version number for primary key</li>
+<li>history is always enabled</li>
+</ul></li>
+<li>dsquery merged into dataset cli</li>
+<li>datasetd
+<ul>
+<li>Look at improving and documenting the JSON API such that it is
+clearer how</li>
+</ul></li>
+</ul>
+<h2 id="simplified-documentation">Simplified documentation</h2>
+<ul>
+<li>documentations has grown organically and is difficulty to keep
+acurate</li>
+<li>manual pages should be generated from the command help</li>
+<li>better tutorials are needed</li>
+<li>examples use cases are needed</li>
+</ul>
+<h2 id="under-consideration">Under consideration</h2>
+<ul>
+<li>model support
+<ul>
+<li>Review model approach, integrate this into the dataset and datasetd
+<ul>
+<li>does it make sense to continue with GitHub Issue Template or is JSON
+schema stable enough to easily implement</li>
+</ul></li>
+</ul></li>
+<li>YAML integration
+<ul>
+<li>while dataset will remain a JSON document management system, YAML
+support should be included for input and outputs</li>
+</ul></li>
+</ul>
+<h2 id="implementation-languages">Implementation language(s)</h2>
+<p>One of the goals of v3 will be to reduce the feature set such that
+implementation in Go, Rust, TypeScript and Python with feature parity of
+the reference implementation is easy.</p>
+<h2 id="targeted-platforms">Targeted platforms</h2>
+<ul>
+<li>aarch64
+<ul>
+<li>Linux</li>
+<li>macOS</li>
+<li>Windows 11</li>
+</ul></li>
+<li>x86_64
+<ul>
+<li>Linux</li>
+<li>macOS</li>
+<li>Windows 11</li>
+</ul></li>
+<li>Explore WASM support</li>
+</ul>
+</section>
+
+<footer>
+<span>&copy; 2022 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

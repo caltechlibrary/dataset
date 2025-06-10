@@ -1,3 +1,6 @@
+
+# generated with CMTools 2.2.7 b3036dd 2025-06-02
+
 #
 # Makefile for running pandoc on all Markdown docs ending in .md
 #
@@ -18,10 +21,11 @@ $(HTML_PAGES): $(MD_PAGES) .FORCE
 	@if [ $@ = "README.html" ]; then mv README.html index.html; fi
 
 pagefind: .FORCE
-	pagefind --verbose --exclude-selectors="nav,header,footer" --site .
+	# NOTE: I am not including most of the archive in PageFind index since it doesn't make sense in this case.
+	pagefind --verbose --glob="{*.html,docs/*.html}" --force-language en-US --exclude-selectors="nav,header,footer" --output-path ./pagefind --site .
 	git add pagefind
 
 clean:
-	@if [ -f index.html ]; then rm *.html; fi
+	@rm *.html
 
 .FORCE:
