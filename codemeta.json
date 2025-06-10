@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2016-09-12",
-  "dateModified": "2025-06-02",
-  "datePublished": "2025-06-02",
+  "dateModified": "2025-06-10",
+  "datePublished": "2025-06-10",
   "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
   "funder": [
     {
@@ -85,7 +85,7 @@
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Fix issue with spurious form validation without a defined data model. See issue #144.\n\nI need to find a fix for issue #145 before I can release v2.2.7.",
+  "releaseNotes": "Fix issue with spurious form validation without a defined data model. See issue #144.\n\nFixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded\n\nFixed issue #146, path handling to collection name caused me to mis-caculate the table name.",
   "copyrightYear": 2025,
   "copyrightHolder": "California Institute of Technology"
 }

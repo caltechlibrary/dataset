@@ -32,7 +32,7 @@ keywords:
   - software
   - json
 
-date_released: 2025-06-02
+date_released: 2025-06-10
 ---
 
 About this software
@@ -42,7 +42,9 @@ About this software
 
 Fix issue with spurious form validation without a defined data model. See issue #144.
 
-I need to find a fix for issue #145 before I can release v2.2.7.
+Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded
+
+Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.
 
 ### Authors
 
