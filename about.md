@@ -40,11 +40,12 @@ About this software
 
 ## dataset 2.2.7
 
-Fix issue with spurious form validation without a defined data model. See issue #144.
+This release has focused on cleanup, bug fixes and adding a redirect feature to support development without requiring JavaScript browser side.
 
-Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded
-
-Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.
+- Fixed issue #138, where SQLite3 updated times where not set.
+- Fixed issue #144, Fix issue with spurious form validation without a defined data model.
+- Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded.
+- Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.
 
 ### Authors
 
