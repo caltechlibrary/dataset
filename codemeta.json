@@ -75,7 +75,7 @@
   ],
   "softwareRequirements": [
     "Golang >= 1.24.4",
-    "CMTools >= 0.0.32"
+    "CMTools >= 0.0.33"
   ],
   "softwareSuggestions": [
     "Pandoc >= 3.1",
