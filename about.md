@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.6
+version: 2.2.7
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -32,15 +32,20 @@ keywords:
   - software
   - json
 
-date_released: 2025-06-02
+date_released: 2025-06-10
 ---
 
 About this software
 ===================
 
-## dataset 2.2.6
+## dataset 2.2.7
 
-Fix runtime error, issue 142. Added cors setting when serving JavaScript files.
+This release has focused on cleanup, bug fixes and adding a redirect feature to support development without requiring JavaScript browser side.
+
+- Fixed issue #138, where SQLite3 updated times where not set.
+- Fixed issue #144, Fix issue with spurious form validation without a defined data model.
+- Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded.
+- Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.
 
 ### Authors
 
@@ -72,11 +77,13 @@ Tools for working with JSON documents as a collection hosted on the file system 
 
 ### Software Requirements
 
-- Golang &gt;&#x3D; 1.24.3
-- CMTools &gt;&#x3D; 0.0.29
+- Golang &gt;&#x3D; 1.24.4
+- CMTools &gt;&#x3D; 0.0.32
+
+
+### Software Suggestions
+
 - Pandoc &gt;&#x3D; 3.1
 - GNU Make &gt;&#x3D; 3.8
-
-
 
 

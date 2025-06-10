@@ -84,13 +84,19 @@ type Config struct {
 	// Create allows you to add objects to a collection
 	Create bool `json:"create,omitempty" yaml:"create,omitempty"`
 
+	// CreateSuccess defines a redirect URL or relative path for successful POST to datasetd
+	CreateSuccess string `json:"create_success,omitempty" yaml:"create_success,omitempty"`
+
+	// CreateError defines a redirect URL or relative path for unsuccessful POST to datasetd 
+	CreateError string `json:"create_error,omitempty" yaml:"create_error,omitempty"`
+
 	// Read allows you to retrive an object from a collection
 	Read bool `json:"read,omitempty" yaml:"read,omitempty"`
 
 	// Update allows you to replace objects in a collection
 	Update bool `json:"update,omitempty" yaml:"update,omitempty"`
 
-	// Delete allows ytou to removes objects, object versions,
+	// Delete allows you to removes objects, object versions,
 	// and attachments from a collection
 	Delete bool `json:"delete,omitempty" yaml:"delete,omitempty"`
 

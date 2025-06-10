@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2016-09-12",
-  "dateModified": "2025-06-02",
-  "datePublished": "2025-06-02",
+  "dateModified": "2025-06-10",
+  "datePublished": "2025-06-10",
   "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
   "funder": [
     {
@@ -74,16 +74,18 @@
     "SQL"
   ],
   "softwareRequirements": [
-    "Golang >= 1.24.3",
-    "CMTools >= 0.0.29",
+    "Golang >= 1.24.4",
+    "CMTools >= 0.0.32"
+  ],
+  "softwareSuggestions": [
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.6",
+  "version": "2.2.7",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "Fix runtime error, issue 142. Added cors setting when serving JavaScript files.",
+  "releaseNotes": "This release has focused on cleanup, bug fixes and adding a redirect feature to support development without requiring JavaScript browser side.\n\n- Fixed issue #138, where SQLite3 updated times where not set.\n- Fixed issue #144, Fix issue with spurious form validation without a defined data model.\n- Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded.\n- Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.",
   "copyrightYear": 2025,
   "copyrightHolder": "California Institute of Technology"
 }

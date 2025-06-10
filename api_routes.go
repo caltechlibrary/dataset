@@ -53,27 +53,17 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 	fmt.Fprintf(w, "%s", src)
 }
 
-// statusOKText returns a JSON object indicating the status of a request
+// statusOKText returns a text indicating the status of a request
 // is OK.
-func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key string, action string, target string) {
+func statusIsOKText(w http.ResponseWriter, r *http.Request, statusCode int, cName string, key string, action string, target string, successRedirect string) {
+	log.Printf("Success request URL: %s %q  statusCode: %d, cName: %q, key: %q, action %q, target: %q, successRedirect: %q", r.Method, r.URL, statusCode, cName, key, action, target, successRedirect)
+	if successRedirect != "" {
+		// Redirecting the to the success page, using HTTP status found
+		http.Redirect(w, r, successRedirect, http.StatusFound)
+		return
+	}
 	w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(statusCode)
-	/*
-	m := map[string]string{}
-	m["status"] = "OK"
-	if cName != "" {
-		m["collection"] = cName
-	}
-	if key != "" {
-		m["key"] = key
-	}
-	if action != "" {
-		m["action"] = action
-	}
-	if target == "" {
-		m["target"] = target
-	}
-	*/
 	fmt.Fprintf(w, "%s for %s\n", http.StatusText(statusCode), cName)
 	if key != "" {
 		fmt.Fprintf(w, "  %s\n", key)
@@ -86,6 +76,24 @@ func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key str
 	}
 }
 
+// statusIsError provides a consistent way to express an error condition in the API request.
+// It is not intended to be used where `http.NotFound(w, r)` is more appropriate. It was created
+// as a means of handling redirects specified in the YAML for for datasetd.
+func statusIsError(w http.ResponseWriter, r *http.Request, statusText string, statusCode int, errorRedirect string) {
+	// Do we have a redirect?
+	if errorRedirect != "" {
+		// Redirecting using http status NotModified
+		log.Printf("ERROR request URL: %s %q  statusText: %q, statusCode: %d, errorRedirect: %q", r.Method, r.URL, statusText, statusCode, errorRedirect)
+		// Redirecting the to the error page.
+		http.Redirect(w, r, errorRedirect, http.StatusNotModified)
+		return
+	}
+	// Fallback to the default error handler
+	http.Error(w, statusText, statusCode)
+}
+
+
+
 // ApiVersion returns the version of the web service running.
 // This will normally be the same version of dataset you installed.
 //
@@ -96,7 +104,7 @@ func statusIsOKText(w http.ResponseWriter, statusCode int, cName string, key str
 // ```
 func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "%s %s", api.AppName, api.Version)
+	fmt.Fprintf(w, "%s %s", path.Base(api.AppName), api.Version)
 }
 
 // Collections returns a list of dataset collections supported
@@ -117,7 +125,7 @@ func Collections(w http.ResponseWriter, r *http.Request, api *API, cName string,
 		src, err := JSONMarshalIndent(collections, "", "     ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", collections, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 		}
 		fmt.Fprintf(w, "%s", src)
 		return
@@ -140,14 +148,14 @@ func Codemeta(w http.ResponseWriter, r *http.Request, api *API, cName string, ve
 		src, err := c.Codemeta()
 		if err != nil {
 			log.Printf("Codemeta, not found for %s, %s", cName, err)
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			http.NotFound(w, r)
 			return
 		}
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 		fmt.Fprintf(w, "%s", src)
 		return
 	}
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -207,14 +215,14 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	}
 	if len(options) == 0 {
 		log.Printf("Query, Bad Request %s %q, missing query name", r.Method, r.URL.Path)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	qName := options[0]
 	cfg, err := api.Settings.GetCfg(cName)
 	if err != nil {
 		log.Printf("Query, Bad Request %s %q %s, not found", r.Method, r.URL.Path, qName)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	if api.Debug {
@@ -223,13 +231,13 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	// Make sure we have queries defined in the configuration
 	if cfg.QueryFn == nil || len(cfg.QueryFn) == 0 {
 		log.Printf("Query, Bad Request %s %q, undefined query", r.Method, r.URL.Path)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	qStmt, ok := cfg.QueryFn[qName]
 	if !ok {
 		log.Printf("Query, Bad Request %s %q, undefined query %q", r.Method, r.URL.Path, qName)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	if api.Debug {
@@ -243,7 +251,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		src, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 			return
 		}
 		defer r.Body.Close()
@@ -252,7 +260,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			err = json.Unmarshal(src, &o)
 			if err != nil {
 				log.Printf("Query, unmarshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 				return
 			}
 		}
@@ -273,11 +281,14 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			}
 			rows, err = c.SQLStore.db.Query(qStmt, qParams...)
 		} else {
+			if api.Debug {
+				log.Printf("DEBUG qStmt %+v", qStmt)
+			}
 			rows, err = c.SQLStore.db.Query(qStmt)
 		}
 		if err != nil {
 			log.Printf("Query, failed stmt: %q, %s, %+v, %s", qName, qStmt, qParams, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 			return
 		}
 		src = []byte(`[`)
@@ -287,7 +298,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			obj := []byte{}
 			if err := rows.Scan(&obj); err != nil {
 				log.Printf("Query, failed row.Scan(obj): %q, %s, (%d) %+v, %s", qName, qStmt, i, obj, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 				return
 			}
 			if i > 0 {
@@ -300,7 +311,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		err = rows.Err()
 		if err != nil {
 			log.Printf("Query, row.Err(): %q, %s, (%d) %+v, %s", qName, qStmt, i, src, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 			return
 		}
 		// NOTE: I need to handle the content type requested -> CSV, YAML or JSON (default)
@@ -309,14 +320,14 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			src, err = MakeCSV(src, getAttrNames(urlQuery, "csv"))
 			if err != nil {
 				log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 				return
 			}
 		case "application/yaml":
 			src, err = MakeCSV(src, getAttrNames(urlQuery, "yaml"))
 			if err != nil {
 				log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 				return
 			}
 		}
@@ -324,7 +335,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		fmt.Fprintf(w, "%s", src)
 		return
 	}
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -347,7 +358,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 		src, err := JSONMarshalIndent(keys, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", keys, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 			return
 		}
 		// Set header to application/json
@@ -355,7 +366,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 		fmt.Fprintf(w, "%s", src)
 		return
 	}
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -386,6 +397,16 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 	//NOTE: Handle the cases for submissions encoded as JSON or urlencoded data.
 	contentType := r.Header.Get("content-type")
 	idName := ""
+	successRedirect := ""
+	errorRedirect := ""
+	if (api.Settings != nil) {
+		if cfg, err := api.Settings.GetCfg(cName); err == nil {
+			successRedirect, errorRedirect = cfg.CreateSuccess, cfg.CreateError
+			if api.Debug {
+				log.Printf("DEBUG successRedirect: %q, errorRedirect: %q", successRedirect, errorRedirect)
+			}
+		}
+	}
 	o := map[string]interface{}{}
 	if c, ok := api.CMap[cName]; ok {
 		if api.Debug {
@@ -396,13 +417,13 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			src, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 				return
 			}
 			err = json.Unmarshal(src, &o)
 			if err != nil {
 				log.Printf("Create, json unmarshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, errorRedirect)
 				return
 			}
 		default:
@@ -434,7 +455,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		if key == "" {
 			if idName == "" {
 				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, o)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 				return
 			}
 			if id, ok := o[idName]; ok {
@@ -454,7 +475,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					oldO := map[string]interface{}{}
 					if err := c.Read(key, oldO); err != nil {
 						log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-						http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+						statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 						return
 					}
 					for k, genType := range generatedTypes {
@@ -491,28 +512,29 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 						}
 					}
 				}
+				// Now we need to validate the form data against our model.
+				if ok := c.Model.ValidateMapInterface(o); !ok {
+					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+					return
+				}
 			}
 			if api.Debug {
 				txt, _ := json.MarshalIndent(o, "", "  ")
-				log.Printf("DEBUG form data:\n%s\n\n", txt)
-			}
-			// Now we need to validate the form data.
-			if ok := c.Model.ValidateMapInterface(o); !ok {
-				log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
+				log.Printf("DEBUGING form data:\n%s\n\n", txt)
 			}
 			// Now if we have formData populated it needs to get validated after generated types appliced
 			if err := c.Update(key, o); err != nil {
 				log.Printf("Update failed %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 				return
 			}
-			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
+			//FIXME: If urlencoded data then redirect for the form to some URL. What is the way to indicate this?
+			// Early web stuff used a hidden form field for this, seems really clunky.
 			if contentType == "application/json" {
 				statusIsOK(w, http.StatusOK, cName, key, "updated", "")
 			} else {
-				statusIsOKText(w, http.StatusOK, cName, key, "updated", "")
+				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key))
 			}
 			return
 		} else {
@@ -545,20 +567,20 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			if c.Model != nil {
 				if ok := c.Model.ValidateMapInterface(o); !ok {
 					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 					return
 				}
 			}
 			if err := c.Create(key, o); err != nil {
 				log.Printf("Create failed %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 				return
 			}
 			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
 			if contentType == "application/json" {
 				statusIsOK(w, http.StatusCreated, cName, key, "created", "")
 			} else {
-				statusIsOKText(w, http.StatusCreated, cName, key, "created", "")
+				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key))
 			}
 			return
 		}
@@ -582,7 +604,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // ```
 func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	key := options[0]
@@ -605,21 +627,21 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 			src, err = yaml.Marshal(o)
 			if err != nil {
 				log.Printf("Read, yaml marshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 				return
 			}
 		case "application/json":
 			src, err = JSONMarshalIndent(o, "", "    ")
 			if err != nil {
 				log.Printf("Read, json marshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 				return
 			}
 		default:
 			src, err = JSONMarshalIndent(o, "", "    ")
 			if err != nil {
 				log.Printf("Read, json marshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 				return
 			}
 		}
@@ -649,7 +671,7 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	key := options[0]
@@ -668,13 +690,13 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			src, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 				return
 			}
 			err = json.Unmarshal(src, &o)
 			if err != nil {
 				log.Printf("Update, json unmarshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 				return
 			}
 		default:
@@ -706,7 +728,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				// Now we need to validate the form data.
 				if ok := c.Model.Validate(formData); !ok {
 					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
-					//http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					//statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 					//return
 				}
 			}
@@ -717,7 +739,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		if key == "" {
 			if idName == "" {
 				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, formData)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 				return
 			}
 			if id, ok := o[idName]; ok {
@@ -735,7 +757,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				oldO := map[string]interface{}{}
 				if err := c.Read(key, oldO); err != nil {
 					log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 					return
 				}
 				for k, genType := range generatedTypes {
@@ -774,7 +796,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			}
 		}
 		if err := c.Update(key, o); err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 			return
 		}
 		statusIsOK(w, http.StatusOK, cName, key, "updated", "")
@@ -797,14 +819,14 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // ```
 func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	key := options[0]
 
 	if c, ok := api.CMap[cName]; ok {
 		if err := c.Delete(key); err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 			return
 		}
 		statusIsOK(w, http.StatusOK, cName, key, "delete", "")
@@ -829,7 +851,7 @@ func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // ```
 func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	key := options[0]
@@ -837,13 +859,13 @@ func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	if c, ok := api.CMap[cName]; ok {
 		fNames, err := c.Attachments(key)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 			return
 		}
 		src, err := JSONMarshalIndent(fNames, "", "    ")
 		if err != nil {
 			log.Printf("Attachments, unmarshal error %+v, %s", fNames, err)
-			http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 			return
 		}
 		// Set header to application/json
@@ -870,7 +892,7 @@ func Attachments(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 // ```
 func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 2 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	key := options[0]
@@ -885,7 +907,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 			file, _, err := r.FormFile("file")
 			if err != nil {
 				log.Printf("Error in handling file upload %s", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 				return
 
 			}
@@ -894,7 +916,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 			// Now we can attach the file to the record.
 			if err := c.AttachStream(key, fName, file); err != nil {
 				log.Printf("Failed to attach %q to %q, %s", fName, key, err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError, "")
 				return
 			}
 			statusIsOK(w, http.StatusCreated, cName, key, "attach", fName)
@@ -903,7 +925,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 			// Assume raw bytes and read them.
 			if err := c.AttachStream(key, fName, r.Body); err != nil {
 				log.Printf("Failed to attach stream %q to %q, %s", fName, key, err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError, "")
 				return
 			}
 			defer r.Body.Close()
@@ -929,7 +951,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 // ```
 func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 2 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	contentType := "application/octet-stream"
@@ -956,7 +978,7 @@ func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 	err = c.RetrieveStream(key, filename, w)
 	if err != nil {
 		log.Printf("failed to retrieve stream %q from %q in %q, %s", filename, key, cName, err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 		return
 	}
 }
@@ -973,7 +995,7 @@ func Retrieve(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 // ```
 func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) != 2 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	key, fName := options[0], options[1]
@@ -1020,7 +1042,7 @@ func HasFrame(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 		}
 	}
 	// Check if frame is in collection
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 }
 
 // FrameCreate creates a new frame in a collection. It accepts the
@@ -1051,13 +1073,13 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	src, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	m := map[string][]string{}
 	if err := json.Unmarshal(src, &m); err != nil {
 		log.Printf("FrameCreate, unmarshal error %+v, %s", m, err)
-		http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
+		statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 		return
 	}
 	keys := []string{}
@@ -1077,13 +1099,13 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	if ok {
 		if _, err := c.FrameCreate(frameName, keys, dotPaths, labels, verbose); err != nil {
 			log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		}
 		statusIsOK(w, http.StatusCreated, cName, "", "frame-create", frameName)
 		return
 	}
 	// Check if frame is in collection
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1102,7 +1124,7 @@ func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 		src, err := JSONMarshalIndent(frameNames, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", frameNames, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 			return
 		}
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -1110,7 +1132,7 @@ func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 		return
 	}
 	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1124,7 +1146,7 @@ func Frames(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 // ```
 func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	frameName := options[0]
@@ -1135,7 +1157,7 @@ func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb str
 		src, err := JSONMarshalIndent(keys, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", keys, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 			return
 		}
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -1143,7 +1165,7 @@ func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb str
 		return
 	}
 	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1157,7 +1179,7 @@ func FrameKeys(w http.ResponseWriter, r *http.Request, api *API, cName, verb str
 // ```
 func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	frameName := options[0]
@@ -1166,13 +1188,13 @@ func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 	if ok {
 		def, err := c.FrameDef(frameName)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			http.NotFound(w, r)
 			return
 		}
 		src, err := JSONMarshalIndent(def, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", def, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 			return
 		}
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -1180,7 +1202,7 @@ func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 		return
 	}
 	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1194,7 +1216,7 @@ func FrameDef(w http.ResponseWriter, r *http.Request, api *API, cName, verb stri
 // ```
 func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	frameName := options[0]
@@ -1203,13 +1225,13 @@ func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 	if ok {
 		objects, err := c.FrameObjects(frameName)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			http.NotFound(w, r)
 			return
 		}
 		src, err := JSONMarshalIndent(objects, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", objects, err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 			return
 		}
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -1217,7 +1239,7 @@ func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 		return
 	}
 	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1247,7 +1269,7 @@ func FrameObjects(w http.ResponseWriter, r *http.Request, api *API, cName, verb 
 // ```
 func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	frameName := options[0]
@@ -1260,11 +1282,11 @@ func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 			// Handle reframe
 			keys := []string{}
 			if err := json.Unmarshal(body, &keys); err != nil {
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 				return
 			}
 			if err := c.FrameReframe(frameName, keys, verbose); err != nil {
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
 				return
 			}
 			statusIsOK(w, http.StatusOK, cName, "", "reframe", frameName)
@@ -1272,14 +1294,14 @@ func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 		}
 		err = c.FrameRefresh(frameName, verbose)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			http.NotFound(w, r)
 			return
 		}
 		statusIsOK(w, http.StatusOK, cName, "", "refresh", frameName)
 		return
 	}
 	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1293,7 +1315,7 @@ func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 // ```
 func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
 	if len(options) < 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
 	frameName := options[0]
@@ -1302,14 +1324,14 @@ func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	if ok {
 		err := c.FrameDelete(frameName)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			http.NotFound(w, r)
 			return
 		}
 		statusIsOK(w, http.StatusOK, cName, "", "frame-delete", frameName)
 		return
 	}
 	// Collection not found
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	http.NotFound(w, r)
 	return
 }
 
@@ -1319,15 +1341,15 @@ func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 //**************************************************************
 
 func ObjectVersions(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	statusIsError(w, r, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented, "")
 }
 
 func ReadVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	statusIsError(w, r, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented, "")
 }
 
 func DeleteVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	statusIsError(w, r, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented, "")
 }
 
 //**************************************************************
@@ -1336,13 +1358,13 @@ func DeleteVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb
 //**************************************************************
 
 func AttachmentVersions(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	statusIsError(w, r, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented, "")
 }
 
 func RetrieveVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	statusIsError(w, r, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented, "")
 }
 
 func PruneVersion(w http.ResponseWriter, r *http.Request, api *API, cName, verb string, options []string) {
-	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+	statusIsError(w, r, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented, "")
 }
