@@ -23,25 +23,17 @@
 </nav>
 
 <section>
-<h1 id="tutorials-and-how-to">Tutorials and How To…</h1>
-<p>Here is a small collection of pages to help you get started with
-<em>dataset</em> or explore a specific topic.</p>
-<h2 id="a-short-reading-list">A short reading list</h2>
-<ul>
-<li><a href="getting-started-with-dataset.html">Getting started with
-dataset</a></li>
-</ul>
-<h2 id="additional-topics">Additional topics</h2>
-<ul>
-<li><a href="file-system-layout.html">File system layout</a></li>
-<li><a href="how-attachments-work.html">How attachments work</a></li>
-<li><a href="filtering-keys.html">An approach to filtering keys</a></li>
-<li><a href="managing-attachments.html">Managing attachments</a></li>
-<li><a href="upgrading-a-collection.html">Upgrading a
-collection</a></li>
-<li><a href="Windows-cmd-prompt.html">Windows 11 cmd prompt and
-dataset</a></li>
-</ul>
+<h1 id="load">load</h1>
+<p>This will read a JSON lines document holding an object made of a
+“key” attribute and an “object” attribute and populate the collection
+using those objects. By default objects are not overwritten but there is
+an option for allowing that.</p>
+<h2 id="example">Example</h2>
+<p>Load the objects from “data.jsonl” into the collection called
+“data.ds”. Then update the collection using “new-data.jsonl” overwriting
+existing objects in “data.ds”</p>
+<pre class="shell"><code>cat data.jsonl | dataset load data.ds
+cat new-data.jsonl | dataset load --overwrite data.ds</code></pre>
 </section>
 
 <footer>

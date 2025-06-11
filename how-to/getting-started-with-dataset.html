@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dataset Project -- How to ...</title>
+    <title>Dataset Project</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
@@ -13,10 +13,9 @@
 <ul>
     <li><a href="/">Home</a></li>
     <li><a href="../">README</a></li>
-    <li><a href="../user-manual.html">User Manual</a></li>
-    <li><a href="../docs/">Documentation</a></li>
-    <li><a href="./">How To</a></li>
-    <li><a href="../libdataset/">Libdataset</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
     <li><a href="../about.html">About</a></li>
 	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
@@ -25,24 +24,25 @@
 
 <section>
 <h1 id="getting-started-with-dataset">Getting started with dataset</h1>
-<p><em>dataset</em> is designed to easily manage collections of JSON
-documents. A JSON object is associated with a unique key you provide. If
-you are using the default storage engine the objects themselves are
-stored on disc in a folder inside the collection folder. If you are
-using a SQL storage engine they are stored in a column of a table of the
-collection in your SQL database.</p>
+<p><strong>dataset</strong> is designed to easily manage collections of
+JSON documents. A JSON object is associated with a unique key you
+provide. If you are using the default storage engine the objects
+themselves are stored on disc in a folder inside the collection folder.
+If you are using a SQL storage engine they are stored in a column of a
+table of the collection in your SQL database.</p>
 <p>The collection folder contains a JSON object document called
-<em>collection.json</em>. This file stores operational metadata about
-the collection. If the collection is using a pairtree then a
-<em>keymap.json</em> file will include the association of keys with
-paths to their objects. When a collection is initialized a minimal
-codemeta.json file will created describing the collection. This can be
-update to a full codemeta.json file, follow the guideline and practice
-described at the <a href="https://codemeta.github.io">codemeta</a>
-website.</p>
-<p><em>dataset</em> comes in several flavors — a command line program
-called <em>dataset</em>, a web service called <em>datasetd</em> and the
-Go language package used to build for programs.</p>
+<strong>collection.json</strong>. This file stores operational metadata
+about the collection. If the collection is using a pairtree then a
+<strong>keymap.json</strong> file will include the association of keys
+with paths to their objects.</p>
+<p>When a collection is initialized a minimal codemeta.json file will
+created describing the collection. This can be update to a full
+codemeta.json file, follow the guideline and practice described at the
+<a href="https://codemeta.github.io">codemeta</a> website.</p>
+<p><strong>dataset</strong> comes in several flavors — a command line
+program called <em>dataset</em>, a web service called
+<strong>datasetd</strong> and the Go language package used to build for
+programs.</p>
 <p>This tutorial talks both the command line program and the Go package.
 The command line is great for simple setup, the Go package allows you to
 build on other programs that use dataset collections for content
@@ -51,7 +51,8 @@ persistence.</p>
 init</h2>
 <p>To create a collection you use the init verb. In the following
 examples you will see how to do this with both the command line tool
-<em>dataset</em> as well as the Python module of the same name.</p>
+<strong>dataset</strong> as well as the Python module of the same
+name.</p>
 <p>Let's create a collection called <em>friends.ds</em>. At the command
 line type the following.</p>
 <div class="sourceCode" id="cb1"><pre
@@ -103,7 +104,7 @@ delete</h2>
 <p>As with many systems that store information dataset provides for
 basic operations of creating, updating and deleting. In the following
 section we will work with the <em>friends.ds</em> collection and
-<em>favorites.ds</em> collection we created previously.</p>
+<strong>favorites.ds</strong> collection we created previously.</p>
 <p>I have some friends who are characters in <a
 href="https://zbs.org">ZBS</a> radio plays. I am going to create and
 save some of their info in our collection called <em>friends.ds</em>. I
@@ -235,7 +236,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="
 <h3 id="read">read</h3>
 <p>We have three records in our <em>friends.ds</em> collection —
 "frieda", "mojo", and "jack". Let's see what they look like with the
-<em>read</em> verb.</p>
+<strong>read</strong> verb.</p>
 <p>command line --</p>
 <div class="sourceCode" id="cb10"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> read friends.ds frieda</span></code></pre></div>
@@ -303,8 +304,9 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href=
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
 <p>On the command line we can read in the updated JSON objects and save
 the results in the collection with the <em>update</em> verb. Like with
-<em>init</em> and <em>create</em> the <em>update</em> verb will return
-an “OK” or error message. Let's update each of our JSON objects.</p>
+<strong>init</strong> and <strong>create</strong> the
+<strong>update</strong> verb will return an “OK” or error message. Let's
+update each of our JSON objects.</p>
 <div class="sourceCode" id="cb16"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds freida frieda-profile.json</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> update friends.ds mojo mojo-profile.json</span>
@@ -434,10 +436,11 @@ JSON object from the collection.</p>
 <h2 id="keys-and-count">keys and count</h2>
 <p>Eventually you have lots of objects in your collection. You are not
 going to be able to remember all the keys. dataset provides a
-<em>keys</em> function for getting a list of keys as well as a
-<em>count</em> to give you a total number of keys.</p>
+<strong>keys</strong> function for getting a list of keys as well as a
+<strong>count</strong> to give you a total number of keys.</p>
 <p>Now that we've deleted a few things let's see how many keys are in
-<em>friends.ds</em>. We can do that with the <em>count</em> verb.</p>
+<strong>friends.ds</strong>. We can do that with the
+<strong>count</strong> verb.</p>
 <p>Command line --</p>
 <div class="sourceCode" id="cb21"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> count friends.ds</span></code></pre></div>
@@ -467,183 +470,6 @@ variable called keys.</p>
        // ... handle error
    }
    fmt.Printf(&quot;%s\n&quot;, strings.Join(keys, &quot;\n&quot;))</code></pre>
-<h2 id="data-frames">Data frames</h2>
-<p>JSON objects are tree like. This structure can be inconvenient for
-some types of analysis like tabulation, comparing values or generating
-summarizing reports. Many languages support a concept of "data frame".
-Meaning a list of objects, possibly with associated metadata about how
-the list was created. This becomes a convenient way to process data.
-Frames can easily be transformed.</p>
-<h3 id="the-frame">the frame</h3>
-<p>dataset also comes with a <em>frame</em> verb. A <em>frame</em> is an
-order list of objects based on a set of keys and metadata about how the
-values for the objects we mapped from the collection’s JSON documents.
-It is similar to the "data frames" concepts in languages like Julia,
-Matlab, Octave, Python and R.</p>
-<p>To define a frame we only need two pieces of information, a list of
-keys in the collection to be framed and a list of dot notated paths to
-map into a set of labels for the object in the frame.</p>
-<div class="sourceCode" id="cb25"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-create <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="dt">\</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        .name=name .email=email <span class="dt">\</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        .catch_phrase=catch_phrase</span></code></pre></div>
-<p>In Go it would look like</p>
-<div class="sourceCode" id="cb26"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>    c, err :<span class="op">=</span> dataset.Open(<span class="st">&quot;friends.ds&quot;</span>)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">//</span> ... handle error</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    defer c.Close()</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    verbose :<span class="op">=</span> true</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> c.Keys()</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    dotPaths :<span class="op">=</span> []string{ <span class="st">&quot;.name&quot;</span>, <span class="st">&quot;.email&quot;</span>, <span class="st">&quot;.catch_phrase&quot;</span> }</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    labels :<span class="op">=</span> []string{ <span class="st">&quot;name&quot;</span>, <span class="st">&quot;email&quot;</span>, <span class="st">&quot;catch_phrase&quot;</span> }</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err :<span class="op">=</span> c.FrameCreate(<span class="st">&quot;friends.ds&quot;</span>, <span class="st">&quot;name-and-email&quot;</span>, </span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>                keys, dotPaths, labels, verbose)<span class="op">;</span> err <span class="op">!=</span> nil {</span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">//</span> ... handle error</span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre></div>
-<p>In Go it'd look like</p>
-<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
-    // ... handle error
-    defer c.Close()
-
-    frm, err := c.FrameRead(&quot;name-and-email&quot;)
-    // ... handle error
-    src, err := json.MarshalIndent(frm, &quot;&quot;, &quot;    &quot;)
-    // ... handle error
-    fmt.Printf(&quot;%s\n&quot;, src)</code></pre>
-<p>Looking at the resulting JSON object you see other attributes beyond
-the object list of the frame. These are created to simplify some of
-dataset more complex interactions.</p>
-<p>Most of the time you don't want the metadata, so you we have a way of
-just retrieving the object list.</p>
-<div class="sourceCode" id="cb28"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre></div>
-<p>Or in Go --</p>
-<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
-    // ... handle error
-    defer c.Close()
-
-    objects, err := c.FrameObjects(&quot;name-and-email&quot;)
-    // ... handle error
-    src, err := json.MarshalIndent(objects, &quot;&quot;, &quot;    &quot;)
-    // ... handle error
-    fmt.Printf(&quot;%s\n&quot;, src)</code></pre>
-<p>Let's add back the Jack record we deleted a few sections ago and
-“reframe” our “name-and-email” frame.</p>
-<div class="sourceCode" id="cb30"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Adding back Jack</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> create <span class="at">-i</span> jack-profile.json friends.ds jack</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save all the keys in the collection</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> keys friends.ds <span class="op">&gt;</span>friends.keys</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now reframe &quot;name-and-email&quot; with the updated friends.keys</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> reframe <span class="at">-i</span><span class="op">=</span>friends.keys friends.ds <span class="st">&quot;name-and-email&quot;</span> </span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s take a look at the frame&#39;s objects</span></span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-objects friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre></div>
-<p>Let's try the same thing in Go --</p>
-<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
-   // ... handle error
-   defer c.Close()
-   if err := c.CreateObject(&quot;jack&quot;, jackProfile); err != nil {
-       // ... handle error
-   }
-   keys, err := c.Keys()
-   if err != nil {
-       // ... handle error
-   }
-   if err := c.Reframe(&quot;name-and-email&quot;, keys); err != nil {
-       // ... handle error
-   }
-   objects, err := c.FrameObjects(&quot;name-and-email&quot;)
-   // ... handle error
-   src, err := json.MarshalIndent(objects, &quot;&quot;, &quot;    &quot;)
-   // ... handle error
-   fmt.Printf(&quot;%s\n&quot;, src)</code></pre>
-<p>We can list the frames in the collection using the <em>frames</em>
-verb.</p>
-<div class="sourceCode" id="cb32"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frames friends.ds</span></code></pre></div>
-<p>In Go --</p>
-<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
-   // ... handle error
-   defer c.Close()
-
-   frameNames := c.Frames()
-   fmt.Printf(&quot;%s\n&quot;, string.Join(frame_names, &quot;\n&quot;))</code></pre>
-<p>In our frame we have previously defined three columns, looking at the
-JSON representation of the frame we also see a "labels" attribute.
-Labels are used when exporting and synchronizing content between a CSV
-file, Google Sheet and a collection (labels become column names).</p>
-<p>Labels are the target attribute name. They are set at the time of
-frame definition and persist as long as the frame exists. The order of
-the columns reflects the order of the pairs defining the dot paths and
-labels. In our previous examples we provided the order of the columns
-for the frame "name-and-email" as <code>.name</code>,
-<code>.email</code>, <code>.catch_phrase</code> dot paths. If we want to
-have the labels "ID", "Display Name", "EMail", and "Catch Phrase" we
-need to define our frame that way.</p>
-<div class="sourceCode" id="cb34"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-keys friends.ds <span class="op">&gt;</span>keys.json </span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame <span class="at">-i</span> keys.json friends.ds <span class="st">&quot;name-and-email&quot;</span> <span class="dt">\</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;._Key=ID&quot;</span> <span class="st">&quot;.name=Display Name&quot;</span> <span class="dt">\</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;.email=EMail&quot;</span> <span class="st">&quot;.catch_phrase=Catch Phrase&quot;</span></span></code></pre></div>
-<p>In Go it might look like</p>
-<pre class="golang"><code>    c, err := dataset.Open(&quot;friends.ds&quot;)
-    // ... handle error
-    defer c.Close()
-
-    verbose := true
-    keys, err := c.FrameKeys(&quot;name-and-email&quot;)
-    // ... handle error
-    frm, err := c.FrameRead(&quot;name-and-email&quot;)
-    // ... handle error
-
-    // Retrieve our dot paths and labels then append
-    // the additional path and label
-    dotPaths := frm.DotPaths
-    dotPaths = append(dotPaths, &quot;.catch_phrase&quot;)
-    labels := frm.Labels
-    labels = append(labels, &quot;catch_phrase&quot;)
-
-    err := c.FrameDelete(&quot;name-and-email&quot;)
-    // ... handle error
-
-    err := c.Frame(&quot;name-and-email&quot;, keys, dotPath, labels, verbose)
-    if err != nil {
-        // ... handle error
-    }</code></pre>
-<p>Finally the last thing we need to be able to do is delete a frame.
-Delete frames work very similar to deleting a JSON record.</p>
-<div class="sourceCode" id="cb36"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dataset</span> frame-delete friends.ds <span class="st">&quot;name-and-email&quot;</span></span></code></pre></div>
-<p>Or in Go --</p>
-<pre class="golang"><code>   c, err := dataset.Open(&quot;friends.ds&quot;)
-   // ... handle
-   defer c.Close()
-
-   err := c.FrameDelete(&quot;name-and-email&quot;)
-   // ... handle error</code></pre>
-<p><strong>TIP</strong>: Frames like collections have a number of
-operations. Here's the list</p>
-<ol type="1">
-<li><p><em>frame</em> will let you define a frame</p></li>
-<li><p><em>frame-def</em> will let you read back a frame’s
-definition</p></li>
-<li><p><em>frame-objects</em> return the frame's object list</p></li>
-<li><p><em>frame-keys</em> return the frame's key list</p></li>
-<li><p><em>frames</em> will list the frames defined in the collection
-columns in a frame, it will cause the frame to regenerate its object
-list</p></li>
-<li><p><em>delete-frame</em> will remove the frame from the
-collection</p></li>
-<li><p><em>refresh</em> will let you refresh the objects in a frame from
-the current state of the collection, it’ll prune any existing objects in
-the frame is they no longer exist.</p></li>
-<li><p><em>reframe</em> will take a new list of keys from the colletion
-recreating ( (replacing) the objects in the data frame based on the new
-list of keys</p></li>
-</ol>
 </section>
 
 <footer>
