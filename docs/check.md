@@ -1,5 +1,5 @@
-check
-=====
+check (depricated)
+==================
 
 syntax
 ------

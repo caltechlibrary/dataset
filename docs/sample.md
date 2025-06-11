@@ -1,5 +1,5 @@
-sample
-======
+sample (depricated)
+===================
 
 __dataset__ supports the concept of generating a random sample
 of keys from a collection. To do this you need to use the `-sample`

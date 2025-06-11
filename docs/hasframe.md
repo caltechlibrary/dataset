@@ -1,5 +1,5 @@
-has-frame
-=========
+has-frame (depreicated)
+=======================
 
 Check to see if a frame name exists in a collection.
 

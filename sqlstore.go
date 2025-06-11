@@ -152,7 +152,7 @@ func dsnFixUp(driverName string, dsn string, workPath string) string {
 	case Sqlite3DriverName:
 		// NOTE: the db needs to be stored in the dataset directory
 		// to keep the dataset easily movable.
-		dbName := path.Base(dsn)
+		dbName := filepath.Base(dsn)
 		return  path.Join(workPath, dbName)
 	}
 	return dsn
@@ -171,7 +171,7 @@ func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	store.WorkPath = name
 	store.driverName = driverNameFixUp(driverName)
 	store.dsn = dsnFixUp(driverName, dsn, name)
-	store.tableName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	store.tableName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
 	// Validate we support this SQL driver and form create statement.
 	var stmt string
 	switch driverName {

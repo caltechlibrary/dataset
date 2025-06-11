@@ -1,5 +1,5 @@
-frame-objects
-=============
+frame-objects (depricated)
+==========================
 
 Usage
 -----

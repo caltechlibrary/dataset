@@ -3,7 +3,11 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: dataset
-abstract: "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store"
+abstract: "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+
+It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
+
+The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata."
 authors:
   - family-names: Doiel
     given-names: R. S.

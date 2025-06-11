@@ -1,5 +1,5 @@
-frame
-=====
+frame (depricated)
+==================
 
 This command will define a data frame or return the contents and
 metadata of a defined frame. To define a new frame you need to provide a

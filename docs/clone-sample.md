@@ -1,5 +1,5 @@
-clone-sample
-============
+clone-sample (depricated)
+=========================
 
 Clone a collection into a sample size based training collection 
 and test collection.

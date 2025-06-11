@@ -1,6 +1,10 @@
 ---
 title: dataset
-abstract: "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store"
+abstract: "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+
+It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
+
+The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata."
 authors:
   - family_name: Doiel
     given_name: R. S.
@@ -61,7 +65,11 @@ This release has focused on cleanup, bug fixes and adding a redirect feature to 
 - Thomas E Morrell, <https://orcid.org/0000-0001-9266-5146>
 
 
-Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store
+The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+
+It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
+
+The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.
 
 - License: <https://caltechlibrary.github.io/dataset/LICENSE>
 - GitHub: <https://github.com/caltechlibrary/dataset>

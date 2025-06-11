@@ -4,118 +4,75 @@ Dataset Project
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-The Dataset Project provides tools for working with collections of
-JSON documents stored on the local file system in a pairtree or
-in a SQL database supporting JSON columns. Two primary tools are provided
-by the project -- a command line interface (dataset) and a
-[RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer)
-web service (datasetd).
+The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+
+It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
+
+The Dataset Project provides a command line program and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.
 
 dataset, a command line tool
 ----------------------------
 
-[dataset](doc/dataset.md) is a command line tool for working with
-collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents.
-Collections can be stored on the file system in a pairtree directory
-structure or stored in a SQL database that supports JSON columns
-(currently SQLite3 or MySQL 8 are supported).  Collections using the
-file system store the JSON documents in a
-[pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01).
-The JSON documents are plain UTF-8 source. This means the objects can be
-accessed with common [Unix](https://en.wikipedia.org/wiki/Unix)
-text processing tools as well as most programming languages.
+[dataset](doc/dataset.md) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents. Collections can be stored on the file system in a [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) or stored in a SQL database that supports JSON columns like SQLite3, PostgreSQL or MySQL.
 
-The __dataset__ command line tool supports common data management operations
-such as initialization of collections; document creation, reading,
-updating and deleting; listing keys of JSON objects in the collection;
-and associating non-JSON documents (attachments) with specific JSON
-documents in the collection.
+The __dataset__ command line tool supports common data management operations as
 
-### enhanced features include
-
-- aggregate objects into data [frames](docs/frame.md)
-- generate sample sets of keys and objects
-- clone a collection
-- clone a collection into training and test samples
+- initialization of a collection
+- dump and load JSON lines files into collection
+- CRUD operations on a collection
+- Query a collection using SQL
 
 See [Getting started with dataset](how-to/getting-started-with-dataset.md) for a tour and tutorial.
 
+datasetd is dataset implemented as a web service
+------------------------------------------------
 
-datasetd, dataset as a web service
-----------------------------------
+[datasetd](docs/datasetd.md) is a JSON REST web service and static file host. It provides a JSON API supporting the main operations found in the __dataset__ command line program. This allows dataset collections to be integrated safely into web applications or be used concurrently by multiple processes.
 
-[datasetd](doc/datasetd.md) is a RESTful web service implementation of the
-_dataset_ command line program. It features a sub-set of capability found
-in the command line tool. This allows dataset collections to be integrated
-safely into web applications or used concurrently by multiple processes.
-It achieves this by storing the dataset collection in a SQL database
-using JSON columns.
+The Dataset Web Service can host multiple collections each with their own custom query API defined in a simple YAML configuration file.
 
 Design choices
 --------------
 
-_dataset_ and _datasetd_ are intended to be simple tools for managing
-collections JSON object documents in a predictable structured way.
+__dataset__ and __datasetd__ are intended to be simple tools for managing collections JSON object documents in a predictable structured way. The dataset web service allows multi process or multi user access to a dataset collection via HTTP.
 
-_dataset_ is guided by the idea that you should be able to work with
-JSON documents as easily as you can any plain text document on the Unix
-command line. _dataset_ is intended to be simple to use with minimal
-setup (e.g.  `dataset init mycollection.ds` creates a new collection
-called 'mycollection.ds').
+__dataset__ is guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on the Unix command line. __dataset__ is intended to be simple to use with minimal setup (e.g.  `dataset init mycollection.ds` creates a new collection called 'mycollection.ds').
 
-- _dataset_ and _datasetd_ store JSON object documents in collections.
-  - Storage of the JSON documents may be either in a pairtree on disk
-    or in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)
-  - dataset collections are made up of a directory containing a
-    collection.json and codemeta.json files.
-  - collection.json metadata file describing the collection,
-    e.g. storage type, name, description, if versioning is enabled
+- __dataset__ and __datasetd__ store JSON object documents in collections
+  - Storage of the JSON documents may be either in a pairtree on disk or in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)
+  - dataset collections are made up of a directory containing a collection.json and codemeta.json files.
+  - collection.json metadata file describing the collection, e.g. storage type, name, description, if versioning is enabled
   - codemeta.json is a [codemeta](https://codemeta.github.io) file describing the nature of the collection, e.g. authors, description, funding
-  - collection objects are accessed by their key, a unique identifier made of lower case alpha numeric characters
-  - collection names are usually lowered case and usually have a `.ds`
-    extension for easy identification
+  - collection objects are accessed by their key, a unique identifier, made up of lower case alpha numeric characters
+  - collection names are usually lowered case and usually have a `.ds` extension for easy identification
 
-_datatset_ collection storage options
-  - [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) is the default disk organization of a dataset collection
-    - the pairtree path is always lowercase
-    - non-JSON attachments can be associated with a JSON document and
-      found in a directories organized by semver (semantic version number)
-    - versioned JSON documents are created along side the current JSON document but are named using both their key and semver
+__dataset__ collection storage options
   - SQL store stores JSON documents in a JSON column
-    - SQLite3 and MySQL 8 are the current SQL databases support
+    - SQLite3 (default), PostgreSQL >= 12 and MySQL 8 are the current SQL databases support
     - A "DSN URI" is used to identify and gain access to the SQL database
     - The DSN URI maybe passed through the environment
+  - [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) (depricated, will be removed in v3)
+    - the pairtree path is always lowercase
+    - non-JSON attachments can be associated with a JSON document and found in a directories organized by semver (semantic version number)
+    - versioned JSON documents are created along side the current JSON document but are named using both their key and semver
 
-_datasetd_ is a web service
-  - is intended as a back end web service run on localhost
-    - by default it runs on localhost port 8485
-    - supports collections that use the SQL storage engine
-  - **should never be used as a public facing web service**
-    - there are no user level access mechanisms
-    - anyone with access to the web service end point has access to the dataset collection content
+__datasetd__ is a web service
+  - it is intended as a back end web service run on localhost
+    - it runs on localhost and a designated port (port 8485 is the default)
+    - supports multiple collections each can have their own configuration for global object permissions and supported SQL queries
 
-
-The choice of plain UTF-8 is intended to help future proof reading dataset
-collections.  Care has been taken to keep _dataset_ simple enough and light
-weight enough that it will run on a machine as small as a Raspberry Pi Zero
-while being equally comfortable on a more resource rich server or desktop
-environment. _dataset_ can be re-implement in any programming language
-supporting file input and output, common string operations and along with
-JSON encoding and decoding functions. The current implementation is in the
-Go language.
-
+The choice of plain UTF-8 is intended to help future proof reading dataset collections.  Care has been taken to keep _dataset_ simple enough and light weight enough that it will run on a machine as small as a Raspberry Pi Zero while being equally  comfortable on a more resource rich server or desktop environment. _dataset_ can be re-implement in any programming language supporting file input and output, common string operations and along with JSON encoding and decoding functions. The current  implementation is in the Go language.
 
 Features
 --------
 
 [dataset](docs/dataset.md) supports
-- Initialize a new dataset collection
-  - Define metadata about the collection using a codemeta.json file
-  - Define a keys file holding a list of allocated keys in the collection
-  - Creates a pairtree for object storage
-- Codemeta file support for describing the collection contents
-- Simple JSON object versioning
-- Listing [Keys](docs/keys.md) in a collection
+- Collection level
+  - [Initialize](docs/init.md) a new dataset collection
+  - Codemeta file support for describing the collection contents
+  - [Dump](docs/load.md) a collection to a JSON lines document
+  - [Load](docs/load.md) a collection from a JSON lines document
+  - Listing [Keys](docs/keys.md) in a collection
 - Object level actions
   - [create](docs/create.md)
   - [read](docs/read.md)
@@ -123,33 +80,11 @@ Features
   - [delete](docs/delete.md)
   - [keys](docs/keys.md)
   - [has-key](docs/has-key.md)
-  - [sample](docs/sample.md)
-  - [clone](docs/clone.md)
-  - [clone-sample](docs/clone-sample.md)
   - Documents as attachments
     - [attachments](docs/attachments.md) (list)
     - [attach](docs/attach.md) (create/update)
     - [retrieve](docs/retrieve.md) (read)
     - [prune](docs/prune.md) (delete)
-- The ability to create data [frames](docs/frame.md) from while
-  collections or based on keys lists
-  - frames are defined using a list of keys and a lost
-    [dot paths](docs/dotpath.md) describing what is to be pulled out
-    of a stored JSON objects and into the frame
-  - frame level actions
-    - frames, list the frame names in the collection
-    - frame, define a frame, does not overwrite an existing frame with
-      the same name
-    - frame-def, show the frame definition (in case we need it for some
-      reason)
-    - frame-keys, return a list of keys in the frame
-    - frame-objects, return a list of objects in the frame
-    - refresh, using the current frame definition reload all the objects
-      in the frame given a key list
-    - reframe, replace the frame definition then reload the objects in
-      the frame using the existing key list
-    - has-frame, check to see if a frame exists
-    - delete-frame remove the frame
 
 [datasetd](docs/datasetd.md) supports
 
@@ -166,36 +101,29 @@ Features
         - [attach](docs/attach-endpoint.md)
         - [retrieve](docs/retrieve-endpoint.md)
         - [prune](docs/prune-endpoint.md)
-- The ability to create data [frames](docs/frame.md) from
-  collections or based on keys lists and dot paths to form a new object
-  - [dot paths](docs/dotpath.md) describing
-    what is to be pulled out of a stored JSON objects
-
-Both _dataset_  and _datasetd_ maybe useful for general data science
-applications needing JSON object management or in implementing repository
-systems in research libraries and archives.
 
 
-Limitations of _dataset_ and _datasetd_
----------------------------------------
+Both __dataset__  and __datasetd__ maybe useful for general data science applications needing JSON object management or in implementing repository systems in research libraries and archives.
 
-_dataset_ has many limitations, some are listed below
 
-- the pairtree implementation it is not a multi-process, multi-user
-  data store
+Limitations of __dataset__ and __datasetd__
+-------------------------------------------
+
+__dataset__ has many limitations, some are listed below
+
+- the pairtree implementation it is not a multi-process, multi-user data store
 - it is not a general purpose database system
-- it stores all keys in lower case in order to deal with file systems
-  that are not case sensitive, compatibility needed by a pairtree
+- it stores all keys in lower case in order to deal with file systems 
 - it stores collection names as lower case to deal with file systems that
   are not case sensitive
-- it does not have a built-in query language, search or sorting
-- it should NOT be used for sensitive or secret information
+- **it should NOT be used for sensitive, confidential or secret information** because it lacks access controls and data encryption
 
-_datasetd_ is a simple web service intended to run on "localhost:8485".
+__datasetd__ is a simple web service intended to run on "localhost:8485".
 
 - it does not include support for authentication
-- it does not support a query language, search or sorting
-- it does not support access control by users or roles
+- it does not support access control for users or roles
+- it does not encrypt the data it stores
+- it does not support HTTPS
 - it does not provide auto key generation
 - it limits the size of JSON documents stored to the size supported by
   with host SQL JSON columns
@@ -203,8 +131,7 @@ _datasetd_ is a simple web service intended to run on "localhost:8485".
 - it does not support partial JSON record updates or retrieval
 - it does not provide an interactive Web UI for working with dataset
   collections
-- it does not support HTTPS or "at rest" encryption
-- it should NOT be used for sensitive or secret information
+- **it should NOT be used for sensitive, confidential or secret information** because it lacks access controls and data encryption
 
 
 Read next ...
@@ -216,7 +143,7 @@ Read next ...
 - [License](LICENSE)
 - [Contributing](CONTRIBUTING.md)
 - [Code of conduct](CODE_OF_CONDUCT.md)
-- Explore _dataset_ and _datasetd_
+- Explore __dataset__ and __datasetd__
     - [Getting Started with Dataset](how-to/getting-started-with-dataset.md "Python examples as well as command line")
     - [How To](how-to/) guides
     - [Reference Documentation](docs/).
@@ -231,14 +158,14 @@ Authors and history
 Releases
 --------
 
-Compiled versions are provided for Linux (x86), Mac OS X (x86 and M1),
-Windows 11 (x86) and Raspberry Pi OS (ARM7).
+Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64) and Raspberry Pi OS (ARM7).
 
 [github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 
 Related projects
 ----------------
 
-You can use _dataset_ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package.
-You can use _dataset_ from Deno+TypeScript by running datasetd and access it with [ts_dataset](https://github.com/caltechlibraray/ts_dataset).
+You can use __dataset__ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package. 
+
+You can use __dataset__ from Deno+TypeScript by running datasetd and access it with [ts_dataset](https://github.com/caltechlibraray/ts_dataset).
 

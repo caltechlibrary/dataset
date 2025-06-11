@@ -53,7 +53,7 @@
   "dateCreated": "2016-09-12",
   "dateModified": "2025-06-10",
   "datePublished": "2025-06-10",
-  "description": "Tools for working with JSON documents as a collection hosted on the file system or SQL JSON store",
+  "description": "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.\n\nIt is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.\n\nThe Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.",
   "funder": [
     {
       "@id": "https://doi.org/10.13039/100006961",

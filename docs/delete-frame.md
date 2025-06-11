@@ -1,5 +1,5 @@
-delete-frame
-============
+delete-frame (depricated)
+=========================
 
 This is used to removed a frame from a collection.
 

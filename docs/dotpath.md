@@ -1,5 +1,5 @@
-dotpath
-=======
+dotpath (depricated)
+====================
 
 Description
 -----------

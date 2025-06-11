@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Filtering Keys using data frames
+# Filtering Keys using dsquery
 #
 
 
@@ -28,25 +28,29 @@ dataset create friends.ds Mozulla \
 ## Display the records we created.
 for KEY in Frieda Mojo Jack Mozulla; do
     echo "Reading ${KEY} object"
-    dataset -pretty read friends.ds "${KEY}"
+    dataset read friends.ds "${KEY}"
 done
 
 #
-# Frames, filter for given name "Mojo"
+# Filter using dsquery for given name "Mojo"
 #
 
-# Step 1. create an unfiltered frame of all records
-dataset frame friends.ds "unfiltered" "._Key=id" ".given=given" ".family=family">/dev/null
+# Step 1. Show some records so I can figure out what part of the JSON object I want.
+echo "Look at the Mojo record and see what the fields are I need."
+dataset dump friends.ds Mojo | jq .
+# Reviewing the records I see I'm iterested in `_Key`, `src->>'given'` and  `src->>'family'`
 
-# Step 2. Filter the unfiltered frame creating a "filtered" data frame
-for OBJ in $(dataset frame-objects friends.ds unfiltered | jsonrange -values ); do
-    GIVEN=$(echo "${OBJ}" | jsoncols -i - .given | sed -E 's/"//g')
-    if [ "${GIVEN}" = "Mojo" ]; then
-        echo "${OBJ}" | jsoncols -i - .id | sed -E 's/"//g'
-    fi
-done |\
-# Step 3. create our filtered frame
- dataset -i - frame friends.ds filtered "._Key=id" ".given=given" ".family=family">/dev/null
 
-echo "We now have a frame with only Mojo."
-dataset -pretty frame friends.ds filtered
+# Step 2. do our filtering iterating over the unfiltered frame (piping the results)
+# This SQL statement I'll want should looke something like this.
+cat <<SQL >mojo-filter.sql
+SELECT '"' || _Key || '"'
+FROM friends
+WHERE src->>'given' LIKE 'Mojo' 
+   OR src->>'family' LIKE 'Mojo'
+SQL
+
+# Step 3. Run the SQL query using dsquery, pretty print the output with jq.
+echo "Keys for given or family names of 'Mojo'"
+dsquery -sql mojo-filter.sql friends.ds | jq -r .[0]
+
