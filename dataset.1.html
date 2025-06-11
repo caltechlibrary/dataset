@@ -95,45 +95,6 @@ directory
 <dd>
 removes an attachment (including all versions) from a JSON record
 </dd>
-<dt>frame-names</dt>
-<dd>
-lists the frames defined in a collection
-</dd>
-<dt>frame</dt>
-<dd>
-will add a data frame to a collection
-</dd>
-<dt>frame-def</dt>
-<dd>
-will return the definition of a frame
-</dd>
-<dt>frame-keys</dt>
-<dd>
-will retrieve the object keys in a frame
-</dd>
-<dt>frame-objects</dt>
-<dd>
-will retrieve the object list in a frame
-</dd>
-<dt>reframe</dt>
-<dd>
-will recreate a frame using its existing definition but replacing
-objects based on a new set of keys provided
-</dd>
-<dt>refresh</dt>
-<dd>
-will update all objects currently in the frame based on the current
-state of the collection. Any keys deleted in the collection will be
-delete from the frame.
-</dd>
-<dt>delete-frame</dt>
-<dd>
-will remove a frame from the collection
-</dd>
-<dt>has-frame</dt>
-<dd>
-will return true (exit 0) if frame exists, false (exit 1) if not
-</dd>
 <dt>set-versioning</dt>
 <dd>
 will set the versioning of a collection. The versioning value can be
@@ -182,9 +143,10 @@ after the verb and apply to the specific action the verb implements.</p>
 <p>There are currently three support storage options for JSON documents
 in a dataset collection.</p>
 <ul>
-<li>SQLite3 database (default),</li>
+<li>SQLite3 database &gt;= 3.40 (default)</li>
+<li>Postgres &gt;= 12</li>
+<li>MySQL 8</li>
 <li>Pairtree (pre-2.1 default)</li>
-<li>Postgres</li>
 </ul>
 <p>STORAGE TYPE are specified as a DSN URI except for pairtree which is
 just “pairtree”.</p>
