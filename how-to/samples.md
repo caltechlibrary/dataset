@@ -1,5 +1,5 @@
-Samples
-=======
+Samples (depricated)
+====================
 
 Getting a sample of a collection and be done by generating
 a random sample of keys or by cloning a collection based on

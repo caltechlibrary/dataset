@@ -1,5 +1,5 @@
-refresh
-=======
+refresh (depricated)
+====================
 
 This command will update an objects in a frame based on the current
 state of the collection.  

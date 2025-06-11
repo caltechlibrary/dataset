@@ -104,7 +104,7 @@ func statusIsError(w http.ResponseWriter, r *http.Request, statusText string, st
 // ```
 func ApiVersion(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "%s %s", path.Base(api.AppName), api.Version)
+	fmt.Fprintf(w, "%s %s", filepath.Base(api.AppName), api.Version)
 }
 
 // Collections returns a list of dataset collections supported

@@ -1,5 +1,5 @@
-reframe
-=======
+reframe (depreciated)
+=====================
 
 This command replaces the current keys/objects in a frame based
 on the new keys provided. 

@@ -1,62 +1,20 @@
 File system layout
 ==================
 
-dataset provides a way to manage your JSON documents. This
-can be done on your local disk using a technique called a
-[pairtree](https://tools.ietf.org/html/draft-kunze-pairtree-01). 
-Optionally can also be done by storing the JSON Objects in a 
-SQL database table.
+dataset provides a way to manage your JSON documents. In version we usually use a SQL engine for storage. SQLite3 is the default in v2.2. The means you can have your JSON objects on disk and easily preservable without running a database management system. In version one the default store was a [pairtree](https://tools.ietf.org/html/draft-kunze-pairtree-01).  While  those are still supported in v2.2 they are depreciated and will not be support in v3.
 
-The pairtree layout is described by "collection.json" and "keymaps.json"
-documents. These are located in the root folder of the collection. 
+The layout of a dataset collection on disk is as follows
 
-A JSON document may also have one or more "attachments". These are
-stored in their own pairtree under the "attachments" sub-directory of the
-collection. Attachments are supported for both pairtree storage
-and SQL storage of JSON objects in a collection.
+~~~
+- COLLECTION_NAME
+  - collection.json (holds operational metadata about the collection)
+  - codemeta.json (holds citation metadata about the collection)
+  - collection.db (for SQLite3, the SQL data)
+  - attachments (optional, holds a pairtree of attached files)
+~~~
 
-Pairtrees ensures sequence of characters in a object's key
-will not collide with and is legal on common file systems. 
-E.g. storing the document "hello-world.json" with the attachment
-"smiles.png" in a collection named "C.ds" would result in paths like 
+If the legacy pairtree implementation you would have a directory named "pairtree" holding the JSON objects.
 
-    `C.ds/pairtree/he/ll/o-/wo/rl/d/hello-world.json` 
+This simple data structure is easy to [Bag](https://en.wikipedia.org/wiki/BagIt). The collection as a whole would be placed the the "data" sub directory of the bag and along with the required metadata files supporting the Bag format.
 
-and 
-
-    `C.ds/attachments/he/ll/o-/wo/rl/d/smiles.png".
-
-Attachments are experimental and how they are handled
-may change in the future. 
-
-In a collection's root directory you will find two or three
-JSON documents.
-
-- codemeta.json hold general metadata about the collection
-- collection.json describes the operational metadata for a collection
-- keymap.json holds the key to pairtree path map for pairtree
-  collections (it will be missing for for SQL storage collections)
-
-If you're using SQLite3 as your JSON document storage engine you
-can choose to include your SQLite3 database file in the directory
-too, if so "collection.db" is a good name. That way if you zip
-up your collection and share it with a friend the JSON documents
-will travel appropriately.
-
-
-Pairtree
---------
-
-The directory layout looks like:
-
-- collection (directory on the file system)
-    - [namaste](https://confluence.ucop.edu/display/Curation/Namaste) 
-      records identifying the collection
-        - these will get used to generate things like index.md and codemeta.json files 
-    - a file, collection.json, holding metadata about the collection
-    - a directory named "_frames" holding frame definitions for the 
-      collection
-    - a directory named "pairtree" holding the pairtree where the 
-      JSON document and attachments are stored.
-
-
+If you are using MySQL or PostgreSQL to store your data then you have two options when bagging. You could dump the collection contents along side the collections directory or you could created an SQLite3 version of the collection (trivial using the dump and load feature of v2.2) and Bag that.
