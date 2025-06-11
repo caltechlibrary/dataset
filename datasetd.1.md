@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.2.7 2eaf9ea
+%datasetd(1) user manual | version 2.2.7 5c9e814
 % R. S. Doiel
 % 2025-06-10
 
@@ -102,12 +102,6 @@ retrieve
 prune
 : (optional, default false) Allow removing attachments through a DELETE to the web API.
 
-frame_read
-: (optional, default false) Allow reading frames from a GET to the web API.
-
-frame_write
-: (optional, default false) Allow writing new frames through a POST to the web API.
-
 versions
 : (optional, default false) Allow setting versioning of attachments via POST to the web API.
 
@@ -159,9 +153,6 @@ collections:
 	attach: true
 	retrieve: true
 	prune: true
-    # These are frame level permissions
-	frame_read: true
-	frame_write: true
     # This sets versioning behavior
 	versions: true
 EOT

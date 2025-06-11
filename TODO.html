@@ -35,37 +35,25 @@ declined, decided not to implement
 </dd>
 </dl>
 <h2 id="bugs">Bugs</h2>
-<h2 id="next-prep-for-v2.2.2">Next (prep for v2.2.2)</h2>
-<ul>
-<li><label><input type="checkbox" checked="" />Remove libdataset
-support</label></li>
-<li><label><input type="checkbox" />Update datasetd to support
-urlencoded data submissions in additional to application/json</label>
-<ul>
-<li>this would allow a simple data entry system to be build directly
-from HTML without the need for JavaScript in the browser</li>
-<li>the urlencoded data should support embedded YAML in text areas for
-extrapolating more complex data structures</li>
-<li><label><input type="checkbox" checked="" />Handle POST with
-‘application/x-www-form-urlencoded’</label>
+<h2 id="next-prep-for-v2.2.8">Next (prep for v2.2.8)</h2>
 <ul class="task-list">
-<li><label><input type="checkbox" checked="" />Handle the submissions
-mapping create/update to POST</label></li>
-<li><label><input type="checkbox" checked="" />Handle the success or
-failure of the create/update of POST (using text page for result, will
-replace later)</label></li>
-<li><label><input type="checkbox" />Figure out what to do success or
-failure pages after a POST</label></li>
-</ul></li>
-<li>[D] Handle PUT with ‘application/x-www-form-urlencoded’
-<ul>
-<li>Browsers only honor GET, POST and DIALOG in 2024. Frustrating.</li>
-<li>Modified POST to work for both Create and Update actions, delete
-will get handled like GET but I need to decide on symantics
-(e.g. <code>?delete=true</code>)</li>
-</ul></li>
+<li><label><input type="checkbox" />Remove frames support</label></li>
+<li><label><input type="checkbox" />Remove join</label></li>
+<li><label><input type="checkbox" />Decide if models is going to be
+continued or not</label></li>
+<li><label><input type="checkbox" />Remove check and repair since dump
+and load work well</label></li>
+<li><label><input type="checkbox" />Remove dsimporter and dsexporter,
+replace with documentations of using datatools for generating a jsonl
+file.</label></li>
+<li><label><input type="checkbox" />Merge dsquery into dataset, make the
+dsquery cli deprecated</label></li>
+</ul>
+<h2 id="someday-maybe">Someday, Maybe</h2>
+<ul class="task-list">
 <li><label><input type="checkbox" />Integrate models package into
-dataset cli and datasetd</label></li>
+dataset cli and datasetd</label>
+<ul class="task-list">
 <li><label><input type="checkbox" />Modify Create and Update in datasetd
 to use the models package</label></li>
 <li><label><input type="checkbox" />Handle generated elements on Create
@@ -82,6 +70,7 @@ form that was submitted</label></li>
 for better integration with website</label></li>
 <li>Is this a configuration chioice (e.g. success, fail pages in model
 attributes?)</li>
+</ul></li>
 </ul></li>
 <li><label><input type="checkbox" />Can I can skip the handlebars
 templates and just support HTML?</label>
@@ -102,17 +91,6 @@ them</li>
 <li><label><input type="checkbox" />Decide if it is exceptible to render
 HTML with JavaScript to adjust form behavior between create and
 update</label></li>
-</ul></li>
-<li>[D] Update datasetd to handle YAML submission for create and update:
-This didn’t work in my experiments, not sure why.
-<ul>
-<li>Form handling in browser restricts the mime types submitted, I’d
-have to use text/plain to submit YAML then check server side to make
-sure I had YAML</li>
-</ul></li>
-</ul>
-<h2 id="someday-maybe">Someday, Maybe</h2>
-<ul class="task-list">
 <li><label><input type="checkbox" />Should the project be renamed
 “collections”?</label></li>
 <li><label><input type="checkbox" />Update datasetd to allow multipart

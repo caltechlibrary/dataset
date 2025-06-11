@@ -1,4 +1,4 @@
-%dataset(1) user manual | version 2.2.7 2eaf9ea
+%dataset(1) user manual | version 2.2.7 5c9e814
 % R. S. Doiel and Tom Morrell
 % 2025-06-10
 
@@ -67,37 +67,6 @@ detach
 prune
 : removes an attachment (including all versions) from a JSON record
 
-frame-names
-: lists the frames defined in a collection
-
-frame
-: will add a data frame to a collection 
-
-frame-def
-: will return the definition of a frame
-
-frame-keys
-: will retrieve the object keys in a frame
-
-frame-objects
-: will retrieve the object list in a frame
-
-reframe
-: will recreate a frame using its existing definition but
-  replacing objects based on a new set of keys provided
-
-refresh
-: will update all objects currently in the frame based on the
-  current state of the collection. Any keys deleted in the collection
-  will be delete from the frame.
-
-delete-frame
-: will remove a frame from the collection
-
-has-frame
-: will return true (exit 0) if frame exists, false (exit 1)
-  if not
-
 set-versioning
 : will set the versioning of a collection. The versioning
   value can be "", "none", "major", "minor", or "patch"
@@ -145,9 +114,10 @@ implements.
 
 There are currently three support storage options for JSON documents in a dataset collection.
 
-- SQLite3 database (default),
+- SQLite3 database >= 3.40 (default)
+- Postgres >= 12
+- MySQL 8
 - Pairtree (pre-2.1 default)
-- Postgres
 
 STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairtree".
 
