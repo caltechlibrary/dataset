@@ -1,4 +1,4 @@
-check (depricated)
+check (deprecated)
 ==================
 
 syntax

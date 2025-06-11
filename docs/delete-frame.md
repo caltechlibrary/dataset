@@ -1,4 +1,4 @@
-delete-frame (depricated)
+delete-frame (deprecated)
 =========================
 
 This is used to removed a frame from a collection.

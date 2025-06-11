@@ -1,4 +1,4 @@
-sample (depricated)
+sample (deprecated)
 ===================
 
 __dataset__ supports the concept of generating a random sample

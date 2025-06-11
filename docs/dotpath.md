@@ -1,4 +1,4 @@
-dotpath (depricated)
+dotpath (deprecated)
 ====================
 
 Description
