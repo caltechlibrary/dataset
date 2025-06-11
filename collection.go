@@ -198,7 +198,7 @@ func (c *Collection) initSQLStore() error {
 		return fmt.Errorf("%q already exists", c.Name)
 	}
 	fullName := c.Name
-	basename := path.Base(c.Name)
+	basename := filepath.Base(c.Name)
 	colName := path.Join(fullName, "collection.json")
 	c.Name = basename
 	src, err := JSONMarshal(c)
@@ -214,8 +214,8 @@ func (c *Collection) initSQLStore() error {
 	//today := time.Now().Format(datestamp)
 	m := map[string]string{
 		"{today}":    today,
-		"{c_name}":   path.Base(c.Name),
-		"{app_name}": path.Base(os.Args[0]),
+		"{c_name}":   filepath.Base(c.Name),
+		"{app_name}": filepath.Base(os.Args[0]),
 		"{version}":  Version,
 	}
 	src = BytesProcessor(m, []byte(`{
@@ -344,7 +344,7 @@ func (c *Collection) UpdateMetadata(fName string) error {
 // The following are aliases to the storage system implementation.
 //
 
-// Create store a an object in the collection. Object will get
+// Write store a an object in the collection. Object will get
 // converted to JSON source then stored. Collection must be open.
 // A Go `map[string]interface{}` is a common way to handle ad-hoc
 // JSON data in gow. Use `CreateObject()` to store structured
@@ -354,12 +354,12 @@ func (c *Collection) UpdateMetadata(fName string) error {
 //
 //	key := "123"
 //	obj := map[]*interface{}{ "one": 1, "two": 2 }
-//	if err := c.Create(key, obj); err != nil {
+//	if err := c.Write(key, obj); err != nil {
 //	   ...
 //	}
 //
 // ```
-func (c *Collection) Create(key string, obj map[string]interface{}) error {
+func (c *Collection) Write(key string, obj map[string]interface{}) error {
 	src, err := JSONMarshal(obj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
@@ -367,7 +367,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 	switch c.StoreType {
 	case SQLSTORE:
 		if c.SQLStore != nil {
-			return c.SQLStore.Create(key, src)
+			return c.SQLStore.Write(key, src)
 		}
 	default:
 		return fmt.Errorf("%q not supported", c.StoreType)
@@ -375,7 +375,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// CreateObject is used to store structed data in a dataset collection.
+// WriteObject is used to store structed data in a dataset collection.
 // The object needs to be defined as a Go struct notated approriately
 // with the domain markup for working with json.
 //
@@ -406,7 +406,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 //	        Name: "Mojo Sam",
 //	        EMail: "mojo.sam@cosmic-cafe.example.org",
 //	    }
-//	    if err := c.CreateObject(obj.ID, obj); err != nil {
+//	    if err := c.WriteObject(obj.ID, obj); err != nil {
 //	         fmt.Fprintf(os.Stderr, "%s", err)
 //	         os.Exit(1)
 //	    }
@@ -415,7 +415,7 @@ func (c *Collection) Create(key string, obj map[string]interface{}) error {
 //	}
 //
 // ```
-func (c *Collection) CreateObject(key string, obj interface{}) error {
+func (c *Collection) WriteObject(key string, obj interface{}) error {
 	src, err := JSONMarshal(obj)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
@@ -423,7 +423,7 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 	switch c.StoreType {
 	case SQLSTORE:
 		if c.SQLStore != nil {
-			return c.SQLStore.Create(key, src)
+			return c.SQLStore.Write(key, src)
 		}
 	default:
 		return fmt.Errorf("%q not supported", c.StoreType)
@@ -431,7 +431,7 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 	return fmt.Errorf("%s not open", c.Name)
 }
 
-// CreateJSON is used to store JSON directory into a dataset collection.
+// WriteJSON is used to store JSON directory into a dataset collection.
 // NOTE: the JSON is NOT validated.
 //
 // ```
@@ -450,7 +450,7 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 //	    defer c.Close()
 //
 //	    src := []byte(`{ "ID": "mojo", "Name": "Mojo Sam", "EMail": "mojo.sam@cosmic-cafe.example.org" }`)
-//	    if err := c.CreateJSON("modo", src); err != nil {
+//	    if err := c.WriteJSON("modo", src); err != nil {
 //	         fmt.Fprintf(os.Stderr, "%s", err)
 //	         os.Exit(1)
 //	    }
@@ -459,11 +459,11 @@ func (c *Collection) CreateObject(key string, obj interface{}) error {
 //	}
 //
 // ```
-func (c *Collection) CreateJSON(key string, src []byte) error {
+func (c *Collection) WriteJSON(key string, src []byte) error {
 	switch c.StoreType {
 	case SQLSTORE:
 		if c.SQLStore != nil {
-			return c.SQLStore.Create(key, src)
+			return c.SQLStore.Write(key, src)
 		}
 	default:
 		return fmt.Errorf("%q not supported", c.StoreType)
@@ -572,97 +572,6 @@ func (c *Collection) ReadJSON(key string) ([]byte, error) {
 		return src, fmt.Errorf("failed to read %s, %s", key, err)
 	}
 	return src, nil
-}
-
-// Update replaces a JSON document in the collection with a new one.
-// If the collection is versioned then it creates a new versioned copy
-// and updates the "current" version to use it.
-//
-// ```
-//
-//	key := "123"
-//	obj["three"] = 3
-//	if err := c.Update(key, obj); err != nil {
-//	   ...
-//	}
-//
-// ```
-func (c *Collection) Update(key string, obj map[string]interface{}) error {
-	src, err := JSONMarshal(obj)
-	if err != nil {
-		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
-	}
-	switch c.StoreType {
-	case SQLSTORE:
-		if c.SQLStore != nil {
-			return c.SQLStore.Update(key, src)
-		}
-	default:
-		return fmt.Errorf("%q not supported", c.StoreType)
-	}
-	return fmt.Errorf("%s not open", c.Name)
-}
-
-// UpdateObject replaces a JSON document in the collection with a new one.
-// If the collection is versioned then it creates a new versioned copy
-// and updates the "current" version to use it.
-//
-// ```
-//
-//	type Record struct {
-//	    // ... structure def goes here.
-//	    Three int `json:"three"`
-//	}
-//
-//	var obj = *Record
-//
-//	key := "123"
-//	obj := &Record {
-//	  Three: 3,
-//	}
-//	if err := c.Update(key, obj); err != nil {
-//	   // ... handle error
-//	}
-//
-// ```
-func (c *Collection) UpdateObject(key string, obj interface{}) error {
-	src, err := JSONMarshal(obj)
-	if err != nil {
-		return fmt.Errorf("failed to marshal JSON for %s, %s", key, err)
-	}
-	switch c.StoreType {
-	case SQLSTORE:
-		if c.SQLStore != nil {
-			return c.SQLStore.Update(key, src)
-		}
-	default:
-		return fmt.Errorf("%q not supported", c.StoreType)
-	}
-	return fmt.Errorf("%s not open", c.Name)
-}
-
-// UpdateJSON replaces a JSON document in the collection with a new one.
-// NOTE: It does not validate the JSON
-//
-// ```
-//
-//	src := []byte(`{"Three": 3}`)
-//	key := "123"
-//	if err := c.UpdateJSON(key, src); err != nil {
-//	   // ... handle error
-//	}
-//
-// ```
-func (c *Collection) UpdateJSON(key string, src []byte) error {
-	switch c.StoreType {
-	case SQLSTORE:
-		if c.SQLStore != nil {
-			return c.SQLStore.Update(key, src)
-		}
-	default:
-		return fmt.Errorf("%q not supported", c.StoreType)
-	}
-	return fmt.Errorf("%s not open", c.Name)
 }
 
 // Delete removes an object from the collection. If the collection is

@@ -20,7 +20,7 @@ func SetupApiTestCollection(cName string, dsnURI string, records map[string]map[
 	defer c.Close()
 	// Now populate with some test records records.
 	for key, obj := range records {
-		if err := c.Create(key, obj); err != nil {
+		if err := c.Write(key, obj); err != nil {
 			return err
 		}
 	}

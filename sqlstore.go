@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -125,7 +126,7 @@ func dsnFixUp(driverName string, dsn string, workPath string) string {
 	case "sqlite":
 		// NOTE: the db needs to be stored in the dataset directory
 		// to keep the dataset easily movable.
-		dbName := path.Base(dsn)
+		dbName := filepath.Base(dsn)
 		return path.Join(workPath, dbName)
 	}
 	return dsn
@@ -144,7 +145,7 @@ func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	store.WorkPath = name
 	store.dsn = dsnFixUp(driverName, dsn, name)
 	store.driverName = driverName
-	store.primaryName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	store.primaryName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
 	store.historyName = store.primaryName + "_history"
 	// Validate we support this SQL driver and form create statement.
 	var (
@@ -169,6 +170,7 @@ version INTEGER NOT NULL DEFAULT 0,
 PRIMARY KEY (_key, version)
 );
 `, store.historyName)
+	    //FIXME: Need to add Trigger to handle upsert
 	case "postgres":
 		stmt = fmt.Sprintf(`CREATE TABLE %s (_key TEXT PRIMARY KEY,
 src JSON,
@@ -185,7 +187,7 @@ version INTEGER NOT NULL DEFAULT 0,
 PRIMARY KEY (_key, version)
 );
 `, store.historyName)
-		//NOTE: Postgres needs a trigger to make update work.
+	    //FIXME: Need to add Trigger to handle upsert
 	case "mysql":
 		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
 _key VARCHAR(512) PRIMARY KEY,
@@ -202,6 +204,7 @@ updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 version INTEGER NOT NULL DEFAULT 0,
 PRIMARY KEY (_key, version)
 )`, store.historyName)
+	    //FIXME: Need to add Trigger to handle upsert
 	default:
 		return nil, fmt.Errorf("%q database not supported", store.driverName)
 	}
@@ -258,7 +261,7 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 
 	store := new(SQLStore)
 	store.WorkPath = name
-	store.primaryName = strings.TrimSuffix(strings.ToLower(path.Base(name)), ".ds")
+	store.primaryName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
 	store.historyName = store.primaryName + "_history"
 	store.driverName = driverName
 	store.dsn = dsnFixUp(driverName, dsn, name)
@@ -307,36 +310,31 @@ func (store *SQLStore) Close() error {
 	}
 }
 
-// Create stores a new JSON object in the collection
+// Write stores a new JSON or replacement object in the collection
 // It takes a string as a key and a byte slice of encoded JSON
 //
 //	err := storage.Create("123", []byte(`{"one": 1}`))
 //	if err != nil {
 //	   ...
 //	}
-func (store *SQLStore) Create(key string, src []byte) error {
+func (store *SQLStore) Write(key string, src []byte) error {
 	var (
 		stmt string
-		stmtHistory string
 	)
 	// FIXME: this should happen as a transaction
 	switch store.driverName {
 	case "postgres":
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) VALUES ($1, $2, NOW(), NOW(), 0)`, store.primaryName)
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) SELECT _key, src, created, updated, version FROM %s WHERE _key = $1`, store.historyName, store.historyName)
 	case "sqlite":
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) VALUES (?, ?, datetime(), datetime(), 0)`, store.primaryName)
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) SELECT _key, src, created, updated, version from %s where _key = ?`, store.historyName, store.historyName)
 	default:
 		stmt = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) VALUES ($1, $2, NOW(), NOW(), 0)`, store.primaryName)
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) SELECT _key, src, created, updated, version from %s where _key = ?`, store.historyName, store.historyName)
 	}
 	// Insert the row in the primary table, then use that row to populate the history table
 	_, err := store.db.Exec(stmt, key, string(src))
 	if err != nil {
 		return err
 	}
-	_, err = store.db.Exec(stmtHistory, key)
 	return nil
 }
 
@@ -383,79 +381,16 @@ func (store *SQLStore) Read(key string) ([]byte, error) {
 	return []byte(value), nil
 }
 
-// Update takes a key and encoded JSON object and updates a
-//
-//	key := "123"
-//	src := []byte(`{"one": 1, "two": 2}`)
-//	if err := storage.Update(key, src); err != nil {
-//	   ...
-//	}
-func (store *SQLStore) Update(key string, src []byte) error {
-	var (
-		stmt string
-		stmtHistory string
-	)
-	// FIXME this should happen as a transaction.
-	switch store.driverName {
-	case "postgres":
-		stmt = fmt.Sprintf(`UPDATE %s SET src = $1, updated = NOW(), version = version + 1 WHERE _key = $2`, store.primaryName)
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) SELECT _key, src, created, updated, version from %s where _key = $1`, store.historyName, store.historyName)
-	case "sqlite":
-		// SQLite3 only supports the initial timestamp generation in the scheme, the timestamp
-		// will **not** automatically on update.
-		stmt = fmt.Sprintf(`UPDATE %s SET src = ?, version = version + 1, updated = datetime() WHERE _key = ?`, store.primaryName)
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version) SELECT _key, src, created, updated, version from %s where _key = ?`, store.historyName, store.historyName)
-	default:
-		stmt = fmt.Sprintf(`UPDATE %s SET src = ?, version = version + 1, updated = NOW() WHERE _key = ?`, store.primaryName)
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s (_key, src, created, updated, version)  SELECT _key, src, created, updated, version from %s where _key = ?`, store.historyName, store.historyName)
-	}
-
-	// Update the primary table then use that to update the history table.
-	_, err := store.db.Exec(stmt, string(src), key)
-	if err != nil {
-		return err
-	}
-	_, err = store.db.Exec(stmtHistory, key)
-	return err
-}
-
-// Delete removes a JSON document from the collection
+// Delete deaccession the JSON document form the collection by recording a null object
+// associated with the key. This preserves the object history and allows for an "undelete"
+// where the history of the object is preserved.
 //
 //	key := "123"
 //	if err := storage.Delete(key); err != nil {
 //	   ...
 //	}
 func (store *SQLStore) Delete(key string) error {
-	var (
-		stmt string
-		stmtHistory string
-	)
-	// FIXME this should happen as a transaction.
-	switch store.driverName {
-	case "postgres":
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s 
-  (_key, src, created, updated, version)
-  SELECT _key, '' as src, created, updated, (version + 1) as version
-  FROM %s
-  WHERE _key = $1;`, store.historyName, store.historyName)
-		stmt = fmt.Sprintf(`DELETE FROM %s WHERE _key = $1`, store.primaryName)
-	default:
-		stmtHistory = fmt.Sprintf(`INSERT INTO %s
-  (_key, src, created, updated, version)
-  SELECT _key, '' as src, created, updated, (version + 1) as version
-  FROM %s
-  WHERE _key = ?;`, store.historyName, store.historyName)
-		stmt = fmt.Sprintf(`DELETE FROM %s WHERE _key = ?`, store.primaryName)		
-	}
-	// We insert the deleted object into history then delete the row in the primary table
-	_, err := store.db.Exec(stmtHistory, key)
-//	fmt.Printf(`DEBUG stmtHistory key: %q ->\n%s\n-> err -> %+v` + "\n", key, stmtHistory, err)
-	if err != nil {
-		return err
-	}
-	_, err = store.db.Exec(stmt, key)
-//	fmt.Printf(`DEBUG stmt key: %q ->\n%s\n-> err -> %+v` + "\n", key, stmt, err)
-	return err
+	return store.Write(key, []byte(""))
 }
 
 // Keys returns all keys in a collection as a slice of strings.
@@ -469,6 +404,7 @@ func (store *SQLStore) Delete(key string) error {
 func (store *SQLStore) Keys() ([]string, error) {
 	var stmt string
 
+	//FIXME: Need to decide key's behavior for keys that were deleted. Do I list them or exclude them?
 	switch store.driverName {
 	case "postgres":
 		stmt = fmt.Sprintf(`SELECT _key FROM %s ORDER BY _key`, store.primaryName)

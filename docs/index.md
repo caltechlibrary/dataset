@@ -41,9 +41,8 @@ Collection Level
 JSON Document level
 -------------------
 
-- [create](create.md) a JSON document in a collection
+- [write](write.md) a JSON document in a collection
 - [read](read.md) back a JSON document in a collection
-- [update](update.md) a JSON document in a collection
 - [delete](delete.md) a JSON document in a collection
 - [haskey](haskey.md) returns true if key is found in collection, false otherwise
 
@@ -60,9 +59,8 @@ documentation page.
 
 - [Collections Endpoint](collections-endpoint.md)
 - [Collection Endpoint](collection-endpoint.md)
-- [Create Endpoint](create-endpoint.md)
+- [Write Endpoint](write-endpoint.md)
 - [Read Endpoint](read-endpoint.md)
-- [Update Endpoint](update-endpoint.md)
 - [Delete Endpoint](delete-endpoint.md)
 - [Keys Endpoint](keys-endpoint.md)
 - [Query Endpoint](query-endpoint.md)

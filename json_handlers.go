@@ -185,7 +185,7 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 				keyExists := c.HasKey(key)
 				if keyExists {
 					if overwrite {
-						if err := c.Update(key, obj); err != nil {
+						if err := c.Write(key, obj); err != nil {
 							fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q -> %s, %s\n", i, key, src, err)
 							errCnt += 1
 						}
@@ -194,7 +194,7 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 						errCnt += 1
 					}
 				} else {
-					if err := c.Create(key, obj); err != nil {
+					if err := c.Write(key, obj); err != nil {
 						fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q -> %s, %s\n", i, key, src, err)
 						errCnt += 1
 					}

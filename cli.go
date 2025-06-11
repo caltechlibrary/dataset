@@ -23,25 +23,24 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
 var (
 	showHelp bool
-	appName  = path.Base(os.Args[0])
+	appName  = filepath.Base(os.Args[0])
 
 	helpDocs = map[string]string{
 		"description":          cliDescription,
 		"examples":       cliExamples,
 		"init":           cliInit,
-		"create":         cliCreate,
+		"write":         cliWrite,
 		"read":           cliRead,
-		"update":         cliUpdate,
 		"delete":         cliDelete,
 		"query":          cliQuery,
 		"keys":           cliKeys,
 		"haskey":         cliHasKey,
-		"history":        cliHistory,
 		"codemeta":       cliCodemeta,
 		"load":           cliLoad,
 		"dump":           cliDump,
@@ -136,14 +135,12 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 		src       []byte
 		input     string
 		err       error
-		overwrite bool
 	)
 	flagSet := flag.NewFlagSet("create", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "help for create")
 	flagSet.BoolVar(&showHelp, "help", false, "help for create")
 	flagSet.StringVar(&input, "i", "-", "read JSON from file, use '-' for stdin")
 	flagSet.StringVar(&input, "input", "-", "read JSON from file, use '-' for stdin")
-	flagSet.BoolVar(&overwrite, "overwrite", false, "overwrite object if it previously exists")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 	if showHelp {
@@ -171,10 +168,7 @@ func doCreate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	if err := JSONUnmarshal(src, &obj); err != nil {
 		return err
 	}
-	if overwrite && c.HasKey(key) {
-		return c.Update(key, obj)
-	}
-	if err := c.Create(key, obj); err != nil {
+	if err := c.Write(key, obj); err != nil {
 		return err
 	}
 	return nil
@@ -264,7 +258,7 @@ func doUpdate(in io.Reader, out io.Writer, eout io.Writer, args []string) error 
 	if err := JSONUnmarshal(src, &obj); err != nil {
 		return err
 	}
-	if err := c.Update(key, obj); err != nil {
+	if err := c.Write(key, obj); err != nil {
 		return err
 	}
 	return nil
@@ -400,12 +394,11 @@ func doDump(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	var (
 		cName       string
-		overwrite   bool
 		maxCapacity = 0
+		overwrite bool
 	)
 	flagSet := flag.NewFlagSet("load", flag.ContinueOnError)
 	flagSet.BoolVar(&overwrite, "o", false, "overwrite existing objects on load")
-	flagSet.BoolVar(&overwrite, "overwrite", false, "overwrite existing objects on load")
 	flagSet.IntVar(&maxCapacity, "m", maxCapacity, "set a maximum size for single object in megabytes")
 	flagSet.IntVar(&maxCapacity, "max-capacity", maxCapacity, "set a maximum size for single object in megabytes")
 	flagSet.BoolVar(&showHelp, "h", false, "display help")

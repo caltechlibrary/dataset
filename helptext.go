@@ -40,9 +40,8 @@ Collections
 Objects
 =======
 
-- Create
+- Write
 - Read
-- Update
 - Delete
 - Keys
 - HasKey
@@ -60,9 +59,9 @@ DESCRIPTION
 {app_name} command line interface supports creating JSON object
 collections and managing the JSON object documents in a collection. As of v3
 SQLite3 is the storage option supported.  Prior versions of dataset supported
-storing objects in a pairtree, in MySQL and PostgreSQL.  You can use dump
-from a dataset v2 then use load with dataset v3 to migrate your collection to
-v3.
+storing objects in a pairtree in additiojnal to SQlite3, MySQL and PostgreSQL.
+You can use dump from a dataset v2 then use load with dataset v3 to migrate
+your collection to v3.
 
 When creating new documents in the collection or updating documents
 in the collection the JSON source can be read from the command line,
@@ -77,14 +76,11 @@ init C_NAME
 : creates a new dataset collection. By default the collection uses
   SQLite3 for a JSON store.
 
-create [OPTION] C_NAME KEY [DATA]
-: creates a new document in the collection
+write [OPTION] C_NAME KEY [DATA]
+: creates or replaces a JSON document in the collection
 
 read [OPTION] C_NAME KEY
 : retrieves a document from the collection writing it standard out
-
-update [OPTION] C_NAME KEY [DATA]
-: updates a document in the collection
 
 delete C_NAME KEY
 : removes a document from the collection
@@ -108,7 +104,7 @@ query [OPTION] C_NAME SQL_STMT
   or value to the SQLite 3 engine. This provides a flexible way to work
   with the objects in the collection as well as create lists of objects.
 
-history is implemented as a SQLite3 history table where the verison number
+history is implemented as a SQL history table where the verison number
 is a single ascending integer value. The key and version number form a
 complex primary key to ensure uniqueness in the history table.
 
@@ -136,18 +132,18 @@ EXAMPLES
 
    {app_name} init my_objects.ds 
 
-   {app_name} help create
+   {app_name} help write
 
-   {app_name} create my_objects.ds "123" '{"one": 1}'
+   {app_name} write my_objects.ds "123" '{"one": 1}'
 
-   cat <<EOT | {app_name} create my_objects.ds "345"
+   cat <<EOT | {app_name} write my_objects.ds "345"
    {
 	   "four": 4,
 	   "five": "six"
    }
    EOT
 
-   {app_name} update my_objects.ds "123" '{"one": 1, "two": 2}'
+   {app_name} write my_objects.ds "123" '{"one": 1, "two": 2}'
 
    {app_name} delete my_objects.ds "345"
 
@@ -173,25 +169,25 @@ EXAMPLES
 	// cli specific help, not exported
 	//
 
-	// Taken from docs/create.md
-	cliCreate = `
-create
+	// Taken from docs/write.md
+	cliWrite = `
+write
 ======
 
 Syntax
 ------
 
 ~~~shell
-    cat JSON_DOCNAME | {app_name} create COLLECTION_NAME KEY
-    {app_name} create -i JSON_DOCNAME COLLECTION_NAME KEY
-    {app_name} create COLLECTION_NAME KEY JSON_VALUE
-    {app_name} create COLLECTION_NAME KEY JSON_FILENAME
+    cat JSON_DOCNAME | {app_name} write COLLECTION_NAME KEY
+    {app_name} write -i JSON_DOCNAME COLLECTION_NAME KEY
+    {app_name} write COLLECTION_NAME KEY JSON_VALUE
+    {app_name} write COLLECTION_NAME KEY JSON_FILENAME
 ~~~
 
 Description
 -----------
 
-create adds or replaces a JSON document to a collection. The JSON 
+write adds or replaces a JSON document to a collection. The JSON 
 document can be read from a standard in, a named file (with a 
 ".json" file extension) or expressed literally on the command line.
 
@@ -205,12 +201,12 @@ Collection is "people.ds".  The following are equivalent in
 resulting record.
 
 ~~~shell
-    cat jane-doe.json | {app_name} create people.ds r1
-    {app_name} create -i blob.json people.ds r1
-    {app_name} create people.ds r1 '{"name":"Jane Doe"}'
-    {app_name} create people.ds r1 jane-doe.json
-    cat jane-doe.json | {app_name} create people.ds r1
-    {app_name} create people.ds r1 <jane-doe.json
+    cat jane-doe.json | {app_name} write people.ds r1
+    {app_name} write -i blob.json people.ds r1
+    {app_name} write people.ds r1 '{"name":"Jane Doe"}'
+    {app_name} write people.ds r1 jane-doe.json
+    cat jane-doe.json | {app_name} write people.ds r1
+    {app_name} write people.ds r1 <jane-doe.json
 ~~~
 
 `
@@ -252,47 +248,6 @@ Use the `+"`"+`-jsonl`+"`"+` to force it to a single line (JSON line format).
 
 ~~~shell
     {app_name} read -jsonl data.ds r1
-~~~
-
-`
-
-	cliUpdate = `
-update
-======
-
-Syntax
-------
-
-~~~shell
-    {app_name} update COLLECTION_NAME KEY
-~~~
-
-Description
------------
-
-__update__ will replace a JSON document in a {app_name} collection for 
-a given KEY.  By default the JSON document is read from standard 
-input but you can specific a specific file with the "-input" 
-option. The JSON document should already exist in the collection
-when you use update.
-
-
-Usage
-------
-
-In this example we assume there is a JSON document on local disc 
-named __jane-doe.json__. It contains ` + "`{\"name\":\"Jane Doe\"}`" + ` and the 
-KEY is "jane.doe". In the first one we specify the full JSON document 
-via the command line after the KEY.  In the second example we read the 
-data from __jane-doe.json__. Finally in the last we read the JSON 
-document from standard input and save the update to "jane.doe".
-The collection name is "people.ds".
-
-~~~shell
-    {app_name} update people.ds jane.doe '{"name":"Jane Doiel"}'
-    {app_name} update people.ds jane.doe <jane-doe.json
-    {app_name} update -i jane-doe.json people.ds jane.doe
-    cat jane-doe.json | {app_name} update people.ds jane.doe
 ~~~
 
 `
@@ -425,16 +380,6 @@ an error message.
 ~~~shell
     dataset init data.ds
 ~~~
-
-`
-
-	cliHistory = `
-history
-==========
-
-Collections support an object history by default. This is implemented as a second
-history table in the SQL JSON store. The version is a single number and changes
-for create, update, and delete operations.
 
 `
 

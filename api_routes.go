@@ -310,7 +310,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 	return
 }
 
-// Create deposit a JSON object in the collection for a given key.
+// Write deposit a JSON object in the collection for a given key.
 //
 // In this example the json document is in the working directory called
 // "record-123.json" and the environment variable KEY holds the document
@@ -324,7 +324,7 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 //	      --data-binary "@./record-123.json"
 //
 // ```
-func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
+func Write(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	var key string
 	if len(options) > 0 {
@@ -345,13 +345,13 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		case "application/json":
 			src, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+				log.Printf("Write, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
 			}
 			err = json.Unmarshal(src, &o)
 			if err != nil {
-				log.Printf("Create, json unmarshal error %+v, %s", o, err)
+				log.Printf("Write, json unmarshal error %+v, %s", o, err)
 				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
 				return
 			}
@@ -359,7 +359,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			//NOTE: Need to know the form field names, this is in .Model
 			r.ParseForm()
 			if api.Debug {
-				log.Printf("DEBUG creating form object -> %+v", o)
+				log.Printf("DEBUG writing form object -> %+v", o)
 			}
 		}
 		if key == "" {
@@ -383,7 +383,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			}
 			// Now we need to validate the form data.
 			// Now if we have formData populated it needs to get validated after generated types appliced
-			if err := c.Update(key, o); err != nil {
+			if err := c.Write(key, o); err != nil {
 				log.Printf("Update failed %+v, %s", o, err)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
@@ -400,7 +400,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				txt, _ := json.MarshalIndent(o, "", "  ")
 				log.Printf("DEBUG form data:\n%s\n\n", txt)
 			}
-			if err := c.Create(key, o); err != nil {
+			if err := c.Write(key, o); err != nil {
 				log.Printf("Create failed %+v, %s", o, err)
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
@@ -477,88 +477,6 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 		// Set header to application/json
 		w.Header().Add("Content-Type", contentType)
 		fmt.Fprintf(w, `%s`, src)
-		return
-	}
-	http.NotFound(w, r)
-	return
-}
-
-// Update replaces a JSON object in the collection for a given key.
-//
-// In this example the json document is in the working directory called
-// "record-123.json" and the environment variable KEY holds the document
-// key which is the string "123".
-//
-// ```shell
-//
-//	KEY="123"
-//	curl -X PUT http://localhost:8585/api/journals.ds/object/$KEY
-//	     -H "Content-Type: application/json" \
-//	      --data-binary "@./record-123.json"
-//
-// ```
-func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
-	defer r.Body.Close()
-	if len(options) != 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	key := options[0]
-
-	idName := ""
-	formData := map[string]string{}
-	if c, ok := api.CMap[cName]; ok {
-		o := map[string]interface{}{}
-		//FIXME: Are we being sent JSON, YAML or urlencoded data?
-		contentType := r.Header.Get("content-type")
-		if api.Debug {
-			log.Printf("DEBUG contentType: %q", contentType)
-		}
-		switch contentType {
-		case "application/json":
-			src, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
-			}
-			err = json.Unmarshal(src, &o)
-			if err != nil {
-				log.Printf("Update, json unmarshal error %+v, %s", o, err)
-				http.Error(w, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable)
-				return
-			}
-		default:
-			//NOTE: Need to know the form field names, this is in .Model
-			r.ParseForm()
-			if api.Debug {
-				log.Printf("DEBUG c.Model is nil, accept all fields without validation")
-			}
-			for key, _ := range r.Form {
-				o[key] = r.Form.Get(key)
-			}
-			if api.Debug {
-				log.Printf("DEBUG creating form object -> %+v", o)
-			}
-		}
-		if key == "" {
-			if idName == "" {
-				log.Printf("Missing primary id, bad request %s %q, data %+v", r.Method, r.URL.Path, formData)
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-				return
-			}
-			if id, ok := o[idName]; ok {
-				if api.Debug {
-					log.Printf("DEBUG key set to record 'id' value, %+v", id)
-				}
-				key = id.(string)
-			}
-		}
-		if err := c.Update(key, o); err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		statusIsOK(w, http.StatusOK, cName, key, "updated", "")
 		return
 	}
 	http.NotFound(w, r)

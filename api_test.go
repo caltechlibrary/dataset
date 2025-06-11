@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"testing"
 	"time"
@@ -217,7 +218,7 @@ func clientTestKeys(t *testing.T, settings *Settings) {
 			t.Errorf("c.Key() %s", err)
 			t.FailNow()
 		}
-		cName := path.Base(cfg.CName)
+		cName := filepath.Base(cfg.CName)
 		// Run through a set of the
 		u := fmt.Sprintf("http://%s/api/%s/keys", settings.Host, cName)
 		res, err := http.Get(u)
@@ -290,7 +291,7 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 	}
 
 	for _, cfg := range settings.Collections {
-		cName := path.Base(cfg.CName)
+		cName := filepath.Base(cfg.CName)
 		if cName == "objects_test.ds" {
 			//FIXME: only work with object_tests.ds
 			for k, v := range newPost {
@@ -407,7 +408,7 @@ collections:
 		t.FailNow()
 	}
 
-	appName := path.Base(appName)
+	appName := filepath.Base(appName)
 
 	setupWait := "5s"
 	wait, _ := time.ParseDuration(setupWait)

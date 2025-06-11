@@ -62,12 +62,6 @@ type Config struct {
 	QueryFn map[string]string `json:"query,omitempty" yaml:"query,omitempty"`
 
 
-	// SuccessPage is used for form submissions that are succcessful, i.e. HTTP Status OK (200)
-	SuccessPage string `json:"success_page,omitempty" yaml:"success_page,omitempty"`
-
-	// FailPage is used to for form submissions that are unsuccessful, i.g. HTTP response other than OK
-	FailPage string `json:"fail_page,omitempty" yaml:"fail_page,omitempty"`
-
 	// Permissions for accessing the collection through the web service
 	// At least some of these should be set to true otherwise you
 	// don't have much of a web service.
@@ -75,47 +69,21 @@ type Config struct {
 	// Keys lets you get a list of keys in a collection
 	Keys bool `json:"keys,omitempty" yaml:"keys,omitempty"`
 
-	// Create allows you to add objects to a collection
-	Create bool `json:"create,omitempty" yaml:"create,omitempty"`
+	// Write allows you to add or replace objects to a collection
+	Write bool `json:"write,omitempty" yaml:"write,omitempty"`
+
+	// WriteSuccess is a redirect to apply on successful Write submission
+	WriteSuccess string `json:"write_success,omitempty" yaml:"write_success,omitempty"`
+
+	// WriteError is a redirect to be applied on a failing Write submission
+	WriteError string `json:"write_error,omitempty" yaml:"write_error,omitempty"`
 
 	// Read allows you to retrive an object from a collection
 	Read bool `json:"read,omitempty" yaml:"read,omitempty"`
 
-	// Update allows you to replace objects in a collection
-	Update bool `json:"update,omitempty" yaml:"update,omitempty"`
-
 	// Delete allows ytou to removes objects, object versions,
 	// and attachments from a collection
 	Delete bool `json:"delete,omitempty" yaml:"delete,omitempty"`
-
-	// Attachments allows you to attached documents for an object in the
-	// collection.
-	Attachments bool `json:"attachments,omitempty" yaml:"attachments,omitempty"`
-
-	// Attach allows you to store an attachment for an object in
-	// the collection
-	Attach bool `json:"attach,omitempty" yaml:"attach,omitempty"`
-
-	// Retrieve allows you to get an attachment in the collection for
-	// a given object.
-	Retrieve bool `json:"retrieve,omitempty" yaml:"retreive,omitempty"`
-
-	// Prune allows you to remove an attachment from an object in
-	// a collection
-	Prune bool `json:"prune,omitempty" yaml:"prune,omitempty"`
-
-	// FrameRead allows you to see a list of frames, check for
-	// a frame's existance and read the content of a frame, e.g.
-	// it's definition, keys, object list.
-	FrameRead bool `json:"frame_read,omitempty" yaml:"frame_read,omitempty"`
-
-	// FrameWrite allows you to create a frame, change the frame's
-	// content or remove the frame completely.
-	FrameWrite bool `json:"frame_write,omitempty" yaml:"frame_write,omitempty"`
-
-	// Versions allows you to list versions, read and delete
-	// versioned objects and attachments in a collection.
-	Versions bool `json:"versions,omitempty" yaml:"versions,omitempty"`
 }
 
 // String renders the configuration as a JSON string.

@@ -154,7 +154,7 @@ func TestSQLStore(t *testing.T) {
 	}
 
 	// Let's set c.Query()
-	tName := strings.TrimSuffix(path.Base(cName), ".ds")
+	tName := strings.TrimSuffix(filepath.Base(cName), ".ds")
 	sqlStmt := fmt.Sprintf(`select src
 from %s
 order by updated`, tName)

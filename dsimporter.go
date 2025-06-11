@@ -86,14 +86,14 @@ func (app *DSImport) Run(in io.Reader, out io.Writer, eout io.Writer, cName stri
 				}
 				if c.HasKey(key) {
 					if app.Overwrite {
-						if err := c.Update(key, values); err != nil {
+						if err := c.Write(key, values); err != nil {
 							fmt.Fprintf(eout, "row %d: failed to update %q in collection, %s\n", i, key, err)
 						}
 					} else {
 						fmt.Fprintf(eout, "row %d: key already exists in collection %q\n", i, key)
 					}
 				} else {
-					if err := c.Create(key, values); err != nil {
+					if err := c.Write(key, values); err != nil {
 						fmt.Fprintf(eout, "row %d: failed to create %q in collection, %s\n", i, key, err)
 					}
 				}

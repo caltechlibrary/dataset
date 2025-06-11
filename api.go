@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 )
@@ -267,7 +268,7 @@ func (api *API) RegisterRoute(prefix string, method string, fn func(http.Respons
 // Init setups and the API to run.
 func (api *API) Init(appName string, settingsFile string) error {
 	var err error
-	api.AppName = path.Base(appName)
+	api.AppName = filepath.Base(appName)
 	api.Version = Version
 	api.Pid = os.Getpid()
 	api.SettingsFile = settingsFile
@@ -305,7 +306,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 		}
 		// NOTE: cName is the name used in our CMap as well as in building
 		// paths for service.
-		cName := path.Base(cfg.CName)
+		cName := filepath.Base(cfg.CName)
 		c, err := Open(cfg.CName)
 		if err != nil {
 			log.Printf("WARNING: failed to open %q, %s", cfg.CName, err)
@@ -320,21 +321,15 @@ func (api *API) Init(appName string, settingsFile string) error {
 				return err
 			}
 		}
-		if cfg.Create {
+		if cfg.Write {
 			prefix := path.Join(cName, "object")
-			if err = api.RegisterRoute(prefix, http.MethodPost, Create); err != nil {
+			if err = api.RegisterRoute(prefix, http.MethodPost, Write); err != nil {
 				return err
 			}
 		}
 		if cfg.Read {
 			prefix := path.Join(cName, "object")
 			if err = api.RegisterRoute(prefix, http.MethodGet, Read); err != nil {
-				return err
-			}
-		}
-		if cfg.Update {
-			prefix := path.Join(cName, "object")
-			if err = api.RegisterRoute(prefix, http.MethodPut, Update); err != nil {
 				return err
 			}
 		}
@@ -362,7 +357,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 //
 // ```
 //
-//	appName := path.Base(sys.Argv[0])
+//	appName := filepath.Base(sys.Argv[0])
 //	settingsFile := "settings.yaml"
 //	if err := api.RunAPI(appName, settingsFile); err != nil {
 //	   ...
