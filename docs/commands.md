@@ -33,17 +33,3 @@ NOTE: The options create, update can read JSON documents piped
 from standard in if you use the '-i -' or '-include -' option. 
 Likewise keys can be read from standard input with the '-i -' 
 or '-include -' options for read, list, keys and count.
-
-Depricated features (will not be available in v2.3)
-
-- Data frames (depricated)
-    - [frames](frames.md) - list the data frames defined for a collection (depricated)
-    - [frame](frame.md) - defines a new data frame (depricated)
-    - [frame-def](frame-def.md) - returns a frame's object definition (depricated)
-    - [frame-keys](frame-keys.md) - returns a frame's key list (depricated)
-    - [frame-objects](frame-objects.md) - returns a frame's object list (depricated)
-    - [reframe](reframe.md) - uses the existing frame definition replacing all objects using a new key list (depricated)
-    - [refresh](refresh.md) - updates the objects in a data frame based on the current status of the collection. (depricated)
-    - [delete-frame](delete-frame.md) - remove a frame from a collection (depricated)
-- [check](check.md) - will check a collection against current version (for pairtree storage collections) (depricated)
-- [repair](repair.md) - will attempt to repair/upgrade a collection (for pairtree storage collections) (depricated)

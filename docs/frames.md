@@ -1,4 +1,4 @@
-frames (depricated)
+frames (deprecated)
 ===================
 
 Lists the frames available in a collection. In this example our

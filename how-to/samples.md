@@ -1,4 +1,4 @@
-Samples (depricated)
+Samples (deprecated)
 ====================
 
 Getting a sample of a collection and be done by generating

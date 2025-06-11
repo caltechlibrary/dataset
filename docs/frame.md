@@ -1,4 +1,4 @@
-frame (depricated)
+frame (deprecated)
 ==================
 
 This command will define a data frame or return the contents and

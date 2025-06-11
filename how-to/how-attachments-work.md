@@ -14,15 +14,15 @@ It is easier to see with this example. We have a dataset collection called \"Sea
 Using the __dataset__ cli you issue the follow command \--
 
 ```shell
-    dataset create Sea-Mamals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
-    dataset attach Sea-Mamals.ds walrus \
+    dataset create Sea-Mammals.ds walrus '{"description": "may have tusks", "size": "impressive"}'
+    dataset attach Sea-Mammals.ds walrus \
        /Users/fred/Documents/notes-on-walrus.docx
 ```
 
 The results in a simple directory stricture for the JSON object and attachment.
 
-        Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-        Sea-Mamanls/attachments/wa/lr/us/notes-on-walrus.docx
+        Sea-Mammals/pairtree/wa/lr/us/walrus.json
+        Sea-Mammals/attachments/wa/lr/us/notes-on-walrus.docx
 
 The directory structured for versioned attachments and JSON document is more complex. In the case of the JSON document the semver  gets embedded in the JSON document name while the attachments are stored in subfolders by version. The assignment of the semver is automatic based on the collection's original setup.
 

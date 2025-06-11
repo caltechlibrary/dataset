@@ -1,4 +1,4 @@
-frame-objects (depricated)
+frame-objects (deprecated)
 ==========================
 
 Usage

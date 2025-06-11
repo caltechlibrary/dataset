@@ -1,4 +1,4 @@
-has-frame (depreicated)
+has-frame (deprecated)
 =======================
 
 Check to see if a frame name exists in a collection.

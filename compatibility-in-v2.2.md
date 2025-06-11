@@ -4,6 +4,8 @@
 
 # Compatibity
 
+AS of 2.2.7 the features around frames is no longer going to be supported. I practice the SQL query support replaced it. Also cloning and samples have been replace by SQL query support and the new "dump" and "load" feature.
+
 As of 2.2.0 you can "dump" and "load" are availabe to create a portable
 export and import using JSON lines.
 

@@ -1,4 +1,4 @@
-repair (depricated)
+repair (deprecated)
 ===================
 
 Syntax

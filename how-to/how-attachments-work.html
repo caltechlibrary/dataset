@@ -61,13 +61,13 @@ want to attach "notes-on-walrus.docx" which is on our local drive under
 "/Users/fred/Documents/notes-on-walrus.docx".</p>
 <p>Using the <strong>dataset</strong> cli you issue the follow command
 --</p>
-<pre class="shell"><code>    dataset create Sea-Mamals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
-    dataset attach Sea-Mamals.ds walrus \
+<pre class="shell"><code>    dataset create Sea-Mammals.ds walrus &#39;{&quot;description&quot;: &quot;may have tusks&quot;, &quot;size&quot;: &quot;impressive&quot;}&#39;
+    dataset attach Sea-Mammals.ds walrus \
        /Users/fred/Documents/notes-on-walrus.docx</code></pre>
 <p>The results in a simple directory stricture for the JSON object and
 attachment.</p>
-<pre><code>    Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/attachments/wa/lr/us/notes-on-walrus.docx</code></pre>
+<pre><code>    Sea-Mammals/pairtree/wa/lr/us/walrus.json
+    Sea-Mammals/attachments/wa/lr/us/notes-on-walrus.docx</code></pre>
 <p>The directory structured for versioned attachments and JSON document
 is more complex. In the case of the JSON document the semver gets
 embedded in the JSON document name while the attachments are stored in
