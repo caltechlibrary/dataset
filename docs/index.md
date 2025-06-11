@@ -89,27 +89,3 @@ Example migrating from dataset "data_v2.ds" from v2 to v3 as "data_v3.ds".
 dataset3 init data_v3.ds
 dataset dump data_v2.ds | dataset3 load data_v3.ds
 ~~~
-
-
-Depricated fatures as of v2.2
------------------------------
-
-- [data frame support](../how-to/collections-and-data-frames.html) provides a persistent metadata associated with the collection as data frames
-    - [frame](frame.html)
-    - [frame-objects](frame-objects.html)
-    - [frames](frames.html)
-    - [refresh](refresh.html)
-    - [reframe](reframe.html)
-    - [delete-frame](delete-frame.html)
-    - [has-frame](hasframe.html)
-- [dotpath](dotpath.md)
-- [sample](sample.html) - getting a random sample of keys
-- [clone](clone.html) - clone a repository
-- [clone-sample](clone-sample.html) - cloning a repository into training and test collections
-
-The following commands are depricated as the use of pairtree storage has declined.
-
-- [check](check.html) - checks a collection against the current version of tools
-- [repair](repair.html) - repairs/upgrades a collection based on the current version of the tool
-
-
