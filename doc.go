@@ -41,11 +41,6 @@ updating and deleting; listing keys of JSON objects in the collection;
 and associating non-JSON documents (attachments) with specific JSON
 documents in the collection.
 
-### enhanced features include
-
-- aggregate objects into data frames
-- generate sample sets of keys and objects
-
 datasetd, dataset as a web service
 ----------------------------------
 
@@ -78,7 +73,7 @@ called 'mycollection.ds').
     for easy identification the directory must be lower case folder
     contain
 
-_datatset_ stores JSON object documents in a pairtree
+_datatset_ stores JSON object documents in a SQL data store or pairtree
   - the pairtree path is always lowercase
   - a pairtree of JSON object documents
   - non-JSON attachments can be associated with a JSON document and
@@ -124,22 +119,6 @@ _dataset_ supports
   - prune (delete)
   - The ability to create data frames from while collections or based on
     keys lists
-  - frames are defined using a list of keys and a lost
-    "dot paths" describing what is to be pulled out
-    of a stored JSON objects and into the frame
-  - frame level actions
-  - frames, list the frame names in the collection
-  - frame, define a frame, does not overwrite an existing frame with
-    the same name
-  - frame-def, show the frame definition (in case we need it for some
-    reason)
-  - frame-objects, return a list of objects in the frame
-  - refresh, using the current frame definition reload all the objects
-    in the frame
-  - reframe, replace the frame definition then reload the objects in
-    the frame using the old frame key list
-  - has-frame, check to see if a frame exists
-  - delete-frame remove the frame
 
 _datasetd_ supports
 
@@ -160,8 +139,6 @@ _datasetd_ supports
     collections
   - The ability to create data frames from while
     collections or based on keys lists
-  - frames are defined using "dot paths" describing
-    what is to be pulled out of a stored JSON objects
 
 Both _dataset_  and _datasetd_ maybe useful for general data science
 applications needing JSON object management or in implementing repository

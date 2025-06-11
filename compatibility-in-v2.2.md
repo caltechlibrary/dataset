@@ -1,8 +1,11 @@
-%dataset(1) user manual | version 2.2.2
+%dataset(1) user manual | version 2.2.7
 % R. S. Doiel and Tom Morrell
-% 2025-04-15
+% 2025-06-11
 
 # Compatibity
+
+As of 2.2.0 you can "dump" and "load" are availabe to create a portable
+export and import using JSON lines.
 
 As of 2.2.0 the default Dataset collection uses SQLite3 databases for 
 the JSON document store. As of 2.2.1 all tests are passing again with

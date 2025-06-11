@@ -100,5 +100,4 @@ batch files to perform some of what Make under Linux and macOS would do.
 - release.bat builds a release, will prompt for version
 - clean.bat removes executable and temp files
 
-Compilation assumes [go](https://github.com/golang/go) v1.23 or better.
-
+Compilation assumes [go](https://github.com/golang/go) v1.24 or better.
