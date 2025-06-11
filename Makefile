@@ -102,6 +102,8 @@ uninstall: .FORCE
 
 website: .FORCE
 	make -f website.mak
+	cd docs && make -f website.mak
+	cd how-to && make -f website.mak
 
 check: .FORCE
 	go vet *.go

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dataset Project -- How to ...</title>
+    <title>Dataset Project</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
@@ -13,10 +13,9 @@
 <ul>
     <li><a href="/">Home</a></li>
     <li><a href="../">README</a></li>
-    <li><a href="../user-manual.html">User Manual</a></li>
-    <li><a href="../docs/">Documentation</a></li>
-    <li><a href="./">How To</a></li>
-    <li><a href="../libdataset/">Libdataset</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
     <li><a href="../about.html">About</a></li>
 	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
@@ -25,60 +24,31 @@
 
 <section>
 <h1 id="file-system-layout">File system layout</h1>
-<p>dataset provides a way to manage your JSON documents. This can be
-done on your local disk using a technique called a <a
+<p>dataset provides a way to manage your JSON documents. In version we
+usually use a SQL engine for storage. SQLite3 is the default in v2.2.
+The means you can have your JSON objects on disk and easily preservable
+without running a database management system. In version one the default
+store was a <a
 href="https://tools.ietf.org/html/draft-kunze-pairtree-01">pairtree</a>.
-Optionally can also be done by storing the JSON Objects in a SQL
-database table.</p>
-<p>The pairtree layout is described by “collection.json” and
-“keymaps.json” documents. These are located in the root folder of the
-collection.</p>
-<p>A JSON document may also have one or more “attachments”. These are
-stored in their own pairtree under the “attachments” sub-directory of
-the collection. Attachments are supported for both pairtree storage and
-SQL storage of JSON objects in a collection.</p>
-<p>Pairtrees ensures sequence of characters in a object’s key will not
-collide with and is legal on common file systems. E.g. storing the
-document “hello-world.json” with the attachment “smiles.png” in a
-collection named “C.ds” would result in paths like</p>
-<pre><code>`C.ds/pairtree/he/ll/o-/wo/rl/d/hello-world.json` </code></pre>
-<p>and</p>
-<pre><code>`C.ds/attachments/he/ll/o-/wo/rl/d/smiles.png&quot;.</code></pre>
-<p>Attachments are experimental and how they are handled may change in
-the future.</p>
-<p>In a collection’s root directory you will find two or three JSON
-documents.</p>
-<ul>
-<li>codemeta.json hold general metadata about the collection</li>
-<li>collection.json describes the operational metadata for a
-collection</li>
-<li>keymap.json holds the key to pairtree path map for pairtree
-collections (it will be missing for for SQL storage collections)</li>
-</ul>
-<p>If you’re using SQLite3 as your JSON document storage engine you can
-choose to include your SQLite3 database file in the directory too, if so
-“collection.db” is a good name. That way if you zip up your collection
-and share it with a friend the JSON documents will travel
-appropriately.</p>
-<h2 id="pairtree">Pairtree</h2>
-<p>The directory layout looks like:</p>
-<ul>
-<li>collection (directory on the file system)
-<ul>
-<li><a
-href="https://confluence.ucop.edu/display/Curation/Namaste">namaste</a>
-records identifying the collection
-<ul>
-<li>these will get used to generate things like index.md and
-codemeta.json files</li>
-</ul></li>
-<li>a file, collection.json, holding metadata about the collection</li>
-<li>a directory named “_frames” holding frame definitions for the
-collection</li>
-<li>a directory named “pairtree” holding the pairtree where the JSON
-document and attachments are stored.</li>
-</ul></li>
-</ul>
+While those are still supported in v2.2 they are depreciated and will
+not be support in v3.</p>
+<p>The layout of a dataset collection on disk is as follows</p>
+<pre><code>- COLLECTION_NAME
+  - collection.json (holds operational metadata about the collection)
+  - codemeta.json (holds citation metadata about the collection)
+  - collection.db (for SQLite3, the SQL data)
+  - attachments (optional, holds a pairtree of attached files)</code></pre>
+<p>If the legacy pairtree implementation you would have a directory
+named “pairtree” holding the JSON objects.</p>
+<p>This simple data structure is easy to <a
+href="https://en.wikipedia.org/wiki/BagIt">Bag</a>. The collection as a
+whole would be placed the the “data” sub directory of the bag and along
+with the required metadata files supporting the Bag format.</p>
+<p>If you are using MySQL or PostgreSQL to store your data then you have
+two options when bagging. You could dump the collection contents along
+side the collections directory or you could created an SQLite3 version
+of the collection (trivial using the dump and load feature of v2.2) and
+Bag that.</p>
 </section>
 
 <footer>

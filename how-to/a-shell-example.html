@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dataset Project -- How to ...</title>
+    <title>Dataset Project</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
@@ -13,10 +13,9 @@
 <ul>
     <li><a href="/">Home</a></li>
     <li><a href="../">README</a></li>
-    <li><a href="../user-manual.html">User Manual</a></li>
-    <li><a href="../docs/">Documentation</a></li>
-    <li><a href="./">How To</a></li>
-    <li><a href="../libdataset/">Libdataset</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
     <li><a href="../about.html">About</a></li>
 	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
@@ -24,7 +23,8 @@
 </nav>
 
 <section>
-<h1 id="a-shell-example">A Shell Example</h1>
+<h1 id="a-shell-example-using-dataset-and-datasetd">A Shell Example
+using dataset and datasetd</h1>
 <h2 id="dataset">dataset</h2>
 <p>Below is a simple example of shell based interaction with dataset a
 collection using the command line dataset tool.</p>
@@ -33,48 +33,58 @@ collection using the command line dataset tool.</p>
     # if successful then you should see an OK otherwise an error message
 
     # Create a JSON document 
-    dataset create friends.ds frieda \
-        &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
+    dataset create friends.ds lady.jowls \
+        &#39;{&quot;name&quot;:&quot;lady.jowls&quot;,&quot;email&quot;:&quot;lady.jowls@inverness.example.org&quot;}&#39;
     # If successful then you should see an OK otherwise an error message
 
     # Read a JSON document
-    dataset read friends.ds frieda
+    dataset read friends.ds lady.jowls
     
     # Update a JSON document
-    dataset update friends.ds frieda \
-        &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}&#39;
+    dataset update friends.ds lady.jowls \
+        &#39;{&quot;name&quot;:&quot;lady.jowls&quot;,&quot;email&quot;:&quot;lady.jowls@zbs.example.org&quot;, &quot;current_residence&quot;: &quot;Inverness&quot;}&#39;
     # If successful then you should see an OK or an error message
 
     # List the keys in the collection
     dataset keys friends.ds
 
     # Delete a JSON document
-    dataset delete friends.ds frieda
+    dataset delete friends.ds lady.jowls
 
     # To remove the collection just use the Unix shell command
     rm -fR friends.ds</code></pre>
-<h2 id="datasetd">datasetd</h2>
+<h2 id="dataset-1">dataset</h2>
 <p>We need to have two shell sessions running for this example.</p>
+<p>Before we begin let’s create an populate our “friends.ds”
+collection.</p>
+<ol type="1">
+<li>Create our “friends.ds” collection</li>
+<li>Load the “friends.ds” from <a
+href="zbs_cast_list.jsonl">zbs_cast_list.jsonl</a></li>
+</ol>
+<pre class="shell"><code>dataset3 init friends.ds
+dataset3 load friends.ds &lt;zbs_cast_list.jsonl</code></pre>
 <p>For this example we’re going to use the “friends.ds” collection
-created in the previous example. We need to create a “settings.json”
+created in the previous example. We need to create a “friends_api.yaml”
 file in the same directory where you have “friends.ds”. We will use it
-to start <em>datasetd</em>. That file should contain</p>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;host&quot;</span><span class="fu">:</span> <span class="st">&quot;localhost:8485&quot;</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;collections&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;friends&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;dataset&quot;</span><span class="fu">:</span> <span class="st">&quot;friends.ds&quot;</span><span class="fu">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;keys&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;create&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;update&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                <span class="dt">&quot;delete&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">}</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
-<p>We start up <em>datasetd</em> with the following command.</p>
-<pre class="shell"><code>    datasetd settings.json</code></pre>
+to start <strong>datasetd</strong>. That file should contain</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">host</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;localhost:8485&quot;</span><span class="er">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">collections</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">dataset</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;friends.ds&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">query</span><span class="kw">:</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">      cast_list</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        select src</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        from friends</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        order by src-&gt;&gt;&#39;family_name&#39;</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">keys</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">create</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">read</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">update</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">delete</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<p>We start up <strong>dataset3d</strong> with the following
+command.</p>
+<pre class="shell"><code>    datasetd start friends_api.yaml</code></pre>
 <p>In this first session you will see log output to the console. We can
 use that to see how the service handles the requests.</p>
 <p>In a second shell session we’re going to use the <a
@@ -82,22 +92,22 @@ href="https://curl.se/">curl</a> command to interact with our
 collections.</p>
 <pre class="shell"><code>    # Create a JSON document 
     curl -X POST -H &#39;application/json&#39; \
-    &#39;http://localhost:8485/friends/object/frieda&#39; \
-    -d &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@inverness.example.org&quot;}&#39;
+    &#39;http://localhost:8485/friends/object/lord.jowls&#39; \
+    -d &#39;{&quot;name&quot;:&quot;Lord Jowls&quot;,&quot;email&quot;:&quot;lord.jowls@inverness.example.org&quot;}&#39;
 
     # Read a JSON document
-    curl &#39;http://localhost:8485/friends/object/frieda&#39;
+    curl &#39;http://localhost:8485/friends/object/lord.jowls&#39;
     
     # Update a JSON document
     curl -X PUT -H &#39;application/json&#39; \
-    &#39;http://localhost:8485/friends/object/frieda&#39; \
-    -d &#39;{&quot;name&quot;:&quot;frieda&quot;,&quot;email&quot;:&quot;frieda@zbs.example.org&quot;, &quot;count&quot;: 2}&#39;
+    &#39;http://localhost:8485/friends/object/lord.jowls&#39; \
+    -d &#39;{&quot;name&quot;:&quot;Lord Jowls&quot;,&quot;email&quot;:&quot;lord.jowls@zbs.example.org&quot;, &quot;current_residency&quot;: &quot;astroplanes&quot;}&#39;
 
     # List the keys in the collection
     curl &#39;http://localhost:8485/friends/keys&#39;
 
     # Delete a JSON document
-    curl -X DELETE &#39;http://localhost:8485/friends/object/frieda&#39;</code></pre>
+    curl -X DELETE &#39;http://localhost:8485/friends/object/lord.jowls&#39;</code></pre>
 </section>
 
 <footer>

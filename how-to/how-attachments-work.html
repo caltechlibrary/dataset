@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dataset Project -- How to ...</title>
+    <title>Dataset Project</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
@@ -13,10 +13,9 @@
 <ul>
     <li><a href="/">Home</a></li>
     <li><a href="../">README</a></li>
-    <li><a href="../user-manual.html">User Manual</a></li>
-    <li><a href="../docs/">Documentation</a></li>
-    <li><a href="./">How To</a></li>
-    <li><a href="../libdataset/">Libdataset</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../INSTALL.html">INSTALL</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
     <li><a href="../about.html">About</a></li>
 	<li><a href="../search.html">Search</a></li>
     <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
@@ -28,29 +27,30 @@
 <p>The primary use case of the <strong>dataset</strong> tool is managing
 JSON documents. There exist a common secondary use case of including
 support for "attached" non-JSON documents. Example 1, when we harvest
-content from a system who does not support JSON natively it is handy to
-keep a version of the harvested content for audit purposes. The EPrints
-system has a REST API that returns XML. Storing the original EPrint XML
-document gives the developer an ability to verify that their JSON
-rendering matches the EPrint XML should their JSON needs change in the
-future.</p>
+content from a system who does not support JSON natively (e.g. it
+represents data as XML). It is useful to keep the original version along
+side the JSON representation. The EPrints system has a REST API that
+returns XML. Storing the original EPrint XML document gives the
+developer an ability to verify that their JSON rendering matches the
+EPrint XML should their JSON needs change in the future.</p>
 <p>This raises questions of how to keep things simple while supporting
 an arbitrary number of attachments for JSON object document? How do you
 handle versioning when some types of collections need it for attachments
 and others don't?</p>
 <p>The <strong>dataset</strong> command line tool and related Go package
-store the attachments un-versioned by default in the pairtree. The
-un-versioned attached document is stored in a pairtree in the
-“attachments” folder of the collection. This is true regardless of the
-storage engine used (e.g. pairtree storage, sql storage). The attached
-document is stored by its basename. The basename must be unique among
-the documents attached otherwise it will be overwritten when attaching
-another document using the same basename.</p>
+store the attachments un-versioned by default in a pairtree directory
+structure called “attements”. The un-versioned attached document is
+stored in a pairtree in the “attachments” folder of the collection. This
+is true regardless of the storage engine used (e.g. pairtree storage,
+sql storage). The attached document is stored by its basename. The
+basename must be unique among the documents attached otherwise it will
+be overwritten when attaching another document using the same
+basename.</p>
 <p>If you need versioning you create your collection with versioning
 support. Attaching the documents will automatically version based on the
 basename of the attachment. When retrieving a specific version you need
 to support a <a href="https://semver.org">semver</a> using the
-appropraite versioned verb. By default reads will be the current version
+appropriate versioned verb. By default reads will be the current version
 of the document, meaning the version with the “largest” semver value. In
 a versioned collection two files with the same basename will result in
 different “versions” of the document with the highest semver reflecting
