@@ -1,4 +1,4 @@
-%dataset3(1) user manual | version 3.0.0-alpha 7c15b66
+%dataset3(1) user manual | version 3.0.0-alpha 311aa47
 % R. S. Doiel and Tom Morrell
 % 2025-05-28
 

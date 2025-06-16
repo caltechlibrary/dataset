@@ -1,4 +1,4 @@
-%dataset3d(1) user manual | version 3.0.0-alpha 7c15b66
+%dataset3d(1) user manual | version 3.0.0-alpha 311aa47
 % R. S. Doiel
 % 2025-05-28
 
