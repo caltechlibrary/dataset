@@ -532,9 +532,10 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			}
 			//FIXME: If urlencoded data then redirect for the form to some URL. What is the way to indicate this?
 			// Early web stuff used a hidden form field for this, seems really clunky.
-			if contentType == "application/json" {
+			if contentType == "application/json" || successRedirect == "" {
 				statusIsOK(w, http.StatusOK, cName, key, "updated", "")
 			} else {
+				// NOTE: we build the parameter list if successRedirect is not an empty string.
 				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key))
 			}
 			return
@@ -578,9 +579,10 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				return
 			}
 			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
-			if contentType == "application/json" {
+			if contentType == "application/json" || successRedirect == "" {
 				statusIsOK(w, http.StatusCreated, cName, key, "created", "")
 			} else {
+				// NOTE: we build the parameter list if successRedirect is not an empty string.
 				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key))
 			}
 			return
