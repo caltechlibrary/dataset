@@ -23,7 +23,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.7
+version: 2.2.8
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -42,14 +42,11 @@ date_released: 2025-06-10
 About this software
 ===================
 
-## dataset 2.2.7
+## dataset 2.2.8
 
-This release has focused on cleanup, bug fixes and adding a redirect feature to support development without requiring JavaScript browser side.
+This release has focused on cleanup, bug fixes and documentation revisions.
 
-- Fixed issue #138, where SQLite3 updated times where not set.
-- Fixed issue #144, Fix issue with spurious form validation without a defined data model.
-- Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded.
-- Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.
+- working on issue #148 and #149 before 2.2.8 release
 
 ### Authors
 

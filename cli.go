@@ -632,6 +632,9 @@ func doKeys(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 		return err
 	}
 	src := []byte(strings.Join(keys, "\n"))
+	if (len(keys) > 0) {
+		src = append(src, []byte("\n")...)
+	}
 	return WriteSource(output, out, src)
 }
 
