@@ -14,18 +14,10 @@ Dataset provides a means of easily curating collections of JSON objects as docum
 The Dataset Project comes with following tools for working with collections of JSON documents. Serveral programs provided as part of the Dataset Project.
 
 dataset
-: A command line program for working with JSON documents as a collection
+: A command line program for working with JSON documents and their attaches as a collection
 
 datasetd
-: A web service that allows managing JSON document collections via a web service (nice platform for web applictions). It includes support for digital assets should they exist in a collection
-
-models
-: This allows you to enforce data models, expressed in YAML documents, on a dataset collection.
-
-digiset
-: This is a tool to manages an digital assets related to a dataset collection JSON object. The "attached" digital assets are stored in an OCFL v1.1 compatible directory structure in the collection using the asset version number and pairtree (e.g. `assets/v1/...`).
-
-These are enough to form the foundation for a light weight repository systems while remaining preservation friendly (e.g. via BagIt and RO-Crates).
+: A web service that allows managing JSON document collections via a web service (nice platform for web applictions). It includes support for digital assets should they exist in a collection. 
 
 ## Why or when should I use Dataset v3?
 
