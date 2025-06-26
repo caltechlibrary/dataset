@@ -309,12 +309,16 @@ func (store *SQLStore) getVersioning() error {
 	if err != nil {
 		return err
 	}
-	m := map[string]int{}
-	if err := json.Unmarshal(src, &m); err != nil {
+	m := map[string]json.Number{}
+	if err := JSONUnmarshal(src, &m); err != nil {
 		return err
 	}
 	if val, ok := m["versioning"]; ok {
-		switch val {
+		iVal := 0
+		if i, err := val.Int64(); err == nil {
+			iVal = int(i)
+		}
+		switch iVal {
 		case None:
 			store.Versioning = None
 		case Major:
@@ -325,7 +329,7 @@ func (store *SQLStore) getVersioning() error {
 			store.Versioning = Patch
 		default:
 			store.Versioning = None
-			return fmt.Errorf("Unknown/unsupported version type")
+			return fmt.Errorf("Unknown/unsupported versioning setting, %q, expected %d (major), %d (minor) or %d (patch)", val, Major, Minor, Patch)
 		}
 	}
 	return nil
@@ -345,7 +349,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
 	case Patch:
 		store.Versioning = setting
 	default:
-		return fmt.Errorf("Unknown/unsupported version type")
+		return fmt.Errorf("Unknown/unsupported version increment setting, %q, expected %d (major), %d (minor) or %d (patch)", setting, Major, Minor, Patch)
 	}
 	if store.Versioning != None {
 		var (
