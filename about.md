@@ -36,7 +36,7 @@ keywords:
   - software
   - json
 
-date_released: 2025-06-10
+date_released: 2025-06-26
 ---
 
 About this software
@@ -46,7 +46,8 @@ About this software
 
 This release has focused on cleanup, bug fixes and documentation revisions.
 
-- working on issue #148 and #149 before 2.2.8 release
+- Fixes and mitigations for issues #148 and #149
+- Implemented feature request issue #150
 
 ### Authors
 
