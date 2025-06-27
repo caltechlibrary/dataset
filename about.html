@@ -24,13 +24,15 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.2.8">dataset 2.2.8</h2>
-<p>This release has focused on cleanup, bug fixes and documentation
-revisions.</p>
-<ul>
-<li>Fixes and mitigations for issues #148 and #149</li>
-<li>Implemented feature request issue #150</li>
-</ul>
+<h2 id="dataset-2.3.0">dataset 2.3.0</h2>
+<p>The object versioning problem identified in issue #149 persisted
+after the release of v2.2.8. The resulting mitigation steps before the
+planned v3 release of data is to ignore the version.json file held in
+the collection's root directory. As of v2.3 this file is no longer read,
+written or updated. Instead the collection level methods will explicitly
+set the versioning type at the store level. This means one locations
+holds versioning state, the collection.json. This simplified the
+codebase and appears to be backward compatible.</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"

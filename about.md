@@ -36,7 +36,7 @@ keywords:
   - software
   - json
 
-date_released: 2025-06-26
+date_released: 2025-06-27
 ---
 
 About this software
@@ -44,9 +44,9 @@ About this software
 
 ## dataset 2.3.0
 
-The object versioning problem identified in issue #149 persisted after the release of v2.2.8.  The root problem is the versioning.json document is not reliable given the sequences of opartions that cause it to come into existence or be updated. This lead to instability issues with v2 versioning.  In v2.3 the versioning.json file is being ignored and nolonger is saved. Instead the collection.go was updated to explicitly set the versioning state when a collection is open. This means the collections.json reflects the true state of versioning not the inferred state.
-
-The result of changes simplifies the codebase some. It appears to be backward compatible while maintaining the flawed semver approach to versioning JSON documents. In v3 versioning will be automatic and use a simple incrementing integer value.
+The object versioning problem identified in issue #149 persisted after the release of v2.2.8. The resulting mitigation steps before the planned v3 release of data is to ignore the 
+version.json file held in the collection&#x27;s root directory. As of v2.3 this file is no longer read, written or updated. Instead the collection level methods will explicitly set the 
+versioning type at the store level. This means one locations holds versioning state, the collection.json. This simplified the codebase and appears to be backward compatible.
 
 ### Authors
 

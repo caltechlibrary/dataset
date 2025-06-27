@@ -39,28 +39,29 @@ SUPPORTED VERBS
 - read, retrieves a document from the collection writing it standard out
 - update, updates a document in the collection
 - delete, removes a document from the collection
-- list, returns a list of keys in the collection
-- codemeta, copies metadata a codemeta file and updates the collections metadata
+- keys, returns a list of keys in the collection
+- has-key, returnss true if key if found in collection, false otherwise
+- codemeta (deprecated), copies metadata a codemeta file and updates the collections metadata
 - info, returns the metadata associated with collection
-- import, imports another collecting into the current one
-- export, exports the collection into another collection
+- import (deprecated), imports another collecting into the current one
+- export (deprecated), exports the collection into another collection
 - attach, attaches a document to a JSON object record
 - attachments, lists the attachments associated with a JSON object record
 - retrieve, creates a copy local of an attachment in a JSON record
 - prune, removes and attachment from a JSON record
-- frames, lists the frames defined in a collection
-- frame, will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
-- reframe, will recreate a frame using its existing definition but replacing objects based on a new set of keys provided
-- refresh, will update all objects currently in the frame based on the current state of the collection. Any keys deleted in the collection will be delete from the frame.
-- delete-frame, will remove a frame from the collection
-- has-frame, will return true (exit 0) if frame exists, false (exit 1) if not
+- frames (deprecated), lists the frames defined in a collection
+- frame (deprecated), will add a data frame to a collection if a definition is provided or return an existing frame if just the frame name is provided
+- reframe (deprecated), will recreate a frame using its existing definition but replacing objects based on a new set of keys provided
+- refresh (deprecated), will update all objects currently in the frame based on the current state of the collection. Any keys deleted in the collection will be delete from the frame.
+- delete-frame (deprecated), will remove a frame from the collection
+- has-frame (deprecated), will return true (exit 0) if frame exists, false (exit 1) if not
 - attachments, will list any attachments for a JSON document
 - attach, will add an attachment to a JSON document
 - retrieve, will copy out the attachment to a JSON document 
   into the current directory 
 - prune, will remove an attachment from the JSON document
 - versions, will list the versions known for a JSON document if versioning is enabled for collection
-- read-version, will return a specific version of a JSON document if versioning is enabled for collection
+- read-version (deprecated), will return a specific version of a JSON document if versioning is enabled for collection
 - versioning,  will set the versioning of a collection, can be "none", "major", "minor", or "patch"
 
 A word about "keys". {app_name} uses the concept of key/values for
@@ -315,14 +316,14 @@ return the top N number of those keys.
 `
 
 	cliHasKey = `
-haskey
+has-key
 ======
 
 Syntax
 ------
 
 ~~~shell
-    {app_name} [OPTIONS] haskey COLLECTION_NAME KEY_TO_CHECK_FOR
+    {app_name} [OPTIONS] has-key COLLECTION_NAME KEY_TO_CHECK_FOR
 ~~~
 
 Description
@@ -335,14 +336,16 @@ Usage
 -----
 
 ~~~shell
-    {app_name} haskey people.ds '0000-0003-0900-6903'
-    {app_name} haskey people.ds r1
+    {app_name} has-key people.ds '0000-0003-0900-6903'
+    {app_name} has-key people.ds r1
 ~~~
 
 `
 	cliUpdatedKeys = `
 updated-keys
 ============
+
+(deprecated)
 
 Syntax
 ------
@@ -549,6 +552,8 @@ collection.
 clone
 =====
 
+(deprecated)
+
 Clone a collection from a list of keys into a new collection. If the
 ` + "`" + `-all` + "`" + ` option is used then the whole collection will be
 clone and a list of keys is not required.
@@ -571,6 +576,8 @@ operating system's version of copying.
 clone-sample
 ============
 
+(deprecated)
+
 Clone a collection into a sample size based training collection 
 and test collection.
 
@@ -587,6 +594,8 @@ based on a training sample size of 1000.
 frames
 ======
 
+(deprecated)
+
 Lists the frames available in a collection. In this example our
 collection name is ` + "`pubs.ds`" + `.
 
@@ -599,6 +608,8 @@ collection name is ` + "`pubs.ds`" + `.
 	cliFrame = `
 frame
 =====
+
+(deprecated)
 
 This command will define a data frame or return the contents and
 metadata of a defined frame. To define a new frame you need to provide a
@@ -639,6 +650,8 @@ This allows you to create convenient names for otherwise deep dot paths.
 frame-objects
 =============
 
+(deprecated)
+
 Usage
 -----
 
@@ -672,6 +685,8 @@ called "photos.ds" I would do the following (will be using the
 reframe
 =======
 
+(deprecated)
+
 This command replace the current keys/object list in a frame based
 on the frame's current definition.
 
@@ -691,6 +706,8 @@ the same thing but is taking a filename to retrieve the list of keys.
 refresh
 =======
 
+(deprecated)
+
 Update the objects in a frame based on it's current set of keys and definition.  
 
 NOTE: If any keys have been deleted from the collection then the object
@@ -708,6 +725,8 @@ In the following example the frame name is \"f1\", the collection is
 	cliDeleteFrame = `
 delete-frame
 ============
+
+(deprecated)
 
 This is used to removed a frame from a collection.
 
@@ -862,6 +881,8 @@ the second all attachments are removed. Our collection name is "data.ds"
 sample
 ======
 
+(deprecated)
+
 {app_name} supports the concept of generating a random sample
 of keys from a collection. To do this you need to use the ` + "`sample`" + `
 verb. ` + "`sample`" + ` expects the collection name followed by an
@@ -879,6 +900,8 @@ for the collection.
 frame-def
 =========
 
+(deprecated)
+
 {app_name} supports the concept of frames and the "frame-def" verb
 lets you review the definition of an existing frame.
 
@@ -892,6 +915,8 @@ lets you review the definition of an existing frame.
 has-frame
 =========
 
+(deprecated)
+
 {app_name} supports the concept of frames and the "has-frame" verb
 lets you check if a frame exists.
 
@@ -904,6 +929,8 @@ lets you check if a frame exists.
 	cliCheck = `
 check
 =====
+
+(deprecated)
 
 syntax
 ------
@@ -937,6 +964,8 @@ will become inaccurate.
 repair
 ======
 
+(deprecated)
+
 Syntax
 ------
 
@@ -965,6 +994,8 @@ Our collection name is "MyCollectiond.ds".
 codemeta
 ========
 
+(deprecated)
+
 The command imports a codemeta.json file into the collection replacing
 it's existing metadata.
 
@@ -980,6 +1011,8 @@ Without the codemeta filename it returns the existing codemeta values.
 frame-keys
 ==========
 
+(deprecated)
+
 This returns a list of keys associated with the frame. Keys are
 returned one per line.
 
@@ -993,6 +1026,8 @@ returned one per line.
 	cliMigrate = `
 migrate
 =======
+
+(deprecated)
 
 This will migrate content from a v1 dataset collection to a
 v2 dataset collection.  Before migrating you need to create an
@@ -1012,6 +1047,8 @@ migrated, just the JSON documents.
 # NAME
 
 model
+
+(experimental)
 
 # SYNOPSIS
 
@@ -1233,6 +1270,8 @@ Example
 
 cliJoin = `join
 ============
+
+(deprecated)
 
 This will take a collection name, key and new JSON expression.
 the object in the collection matching the key will be "joined"
