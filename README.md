@@ -67,6 +67,7 @@ Features
 --------
 
 [dataset](docs/dataset.md) supports
+
 - Collection level
   - [Initialize](docs/init.md) a new dataset collection
   - Codemeta file support for describing the collection contents
@@ -79,7 +80,7 @@ Features
   - [update](docs/update.md)
   - [delete](docs/delete.md)
   - [keys](docs/keys.md)
-  - [has-key](docs/has-key.md)
+  - [has-key](docs/haskey.md)
   - Documents as attachments
     - [attachments](docs/attachments.md) (list)
     - [attach](docs/attach.md) (create/update)
@@ -158,7 +159,7 @@ Authors and history
 Releases
 --------
 
-Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64) and Raspberry Pi OS (ARM7).
+Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64) and Raspberry Pi OS. 
 
 [github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 
