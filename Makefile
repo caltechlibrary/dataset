@@ -212,7 +212,7 @@ update_version:
 	codemeta2cff
 
 release: .FORCE clean build version.go CITATION.cff man website distribute_docs dist/Linux-x86_64 dist/Linux-aarch64 dist/Linux-armv7l dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64
-	./release.bash
+	@printf "\nReady to run\n\n\t./release.bash\n\n"
 
 status:
 	git status

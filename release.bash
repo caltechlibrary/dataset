@@ -1,5 +1,5 @@
 #!/bin/bash
-# generated with CMTools 2.2.7 b3036dd 2025-06-02
+# generated with CMTools 2.3.0 f9fc2d1
 
 #
 # Release script for dataset on GitHub using gh cli.
