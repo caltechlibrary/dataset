@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2016-09-12",
-  "dateModified": "2025-06-10",
-  "datePublished": "2025-06-10",
+  "dateModified": "2025-06-27",
+  "datePublished": "2025-06-27",
   "description": "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.\n\nIt is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.\n\nThe Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.",
   "funder": [
     {
@@ -81,11 +81,11 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.2.7",
+  "version": "2.3.0",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "This release has focused on cleanup, bug fixes and adding a redirect feature to support development without requiring JavaScript browser side.\n\n- Fixed issue #138, where SQLite3 updated times where not set.\n- Fixed issue #144, Fix issue with spurious form validation without a defined data model.\n- Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded.\n- Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.",
+  "releaseNotes": "The object versioning problem identified in issue #149 persisted after the release of v2.2.8. The resulting mitigation steps before the planned v3 release of data is to ignore the \nversion.json file held in the collection's root directory. As of v2.3 this file is no longer read, written or updated. Instead the collection level methods will explicitly set the \nversioning type at the store level. This means one locations holds versioning state, the collection.json. This simplified the codebase and appears to be backward compatible.",
   "copyrightYear": 2025,
   "copyrightHolder": "California Institute of Technology"
 }

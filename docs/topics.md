@@ -29,7 +29,7 @@ Topics A-Z
 - [create](create.md)
 - [delete](delete.md), [delete end point](delete-endpoint.md)
 - [dump](dump.md) (new in v2.2)
-- [has-key](haskey.md)
+- [haskey](haskey.md)
 - [init](init.md)
 - [keys](keys.md)
 - [load](load.md) (new in v2.2)

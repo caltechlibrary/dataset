@@ -816,10 +816,13 @@ func TestDataset(t *testing.T) {
 		t.FailNow()
 	}
 
+	// NOTE: after v2.27 key lists with 1 or more keys get a trailing newline.
+	// See issue #150 enhancement request.
 	expectedB = []byte(`1
 2
 3
-4`)
+4
+`)
 	args = []string{"keys", cName}
 	if err := RunCLI(in, out, eout, args); err != nil {
 		t.Errorf("ran %q, got error %s", strings.Join(args, " "), err)

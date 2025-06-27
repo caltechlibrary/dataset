@@ -4,7 +4,7 @@ Dataset Project
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
 
 It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
 
@@ -67,6 +67,7 @@ Features
 --------
 
 [dataset](docs/dataset.md) supports
+
 - Collection level
   - [Initialize](docs/init.md) a new dataset collection
   - Codemeta file support for describing the collection contents
@@ -79,7 +80,7 @@ Features
   - [update](docs/update.md)
   - [delete](docs/delete.md)
   - [keys](docs/keys.md)
-  - [has-key](docs/has-key.md)
+  - [has-key](docs/haskey.md)
   - Documents as attachments
     - [attachments](docs/attachments.md) (list)
     - [attach](docs/attach.md) (create/update)
@@ -158,7 +159,7 @@ Authors and history
 Releases
 --------
 
-Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64) and Raspberry Pi OS (ARM7).
+Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64) and Raspberry Pi OS. 
 
 [github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 

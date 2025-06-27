@@ -148,28 +148,10 @@ func Open(name string) (*Collection, error) {
 	switch c.StoreType {
 	case PTSTORE:
 		c.PTStore, err = PTStoreOpen(c.workPath, c.DsnURI)
-		switch c.Versioning {
-		case "major":
-			c.PTStore.SetVersioning(Major)
-		case "minor":
-			c.PTStore.SetVersioning(Minor)
-		case "patch":
-			c.PTStore.SetVersioning(Patch)
-		default:
-			c.PTStore.SetVersioning(None)
-		}
+		c.setStoreVersioning(c.Versioning)
 	case SQLSTORE:
 		c.SQLStore, err = SQLStoreOpen(c.workPath, c.DsnURI)
-		switch c.Versioning {
-		case "major":
-			c.SQLStore.SetVersioning(Major)
-		case "minor":
-			c.SQLStore.SetVersioning(Minor)
-		case "patch":
-			c.SQLStore.SetVersioning(Patch)
-		default:
-			c.SQLStore.SetVersioning(None)
-		}
+		c.setStoreVersioning(c.Versioning)
 	default:
 		return nil, fmt.Errorf("failed to open %s, %q storage type not supported", name, c.StoreType)
 	}
@@ -230,6 +212,34 @@ func (c *Collection) WorkPath() string {
 	return c.workPath
 }
 
+// setStoreVersioning take a collection and set the versioning attributes for the type of store.
+func (c *Collection) setStoreVersioning(versioning string) {
+	// Figure out which store we're using and make sure I set the value in the store.
+	if c.StoreType == PTSTORE {
+		switch c.Versioning {
+		case "major":
+			c.PTStore.SetVersioning(Major)
+		case "minor":
+			c.PTStore.SetVersioning(Minor)
+		case "patch":
+			c.PTStore.SetVersioning(Patch)
+		default:
+			c.PTStore.SetVersioning(None)
+		}
+	} else if c.StoreType == SQLSTORE {
+		switch c.Versioning {
+		case "major":
+			c.SQLStore.SetVersioning(Major)
+		case "minor":
+			c.SQLStore.SetVersioning(Minor)
+		case "patch":
+			c.SQLStore.SetVersioning(Patch)
+		default:
+			c.SQLStore.SetVersioning(None)
+		}
+	}
+}
+
 // SetVersioning sets the versioning on a collection. The version string
 // can be "major", "minor", "patch". Any other value (e.g. "", "off", "none")
 // will turn off versioning for the collection.
@@ -244,6 +254,8 @@ func (c *Collection) SetVersioning(versioning string) error {
 	default:
 		c.Versioning = ""
 	}
+	c.setStoreVersioning(c.Versioning)
+	// Update the collections.json file.
 	colName := path.Join(c.workPath, "collection.json")
 	src, err := JSONMarshalIndent(c, "", "    ")
 	if err != nil {

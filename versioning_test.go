@@ -84,10 +84,17 @@ func TestSQLStoreVersioning(t *testing.T) {
 		t.Errorf("failed to set versioning to major for %q, %s", cName, err)
 		t.FailNow()
 	}
+	if c.SQLStore.Versioning != Major {
+		t.Errorf("Expected c.SQLStore.Versioning to be %d, got %d", Major, c.SQLStore.Versioning)
+		t.FailNow()
+
+	}
+	/*
 	if _, err := os.Stat(path.Join(cName, "versioning.json")); os.IsNotExist(err) {
 		t.Errorf("Missing versioning.json from %q", cName)
 		t.FailNow()
 	}
+	*/
 	c.Close()
 	c, err = Open(cName)
 	if err != nil {

@@ -179,7 +179,7 @@ func sameObjectSrc(expected []byte, got []byte) bool {
 }
 
 func clientTestVersion(t *testing.T, settings *Settings) {
-	fmt.Printf("starting client test verisons\n")
+	fmt.Printf("starting client test versions\n")
 	// Run through a set of the
 	u := fmt.Sprintf("http://%s/api/version", settings.Host)
 	res, err := http.Get(u)

@@ -24,20 +24,15 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.2.7">dataset 2.2.7</h2>
-<p>This release has focused on cleanup, bug fixes and adding a redirect
-feature to support development without requiring JavaScript browser
-side.</p>
-<ul>
-<li>Fixed issue #138, where SQLite3 updated times where not set.</li>
-<li>Fixed issue #144, Fix issue with spurious form validation without a
-defined data model.</li>
-<li>Fixed issue #145, added support for create_success, and create_error
-which hold redirects for success and failure on POST that are
-URLencoded.</li>
-<li>Fixed issue #146, path handling to collection name caused me to
-mis-caculate the table name.</li>
-</ul>
+<h2 id="dataset-2.3.0">dataset 2.3.0</h2>
+<p>The object versioning problem identified in issue #149 persisted
+after the release of v2.2.8. The resulting mitigation steps before the
+planned v3 release of data is to ignore the version.json file held in
+the collection's root directory. As of v2.3 this file is no longer read,
+written or updated. Instead the collection level methods will explicitly
+set the versioning type at the store level. This means one locations
+holds versioning state, the collection.json. This simplified the
+codebase and appears to be backward compatible.</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"

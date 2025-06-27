@@ -23,7 +23,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.7
+version: 2.3.0
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -36,20 +36,17 @@ keywords:
   - software
   - json
 
-date_released: 2025-06-10
+date_released: 2025-06-27
 ---
 
 About this software
 ===================
 
-## dataset 2.2.7
+## dataset 2.3.0
 
-This release has focused on cleanup, bug fixes and adding a redirect feature to support development without requiring JavaScript browser side.
-
-- Fixed issue #138, where SQLite3 updated times where not set.
-- Fixed issue #144, Fix issue with spurious form validation without a defined data model.
-- Fixed issue #145, added support for create_success, and create_error which hold redirects for success and failure on POST that are URLencoded.
-- Fixed issue #146, path handling to collection name caused me to mis-caculate the table name.
+The object versioning problem identified in issue #149 persisted after the release of v2.2.8. The resulting mitigation steps before the planned v3 release of data is to ignore the 
+version.json file held in the collection&#x27;s root directory. As of v2.3 this file is no longer read, written or updated. Instead the collection level methods will explicitly set the 
+versioning type at the store level. This means one locations holds versioning state, the collection.json. This simplified the codebase and appears to be backward compatible.
 
 ### Authors
 

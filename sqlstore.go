@@ -18,9 +18,7 @@ package dataset
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -53,13 +51,13 @@ const (
 	MySQLDriverName = "mysql"
 
 	// None means versioning is turned off for collection
-	None = iota
+	None = 0
 	// Major means increment the major semver value on creation or update
-	Major
+	Major = 1
 	// Minor means increment the minor semver value on creation or update
-	Minor
+	Minor = 2
 	// Patach means increment the patch semver value on creation or update
-	Patch
+	Patch = 3
 
 	versionPrefix = "_v_"
 )
@@ -284,52 +282,6 @@ func (store *SQLStore) saveNewVersion(key string, src []byte) error {
 	return nil
 }
 
-// saveVersioning() is a help function to store current versioning settings.
-func (store *SQLStore) saveVersioning() error {
-	versioningName := path.Join(store.WorkPath, "versioning.json")
-	src := []byte(fmt.Sprintf(`{"versioning": %d}`, store.Versioning))
-	if _, err := os.Stat(store.WorkPath); os.IsNotExist(err) {
-		os.MkdirAll(store.WorkPath, 775)
-	}
-	if err := ioutil.WriteFile(versioningName, src, 0664); err != nil {
-		return err
-	}
-	return nil
-}
-
-// getVersioning() reads the versioning information for collection
-// and returns the integer value it finds.
-func (store *SQLStore) getVersioning() error {
-	versioningName := path.Join(store.WorkPath, "versioning.json")
-	if _, err := os.Stat(versioningName); os.IsNotExist(err) {
-		store.Versioning = None
-		return nil
-	}
-	src, err := ioutil.ReadFile(versioningName)
-	if err != nil {
-		return err
-	}
-	m := map[string]int{}
-	if err := json.Unmarshal(src, &m); err != nil {
-		return err
-	}
-	if val, ok := m["versioning"]; ok {
-		switch val {
-		case None:
-			store.Versioning = None
-		case Major:
-			store.Versioning = Major
-		case Minor:
-			store.Versioning = Minor
-		case Patch:
-			store.Versioning = Patch
-		default:
-			store.Versioning = None
-			return fmt.Errorf("Unknown/unsupported version type")
-		}
-	}
-	return nil
-}
 
 // SetVersioning sets versioning to Major, Minor, Patch or None
 // If versioning is set to Major, Minor or Patch a table in the
@@ -345,7 +297,7 @@ func (store *SQLStore) SetVersioning(setting int) error {
 	case Patch:
 		store.Versioning = setting
 	default:
-		return fmt.Errorf("Unknown/unsupported version type")
+		store.Versioning = None
 	}
 	if store.Versioning != None {
 		var (
@@ -384,9 +336,6 @@ func (store *SQLStore) SetVersioning(setting int) error {
 		if _, err := store.db.Exec(stmt); err != nil {
 			return fmt.Errorf("Failed to create version table %q, %s", versionTable, err)
 		}
-	}
-	if err := store.saveVersioning(); err != nil {
-		return err
 	}
 	return nil
 }
@@ -443,10 +392,6 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 	store.db.SetConnMaxLifetime(0)
 	store.db.SetMaxIdleConns(50)
 	store.db.SetMaxOpenConns(50)
-
-	if err := store.getVersioning(); err != nil {
-		return store, err
-	}
 	return store, err
 }
 
