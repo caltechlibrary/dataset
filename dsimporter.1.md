@@ -1,4 +1,4 @@
-%dsimporter(1) dataset user manual | version 2.2.8 4da7558
+%dsimporter(1) dataset user manual | version 2.3.0 c421d1c
 % R. S. Doiel and Tom Morrell
 % 2025-06-26
 

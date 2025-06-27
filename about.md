@@ -23,7 +23,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.2.8
+version: 2.3.0
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -42,12 +42,11 @@ date_released: 2025-06-26
 About this software
 ===================
 
-## dataset 2.2.8
+## dataset 2.3.0
 
-This release has focused on cleanup, bug fixes and documentation revisions.
+The object versioning problem identified in issue #149 persisted after the release of v2.2.8.  The root problem is the versioning.json document is not reliable given the sequences of opartions that cause it to come into existence or be updated. This lead to instability issues with v2 versioning.  In v2.3 the versioning.json file is being ignored and nolonger is saved. Instead the collection.go was updated to explicitly set the versioning state when a collection is open. This means the collections.json reflects the true state of versioning not the inferred state.
 
-- Fixes and mitigations for issues #148 and #149
-- Implemented feature request issue #150
+The result of changes simplifies the codebase some. It appears to be backward compatible while maintaining the flawed semver approach to versioning JSON documents. In v3 versioning will be automatic and use a simple incrementing integer value.
 
 ### Authors
 
