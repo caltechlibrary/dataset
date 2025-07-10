@@ -41,6 +41,8 @@ func main() {
 	appName := path.Base(os.Args[0])
 	version, releaseDate, releaseHash, licenseText  := dataset.Version, dataset.ReleaseDate, dataset.ReleaseHash, dataset.LicenseText
 	helpText, apiText, serviceText, yamlText := dataset.DatasetdHelpText, dataset.DatasetdApiText, dataset.DatasetdServiceText, dataset.DatasetdYAMLText
+	dsqueryHelpText, dsimporterHelpText := dataset.DSQueryHelpText, dataset.DSImporterHelpText
+	datasetHelpText := dataset.DatasetHelpText
 	fmtHelp := dataset.FmtHelp
 
 	// Standard Options
@@ -63,6 +65,16 @@ func main() {
 			topic = args[0];
 		}
 		switch topic {
+		case "dsquery":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsqueryHelpText, "dsquery", version, releaseDate, releaseHash))
+		case "query":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsqueryHelpText, "dsquery", version, releaseDate, releaseHash))
+		case "dsimporter":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsimporterHelpText, "dsimporter", version, releaseDate, releaseHash))
+		case "importer":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsimporterHelpText, "dsimporter", version, releaseDate, releaseHash))
+		case "dataset":
+			fmt.Fprintf(out, "%s\n", fmtHelp(datasetHelpText, "dataset", version, releaseDate, releaseHash))
 		case "api":
 			fmt.Fprintf(out, "%s\n", fmtHelp(apiText, appName, version, releaseDate, releaseHash))	
 		case "service":

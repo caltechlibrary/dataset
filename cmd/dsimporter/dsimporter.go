@@ -44,77 +44,6 @@ import (
 	"github.com/caltechlibrary/dataset/v2"
 )
 
-var (
-	helpText = `%{app_name}(1) dataset user manual | version {version} {release_hash}
-% R. S. Doiel and Tom Morrell
-% {release_date}
-
-# NAME
-
-{app_name}
-
-# SYNOPSIS
-
-{app_name} [OPTIONS] C_NAME CSV_FILENAME KEY_COLUMN
-
-# DESCRIPTION
-
-__{app_name}__ is a tool to import CSV content into a dataset collection
-where the column headings become the attribute names and the row values
-become the attribute values.
-
-# PARAMETERS
-
-C_NAME
-: If harvesting the dataset collection name to harvest the records to.
-
-CSV_FILENAME
-: The name of the CSV file to import
-
-KEY_COLUMN
-: The column name to use the they object key. If none is provided then
-the first column is used as the object key. Keys values must be unique.
-
-
-# OPTIONS
-
--help
-: display help
-
--license
-: display license
-
--version
-: display version
-
--comma
-: Set column delimiter
-
--comment
-: Set row comment delimiter
-
--overwrite
-: Overwrite objects on key collision
-
-# EXAMPLES
-
-Import a file with three columns
-
-- item_code
-- title
-- location
-
-The "item_code" is unique for each row. The data is stored
-in a file called "books.csv". We are importing the CSV file
-into a collections called. "shelves.ds"
-
-~~~
-{app_name} shelves.ds books.csv "item_code"
-~~~
-
-`
-)
-
 func main() {
 	appName := path.Base(os.Args[0])
 	// NOTE: The following will be set when version.go is generated
@@ -124,7 +53,10 @@ func main() {
 	fmtHelp := dataset.FmtHelp
 	overwrite, comma, comment := false, "", ""
 	lazyQuotes, trimSpace := false, false
-
+	dsqueryHelpText, helpText := dataset.DSQueryHelpText, dataset.DSImporterHelpText
+	datasetdHelpText, apiText, serviceText, yamlText := dataset.DatasetdHelpText, dataset.DatasetdApiText, dataset.DatasetdServiceText, dataset.DatasetdYAMLText
+	datasetHelpText := dataset.DatasetHelpText
+	
 	showHelp, showVersion, showLicense := false, false, false
 	flag.BoolVar(&showHelp, "help", false, "display help")
 	flag.BoolVar(&showVersion, "version", false, "display version")
@@ -137,8 +69,36 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 
+	in := os.Stdin
+	out := os.Stdout
+	eout := os.Stderr
+
 	if showHelp {
-		fmt.Fprintf(os.Stdout, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
+		//NOTE: handle help for topic request
+		topic := "help"
+		if (len(args) > 0) {
+			topic = args[0];
+		}
+		switch topic {
+		case "dsquery":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsqueryHelpText, "dsquery", version, releaseDate, releaseHash))
+		case "query":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsqueryHelpText, "dsquery", version, releaseDate, releaseHash))
+		case "dataset":
+			fmt.Fprintf(out, "%s\n", fmtHelp(datasetHelpText, "datasetd", version, releaseDate, releaseHash))
+		case "datasetd":
+			fmt.Fprintf(out, "%s\n", fmtHelp(datasetdHelpText, "datasetd", version, releaseDate, releaseHash))
+		case "api":
+			fmt.Fprintf(out, "%s\n", fmtHelp(apiText, "datasetd", version, releaseDate, releaseHash))	
+		case "service":
+			fmt.Fprintf(out, "%s\n", fmtHelp(serviceText, "datasetd", version, releaseDate, releaseHash))	
+		case "yaml":
+			fmt.Fprintf(out, "%s\n", fmtHelp(yamlText, "datasetd", version, releaseDate, releaseHash))	
+		case "config":
+			fmt.Fprintf(out, "%s\n", fmtHelp(yamlText, "datasetd", version, releaseDate, releaseHash))	
+		default:
+			fmt.Fprintf(os.Stdout, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
+		}
 		os.Exit(0)
 	}
 	if showVersion {
@@ -156,9 +116,6 @@ func main() {
 
 	// Setup our POSIX IO options
 	var err error
-	in := os.Stdin
-	out := os.Stdout
-	eout := os.Stderr
 
 	// Create a DSQuery object and evaluate the command line options
 	app := new(dataset.DSImport)

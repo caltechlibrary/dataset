@@ -50,7 +50,7 @@ version.go: .FORCE
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/$@.go
-	@./bin/$@ -help >$@.1.md
+	./bin/$@ -help >$@.1.md
 
 man: $(MAN_PAGES) $(MAN_PAGES_LIB) $(MAN_PAGES_MISC)
 
@@ -58,7 +58,10 @@ $(MAN_PAGES): .FORCE
 	mkdir -p man/man1
 	pandoc $@.md --from markdown --to man -s >man/man1/$@
 
-$(MAN_PAGES_MISC): .FORCE
+$(MAN_PAGES_MISC): $(PROGRAMS) .FORCE
+	@./bin/datasetd --help api >datasetd_api.5.md
+	@./bin/datasetd --help service >datasetd_service.5.md
+	@./bin/datasetd --help yaml >datasetd_yaml.5.md
 	mkdir -p man/man5
 	pandoc $@.md --from markdown --to man -s >man/man5/$@
 

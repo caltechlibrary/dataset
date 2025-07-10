@@ -707,4 +707,197 @@ versions
 
 `
 
+	DSQueryHelpText = `%{app_name}(1) dataset user manual | version {version} {release_hash}
+% R. S. Doiel and Tom Morrell
+% {release_date}
+
+# NAME
+
+{app_name}
+
+# SYNOPSIS
+
+{app_name} [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+
+# DESCRIPTION
+
+__{app_name}__ is a tool to support SQL queries of dataset collections. 
+Pairtree based collections should be index before trying to query them
+(see '-index' option below). Pairtree collections use the SQLite 3
+dialect of SQL for querying.  For collections using a SQL storage
+engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect reflects
+the SQL of the storage engine.
+
+The schema is the same for all storage engines.  The scheme for the JSON
+stored documents have a four column scheme.  The columns are "_key", 
+"created", "updated" and "src". "_key" is a string (aka VARCHAR),
+"created" and "updated" are timestamps while "src" is a JSON column holding
+the JSON document. The table name reflects the collection
+name without the ".ds" extension (e.g. data.ds is stored in a database called
+data having a table also called data).
+
+The output of __{app_name}__ is a JSON array of objects. The order of the
+objects is determined by the your SQL statement and SQL engine. There
+is an option to generate a 2D grid of values in JSON, CSV or YAML formats.
+See OPTIONS for details.
+
+# PARAMETERS
+
+C_NAME
+: If harvesting the dataset collection name to harvest the records to.
+
+SQL_STATEMENT
+: The SQL statement should conform to the SQL dialect used for the
+JSON store for the JSON store (e.g.  Postgres, MySQL and SQLite 3).
+The SELECT clause should return a single JSON object type per row.
+__{app_name}__ returns an JSON array of JSON objects returned
+by the SQL query.
+
+PARAMS
+: Is optional, it is any values you want to pass to the SQL_STATEMENT.
+
+# SQL Store Scheme
+
+_key
+: The key or id used to identify the JSON documented stored.
+
+src
+: This is a JSON column holding the JSON document
+
+created
+: The date the JSON document was created in the table
+
+updated
+: The date the JSON document was updated
+
+
+# OPTIONS
+
+-help
+: display help
+
+-license
+: display license
+
+-version
+: display version
+
+-pretty
+: pretty print the resulting JSON array
+
+-sql SQL_FILENAME
+: read SQL from a file. If filename is "-" then read SQL from standard input.
+
+-grid STRING_OF_ATTRIBUTE_NAMES
+: Returns list as a 2D grid of values. This options requires a comma delimited
+string of attribute names for the outer object to include in grid output. It
+can be combined with -pretty options.
+
+-csv STRING_OF_ATTRIBUTE_NAMES
+: Like -grid this takes our list of dataset objects and a list of attribute
+names but rather than create a 2D JSON array of values it creates CSV 
+representation with the first row as the attribute names.
+
+-yaml STRING_OF_ATTRIBUTE_NAMES
+: Like -grid this takes our list of dataset objects and a list of attribute
+names but rather than create a 2D JSON of values it creates YAML 
+representation.
+
+-index
+: This will create a SQLite3 index for a collection. This enables {app_name}
+to query pairtree collections using SQLite3 SQL dialect just as it would for
+SQL storage collections (i.e. don't use with postgres, mysql or sqlite based
+dataset collections. It is not needed for them). Note the index is always
+built before executing the SQL statement.
+
+# EXAMPLES
+
+Generate a list of JSON objects with the ` + "`" + `_key` + "`" + ` value
+merged with the object stored as the ` + "`" + `._Key` + "`" + ` attribute.
+The colllection name "data.ds" which is implemented using Postgres
+as the JSON store. (note: in Postgres the ` + "`" + `||` + "`" + ` is very helpful).
+
+~~~
+{app_name} data.ds "SELECT jsonb_build_object('_Key', _key)::jsonb || src::jsonb FROM data"
+~~~
+
+In this example we're returning the "src" in our collection by querying
+for a "id" attribute in the "src" column. The id is passed in as an attribute
+using the Postgres positional notatation in the statement.
+
+~~~
+{app_name} data.ds "SELECT src FROM data WHERE src->>'id' = $1 LIMIT 1" "xx103-3stt9"
+~~~
+
+`
+
+	DSImporterHelpText = `%{app_name}(1) dataset user manual | version {version} {release_hash}
+% R. S. Doiel and Tom Morrell
+% {release_date}
+
+# NAME
+
+{app_name}
+
+# SYNOPSIS
+
+{app_name} [OPTIONS] C_NAME CSV_FILENAME KEY_COLUMN
+
+# DESCRIPTION
+
+__{app_name}__ is a tool to import CSV content into a dataset collection
+where the column headings become the attribute names and the row values
+become the attribute values.
+
+# PARAMETERS
+
+C_NAME
+: If harvesting the dataset collection name to harvest the records to.
+
+CSV_FILENAME
+: The name of the CSV file to import
+
+KEY_COLUMN
+: The column name to use the they object key. If none is provided then
+the first column is used as the object key. Keys values must be unique.
+
+
+# OPTIONS
+
+-help
+: display help
+
+-license
+: display license
+
+-version
+: display version
+
+-comma
+: Set column delimiter
+
+-comment
+: Set row comment delimiter
+
+-overwrite
+: Overwrite objects on key collision
+
+# EXAMPLES
+
+Import a file with three columns
+
+- item_code
+- title
+- location
+
+The "item_code" is unique for each row. The data is stored
+in a file called "books.csv". We are importing the CSV file
+into a collections called. "shelves.ds"
+
+~~~
+{app_name} shelves.ds books.csv "item_code"
+~~~
+
+`
+
 )

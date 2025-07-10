@@ -23,7 +23,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.3.0
+version: 2.3.1
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -36,17 +36,26 @@ keywords:
   - software
   - json
 
-date_released: 2025-06-27
+date_released: 2025-07-10
 ---
 
 About this software
 ===================
 
-## dataset 2.3.0
+## dataset 2.3.1
 
-The object versioning problem identified in issue #149 persisted after the release of v2.2.8. The resulting mitigation steps before the planned v3 release of data is to ignore the 
-version.json file held in the collection&#x27;s root directory. As of v2.3 this file is no longer read, written or updated. Instead the collection level methods will explicitly set the 
-versioning type at the store level. This means one locations holds versioning state, the collection.json. This simplified the codebase and appears to be backward compatible.
+Issue #152 has started. The frames, sample and clone help has been removed as those features are depreciated. The frames supprt was remove from datasetd. Help is being reorganizaed. api_doc.go and api_cmd.go was removed as it was dead code with changes in help implementaiton. 
+
+The &#x60;-help&#x60; option can pull up help on a topic by providing a keyword as a separate parameter. This let&#x27;s you pull up help on the related commands. 
+
+Example:
+
+~~~shell
+dataset -help api
+dastaet -help dsquery
+~~~
+
+Help text is now maintain inside a single file, helptext.go.
 
 ### Authors
 

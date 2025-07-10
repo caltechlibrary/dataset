@@ -90,8 +90,8 @@ API to.
 <dt>query</dt>
 <dd>
 (optional) is map of query name to SQL statement. A POST is used to
-access the query (i.e. a POST To the path
-“<code>/api/&lt;COLLECTION_NAME&gt;/query/&lt;QUERY_NAME&gt;</code>”)
+access the query (i.e. a GET or POST To the path
+“<code>/api/&lt;COLLECTION_NAME&gt;/query/&lt;QUERY_NAME&gt;/&lt;FIELD_NAMES&gt;</code>”)
 The parameters submitted in the post are passed to the SQL statement.
 NOTE: Only dataset collections using a SQL store are supported. The SQL
 needs to conform the SQL dialect of the store being used (e.g. MySQL,
@@ -218,9 +218,14 @@ deleting it.</p>
 <pre><code>    curl http://localhost:8485/api/t1.ds/object/one</code></pre>
 <p>List the keys and you should see that “one” is not longer there.</p>
 <pre><code>    curl http://localhost:8485/api/t1.ds/keys</code></pre>
+<p>You can run a query named ‘browse’ that is defined in the YAML
+configuration like this.</p>
+<pre><code>    curl http://localhost:8485/api/t1.ds/query/browse</code></pre>
+<p>or</p>
+<pre><code>    curl -X POST -H &#39;Content-type:application/json&#39; -d &#39;{}&#39; http://localhost:8485/api/t1.ds/query/browse</code></pre>
 <p>In the shell session where datasetd is running press “ctr-C” to
 terminate the service.</p>
-<p>datasetd 2.3.0</p>
+<p>datasetd 2.3.1</p>
 </section>
 
 <footer>

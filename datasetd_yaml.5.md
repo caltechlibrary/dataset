@@ -1,6 +1,6 @@
-%dataset(5) user manual | version 2.1.12 cfcaeeb
+%datasetd(5) user manual | version 2.3.1 e448f12
 % R. S. Doiel and Tom Morrell
-% 2024-06-12
+% 2025-07-10
 
 
 # datasetd YAML configuration
@@ -55,7 +55,6 @@ update
 delete
 : (optional, default false) If true allow obejct to be deleted via a DELETE to `/api/<COLLECTION_NAME>/object/<KEY>`
 
-
 attachments
 : (optional, default false) list object attachments through a GET to the web API.
 
@@ -67,12 +66,6 @@ retrieve
 
 prune
 : (optional, default false) Allow removing attachments through a DELETE to the web API.
-
-frame\_read
-: (optional, default false) Allow reading frames from a GET to the web API.
-
-frame\_write
-: (optional, default false) Allow writing new frames through a POST to the web API.
 
 versions
 : (optional, default false) Allow setting versioning of attachments via POST to the web API.

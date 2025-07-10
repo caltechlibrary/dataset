@@ -43,6 +43,7 @@ func main() {
 	helpText := dataset.DatasetHelpText
 	version, releaseDate, releaseHash, licenseText  := dataset.Version, dataset.ReleaseDate, dataset.ReleaseHash, dataset.LicenseText
 	datasetdHelpText, apiText, serviceText, yamlText := dataset.DatasetdHelpText, dataset.DatasetdApiText, dataset.DatasetdServiceText, dataset.DatasetdYAMLText
+	dsqueryHelpText, dsimporterHelpText := dataset.DSQueryHelpText, dataset.DSImporterHelpText
 	fmtHelp := dataset.FmtHelp
 
 	// Standard Options
@@ -65,16 +66,24 @@ func main() {
 			topic = args[0];
 		}
 		switch topic {
+		case "dsquery":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsqueryHelpText, "dsquery", version, releaseDate, releaseHash))
+		case "query":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsqueryHelpText, "dsquery", version, releaseDate, releaseHash))
+		case "dsimporter":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsimporterHelpText, "dsimporter", version, releaseDate, releaseHash))
+		case "importer":
+			fmt.Fprintf(out, "%s\n", fmtHelp(dsimporterHelpText, "dsimporter", version, releaseDate, releaseHash))
 		case "datasetd":
-			fmt.Fprintf(out, "%s\n", fmtHelp(datasetdHelpText, appName, version, releaseDate, releaseHash))	
+			fmt.Fprintf(out, "%s\n", fmtHelp(datasetdHelpText, "datasetd", version, releaseDate, releaseHash))
 		case "api":
-			fmt.Fprintf(out, "%s\n", fmtHelp(apiText, appName, version, releaseDate, releaseHash))	
+			fmt.Fprintf(out, "%s\n", fmtHelp(apiText, "datasetd", version, releaseDate, releaseHash))	
 		case "service":
-			fmt.Fprintf(out, "%s\n", fmtHelp(serviceText, appName, version, releaseDate, releaseHash))	
+			fmt.Fprintf(out, "%s\n", fmtHelp(serviceText, "datasetd", version, releaseDate, releaseHash))	
 		case "yaml":
-			fmt.Fprintf(out, "%s\n", fmtHelp(yamlText, appName, version, releaseDate, releaseHash))	
+			fmt.Fprintf(out, "%s\n", fmtHelp(yamlText, "datasetd", version, releaseDate, releaseHash))	
 		case "config":
-			fmt.Fprintf(out, "%s\n", fmtHelp(yamlText, appName, version, releaseDate, releaseHash))	
+			fmt.Fprintf(out, "%s\n", fmtHelp(yamlText, "datasetd", version, releaseDate, releaseHash))	
 		default:
 			fmt.Fprintf(out, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
 		}

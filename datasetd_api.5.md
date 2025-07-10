@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.3.0 f9fc2d1
+%datasetd(1) user manual | version 2.3.1 e448f12
 % R. S. Doiel
 % 2025-07-10
 
@@ -166,5 +166,6 @@ curl -X POST \
   -d '{"family": "Doe", "lived": "Jane" }' \
   http://localhost:8485/api/people.ds/query/full_name/family/lived
 ~~~
+
 
 
