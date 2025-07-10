@@ -162,10 +162,10 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 		default:
 			cName, verb, options = parts[0], parts[1], parts[2:]
 		}
-		if api.Debug {
-			log.Printf("DEBUG cName %q, verb: %q, options: %+v\n", cName, verb, options)
-		}
 		prefix := path.Join(cName, verb)
+		if api.Debug {
+			log.Printf("DEBUG method: %q, prefix: %s, cName %q, verb: %q, options: %+v\n", r.Method, prefix, cName, verb, options)
+		}
 		if route, ok := api.Routes[prefix]; ok {
 			if fn, ok := route[r.Method]; ok {
 				fn(w, r, api, cName, verb, options)
@@ -362,6 +362,9 @@ func (api *API) Init(appName string, settingsFile string) error {
 		}
 		if cfg.QueryFn != nil && len(cfg.QueryFn) > 0 {
 			prefix := path.Join(cName, "query")
+			if err = api.RegisterRoute(prefix, http.MethodGet, Query); err != nil {
+				return err
+			}
 			if err = api.RegisterRoute(prefix, http.MethodPost, Query); err != nil {
 				return err
 			}

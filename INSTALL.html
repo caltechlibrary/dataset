@@ -23,81 +23,49 @@
 </nav>
 
 <section>
-<h1 id="installation">Installation</h1>
-<p><strong>dataset</strong> is a set of command line programs run from a
-shell like Bash. It is designed for single user, single process
-management of a JSON object documents as a collection where JSON
-documents are referenced by a unique identifier or key.
-<strong>datasetd</strong> is a web service which serves a similar
-purpose but is intended for supporting multi-user and
-multi-processes.</p>
-<p>This is generalized instructions for a release. For deployment
-suggestions see NOTES.md</p>
+<h1 id="installation-for-development-of-dataset">Installation for
+development of <strong>dataset</strong></h1>
+<p><strong>dataset</strong> The Dataset Project provides tools for
+working with collections of JSON documents easily. It uses a simple key
+and object pair to organize JSON documents into a collection. It
+supports SQL querying of the objects stored in a collection.</p>
+<p>It is suitable for temporary storage of JSON objects in data
+processing pipelines as well as a persistent storage mechanism for
+collections of JSON objects.</p>
+<p>The Dataset Project provides command line programs and a web service
+for working with JSON objects as a collection or individual objects. As
+such it is well suited for data science projects as well as building web
+applications that work with metadata.</p>
 <h2 id="quick-install-with-curl-or-irm">Quick install with curl or
 irm</h2>
 <p>There is an experimental installer.sh script that can be run with the
 following command to install latest table release. This may work for
 macOS, Linux and if you’re using Windows with the Unix subsystem. This
 would be run from your shell (e.g. Terminal on macOS).</p>
-<pre><code>curl https://caltechlibrary.github.io/dataset/installer.sh | sh</code></pre>
-<p>This will install dataset and datasetd in your <code>$HOME/bin</code>
-directory.</p>
+<pre class="shell"><code>curl https://caltechlibrary.github.io/dataset/installer.sh | sh</code></pre>
+<p>This will install the programs included in dataset in your
+<code>$HOME/bin</code> directory.</p>
 <p>If you are running Windows 10 or 11 use the Powershell command
 below.</p>
-<pre><code>irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex</code></pre>
-<p>If your want to install a specific verions set the
-<code>PKG_VERSION</code> environment variable then download. E.g.
-version 2.1.5 in tihs example.</p>
-<p>For Linux and macOS</p>
-<pre><code>export PKG_VERSION=2.1.5
-curl https://caltechlibrary.github.io/dataset/installer.sh | sh</code></pre>
-<p>For Windows</p>
-<pre><code>$env:PKG_VERSION = &#39;2.1.5&#39;
-irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex</code></pre>
-<h2 id="compiling-from-source">Compiling from source</h2>
-<p>You need to have git, Pandoc, Go compiler and Make (GNU Make)
-available for this recipe to work. Clone the repository and then compile
-in the typical POSIX style. NOTE by default the binaries are installed
-in <code>$HOME/bin</code> and that is assumed to be in your path.</p>
-<pre class="shell"><code>    cd
-    git clone https://github.com/caltechlibrary/dataset
-    cd dataset
-    make
-    # Add any missing dependencies you might need in your Go environment
-    make test
-    make install</code></pre>
-<p>On Windows you would perform the following in Powershell.</p>
-<pre class="shell"><code>    cd
-    git clone https://github.com/caltechlibrary/dataset
-    cd dataset
-    .\make.bat
-    # Follow the prompts and instruction in the bat file.</code></pre>
-<h3 id="requirements">Requirements</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode ps1"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">irm</span> https<span class="op">://</span>caltechlibrary<span class="op">.</span><span class="fu">github</span><span class="op">.</span><span class="fu">io</span><span class="op">/</span>dataset<span class="op">/</span>installer<span class="op">.</span><span class="fu">ps1</span> <span class="op">|</span> <span class="fu">iex</span></span></code></pre></div>
+<h2 id="installing-from-source">Installing from source</h2>
+<h3 id="required-software">Required software</h3>
 <ul>
-<li>Go version 1.23 or better</li>
-<li>Pandoc version 3.1 or better</li>
-<li>GNU Make</li>
-<li>Common POSIX/Unix utilities, e.g. cat, sed, grep</li>
+<li>Golang &gt;= 1.24.5</li>
+<li>CMTools &gt;= 0.0.35</li>
 </ul>
-<h3 id="windows-compilation">Windows compilation</h3>
-<p>The tool chain to compile on Windows make several assumptions.</p>
+<h3 id="steps">Steps</h3>
 <ol type="1">
-<li>You’re using Anaconda shell and have the C tool chain installed for
-cgo to work</li>
-<li>GNU Make, cat, grep and sed</li>
-<li>You have the latest Go installed</li>
+<li>git clone https://github.com/caltechlibrary/dataset</li>
+<li>Change directory into the <code>dataset</code> directory</li>
+<li>Make to build, test and install</li>
 </ol>
-<p>Since I don’t assume a POSIX shell environment on windows I have made
-batch files to perform some of what Make under Linux and macOS would
-do.</p>
-<ul>
-<li>make.bat builds our application and depends on go and jq
-commands</li>
-<li>release.bat builds a release, will prompt for version</li>
-<li>clean.bat removes executable and temp files</li>
-</ul>
-<p>Compilation assumes <a href="https://github.com/golang/go">go</a>
-v1.24 or better.</p>
+<pre class="shell"><code>git clone https://github.com/caltechlibrary/dataset
+cd dataset
+make
+make test
+make install</code></pre>
 </section>
 
 <footer>

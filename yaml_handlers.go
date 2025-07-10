@@ -9,7 +9,10 @@ import (
 
 // YAMLUnmarshal is a custom YAML decoder so we can treat numbers easier
 func YAMLUnmarshal(src []byte, data interface{}) error {
-	if err := yaml.Unmarshal(src, data); err != nil {
+	r := bytes.NewBuffer(src)
+	dec := yaml.NewDecoder(r)
+	dec.KnownFields(true)
+	if err := dec.Decode(data); err != nil {
 		return err
 	}
 	return nil

@@ -242,7 +242,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		return
 	}
 	if api.Debug {
-		log.Printf("DEBUG qStmt: %q\n", qStmt)
+		log.Printf("DEBUG qStmt:\n%s\n", qStmt)
 	}
 
 	if c, ok := api.CMap[cName]; ok {

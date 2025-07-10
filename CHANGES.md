@@ -1,3 +1,11 @@
+Release 2.3.1:
+
+Documentation and tests have been removed for frames, clone, and sample. Frame support was removed from datasetd.
+
+Release 2.3.0:
+
+This release fixed problems related to how a collection might incorrectly return a unknown type. v2.3.x cycle will depreciated features in preparation for v2.4.
+
 Release 2.0.0-b06:
 
 This release is a rewrite of version 1 focusing on removing features, clearifying useful concepts and abstracting the storage engines cleanly. The latter was done to allow the web implementation of dataset to achieve an appropriate performance and be able to scale to a larger number of collections and size of collections.

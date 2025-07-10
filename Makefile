@@ -126,7 +126,7 @@ check: .FORCE
 	cd sqlstore && go vet *.go
 	cd texts && go vet *.go
 
-test: clean build
+test: clean
 	go test
 
 cleanweb:

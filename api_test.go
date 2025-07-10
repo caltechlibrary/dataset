@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 )
@@ -17,6 +18,7 @@ import (
 var (
 	contentType        = "application/json"
 	dName              = "testout"
+	query 			   = "query_test"
 	testCollectionsSrc = []byte(`{
 	"attachment_test.ds": {
 		"one": {
@@ -41,6 +43,29 @@ var (
 	}
 }`)
 )
+
+func setupApiTestCollection(cName string, dsnURI string, records map[string]map[string]interface{}) error {
+	// Create collection.json using v1 structures
+	if len(cName) == 0 {
+		return fmt.Errorf("missing a collection name")
+	}
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	// Now populate with some test records records.
+	for key, obj := range records {
+		if err := c.Create(key, obj); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 
 // sameStrings compares one slice of strings to another by converting
 // them to a JSON represention and compariing the representation.
@@ -305,6 +330,23 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 						t.FailNow()
 					}
 				}
+				// Run test on query support
+				if qStmt, ok := cfg.QueryFn[query]; ok {
+					fmt.Fprintf(os.Stderr, "DEBUG cName: %q DsnURI: %q, qStmt: %s\n", cName, cfg.DsnURI, qStmt)
+					u := fmt.Sprintf("http://%s/api/%s/query/%s", settings.Host, cName, query)
+					res, err := makeRequest(u, http.MethodGet, nil)
+					if err != nil {
+						t.Errorf("http.Get(%q, %q, %+v) error %s", u, contentType, nil, err)
+						t.FailNow()
+					}
+					fmt.Fprintf(os.Stderr, "DEBUG res -> %+v\n", res)
+					if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+						t.Error(err)
+						t.FailNow()
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "DEBUG no query defined for %q -> %+v\n", cName, cfg.QueryFn)
+				}
 			}
 		}
 	}
@@ -330,7 +372,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 10,100,50
 131,313,113
 `)
-	aName := path.Join(dName, "numbers.csv")
+	aName := "numbers.csv"
 	if _, err := os.Stat(aName); err == nil {
 		os.RemoveAll(aName)
 	}
@@ -451,7 +493,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 			t.Errorf("expected a response body, got %q", body)
 			t.FailNow()
 		}
-		outName := path.Join(dName, "download-"+filename)
+		outName := "download-"+filename
 		if err := ioutil.WriteFile(outName, body, 0664); err != nil {
 			t.Errorf("unable to write requested file %q, %s", filename, err)
 		}
@@ -501,13 +543,12 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 	}
 }
 
-
 func TestRunAPI(t *testing.T) {
 	if _, err := os.Stat(dName); os.IsNotExist(err) {
 		os.MkdirAll(dName, 0775)
 	}
 	// Setup up a test collection
-	fName := path.Join(dName, "settings.json")
+	fName := path.Join(dName, "settings.yaml")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
@@ -518,25 +559,23 @@ func TestRunAPI(t *testing.T) {
 		t.Errorf("Failed to unpack text data to populate collections, %s", err)
 		t.FailNow()
 	}
-	for name, testRecords := range testCollections {
+	for cName, testRecords := range testCollections {
 		records := map[string]map[string]interface{}{}
 		for k, v := range testRecords.(map[string]interface{}) {
 			records[k] = v.(map[string]interface{})
 		}
-		pName := path.Join(dName, name)
+		pName := path.Join(dName, cName)
 		if _, err := os.Stat(pName); err == nil {
 			os.RemoveAll(pName)
 		}
-
-		dbName := path.Join(pName, "collection.db")
-		dsnURI := "sqlite://" + dbName
-		if err := SetupApiTestCollection(pName, dsnURI, records); err != nil {
+		dsnURI := "sqlite://collection.db"
+		if err := setupApiTestCollection(pName, dsnURI, records); err != nil {
 			t.Errorf("Failed to setup test collection %q, %s", pName, err)
 			t.FailNow()
 		}
 		// Setup a test configuration
 		cfg := new(Config)
-		cfg.CName = pName
+		cfg.CName = cName
 		cfg.DsnURI = dsnURI
 		cfg.Keys = true
 		cfg.Create = true
@@ -547,8 +586,17 @@ func TestRunAPI(t *testing.T) {
 		cfg.Attach = true
 		cfg.Retrieve = true
 		cfg.Prune = true
+		cfg.QueryFn = map[string]string{}
+		tName := strings.TrimSuffix(cName, ".ds")
+		cfg.QueryFn[query] = fmt.Sprintf(`select count(*) as src from %s`, tName)
+		if settings.Collections == nil {
+			settings.Collections = []*Config{}
+		}
 		settings.Collections = append(settings.Collections, cfg)
 	}
+	//fmt.Fprintf(os.Stderr, "DEBUG writing test YAML to %q\n", fName)
+	//src, _ := YAMLMarshal(settings)
+	//fmt.Fprintf(os.Stderr, "DEBUG yaml src ->\n%s\n", src)
 	if err := settings.WriteFile(fName, 0664); err != nil {
 		t.Errorf("failed to save config %q, %s", fName, err)
 		t.FailNow()
@@ -571,6 +619,10 @@ Client testings starts in %s (s = seconds)
 	// a client test.
 	debug := false
 	go func() {
+		os.Chdir(dName)
+		fName = "settings.yaml"
+		wDir, _ := os.Getwd()
+		fmt.Fprintf(os.Stderr, "INFO Running tests %q %q %t from %s\n", path.Base(appName), fName, debug, path.Base(wDir))
 		if err := RunAPI(appName, fName, debug); err != nil {
 			t.Errorf("Expected API to setup and run, %s", err)
 		}

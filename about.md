@@ -57,6 +57,8 @@ dastaet -help dsquery
 
 Help text is now maintain inside a single file, helptext.go.
 
+This while the code for frames, clone and sample remains in the dataset cli it&#x27;ll be removed in an upcoming release before the transition to v2.4.
+
 ### Authors
 
 - R. S. Doiel, <https://orcid.org/0000-0003-0900-6903>
@@ -91,8 +93,8 @@ The Dataset Project provides command line programs and a web service for working
 
 ### Software Requirements
 
-- Golang &gt;&#x3D; 1.24.4
-- CMTools &gt;&#x3D; 0.0.33
+- Golang &gt;&#x3D; 1.24.5
+- CMTools &gt;&#x3D; 0.0.35
 
 
 ### Software Suggestions

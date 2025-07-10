@@ -11,14 +11,14 @@ D
 Bugs
 ----
 
-Next (prep for v2.2.8)
+Next (prep for v2.4)
 -----------------------
 
 - [ ] Remove frames support
 - [ ] Remove join
 - [ ] Decide if models is going to be continued or not
 - [ ] Remove check and repair since dump and load work well
-- [ ] Remove dsimporter and dsexporter, replace with documentations of using datatools for generating a jsonl file.
+- [ ] Remove dsimporter replace with documentations of using datatools for generating a jsonl file.
 - [ ] Merge dsquery into dataset, make the dsquery cli deprecated
 
 Someday, Maybe
