@@ -1018,9 +1018,10 @@ func Prune(w http.ResponseWriter, r *http.Request, api *API, cName, verb string,
 }
 
 //
-// The following routes handle frames
+// The following routes handle frames, deprecated and being removed before v2.4 per issue #152.
 //
 
+/* NOTE: Removed per issue #152
 // HasFrame checks a collection for a frame by its name
 //
 // ```shell
@@ -1337,6 +1338,7 @@ func FrameDelete(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	http.NotFound(w, r)
 	return
 }
+*/
 
 //**************************************************************
 // The following routes handle JSON object versions. These are

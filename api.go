@@ -390,6 +390,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 				return err
 			}
 		}
+		/* NOTE: Removing frame support per isssue #152.
 		if cfg.FrameRead {
 			prefix := path.Join(cName, "frames")
 			if err = api.RegisterRoute(prefix, http.MethodGet, Frames); err != nil {
@@ -424,6 +425,7 @@ func (api *API) Init(appName string, settingsFile string) error {
 				return err
 			}
 		}
+		*/
 
 		//NOTE: Need to apply versioned routes if a collection uses
 		// versioning and permission is granted to see versions. I am
