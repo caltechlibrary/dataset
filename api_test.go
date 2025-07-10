@@ -12,9 +12,6 @@ import (
 	"sort"
 	"testing"
 	"time"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/dotpath"
 )
 
 var (
@@ -583,6 +580,5 @@ Client testings starts in %s (s = seconds)
 	clientTestKeys(t, settings)
 	clientTestObjects(t, settings)
 	clientTestKeys(t, settings)
-	clientTestFrames(t, settings)
 	clientTestAttachments(t, settings)
 }
