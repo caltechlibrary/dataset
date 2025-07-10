@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2016-09-12",
-  "dateModified": "2025-06-27",
-  "datePublished": "2025-06-27",
+  "dateModified": "2025-07-10",
+  "datePublished": "2025-07-10",
   "description": "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.\n\nIt is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.\n\nThe Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.",
   "funder": [
     {
@@ -74,18 +74,18 @@
     "SQL"
   ],
   "softwareRequirements": [
-    "Golang >= 1.24.4",
-    "CMTools >= 0.0.33"
+    "Golang >= 1.24.5",
+    "CMTools >= 0.0.35"
   ],
   "softwareSuggestions": [
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.3.0",
+  "version": "2.3.1",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "The object versioning problem identified in issue #149 persisted after the release of v2.2.8. The resulting mitigation steps before the planned v3 release of data is to ignore the \nversion.json file held in the collection's root directory. As of v2.3 this file is no longer read, written or updated. Instead the collection level methods will explicitly set the \nversioning type at the store level. This means one locations holds versioning state, the collection.json. This simplified the codebase and appears to be backward compatible.",
+  "releaseNotes": "Issue #152 has started. The frames, sample and clone help has been removed as those features are depreciated. The frames supprt was remove from datasetd. Help is being reorganizaed. api_doc.go and api_cmd.go was removed as it was dead code with changes in help implementaiton. \n\nThe `-help` option can pull up help on a topic by providing a keyword as a separate parameter. This let's you pull up help on the related commands. \n\nExample:\n\n~~~shell\ndataset -help api\ndastaet -help dsquery\n~~~\n\nHelp text is now maintain inside a single file, helptext.go.\n\nThis while the code for frames, clone and sample remains in the dataset cli it'll be removed in an upcoming release before the transition to v2.4.",
   "copyrightYear": 2025,
   "copyrightHolder": "California Institute of Technology"
 }

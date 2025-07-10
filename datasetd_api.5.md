@@ -1,6 +1,6 @@
-%dataset(5) user manual | version 2.1.12 cfcaeeb
-% R. S. Doiel and Tom Morrell
-% 2024-06-12
+%datasetd(1) user manual | version 2.3.1 9a3d898
+% R. S. Doiel
+% 2025-07-10
 
 
 # datasetd REST API
@@ -13,11 +13,13 @@ There are three basic forms of the URL paths supported by the API.
 
 - `/api/<COLLECTION_NAME>/keys`, get a list of all keys in the the collection
 - `/api/<COLLECTION_NAME>/object/<OPTIONS>`, interact with an object in the collection (e.g. create, read, update, delete)
-- `/api/<COLLECTION_NAME>/query/<FIELDS>`, query the collection and receive a list of objects in response
+- `/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELDS>`, query the collection and receive a list of objects in response
 
 The "`<COLLECTION_NAME>`" would be the name of the dataset collection, e.g. "mydata.ds".
 
 The "`<OPTIONS>`" holds any additional parameters related to the verb. Options are separated by the path delimiter (i.e. "/"). The options are optional. They do not require a trailing slash.
+
+The "`<QUERY_NAME>`" is the query name defined in the YAML configuration for the specific collection.
 
 The "`<FIELDS>`" holds the set of fields being passed into the query. These are delimited with the path separator like with options (i.e. "/"). Fields are optional and they do not require a trailing slash.
 
@@ -126,8 +128,7 @@ order by family, lived
 
 NOTE: The SQL is has to retain the constraint of a single object per row, normally this will be "src" for dataset collections.
 
-When you form a query path we need to indicate that the parameter for family and lived names need to get mapped to their
-respect positional references in the SQL. This is done as following url path.
+When you form a query path we need to indicate that the parameter for family and lived names need to get mapped to their respect positional references in the SQL. This is done as following url path. In this example "full_name" is the name of the query while "family" and "lived" are the values mapped into the parameters.
 
 ~~~
 /api/people.ds/query/full_name/family/lived
@@ -165,5 +166,6 @@ curl -X POST \
   -d '{"family": "Doe", "lived": "Jane" }' \
   http://localhost:8485/api/people.ds/query/full_name/family/lived
 ~~~
+
 
 

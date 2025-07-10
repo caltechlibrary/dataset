@@ -24,15 +24,21 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.3.0">dataset 2.3.0</h2>
-<p>The object versioning problem identified in issue #149 persisted
-after the release of v2.2.8. The resulting mitigation steps before the
-planned v3 release of data is to ignore the version.json file held in
-the collection's root directory. As of v2.3 this file is no longer read,
-written or updated. Instead the collection level methods will explicitly
-set the versioning type at the store level. This means one locations
-holds versioning state, the collection.json. This simplified the
-codebase and appears to be backward compatible.</p>
+<h2 id="dataset-2.3.1">dataset 2.3.1</h2>
+<p>Issue #152 has started. The frames, sample and clone help has been
+removed as those features are depreciated. The frames supprt was remove
+from datasetd. Help is being reorganizaed. api_doc.go and api_cmd.go was
+removed as it was dead code with changes in help implementaiton.</p>
+<p>The `-help` option can pull up help on a topic by providing a keyword
+as a separate parameter. This let's you pull up help on the related
+commands.</p>
+<p>Example:</p>
+<pre class="shell"><code>dataset -help api
+dastaet -help dsquery</code></pre>
+<p>Help text is now maintain inside a single file, helptext.go.</p>
+<p>This while the code for frames, clone and sample remains in the
+dataset cli it'll be removed in an upcoming release before the
+transition to v2.4.</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
@@ -73,8 +79,8 @@ class="uri">https://github.com/caltechlibrary/dataset/issues</a></li>
 </ul>
 <h3 id="software-requirements">Software Requirements</h3>
 <ul>
-<li>Golang &gt;= 1.24.4</li>
-<li>CMTools &gt;= 0.0.33</li>
+<li>Golang &gt;= 1.24.5</li>
+<li>CMTools &gt;= 0.0.35</li>
 </ul>
 <h3 id="software-suggestions">Software Suggestions</h3>
 <ul>

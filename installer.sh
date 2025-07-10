@@ -1,11 +1,11 @@
 #!/bin/sh
-# generated with CMTools 2.3.0 f9fc2d1
+# generated with CMTools 2.3.1 9a3d898
 
 #
 # Set the package name and version to install
 #
 PACKAGE="dataset"
-VERSION="2.3.0"
+VERSION="2.3.1"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
 if [ "$PKG_VERSION" != "" ]; then
@@ -114,7 +114,7 @@ if [ "$EXPLAIN_OS_POLICY" = "no" ]; then
 
   You need to take additional steps to complete installation.
 
-  Your operating system security policied needs to "allow"
+  Your operating system security policies needs to "allow"
   running programs from $PACKAGE.
 
   Example: on macOS you can type open the programs in finder.

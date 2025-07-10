@@ -5,7 +5,8 @@
 
 (when compiling from source)
 
-- Golang 1.23.2 or better
+- Golang 1.24.5 or better
+- CMTools >= v0.0.35
 
 ## Recommend
 
@@ -71,6 +72,6 @@ packages.
 
 ## Caltech Library packages
 
-- [github.com/caltechlibrary/dotpath](https://github.com/caltechlibrary/dotpath)
+- [github.com/caltechlibrary/dotpath](https://github.com/caltechlibrary/dotpath) (depreciated, will not be needed when frame support is removed)
   - provides dot path style notation to reach into JSON objects
 

@@ -10,16 +10,15 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 	"testing"
 	"time"
-
-	// Caltech Library packages
-	"github.com/caltechlibrary/dotpath"
 )
 
 var (
 	contentType        = "application/json"
 	dName              = "testout"
+	query 			   = "query_test"
 	testCollectionsSrc = []byte(`{
 	"attachment_test.ds": {
 		"one": {
@@ -41,49 +40,32 @@ var (
 			"family": "Lopez",
 			"genre":  ["plays", "radio-theater"]
 		}
-	},
-	"frames_test.ds": {
-		"Miller-A": {
-			"id":        "Miller-A",
-			"given":     "Arthor",
-			"family":    "Miller",
-			"character": false,
-			"vocations": ["playright", "writer", "author"]
-		},
-		"Lopez-T": {
-			"id":        "Lopez-T",
-			"given":     "Tom",
-			"family":    "Lopez",
-			"character": false,
-			"vocations": ["playright", "producer", "director", "sound-engineer", "voice actor", "disc jockey"]
-		},
-		"Flanders-J": {
-			"id":          "Flanders-J",
-			"given":       "Jack",
-			"family":      "Flanders",
-			"played-by":   "Robert Lorick",
-			"character":   true,
-			"description": "Metaphysical Detective"
-		},
-		"Freda-L": {
-			"id":          "Freda-L",
-			"given":       "Little",
-			"family":      "Freda",
-			"played-by":   "P.J. O'Rorke",
-			"character":   true,
-			"description": "A wise Venusian"
-		},
-		"Sam-M": {
-			"id":          "Sam-M",
-			"given":       "Mojo",
-			"family":      "Sam",
-			"played-by":   "Dave Adams",
-			"character":   true,
-			"description": "The wise You-do man"
-		}
 	}
 }`)
 )
+
+func setupApiTestCollection(cName string, dsnURI string, records map[string]map[string]interface{}) error {
+	// Create collection.json using v1 structures
+	if len(cName) == 0 {
+		return fmt.Errorf("missing a collection name")
+	}
+	if _, err := os.Stat(cName); err == nil {
+		os.RemoveAll(cName)
+	}
+	c, err := Init(cName, dsnURI)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	// Now populate with some test records records.
+	for key, obj := range records {
+		if err := c.Create(key, obj); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 
 // sameStrings compares one slice of strings to another by converting
 // them to a JSON represention and compariing the representation.
@@ -348,6 +330,23 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 						t.FailNow()
 					}
 				}
+				// Run test on query support
+				if qStmt, ok := cfg.QueryFn[query]; ok {
+					fmt.Fprintf(os.Stderr, "DEBUG cName: %q DsnURI: %q, qStmt: %s\n", cName, cfg.DsnURI, qStmt)
+					u := fmt.Sprintf("http://%s/api/%s/query/%s", settings.Host, cName, query)
+					res, err := makeRequest(u, http.MethodGet, nil)
+					if err != nil {
+						t.Errorf("http.Get(%q, %q, %+v) error %s", u, contentType, nil, err)
+						t.FailNow()
+					}
+					fmt.Fprintf(os.Stderr, "DEBUG res -> %+v\n", res)
+					if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
+						t.Error(err)
+						t.FailNow()
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "DEBUG no query defined for %q -> %+v\n", cName, cfg.QueryFn)
+				}
 			}
 		}
 	}
@@ -373,7 +372,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 10,100,50
 131,313,113
 `)
-	aName := path.Join(dName, "numbers.csv")
+	aName := "numbers.csv"
 	if _, err := os.Stat(aName); err == nil {
 		os.RemoveAll(aName)
 	}
@@ -494,7 +493,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 			t.Errorf("expected a response body, got %q", body)
 			t.FailNow()
 		}
-		outName := path.Join(dName, "download-"+filename)
+		outName := "download-"+filename
 		if err := ioutil.WriteFile(outName, body, 0664); err != nil {
 			t.Errorf("unable to write requested file %q, %s", filename, err)
 		}
@@ -544,354 +543,12 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 	}
 }
 
-func clientTestFrames(t *testing.T, settings *Settings) {
-	cPath := path.Join(dName, "frames_test.ds")
-	cName := path.Base(cPath)
-	c, err := Open(cPath)
-	if err != nil {
-		t.Errorf("Failed to open test collection %q, %s", cPath, err)
-	}
-	defer c.Close()
-
-	// Double check loaded test data
-	frmKeys := []string{"Sam-M", "Freda-L", "Flanders-J"}
-	attributes := []string{"family", "given"}
-	dotPaths := []string{".family", ".given"}
-	labels := []string{"Family Name", "Given Name"}
-	for _, key := range frmKeys {
-		m := map[string]interface{}{}
-		if err := c.Read(key, m); err != nil {
-			t.Errorf("could not open %q, %s", key, err)
-			t.FailNow()
-		}
-		for _, attr := range attributes {
-			if given, ok := m[attr]; !ok {
-				t.Errorf("failed to find .%s in %s, %+v", attr, key, m)
-			} else if given == "" {
-				t.Errorf("failed to find .%s is empty string %s, %+v", attr, key, m)
-			}
-			expr := fmt.Sprintf(".%s", attr)
-			val, err := dotpath.Eval(expr, m)
-			if err != nil {
-				t.Errorf("dotpath.Eval(%q, %+v) failed, %s", expr, m, err)
-			}
-			if val == nil {
-				t.Errorf("dotpath.Eval(%q, %+v) should not return nil value", expr, m)
-				t.FailNow()
-			}
-		}
-	}
-	exFrameName := "expected"
-	expectedFrm, err := c.FrameCreate(exFrameName, frmKeys, dotPaths, labels, true)
-	if err != nil {
-		t.Errorf("should be able to created the %q frame, %s", exFrameName, err)
-	}
-	if expectedFrm == nil {
-		t.Errorf("something went really wrong, should have an %q frame", exFrameName)
-	}
-
-	// Check to make sure frame does not exist
-	frameName := "test_names"
-	u := fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
-	res, err := makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusNotFound, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if _, err := ioutil.ReadAll(res.Body); err != nil {
-		t.Errorf("expected to read the body of reqest, %s", err)
-		t.FailNow()
-	}
-	res.Body.Close()
-
-	// Create the frame "test_names"
-	frameDef := map[string]interface{}{
-		"keys":      frmKeys,
-		"dot_paths": dotPaths,
-		"labels":    labels,
-	}
-	payload, err := makeObjectPayload(frameDef)
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodPost, payload)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, %s) -> %s", u, http.MethodPost, payload, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusCreated, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	// Attempt to read the frame that was just created.
-	frm, err := c.FrameRead(frameName)
-	if err != nil {
-		t.Errorf("frame failed to be created %q, %s", frameName, err)
-		t.FailNow()
-	}
-	if len(frm.ObjectMap) == 0 {
-		t.Errorf("something went wrong, frm.ObjectMap should have objects, %+v", frm)
-		t.FailNow()
-	}
-	hasError := false
-	for k, v := range frm.ObjectMap {
-		if v == nil || len(v.(map[string]interface{})) == 0 {
-			t.Errorf("something went wrong, frm.ObjectMap[%q] should have a populated map[string]interface{}, %+v", k, frm.ObjectMap)
-			hasError = true
-		}
-	}
-	if hasError {
-		t.FailNow()
-	}
-
-	// Check if we have the "names" frame.
-	u = fmt.Sprintf("http://%s/api/%s/has-frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if _, err := ioutil.ReadAll(res.Body); err != nil {
-		t.Errorf("expected to read the body of request, %s", err)
-	}
-	res.Body.Close()
-
-	// List the frames in a collection
-	u = fmt.Sprintf("http://%s/api/%s/frames/", settings.Host, cName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	frameList := []string{}
-	if err := json.Unmarshal(src, &frameList); err != nil {
-		t.Errorf("Unmarshal(%s, %+v) -> %s", src, frameList, err)
-	}
-	if len(frameList) != 2 {
-		t.Errorf("expected two frames defined, got %d", len(frameList))
-		t.FailNow()
-	}
-	foundFrame := false
-	for _, name := range frameList {
-		if name == frameName {
-			foundFrame = true
-			break
-		}
-	}
-	if !foundFrame {
-		t.Errorf("expected frame %q, it was missing from %+v", frameName, frameList)
-		t.FailNow()
-	}
-
-	// Get the frame's def
-	expectedDef, err := c.FrameDef(frameName)
-	if err != nil {
-		t.Errorf("expected to find frame def for %q, got %s", frameName, err)
-		t.FailNow()
-	}
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	def := map[string]interface{}{}
-	if err := json.Unmarshal(src, &def); err != nil {
-		t.Errorf("json.Unmarshal(%s, def) failed, %s", src, err)
-		t.FailNow()
-	}
-	if !sameMapping(expectedDef, def) {
-		exSrc, _ := JSONMarshalIndent(expectedDef, "", "    ")
-		t.Errorf("expected map %s, got %s", exSrc, src)
-	}
-
-	expectedKeys := c.FrameKeys(frameName)
-	u = fmt.Sprintf("http://%s/api/%s/frame-keys/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	gotKeys := []string{}
-	if err := json.Unmarshal(src, &gotKeys); err != nil {
-		t.Errorf("json.Unmarshal(%s, gotKeys) failed, %s", src, err)
-		t.FailNow()
-	}
-	if !sameStrings(expectedKeys, gotKeys) {
-		exSrc, _ := JSONMarshalIndent(expectedKeys, "", "    ")
-		t.Errorf("expected map %s, got %s", exSrc, src)
-	}
-
-	expectedObjects, err := c.FrameObjects(frameName)
-	if err != nil {
-		t.Errorf("Could get get %q objects, %s", frameName, err)
-		t.FailNow()
-	}
-	u = fmt.Sprintf("http://%s/api/%s/frame-objects/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodGet, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodGet, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	src, err = ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("expected to read the body of the request, %s", err)
-	}
-	res.Body.Close()
-	gotObjects := []map[string]interface{}{}
-	if err := json.Unmarshal(src, &gotObjects); err != nil {
-		t.Errorf("json.Unmarshal(%s, gotObjects) failed, %s", src, err)
-		t.FailNow()
-	}
-	if !sameObjects(expectedObjects, gotObjects) {
-		exSrc, _ := JSONMarshalIndent(expectedObjects, "", "    ")
-		t.Errorf("expected map %s, got %s", exSrc, src)
-	}
-
-	expectedObjects, err = c.FrameObjects(frameName)
-	if err != nil {
-		t.Errorf("Could get get %q objects, %s", frameName, err)
-		t.FailNow()
-	}
-
-	// save old object list
-	oldObjects := gotObjects[:]
-	// Update a record so we can then try frame-refresh
-	key := "Flanders-J"
-	buf := bytes.NewBuffer([]byte(`{
-    "id":        "Flanders-J",
-    "given":     "Capt. Marcelle",
-    "family":    "Du Champ",
-	"character":   true,
-	"description": "Sky Pirate Captain"
-}`))
-	u = fmt.Sprintf("http://%s/api/%s/object/%s", settings.Host, cName, key)
-	res, err = makeRequest(u, http.MethodPut, buf)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-
-	// Make a refresh call
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodPut, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-
-	// Verify records changed.
-	gotObjects, err = c.FrameObjects(frameName)
-	if err != nil {
-		t.Errorf("Could get get %q objects, %s", frameName, err)
-		t.FailNow()
-	}
-	if sameObjects(oldObjects, gotObjects) {
-		t.Errorf("FrameRefresh failed to update objects")
-		t.FailNow()
-	}
-
-	//FIXME: need tests for reframe
-	newKeys, err := c.Keys()
-	if err != nil {
-		t.Errorf("failed to get keys from %q, %s", cName, err)
-		t.FailNow()
-	}
-	src, err = JSONMarshalIndent(newKeys, "", "    ")
-	if err != nil {
-		t.Errorf("failed to marshal key list, %s", err)
-		t.FailNow()
-	}
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	buf = bytes.NewBuffer(src)
-	res, err = makeRequest(u, http.MethodPut, buf)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodPut, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	updatedKeys := c.FrameKeys(frameName)
-	if !sameStrings(newKeys, updatedKeys) {
-		t.Errorf("expected keys %+v, got %+v", newKeys, updatedKeys)
-		t.FailNow()
-	}
-	objects, err := c.FrameObjects(frameName)
-	if len(objects) != len(newKeys) {
-		t.Errorf("expected %d objects, got %d", len(newKeys), len(objects))
-		t.FailNow()
-	}
-
-	frameName = "expected"
-	u = fmt.Sprintf("http://%s/api/%s/frame/%s", settings.Host, cName, frameName)
-	res, err = makeRequest(u, http.MethodDelete, nil)
-	if err != nil {
-		t.Errorf("makeRequest(%q, %q, nil) %s", u, http.MethodDelete, err)
-		t.FailNow()
-	}
-	if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	if c.HasFrame(frameName) {
-		t.Errorf("expected frame %q to be deleted, found it", frameName)
-		t.FailNow()
-	}
-}
-
 func TestRunAPI(t *testing.T) {
 	if _, err := os.Stat(dName); os.IsNotExist(err) {
 		os.MkdirAll(dName, 0775)
 	}
 	// Setup up a test collection
-	fName := path.Join(dName, "settings.json")
+	fName := path.Join(dName, "settings.yaml")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
@@ -902,25 +559,23 @@ func TestRunAPI(t *testing.T) {
 		t.Errorf("Failed to unpack text data to populate collections, %s", err)
 		t.FailNow()
 	}
-	for name, testRecords := range testCollections {
+	for cName, testRecords := range testCollections {
 		records := map[string]map[string]interface{}{}
 		for k, v := range testRecords.(map[string]interface{}) {
 			records[k] = v.(map[string]interface{})
 		}
-		pName := path.Join(dName, name)
+		pName := path.Join(dName, cName)
 		if _, err := os.Stat(pName); err == nil {
 			os.RemoveAll(pName)
 		}
-
-		dbName := path.Join(pName, "collection.db")
-		dsnURI := "sqlite://" + dbName
-		if err := SetupApiTestCollection(pName, dsnURI, records); err != nil {
+		dsnURI := "sqlite://collection.db"
+		if err := setupApiTestCollection(pName, dsnURI, records); err != nil {
 			t.Errorf("Failed to setup test collection %q, %s", pName, err)
 			t.FailNow()
 		}
 		// Setup a test configuration
 		cfg := new(Config)
-		cfg.CName = pName
+		cfg.CName = cName
 		cfg.DsnURI = dsnURI
 		cfg.Keys = true
 		cfg.Create = true
@@ -931,10 +586,17 @@ func TestRunAPI(t *testing.T) {
 		cfg.Attach = true
 		cfg.Retrieve = true
 		cfg.Prune = true
-		cfg.FrameRead = true
-		cfg.FrameWrite = true
+		cfg.QueryFn = map[string]string{}
+		tName := strings.TrimSuffix(cName, ".ds")
+		cfg.QueryFn[query] = fmt.Sprintf(`select count(*) as src from %s`, tName)
+		if settings.Collections == nil {
+			settings.Collections = []*Config{}
+		}
 		settings.Collections = append(settings.Collections, cfg)
 	}
+	//fmt.Fprintf(os.Stderr, "DEBUG writing test YAML to %q\n", fName)
+	//src, _ := YAMLMarshal(settings)
+	//fmt.Fprintf(os.Stderr, "DEBUG yaml src ->\n%s\n", src)
 	if err := settings.WriteFile(fName, 0664); err != nil {
 		t.Errorf("failed to save config %q, %s", fName, err)
 		t.FailNow()
@@ -957,6 +619,10 @@ Client testings starts in %s (s = seconds)
 	// a client test.
 	debug := false
 	go func() {
+		os.Chdir(dName)
+		fName = "settings.yaml"
+		wDir, _ := os.Getwd()
+		fmt.Fprintf(os.Stderr, "INFO Running tests %q %q %t from %s\n", path.Base(appName), fName, debug, path.Base(wDir))
 		if err := RunAPI(appName, fName, debug); err != nil {
 			t.Errorf("Expected API to setup and run, %s", err)
 		}
@@ -966,6 +632,5 @@ Client testings starts in %s (s = seconds)
 	clientTestKeys(t, settings)
 	clientTestObjects(t, settings)
 	clientTestKeys(t, settings)
-	clientTestFrames(t, settings)
 	clientTestAttachments(t, settings)
 }

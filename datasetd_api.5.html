@@ -38,7 +38,7 @@ keys in the the collection</li>
 <li><code>/api/&lt;COLLECTION_NAME&gt;/object/&lt;OPTIONS&gt;</code>,
 interact with an object in the collection (e.g. create, read, update,
 delete)</li>
-<li><code>/api/&lt;COLLECTION_NAME&gt;/query/&lt;FIELDS&gt;</code>,
+<li><code>/api/&lt;COLLECTION_NAME&gt;/query/&lt;QUERY_NAME&gt;/&lt;FIELDS&gt;</code>,
 query the collection and receive a list of objects in response</li>
 </ul>
 <p>The “<code>&lt;COLLECTION_NAME&gt;</code>” would be the name of the
@@ -47,6 +47,8 @@ dataset collection, e.g. “mydata.ds”.</p>
 related to the verb. Options are separated by the path delimiter
 (i.e. “/”). The options are optional. They do not require a trailing
 slash.</p>
+<p>The “<code>&lt;QUERY_NAME&gt;</code>” is the query name defined in
+the YAML configuration for the specific collection.</p>
 <p>The “<code>&lt;FIELDS&gt;</code>” holds the set of fields being
 passed into the query. These are delimited with the path separator like
 with options (i.e. “/”). Fields are optional and they do not require a
@@ -153,7 +155,9 @@ class="sourceCode sql"><code class="sourceCode sql"><span id="cb7-1"><a href="#c
 row, normally this will be “src” for dataset collections.</p>
 <p>When you form a query path we need to indicate that the parameter for
 family and lived names need to get mapped to their respect positional
-references in the SQL. This is done as following url path.</p>
+references in the SQL. This is done as following url path. In this
+example “full_name” is the name of the query while “family” and “lived”
+are the values mapped into the parameters.</p>
 <pre><code>/api/people.ds/query/full_name/family/lived</code></pre>
 <p>The web form could look like this.</p>
 <pre><code>&lt;form id=&quot;query_name&quot;&gt;

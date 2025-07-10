@@ -50,7 +50,7 @@ version.go: .FORCE
 $(PROGRAMS): cmd/*/*.go $(PACKAGE)
 	@mkdir -p bin
 	go build -o bin/$@$(EXT) cmd/$@/$@.go
-	@./bin/$@ -help >$@.1.md
+	./bin/$@ -help >$@.1.md
 
 man: $(MAN_PAGES) $(MAN_PAGES_LIB) $(MAN_PAGES_MISC)
 
@@ -58,7 +58,10 @@ $(MAN_PAGES): .FORCE
 	mkdir -p man/man1
 	pandoc $@.md --from markdown --to man -s >man/man1/$@
 
-$(MAN_PAGES_MISC): .FORCE
+$(MAN_PAGES_MISC): $(PROGRAMS) .FORCE
+	@./bin/datasetd --help api >datasetd_api.5.md
+	@./bin/datasetd --help service >datasetd_service.5.md
+	@./bin/datasetd --help yaml >datasetd_yaml.5.md
 	mkdir -p man/man5
 	pandoc $@.md --from markdown --to man -s >man/man5/$@
 
@@ -88,7 +91,8 @@ install: build
 	@echo "Make sure $(PREFIX)/bin is in your PATH"
 	@echo ""
 	@for FNAME in $(MAN_PAGES); do if [ -f "./man/man1/$${FNAME}" ]; then cp -v "./man/man1/$${FNAME}" "$(PREFIX)/man/man1/$${FNAME}"; fi; done
-	@for FNAME in $(MANPAGES_LIB); do if [ -f "./man/man3/$${FNAME}" ]; then cp -v "./man/man3/$${FNAME}" "$(PREFIX)/man/man3/$${FNAME}"; fi; done
+	@for FNAME in $(MAN_PAGES_LIB); do if [ -f "./man/man3/$${FNAME}" ]; then cp -v "./man/man3/$${FNAME}" "$(PREFIX)/man/man3/$${FNAME}"; fi; done
+	@for FNAME in $(MAN_PAGES_MISC); do if [ -f "./man/man5/$${FNAME}" ]; then cp -v "./man/man5/$${FNAME}" "$(PREFIX)/man/man5/$${FNAME}"; fi; done
 	@echo "Make sure $(PREFIX)/man is in your MANPATH"
 	@echo ""
 
@@ -98,6 +102,7 @@ uninstall: .FORCE
 	@echo "Removing manpages in $(PREFIX)/man"
 	@for FNAME in $(MAN_PAGES); do if [ -f "$(PREFIX)/man/man1/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man1/$${FNAME}"; fi; done
 	@for FNAME in $(MAN_PAGES_LIB); do if [ -f "$(PREFIX)/man/man3/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man3/$${FNAME}"; fi; done
+	@for FNAME in $(MAN_PAGES_MISC); do if [ -f "$(PREFIX)/man/man5/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man5/$${FNAME}"; fi; done
 
 
 website: .FORCE
@@ -121,7 +126,7 @@ check: .FORCE
 	cd sqlstore && go vet *.go
 	cd texts && go vet *.go
 
-test: clean build
+test: clean
 	go test
 
 cleanweb:

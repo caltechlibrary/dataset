@@ -5,11 +5,12 @@ On Unix-like systems (e.g. Darwin, Linux, Windows with the Linux subsystem enabl
 
 ## Windows 11
 
-+ Install Go 1.21.1 via the Windows' installer available from https://golang.org/downloads
-+ Install git
-+ Run `go get -u github.com\caltechlibrary\dataset`
-+ Change into the dataset directory
-+ Run the make.bat 
+- Install Go 1.24.5 via the Windows' installer available from https://golang.org/downloads
+- Install CMTools v0.0.35 or better via the Windows' installer available from https://caltechlibrary.github.io/CMTools/installer.ps1
+- Install git
+- Run `go get -u github.com\caltechlibrary\dataset`
+- Change into the dataset directory
+- Run the `build.ps1`
 
 Here's an example of what I've done after opening a command window
 
@@ -20,8 +21,8 @@ Here's an example of what I've done after opening a command window
     mkdir go\src
     go get -u github.com\caltechlibrary\dataset
     cd go\src\caltechlibrary\dataset
-    .\make.bat
-    move dataset.exe "%USERPROFILE\go\bin\dataset.exe"
+    .\build.ps1
+    move bin\dataset.exe "%USERPROFILE\go\bin\dataset.exe"
 ```
 
 The dataset command line exe will likely need to be copied

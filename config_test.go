@@ -35,11 +35,11 @@ func TestConfigOpen(t *testing.T) {
 	if _, err := os.Stat(htdocs); os.IsNotExist(err) {
 		os.MkdirAll(htdocs, 0775)
 	}
-	fName := path.Join(dName, "settings.json")
+	fName := path.Join(dName, "settings.yaml")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}
-	// Write out sample test settings.json
+	// Write out sample test settings.yaml
 	src := []byte(`{
     "host": "localhost:8000",
     "htdocs": "testout/htdocs",
@@ -80,7 +80,7 @@ func TestWriteFile(t *testing.T) {
 	htdocs := path.Join(dName, "htdocs")
 	if _, err := os.Stat(htdocs); os.IsNotExist(err) {
 	}
-	fName := path.Join(dName, "settings-saved.json")
+	fName := path.Join(dName, "settings-saved.yaml")
 	if _, err := os.Stat(fName); err == nil {
 		os.RemoveAll(fName)
 	}

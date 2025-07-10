@@ -1,9 +1,9 @@
-%dataset(5) user manual | version 2.1.12 cfcaeeb
+%datasetd(5) user manual | version 2.3.1 9a3d898
 % R. S. Doiel and Tom Morrell
-% 2024-06-12
+% 2025-07-10
 
 
-# Datasetd Service
+# datasetd Service
 
 The datasetd based application can be configured to be managed by
 systemd. You need to create a an appropriate service file with
@@ -27,4 +27,5 @@ ExecStart=/usr/local/bin/datasetd /Sites/citesearch/citesearch.yaml
 [Install]
 WantedBy=multi-user.target
 ~~~
+
 

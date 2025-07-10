@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.3.0 f9fc2d1
+%datasetd(1) user manual | version 2.3.1 9a3d898
 % R. S. Doiel
-% 2025-06-27
+% 2025-07-10
 
 # NAME
 
@@ -62,7 +62,7 @@ dataset
 
 query
 : (optional) is map of query name to SQL statement. A POST is used to access
-the query (i.e. a POST To the path "`/api/<COLLECTION_NAME>/query/<QUERY_NAME>`")
+the query (i.e. a GET or POST To the path "`/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELD_NAMES>`")
 The parameters submitted in the post are passed to the SQL statement.
 NOTE: Only dataset collections using a SQL store are supported. The SQL
 needs to conform the SQL dialect of the store being used (e.g. MySQL, Postgres,
@@ -209,10 +209,21 @@ List the keys and you should see that "one" is not longer there.
     curl http://localhost:8485/api/t1.ds/keys
 ~~~
 
+You can run a query named 'browse' that is defined in the YAML configuration like this.
+
+~~~
+	curl http://localhost:8485/api/t1.ds/query/browse
+~~~
+
+or 
+
+~~~
+	curl -X POST -H 'Content-type:application/json' -d '{}' http://localhost:8485/api/t1.ds/query/browse
+~~~
+
 In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-datasetd 2.3.0
-
+datasetd 2.3.1
 
