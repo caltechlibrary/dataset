@@ -199,16 +199,15 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	// JSON -> application/json
 	//
 	// if contentType is "" then it will default to application/json
-	contentType := "application/json"
+	contentType := "application/x-www-form-urlencoded"
 	if r.Header != nil {
 		contentType = r.Header.Get("content-type")
 	}
-	// Make content type align to "csv" or "yaml" query parameter when passed.
+	// Make content type align to "csv" or "yaml" query parameter when passed named "fmt".
 	urlQuery := r.URL.Query()
-	if urlQuery.Get("csv") != "" {
+	if urlQuery.Get("fmt") == "csv" {
 		contentType = "text/csv"
-	}
-	if urlQuery.Get("yaml") != "" {
+	} else if urlQuery.Get("fmt") == "yaml" {
 		contentType = "application/yaml"
 	}
 	if api.Debug {
@@ -219,7 +218,9 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
-	qName := options[0]
+	// Get the query name form the list of options.
+	qName:= options[0]
+	
 	cfg, err := api.Settings.GetCfg(cName)
 	if err != nil {
 		log.Printf("Query, Bad Request %s %q %s, not found", r.Method, r.URL.Path, qName)
@@ -249,19 +250,56 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		if api.Debug {
 			log.Printf("DEBUG c : c -> %+v\n", c)
 		}
-		src, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
-			return
-		}
-		defer r.Body.Close()
+		// o holds the query parameter map used building the SQL query statement.
 		o := map[string]interface{}{}
-		if len(src) > 0 {
-			err = json.Unmarshal(src, &o)
-			if err != nil {
-				log.Printf("Query, unmarshal error %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+		// If we're a GET then we pull they query terms from the URL parameters.
+		if r.Method == http.MethodGet && len(options) > 1 {
+			for attrName := range urlQuery {
+				// NOTE: we skip format as that maybe used to request alternate output formats.
+				if attrName != "fmt" {
+					o[attrName] = urlQuery.Get(attrName)
+				}
+			}
+			// if urlQuery.Get(opt) != "" { copy option in to o } 
+		}
+		// Get the terms I need to look for in the URL prameters from the "options" passed in.
+
+		// 
+		// If we're a POST we need to read the body to get the query terms.
+		//
+		var src []byte
+		if r.Method == http.MethodPost {
+			if contentType == "application/json" {
+				src, err = ioutil.ReadAll(r.Body)
+				if err != nil {
+					log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+					return
+				}
+				defer r.Body.Close()
+				if len(src) > 0 {
+					err = json.Unmarshal(src, &o)
+					if err != nil {
+						log.Printf("Query, unmarshal error %+v, %s", o, err)
+						statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+						return
+					}
+				}
+			} else if contentType ==  "application/x-www-form-urlencoded" {
+				// Decode form data
+				err = r.ParseForm()
+				if err == nil {
+					for key, values := range r.Form {
+						if len(values) == 1 {
+							o[key] = values[0]
+						} else {
+							o[key] = values
+						}
+					}
+				}
+			} else {
+				//log.Printf(`Unsupported content type: %q for %q`, contentType, r.URL)
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "unsupported content type, " + contentType)
 				return
 			}
 		}
@@ -269,16 +307,22 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		if api.Debug {
 			log.Printf("DEBUG verb %q, options %+v\n", verb, options)
 		}
-		// FIXME: how to map form names to a list of parameters?
+		// NOTE: We must map form names to an ordered list of parameters.
 		var rows *sql.Rows
 		qParams := []interface{}{}
 		if len(options) > 0 && len(o) > 0 {
-			for _, key := range options {
-				if val, ok := o[key]; ok {
-					qParams = append(qParams, val)
-				} else if api.Debug {
-					log.Printf("DEBUG option %q, failed to map to query object %+v\n", key, o)
+			for i, key := range options {
+				// NOTE: the first option is the query name, it can be skipped.
+				if i > 0 {
+					if val, ok := o[key]; ok {
+						qParams = append(qParams, val)
+					} else if api.Debug {
+						log.Printf("DEBUG option %q, failed to map to query object %+v\n", key, o)
+					}
 				}
+			}
+			if api.Debug {
+				log.Printf("DEBUG qParams -> %+v", qParams)
 			}
 			rows, err = c.SQLStore.db.Query(qStmt, qParams...)
 		} else {
