@@ -1,3 +1,7 @@
+Release 2.3.2
+
+Frame, clone, sample, sync and join support removed. The dsimporter cli removed (use jsonl dump and load instead). Fixed a bug in using the JSON API with GET where command line parameters were not getting processed. Also added support for standard encoding of web forms in queries.
+
 Release 2.3.1:
 
 Documentation and tests have been removed for frames, clone, and sample. Frame support was removed from datasetd.

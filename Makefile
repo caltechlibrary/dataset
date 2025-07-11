@@ -19,11 +19,11 @@ else
 endif
 
 
-MAN_PAGES = dataset.1 datasetd.1 dsquery.1 dsimporter.1
+MAN_PAGES = dataset.1 datasetd.1 dsquery.1
 
 MAN_PAGES_MISC = datasetd_yaml.5 datasetd_service.5 datasetd_api.5
 
-PROGRAMS = dataset datasetd dsquery dsimporter
+PROGRAMS = dataset datasetd dsquery
 
 PREFIX = $(HOME)
 

@@ -24,21 +24,12 @@
 
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.3.1">dataset 2.3.1</h2>
-<p>Issue #152 has started. The frames, sample and clone help has been
-removed as those features are depreciated. The frames supprt was remove
-from datasetd. Help is being reorganizaed. api_doc.go and api_cmd.go was
-removed as it was dead code with changes in help implementaiton.</p>
-<p>The `-help` option can pull up help on a topic by providing a keyword
-as a separate parameter. This let's you pull up help on the related
-commands.</p>
-<p>Example:</p>
-<pre class="shell"><code>dataset -help api
-dastaet -help dsquery</code></pre>
-<p>Help text is now maintain inside a single file, helptext.go.</p>
-<p>This while the code for frames, clone and sample remains in the
-dataset cli it'll be removed in an upcoming release before the
-transition to v2.4.</p>
+<h2 id="dataset-2.3.2">dataset 2.3.2</h2>
+<p>Issue #161 fix for handling GET with query were data is passed via
+URL parameters.</p>
+<p>Removed support for frame, clone, sample, sync and join support
+removed. The dsimporter cli removed (use jsonl dump and load
+instead).</p>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
