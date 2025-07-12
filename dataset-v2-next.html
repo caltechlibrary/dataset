@@ -54,23 +54,18 @@ locking to avoid curruption on concurrent writes.</p>
 <p>In developing a version 2 of dataset an eye needs to be kept to
 several areas –</p>
 <ol type="1">
-<li>reduction of complexity.
+<li>reduction of complexity (see v2.3 has significant code reduction).
 <ol type="a">
 <li>simplification of codebase</li>
 <li>simplification of operation</li>
+<li><strong>elimination</strong> of underused “features”</li>
 </ol></li>
 <li>learn from other systems.
 <ol type="a">
 <li>align with good data practices</li>
 <li>adopt standards, e.g. codemeta for general metadata</li>
 </ol></li>
-<li><strong>elimination</strong> of underused “features”.</li>
 </ol>
-<p>With the introduction of Go 1.18 some of this can be achieved through
-a better organization of code, some by applying lessons learned over the
-last several years and some by reorganizing the underlying persistenent
-structure of the collections themselves (e.g. take advantage of SQL
-storage options as well as the tried and true pairtree model)</p>
 <h2 id="proposed-updates">Proposed updates</h2>
 <p>The metadata of a collection can be described by two JSON document.
 Operational metadata (e.g. type of collection storage) is held in a
@@ -101,47 +96,30 @@ e.g. “my_collection.ds” might increment patch level with each update,
 explored through using the tool. Versioning should be across the
 collection meaning both the JSON documents and attachments should be
 versioning consistently or not versioned at all.</p>
-<p>Dataset frames have proved very helpful. Where possible code should
-be simplified and frames should be available regardless of JSON document
-storage type. As we continue to use frames in growing collections
-performance will need to be improved. In practice the object list or
-keys associated with a frame are used not the direct representation of
-the frame in memory. This is an area suited to refinement. The internals
-could be changed to improve performance as long as the access to the
-keys/objects in the frame remains consistent. E.g. Frames don’t have to
-be stored as plain text on disk. The code for frames needs to be
-reviewed and positioned for possible evolution as needs evolve with
-frame usage.</p>
-<p>Before frames were implemented data grids were tried. In practical
-usage frames replaced grids. The data grids code can be removed from
-dataset. The few places where they are used in our feeds processing are
-scheduled to be rewritten to use regular frames. It is a good time to
-prune this “feature”.</p>
-<p>Importing, syncing and exporting to CSV is a canidate for a rethink.
-While it makes it easy to get started with dataset maintaining the
-ability to syncronization between a CSV representation and a dataset
-collection is overly complex. While CSV support in Go is very good but
-so are the Python libraries for working with CSV files. Processing
-objects in a collection is more commonly done in a script (e.g. Python
-using py_dataset) then directly in Go. It may make more sense to either
-simplify or drop support for CSV for the version 1 level integration.
-How much does Go bring to the table beyond Python? Does this need to be
-“built-in” to dataset or should it be left to scripting a dataset
-service or resource? Does import/export support of CSV files make
-dataset easier to use beyond the library? If so does that extend to SQL
-tables in general?</p>
+<p>Dataset frames have proved very helpful until implementation of
+<strong>dsquery</strong>. <strong>dsquery</strong> was an experimental
+add on that allowed SQL queries against the object store. Even for a
+pairtree collection it was easy to use SQLite databases as a rich index
+then query that. Additionally in v2.2 JSONL (JSON lines) support was
+added to dataset command. This proved very fast and was much more
+flexibly than clone repositories. It’s also easy to take samples out of
+a stream of of JSON objects. Given the current state of JSON tooling
+Cloing, sample, sync as well as the CSV importer seems redudent. About a
+quarter of the Dataset codebase is taken up supporting these features
+which have limitted application moving forward. They are being removed
+as part of the simplification process.</p>
 <p>There are generally two practices in using dataset in Caltech
 Library. The command line is used interactively or Python is used
 programatically to process collections (e.g. like in reporting or the
 feeds project). Python has been support via a C shared library called
 libdataset. While this has worked well it also has been a challenge to
 maintain requiring acccess to each os/hardware platform the cli
-supports. I don’t think this is sustainable. Since the introduction of
-datasetd (the web service implementation of dataset) py_dataset could be
-rewritten to use the web service implementation of dataset
-(i.e. datasetd) and this would fit most of our use cases now and planned
-in the near future. It would avoid some hard edge cases we’ve run across
-where the Go run time and Python run need to be kept in sync.</p>
+supports. It is not sustainable. Since the introduction of datasetd (the
+web service implementation of dataset) py_dataset could be rewritten to
+use the web service implementation of dataset (i.e. datasetd) and this
+would fit most of our use cases now and planned in the near future. It
+would avoid some hard edge cases we’ve run across where the Go run time
+and Python run need to be kept in sync.</p>
 <p>Dropping libdataset support (done in release v2.2.2) would allow
 dataset/datasetd to be cross compiled for all supported platforms using
 only the Go tool chain. It would make fully supporting snap installs
@@ -184,7 +162,7 @@ assume patch increment</li>
 <li><strong>minor</strong> would increment the minor number and set
 patch to zero</li>
 <li><strong>major</strong> would increment the major number and set
-minor and patch to zer</li>
+minor and patch to zero</li>
 </ol></li>
 <li>JSON objects should be versioned if the collection is
 versioned.</li>
@@ -213,19 +191,18 @@ JSON column support</h2>
 created and a collections.json document will also be create. This will
 help in supporting import/export (aka cloning) of JSON collections
 to/from pairtree and SQL engines.</p>
-<p>The v1 structure of a collection is defined by a directory name (e.g.
-mydataset.ds) containing a collection.json file (e.g. 
-mydata.ds/collection.json).</p>
+<p>The v1 structure of a collection is defined by a directory name
+(e.g. mydataset.ds) containing a collection.json file
+(e.g. mydata.ds/collection.json).</p>
 <p>When supporting SQL storage the collections.json should identify that
-the storage type is a SQL storage engine targetted
-(e.g. <code>"sqlite3", "mysql"</code>) a URI like string could be used
-to define the SQL stored based on Go’s DNS (data source name). The
-storage engine could be indentified as the “protocal” in the URI. The
-collection.json document SHOULD NOT require storing any secrets. Secrets
-can be passed via the environment. Loading a configuration should
-automatically check for this situation (e.g. you’re running a datasetd
-cprocess in a container and the settings.json file needs to be stored in
-the project’s GitHub repo)</p>
+the storage type is a SQL storage engine targetted (e.g. “sqlite3”,
+“mysql”`) a URI like string could be used to define the SQL stored based
+on Go’s DNS (data source name). The storage engine could be indentified
+as the “protocal” in the URI. The collection.json document SHOULD NOT
+require storing any secrets. Secrets can be passed via the environment.
+Loading a configuration should automatically check for this situation
+(e.g. you’re running a datasetd cprocess in a container and the
+settings.json file needs to be stored in the project’s GitHub repo)</p>
 <p>If the “storage type” is not present it is assumed that storage is
 local disk in a pairtree. Storage type is set at collection creation.
 E.g.</p>
