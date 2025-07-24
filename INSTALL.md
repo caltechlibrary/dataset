@@ -24,9 +24,12 @@ If you are running Windows 10 or 11 use the Powershell command below.
 irm https://caltechlibrary.github.io/dataset/installer.ps1 | iex
 ~~~
 
-If you are running macOS please see, [INSTALL_NOTES_macOS.md](INSTALL_NOTES_macOS.md) for details on dealing with unsigned executables.
+### If your are running macOS or Windows
 
-If you are running Windows please see, [INSTALL_NOTES_Windows.md](INSTALL_NOTES_Windows.md) for details on dealing with unsigned executables.
+You may get security warnings if you are using macOS or Windows. See the notes for the specific operating system you're using to fix issues.
+
+- [INSTALL_NOTES_macOS.md](INSTALL_NOTES_macOS.md)
+- [INSTALL_NOTES_Windows.md](INSTALL_NOTES_Windows.md)
 
 Installing from source
 ----------------------
