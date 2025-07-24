@@ -208,6 +208,7 @@ distribute_docs:
 	cp -v README.md dist/
 	cp -v LICENSE dist/
 	cp -v INSTALL.md dist/
+	cp -v INSTALL_NOTE_*.md dist/
 	cp installer.sh dist/
 	cp installer.ps1 dist/
 	cp -vR man dist/

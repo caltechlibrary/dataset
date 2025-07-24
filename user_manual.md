@@ -15,7 +15,8 @@
   - [Compatibility in Dataset v2.2](compatibility-in-v2.2.md)
   - [Compatibility with Dataset v1 in v2.1](compatibility-in-v2.1.md)
 - [Installation](INSTALL.md)
+  - [Notes if you run macOS](INSTALL_NOTES_macOS.md)
+  - [Notes if you run Windows](INSTALL_NOTES_Windows.md)
 - [Documentation](docs/)
 - [How to ...](how-to/)
-
 
