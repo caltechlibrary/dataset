@@ -3,7 +3,6 @@ module github.com/caltechlibrary/dataset/v2
 go 1.24.5
 
 require (
-	github.com/caltechlibrary/dotpath v0.1.0
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
 	github.com/caltechlibrary/models v0.0.5
 	github.com/caltechlibrary/pairtree v1.0.4
@@ -17,7 +16,7 @@ require (
 )
 
 require (
-	filippo.io/edwards25519 v1.1.0 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/nyaruka/phonenumbers v1.4.0 // indirect
