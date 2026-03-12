@@ -97,6 +97,8 @@ func JSONIndent(src []byte, prefix string, indent string) []byte {
 //
 // ```
 func (c *Collection) Dump(out io.Writer) error {
+	// Use a streaming approach if possible, e.g., iterate over the collection without loading all keys at once.
+	// If not possible, proceed with the current approach but ensure minimal memory usage.
 	keys, err := c.Keys()
 	if err != nil {
 		return err
@@ -104,6 +106,11 @@ func (c *Collection) Dump(out io.Writer) error {
 	if len(keys) == 0 {
 		return fmt.Errorf("collection %q is empty", c.Name)
 	}
+
+	enc := json.NewEncoder(out)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "") // For compact JSONL output
+
 	errCnt := 0
 	tot := len(keys)
 	for i, key := range keys {
@@ -111,21 +118,22 @@ func (c *Collection) Dump(out io.Writer) error {
 		err := c.Read(key, obj)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "WARNING (%d/%d) failed to read %q from %q, %s\n", i, tot, key, c.Name, err)
-			errCnt += 1
+			errCnt++
 			continue
 		}
+
 		rec := map[string]interface{}{
 			"key":    key,
 			"object": obj,
 		}
-		src, err := JSONMarshal(rec)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "WARNING (%d/%d) failed to encode %q from %q, %s", i, tot, key, c.Name, err)
-			errCnt += 1
+
+		if err := enc.Encode(rec); err != nil {
+			fmt.Fprintf(os.Stderr, "WARNING (%d/%d) failed to encode %q from %q, %s\n", i, tot, key, c.Name, err)
+			errCnt++
 			continue
 		}
-		fmt.Fprintf(out, "%s\n", src)
 	}
+
 	if errCnt > 0 {
 		return fmt.Errorf("%d dump errors for %q", errCnt, c.Name)
 	}
@@ -137,82 +145,105 @@ func (c *Collection) Dump(out io.Writer) error {
 // is the JSON object to be stored in the collection. The collection needs to exist.
 // If the overwrite parameter is set to true then the object read will overwrite
 // any objects with the same key. If overwrite is false you will get a warning mesage
-// that the object was skipped due to duplicate key. 
+// that the object was skipped due to duplicate key.
 // The third parameter is the size of the input buffer scanned in megabytes. If
-//  the value is less or equal to zero then it defaults to 1 megabyte buffer.
-// 
+//
+//	the value is less or equal to zero then it defaults to 1 megabyte buffer.
 //
 // ```
 //
-//	 cName := "mycollection.ds"
-//	 c, err := dataset.open(cName)
-//	 if err != nil {
-//	    // ... handle error
-//	 }
-//	 defer c.Close()
-//   // use the default buffer size
-//	 err = c.Load(os.Stdin, maxCapacity, 0)
-//	 if err != nil {
-//	    // ... handle error
-//	 }
+//		 cName := "mycollection.ds"
+//		 c, err := dataset.open(cName)
+//		 if err != nil {
+//		    // ... handle error
+//		 }
+//		 defer c.Close()
+//	  // use the default buffer size
+//		 err = c.Load(os.Stdin, maxCapacity, 0)
+//		 if err != nil {
+//		    // ... handle error
+//		 }
 //
 // ```
 func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
-	scanner := bufio.NewScanner(in)
-	// Set a max capacity for the buffer is greater than zero
+	// Set a large buffer size if maxCapacity is specified
+	bufSize := 1024 * 1024 // Default: 1 MB
 	if maxCapacity > 0 {
-		maxBufSize := maxCapacity * 1024 * 1024
-		buf := make([]byte, maxBufSize)
-		scanner.Buffer(buf, maxBufSize)
+		bufSize = maxCapacity * 1024 * 1024
 	}
-	// Set the split function to scan lines
-	scanner.Split(bufio.ScanLines)
+
+	scanner := bufio.NewScanner(in)
+	// Use a custom split function to handle very large lines
+	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if atEOF && len(data) == 0 {
+			return 0, nil, nil
+		}
+		// Look for a newline character
+		if i := bytes.IndexByte(data, '\n'); i >= 0 {
+			return i + 1, data[0:i], nil
+		}
+		// If we're at EOF, return the remaining data
+		if atEOF {
+			return len(data), data, nil
+		}
+		// Request more data
+		return 0, nil, nil
+	})
+	// Set the buffer size
+	buf := make([]byte, bufSize)
+	scanner.Buffer(buf, bufSize)
+
+	dec := json.NewDecoder(nil)
 	errCnt := 0
-	i := 0
+	lineNum := 0
+
 	for scanner.Scan() {
-		i += 1
-		src := scanner.Text()
-		rec := map[string]interface{}{}
-		err := JSONUnmarshal([]byte(src), &rec)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "WARNING: failed to decode line %d to %q, %s", i, c.Name, err)
-			errCnt += 1
+		lineNum++
+		line := scanner.Bytes()
+		dec = json.NewDecoder(bytes.NewReader(line))
+		dec.UseNumber()
+
+		var rec map[string]interface{}
+		if err := dec.Decode(&rec); err != nil {
+			fmt.Fprintf(os.Stderr, "WARNING: failed to decode line %d for %q, %s\n", lineNum, c.Name, err)
+			errCnt++
 			continue
 		}
-		if key, ok := rec["key"].(string); ok {
-			if obj, ok := rec["object"].(map[string]interface{}); ok {
-				// Check if the key exists or overwrite is true.
-				keyExists := c.HasKey(key)
-				if keyExists {
-					if overwrite {
-						if err := c.Update(key, obj); err != nil {
-							fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q -> %s, %s\n", i, key, src, err)
-							errCnt += 1
-						}
-					} else {
-						fmt.Fprintf(os.Stderr, "WARNING (line %d): duplicate key %q, skipping\n", i, key)
-						errCnt += 1
-					}
-				} else {
-					if err := c.Create(key, obj); err != nil {
-						fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q -> %s, %s\n", i, key, src, err)
-						errCnt += 1
-					}
+
+		key, keyOk := rec["key"].(string)
+		obj, objOk := rec["object"].(map[string]interface{})
+
+		if !keyOk || !objOk {
+			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key or object\n", lineNum)
+			errCnt++
+			continue
+		}
+
+		keyExists := c.HasKey(key)
+		if keyExists {
+			if overwrite {
+				if err := c.Update(key, obj); err != nil {
+					fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to update %q, %s\n", lineNum, key, err)
+					errCnt++
 				}
 			} else {
-				fmt.Fprintf(os.Stderr, "WARNING (line %d): missing object -> %s\n", i, src)
-				errCnt += 1
+				fmt.Fprintf(os.Stderr, "WARNING (line %d): duplicate key %q, skipping\n", lineNum, key)
+				errCnt++
 			}
 		} else {
-			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key -> %s\n", i, src)
-			errCnt += 1
+			if err := c.Create(key, obj); err != nil {
+				fmt.Fprintf(os.Stderr, "WARNING (line %d): failed to create %q, %s\n", lineNum, key, err)
+				errCnt++
+			}
 		}
 	}
-	// Check for any errors that occurred during the scan
-    if err := scanner.Err(); err != nil {
-        fmt.Fprintf(os.Stderr, "WARNING scanning errors, %s", err)
-		errCnt += 1
-    }
+
+	// Handle scanner errors (e.g., "token too long")
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "WARNING: scanning error at line %d, %s\n", lineNum, err)
+		errCnt++
+	}
+
 	if errCnt > 0 {
 		return fmt.Errorf("%d load errors for %q", errCnt, c.Name)
 	}

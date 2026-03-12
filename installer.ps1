@@ -1,12 +1,12 @@
 #!/usr/bin/env pwsh
-# generated with CMTools 2.3.2 d3f4f66
+# generated with CMTools 2.3.3 e9779d7
 
 #
 # Set the package name and version to install
 #
 param(
   [Parameter()]
-  [String]$VERSION = "2.3.2"
+  [String]$VERSION = "2.3.3"
 )
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
 if ($PKG_VERSION) {
@@ -82,4 +82,5 @@ if (!(Test-Path $ZIPFILE)) {
         $Env:Path += ";${BIN_DIR}"
     }
     Write-Output "${PACKAGE} was installed successfully to ${BIN_DIR}"
+	Write-Output "If you get a security warning on Windows or macOS please see INSTALL_NOTES_Windows.md or INSTALL_NOTES_macOS.md"
 }
