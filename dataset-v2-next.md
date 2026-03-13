@@ -11,9 +11,9 @@ Ideas
 
 We've been using dataset for several years now. It has proven helpful. The strength of dataset appears to be in severl areas. A simple clear API of commands on the command line make it easy to pickup and use. Storing JSON Object documents in a pairtree makes it easy to integrated into a text friendly environment like that found on Unix systems.  The added ability to store non-JSON documents along side the JSON document as attachments he proven useful but could be refined to be more seemless (e.g. you pass a semver when you attach a document).
 
-Dataset was concieved with deliberate limitiations. This in part due to the options available at the time (e.g. MySQL, Postgres, MongDB, CouchDB, Redis) all imposed a high level of complexity to do conceptually simple things. While many of the limitations were deliberate it is time to consider loosing some. This should be done with a degree of caution.
+Dataset was concieved with deliberate limitiations. This in part due to the options available at the time (e.g. Postgres, MongDB, CouchDB, Redis) all imposed a high level of complexity to do conceptually simple things. While many of the limitations were deliberate it is time to consider loosing some. This should be done with a degree of caution.
 
-In the intervening years since starting the dataset project the NoSQL and SQL database engines have started to converge in capabilities. This is particularly true on the SQL engine side. SQLite 3, MySQL 8, and Postgres 14 all have mature support for storing JSON objects in a column. This provides an opportunity for dataset itself. It can use those engines for storing hetrogenious collections of JSON objects. The use case where this is particularly helpful is when running multi-user, multi-proccess support for interacting with a dataset collection. If dataset provides a web service the SQL engines can be used to store the objects reliably. This allows for larger dataset collections as well as concurrent interactions. The SQL engines provide the necessary record locking to avoid curruption on concurrent writes.
+In the intervening years since starting the dataset project the NoSQL and SQL database engines have started to converge in capabilities. This is particularly true on the SQL engine side. SQLite 3 and Postgres 14 all have mature support for storing JSON objects in a column. This provides an opportunity for dataset itself. It can use those engines for storing hetrogenious collections of JSON objects. The use case where this is particularly helpful is when running multi-user, multi-proccess support for interacting with a dataset collection. If dataset provides a web service the SQL engines can be used to store the objects reliably. This allows for larger dataset collections as well as concurrent interactions. The SQL engines provide the necessary record locking to avoid curruption on concurrent writes.
 
 In developing a version 2 of dataset an eye needs to be kept to several areas --
 
@@ -30,7 +30,7 @@ Proposed updates
 
 The metadata of a collection can be described by two JSON document. Operational metadata (e.g. type of collection storage) is held in a document named "collection.json". General metadata about a collection's purpose is held in a document named "codemeta.json". The "codemeta.json" document should reflect the codemeta's project for describing software and data. This has been adopted in the data science community. 
 
-Looking at storage options. While a pairtree is well suited for integration into the text processing environment of Unix it is not performant when dealing with large numbers of objects and concurrent access. To meet the needs of scaling out a collection other options can easily be explored. First SQL databases often support JSON columns. This includes two commonly used in Caltech Library, i.e. MySQL 8 and SQLite 3.  If a dataset collection is to be accessed via a web service then using a SQL store gives us an implementation that solves concurrent access and updates to JSON metadata. This is desirable. 
+Looking at storage options. While a pairtree is well suited for integration into the text processing environment of Unix it is not performant when dealing with large numbers of objects and concurrent access. To meet the needs of scaling out a collection other options can easily be explored. First SQL databases often support JSON columns. This includes two commonly used in Caltech Library, i.e. SQLite 3.  If a dataset collection is to be accessed via a web service then using a SQL store gives us an implementation that solves concurrent access and updates to JSON metadata. This is desirable. 
 
 Dataset has supported a form of versioning attachments for some time. It's has not supported versioning of JSON objects, that is desirable. Likewise the JSON support for attachments has been achieved by explicitly passing [semver](https://semver.org/) strings when attaching a document. This is not ideal.  The versioning process should be automatic. Retaining a semver raises a question, what is the increment value to change? Should you increment by major version, minor version or patch level? There is no "right" answer for the likely use cases for dataset. The incremented level could be set collection wide, e.g. "my_collection.ds" might increment patch level with each update, "your_collection.ds" might increment the major level. That needs to be explored through using the tool. Versioning should be across the collection meaning both the JSON documents and attachments should be versioning consistently or not versioned at all.
 
@@ -56,7 +56,7 @@ Proposals
 
 In moving to version 2 there will be breaking changes.
 
-1. (braking change) datasetd should should store data in a SQL engine that support JSON columns, e.g. MySQL 8
+1. (braking change) datasetd should store data in a SQL engine that support JSON columns, e.g. SQLite3, Postgres 12
    a. should improve performance and allow for better concurrent usage
    b. improve frames support
    c. facilitate integration with fulltext search engines, e.g. Lunr,
@@ -73,8 +73,7 @@ In moving to version 2 there will be breaking changes.
 5. Versioning of JSON documents and attachments should be global to the collection, i.e. everything is versioned or nothing is versioned
 6. Dot notation needs reviewed. Look at how SQL databases are interacting with JSON columns. Is there a convergence in notation?
    a. [SQLite3](https://www.sqlite.org/json1.html), 
-   b. [MySQL 8](https://dev.mysql.com/doc/refman/8.0/en/json.html) and
-   c. [Postgres 9](https://www.postgresql.org/docs/9.3/functions-json.html)
+   b. [Postgres 9](https://www.postgresql.org/docs/9.3/functions-json.html)
 7. Easily clone to/from pairtree and SQL stored dataset collections
 8. Drop libdataset, it has been a time sync and constrainged dataset's evolution
 9. Automated migration from version 1 to version 2 databases (via check/repair) for primary JSON documents
@@ -86,12 +85,12 @@ When initializing a new SQL based collection a directory will get created and a 
 
 The v1 structure of a collection is defined by a directory name (e.g. mydataset.ds) containing a collection.json file (e.g. mydata.ds/collection.json).
 
-When supporting SQL storage the collections.json should identify that the storage type is a SQL storage engine targetted (e.g.  "sqlite3", "mysql"`) a URI like string could be used to define the SQL stored based on Go's DNS (data source name). The storage engine could be indentified as the "protocal" in the URI.  The collection.json document SHOULD NOT require storing any secrets. Secrets can be passed via the environment. Loading a configuration should automatically check for this situation (e.g. you're running a datasetd cprocess in a container and the settings.json file needs to be stored in the project's GitHub repo)
+When supporting SQL storage the collections.json should identify that the storage type is a SQL storage engine targetted (e.g.  "sqlite3", "postgres"`) a URI like string could be used to define the SQL stored based on Go's DNS (data source name). The storage engine could be indentified as the "protocal" in the URI.  The collection.json document SHOULD NOT require storing any secrets. Secrets can be passed via the environment. Loading a configuration should automatically check for this situation (e.g. you're running a datasetd cprocess in a container and the settings.json file needs to be stored in the project's GitHub repo)
 
 If the "storage type" is not present it is assumed that storage is local disk in a pairtree. Storage type is set at collection creation. E.g.
 
 - `init COLLECTION_NAME`, intialize dataset as a pairtree
-- `init COLLECTION_NAME DSN_URI`, intialize dataset using SQLite3 or MySQL 8 for JSON document storage depending on the values in DSN_URI
+- `init COLLECTION_NAME DSN_URI`, intialize dataset using SQLite3 or Postgres for JSON document storage depending on the values in DSN_URI
 
 A SQL based dataset collections could be stored in a single SQL database as tables. This would allow for easier collection migration and replication.
 
@@ -133,8 +132,8 @@ The v1 series of dataset source code is rather organic. It needs to be structure
 - sqlstore holds the code hanlding a SQL engine storage using JSON columns
   - sqlstore/sql.go - SQL primatives for mapping actions to the SQL store
   - sqlstore/frames.go should hold the SQL implementation of frames
-  - sqlstore/storage.go should handle mapping objects into MySQL storage
-  - sqlstore/versioning.go should handle the version mapping in MySQL tables
+  - sqlstore/storage.go should handle mapping objects into SQL storage
+  - sqlstore/versioning.go should handle the version mapping in SQL tables
 - semver/semver.go models semver behaviors
 - dotpath/dotpath.go models dotpaths and JSON object behaviors
 - pairtree/pairtree.go should hold pairtree structure and methods
@@ -144,4 +143,3 @@ The v1 series of dataset source code is rather organic. It needs to be structure
   - base assumption, multi user, multi process
 - cmd/dataset/dataset.go is a light wrapper envoking run methods in cli
 - cmd/datasetd/datasetd.go is a light wrapper envoking the run methods in ebapi.go
-

@@ -13,7 +13,9 @@ The Dataset Project provides a command line program and a web service for workin
 dataset, a command line tool
 ----------------------------
 
-[dataset](doc/dataset.md) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents. Collections can be stored on the file system in a [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) or stored in a SQL database that supports JSON columns like SQLite3, PostgreSQL or MySQL.
+[dataset](doc/dataset.md) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents. Collections can be stored on the file system in a [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) or stored in a SQL database that supports JSON columns like SQLite3 and PostgreSQL[^1].
+
+[^1]: MySQL was supported through v2.3.3. It will not longer be maintained starting v2.3.4 and will eventually be removed completely.
 
 The __dataset__ command line tool supports common data management operations as
 
@@ -39,7 +41,7 @@ __dataset__ and __datasetd__ are intended to be simple tools for managing collec
 __dataset__ is guided by the idea that you should be able to work with JSON documents as easily as you can any plain text document on the Unix command line. __dataset__ is intended to be simple to use with minimal setup (e.g.  `dataset init mycollection.ds` creates a new collection called 'mycollection.ds').
 
 - __dataset__ and __datasetd__ store JSON object documents in collections
-  - Storage of the JSON documents may be either in a pairtree on disk or in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)
+  - Storage of the JSON documents may be either in a pairtree on disk or in a SQL database using JSON columns (e.g. SQLite3 or Postgres)
   - dataset collections are made up of a directory containing a collection.json and codemeta.json files.
   - collection.json metadata file describing the collection, e.g. storage type, name, description, if versioning is enabled
   - codemeta.json is a [codemeta](https://codemeta.github.io) file describing the nature of the collection, e.g. authors, description, funding
@@ -48,7 +50,7 @@ __dataset__ is guided by the idea that you should be able to work with JSON docu
 
 __dataset__ collection storage options
   - SQL store stores JSON documents in a JSON column
-    - SQLite3 (default), PostgreSQL >= 12 and MySQL 8 are the current SQL databases support
+    - SQLite3 (default), PostgreSQL >= 12 are the current SQL databases support (MySQL/MariaDB support depricated v2.3.3)
     - A "DSN URI" is used to identify and gain access to the SQL database
     - The DSN URI maybe passed through the environment
   - [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) (depricated, will be removed in v3)
@@ -169,4 +171,3 @@ Related projects
 You can use __dataset__ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package. 
 
 You can use __dataset__ from Deno+TypeScript by running datasetd and access it with [ts_dataset](https://github.com/caltechlibraray/ts_dataset).
-
