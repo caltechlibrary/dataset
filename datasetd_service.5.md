@@ -1,4 +1,4 @@
-%datasetd(5) user manual | version 2.3.3 57a197c
+%datasetd(5) user manual | version 2.3.3 aec520a
 % R. S. Doiel and Tom Morrell
 % 2026-03-11
 

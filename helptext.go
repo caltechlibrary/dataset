@@ -92,10 +92,15 @@ load
 format is often called JSONL, see https://jsonlines.org. The object
 has two attributes, key and object.
 
-join [OPTIONS] c_name, key, JSON_SRC
+join [OPTIONS] C_NAME KEY JSON_SRC
 : This will join a new object provided on the command line with an
 existing object in the collection.
 
+query [OPTIONS] C_NAME SQL_STATMENT
+: This will run a SQL query that returns a single JSON column in the
+collection identfied by C_NAME. It integrates the dsquery cli with
+{app_name}. See the man page for dsquery for details about SQL
+supported.
 
 A word about "keys". {app_name} uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
@@ -747,10 +752,12 @@ C_NAME
 
 SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
-JSON store for the JSON store (e.g. Postgres and SQLite 3).
-The SELECT clause should return a single JSON object type per row.
-__{app_name}__ returns an JSON array of JSON objects returned
-by the SQL query.
+JSON store(SQLite3 or Postgres). If it is a select statement
+is must return a single column of type JSON, TEXT, VARCHAR,
+BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columsn
+are mapped to JSON string type. __{app_name}__ returns an JSON
+array of value JSON objects or types. If the query does not return
+a value (is not select statement) than an empty JSON array is returned.
 
 PARAMS
 : Is optional, it is any values you want to pass to the SQL_STATEMENT.

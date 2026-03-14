@@ -1,4 +1,4 @@
-%datasetd(5) user manual | version 2.3.3 57a197c
+%datasetd(5) user manual | version 2.3.3 aec520a
 % R. S. Doiel and Tom Morrell
 % 2026-03-11
 
@@ -30,7 +30,7 @@ query
 : (optional) Is a map of query name to SQL statements. Each name will trigger a the execution of a SQL statement.
 The query expects a POST. Fields are mapped to the SQL statement parameters. If a pairtree store is used a
 indexing will be needed before this will work as it would use the SQLite 3 database to execute the SQL statement against.
-Otherwise the SQL statement would conform to the SQL dialect of the SQL storage used (e.g. Postgres, MySQL or SQLite3).
+Otherwise the SQL statement would conform to the SQL dialect of the SQL storage used (e.g. Postgres or SQLite3).
 The SQL statements need to conform to the same constraints as dsquery's implementation of SQL statements.
 
 ## API Permissions

@@ -1,3 +1,14 @@
+Release 2.3.4
+
+- Deprecated MySQL support in documentation
+
+Release 2.3.3
+
+- Issue #161 fix for handling GET with query were data is passed via URL parameters.
+- Removed support for frame, clone, sample, sync and join support removed. 
+- The dsimporter cli removed (use jsonl dump and load instead).
+- Improved loading large JSON objects from jsonl files
+
 Release 2.3.2
 
 Frame, clone, sample, sync and join support removed. The dsimporter cli removed (use jsonl dump and load instead). Fixed a bug in using the JSON API with GET where command line parameters were not getting processed. Also added support for standard encoding of web forms in queries.

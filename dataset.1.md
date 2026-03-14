@@ -1,10 +1,10 @@
-%dataset(1) user manual | version 2.3.3 57a197c
+%dataset(1) user manual | version 2.3.3 aec520a
 % R. S. Doiel and Tom Morrell
 % 2026-03-11
 
 # NAME
 
-dataset 
+dataset
 
 # SYNOPSIS
 
@@ -35,7 +35,7 @@ create
 : creates a new JSON document in the collection
 
 read
-: retrieves the "current" version of a JSON document from 
+: retrieves the "current" version of a JSON document from
   the collection writing it standard out
 
 update
@@ -48,7 +48,7 @@ keys
 : returns a list of keys in the collection
 
 codemeta:
-: copies metadata a codemeta file and updates the 
+: copies metadata a codemeta file and updates the
   collections metadata
 
 attach
@@ -61,8 +61,8 @@ retrieve
 : creates a copy local of an attachement in a JSON record
 
 detach
-: will copy out the attachment to a JSON document 
-  into the current directory 
+: will copy out the attachment to a JSON document
+  into the current directory
 
 prune
 : removes an attachment (including all versions) from a JSON record
@@ -84,18 +84,23 @@ value retrieved from the collection.
 load
 : This will read JSON objects one per line from standard input. This
 format is often called JSONL, see https://jsonlines.org. The object
-has two attributes, key and object. 
+has two attributes, key and object.
 
-join [OPTIONS] c_name, key, JSON_SRC
+join [OPTIONS] C_NAME KEY JSON_SRC
 : This will join a new object provided on the command line with an
 existing object in the collection.
 
+query [OPTIONS] C_NAME SQL_STATMENT
+: This will run a SQL query that returns a single JSON column in the
+collection identfied by C_NAME. It integrates the dsquery cli with
+dataset. See the man page for dsquery for details about SQL
+supported.
 
 A word about "keys". dataset uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
-value is the object to be stored.  Keys must be lower case 
+value is the object to be stored.  Keys must be lower case
 alpha numeric only.  Depending on storage engines there are issues
-for keys with punctation or that rely on case sensitivity. E.g. 
+for keys with punctation or that rely on case sensitivity. E.g.
 The pairtree storage engine relies on the host file system. File
 systems are notorious for being picky about non-alpha numeric
 characters and some are not case sensistive.
@@ -116,7 +121,6 @@ There are currently three support storage options for JSON documents in a datase
 
 - SQLite3 database >= 3.40 (default)
 - Postgres >= 12
-- MySQL 8
 - Pairtree (pre-2.1 default)
 
 STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairtree".
@@ -138,7 +142,7 @@ STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairt
 ~~~
    dataset help init
 
-   dataset init my_objects.ds 
+   dataset init my_objects.ds
 
    dataset model my_objects.ds
 
@@ -146,8 +150,8 @@ STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairt
 
    dataset create my_objects.ds "123" '{"one": 1}'
 
-   dataset create my_objects.ds "234" mydata.json 
-   
+   dataset create my_objects.ds "234" mydata.json
+
    cat <<EOT | dataset create my_objects.ds "345"
    {
 	   "four": 4,
