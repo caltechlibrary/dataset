@@ -47,8 +47,9 @@ working with collections of <a
 href="https://en.wikipedia.org/wiki/JSON">JSON</a> documents.
 Collections can be stored on the file system in a <a
 href="https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01">pairtree</a>
-or stored in a SQL database that supports JSON columns like SQLite3,
-PostgreSQL or MySQL.</p>
+or stored in a SQL database that supports JSON columns like SQLite3 and
+PostgreSQL<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>.</p>
 <p>The <strong>dataset</strong> command line tool supports common data
 management operations as</p>
 <ul>
@@ -84,7 +85,7 @@ called ‘mycollection.ds’).</p>
 object documents in collections
 <ul>
 <li>Storage of the JSON documents may be either in a pairtree on disk or
-in a SQL database using JSON columns (e.g. SQLite3 or MySQL 8)</li>
+in a SQL database using JSON columns (e.g. SQLite3 or Postgres)</li>
 <li>dataset collections are made up of a directory containing a
 collection.json and codemeta.json files.</li>
 <li>collection.json metadata file describing the collection,
@@ -100,9 +101,9 @@ made up of lower case alpha numeric characters</li>
 </ul>
 <p><strong>dataset</strong> collection storage options - SQL store
 stores JSON documents in a JSON column - SQLite3 (default), PostgreSQL
-&gt;= 12 and MySQL 8 are the current SQL databases support - A “DSN URI”
-is used to identify and gain access to the SQL database - The DSN URI
-maybe passed through the environment - <a
+&gt;= 12 are the current SQL databases support (MySQL/MariaDB support
+depricated v2.3.3) - A “DSN URI” is used to identify and gain access to
+the SQL database - The DSN URI maybe passed through the environment - <a
 href="https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01">pairtree</a>
 (depricated, will be removed in v3) - the pairtree path is always
 lowercase - non-JSON attachments can be associated with a JSON document
@@ -247,6 +248,16 @@ package.</p>
 <p>You can use <strong>dataset</strong> from Deno+TypeScript by running
 datasetd and access it with <a
 href="https://github.com/caltechlibraray/ts_dataset">ts_dataset</a>.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>MySQL was supported through v2.3.3. It will not longer
+be maintained starting v2.3.4 and will eventually be removed
+completely.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
 </section>
 <footer-global></footer-global>
 </body>

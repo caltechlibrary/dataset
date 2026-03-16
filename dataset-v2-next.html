@@ -35,23 +35,22 @@ systems. The added ability to store non-JSON documents along side the
 JSON document as attachments he proven useful but could be refined to be
 more seemless (e.g. you pass a semver when you attach a document).</p>
 <p>Dataset was concieved with deliberate limitiations. This in part due
-to the options available at the time (e.g. MySQL, Postgres, MongDB,
-CouchDB, Redis) all imposed a high level of complexity to do
-conceptually simple things. While many of the limitations were
-deliberate it is time to consider loosing some. This should be done with
-a degree of caution.</p>
+to the options available at the time (e.g. Postgres, MongDB, CouchDB,
+Redis) all imposed a high level of complexity to do conceptually simple
+things. While many of the limitations were deliberate it is time to
+consider loosing some. This should be done with a degree of caution.</p>
 <p>In the intervening years since starting the dataset project the NoSQL
 and SQL database engines have started to converge in capabilities. This
-is particularly true on the SQL engine side. SQLite 3, MySQL 8, and
-Postgres 14 all have mature support for storing JSON objects in a
-column. This provides an opportunity for dataset itself. It can use
-those engines for storing hetrogenious collections of JSON objects. The
-use case where this is particularly helpful is when running multi-user,
-multi-proccess support for interacting with a dataset collection. If
-dataset provides a web service the SQL engines can be used to store the
-objects reliably. This allows for larger dataset collections as well as
-concurrent interactions. The SQL engines provide the necessary record
-locking to avoid curruption on concurrent writes.</p>
+is particularly true on the SQL engine side. SQLite 3 and Postgres 14
+all have mature support for storing JSON objects in a column. This
+provides an opportunity for dataset itself. It can use those engines for
+storing hetrogenious collections of JSON objects. The use case where
+this is particularly helpful is when running multi-user, multi-proccess
+support for interacting with a dataset collection. If dataset provides a
+web service the SQL engines can be used to store the objects reliably.
+This allows for larger dataset collections as well as concurrent
+interactions. The SQL engines provide the necessary record locking to
+avoid curruption on concurrent writes.</p>
 <p>In developing a version 2 of dataset an eye needs to be kept to
 several areas –</p>
 <ol type="1">
@@ -79,10 +78,10 @@ integration into the text processing environment of Unix it is not
 performant when dealing with large numbers of objects and concurrent
 access. To meet the needs of scaling out a collection other options can
 easily be explored. First SQL databases often support JSON columns. This
-includes two commonly used in Caltech Library, i.e. MySQL 8 and SQLite
-3. If a dataset collection is to be accessed via a web service then
-using a SQL store gives us an implementation that solves concurrent
-access and updates to JSON metadata. This is desirable.</p>
+includes two commonly used in Caltech Library, i.e. SQLite 3. If a
+dataset collection is to be accessed via a web service then using a SQL
+store gives us an implementation that solves concurrent access and
+updates to JSON metadata. This is desirable.</p>
 <p>Dataset has supported a form of versioning attachments for some time.
 It’s has not supported versioning of JSON objects, that is desirable.
 Likewise the JSON support for attachments has been achieved by
@@ -140,8 +139,8 @@ of direct help integration with the cli or web service.</p>
 <h2 id="proposals">Proposals</h2>
 <p>In moving to version 2 there will be breaking changes.</p>
 <ol type="1">
-<li>(braking change) datasetd should should store data in a SQL engine
-that support JSON columns, e.g. MySQL 8
+<li>(braking change) datasetd should store data in a SQL engine that
+support JSON columns, e.g. SQLite3, Postgres 12
 <ol type="a">
 <li>should improve performance and allow for better concurrent
 usage</li>
@@ -173,8 +172,6 @@ collection, i.e. everything is versioned or nothing is versioned</li>
 interacting with JSON columns. Is there a convergence in notation?
 <ol type="a">
 <li><a href="https://www.sqlite.org/json1.html">SQLite3</a>,</li>
-<li><a href="https://dev.mysql.com/doc/refman/8.0/en/json.html">MySQL
-8</a> and</li>
 <li><a
 href="https://www.postgresql.org/docs/9.3/functions-json.html">Postgres
 9</a></li>
@@ -197,13 +194,14 @@ to/from pairtree and SQL engines.</p>
 (e.g. mydata.ds/collection.json).</p>
 <p>When supporting SQL storage the collections.json should identify that
 the storage type is a SQL storage engine targetted (e.g. “sqlite3”,
-“mysql”`) a URI like string could be used to define the SQL stored based
-on Go’s DNS (data source name). The storage engine could be indentified
-as the “protocal” in the URI. The collection.json document SHOULD NOT
-require storing any secrets. Secrets can be passed via the environment.
-Loading a configuration should automatically check for this situation
-(e.g. you’re running a datasetd cprocess in a container and the
-settings.json file needs to be stored in the project’s GitHub repo)</p>
+“postgres”`) a URI like string could be used to define the SQL stored
+based on Go’s DNS (data source name). The storage engine could be
+indentified as the “protocal” in the URI. The collection.json document
+SHOULD NOT require storing any secrets. Secrets can be passed via the
+environment. Loading a configuration should automatically check for this
+situation (e.g. you’re running a datasetd cprocess in a container and
+the settings.json file needs to be stored in the project’s GitHub
+repo)</p>
 <p>If the “storage type” is not present it is assumed that storage is
 local disk in a pairtree. Storage type is set at collection creation.
 E.g.</p>
@@ -211,7 +209,7 @@ E.g.</p>
 <li><code>init COLLECTION_NAME</code>, intialize dataset as a
 pairtree</li>
 <li><code>init COLLECTION_NAME DSN_URI</code>, intialize dataset using
-SQLite3 or MySQL 8 for JSON document storage depending on the values in
+SQLite3 or Postgres for JSON document storage depending on the values in
 DSN_URI</li>
 </ul>
 <p>A SQL based dataset collections could be stored in a single SQL
@@ -277,9 +275,9 @@ columns
 <li>sqlstore/sql.go - SQL primatives for mapping actions to the SQL
 store</li>
 <li>sqlstore/frames.go should hold the SQL implementation of frames</li>
-<li>sqlstore/storage.go should handle mapping objects into MySQL
+<li>sqlstore/storage.go should handle mapping objects into SQL
 storage</li>
-<li>sqlstore/versioning.go should handle the version mapping in MySQL
+<li>sqlstore/versioning.go should handle the version mapping in SQL
 tables</li>
 </ul></li>
 <li>semver/semver.go models semver behaviors</li>

@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.3.2 d3f4f66
+%datasetd(1) user manual | version 2.3.4 6b944fa
 % R. S. Doiel
-% 2025-07-11
+% 2026-03-16
 
 
 # datasetd REST API
@@ -73,7 +73,7 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
   -d '{"pid": "doe-jane", "family": "Doe", "lived": "Jane", "orcid": "9999-9999-9999-9999" }' \
-  http://localhost:8485/api/people.ds/object/doe-jane  
+  http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 ### read
@@ -82,7 +82,7 @@ The read action is formed with the object URL path, the GET http method and the 
 aside from the URL to request the object. Here's what it would look like using curl to access the API.
 
 ~~~shell
-curl http://localhost:8485/api/people.ds/object/doe-jane  
+curl http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 ### update
@@ -97,7 +97,7 @@ curl -X PUT \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
   -d '{"pid": "doe-jane", "family": "Doe", "lived": "Jane", "orcid": "9999-9999-9999-9999" }' \
-  http://localhost:8485/api/people.ds/object/doe-jane  
+  http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 This will overwrite the existing "doe-jane". NOTE the record must exist or you will get an error.
@@ -107,7 +107,7 @@ This will overwrite the existing "doe-jane". NOTE the record must exist or you w
 If you want to delete the "doe-jane" record in "people.ds" you perform an http DELETE method and form the url like a read.
 
 ~~~shell
-curl -X DELETE http://localhost:8485/api/people.ds/object/doe-jane  
+curl -X DELETE http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 ## query
@@ -134,7 +134,7 @@ When you form a query path we need to indicate that the parameter for family and
 /api/people.ds/query/full_name/family/lived
 ~~~
 
-The web form could look like this.  
+The web form could look like this.
 
 ~~~
 <form id="query_name">
@@ -147,7 +147,7 @@ The web form could look like this.
 REMEMBER: the JSON API only supports the content type of "application/json" so you can use the browser's action and method in the form.
 
 You would include JavaScript in the your HTML to pull the values out of the form and create a JSON object. If I searched
-for someone who had the family name "Doe" and he lived name of "Jane" the object submitted to query might look like the following. 
+for someone who had the family name "Doe" and he lived name of "Jane" the object submitted to query might look like the following.
 
 ~~~json
 {

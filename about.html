@@ -25,12 +25,18 @@
 </nav>
 <section>
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.3.2">dataset 2.3.2</h2>
-<p>Issue #161 fix for handling GET with query were data is passed via
-URL parameters.</p>
-<p>Removed support for frame, clone, sample, sync and join support
+<h2 id="dataset-2.3.4">dataset 2.3.4</h2>
+<ul>
+<li>Issue #161 fix for handling GET with query were data is passed via
+URL parameters.</li>
+<li>Removed support for frame, clone, sample, sync and join support
 removed. The dsimporter cli removed (use jsonl dump and load
-instead).</p>
+instead).</li>
+<li>Improved loading large JSON objects from jsonl files</li>
+<li>Issue #164 where the queries in COLD would work in v2.2.0 but fail
+in v2.3.x. Now compare column types returned by DB as well as Go type in
+driver</li>
+</ul>
 <h3 id="authors">Authors</h3>
 <ul>
 <li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
@@ -71,8 +77,8 @@ class="uri">https://github.com/caltechlibrary/dataset/issues</a></li>
 </ul>
 <h3 id="software-requirements">Software Requirements</h3>
 <ul>
-<li>Golang &gt;= 1.24.5</li>
-<li>CMTools &gt;= 0.0.35</li>
+<li>Golang &gt;= 1.26.1</li>
+<li>CMTools &gt;= 0.0.40</li>
 </ul>
 <h3 id="software-suggestions">Software Suggestions</h3>
 <ul>

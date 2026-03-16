@@ -24,7 +24,6 @@ type DSQuery struct {
 	Attributes []string `json:"attributes,omitempty"`
 	PTIndex    bool     `json:"pt_index,omitempty"`
 	ds         *Collection
-	db         *sql.DB
 }
 
 // MakeGrid takes JSON source holding an array of objects and uses the attribute list to
@@ -166,7 +165,7 @@ func indexCollection(ds *Collection, index *sql.DB) error {
 	return nil
 }
 
-func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName string, stmt string, params []string) error {
+func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName string, stmt string, params []string, debug bool) error {
 	app.CName = cName
 	app.Stmt = stmt
 	ds, err := Open(cName)
@@ -174,12 +173,10 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 		return err
 	}
 	defer ds.Close()
-	app.ds = ds
 	if strings.Compare(ds.StoreType, SQLSTORE) == 0 {
 		if ds.SQLStore == nil {
 			return fmt.Errorf("sqlstore failed to open")
 		}
-		app.db = ds.SQLStore.db
 	} else {
 		wPath := cName
 		if ds.workPath != "" {
@@ -201,60 +198,48 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 				return fmt.Errorf("failed to index %q, %s", cName, err)
 			}
 		}
-		app.db = index
+		ds.SQLStore.db = index
 	}
-	// FIXME: This needs to be abstracted into a general purpose Query function so I can support dsquery in the JSON API provided
-	// datasetd.
-	var rows *sql.Rows
-	if len(params) > 0 {
-		args := []interface{}{}
-		for _, val := range params {
-			args = append(args, val)
-		}
-		rows, err = app.db.Query(app.Stmt, args...)
-	} else {
-		rows, err = app.db.Query(app.Stmt)
-	}
+	resultsList, err := ds.Query(app.Stmt, debug, nil)
 	if err != nil {
 		return fmt.Errorf("stmt: %s, %s", app.Stmt, err)
 	}
-	src := []byte(`[`)
-	i := 0
-	for rows.Next() {
-		// Get our row values
-		obj := []byte{}
-		if err := rows.Scan(&obj); err != nil {
-			return err
+	var src []byte
+
+	if len(resultsList) == 0 {
+		src = []byte("[]")
+	} else {
+		src, err = JSONMarshal(resultsList)
+		if err != nil {
+			return fmt.Errorf("json encoding error, %s", err)
 		}
-		if i > 0 {
-			src = append(src, ',')
-		}
-		src = append(src, obj...)
-		i++
 	}
-	src = append(src, ']')
-	err = rows.Err()
-	if err != nil {
-		return err
-	}
+
 	if app.AsGrid {
 		src, err = MakeGrid(src, app.Attributes)
 		if err != nil {
 			return err
 		}
+		fmt.Fprintf(out, "%s\n", src)
+		return nil
 	}
 	if app.AsCSV {
 		src, err = MakeCSV(src, app.Attributes)
 		if err != nil {
 			return err
 		}
+		fmt.Fprintf(out, "%s\n", src)
+		return nil
 	}
 	if app.AsYAML {
 		src, err = MakeYAML(src, app.Attributes)
 		if err != nil {
 			return err
 		}
+		fmt.Fprintf(out, "%s\n", src)
+		return nil
 	}
+	// Default output is JSON
 	if app.Pretty {
 		fmt.Fprintf(out, "%s\n", JSONIndent(src, "", "    "))
 		return nil

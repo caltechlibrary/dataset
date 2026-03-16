@@ -1,9 +1,8 @@
 module github.com/caltechlibrary/dataset/v2
 
-go 1.24.5
+go 1.26.1
 
 require (
-	github.com/caltechlibrary/dotpath v0.1.0
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
 	github.com/caltechlibrary/models v0.0.5
 	github.com/caltechlibrary/pairtree v1.0.4
@@ -11,13 +10,13 @@ require (
 	github.com/glebarez/go-sqlite v1.22.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.11.2
 	github.com/pkg/fileutils v0.0.0-20181114200823-d734b7f202ba
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	filippo.io/edwards25519 v1.1.0 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/nyaruka/phonenumbers v1.4.0 // indirect

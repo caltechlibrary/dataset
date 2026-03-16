@@ -1,6 +1,6 @@
-%dsquery(1) dataset user manual | version 2.3.2 d3f4f66
+%dsquery(1) dataset user manual | version 2.3.4 6b944fa
 % R. S. Doiel and Tom Morrell
-% 2025-07-11
+% 2026-03-16
 
 # NAME
 
@@ -8,19 +8,19 @@ dsquery
 
 # SYNOPSIS
 
-dsquery [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+dsquery [OPTIONS] C_NAME SQL_STATEMENT
 
 # DESCRIPTION
 
-__dsquery__ is a tool to support SQL queries of dataset collections. 
+__dsquery__ is a tool to support SQL queries of dataset collections.
 Pairtree based collections should be index before trying to query them
 (see '-index' option below). Pairtree collections use the SQLite 3
 dialect of SQL for querying.  For collections using a SQL storage
-engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect reflects
+engine (e.g. SQLite3 and Postgres), the SQL dialect reflects
 the SQL of the storage engine.
 
 The schema is the same for all storage engines.  The scheme for the JSON
-stored documents have a four column scheme.  The columns are "_key", 
+stored documents have a four column scheme.  The columns are "_key",
 "created", "updated" and "src". "_key" is a string (aka VARCHAR),
 "created" and "updated" are timestamps while "src" is a JSON column holding
 the JSON document. The table name reflects the collection
@@ -39,13 +39,12 @@ C_NAME
 
 SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
-JSON store for the JSON store (e.g.  Postgres, MySQL and SQLite 3).
-The SELECT clause should return a single JSON object type per row.
-__dsquery__ returns an JSON array of JSON objects returned
-by the SQL query.
-
-PARAMS
-: Is optional, it is any values you want to pass to the SQL_STATEMENT.
+JSON store(SQLite3 or Postgres). If it is a select statement
+is must return a single column of type JSON, TEXT, VARCHAR,
+BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columns
+are mapped to JSON string type. __dsquery__ returns an JSON
+array of value JSON objects or types. If the query does not return
+a value (is not select statement) than an empty JSON array is returned.
 
 # SQL Store Scheme
 
@@ -86,12 +85,12 @@ can be combined with -pretty options.
 
 -csv STRING_OF_ATTRIBUTE_NAMES
 : Like -grid this takes our list of dataset objects and a list of attribute
-names but rather than create a 2D JSON array of values it creates CSV 
+names but rather than create a 2D JSON array of values it creates CSV
 representation with the first row as the attribute names.
 
 -yaml STRING_OF_ATTRIBUTE_NAMES
 : Like -grid this takes our list of dataset objects and a list of attribute
-names but rather than create a 2D JSON of values it creates YAML 
+names but rather than create a 2D JSON of values it creates YAML
 representation.
 
 -index

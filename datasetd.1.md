@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.3.2 d3f4f66
+%datasetd(1) user manual | version 2.3.4 6b944fa
 % R. S. Doiel
-% 2025-07-11
+% 2026-03-16
 
 # NAME
 
@@ -65,14 +65,14 @@ query
 the query (i.e. a GET or POST To the path "`/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELD_NAMES>`")
 The parameters submitted in the post are passed to the SQL statement.
 NOTE: Only dataset collections using a SQL store are supported. The SQL
-needs to conform the SQL dialect of the store being used (e.g. MySQL, Postgres,
+needs to conform the SQL dialect of the store being used (e.g. Postgres,
 SQLite3). The SQL statement functions with the same contraints of dsquery SQL
 statements. The SQL statement is defined as a YAML text blog.
 
 ## API Permissions
 
 The following are permissioning attributes for the collection. These are
-global to the collection and by default are set to false. A read only API 
+global to the collection and by default are set to false. A read only API
 would normally only include "keys" and "read" attributes set to true.
 
 keys
@@ -116,8 +116,8 @@ Starting up the web service
 
 In this example we cover a short life cycle of a collection
 called "t1.ds". We need to create a "settings.json" file and
-an empty dataset collection. Once ready you can run the datasetd 
-service to interact with the collection via cURL. 
+an empty dataset collection. Once ready you can run the datasetd
+service to interact with the collection via cURL.
 
 To create the dataset collection we use the "dataset" command and the
 "vi" text edit (use can use your favorite text editor instead of vi).
@@ -169,7 +169,7 @@ You should now see the start up message and any log information display
 to the console. You should open a new shell sessions and try the following.
 
 We can now use cURL to post the document to the "api//t1.ds/object/one" end
-point. 
+point.
 
 ~~~
     curl -X POST http://localhost:8485/api/t1.ds/object/one \
@@ -189,7 +189,7 @@ We should see "one" in the response. If so we can try reading it.
 ~~~
 
 That should display our JSON document. Let's try updating (replacing)
-it. 
+it.
 
 ~~~
     curl -X POST http://localhost:8485/api/t1.ds/object/one \
@@ -215,7 +215,7 @@ You can run a query named 'browse' that is defined in the YAML configuration lik
 	curl http://localhost:8485/api/t1.ds/query/browse
 ~~~
 
-or 
+or
 
 ~~~
 	curl -X POST -H 'Content-type:application/json' -d '{}' http://localhost:8485/api/t1.ds/query/browse
@@ -225,5 +225,5 @@ In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-datasetd 2.3.2
+datasetd 2.3.4
 

@@ -1,11 +1,11 @@
 #!/bin/sh
-# generated with CMTools 2.3.2 d3f4f66
+# generated with CMTools 2.3.4 6b944fa
 
 #
 # Set the package name and version to install
 #
 PACKAGE="dataset"
-VERSION="2.3.2"
+VERSION="2.3.4"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
 if [ "$PKG_VERSION" != "" ]; then
@@ -123,6 +123,8 @@ if [ "$EXPLAIN_OS_POLICY" = "no" ]; then
 
   Find the program(s) and right click on the program(s)
   installed to enable them to run.
+
+  More information about security policies see INSTALL_NOTES_macOS.md
 
 EOT
 

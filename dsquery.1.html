@@ -27,15 +27,14 @@
 <h1 id="name">NAME</h1>
 <p>dsquery</p>
 <h1 id="synopsis">SYNOPSIS</h1>
-<p>dsquery <a href="#options">OPTIONS</a> C_NAME SQL_STATEMENT
-[PARAMS]</p>
+<p>dsquery <a href="#options">OPTIONS</a> C_NAME SQL_STATEMENT</p>
 <h1 id="description">DESCRIPTION</h1>
 <p><strong>dsquery</strong> is a tool to support SQL queries of dataset
 collections. Pairtree based collections should be index before trying to
 query them (see ‘-index’ option below). Pairtree collections use the
 SQLite 3 dialect of SQL for querying. For collections using a SQL
-storage engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect
-reflects the SQL of the storage engine.</p>
+storage engine (e.g. SQLite3 and Postgres), the SQL dialect reflects the
+SQL of the storage engine.</p>
 <p>The schema is the same for all storage engines. The scheme for the
 JSON stored documents have a four column scheme. The columns are “_key”,
 “created”, “updated” and “src”. “_key” is a string (aka VARCHAR),
@@ -56,14 +55,12 @@ If harvesting the dataset collection name to harvest the records to.
 <dt>SQL_STATEMENT</dt>
 <dd>
 The SQL statement should conform to the SQL dialect used for the JSON
-store for the JSON store (e.g. Postgres, MySQL and SQLite 3). The SELECT
-clause should return a single JSON object type per row.
-<strong>dsquery</strong> returns an JSON array of JSON objects returned
-by the SQL query.
-</dd>
-<dt>PARAMS</dt>
-<dd>
-Is optional, it is any values you want to pass to the SQL_STATEMENT.
+store(SQLite3 or Postgres). If it is a select statement is must return a
+single column of type JSON, TEXT, VARCHAR, BOOLEAN, INTEGER, REAL. DATE,
+DATESTAMP, TIME and TIMESTAMP columns are mapped to JSON string type.
+<strong>dsquery</strong> returns an JSON array of value JSON objects or
+types. If the query does not return a value (is not select statement)
+than an empty JSON array is returned.
 </dd>
 </dl>
 <h1 id="sql-store-scheme">SQL Store Scheme</h1>

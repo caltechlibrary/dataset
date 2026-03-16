@@ -4,13 +4,13 @@
 package dataset
 
 const (
-  DatasetHelpText = `%{app_name}(1) user manual | version {version} {release_hash}
+	DatasetHelpText = `%{app_name}(1) user manual | version {version} {release_hash}
 % R. S. Doiel and Tom Morrell
 % {release_date}
 
 # NAME
 
-{app_name} 
+{app_name}
 
 # SYNOPSIS
 
@@ -41,7 +41,7 @@ create
 : creates a new JSON document in the collection
 
 read
-: retrieves the "current" version of a JSON document from 
+: retrieves the "current" version of a JSON document from
   the collection writing it standard out
 
 update
@@ -54,7 +54,7 @@ keys
 : returns a list of keys in the collection
 
 codemeta:
-: copies metadata a codemeta file and updates the 
+: copies metadata a codemeta file and updates the
   collections metadata
 
 attach
@@ -67,8 +67,8 @@ retrieve
 : creates a copy local of an attachement in a JSON record
 
 detach
-: will copy out the attachment to a JSON document 
-  into the current directory 
+: will copy out the attachment to a JSON document
+  into the current directory
 
 prune
 : removes an attachment (including all versions) from a JSON record
@@ -90,18 +90,23 @@ value retrieved from the collection.
 load
 : This will read JSON objects one per line from standard input. This
 format is often called JSONL, see https://jsonlines.org. The object
-has two attributes, key and object. 
+has two attributes, key and object.
 
-join [OPTIONS] c_name, key, JSON_SRC
+join [OPTIONS] C_NAME KEY JSON_SRC
 : This will join a new object provided on the command line with an
 existing object in the collection.
 
+query [OPTIONS] C_NAME SQL_STATMENT
+: This will run a SQL query that returns a single JSON column in the
+collection identfied by C_NAME. It integrates the dsquery cli with
+{app_name}. See the man page for dsquery for details about SQL
+supported.
 
 A word about "keys". {app_name} uses the concept of key/values for
 storing JSON documents where the key is a unique identifier and the
-value is the object to be stored.  Keys must be lower case 
+value is the object to be stored.  Keys must be lower case
 alpha numeric only.  Depending on storage engines there are issues
-for keys with punctation or that rely on case sensitivity. E.g. 
+for keys with punctation or that rely on case sensitivity. E.g.
 The pairtree storage engine relies on the host file system. File
 systems are notorious for being picky about non-alpha numeric
 characters and some are not case sensistive.
@@ -122,7 +127,6 @@ There are currently three support storage options for JSON documents in a datase
 
 - SQLite3 database >= 3.40 (default)
 - Postgres >= 12
-- MySQL 8
 - Pairtree (pre-2.1 default)
 
 STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairtree".
@@ -144,7 +148,7 @@ STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairt
 ~~~
    {app_name} help init
 
-   {app_name} init my_objects.ds 
+   {app_name} init my_objects.ds
 
    {app_name} model my_objects.ds
 
@@ -152,8 +156,8 @@ STORAGE TYPE are specified as a DSN URI except for pairtree which is just "pairt
 
    {app_name} create my_objects.ds "123" '{"one": 1}'
 
-   {app_name} create my_objects.ds "234" mydata.json 
-   
+   {app_name} create my_objects.ds "234" mydata.json
+
    cat <<EOT | {app_name} create my_objects.ds "345"
    {
 	   "four": 4,
@@ -198,7 +202,7 @@ in this example was restricted to localhost on a single user machine.
 
 `
 
-  DatasetdHelpText = `%{app_name}(1) user manual | version {version} {release_hash}
+	DatasetdHelpText = `%{app_name}(1) user manual | version {version} {release_hash}
 % R. S. Doiel
 % {release_date}
 
@@ -262,17 +266,17 @@ dataset
 
 query
 : (optional) is map of query name to SQL statement. A POST is used to access
-the query (i.e. a GET or POST To the path "`+"`"+`/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELD_NAMES>`+"`"+`")
+the query (i.e. a GET or POST To the path "` + "`" + `/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELD_NAMES>` + "`" + `")
 The parameters submitted in the post are passed to the SQL statement.
 NOTE: Only dataset collections using a SQL store are supported. The SQL
-needs to conform the SQL dialect of the store being used (e.g. MySQL, Postgres,
+needs to conform the SQL dialect of the store being used (e.g. Postgres,
 SQLite3). The SQL statement functions with the same contraints of dsquery SQL
 statements. The SQL statement is defined as a YAML text blog.
 
 ## API Permissions
 
 The following are permissioning attributes for the collection. These are
-global to the collection and by default are set to false. A read only API 
+global to the collection and by default are set to false. A read only API
 would normally only include "keys" and "read" attributes set to true.
 
 keys
@@ -316,8 +320,8 @@ Starting up the web service
 
 In this example we cover a short life cycle of a collection
 called "t1.ds". We need to create a "settings.json" file and
-an empty dataset collection. Once ready you can run the {app_name} 
-service to interact with the collection via cURL. 
+an empty dataset collection. Once ready you can run the {app_name}
+service to interact with the collection via cURL.
 
 To create the dataset collection we use the "dataset" command and the
 "vi" text edit (use can use your favorite text editor instead of vi).
@@ -369,7 +373,7 @@ You should now see the start up message and any log information display
 to the console. You should open a new shell sessions and try the following.
 
 We can now use cURL to post the document to the "api//t1.ds/object/one" end
-point. 
+point.
 
 ~~~
     curl -X POST http://localhost:8485/api/t1.ds/object/one \
@@ -389,7 +393,7 @@ We should see "one" in the response. If so we can try reading it.
 ~~~
 
 That should display our JSON document. Let's try updating (replacing)
-it. 
+it.
 
 ~~~
     curl -X POST http://localhost:8485/api/t1.ds/object/one \
@@ -415,7 +419,7 @@ You can run a query named 'browse' that is defined in the YAML configuration lik
 	curl http://localhost:8485/api/t1.ds/query/browse
 ~~~
 
-or 
+or
 
 ~~~
 	curl -X POST -H 'Content-type:application/json' -d '{}' http://localhost:8485/api/t1.ds/query/browse
@@ -441,17 +445,17 @@ to terminate the service.
 
 There are three basic forms of the URL paths supported by the API.
 
-- `+"`"+`/api/<COLLECTION_NAME>/keys`+"`"+`, get a list of all keys in the the collection
-- `+"`"+`/api/<COLLECTION_NAME>/object/<OPTIONS>`+"`"+`, interact with an object in the collection (e.g. create, read, update, delete)
-- `+"`"+`/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELDS>`+"`"+`, query the collection and receive a list of objects in response
+- ` + "`" + `/api/<COLLECTION_NAME>/keys` + "`" + `, get a list of all keys in the the collection
+- ` + "`" + `/api/<COLLECTION_NAME>/object/<OPTIONS>` + "`" + `, interact with an object in the collection (e.g. create, read, update, delete)
+- ` + "`" + `/api/<COLLECTION_NAME>/query/<QUERY_NAME>/<FIELDS>` + "`" + `, query the collection and receive a list of objects in response
 
-The "`+"`"+`<COLLECTION_NAME>`+"`"+`" would be the name of the dataset collection, e.g. "mydata.ds".
+The "` + "`" + `<COLLECTION_NAME>` + "`" + `" would be the name of the dataset collection, e.g. "mydata.ds".
 
-The "`+"`"+`<OPTIONS>`+"`"+`" holds any additional parameters related to the verb. Options are separated by the path delimiter (i.e. "/"). The options are optional. They do not require a trailing slash.
+The "` + "`" + `<OPTIONS>` + "`" + `" holds any additional parameters related to the verb. Options are separated by the path delimiter (i.e. "/"). The options are optional. They do not require a trailing slash.
 
-The "`+"`"+`<QUERY_NAME>`+"`"+`" is the query name defined in the YAML configuration for the specific collection.
+The "` + "`" + `<QUERY_NAME>` + "`" + `" is the query name defined in the YAML configuration for the specific collection.
 
-The "`+"`"+`<FIELDS>`+"`"+`" holds the set of fields being passed into the query. These are delimited with the path separator like with options (i.e. "/"). Fields are optional and they do not require a trailing slash.
+The "` + "`" + `<FIELDS>` + "`" + `" holds the set of fields being passed into the query. These are delimited with the path separator like with options (i.e. "/"). Fields are optional and they do not require a trailing slash.
 
 ## HTTP Methods
 
@@ -459,7 +463,7 @@ The {app_name} REST API follows the rest practices. Good examples are POST creat
 
 ## Content Type and the API
 
-The REST API works with JSON data. The service does not support multipart urlencoded content. You MUST use the content type of `+"`"+`application/json`+"`"+` when performing a POST, or PUT. This means if you are building a user interface for a collections {app_name} service you need to appropriately use JavaScript to send content into the API and set the content type to `+"`"+`application/json`+"`"+`.
+The REST API works with JSON data. The service does not support multipart urlencoded content. You MUST use the content type of ` + "`" + `application/json` + "`" + ` when performing a POST, or PUT. This means if you are building a user interface for a collections {app_name} service you need to appropriately use JavaScript to send content into the API and set the content type to ` + "`" + `application/json` + "`" + `.
 
 ## Examples
 
@@ -494,7 +498,7 @@ The create action is formed with the object URL path, the POST http method and t
 
 The object path includes the dataset key you'll assign in the collection. The key must be unique and not currently exist in the collection.
 
-If we're adding an object with the key of "doe-jane" to our collection called "people.ds" then the object URL path would be  `+"`"+`/api/people.ds/object/doe-jane`+"`"+`. NOTE: the object key is included as a single parameter after "object" path element.
+If we're adding an object with the key of "doe-jane" to our collection called "people.ds" then the object URL path would be  ` + "`" + `/api/people.ds/object/doe-jane` + "`" + `. NOTE: the object key is included as a single parameter after "object" path element.
 
 Adding an object to our collection using curl looks like the following.
 
@@ -503,7 +507,7 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
   -d '{"pid": "doe-jane", "family": "Doe", "lived": "Jane", "orcid": "9999-9999-9999-9999" }' \
-  http://localhost:8485/api/people.ds/object/doe-jane  
+  http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 ### read
@@ -512,7 +516,7 @@ The read action is formed with the object URL path, the GET http method and the 
 aside from the URL to request the object. Here's what it would look like using curl to access the API.
 
 ~~~shell
-curl http://localhost:8485/api/people.ds/object/doe-jane  
+curl http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 ### update
@@ -527,7 +531,7 @@ curl -X PUT \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json' \
   -d '{"pid": "doe-jane", "family": "Doe", "lived": "Jane", "orcid": "9999-9999-9999-9999" }' \
-  http://localhost:8485/api/people.ds/object/doe-jane  
+  http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 This will overwrite the existing "doe-jane". NOTE the record must exist or you will get an error.
@@ -537,7 +541,7 @@ This will overwrite the existing "doe-jane". NOTE the record must exist or you w
 If you want to delete the "doe-jane" record in "people.ds" you perform an http DELETE method and form the url like a read.
 
 ~~~shell
-curl -X DELETE http://localhost:8485/api/people.ds/object/doe-jane  
+curl -X DELETE http://localhost:8485/api/people.ds/object/doe-jane
 ~~~
 
 ## query
@@ -564,7 +568,7 @@ When you form a query path we need to indicate that the parameter for family and
 /api/people.ds/query/full_name/family/lived
 ~~~
 
-The web form could look like this.  
+The web form could look like this.
 
 ~~~
 <form id="query_name">
@@ -577,7 +581,7 @@ The web form could look like this.
 REMEMBER: the JSON API only supports the content type of "application/json" so you can use the browser's action and method in the form.
 
 You would include JavaScript in the your HTML to pull the values out of the form and create a JSON object. If I searched
-for someone who had the family name "Doe" and he lived name of "Jane" the object submitted to query might look like the following. 
+for someone who had the family name "Doe" and he lived name of "Jane" the object submitted to query might look like the following.
 
 ~~~json
 {
@@ -664,7 +668,7 @@ query
 : (optional) Is a map of query name to SQL statements. Each name will trigger a the execution of a SQL statement.
 The query expects a POST. Fields are mapped to the SQL statement parameters. If a pairtree store is used a
 indexing will be needed before this will work as it would use the SQLite 3 database to execute the SQL statement against.
-Otherwise the SQL statement would conform to the SQL dialect of the SQL storage used (e.g. Postgres, MySQL or SQLite3).
+Otherwise the SQL statement would conform to the SQL dialect of the SQL storage used (e.g. Postgres or SQLite3).
 The SQL statements need to conform to the same constraints as dsquery's implementation of SQL statements.
 
 ## API Permissions
@@ -675,19 +679,19 @@ support can be added via the query parameter. These are indepent so if you didn'
 objects to be retrieve you could just provide access via defined queries.
 
 keys
-: (optional, default false) If true allow keys for the collection to be retrieved with a GET to `+"`"+`/api/<COLLECTION_NAME>/keys`+"`"+`
+: (optional, default false) If true allow keys for the collection to be retrieved with a GET to ` + "`" + `/api/<COLLECTION_NAME>/keys` + "`" + `
 
 read
-: (optional, default false) If true allow objects to be read via a GET to `+"`"+`/api/<COLLLECTION_NAME>/object/<KEY>`+"`"+`
+: (optional, default false) If true allow objects to be read via a GET to ` + "`" + `/api/<COLLLECTION_NAME>/object/<KEY>` + "`" + `
 
 create
-: (optional, default false) If true allow object to be created via a POST to `+"`"+`/api/<COLLLECTION_NAME>/object`+"`"+`
+: (optional, default false) If true allow object to be created via a POST to ` + "`" + `/api/<COLLLECTION_NAME>/object` + "`" + `
 
 update
-: (optional, default false) If true allow object to be updated via a PUT  to `+"`"+`/api/<COLLECTION_NAME>/object/<KEY>`+"`"+`
+: (optional, default false) If true allow object to be updated via a PUT  to ` + "`" + `/api/<COLLECTION_NAME>/object/<KEY>` + "`" + `
 
 delete
-: (optional, default false) If true allow obejct to be deleted via a DELETE to `+"`"+`/api/<COLLECTION_NAME>/object/<KEY>`+"`"+`
+: (optional, default false) If true allow obejct to be deleted via a DELETE to ` + "`" + `/api/<COLLECTION_NAME>/object/<KEY>` + "`" + `
 
 attachments
 : (optional, default false) list object attachments through a GET to the web API.
@@ -717,19 +721,19 @@ versions
 
 # SYNOPSIS
 
-{app_name} [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+{app_name} [OPTIONS] C_NAME SQL_STATEMENT
 
 # DESCRIPTION
 
-__{app_name}__ is a tool to support SQL queries of dataset collections. 
+__{app_name}__ is a tool to support SQL queries of dataset collections.
 Pairtree based collections should be index before trying to query them
 (see '-index' option below). Pairtree collections use the SQLite 3
 dialect of SQL for querying.  For collections using a SQL storage
-engine (e.g. SQLite3, Postgres and MySQL), the SQL dialect reflects
+engine (e.g. SQLite3 and Postgres), the SQL dialect reflects
 the SQL of the storage engine.
 
 The schema is the same for all storage engines.  The scheme for the JSON
-stored documents have a four column scheme.  The columns are "_key", 
+stored documents have a four column scheme.  The columns are "_key",
 "created", "updated" and "src". "_key" is a string (aka VARCHAR),
 "created" and "updated" are timestamps while "src" is a JSON column holding
 the JSON document. The table name reflects the collection
@@ -748,13 +752,12 @@ C_NAME
 
 SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
-JSON store for the JSON store (e.g.  Postgres, MySQL and SQLite 3).
-The SELECT clause should return a single JSON object type per row.
-__{app_name}__ returns an JSON array of JSON objects returned
-by the SQL query.
-
-PARAMS
-: Is optional, it is any values you want to pass to the SQL_STATEMENT.
+JSON store(SQLite3 or Postgres). If it is a select statement
+is must return a single column of type JSON, TEXT, VARCHAR,
+BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columns
+are mapped to JSON string type. __{app_name}__ returns an JSON
+array of value JSON objects or types. If the query does not return
+a value (is not select statement) than an empty JSON array is returned.
 
 # SQL Store Scheme
 
@@ -795,12 +798,12 @@ can be combined with -pretty options.
 
 -csv STRING_OF_ATTRIBUTE_NAMES
 : Like -grid this takes our list of dataset objects and a list of attribute
-names but rather than create a 2D JSON array of values it creates CSV 
+names but rather than create a 2D JSON array of values it creates CSV
 representation with the first row as the attribute names.
 
 -yaml STRING_OF_ATTRIBUTE_NAMES
 : Like -grid this takes our list of dataset objects and a list of attribute
-names but rather than create a 2D JSON of values it creates YAML 
+names but rather than create a 2D JSON of values it creates YAML
 representation.
 
 -index
@@ -899,5 +902,4 @@ into a collections called. "shelves.ds"
 ~~~
 
 `
-
 )
