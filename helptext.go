@@ -721,7 +721,7 @@ versions
 
 # SYNOPSIS
 
-{app_name} [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+{app_name} [OPTIONS] C_NAME SQL_STATEMENT
 
 # DESCRIPTION
 
@@ -754,13 +754,10 @@ SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
 JSON store(SQLite3 or Postgres). If it is a select statement
 is must return a single column of type JSON, TEXT, VARCHAR,
-BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columsn
+BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columns
 are mapped to JSON string type. __{app_name}__ returns an JSON
 array of value JSON objects or types. If the query does not return
 a value (is not select statement) than an empty JSON array is returned.
-
-PARAMS
-: Is optional, it is any values you want to pass to the SQL_STATEMENT.
 
 # SQL Store Scheme
 

@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2016-09-12",
-  "dateModified": "2026-03-11",
-  "datePublished": "2026-03-11",
+  "dateModified": "2026-03-16",
+  "datePublished": "2026-03-16",
   "description": "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.\n\nIt is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.\n\nThe Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.",
   "funder": [
     {
@@ -74,18 +74,18 @@
     "SQL"
   ],
   "softwareRequirements": [
-    "Golang >= 1.24.5",
-    "CMTools >= 0.0.35"
+    "Golang >= 1.26.1",
+    "CMTools >= 0.0.40"
   ],
   "softwareSuggestions": [
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.3.3",
+  "version": "2.3.4",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "- Issue #161 fix for handling GET with query were data is passed via URL parameters.\n- Removed support for frame, clone, sample, sync and join support removed. The dsimporter cli removed (use jsonl dump and load instead).\n- Improved loading large JSON objects from jsonl files",
-  "copyrightYear": 2025,
+  "releaseNotes": "- Issue #161 fix for handling GET with query were data is passed via URL parameters.\n- Removed support for frame, clone, sample, sync and join support removed. The dsimporter cli removed (use jsonl dump and load instead).\n- Improved loading large JSON objects from jsonl files\n- Issue #164 where the queries in COLD would work in v2.2.0 but fail in v2.3.x. Now compare column types returned by DB as well as Go type in driver",
+  "copyrightYear": 2026,
   "copyrightHolder": "California Institute of Technology"
 }

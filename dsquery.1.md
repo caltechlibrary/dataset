@@ -1,6 +1,6 @@
-%dsquery(1) dataset user manual | version 2.3.3 aec520a
+%dsquery(1) dataset user manual | version 2.3.4 6b944fa
 % R. S. Doiel and Tom Morrell
-% 2026-03-11
+% 2026-03-16
 
 # NAME
 
@@ -8,7 +8,7 @@ dsquery
 
 # SYNOPSIS
 
-dsquery [OPTIONS] C_NAME SQL_STATEMENT [PARAMS]
+dsquery [OPTIONS] C_NAME SQL_STATEMENT
 
 # DESCRIPTION
 
@@ -41,13 +41,10 @@ SQL_STATEMENT
 : The SQL statement should conform to the SQL dialect used for the
 JSON store(SQLite3 or Postgres). If it is a select statement
 is must return a single column of type JSON, TEXT, VARCHAR,
-BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columsn
+BOOLEAN, INTEGER, REAL. DATE, DATESTAMP, TIME and TIMESTAMP columns
 are mapped to JSON string type. __dsquery__ returns an JSON
 array of value JSON objects or types. If the query does not return
 a value (is not select statement) than an empty JSON array is returned.
-
-PARAMS
-: Is optional, it is any values you want to pass to the SQL_STATEMENT.
 
 # SQL Store Scheme
 

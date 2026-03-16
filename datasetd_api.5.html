@@ -109,13 +109,13 @@ following.</p>
   -H &#39;Content-Type: application/json&#39; \
   -H &#39;Accept: application/json&#39; \
   -d &#39;{&quot;pid&quot;: &quot;doe-jane&quot;, &quot;family&quot;: &quot;Doe&quot;, &quot;lived&quot;: &quot;Jane&quot;, &quot;orcid&quot;: &quot;9999-9999-9999-9999&quot; }&#39; \
-  http://localhost:8485/api/people.ds/object/doe-jane  </code></pre>
+  http://localhost:8485/api/people.ds/object/doe-jane</code></pre>
 <h3 id="read">read</h3>
 <p>The read action is formed with the object URL path, the GET http
 method and the content type of “application/json”. There is no data
 aside from the URL to request the object. Here’s what it would look like
 using curl to access the API.</p>
-<pre class="shell"><code>curl http://localhost:8485/api/people.ds/object/doe-jane  </code></pre>
+<pre class="shell"><code>curl http://localhost:8485/api/people.ds/object/doe-jane</code></pre>
 <h3 id="update">update</h3>
 <p>Like create update is formed from the object URL path, content type
 of “application/json” the data is expressed as a JSON object. Onlike
@@ -126,13 +126,13 @@ object called “doe-jane” in your collection.</p>
   -H &#39;Content-Type: application/json&#39; \
   -H &#39;Accept: application/json&#39; \
   -d &#39;{&quot;pid&quot;: &quot;doe-jane&quot;, &quot;family&quot;: &quot;Doe&quot;, &quot;lived&quot;: &quot;Jane&quot;, &quot;orcid&quot;: &quot;9999-9999-9999-9999&quot; }&#39; \
-  http://localhost:8485/api/people.ds/object/doe-jane  </code></pre>
+  http://localhost:8485/api/people.ds/object/doe-jane</code></pre>
 <p>This will overwrite the existing “doe-jane”. NOTE the record must
 exist or you will get an error.</p>
 <h3 id="delete">delete</h3>
 <p>If you want to delete the “doe-jane” record in “people.ds” you
 perform an http DELETE method and form the url like a read.</p>
-<pre class="shell"><code>curl -X DELETE http://localhost:8485/api/people.ds/object/doe-jane  </code></pre>
+<pre class="shell"><code>curl -X DELETE http://localhost:8485/api/people.ds/object/doe-jane</code></pre>
 <h2 id="query">query</h2>
 <p>The query path lets you run a predefined query from your settings
 YAML file. The http method used is a POST. This is becaue we need to

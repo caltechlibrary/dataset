@@ -119,10 +119,16 @@ This will read JSON objects one per line from standard input. This
 format is often called JSONL, see https://jsonlines.org. The object has
 two attributes, key and object.
 </dd>
-<dt>join <a href="#options">OPTIONS</a> c_name, key, JSON_SRC</dt>
+<dt>join <a href="#options">OPTIONS</a> C_NAME KEY JSON_SRC</dt>
 <dd>
 This will join a new object provided on the command line with an
 existing object in the collection.
+</dd>
+<dt>query <a href="#options">OPTIONS</a> C_NAME SQL_STATMENT</dt>
+<dd>
+This will run a SQL query that returns a single JSON column in the
+collection identfied by C_NAME. It integrates the dsquery cli with
+dataset. See the man page for dsquery for details about SQL supported.
 </dd>
 </dl>
 <p>A word about “keys”. dataset uses the concept of key/values for
@@ -146,7 +152,6 @@ in a dataset collection.</p>
 <ul>
 <li>SQLite3 database &gt;= 3.40 (default)</li>
 <li>Postgres &gt;= 12</li>
-<li>MySQL 8</li>
 <li>Pairtree (pre-2.1 default)</li>
 </ul>
 <p>STORAGE TYPE are specified as a DSN URI except for pairtree which is
@@ -169,7 +174,7 @@ display version
 <h1 id="examples">EXAMPLES</h1>
 <pre><code>   dataset help init
 
-   dataset init my_objects.ds 
+   dataset init my_objects.ds
 
    dataset model my_objects.ds
 
@@ -177,8 +182,8 @@ display version
 
    dataset create my_objects.ds &quot;123&quot; &#39;{&quot;one&quot;: 1}&#39;
 
-   dataset create my_objects.ds &quot;234&quot; mydata.json 
-   
+   dataset create my_objects.ds &quot;234&quot; mydata.json
+
    cat &lt;&lt;EOT | dataset create my_objects.ds &quot;345&quot;
    {
        &quot;four&quot;: 4,
@@ -205,7 +210,7 @@ the environment varaible C_NAME. USER is used for the Postgres username
 and DB_NAME is used for the Postgres database name. The sslmode option
 was specified because Postgres in this example was restricted to
 localhost on a single user machine.</p>
-<p>dataset 2.3.3</p>
+<p>dataset 2.3.4</p>
 </section>
 <footer-global></footer-global>
 </body>

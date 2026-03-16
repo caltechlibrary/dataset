@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.3.3 aec520a
+%datasetd(1) user manual | version 2.3.4 6b944fa
 % R. S. Doiel
-% 2026-03-11
+% 2026-03-16
 
 
 # datasetd REST API

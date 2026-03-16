@@ -53,7 +53,7 @@ func main() {
 	releaseDate := dataset.ReleaseDate
 	releaseHash := dataset.ReleaseHash
 	fmtHelp := dataset.FmtHelp
-	pretty, ptIndex, grid, csv, asYaml := false, false, "", "", ""
+	pretty, ptIndex, grid, csv, asYaml, debug := false, false, "", "", "", false
 	sqlFName := ""
 	datasetdHelpText, apiText, serviceText, yamlText := dataset.DatasetdHelpText, dataset.DatasetdApiText, dataset.DatasetdServiceText, dataset.DatasetdYAMLText
 	helpText, dsimporterHelpText := dataset.DSQueryHelpText, dataset.DSImporterHelpText
@@ -63,6 +63,7 @@ func main() {
 	flag.BoolVar(&showHelp, "help", false, "display help")
 	flag.BoolVar(&showVersion, "version", false, "display version")
 	flag.BoolVar(&showLicense, "license", false, "display license")
+	flag.BoolVar(&debug, "debug", debug, "use debug output")
 	flag.BoolVar(&pretty, "pretty", false, "pretty JSON output")
 	flag.StringVar(&grid, "grid", grid, "return JSON grid of values, requires a comma delimited string of attribute names")
 	flag.StringVar(&csv, "csv", csv, "return csv file using the attribute names from list of objects")
@@ -183,7 +184,7 @@ func main() {
 			app.Attributes = append(app.Attributes, strings.TrimSpace(attr))
 		}
 	}
-	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params); err != nil {
+	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params, debug); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(10)
 	}

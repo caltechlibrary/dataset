@@ -762,11 +762,13 @@ func doLoad(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 }
 
 func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
-	sqlFName, showHelp := "", false
+	sqlFName, showHelp, debug := "", false, false
+
 	flagSet := flag.NewFlagSet("query", flag.ContinueOnError)
 	flagSet.BoolVar(&showHelp, "h", false, "display help")
 	flagSet.BoolVar(&showHelp, "help", false, "display help")
 	flagSet.StringVar(&sqlFName, "sql", sqlFName, "read SQL statement from a file")
+	flagSet.BoolVar(&debug, "debug", debug, "include debug output")
 	flagSet.Parse(args)
 	args = flagSet.Args()
 
@@ -812,7 +814,7 @@ func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	if stmt == "" {
 		return fmt.Errorf("missing SQL_STATEMENT")
 	}
-	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params); err != nil {
+	if err := app.Run(os.Stdin, os.Stdout, os.Stderr, cName, stmt, params, debug); err != nil {
 		return err
 	}
 	return nil

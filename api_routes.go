@@ -1,7 +1,6 @@
 package dataset
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -220,7 +219,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	}
 	// Get the query name form the list of options.
 	qName:= options[0]
-	
+
 	cfg, err := api.Settings.GetCfg(cName)
 	if err != nil {
 		log.Printf("Query, Bad Request %s %q %s, not found", r.Method, r.URL.Path, qName)
@@ -246,7 +245,8 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		log.Printf("DEBUG qStmt:\n%s\n", qStmt)
 	}
 
-	if c, ok := api.CMap[cName]; ok {
+	c, ok := api.CMap[cName]
+	if ok {
 		if api.Debug {
 			log.Printf("DEBUG c : c -> %+v\n", c)
 		}
@@ -260,11 +260,11 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 					o[attrName] = urlQuery.Get(attrName)
 				}
 			}
-			// if urlQuery.Get(opt) != "" { copy option in to o } 
+			// if urlQuery.Get(opt) != "" { copy option in to o }
 		}
 		// Get the terms I need to look for in the URL prameters from the "options" passed in.
 
-		// 
+		//
 		// If we're a POST we need to read the body to get the query terms.
 		//
 		var src []byte
@@ -308,8 +308,10 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			log.Printf("DEBUG verb %q, options %+v\n", verb, options)
 		}
 		// NOTE: We must map form names to an ordered list of parameters.
-		var rows *sql.Rows
-		qParams := []interface{}{}
+		var (
+			data []interface{}
+			qParams []interface{}
+		)
 		if len(options) > 0 && len(o) > 0 {
 			for i, key := range options {
 				// NOTE: the first option is the query name, it can be skipped.
@@ -324,41 +326,22 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			if api.Debug {
 				log.Printf("DEBUG qParams -> %+v", qParams)
 			}
-			rows, err = c.SQLStore.db.Query(qStmt, qParams...)
+			data, err = c.Query(qStmt, api.Debug, qParams)
 		} else {
-			if api.Debug {
-				log.Printf("DEBUG qStmt %+v", qStmt)
-			}
-			rows, err = c.SQLStore.db.Query(qStmt)
+			data, err = c.Query(qStmt, api.Debug, nil)
 		}
 		if err != nil {
 			log.Printf("Query, failed stmt: %q, %s, %+v, %s", qName, qStmt, qParams, err)
 			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 			return
 		}
-		src = []byte(`[`)
-		i := 0
-		for rows.Next() {
-			// Get our row values
-			obj := []byte{}
-			if err := rows.Scan(&obj); err != nil {
-				log.Printf("Query, failed row.Scan(obj): %q, %s, (%d) %+v, %s", qName, qStmt, i, obj, err)
-				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
-				return
-			}
-			if i > 0 {
-				src = append(src, ',')
-			}
-			src = append(src, obj...)
-			i++
-		}
-		src = append(src, ']')
-		err = rows.Err()
+		src, err := JSONMarshal(data)
 		if err != nil {
-			log.Printf("Query, row.Err(): %q, %s, (%d) %+v, %s", qName, qStmt, i, src, err)
+			log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
 			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 			return
 		}
+
 		// NOTE: I need to handle the content type requested -> CSV, YAML or JSON (default)
 		switch contentType {
 		case "text/csv":

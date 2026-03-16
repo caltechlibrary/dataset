@@ -1,6 +1,6 @@
-%dataset(1) user manual | version 2.3.3 aec520a
+%dataset(1) user manual | version 2.3.4 6b944fa
 % R. S. Doiel and Tom Morrell
-% 2026-03-11
+% 2026-03-16
 
 # NAME
 
@@ -192,6 +192,6 @@ database name.  The sslmode option was specified because Postgres
 in this example was restricted to localhost on a single user machine.
 
 
-dataset 2.3.3
+dataset 2.3.4
 
 
