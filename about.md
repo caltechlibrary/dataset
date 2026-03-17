@@ -23,7 +23,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.3.4
+version: 2.3.4-test
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -42,7 +42,7 @@ date_released: 2026-03-16
 About this software
 ===================
 
-## dataset 2.3.4
+## dataset 2.3.4-test
 
 - Issue #161 fix for handling GET with query were data is passed via URL parameters.
 - Removed support for frame, clone, sample, sync and join support removed. The dsimporter cli removed (use jsonl dump and load instead).

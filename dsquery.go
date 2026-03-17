@@ -165,7 +165,7 @@ func indexCollection(ds *Collection, index *sql.DB) error {
 	return nil
 }
 
-func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName string, stmt string, params []string, debug bool) error {
+func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName string, stmt string, params []interface{}, debug bool) error {
 	app.CName = cName
 	app.Stmt = stmt
 	ds, err := Open(cName)
