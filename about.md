@@ -23,7 +23,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.3.4
+version: 2.4.0-rc1
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -41,13 +41,9 @@ date_released: 2026-03-17
 About this software
 ===================
 
-## dataset 2.3.4
+## dataset 2.4.0-rc1
 
-- Improved loading large JSON objects from jsonl files
-- Fixed issue #164 where the queries in COLD would work in v2.2.0 but fail in v2.3.x.
-- Removed support for SQL parameters in dsquery due to encoding issues and lack of practical use cases
-- Removed duplicated code from dsquery.go and api_routes.go in favor of collection.go's implementation of query functionality.
-- Added tailing semi-colon removal for SQL queries due to changes in behavior of SQLite3 driver
+- Removed MySQL support
 
 ### Authors
 

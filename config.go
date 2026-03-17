@@ -210,14 +210,14 @@ func ConfigOpen(fName string) (*Settings, error) {
 // ```
 //
 //	fName := "new-settings.yaml"
-//	mysql_dsn_uri := os.Getenv("DATASET_DSN_URI")
+//	sqlite3_dsn_uri := os.Getenv("DATASET_DSN_URI")
 //
 //	settings := new(Settings)
 //	settings.Host = "localhost:8001"
 //	settings.Htdocs = "/usr/local/www/htdocs"
 //
 //	cfg := &Config{
-//		DsnURI: mysql_dsn_uri,
+//		DsnURI: sqlite3_dsn_uri,
 //	   CName: "my_collection.ds",
 //	   Keys: true,
 //	   Create: true,

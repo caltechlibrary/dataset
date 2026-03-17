@@ -89,7 +89,7 @@ func TestWriteFile(t *testing.T) {
 	settings.Htdocs = htdocs
 
 	cfg := new(Config)
-	cfg.DsnURI = "mysql://$DB_USER:$DB_PASSWORD@/$DB_NAME"
+	cfg.DsnURI = "sqlite://collection.db"
 	cfg.CName = "api_test.ds"
 	cfg.Create = true
 	cfg.Read = true

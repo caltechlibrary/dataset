@@ -303,7 +303,7 @@ func TestSQLStore(t *testing.T) {
 	sqlStmt := fmt.Sprintf(`select src
 from %s
 order by updated`, tName)
-	src, err := c.QueryJSON(sqlStmt, false)
+	src, err := c.QueryJSON(sqlStmt, false, nil)
 	if err != nil {
 		t.Errorf(`ran c.Query(%q) did not expect error, %s`, sqlStmt, err)
 		t.FailNow()
@@ -314,7 +314,7 @@ order by updated`, tName)
 
 	sqlStmt = fmt.Sprintf(`select count(*)
 from %s`, tName)
-	src, err = c.QueryJSON(sqlStmt, false)
+	src, err = c.QueryJSON(sqlStmt, false, nil)
 	if err != nil {
 		t.Errorf(`ran c.Query(%q) did not expect error, %s`, sqlStmt, err)
 		t.FailNow()

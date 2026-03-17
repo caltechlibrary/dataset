@@ -80,11 +80,11 @@
     "Pandoc >= 3.1",
     "GNU Make >= 3.8"
   ],
-  "version": "2.3.4",
+  "version": "2.4.0-rc1",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "- Improved loading large JSON objects from jsonl files\n- Fixed issue #164 where the queries in COLD would work in v2.2.0 but fail in v2.3.x.\n- Removed support for SQL parameters in dsquery due to encoding issues and lack of practical use cases\n- Removed duplicated code from dsquery.go and api_routes.go in favor of collection.go's implementation of query functionality.\n- Added tailing semi-colon removal for SQL queries due to changes in behavior of SQLite3 driver",
+  "releaseNotes": "- Removed MySQL support",
   "copyrightYear": 2026,
   "copyrightHolder": "California Institute of Technology"
 }
