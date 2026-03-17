@@ -1,6 +1,11 @@
 Release 2.3.4
 
-- Deprecated MySQL support in documentation
+- Deprecated MySQL support in documentation, will depreciate MySQL support in future release
+- Improved loading large JSON objects from jsonl files
+- Fixed issue #164 where the queries in COLD would work in v2.2.0 but fail in v2.3.x.
+- Removed support for SQL parameters in dsquery due to encoding issues and lack of practical use cases
+- Removed duplicated code from dsquery.go and api_routes.go in favor of collection.go's implementation of query functionality.
+- Added tailing semi-colon removal for SQL queries due to changes in behavior of SQLite3 driver
 
 Release 2.3.3
 
