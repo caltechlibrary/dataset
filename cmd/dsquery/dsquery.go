@@ -120,7 +120,8 @@ func main() {
 
 	// Create a DSQuery object and evaluate the command line options
 	app := new(dataset.DSQuery)
-	cName, stmt, params := "", "", []string{}
+	var params []interface{}
+	cName, stmt := "", ""
 	if sqlFName != "" {
 		in := os.Stdin
 		if sqlFName != "-" {

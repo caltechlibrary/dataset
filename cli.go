@@ -782,7 +782,8 @@ func doQuery(in io.Reader, out io.Writer, eout io.Writer, args []string) error {
 	}
 	// Create a DSQuery object and evaluate the command line options
 	app := new(DSQuery)
-	cName, stmt, params := "", "", []string{}
+	var params []interface{}
+	cName, stmt := "", ""
 	if sqlFName != "" {
 		if sqlFName != "-" {
 			var err error

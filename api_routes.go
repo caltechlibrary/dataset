@@ -226,9 +226,6 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
-	if api.Debug {
-		log.Printf("DEBUG cfg attribute: c -> %+v\n", cfg)
-	}
 	// Make sure we have queries defined in the configuration
 	if cfg.QueryFn == nil || len(cfg.QueryFn) == 0 {
 		log.Printf("Query, Bad Request %s %q, undefined query", r.Method, r.URL.Path)
@@ -241,15 +238,9 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
 		return
 	}
-	if api.Debug {
-		log.Printf("DEBUG qStmt:\n%s\n", qStmt)
-	}
 
 	c, ok := api.CMap[cName]
 	if ok {
-		if api.Debug {
-			log.Printf("DEBUG c : c -> %+v\n", c)
-		}
 		// o holds the query parameter map used building the SQL query statement.
 		o := map[string]interface{}{}
 		// If we're a GET then we pull they query terms from the URL parameters.
@@ -273,7 +264,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 				src, err = ioutil.ReadAll(r.Body)
 				if err != nil {
 					log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, fmt.Sprintf("%s", err)) // DEBUG "")
 					return
 				}
 				defer r.Body.Close()
@@ -331,10 +322,10 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			data, err = c.Query(qStmt, api.Debug, nil)
 		}
 		if err != nil {
-			log.Printf("Query, failed stmt: %q, %s, %+v, %s", qName, qStmt, qParams, err)
+			log.Printf("Query, failed stmt (debug: %t): %q, %s, params: %+v, error msg: %q", api.Debug, qName, qStmt, qParams, err)
 			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
 			return
-		}
+			}
 		src, err := JSONMarshal(data)
 		if err != nil {
 			log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)

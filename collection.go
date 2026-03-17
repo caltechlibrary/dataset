@@ -26,7 +26,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"time"
 
@@ -1262,134 +1261,6 @@ func (c *Collection) Query(sqlStmt string, debug bool, qParams []interface{}) ([
 	return l, nil
 }
 
-func selectTimeFormatFromDbType(dbType string) string {
-	switch dbType {
-		case "DATE":
-			return "2006-01-02"
-		case "TIME":
-			return "15:04:05"
-		case "TIMESTAMP":
-			return "2006-01-02 15:04:05"
-		case "TIMESTAMPZ":
-			return time.RFC3339
-		default:
-			return time.RFC3339
-	}
-}
-
-func handleNumberExtractFromInterface(rows *sql.Rows, dbType string) (interface{}, error) {
-	switch {
-	case dbType == "NUMERIC" || strings.HasPrefix(dbType, "FLOAT") || strings.HasPrefix(dbType, "REAL"):
-		var f float64
-		if err := rows.Scan(&f); err != nil {
-			return nil, err
-		}
-		return f, nil
-	default:
-		var i int64
-		if err := rows.Scan(&i); err != nil {
-			return nil, err
-		}
-		return i, nil
-	}
-}
-
-func extractColumnValue(rows *sql.Rows, dbType string, goType reflect.Type) (interface{}, error) {
-	if goType == nil {
-		return nil, fmt.Errorf("unable to determine Go type for db type %q", dbType)
-	}
-	switch goType.String() {
-		case "interface {}":
-			if dbType == "NUMERIC" || strings.HasPrefix(dbType, "INT") || strings.HasPrefix(dbType, "FLOAT") || strings.HasPrefix(dbType, "REAL") {
-				return handleNumberExtractFromInterface(rows, dbType)
-			}
-			var u []uint8
-			if err := rows.Scan(&u); err != nil {
-				return nil, err
-			}
-			o := map[string]interface{}{}
-			if err := JSONUnmarshal([]byte(u), &o); err != nil {
-				return nil, err
-			}
-			return o, nil
-		case "time.Time":
-			// NOTE: Postgres driver returns actual time object. Need to distinguish formatting
-			// based on dbType, TIMESTAMPZ is RFC3339, TIMSTAMP is MySQL style date time,
-			var t time.Time
-			if err := rows.Scan(&t); err != nil {
-				return nil, err
-			}
-			return t.Format(selectTimeFormatFromDbType(dbType)), nil
-		case "string":
-			var s string
-			if err := rows.Scan(&s); err != nil {
-				return nil, err
-			}
-			if dbType == "JSON" {
-				o := map[string]interface{}{}
-				if err := JSONUnmarshal([]byte(s), &o); err != nil {
-					return nil, err
-				}
-				return o, nil
-			}
-			return s, nil
-		case "int64":
-			var i int64
-			if err := rows.Scan(&i); err != nil {
-				return nil, err
-			}
-			return i, nil
-		case "int32":
-			var i int
-			if err := rows.Scan(&i); err != nil {
-				return nil, err
-			}
-			return i, nil
-		case "float64":
-			var f float64
-			if err := rows.Scan(&f); err != nil {
-				return nil, err
-			}
-			return f, nil
-			case "float32":
-				var f float32
-				if err := rows.Scan(&f); err != nil {
-					return nil, err
-				}
-				return f, nil
-		case "bool":
-			var b bool
-			if err := rows.Scan(&b); err != nil {
-				return nil, err
-			}
-			return b, nil
-	}
-	return nil, fmt.Errorf("unsupported type conversion, db type %q, go type %+v", dbType, goType)
-}
-
-func columnToJSON(rows *sql.Rows, debug bool) ([]byte, error) {
-	columnTypes, err := rows.ColumnTypes()
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine column types, %s", err)
-	}
-	if len(columnTypes) > 1 {
-		//FIXME: It would be really nice to automatically build up a JSON column from column types and names rather
-		// then require the SQL engine to do so.
-		return nil, fmt.Errorf("query may only contain a single column, got %d columns", len(columnTypes))
-	}
-	if debug {
-		fmt.Fprintf(os.Stderr, "DEBUG name: %q, db type: %q, go type: %+v\n", columnTypes[0].Name(), columnTypes[0].DatabaseTypeName(), columnTypes[0].ScanType())
-	}
-	val, err := extractColumnValue(rows, columnTypes[0].DatabaseTypeName(), columnTypes[0].ScanType())
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract value, %s", err)
-	}
-	if debug {
-		fmt.Fprintf(os.Stderr, "DEBUG value (%T): %+v\n", val, val)
-	}
-	return JSONMarshal(val)
-}
-
 // Query implement the SQL query against a SQLStore and return JSON results.
 func (c *Collection) QueryJSON(sqlStmt string, debug bool, qParams []interface{}) ([]byte, error) {
 	if strings.Compare(c.StoreType, SQLSTORE) == 0 {
@@ -1403,8 +1274,12 @@ func (c *Collection) QueryJSON(sqlStmt string, debug bool, qParams []interface{}
 		rows *sql.Rows
 		err error
 	)
+	// Remove trailing semi-column if found, The SQL query processing does not like trailing semi-colomns in recent SQLite3 driver code
+	if strings.HasSuffix(strings.TrimSpace(sqlStmt), ";") {
+		sqlStmt = strings.TrimSuffix(strings.TrimSpace(sqlStmt), ";")
+	}
 	if debug {
-		fmt.Fprintf(os.Stderr, "SQL: %s\n", sqlStmt)
+		fmt.Fprintf(os.Stderr, "SQL: %s\n\t use params %t\n", sqlStmt, (qParams != nil && len(qParams)> 0))
 	}
 	if qParams != nil && len(qParams) > 0 {
 		rows, err = c.SQLStore.db.Query(sqlStmt, qParams...)
@@ -1417,8 +1292,14 @@ func (c *Collection) QueryJSON(sqlStmt string, debug bool, qParams []interface{}
 	src := []byte(`[`)
 	i := 0
 	for rows.Next() {
+		/*
 		data, err := columnToJSON(rows, debug)
 		if err != nil {
+			return nil, err
+		}
+		*/
+		data := []byte{}
+		if err := rows.Scan(&data); err != nil {
 			return nil, err
 		}
 		if i > 0 {

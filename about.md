@@ -1,8 +1,8 @@
 ---
 title: dataset
-abstract: "The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+abstract: "The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
 
-It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
+It was designed for temporary storage of JSON objects in data processing pipelines. It can be used as persistent storage mechanism for collections of JSON objects you wish to distribute when used in conjuction with pairtree or SQLite3 storage.
 
 The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata."
 authors:
@@ -32,11 +32,10 @@ programming_language:
 
 keywords:
   - metadata
-  - data
-  - software
+  - data storage
   - json
 
-date_released: 2026-03-16
+date_released: 2026-03-17
 ---
 
 About this software
@@ -44,10 +43,11 @@ About this software
 
 ## dataset 2.3.4
 
-- Issue #161 fix for handling GET with query were data is passed via URL parameters.
-- Removed support for frame, clone, sample, sync and join support removed. The dsimporter cli removed (use jsonl dump and load instead).
 - Improved loading large JSON objects from jsonl files
-- Issue #164 where the queries in COLD would work in v2.2.0 but fail in v2.3.x. Now compare column types returned by DB as well as Go type in driver
+- Fixed issue #164 where the queries in COLD would work in v2.2.0 but fail in v2.3.x.
+- Removed support for SQL parameters in dsquery due to encoding issues and lack of practical use cases
+- Removed duplicated code from dsquery.go and api_routes.go in favor of collection.go's implementation of query functionality.
+- Added tailing semi-colon removal for SQL queries due to changes in behavior of SQLite3 driver
 
 ### Authors
 
@@ -63,9 +63,9 @@ About this software
 - Thomas E Morrell, <https://orcid.org/0000-0001-9266-5146>
 
 
-The Dataset Project provides tools for working with collections of JSON documents easily. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
 
-It is suitable for temporary storage of JSON objects in data processing pipelines as well as a persistent storage mechanism for collections of JSON objects.
+It was designed for temporary storage of JSON objects in data processing pipelines. It can be used as persistent storage mechanism for collections of JSON objects you wish to distribute when used in conjuction with pairtree or SQLite3 storage.
 
 The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science projects as well as building web applications that work with metadata.
 
