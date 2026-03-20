@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.3.4 7fb2bf9
+%datasetd(1) user manual | version 2.4.0 a8c5adf
 % R. S. Doiel
-% 2026-03-17
+% 2026-03-20
 
 
 # datasetd REST API

@@ -809,7 +809,7 @@ representation.
 -index
 : This will create a SQLite3 index for a collection. This enables {app_name}
 to query pairtree collections using SQLite3 SQL dialect just as it would for
-SQL storage collections (i.e. don't use with postgres, mysql or sqlite based
+SQL storage collections (i.e. don't use with postgres or sqlite based
 dataset collections. It is not needed for them). Note the index is always
 built before executing the SQL statement.
 

@@ -37,8 +37,8 @@ datasetd. Subsequent version should be stable and feature complete.</p>
 <h2 id="on-the-chopping-block">On the chopping block</h2>
 <h3 id="dropped-features-from-v2">Dropped features from v2</h3>
 <ul class="task-list">
-<li><label><input type="checkbox" />drop or rethink pairtree storage for
-JSON documents</label></li>
+<li><label><input type="checkbox" checked="" />drop or rethink pairtree
+storage for JSON documents</label></li>
 <li><label><input type="checkbox" checked="" />frames related verbs (has
 been superseded by query, dsquery)</label></li>
 <li><label><input type="checkbox" checked="" />clone, clone sample
@@ -47,10 +47,12 @@ been superseded by query, dsquery)</label></li>
 via external tooling or via SQLite3 query support)</label></li>
 <li><label><input type="checkbox" checked="" />libdataset is being
 abandoned, too hard to maintain Windows build</label></li>
-<li><label><input type="checkbox" />dsquery (merged into dataset
-command, already supported in datasetd)</label></li>
+<li><label><input type="checkbox" checked="" />dsquery (merged into
+dataset command, already supported in datasetd)</label></li>
 <li><label><input type="checkbox" checked="" />dsimport (replaced with
 dump/load of json line documents)</label></li>
+<li><label><input type="checkbox" checked="" />dropped support for MySQL
+in v2.4.0</label></li>
 </ul>
 <h2 id="revisions">Revisions</h2>
 <ul>
@@ -58,7 +60,7 @@ dump/load of json line documents)</label></li>
 store versioned objects in a common, bag friendly layout (OCFL v1.1 or
 RO-create v1.1)</label></li>
 <li><label><input type="checkbox" checked="" />default storage of
-metadata is in an SQLite3 database with support for PostgreSQL and MySQL
+metadata is in an SQLite3 database with support for PostgreSQL
 maintained from v2</label></li>
 <li><label><input type="checkbox" />a simplified model for versioned
 metadata.</label>

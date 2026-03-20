@@ -65,7 +65,7 @@ type Collection struct {
 	StoreType string `json:"storage_type,omitempty"`
 
 	// DsnURI holds protocol plus dsn string. The protocol can be
-	// "sqlite://", "mysql://" or "postgres://"and the dsn conforming to the Golang
+	// "sqlite://" or "postgres://"and the dsn conforming to the Golang
 	// database/sql driver name in the database/sql package.
 	DsnURI string `json:"dsn_uri,omitempty"`
 
@@ -333,8 +333,8 @@ func (c *Collection) initPTStore() error {
 // presumes that the database and been create and an appropriate
 // database user has been created outside the dataset provided tooling.
 // It uses a DNS in URI form where the "protocol" element identifies
-// the type of SQL database, e.g. sqlite would use "sqlite:", MySQL
-// would use "mysql:". The rest of the URI is formed from a Go style
+// the type of SQL database, e.g. sqlite would use "sqlite:", Postgres
+// would use "postgres:". The rest of the URI is formed from a Go style
 // DSN (data source name). These are SQL system specific but usually
 // include things like db name, user, password to access the database.
 //
@@ -417,15 +417,15 @@ func (c *Collection) initSQLStore() error {
 // If a DSN URI is a non-empty string then it is the SQL storage engine
 // is used. The database and user access in the SQL engine needs be setup
 // before you can successfully intialized your dataset collection.
-// Currently three SQL database engines are support, SQLite3 or MySQL 8.
+// Currently three SQL database engines are support, SQLite3 or Postgres.
 // You select the SQL storage engine by forming a URI consisting of a
-// "protocol" (e.g. "sqlite", "mysql", "postgres"), the protocol
+// "protocol" (e.g. "sqlite", "postgres"), the protocol
 // delimiter "://" and a Go SQL supported DSN based on the database
 // driver implementation.
 //
-// A MySQL 8 DSN URI would look something like
+// A Postgres DSN URI would look something like
 //
-//	`mysql://DB_USER:DB_PASSWD@PROTOCAL_EXPR/DB_NAME`
+//	`postgres://DB_USER:DB_PASSWD@PROTOCAL_EXPR/DB_NAME`
 //
 // The one for SQLite3
 //

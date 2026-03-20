@@ -19,4 +19,5 @@
   - [Notes if you run Windows](INSTALL_NOTES_Windows.md)
 - [Documentation](docs/)
 - [How to ...](how-to/)
+- [Changes](CHANGES.md)
 

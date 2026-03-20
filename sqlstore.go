@@ -36,7 +36,6 @@ import (
 	//_ "github.com/ncruces/go-sqlite3/driver"
 	//_ "github.com/ncruces/go-sqlite3/embed"
 
-	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
@@ -47,8 +46,6 @@ const (
 	PostgresSchemaName = "postgres"
 	PostgresDriverName = "postgres"
 
-	MySQLSchemaName = "mysql"
-	MySQLDriverName = "mysql"
 
 	// None means versioning is turned off for collection
 	None = 0
@@ -92,7 +89,7 @@ func ParseDSN(uri string) (string, error) {
 		return "", err
 	}
 
-	if !(u.Scheme == Sqlite3SchemaName || u.Scheme == PostgresSchemaName || u.Scheme == MySQLSchemaName) {
+	if !(u.Scheme == Sqlite3SchemaName || u.Scheme == PostgresSchemaName) {
 		return "", fmt.Errorf("invalid connection protocol: %s", u.Scheme)
 	}
 
@@ -137,8 +134,6 @@ func driverNameFixUp(driverName string) string {
 		return Sqlite3DriverName
 	case PostgresSchemaName:
 		return PostgresDriverName
-	case MySQLSchemaName:
-		return MySQLDriverName
 	}
 	return driverName
 }
@@ -186,13 +181,6 @@ src JSON,
 created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)`, store.tableName)
 		//NOTE: Postgres needs a trigger to make update work.
-	case MySQLDriverName:
-		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  _key VARCHAR(255) PRIMARY KEY,
-  src JSON,
-  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-)`, store.tableName)
 	default:
 		return nil, fmt.Errorf("%q (%q) database not supported", store.driverName, store.dsn)
 	}
@@ -321,14 +309,6 @@ func (store *SQLStore) SetVersioning(setting int) error {
   created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   PRIMARY KEY (_key, version)
 )`, versionTable)
-		case MySQLDriverName:
-			stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
-  _key VARCHAR(255) NOT NULL,
-  version VARCHAR(255) NOT NULL,
-  src JSON,
-  created DATETIME DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (_key, version)
-)`, versionTable)
 		default:
 			return fmt.Errorf("%q (%q) database not supported", store.driverName, store.dsn)
 		}
@@ -376,7 +356,6 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 	switch store.driverName {
 	case PostgresDriverName:
 	case Sqlite3DriverName:
-	case MySQLDriverName:
 	default:
 		return nil, fmt.Errorf("%q (%s) database not supported", store.driverName, store.dsn)
 	}
@@ -409,8 +388,6 @@ func (store *SQLStore) Close() error {
 	case Sqlite3DriverName:
 		return store.db.Close()
 	case PostgresDriverName:
-		return store.db.Close()
-	case MySQLDriverName:
 		return store.db.Close()
 	default:
 		return fmt.Errorf("%q (%q) database not supported", store.driverName, store.dsn)

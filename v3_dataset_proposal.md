@@ -8,18 +8,19 @@ Version 3's focus on reducing the functionality of Dataset v2 and simplifying th
 
 ### Dropped features from v2
 
-- [ ] drop or rethink pairtree storage for JSON documents
+- [X] drop or rethink pairtree storage for JSON documents
 - [X] frames related verbs (has been superseded by query, dsquery)
 - [X] clone, clone sample (superseded by dump/load of json lines support)
 - [X] join (should be handled via external tooling or via SQLite3 query support)
 - [X] libdataset is being abandoned, too hard to maintain Windows build
-- [ ] dsquery (merged into dataset command, already supported in datasetd)
+- [X] dsquery (merged into dataset command, already supported in datasetd)
 - [X] dsimport (replaced with dump/load of json line documents)
+- [X] dropped support for MySQL in v2.4.0
 
 ## Revisions
 
 - [ ] attachments and related verbs should store versioned objects in a common, bag friendly layout (OCFL v1.1 or RO-create v1.1)
-- [X] default storage of metadata is in an SQLite3 database with support for PostgreSQL and MySQL maintained from v2
+- [X] default storage of metadata is in an SQLite3 database with support for PostgreSQL maintained from v2
 - [ ] a simplified model for versioned metadata.
   - [ ] one table is "current" metadata
   - [ ] second is a "history" table of versioned metadata

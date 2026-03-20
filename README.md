@@ -13,9 +13,7 @@ The Dataset Project provides a command line program and a web service for workin
 dataset, a command line tool
 ----------------------------
 
-[dataset](doc/dataset.md) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents. Collections can be stored on the file system in a [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) or stored in a SQL database that supports JSON columns like SQLite3 and PostgreSQL[^1].
-
-[^1]: MySQL was supported through v2.3.3. It will not longer be maintained starting v2.3.4 and will eventually be removed completely.
+[dataset](doc/dataset.md) is a command line tool for working with collections of [JSON](https://en.wikipedia.org/wiki/JSON) documents. Collections can be stored on the file system in a [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) or stored in a SQL database that supports JSON columns like SQLite3 and Postgres.
 
 The __dataset__ command line tool supports common data management operations as
 
@@ -50,7 +48,7 @@ __dataset__ is guided by the idea that you should be able to work with JSON docu
 
 __dataset__ collection storage options
   - SQL store stores JSON documents in a JSON column
-    - SQLite3 (default), PostgreSQL >= 12 are the current SQL databases support (MySQL/MariaDB support depricated v2.3.3)
+    - SQLite3 (default), Postgres >= 12 are the current SQL databases support
     - A "DSN URI" is used to identify and gain access to the SQL database
     - The DSN URI maybe passed through the environment
   - [pairtree](https://datatracker.ietf.org/doc/html/draft-kunze-pairtree-01) (depricated, will be removed in v3)

@@ -465,28 +465,28 @@ store the JSON objects.
 ~~~
 
 You can optionally store your JSON documents in a
-SQL in PostgreSQL or MySQL 8. This can improve performance for large collections
+SQL in SQLite3 or Postgre. This can improve performance for large collections
 as well as support multi-user or multi-process concurrent use of a collection.
 
 The SQL storage engine is designated using a "DSN_URI". The DSN_URI is formed
-by setting the "protocol" of the URL to either "sqlite://", "mysql://",
-or "postgres://" followed by a DSN or "data source name" The data source name
+by setting the "protocol" of the URL to either "sqlite://" or "postgres://"
+followed by a DSN or "data source name" The data source name
 is usually a form of the database connection string. e.g. something like
 "posgres://jane.doe:$SECRET@collections". The DSN is described in detail in the Go
 database/sql package.
 
-This examples shows using SQLite3 storage for the JSON documents in
-a "collection.db" stored inside the "data.ds" collection.
+This examples shows using SQLite3 storage explicitly for the JSON documents.
+The JSON documents are in the "collection.db" stored inside the "data.ds" collection.
 
 ~~~shell
     dataset init data.ds "sqlite://collection.db"
 ~~~
 
-Here's a variation using MySQL 8 as the storage engine storing the
-collection in the "collections" database.
+As of 2.3 this is the default collection type now. So you can no longer need
+to include the `+"`"+`sqlite://collection.db"`+"`"+` parameter.
 
 ~~~shell
-    dataset init data.ds "mysql://$DB_USER:$DB_PASSWORD@/collections"
+    dataset init data.ds
 ~~~
 
 Here's an example of for using PostgreSQL running on localhost. 
@@ -1073,7 +1073,7 @@ Read the SQL statement from a file called "report.sql".
     {app_name} query -sql report.sql mycollection.ds
 ~~~
 
-If you are using PostgreSQL or MySQL as your SQL storage engine
+If you are using SQLite3 or PostgreSQL as your SQL storage engine
 then you'll need to adapt these examples to the SQL dialect for
 used in those sytems.
 

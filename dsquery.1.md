@@ -1,6 +1,6 @@
-%dsquery(1) dataset user manual | version 2.3.4 7fb2bf9
+%dsquery(1) dataset user manual | version 2.4.0 a8c5adf
 % R. S. Doiel and Tom Morrell
-% 2026-03-17
+% 2026-03-20
 
 # NAME
 
@@ -96,7 +96,7 @@ representation.
 -index
 : This will create a SQLite3 index for a collection. This enables dsquery
 to query pairtree collections using SQLite3 SQL dialect just as it would for
-SQL storage collections (i.e. don't use with postgres, mysql or sqlite based
+SQL storage collections (i.e. don't use with postgres or sqlite based
 dataset collections. It is not needed for them). Note the index is always
 built before executing the SQL statement.
 

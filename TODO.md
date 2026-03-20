@@ -14,9 +14,9 @@ Bugs
 Next (prep for v2.4)
 -----------------------
 
-- [ ] Decide if models is going to be continued or not
-- [ ] Remove check and repair since dump and load work well
-- [ ] Merge dsquery into dataset, make the dsquery cli deprecated
+- [X] Decide if models is going to be continued or not (decided they need more thought)
+- [X] Consider removing check and repair since dump and load work well
+- [X] Merge dsquery into dataset
 - [X] Remove frames support
 - [X] Remove join
 - [X] Remove dsimporter replace with documentations of using datatools for generating a jsonl file.

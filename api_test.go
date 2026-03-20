@@ -404,7 +404,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 	}
 	l := []string{}
 	if err := json.Unmarshal(body, &l); err != nil {
-		t.Errorf("expected a list of attachments %q, %s", len(l), err)
+		t.Errorf("expected a list of attachments %d, %s", len(l), err)
 		t.FailNow()
 	}
 	if len(l) > 0 {
@@ -459,7 +459,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 	}
 	l = []string{}
 	if err := json.Unmarshal(body, &l); err != nil {
-		t.Errorf("expected a list of attachments %q, %s", len(l), err)
+		t.Errorf("expected a list of attachments %d, %s", len(l), err)
 		t.FailNow()
 	}
 	if len(l) != 1 {
@@ -534,7 +534,7 @@ func clientTestAttachments(t *testing.T, settings *Settings) {
 	}
 	l = []string{}
 	if err := json.Unmarshal(body, &l); err != nil {
-		t.Errorf("expected a list of attachments %q, %s", len(l), err)
+		t.Errorf("expected a list of attachments %d, %s", len(l), err)
 		t.FailNow()
 	}
 	if len(l) > 0 {

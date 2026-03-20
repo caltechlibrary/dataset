@@ -18,7 +18,7 @@ package dataset
 
 // StorageSystem describes the functions required to implement
 // a dataset storage system. Currently two types of storage systems
-// are supported -- pairtree and sql storage (via MySQL 8 and JSON columns)
+// are supported -- pairtree and sql storage (via SQLite3/Postgres JSON columns)
 // If the funcs describe are not supported by the storage system they
 // must return a "Not Implemented" error value.
 type StorageSystem interface {

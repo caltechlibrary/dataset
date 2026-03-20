@@ -173,7 +173,7 @@ func getAttrNames(q url.Values, key string) []string {
 	return []string{}
 }
 
-// Query returns the results from a SQL function stored in MySQL or Postgres.
+// Query returns the results from a SQL function stored in SQLite3 or Postgres.
 // The query takes a query name followed by a path part that maps the order of
 // the fields. This is needed because the SQL prepared statments use paramter
 // order is mostly common to SQL dialects.
