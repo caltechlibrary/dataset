@@ -45,18 +45,18 @@ About this software
 
 - Removed MySQL support
 
-### Authors
+## Authors
 
-- R. S. Doiel, <https://orcid.org/0000-0003-0900-6903>
-- Thomas E Morrell, <https://orcid.org/0000-0001-9266-5146>
-
-
+- [R. S. Doiel](https://orcid.org/0000-0003-0900-6903)
+- [Thomas E Morrell](https://orcid.org/0000-0001-9266-5146)
 
 
-### Maintainers
 
-- R. S. Doiel, <https://orcid.org/0000-0003-0900-6903>
-- Thomas E Morrell, <https://orcid.org/0000-0001-9266-5146>
+
+## Maintainers
+
+- [R. S. Doiel](https://orcid.org/0000-0003-0900-6903)
+- [Thomas E Morrell](https://orcid.org/0000-0001-9266-5146)
 
 
 The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
@@ -65,11 +65,11 @@ It was designed for temporary storage of JSON objects in data processing pipelin
 
 The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science and web base applications.
 
-- License: <https://caltechlibrary.github.io/dataset/LICENSE>
-- GitHub: <https://github.com/caltechlibrary/dataset>
-- Issues: <https://github.com/caltechlibrary/dataset/issues>
+- [License](https://caltechlibrary.github.io/dataset/LICENSE)
+- [Code Repository](https://github.com/caltechlibrary/dataset)
+  - [Issue Tracker](https://github.com/caltechlibrary/dataset/issues)
 
-### Programming languages
+## Programming languages
 
 - Go
 - SQL
@@ -77,15 +77,15 @@ The Dataset Project provides command line programs and a web service for working
 
 
 
-### Software Requirements
+## Software Requirements
 
-- Golang >= 1.26.1
-- CMTools >= 0.0.40
+- Golang >= 1.26
+- CMTools >= 0.0.43
 
 
-### Software Suggestions
+## Software Suggestions
 
-- Pandoc &gt;&#x3D; 3.1
-- GNU Make &gt;&#x3D; 3.8
+- Pandoc >= 3.9
+- GNU Make >= 3.8
 
 
