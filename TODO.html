@@ -11,6 +11,7 @@
 <header>
 <a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
 </header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
 <nav>
 <ul>
     <li><a href="/">Home</a></li>
@@ -20,10 +21,10 @@
     <li><a href="user_manual.html">User Manual</a></li>
     <li><a href="about.html">About</a></li>
     <li><a href="search.html">Search</a></li>
-    <li><a href="https://github.com/caltechlibrary/dataset">GitHub</a></li>
+    <li><a href="https://github.com/caltechlibrary/dataset">Code Repository</a></li>
 </ul>
 </nav>
-<section>
+<section id="main-content">
 <h1 id="action-items">Action Items</h1>
 <dl>
 <dt>X</dt>
@@ -36,6 +37,23 @@ declined, decided not to implement
 </dd>
 </dl>
 <h2 id="bugs">Bugs</h2>
+<h2 id="next-prep-for-v2.5">Next (prep for v2.5)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />In datasetd the queries object to
+come in two flavors. Query name (key), SQL (value) and a variation of
+Query name (key), QueryObject. The query object has two attributes, sql
+holds the SQL and inputs holds a list of Input objects. Input objects
+correspond to HTML5 input attributes with type required. Type initially
+support should be the official input types of HTML5, plus those
+identifiers types need by Caltech Library projects (example orcid, ror,
+isbn, issn).</label></li>
+<li><label><input type="checkbox" />The Input objects supported in the
+enhance query object could be repurposed to describe the JSON schema
+being stored. The tricky part is lists of things, these need to be
+handled in a way that are easy to describe in YAML, easy to read as YAML
+and easy to implemented a general purpose object verifier
+with</label></li>
+</ul>
 <h2 id="next-prep-for-v2.4">Next (prep for v2.4)</h2>
 <ul class="task-list">
 <li><label><input type="checkbox" checked="" />Decide if models is going

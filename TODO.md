@@ -11,6 +11,12 @@ D
 Bugs
 ----
 
+Next (prep for v2.5)
+--------------------
+
+- [ ] In datasetd the queries object to come in two flavors. Query name (key), SQL (value) and a variation of Query name (key), QueryObject. The query object has two attributes, sql holds the SQL and inputs holds a list of Input objects. Input objects correspond to HTML5 input attributes with type required. Type initially support should be the official input types of HTML5, plus those identifiers types need by Caltech Library projects (example orcid, ror, isbn, issn).
+- [ ] The Input objects supported in the enhance query object could be repurposed to describe the JSON schema being stored. The tricky part is lists of things, these need to be handled in a way that are easy to describe in YAML, easy to read as YAML and easy to implemented a general purpose object verifier with
+
 Next (prep for v2.4)
 -----------------------
 
