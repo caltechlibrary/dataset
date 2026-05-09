@@ -30,9 +30,10 @@ Next (prep for v2.4)
 Someday, Maybe
 --------------
 
-- [ ] Integrate models package into dataset cli and datasetd
-  - [ ] Modify Create and Update in datasetd to use the models package
-  - [ ] Handle generated elements on Create and Update
+- [X] Integrate models package into dataset cli and datasetd
+  - [X] Modify Create and Update in datasetd to use the models package
+  - [X] Handle generated elements on Create and Update
+  - [X] Added schema validation with X-Validation-Errors header for API responses
   - [ ] For forms submited with URL encoding reply I currently reply with JSON to indicate success or failure, should return HTML
     - [ ] Success response should provide record view of submitted content
     - [ ] Failure should redirect back to the form that was submitted

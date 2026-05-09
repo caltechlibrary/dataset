@@ -75,6 +75,10 @@ type Collection struct {
 	// allowing possible varification of structure data.
 	Model *models.Model `json:"-"`
 
+	// Config holds the collection's configuration from settings.yaml
+	// This includes schema settings and validation flags.
+	Config *Config `json:"-"`
+
 	// Created
 	Created string `json:"created,omitempty"`
 

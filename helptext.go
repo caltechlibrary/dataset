@@ -465,6 +465,13 @@ The {app_name} REST API follows the rest practices. Good examples are POST creat
 
 The REST API works with JSON data. The service does not support multipart urlencoded content. You MUST use the content type of ` + "`" + `application/json` + "`" + ` when performing a POST, or PUT. This means if you are building a user interface for a collections {app_name} service you need to appropriately use JavaScript to send content into the API and set the content type to ` + "`" + `application/json` + "`" + `.
 
+## Validation
+
+When schema validation is enabled for a collection (via the schema_name and validate settings), create and update
+operations will validate the JSON document against the specified schema. If validation fails, the API returns
+a 400 Bad Request status with validation errors in the X-Validation-Errors HTTP header. The header contains
+a JSON array of validation error objects, each with path, message, and type fields.
+
 ## Examples
 
 Here's an example of a list, in YAML, of people in a collection called "people.ds". There are some fields for the name, sorted name, display name and orcid. The pid is the "key" used to store the objects in our collection.
@@ -654,6 +661,10 @@ htdocs
 : (optional) if this is a non-empty it will be used as the path to static resouce provided with the web service.
 These are useful for prototyping user interfaces with HTML, CSS and JavaScript interacting the RESTful JSON API.
 
+schemas
+: (optional) A map of schema names to schema definitions. Schemas are used to validate JSON documents in collections.
+  Each schema is defined as a model with elements, types, and validation rules. Schemas can be referenced
+  by collections using the schema_name attribute. See the models package documentation for schema format.
 
 collections
 : (required), a list of datasets to be manage via the web service.
@@ -670,6 +681,14 @@ The query expects a POST. Fields are mapped to the SQL statement parameters. If 
 indexing will be needed before this will work as it would use the SQLite 3 database to execute the SQL statement against.
 Otherwise the SQL statement would conform to the SQL dialect of the SQL storage used (e.g. Postgres or SQLite3).
 The SQL statements need to conform to the same constraints as dsquery's implementation of SQL statements.
+
+schema_name
+: (optional) The name of a schema defined in the top-level schemas map to use for validating documents in this collection.
+  If set and validate is true, documents will be validated against this schema on create and update operations.
+
+validate
+: (optional, default false) If true and schema_name is set, enable schema validation for create and update operations.
+  When validation fails, a 400 Bad Request response is returned with validation errors in the X-Validation-Errors header.
 
 ## API Permissions
 

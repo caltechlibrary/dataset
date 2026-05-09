@@ -326,6 +326,12 @@ func (api *API) Init(appName string, settingsFile string) error {
 		if err != nil {
 			log.Printf("WARNING: failed to open %q, %s", cfg.CName, err)
 		} else {
+			// Store the config reference in the collection
+			c.Config = cfg
+			// Apply schema from config if available
+			if cfg.Model != nil {
+				c.Model = cfg.Model
+			}
 			api.CMap[cName] = c
 		}
 		// NOTE: Need to review the permissions in cfg and then

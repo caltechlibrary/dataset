@@ -102,6 +102,10 @@ Features
         - [attach](docs/attach-endpoint.md)
         - [retrieve](docs/retrieve-endpoint.md)
         - [prune](docs/prune-endpoint.md)
+- Schema validation
+    - Define reusable schemas in settings.yaml for validating JSON documents
+    - Enable per-collection validation with schema_name and validate configuration
+    - Returns X-Validation-Errors header with detailed error information on validation failures
 
 
 Both __dataset__  and __datasetd__ maybe useful for general data science applications needing JSON object management or in implementing repository systems in research libraries and archives.

@@ -39,6 +39,10 @@ type Settings struct {
 	// provided by the web service.
 	Htdocs string `json:"htdocs" yaml:"htdocs"`
 
+	// Schemas holds global schema definitions that can be referenced by collections.
+	// Schemas are defined by name and can be reused across multiple collections.
+	Schemas map[string]*models.Model `json:"schemas,omitempty" yaml:"schemas,omitempty"`
+
 	// Collections holds an array of collection configurations that
 	// will be supported by the web service.
 	Collections []*Config `json:"collections" yaml:"collections"`
@@ -67,6 +71,15 @@ type Config struct {
 	// Model describes the record structure to store. It is to validate
 	// URL encoded POST and PUT tot the collection.
 	Model *models.Model `json:"model,omitempty" yaml:"model,omitempty"`
+
+	// SchemaName references a global schema defined in Settings.Schemas.
+	// If set, this takes precedence over Model and model.yaml files.
+	SchemaName string `json:"schema,omitempty" yaml:"schema,omitempty"`
+
+	// Validate enables schema validation for create/update operations.
+	// If true and a schema is defined (via Model, SchemaName, or model.yaml),
+	// incoming records will be validated against the schema.
+	Validate bool `json:"validate,omitempty" yaml:"validate,omitempty"`
 
 	// SuccessPage is used for form submissions that are succcessful, i.e. HTTP Status OK (200)
 	SuccessPage string `json:"success_page,omitempty" yaml:"success_page,omitempty"`
@@ -136,6 +149,51 @@ func (settings *Settings) String() string {
 	return fmt.Sprintf("%s", src)
 }
 
+// ResolveSchemas resolves schema references in collection configurations.
+// It processes each collection and sets up the Model field based on:
+// 1. Inline Model definition (highest priority)
+// 2. SchemaName reference to global Schemas map
+// 3. Existing Model field (if already set)
+// This should be called after parsing the configuration file.
+func (settings *Settings) ResolveSchemas() error {
+	if settings == nil {
+		return fmt.Errorf("settings is nil")
+	}
+	
+	// First, load all global schemas and set up their type definitions
+	for _, schema := range settings.Schemas {
+		if schema != nil {
+			models.SetDefaultTypes(schema)
+		}
+	}
+	
+	// Then resolve each collection's schema
+	for _, cfg := range settings.Collections {
+		if cfg == nil {
+			continue
+		}
+		
+		// Priority 1: Inline Model definition
+		if cfg.Model != nil {
+			models.SetDefaultTypes(cfg.Model)
+			continue
+		}
+		
+		// Priority 2: SchemaName reference
+		if cfg.SchemaName != "" {
+			if schema, ok := settings.Schemas[cfg.SchemaName]; ok {
+				cfg.Model = schema
+			} else {
+				return fmt.Errorf("schema %q referenced by collection %q not found in global schemas", cfg.SchemaName, cfg.CName)
+			}
+		}
+		// Priority 3: Model field already set (from YAML/JSON parsing)
+		// No action needed - will be handled by collection loading
+	}
+	
+	return nil
+}
+
 // ConfigOpen reads the JSON or YAML configuration file provided, validates it
 // and returns a Settings structure and error.
 //
@@ -202,6 +260,12 @@ func ConfigOpen(fName string) (*Settings, error) {
 			}
 		}
 	}
+	
+	// Resolve schema references
+	if err := settings.ResolveSchemas(); err != nil {
+		return nil, fmt.Errorf("failed to resolve schemas: %s", err)
+	}
+	
 	return settings, nil
 }
 

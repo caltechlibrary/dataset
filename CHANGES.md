@@ -1,3 +1,21 @@
+Release 2.4.0
+
+- Removed MySQL support
+- Added schema-based validation for dataset collections using the models package
+- Added support for nested object and list structures in schema definitions
+- Added comprehensive identifier types for metadata validation:
+  - ISBN, ISSN for publication identifiers
+  - DOI for digital object identifiers
+  - ORCID, ROR, ISNI for person/organization identifiers
+  - PMID, PMCID for biomedical literature
+  - FundRef, LCNAF, VIAF, SNAC for authority control
+  - ArXiv for preprint identifiers
+  - EAN for product barcodes
+- Added `schemas` configuration to settings.yaml for defining reusable validation schemas
+- Added `schema_name` and `validate` fields to collection configuration for enabling per-collection validation
+- API now returns `X-Validation-Errors` header with detailed validation error information on create/update failures
+- Backward compatible: existing collections continue to work without schema configuration
+
 Release 2.3.4
 
 - Deprecated MySQL support in documentation, will depreciate MySQL support in future release

@@ -532,10 +532,25 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					}
 				}
 				// Now we need to validate the form data against our model.
-				if ok := c.Model.ValidateMapInterface(o); !ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
-					return
+				// Use new nested validation if available and enabled
+				if c.Config != nil && c.Config.Validate && c.Model != nil {
+					vr := ValidateRecord(c, o)
+					if !vr.Valid {
+						log.Printf("Failed to validate update form, bad request %s %q -> %+v, errors: %s", r.Method, r.URL.Path, o, vr.String())
+						// Add validation errors to header
+						if len(vr.Errors) > 0 {
+							w.Header().Set("X-Validation-Errors", FormatValidationErrors(vr.Errors))
+						}
+						statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+						return
+					}
+				} else if c.Model != nil {
+					// Fallback to legacy flat validation for backward compatibility
+					if ok := c.Model.ValidateMapInterface(o); !ok {
+						log.Printf("Failed to validate update form (legacy), bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+						statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+						return
+					}
 				}
 			}
 			if api.Debug {
@@ -584,9 +599,22 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				log.Printf("DEBUG form data:\n%s\n\n", txt)
 			}
 			// Now we need to validate the form data.
-			if c.Model != nil {
+			// Use new nested validation if available and enabled
+			if c.Config != nil && c.Config.Validate && c.Model != nil {
+				vr := ValidateRecord(c, o)
+				if !vr.Valid {
+					log.Printf("Failed to validate create form, bad request %s %q -> %+v, errors: %s", r.Method, r.URL.Path, o, vr.String())
+					// Add validation errors to header
+					if len(vr.Errors) > 0 {
+						w.Header().Set("X-Validation-Errors", FormatValidationErrors(vr.Errors))
+					}
+					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+					return
+				}
+			} else if c.Model != nil {
+				// Fallback to legacy flat validation for backward compatibility
 				if ok := c.Model.ValidateMapInterface(o); !ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, o)
+					log.Printf("Failed to validate create form (legacy), bad request %s %q -> %+v", r.Method, r.URL.Path, o)
 					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
 					return
 				}
