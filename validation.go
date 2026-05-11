@@ -70,57 +70,46 @@ func (vr *ValidationResult) String() string {
 
 // ValidateRecord validates a record against a collection's schema.
 // Returns a ValidationResult with Valid=true if validation passes,
-// or Valid=false with a list of validation errors.
-// If the collection has no schema (Model == nil) or validation is disabled
-// (Validate == false in config), returns Valid=true with no errors.
+// or Valid=false with field-level validation errors.
+// If the collection has no schema (Model == nil), returns Valid=true.
 func ValidateRecord(c *Collection, data interface{}) *ValidationResult {
-	result := &ValidationResult{
-		Valid:  true,
-		Errors: []*ValidationError{},
-	}
+	result := &ValidationResult{Valid: true, Errors: []*ValidationError{}}
 
-	// No schema or validation disabled = always valid
 	if c == nil || c.Model == nil {
 		return result
 	}
 
-	// Use the model's ValidateInterface method for nested validation
-	if !c.Model.ValidateInterface(data) {
-		result.Valid = false
-		// For now, we return a generic error
-		// In the future, we could enhance models package to return detailed errors
+	for _, fe := range c.Model.ValidateInterfaceErrors(data) {
 		result.Errors = append(result.Errors, &ValidationError{
-			Path:    "root",
-			Message: "record does not match schema",
+			Path:    fe.Path,
+			Message: fe.Message,
+			Type:    fe.Type,
 		})
 	}
-
+	if len(result.Errors) > 0 {
+		result.Valid = false
+	}
 	return result
 }
 
 // ValidateRecordWithConfig validates a record using the provided config.
-// This is useful when the collection's config has validation settings
-// that differ from the collection's Model.
 func ValidateRecordWithConfig(cfg *Config, data interface{}) *ValidationResult {
-	result := &ValidationResult{
-		Valid:  true,
-		Errors: []*ValidationError{},
-	}
+	result := &ValidationResult{Valid: true, Errors: []*ValidationError{}}
 
-	// No schema or validation disabled = always valid
 	if cfg == nil || !cfg.Validate || cfg.Model == nil {
 		return result
 	}
 
-	// Use the model's ValidateInterface method
-	if !cfg.Model.ValidateInterface(data) {
-		result.Valid = false
+	for _, fe := range cfg.Model.ValidateInterfaceErrors(data) {
 		result.Errors = append(result.Errors, &ValidationError{
-			Path:    "root",
-			Message: "record does not match schema",
+			Path:    fe.Path,
+			Message: fe.Message,
+			Type:    fe.Type,
 		})
 	}
-
+	if len(result.Errors) > 0 {
+		result.Valid = false
+	}
 	return result
 }
 
