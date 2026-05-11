@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.4.0 20b43c5
+%datasetd(1) user manual | version 2.4.0 872aeaf
 % R. S. Doiel
 % 2026-03-20
 
@@ -30,6 +30,13 @@ The datasetd REST API follows the rest practices. Good examples are POST creates
 ## Content Type and the API
 
 The REST API works with JSON data. The service does not support multipart urlencoded content. You MUST use the content type of `application/json` when performing a POST, or PUT. This means if you are building a user interface for a collections datasetd service you need to appropriately use JavaScript to send content into the API and set the content type to `application/json`.
+
+## Validation
+
+When schema validation is enabled for a collection (via the schema_name and validate settings), create and update
+operations will validate the JSON document against the specified schema. If validation fails, the API returns
+a 400 Bad Request status with validation errors in the X-Validation-Errors HTTP header. The header contains
+a JSON array of validation error objects, each with path, message, and type fields.
 
 ## Examples
 

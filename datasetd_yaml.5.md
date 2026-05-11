@@ -1,4 +1,4 @@
-%datasetd(5) user manual | version 2.4.0 20b43c5
+%datasetd(5) user manual | version 2.4.0 872aeaf
 % R. S. Doiel and Tom Morrell
 % 2026-03-20
 
@@ -16,6 +16,10 @@ htdocs
 : (optional) if this is a non-empty it will be used as the path to static resouce provided with the web service.
 These are useful for prototyping user interfaces with HTML, CSS and JavaScript interacting the RESTful JSON API.
 
+schemas
+: (optional) A map of schema names to schema definitions. Schemas are used to validate JSON documents in collections.
+  Each schema is defined as a model with elements, types, and validation rules. Schemas can be referenced
+  by collections using the schema_name attribute. See the models package documentation for schema format.
 
 collections
 : (required), a list of datasets to be manage via the web service.
@@ -32,6 +36,14 @@ The query expects a POST. Fields are mapped to the SQL statement parameters. If 
 indexing will be needed before this will work as it would use the SQLite 3 database to execute the SQL statement against.
 Otherwise the SQL statement would conform to the SQL dialect of the SQL storage used (e.g. Postgres or SQLite3).
 The SQL statements need to conform to the same constraints as dsquery's implementation of SQL statements.
+
+schema_name
+: (optional) The name of a schema defined in the top-level schemas map to use for validating documents in this collection.
+  If set and validate is true, documents will be validated against this schema on create and update operations.
+
+validate
+: (optional, default false) If true and schema_name is set, enable schema validation for create and update operations.
+  When validation fails, a 400 Bad Request response is returned with validation errors in the X-Validation-Errors header.
 
 ## API Permissions
 

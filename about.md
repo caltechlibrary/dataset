@@ -44,6 +44,12 @@ About this software
 ## dataset 2.4.0
 
 - Removed MySQL support
+- Added schema-based validation for dataset collections using the models package
+- Added support for nested object and list structures in schema definitions
+- Added identifier types (ISBN, ISSN, DOI, ORCID, ROR, ISNI, PMID, PMCID, FundRef, LCNAF, VIAF, SNAC, ArXiv, EAN) for CrossRef/DataCite record validation
+- Added schemas configuration to settings.yaml for defining reusable validation schemas
+- Added schema_name and validate fields to collection configuration for enabling per-collection validation
+- API now returns X-Validation-Errors header with detailed validation error information on create/update failures
 
 ## Authors
 

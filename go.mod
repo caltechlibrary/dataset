@@ -1,17 +1,15 @@
 module github.com/caltechlibrary/dataset/v2
 
-go 1.26.1
-
-replace github.com/caltechlibrary/models => ../models
+go 1.26.2
 
 require (
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
-	github.com/caltechlibrary/models v0.0.0
+	github.com/caltechlibrary/models v0.0.8-0.20260511235105-a627942b8dbd
 	github.com/caltechlibrary/pairtree v1.0.4
 	github.com/caltechlibrary/semver v0.0.0-20250123014303-7e17c5d894c5
 	github.com/glebarez/go-sqlite v1.22.0
 	github.com/google/uuid v1.6.0
-	github.com/lib/pq v1.11.2
+	github.com/lib/pq v1.12.3
 	github.com/pkg/fileutils v0.0.0-20181114200823-d734b7f202ba
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -19,11 +17,11 @@ require (
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/nyaruka/phonenumbers v1.4.0 // indirect
+	github.com/nyaruka/phonenumbers v1.7.4 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	golang.org/x/text v0.23.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	modernc.org/libc v1.37.6 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
