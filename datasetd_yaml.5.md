@@ -1,6 +1,6 @@
-%datasetd(5) user manual | version 2.4.0 872aeaf
+%datasetd(5) user manual | version 2.4.1 b21548f
 % R. S. Doiel and Tom Morrell
-% 2026-03-20
+% 2026-05-28
 
 
 # datasetd YAML configuration

@@ -1,10 +1,11 @@
 ---
 title: dataset
-abstract: "The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
+abstract: |-
+  The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.
 
-It was designed for temporary storage of JSON objects in data processing pipelines. It can be used as persistent storage mechanism for collections of JSON objects you wish to distribute when used in conjunction with pairtree or SQLite3 storage.
+  It was designed for temporary storage of JSON objects in data processing pipelines. It can be used as persistent storage mechanism for collections of JSON objects you wish to distribute when used in conjunction with pairtree or SQLite3 storage.
 
-The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science and web base applications."
+  The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science and web base applications.
 authors:
   - family_name: Doiel
     given_name: R. S.
@@ -23,7 +24,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.4.0
+version: 2.4.1
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -35,13 +36,13 @@ keywords:
   - data storage
   - JSON
 
-date_released: 2026-03-20
+date_released: 2026-05-28
 ---
 
 About this software
 ===================
 
-## dataset 2.4.0
+## dataset 2.4.1
 
 - Removed MySQL support
 - Added schema-based validation for dataset collections using the models package
