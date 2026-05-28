@@ -1,6 +1,6 @@
 module github.com/caltechlibrary/dataset/v2
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/caltechlibrary/dsv1 v0.0.0-20220817192039-7c2741c5699d
