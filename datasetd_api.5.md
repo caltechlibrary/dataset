@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.4.1-rc1 cc5eb37
+%datasetd(1) user manual | version 2.4.1-rc1 95f6bcd
 % R. S. Doiel
 % 2026-05-28
 
