@@ -24,7 +24,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.4.1
+version: 2.4.1-rc1
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -42,7 +42,7 @@ date_released: 2026-05-28
 About this software
 ===================
 
-## dataset 2.4.1
+## dataset 2.4.1-rc1
 
 - Removed MySQL support
 - Added schema-based validation for dataset collections using the models package

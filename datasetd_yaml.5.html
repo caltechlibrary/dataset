@@ -45,6 +45,14 @@ resouce provided with the web service. These are useful for prototyping
 user interfaces with HTML, CSS and JavaScript interacting the RESTful
 JSON API.
 </dd>
+<dt>schemas</dt>
+<dd>
+(optional) A map of schema names to schema definitions. Schemas are used
+to validate JSON documents in collections. Each schema is defined as a
+model with elements, types, and validation rules. Schemas can be
+referenced by collections using the schema_name attribute. See the
+models package documentation for schema format.
+</dd>
 <dt>collections</dt>
 <dd>
 (required), a list of datasets to be manage via the web service.
@@ -69,6 +77,20 @@ the SQLite 3 database to execute the SQL statement against. Otherwise
 the SQL statement would conform to the SQL dialect of the SQL storage
 used (e.g. Postgres or SQLite3). The SQL statements need to conform to
 the same constraints as dsquery’s implementation of SQL statements.
+</dd>
+<dt>schema_name</dt>
+<dd>
+(optional) The name of a schema defined in the top-level schemas map to
+use for validating documents in this collection. If set and validate is
+true, documents will be validated against this schema on create and
+update operations.
+</dd>
+<dt>validate</dt>
+<dd>
+(optional, default false) If true and schema_name is set, enable schema
+validation for create and update operations. When validation fails, a
+400 Bad Request response is returned with validation errors in the
+X-Validation-Errors header.
 </dd>
 </dl>
 <h2 id="api-permissions">API Permissions</h2>

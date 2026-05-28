@@ -70,6 +70,14 @@ multipart urlencoded content. You MUST use the content type of
 if you are building a user interface for a collections datasetd service
 you need to appropriately use JavaScript to send content into the API
 and set the content type to <code>application/json</code>.</p>
+<h2 id="validation">Validation</h2>
+<p>When schema validation is enabled for a collection (via the
+schema_name and validate settings), create and update operations will
+validate the JSON document against the specified schema. If validation
+fails, the API returns a 400 Bad Request status with validation errors
+in the X-Validation-Errors HTTP header. The header contains a JSON array
+of validation error objects, each with path, message, and type
+fields.</p>
 <h2 id="examples">Examples</h2>
 <p>Here’s an example of a list, in YAML, of people in a collection
 called “people.ds”. There are some fields for the name, sorted name,

@@ -26,9 +26,22 @@
 </nav>
 <section id="main-content">
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.4.0">dataset 2.4.0</h2>
+<h2 id="dataset-2.4.1-rc1">dataset 2.4.1-rc1</h2>
 <ul>
 <li>Removed MySQL support</li>
+<li>Added schema-based validation for dataset collections using the
+models package</li>
+<li>Added support for nested object and list structures in schema
+definitions</li>
+<li>Added identifier types (ISBN, ISSN, DOI, ORCID, ROR, ISNI, PMID,
+PMCID, FundRef, LCNAF, VIAF, SNAC, ArXiv, EAN) for CrossRef/DataCite
+record validation</li>
+<li>Added schemas configuration to settings.yaml for defining reusable
+validation schemas</li>
+<li>Added schema_name and validate fields to collection configuration
+for enabling per-collection validation</li>
+<li>API now returns X-Validation-Errors header with detailed validation
+error information on create/update failures</li>
 </ul>
 <h2 id="authors">Authors</h2>
 <ul>

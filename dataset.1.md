@@ -1,4 +1,4 @@
-%dataset(1) user manual | version 2.4.1 b21548f
+%dataset(1) user manual | version 2.4.1-rc1 cc5eb37
 % R. S. Doiel and Tom Morrell
 % 2026-05-28
 
@@ -192,6 +192,6 @@ database name.  The sslmode option was specified because Postgres
 in this example was restricted to localhost on a single user machine.
 
 
-dataset 2.4.1
+dataset 2.4.1-rc1
 
 

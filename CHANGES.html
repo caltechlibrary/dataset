@@ -25,6 +25,32 @@
 </ul>
 </nav>
 <section id="main-content">
+<p>Release 2.4.0</p>
+<ul>
+<li>Removed MySQL support</li>
+<li>Added schema-based validation for dataset collections using the
+models package</li>
+<li>Added support for nested object and list structures in schema
+definitions</li>
+<li>Added comprehensive identifier types for metadata validation:
+<ul>
+<li>ISBN, ISSN for publication identifiers</li>
+<li>DOI for digital object identifiers</li>
+<li>ORCID, ROR, ISNI for person/organization identifiers</li>
+<li>PMID, PMCID for biomedical literature</li>
+<li>FundRef, LCNAF, VIAF, SNAC for authority control</li>
+<li>ArXiv for preprint identifiers</li>
+<li>EAN for product barcodes</li>
+</ul></li>
+<li>Added <code>schemas</code> configuration to settings.yaml for
+defining reusable validation schemas</li>
+<li>Added <code>schema_name</code> and <code>validate</code> fields to
+collection configuration for enabling per-collection validation</li>
+<li>API now returns <code>X-Validation-Errors</code> header with
+detailed validation error information on create/update failures</li>
+<li>Backward compatible: existing collections continue to work without
+schema configuration</li>
+</ul>
 <p>Release 2.3.4</p>
 <ul>
 <li>Deprecated MySQL support in documentation, will depreciate MySQL
