@@ -585,6 +585,8 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 								key = uid.String()
 							}
 						}
+					case "now":
+						o[k] = time.Now().Format(time.RFC3339)
 					case "timestamp":
 						o[k] = time.Now().Format(time.RFC3339)
 					case "current_timestamp":
@@ -774,12 +776,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					txt, _ := json.MarshalIndent(formData, "", "  ")
 					log.Printf("DEBUG form data:\n%s\n\n", txt)
 				}
-				// Now we need to validate the form data.
-				if ok := c.Model.Validate(formData); !ok {
-					log.Printf("Failed to validate create form, bad request %s %q -> %+v", r.Method, r.URL.Path, formData)
-					//statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
-					//return
-				}
+				// Validation runs after generators are applied (below).
 			}
 			if api.Debug {
 				log.Printf("DEBUG creating form object -> %+v", o)
@@ -834,14 +831,28 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 							}
 						}
 					}
-					// Handle overwriting types (i.e. timestamp, current_timestamp)
+					// Handle overwriting types (i.e. now, timestamp, current_timestamp)
 					switch genType {
+					case "now":
+						o[k] = time.Now().Format(time.RFC3339)
 					case "timestamp":
 						o[k] = time.Now().Format(time.RFC3339)
 					case "current_timestamp":
 						o[k] = time.Now().Format(time.RFC3339)
 					}
 				}
+			}
+		}
+		// Validate after generators so auto-populated fields satisfy required constraints.
+		if c.Config != nil && c.Config.Validate && c.Model != nil {
+			vr := ValidateRecord(c, o)
+			if !vr.Valid {
+				log.Printf("Failed to validate update, bad request %s %q -> %+v, errors: %s", r.Method, r.URL.Path, o, vr.String())
+				if len(vr.Errors) > 0 {
+					w.Header().Set("X-Validation-Errors", FormatValidationErrors(vr.Errors))
+				}
+				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+				return
 			}
 		}
 		if err := c.Update(key, o); err != nil {

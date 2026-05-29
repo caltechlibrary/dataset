@@ -1,12 +1,12 @@
 #!/usr/bin/env pwsh
-# generated with CMTools 2.4.1-rc1 95f6bcd
+# generated with CMTools 2.4.1-rc2 2d96591
 
 #
 # Set the package name and version to install
 #
 param(
   [Parameter()]
-  [String]$VERSION = "2.4.1-rc1"
+  [String]$VERSION = "2.4.1-rc2"
 )
 [String]$PKG_VERSION = [Environment]::GetEnvironmentVariable("PKG_VERSION")
 if ($PKG_VERSION) {

@@ -24,7 +24,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.4.1-rc1
+version: 2.4.1-rc2
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -36,13 +36,13 @@ keywords:
   - data storage
   - JSON
 
-date_released: 2026-05-28
+date_released: 2026-05-29
 ---
 
 About this software
 ===================
 
-## dataset 2.4.1-rc1
+## dataset 2.4.1-rc2
 
 - Removed MySQL support
 - Added schema-based validation for dataset collections using the models package
@@ -51,6 +51,7 @@ About this software
 - Added schemas configuration to settings.yaml for defining reusable validation schemas
 - Added schema_name and validate fields to collection configuration for enabling per-collection validation
 - API now returns X-Validation-Errors header with detailed validation error information on create/update failures
+- Added validation tests, fixed generator and validation sequence bug.
 
 ## Authors
 

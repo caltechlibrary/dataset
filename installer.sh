@@ -1,11 +1,11 @@
 #!/bin/sh
-# generated with CMTools 2.4.1-rc1 95f6bcd
+# generated with CMTools 2.4.1-rc2 2d96591
 
 #
 # Set the package name and version to install
 #
 PACKAGE="dataset"
-VERSION="2.4.1-rc1"
+VERSION="2.4.1-rc2"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
 if [ "$PKG_VERSION" != "" ]; then
