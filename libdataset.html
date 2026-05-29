@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>dataset</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/dataset">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="libdataset">libdataset</h1>
+<p>libdataset is a <a href="https://webassembly.org/">WebAssembly</a>
+(WASM) module that exposes the full <a href="README.html">dataset</a>
+collection API to Python, TypeScript, JavaScript, and any other language
+with a WASI-compatible WASM runtime.</p>
+<p>It replaces the old cgo-based <code>libdataset</code> C shared
+library with a single portable binary (<code>libdataset.wasm</code>)
+that requires no compilation or platform-specific packaging.</p>
+<h2 id="overview">Overview</h2>
+<p><code>libdataset.wasm</code> is built for the <a
+href="https://wasi.dev/">WASI Preview 1</a> target
+(<code>GOOS=wasip1 GOARCH=wasm</code>). It exposes four low-level
+exports (<code>ds_malloc</code>, <code>ds_free</code>,
+<code>ds_exec</code>, <code>ds_result</code>) through which the host
+exchanges JSON-encoded commands and responses via shared linear memory.
+The provided Python and TypeScript wrappers handle all memory management
+so application code never touches the ABI directly.</p>
+<p>The module supports the same operations as the <code>dataset</code>
+CLI:</p>
+<ul>
+<li>Collection lifecycle: init, open, close, codemeta</li>
+<li>CRUD: create, read, update, delete</li>
+<li>Query: keys, has_key, count, updated_keys, named SQL queries</li>
+<li>Versioning: get/set versioning, list versions, read a specific
+version</li>
+<li>Attachments: list, attach, retrieve, prune</li>
+<li>Bulk: dump (export JSONL), load (import JSONL)</li>
+<li>Maintenance: check, repair</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="python">Python</h3>
+<ul>
+<li>Python 3.9+</li>
+<li><a
+href="https://github.com/bytecodealliance/wasmtime-py">wasmtime-py</a></li>
+</ul>
+<pre class="shell"><code>pip install wasmtime</code></pre>
+<h3 id="typescript-deno">TypeScript / Deno</h3>
+<ul>
+<li><a href="https://deno.land/">Deno</a> 1.40+</li>
+</ul>
+<p>No additional packages are required; Deno includes native WASI
+support.</p>
+<h2 id="installation">Installation</h2>
+<p>Download the <code>dataset-vVERSION-libdataset.zip</code> file from
+the <a
+href="https://github.com/caltechlibrary/dataset/releases">releases
+page</a> and unzip it. The archive contains:</p>
+<pre><code>libdataset.wasm          the WASM module (platform-independent)
+python/libdataset/       Python package
+typescript/libdataset.ts TypeScript module for Deno
+LICENSE
+libdataset.md            this file</code></pre>
+<p>Place <code>libdataset.wasm</code> somewhere accessible to your
+project, then copy or install the wrapper that matches your
+language.</p>
+<h2 id="building-from-source">Building from source</h2>
+<pre class="shell"><code>git clone https://github.com/caltechlibrary/dataset
+cd dataset
+make libdataset.wasm        # builds dist/libdataset.wasm</code></pre>
+<p>Requires Go 1.24+ with the standard WASM/WASI toolchain (no extra
+tools).</p>
+<h2 id="wasi-filesystem-access">WASI filesystem access</h2>
+<p>WASM modules cannot read or write the host filesystem unless the host
+explicitly grants access via <strong>preopens</strong>. You must preopen
+every directory that contains collections, attachment files, or JSONL
+export paths.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Python — grant /data read/write access</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> LibDataset(<span class="st">&quot;libdataset.wasm&quot;</span>, preopens<span class="op">=</span>{<span class="st">&quot;/data&quot;</span>: <span class="st">&quot;/data&quot;</span>})</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Deno — grant /data read/write access</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> ds <span class="op">=</span> <span class="cf">await</span> LibDataset<span class="op">.</span><span class="fu">load</span>(<span class="st">&quot;libdataset.wasm&quot;</span><span class="op">,</span> {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  preopens<span class="op">:</span> { <span class="st">&quot;/data&quot;</span><span class="op">:</span> <span class="st">&quot;/data&quot;</span> }<span class="op">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>A common pattern during development is to preopen <code>"/"</code> to
+grant full filesystem access, then restrict to specific paths in
+production.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Named SQL queries must be pre-configured in a YAML file before use.
+The format is identical to <code>datasetd</code>’s
+<code>settings.yaml</code>, minus the HTTP-specific fields:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># libdataset.yaml</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">collections</span><span class="kw">:</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">dataset</span><span class="kw">:</span><span class="at"> /data/people.ds</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">dsn_uri</span><span class="kw">:</span><span class="at"> sqlite://collection.db</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">query</span><span class="kw">:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">      by_family</span><span class="kw">: </span><span class="ch">&gt;-</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        SELECT src FROM people</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        WHERE json_extract(src, &#39;$.family_name&#39;) = ?</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">      recent</span><span class="kw">: </span><span class="ch">&gt;-</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        SELECT src FROM people</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        WHERE updated &gt; ?</span></code></pre></div>
+<p>Load the configuration with <code>setup_file()</code> before calling
+<code>query()</code>. All collections listed in the config are opened
+automatically.</p>
+<h3 id="python-usage">Python usage</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> libdataset <span class="im">import</span> LibDataset, DatasetError</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> LibDataset(<span class="st">&quot;libdataset.wasm&quot;</span>, preopens<span class="op">=</span>{<span class="st">&quot;/data&quot;</span>: <span class="st">&quot;/data&quot;</span>})</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>ds.setup_file(<span class="st">&quot;/data/libdataset.yaml&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a record</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>ds.create(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;doiel-r-s&quot;</span>, {</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;family_name&quot;</span>: <span class="st">&quot;Doiel&quot;</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;given_name&quot;</span>:  <span class="st">&quot;Robert&quot;</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;orcid&quot;</span>:       <span class="st">&quot;0000-0003-0900-6903&quot;</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Read it back</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>obj <span class="op">=</span> ds.read(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;doiel-r-s&quot;</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(obj[<span class="st">&quot;family_name&quot;</span>])   <span class="co"># Doiel</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># List all keys</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> ds.keys(<span class="st">&quot;people.ds&quot;</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Named query (requires libdataset.yaml)</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> ds.query(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;by_family&quot;</span>, [<span class="st">&quot;Doiel&quot;</span>])</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach a file</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>ds.attach(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;doiel-r-s&quot;</span>, <span class="st">&quot;/data/photo.jpg&quot;</span>)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve it</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>ds.retrieve(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;doiel-r-s&quot;</span>, <span class="st">&quot;photo.jpg&quot;</span>, <span class="st">&quot;/tmp/photo.jpg&quot;</span>)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Update, delete</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>obj[<span class="st">&quot;email&quot;</span>] <span class="op">=</span> <span class="st">&quot;rsdoiel@example.org&quot;</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>ds.update(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;doiel-r-s&quot;</span>, obj)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>ds.delete(<span class="st">&quot;people.ds&quot;</span>, <span class="st">&quot;doiel-r-s&quot;</span>)</span></code></pre></div>
+<p>Errors raise <code>DatasetError</code>.</p>
+<h3 id="typescript-deno-usage">TypeScript / Deno usage</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { LibDataset<span class="op">,</span> DatasetError } <span class="im">from</span> <span class="st">&quot;./libdataset.ts&quot;</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> ds <span class="op">=</span> <span class="cf">await</span> LibDataset<span class="op">.</span><span class="fu">load</span>(<span class="st">&quot;libdataset.wasm&quot;</span><span class="op">,</span> {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  preopens<span class="op">:</span> { <span class="st">&quot;/data&quot;</span><span class="op">:</span> <span class="st">&quot;/data&quot;</span> }<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>ds<span class="op">.</span><span class="fu">setupFile</span>(<span class="st">&quot;/data/libdataset.yaml&quot;</span>)<span class="op">;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>ds<span class="op">.</span><span class="fu">create</span>(<span class="st">&quot;people.ds&quot;</span><span class="op">,</span> <span class="st">&quot;doiel-r-s&quot;</span><span class="op">,</span> {</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  family_name<span class="op">:</span> <span class="st">&quot;Doiel&quot;</span><span class="op">,</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  given_name<span class="op">:</span>  <span class="st">&quot;Robert&quot;</span><span class="op">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  orcid<span class="op">:</span>       <span class="st">&quot;0000-0003-0900-6903&quot;</span><span class="op">,</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> obj   <span class="op">=</span> ds<span class="op">.</span><span class="fu">read</span>(<span class="st">&quot;people.ds&quot;</span><span class="op">,</span> <span class="st">&quot;doiel-r-s&quot;</span>)<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> keys  <span class="op">=</span> ds<span class="op">.</span><span class="fu">keys</span>(<span class="st">&quot;people.ds&quot;</span>)<span class="op">;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> rows  <span class="op">=</span> ds<span class="op">.</span><span class="fu">query</span>(<span class="st">&quot;people.ds&quot;</span><span class="op">,</span> <span class="st">&quot;by_family&quot;</span><span class="op">,</span> [<span class="st">&quot;Doiel&quot;</span>])<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>ds<span class="op">.</span><span class="fu">update</span>(<span class="st">&quot;people.ds&quot;</span><span class="op">,</span> <span class="st">&quot;doiel-r-s&quot;</span><span class="op">,</span> { <span class="op">...</span>obj<span class="op">,</span> email<span class="op">:</span> <span class="st">&quot;rsdoiel@example.org&quot;</span> })<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>ds<span class="op">.</span><span class="fu">delete</span>(<span class="st">&quot;people.ds&quot;</span><span class="op">,</span> <span class="st">&quot;doiel-r-s&quot;</span>)<span class="op">;</span></span></code></pre></div>
+<p>Run with:</p>
+<pre class="shell"><code>deno run --allow-read --allow-write your_script.ts</code></pre>
+<p>Errors throw <code>DatasetError</code>.</p>
+<h2 id="command-reference">Command reference</h2>
+<p>All commands are issued through the JSON ABI. The wrapper methods map
+directly to the operations listed here.</p>
+<h3 id="lifecycle">Lifecycle</h3>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 20%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Op</th>
+<th scope="col">Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version()</code></td>
+<td><code>version</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>setup_file(config)</code></td>
+<td><code>setup</code></td>
+<td><code>config</code>: path to YAML</td>
+</tr>
+<tr>
+<td><code>collection_init(collection, dsn_uri)</code></td>
+<td><code>collection_init</code></td>
+<td><code>collection</code>, <code>dsn_uri</code></td>
+</tr>
+<tr>
+<td><code>collection_open(collection)</code></td>
+<td><code>collection_open</code></td>
+<td><code>collection</code></td>
+</tr>
+<tr>
+<td><code>collection_close(collection)</code></td>
+<td><code>collection_close</code></td>
+<td><code>collection</code></td>
+</tr>
+<tr>
+<td><code>codemeta(collection)</code></td>
+<td><code>codemeta</code></td>
+<td><code>collection</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="crud">CRUD</h3>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 20%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Op</th>
+<th scope="col">Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>create(collection, key, object[, overwrite])</code></td>
+<td><code>create</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>read(collection, key)</code></td>
+<td><code>read</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>update(collection, key, object)</code></td>
+<td><code>update</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>delete(collection, key)</code></td>
+<td><code>delete</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>keys(collection)</code></td>
+<td><code>keys</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>has_key(collection, key)</code></td>
+<td><code>has_key</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>count(collection)</code></td>
+<td><code>count</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_keys(collection, start, end)</code></td>
+<td><code>updated_keys</code></td>
+<td>ISO datetime strings</td>
+</tr>
+<tr>
+<td><code>query(collection, query_name, params)</code></td>
+<td><code>query</code></td>
+<td><code>params</code>: ordered list</td>
+</tr>
+</tbody>
+</table>
+<h3 id="versioning">Versioning</h3>
+<table>
+<colgroup>
+<col style="width: 61%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Op</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_versioning(collection)</code></td>
+<td><code>get_versioning</code></td>
+</tr>
+<tr>
+<td><code>set_versioning(collection, versioning)</code></td>
+<td><code>set_versioning</code> — <code>""</code>, <code>"patch"</code>,
+<code>"minor"</code>, <code>"major"</code></td>
+</tr>
+<tr>
+<td><code>versions(collection, key)</code></td>
+<td><code>versions</code></td>
+</tr>
+<tr>
+<td><code>read_version(collection, key, version)</code></td>
+<td><code>read_version</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="attachments">Attachments</h3>
+<table>
+<colgroup>
+<col style="width: 61%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Op</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attachments(collection, key)</code></td>
+<td><code>attachments</code></td>
+</tr>
+<tr>
+<td><code>attach(collection, key, filename)</code></td>
+<td><code>attach</code> — <code>filename</code> must be
+WASI-accessible</td>
+</tr>
+<tr>
+<td><code>retrieve(collection, key, filename, output)</code></td>
+<td><code>retrieve</code> — <code>output</code> must be
+WASI-accessible</td>
+</tr>
+<tr>
+<td><code>prune(collection, key, filename)</code></td>
+<td><code>prune</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="bulk-maintenance">Bulk / maintenance</h3>
+<table>
+<colgroup>
+<col style="width: 61%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Op</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dump(collection, output)</code></td>
+<td><code>dump</code> — writes JSONL to <code>output</code></td>
+</tr>
+<tr>
+<td><code>load(collection, input[, overwrite])</code></td>
+<td><code>load</code> — reads JSONL from <code>input</code></td>
+</tr>
+<tr>
+<td><code>check(collection)</code></td>
+<td><code>check</code></td>
+</tr>
+<tr>
+<td><code>repair(collection)</code></td>
+<td><code>repair</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-issues">Known issues</h2>
+<p>When the WASM module starts it prints one informational line:</p>
+<pre><code>If you&#39;re reading this, you&#39;re unnecessarily importing github.com/ncruces/go-sqlite3/embed.</code></pre>
+<p>This is a cosmetic message from the SQLite driver embedded in the
+module and does not indicate an error. It can be safely ignored. It will
+be suppressed in a future release of the ncruces/go-sqlite3 driver.</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>
