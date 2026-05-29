@@ -183,7 +183,7 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 			wPath = ds.workPath
 		}
 		indexDSN := path.Join(wPath, "index.db")
-		index, err := sql.Open("sqlite", indexDSN)
+		index, err := sql.Open(Sqlite3DriverName, indexDSN)
 		if err != nil {
 			return fmt.Errorf("failed to open index %s, %s", indexDSN, err)
 		}

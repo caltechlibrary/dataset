@@ -14,18 +14,10 @@ Bugs
 Next (prep for v2.5)
 --------------------
 
-- [ ] In datasetd the queries object to come in two flavors. Query name (key), SQL (value) and a variation of Query name (key), QueryObject. The query object has two attributes, sql holds the SQL and inputs holds a list of Input objects. Input objects correspond to HTML5 input attributes with type required. Type initially support should be the official input types of HTML5, plus those identifiers types need by Caltech Library projects (example orcid, ror, isbn, issn).
-- [ ] The Input objects supported in the enhance query object could be repurposed to describe the JSON schema being stored. The tricky part is lists of things, these need to be handled in a way that are easy to describe in YAML, easy to read as YAML and easy to implemented a general purpose object verifier with
-
-Next (prep for v2.4)
------------------------
-
-- [X] Decide if models is going to be continued or not (decided they need more thought)
-- [X] Consider removing check and repair since dump and load work well
-- [X] Merge dsquery into dataset
-- [X] Remove frames support
-- [X] Remove join
-- [X] Remove dsimporter replace with documentations of using datatools for generating a jsonl file.
+- [ ] Update datasetd to allow multipart form subission treating file(s) upload as an attachment request
+- [ ] Rewrite dropped support for libdataset
+  - [ ] Generate WASM module for libdataset
+  - [ ] Create wrapping Python and Deno+TypeScript code examples for using WASM version of libdataset
 
 Someday, Maybe
 --------------
@@ -39,6 +31,8 @@ Someday, Maybe
     - [ ] Failure should redirect back to the form that was submitted
     - [ ] It'd be nice to style/theme the HTML for better integration with website
     - Is this a configuration chioice (e.g. success, fail pages in model attributes?)
+- [ ] In datasetd the queries object to come in two flavors. Query name (key), SQL (value) and a variation of Query name (key), QueryObject. The query object has two attributes, sql holds the SQL and inputs holds a list of Input objects. Input objects correspond to HTML5 input attributes with type required. Type initially support should be the official input types of HTML5, plus those identifiers types need by Caltech Library projects (example orcid, ror, isbn, issn).
+- [ ] The Input objects supported in the enhance query object could be repurposed to describe the JSON schema being stored. The tricky part is lists of things, these need to be handled in a way that are easy to describe in YAML, easy to read as YAML and easy to implemented a general purpose object verifier with
 - [ ] Can I can skip the handlebars templates and just support HTML?
   - Skipping the templates has several advantages
     - one less thing to document
@@ -47,16 +41,6 @@ Someday, Maybe
     - If I do the then PUT and DELETE would work 
     - Downside is it requires JavaScript to update records and submit them
 - [ ] Decide if it is exceptible to render HTML with JavaScript to adjust form behavior between create and update
-- [ ] Should the project be renamed "collections"?
-- [ ] Update datasetd to allow multipart form subission treating file(s) upload as an attachment request
-- [ ] Rewrite py_dataset, drop support for libdataset
-  - [ ] Figure out correct approach
-    - [ ] Generate WASM module for libdataset
-    - [ ] Use ts_dataset approach and required datasetd for Python support
-    - [ ] Rewrite dataset, datasetd and libdataset in Rust and continue shared library support without built in GC
-- [ ] create a cli named `ds` that wraps all the cli except datasetd similar to how the Go command or Git works
-- [ ] My current approach to versioning is too confusing, causing issues in implementing py_dataset, versioning needs to be automatic with a minimum set of methods explicitly supporting it otherwise versioning should just happen in the back ground and only be supported at the package and libdataset levels.
-  - [ ] create, read, update, list operations should always reflect the "current" version (objects or attachments), delete should delete all versions of objects as should prune for attachments, this is because versioning suggests things never really get deleted, just replaced.
 - [ ] Common dataset verbs (dataset/datasetd)
   - [X] keys
     - list the keys in a collection

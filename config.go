@@ -22,7 +22,6 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -210,7 +209,7 @@ func (settings *Settings) ResolveSchemas() error {
 // ```
 func ConfigOpen(fName string) (*Settings, error) {
 	settings := new(Settings)
-	src, err := ioutil.ReadFile(fName)
+	src, err := os.ReadFile(fName)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +312,7 @@ func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
 			return err
 		}
 	}
-	return ioutil.WriteFile(name, src, perm)
+	return os.WriteFile(name, src, perm)
 }
 
 

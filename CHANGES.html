@@ -25,6 +25,39 @@
 </ul>
 </nav>
 <section id="main-content">
+<p>Release 2.5.0</p>
+<ul>
+<li>Added libdataset WASM module (GOOS=wasip1 GOARCH=wasm) replacing the
+old cgo-based C shared library
+<ul>
+<li>Supports the full dataset CLI operation set (26 ops: lifecycle,
+CRUD, query, versioning, attachments, bulk, maintenance)</li>
+<li>Named SQL queries pre-configured via settings.yaml-style config,
+matching datasetd’s query approach</li>
+<li>Python wrapper using wasmtime-py
+(<code>wrappers/python/libdataset/</code>)</li>
+<li>TypeScript/Deno wrapper
+(<code>wrappers/typescript/libdataset.ts</code>)</li>
+<li>New release artifact:
+<code>dataset-vVERSION-libdataset.zip</code></li>
+<li>Build with: <code>make libdataset.wasm</code></li>
+</ul></li>
+<li>Switched SQLite driver from glebarez/go-sqlite3 (SQLite 3.41.2) to
+ncruces/go-sqlite3 (SQLite 3.53.1)
+<ul>
+<li>Enables WASM/WASIP1 compilation</li>
+<li>FTS5 and full SQLite feature set retained</li>
+<li>Existing collection files and DSN URIs (<code>sqlite://...</code>)
+unchanged</li>
+</ul></li>
+<li>Fixed datasetd request body size limits not being enforced
+(jsonSizeLimit 1 MiB, attachmentSizeLimit 250 MiB now applied via
+http.MaxBytesReader)</li>
+<li>Fixed datasetd error redirect using HTTP 304 (Not Modified) instead
+of HTTP 303 (See Other)</li>
+<li>Replaced deprecated io/ioutil with io.ReadAll and
+os.ReadFile/os.WriteFile throughout</li>
+</ul>
 <p>Release 2.4.0</p>
 <ul>
 <li>Removed MySQL support</li>

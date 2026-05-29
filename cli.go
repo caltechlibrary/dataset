@@ -22,7 +22,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -1070,7 +1069,7 @@ func doCodemeta(in io.Reader, out io.Writer, eout io.Writer, args []string) erro
 	default:
 		return fmt.Errorf("Expected: [OPTIONS] COLLECTION_NAME, got %q", strings.Join(args, " "))
 	}
-	src, err := ioutil.ReadFile(path.Join(cPath, "codemeta.json"))
+	src, err := os.ReadFile(path.Join(cPath, "codemeta.json"))
 	if err != nil {
 		return err
 	}

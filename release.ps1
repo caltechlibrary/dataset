@@ -21,7 +21,8 @@ Write-Output "tag: ${releaseTag}, notes:"
 jq -r .releaseNotes codemeta.json | Out-File -FilePath release_notes.tmp -Encoding utf8
 Get-Content release_notes.tmp
 
-# Generate checksums for distribution zip files
+# Generate checksums for all distribution zip files, including libdataset.
+# Expected zips: platform binaries + dataset-vVERSION-libdataset.zip
 $checksumFile = "${repoId}-${releaseTag}-checksums.txt"
 $hashes = Get-ChildItem -Path dist -Filter *.zip | ForEach-Object {
     $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash.ToLower()

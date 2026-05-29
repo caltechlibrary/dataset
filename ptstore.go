@@ -19,7 +19,6 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -79,7 +78,7 @@ func PTStoreOpen(name string, dsnURI string) (*PTStore, error) {
 	// Find the key map file and read it
 	store.keyMapName = path.Join(name, "keymap.json")
 	store.keyMap = map[string]string{}
-	src, err := ioutil.ReadFile(store.keyMapName)
+	src, err := os.ReadFile(store.keyMapName)
 	if err == nil {
 		// We have data so we need to decode it.
 		if err := json.Unmarshal(src, &store.keyMap); err != nil {
@@ -116,7 +115,7 @@ func (store *PTStore) writeKeymap() error {
 	if err != nil {
 		return fmt.Errorf("could not encode key map for %q, %s", store.WorkPath, err)
 	}
-	return ioutil.WriteFile(store.keyMapName, src, 0664)
+	return os.WriteFile(store.keyMapName, src, 0664)
 }
 
 // Close closes the storage system freeing resources as needed.
@@ -173,7 +172,7 @@ func (store *PTStore) Create(key string, src []byte) error {
 
 	// Save the document to the ptPath location
 	fName := path.Join(dName, fmt.Sprintf("%s.json", key))
-	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+	if err := os.WriteFile(fName, src, 0664); err != nil {
 		return fmt.Errorf("failed to write %q, %s", fName, err)
 	}
 	// Update the keyMap
@@ -192,17 +191,17 @@ func (store *PTStore) Create(key string, src []byte) error {
 	switch store.Versioning {
 	case Major:
 		fName = path.Join(dName, fmt.Sprintf("%s%s1.0.0.json", key, vDelimiter))
-		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+		if err := os.WriteFile(fName, src, 0664); err != nil {
 			return fmt.Errorf("failed to write %q, %s", fName, err)
 		}
 	case Minor:
 		fName = path.Join(dName, fmt.Sprintf("%s%s0.1.0.json", key, vDelimiter))
-		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+		if err := os.WriteFile(fName, src, 0664); err != nil {
 			return fmt.Errorf("failed to write %q, %s", fName, err)
 		}
 	case Patch:
 		fName = path.Join(dName, fmt.Sprintf("%s%s0.0.1.json", key, vDelimiter))
-		if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+		if err := os.WriteFile(fName, src, 0664); err != nil {
 			return fmt.Errorf("failed to write %q, %s", fName, err)
 		}
 	}
@@ -238,7 +237,7 @@ func (store *PTStore) Read(key string) ([]byte, error) {
 		ptPath = path.Join(strings.Split(ptPath, "/")...)
 	}
 	fName := path.Join(store.WorkPath, "pairtree", ptPath, fmt.Sprintf("%s.json", key))
-	src, err := ioutil.ReadFile(fName)
+	src, err := os.ReadFile(fName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %q in %q, %s", key, store.WorkPath, err)
 	}
@@ -269,7 +268,7 @@ func (store *PTStore) Update(key string, src []byte) error {
 	// Save the document to the ptPath location
 	fName := path.Join(store.WorkPath, "pairtree", ptPath, fmt.Sprintf("%s.json", key))
 	dName := path.Join(store.WorkPath, "pairtree", ptPath)
-	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+	if err := os.WriteFile(fName, src, 0664); err != nil {
 		return fmt.Errorf("failed to write %q, %s", fName, err)
 	}
 
@@ -309,7 +308,7 @@ func (store *PTStore) saveNewVersion(key string, src []byte, dName string) error
 	}
 	version := sv.String()
 	fName := path.Join(dName, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
-	if err := ioutil.WriteFile(fName, src, 0664); err != nil {
+	if err := os.WriteFile(fName, src, 0664); err != nil {
 		return fmt.Errorf("failed to write %q, %s", fName, err)
 	}
 	return nil
@@ -439,7 +438,7 @@ func (store *PTStore) ReadVersion(key string, version string) ([]byte, error) {
 		ptPath = path.Join(strings.Split(ptPath, "/")...)
 	}
 	fName := path.Join(store.WorkPath, "pairtree", ptPath, fmt.Sprintf("%s%s%s.json", key, vDelimiter, version))
-	src, err := ioutil.ReadFile(fName)
+	src, err := os.ReadFile(fName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %q (v%s) in %q, %s", key, version, store.WorkPath, err)
 	}

@@ -22,7 +22,8 @@ jq -r .releaseNotes codemeta.json >release_notes.tmp
 cat release_notes.tmp
 
 #
-# Generate checksums for distribution zip files
+# Generate checksums for all distribution zip files, including libdataset.
+# Expected zips: platform binaries + dataset-vVERSION-libdataset.zip
 #
 CHECKSUM_FILE="${REPO_ID}-${RELEASE_TAG}-checksums.txt"
 if command -v sha256sum >/dev/null 2>&1; then

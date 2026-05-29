@@ -21,7 +21,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -132,7 +131,7 @@ type Collection struct {
 func Open(name string) (*Collection, error) {
 	// NOTE: find the collection.json file then
 	// open the appropriate store.
-	src, err := ioutil.ReadFile(path.Join(name, "collection.json"))
+	src, err := os.ReadFile(path.Join(name, "collection.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +160,7 @@ func Open(name string) (*Collection, error) {
 	}
 	// FIXME: Now check if there is a models.yaml file in the collection's root folder.
 	if _, err := os.Stat(path.Join(name, "model.yaml")); err == nil {
-		src, err = ioutil.ReadFile(path.Join(name, "model.yaml"))
+		src, err = os.ReadFile(path.Join(name, "model.yaml"))
 		if err != nil {
 			return c, fmt.Errorf("failed to read %s in %s, %s", name, path.Join(name, "model.yaml"), err)
 		}
@@ -265,7 +264,7 @@ func (c *Collection) SetVersioning(versioning string) error {
 	if err != nil {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
-	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
+	if err := os.WriteFile(colName, src, 0660); err != nil {
 		return fmt.Errorf("failed to create %q %s", colName, err)
 	}
 	return nil
@@ -298,7 +297,7 @@ func (c *Collection) initPTStore() error {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
 	c.Name = fullName
-	if err := ioutil.WriteFile(colName, src, 0660); err != nil {
+	if err := os.WriteFile(colName, src, 0660); err != nil {
 		return fmt.Errorf("failed to create %q %s", colName, err)
 	}
 	// Create a default codemeta.json file in the directory
@@ -322,7 +321,7 @@ func (c *Collection) initPTStore() error {
     ]
 }`))
 	cmName := path.Join(c.Name, "codemeta.json")
-	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
+	if err := os.WriteFile(cmName, src, 0664); err != nil {
 		return fmt.Errorf("failed to create %q, %s", cmName, err)
 	}
 	// Create the pairtree root
@@ -379,7 +378,7 @@ func (c *Collection) initSQLStore() error {
 		return fmt.Errorf("cannot encode %q, %s", colName, err)
 	}
 	c.Name = fullName
-	if err := ioutil.WriteFile(colName, src, 0600); err != nil {
+	if err := os.WriteFile(colName, src, 0600); err != nil {
 		return fmt.Errorf("failed to create %q %s", colName, err)
 	}
 
@@ -404,7 +403,7 @@ func (c *Collection) initSQLStore() error {
     ]
 }`))
 	cmName := path.Join(fullName, "codemeta.json")
-	if err := ioutil.WriteFile(cmName, src, 0664); err != nil {
+	if err := os.WriteFile(cmName, src, 0664); err != nil {
 		return fmt.Errorf("failed to create %q, %s", cmName, err)
 	}
 	//NOTE: the collection's table needs to be created using the
@@ -520,12 +519,12 @@ func Init(name string, dsnURI string) (*Collection, error) {
 //	if err != nil {
 //	   ...
 //	}
-//	ioutil.WriteFile("codemeta.json", src, 664)
+//	os.WriteFile("codemeta.json", src, 664)
 //
 // ```
 func (c *Collection) Codemeta() ([]byte, error) {
 	fName := path.Join(c.Name, "codemeta.json")
-	src, err := ioutil.ReadFile(fName)
+	src, err := os.ReadFile(fName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %q, %s", fName, err)
 	}
@@ -548,11 +547,11 @@ func (c *Collection) Codemeta() ([]byte, error) {
 //
 // ```
 func (c *Collection) UpdateMetadata(fName string) error {
-	src, err := ioutil.ReadFile(fName)
+	src, err := os.ReadFile(fName)
 	if err != nil {
 		return fmt.Errorf("failed to read %q, %s", fName, err)
 	}
-	if err := ioutil.WriteFile(path.Join(c.Name, "codemeta.json"), src, 0664); err != nil {
+	if err := os.WriteFile(path.Join(c.Name, "codemeta.json"), src, 0664); err != nil {
 		return fmt.Errorf("failed to write %q, %s", path.Join(c.Name, "codemeta.json"), err)
 	}
 	return nil

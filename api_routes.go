@@ -3,7 +3,7 @@ package dataset
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"mime"
 	"net/http"
@@ -82,10 +82,8 @@ func statusIsOKText(w http.ResponseWriter, r *http.Request, statusCode int, cNam
 func statusIsError(w http.ResponseWriter, r *http.Request, statusText string, statusCode int, errorRedirect string) {
 	// Do we have a redirect?
 	if errorRedirect != "" {
-		// Redirecting using http status NotModified
 		log.Printf("ERROR request URL: %s %q  statusText: %q, statusCode: %d, errorRedirect: %q", r.Method, r.URL, statusText, statusCode, errorRedirect)
-		// Redirecting the to the error page.
-		http.Redirect(w, r, errorRedirect, http.StatusNotModified)
+		http.Redirect(w, r, errorRedirect, http.StatusSeeOther)
 		return
 	}
 	// Fallback to the default error handler
@@ -261,7 +259,8 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		var src []byte
 		if r.Method == http.MethodPost {
 			if contentType == "application/json" {
-				src, err = ioutil.ReadAll(r.Body)
+				r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
+				src, err = io.ReadAll(r.Body)
 				if err != nil {
 					log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, fmt.Sprintf("%s", err)) // DEBUG "")
@@ -433,7 +432,8 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		}
 		switch contentType {
 		case "application/json":
-			src, err := ioutil.ReadAll(r.Body)
+			r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
+			src, err := io.ReadAll(r.Body)
 			if err != nil {
 				log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
@@ -738,7 +738,8 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		}
 		switch contentType {
 		case "application/json":
-			src, err := ioutil.ReadAll(r.Body)
+			r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
+			src, err := io.ReadAll(r.Body)
 			if err != nil {
 				log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
@@ -962,7 +963,8 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 		// Handle multipart upload or just streamed upload
 		contentType := r.Header.Get("content-type")
 		if contentType == `multipart/form-data` || contentType == `multipart/mixed` {
-			r.ParseMultipartForm(1024 << 20) // allow up to 1G files
+			r.Body = http.MaxBytesReader(w, r.Body, attachmentSizeLimit)
+			r.ParseMultipartForm(attachmentSizeLimit)
 			// Get file handler and name
 			file, _, err := r.FormFile("file")
 			if err != nil {
@@ -983,6 +985,7 @@ func Attach(w http.ResponseWriter, r *http.Request, api *API, cName, verb string
 			return
 		} else {
 			// Assume raw bytes and read them.
+			r.Body = http.MaxBytesReader(w, r.Body, attachmentSizeLimit)
 			if err := c.AttachStream(key, fName, r.Body); err != nil {
 				log.Printf("Failed to attach stream %q to %q, %s", fName, key, err)
 				statusIsError(w, r, http.StatusText(http.StatusInternalServerError)+" "+err.Error(), http.StatusInternalServerError, "")
@@ -1131,7 +1134,8 @@ func FrameCreate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 		frameName = options[0]
 	}
 	// Process post
-	src, err := ioutil.ReadAll(r.Body)
+	r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
+	src, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("FrameCreate, Bad Request %s %q %s", r.Method, r.URL.Path, err)
 		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
@@ -1338,7 +1342,8 @@ func FrameUpdate(w http.ResponseWriter, r *http.Request, api *API, cName, verb s
 	c, ok := api.CMap[cName]
 	if ok {
 		// Check to see if we have a body containing a list of keys
-		body, err := ioutil.ReadAll(r.Body)
+		r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
+		body, err := io.ReadAll(r.Body)
 		if err == nil && len(body) > 0 {
 			// Handle reframe
 			keys := []string{}

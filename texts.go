@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -67,9 +67,9 @@ func ReadSource(fName string, in io.Reader) ([]byte, error) {
 		err error
 	)
 	if fName == "" || fName == "-" {
-		src, err = ioutil.ReadAll(in)
+		src, err = io.ReadAll(in)
 	} else {
-		src, err = ioutil.ReadFile(fName)
+		src, err = os.ReadFile(fName)
 	}
 	return src, err
 }
@@ -81,7 +81,7 @@ func WriteSource(fName string, out io.Writer, src []byte) error {
 		_, err := out.Write(src)
 		return err
 	}
-	return ioutil.WriteFile(fName, src, 0664)
+	return os.WriteFile(fName, src, 0664)
 }
 
 // ReadKeys reads a list of keys given filename or an io.Reader

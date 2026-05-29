@@ -80,11 +80,11 @@
     "Pandoc >= 3.9",
     "GNU Make >= 3.8"
   ],
-  "version": "2.4.1-rc2",
+  "version": "2.5.0",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "- Removed MySQL support\n- Added schema-based validation for dataset collections using the models package\n- Added support for nested object and list structures in schema definitions\n- Added identifier types (ISBN, ISSN, DOI, ORCID, ROR, ISNI, PMID, PMCID, FundRef, LCNAF, VIAF, SNAC, ArXiv, EAN) for CrossRef/DataCite record validation\n- Added schemas configuration to settings.yaml for defining reusable validation schemas\n- Added schema_name and validate fields to collection configuration for enabling per-collection validation\n- API now returns X-Validation-Errors header with detailed validation error information on create/update failures\n- Added validation tests, fixed generator and validation sequence bug.",
+  "releaseNotes": "- Added libdataset WASM module (GOOS=wasip1) replacing the old cgo-based C shared library, with Python (wasmtime-py) and TypeScript/Deno wrappers\n- Named SQL queries pre-configured via settings.yaml-style config; new release artifact dataset-vVERSION-libdataset.zip\n- Switched SQLite driver to ncruces/go-sqlite3 (SQLite 3.53.1, up from 3.41.2), enabling WASM builds while retaining FTS5 and full feature set\n- Fixed datasetd request body size limits not being enforced (http.MaxBytesReader now applied)\n- Fixed datasetd error redirect using HTTP 304 instead of HTTP 303\n- Replaced deprecated io/ioutil throughout",
   "copyrightYear": 2026,
   "copyrightHolder": "California Institute of Technology"
 }

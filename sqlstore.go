@@ -31,17 +31,15 @@ import (
 	"github.com/caltechlibrary/semver"
 
 	// Database specific drivers
-	_ "github.com/glebarez/go-sqlite"
-	//_ "modernc.org/sqlite"
-	//_ "github.com/ncruces/go-sqlite3/driver"
-	//_ "github.com/ncruces/go-sqlite3/embed"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 
 	_ "github.com/lib/pq"
 )
 
 const (
 	Sqlite3SchemaName = "sqlite"
-	Sqlite3DriverName = "sqlite"
+	Sqlite3DriverName = "sqlite3"
 
 	PostgresSchemaName = "postgres"
 	PostgresDriverName = "postgres"
@@ -131,7 +129,7 @@ func ParseDSN(uri string) (string, error) {
 func driverNameFixUp(driverName string) string {
 	switch driverName {
 	case Sqlite3SchemaName:
-		return Sqlite3DriverName
+		return Sqlite3DriverName  // maps "sqlite" scheme → "sqlite3" driver
 	case PostgresSchemaName:
 		return PostgresDriverName
 	}
@@ -140,13 +138,13 @@ func driverNameFixUp(driverName string) string {
 
 func dsnFixUp(driverName string, dsn string, workPath string) string {
 	switch driverName {
-	case PostgresDriverName:
+	case PostgresSchemaName:
 		return fmt.Sprintf("%s://%s", driverName, dsn)
-	case Sqlite3DriverName:
+	case Sqlite3SchemaName:
 		// NOTE: the db needs to be stored in the dataset directory
 		// to keep the dataset easily movable.
 		dbName := filepath.Base(dsn)
-		return  path.Join(workPath, dbName)
+		return path.Join(workPath, dbName)
 	}
 	return dsn
 }
@@ -167,7 +165,7 @@ func SQLStoreInit(name string, dsnURI string) (*SQLStore, error) {
 	store.tableName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
 	// Validate we support this SQL driver and form create statement.
 	var stmt string
-	switch driverName {
+	switch store.driverName {
 	case Sqlite3DriverName:
 		stmt = fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
   _key VARCHAR(255) PRIMARY KEY,
@@ -201,7 +199,7 @@ updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)`, store.tableName)
 	}
 
 	// Add Triggers if needed, e.g. Postgres
-	switch driverName {
+	switch store.driverName {
 	case PostgresDriverName:
 		stmt = `CREATE OR REPLACE FUNCTION updated_src_column()   
 RETURNS TRIGGER AS $$
@@ -350,7 +348,7 @@ func SQLStoreOpen(name string, dsnURI string) (*SQLStore, error) {
 	store := new(SQLStore)
 	store.WorkPath = name
 	store.tableName = strings.TrimSuffix(strings.ToLower(filepath.Base(name)), ".ds")
-	store.driverName = driverName
+	store.driverName = driverNameFixUp(driverName)
 	store.dsn = dsnFixUp(driverName, dsn, name)
 	// Validate the driver name as supported by sqlstore ...
 	switch store.driverName {

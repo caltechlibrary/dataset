@@ -24,7 +24,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.4.1-rc2
+version: 2.5.0
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -42,16 +42,14 @@ date_released: 2026-05-29
 About this software
 ===================
 
-## dataset 2.4.1-rc2
+## dataset 2.5.0
 
-- Removed MySQL support
-- Added schema-based validation for dataset collections using the models package
-- Added support for nested object and list structures in schema definitions
-- Added identifier types (ISBN, ISSN, DOI, ORCID, ROR, ISNI, PMID, PMCID, FundRef, LCNAF, VIAF, SNAC, ArXiv, EAN) for CrossRef/DataCite record validation
-- Added schemas configuration to settings.yaml for defining reusable validation schemas
-- Added schema_name and validate fields to collection configuration for enabling per-collection validation
-- API now returns X-Validation-Errors header with detailed validation error information on create/update failures
-- Added validation tests, fixed generator and validation sequence bug.
+- Added libdataset WASM module (GOOS=wasip1) replacing the old cgo-based C shared library, with Python (wasmtime-py) and TypeScript/Deno wrappers
+- Named SQL queries pre-configured via settings.yaml-style config; new release artifact dataset-vVERSION-libdataset.zip
+- Switched SQLite driver to ncruces/go-sqlite3 (SQLite 3.53.1, up from 3.41.2), enabling WASM builds while retaining FTS5 and full feature set
+- Fixed datasetd request body size limits not being enforced (http.MaxBytesReader now applied)
+- Fixed datasetd error redirect using HTTP 304 instead of HTTP 303
+- Replaced deprecated io/ioutil throughout
 
 ## Authors
 

@@ -1,4 +1,4 @@
-%datasetd(1) user manual | version 2.4.1-rc2 2d96591
+%datasetd(1) user manual | version 2.5.0 45de33a
 % R. S. Doiel
 % 2026-05-29
 
@@ -225,5 +225,5 @@ In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-datasetd 2.4.1-rc2
+datasetd 2.5.0
 

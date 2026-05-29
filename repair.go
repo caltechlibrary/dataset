@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -42,7 +41,7 @@ import (
 // or nil (on failure)
 func sniffVersionNumber(cName string) *semver.Semver {
 	collection := path.Join(cName, "collection.json")
-	src, err := ioutil.ReadFile(collection)
+	src, err := os.ReadFile(collection)
 	if err != nil {
 		return nil
 	}
@@ -267,7 +266,7 @@ func FixMissingCollectionJson(cName string) error {
 	if err != nil {
 		return fmt.Errorf("unable to encode %q, %s", collectionJson, err)
 	}
-	return ioutil.WriteFile(collectionJson, src, 0664)
+	return os.WriteFile(collectionJson, src, 0664)
 }
 
 // Repair a SQLite3 base collection.
@@ -469,7 +468,7 @@ func Repair(cName string, verbose bool) error {
 	c.Repaired = time.Now().Format("2006-01-02")
 	src, err := JSONMarshalIndent(c, "", "    ")
 	filename := path.Join(c.workPath, "collection.json")
-	err = ioutil.WriteFile(filename, src, 664)
+	err = os.WriteFile(filename, src, 664)
 	if err != nil {
 		return err
 	}

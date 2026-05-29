@@ -9,6 +9,8 @@
       - [datasetd API](datasetd_api.5.md), A description of the REST JSON API provided with datasetd
       - [datasetd.service](datasetd_service.5.md), systemd service description
     - [dsquery](dsquery.1.md) (deprecated, will be merged into dataset command)
+- Using dataset from other languages
+  - [libdataset](libdataset.md)
 - Backwards compatibility
   - [Compatibility in Dataet v2.3](compatibitilty-in-v2.3.md)
     - NOTE: deprecated frames, clone, sample, sync, merge and join. Also removed the dsimporter cli

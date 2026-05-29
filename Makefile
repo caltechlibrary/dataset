@@ -42,6 +42,11 @@ DIST_FOLDERS = bin/* man/*
 
 build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh installer.ps1
 
+libdataset.wasm: libdataset/libdataset.go libdataset/registry.go
+	@mkdir -p dist
+	GOOS=wasip1 GOARCH=wasm go build -o dist/libdataset.wasm ./libdataset/
+	@echo "Built dist/libdataset.wasm ($$(ls -lh dist/libdataset.wasm | awk '{print $$5}'))"
+
 version.go: .FORCE
 	cmt codemeta.json version.go
 	-git add version.go
@@ -190,14 +195,24 @@ dist/Linux-armv7l:
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-armv7l.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
 	@rm -fR dist/bin
 
-## WASM code build is experimental, Python maybe able to load WASM code via wasmer-python, https://github.com/wasmerio/wasmer-python
-## This would let me avoid having at have seperate machines to build a libdataset C-shared library.
-#dist/js-wasm:
-#	@mkdir -p dist/bin
-#	@cp "$(shell go env GOROOT)/lib/wasm/wasm_exec.js" dist/
-#	@for FNAME in $(PROGRAMS); do env GOOS=js GOARCH=wasm go build -o dist/bin/$$FNAME$(EXT_WEB) cmd/$$FNAME/*.go; done
-#	@cd dist && zip -r $(PROJECT)-v$(VERSION)-js-wasm.zip LICENSE codemeta.json CITATION.cff wasm_exec.js *.md $(DIST_FOLDERS)
-#	@rm -fR dist/bin
+dist/libdataset: dist/libdataset.wasm libdataset.md \
+		wrappers/python/libdataset/__init__.py \
+		wrappers/python/libdataset/libdataset.py \
+		wrappers/python/README.md \
+		wrappers/typescript/libdataset.ts \
+		wrappers/typescript/README.md
+	@mkdir -p dist/libdataset-staging/python/libdataset
+	@mkdir -p dist/libdataset-staging/typescript
+	@cp dist/libdataset.wasm           dist/libdataset-staging/
+	@cp wrappers/python/libdataset/*.py dist/libdataset-staging/python/libdataset/
+	@cp wrappers/python/README.md       dist/libdataset-staging/python/
+	@cp wrappers/typescript/libdataset.ts dist/libdataset-staging/typescript/
+	@cp wrappers/typescript/README.md   dist/libdataset-staging/typescript/
+	@cp LICENSE                         dist/libdataset-staging/
+	@cp libdataset.md                   dist/libdataset-staging/
+	@cd dist/libdataset-staging && zip -r ../$(PROJECT)-v$(VERSION)-libdataset.zip .
+	@rm -rf dist/libdataset-staging
+	@echo "Built dist/$(PROJECT)-v$(VERSION)-libdataset.zip"
 
 	
 distribute_docs:
@@ -217,7 +232,7 @@ update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: .FORCE clean build version.go CITATION.cff man website distribute_docs dist/Linux-x86_64 dist/Linux-aarch64 dist/Linux-armv7l dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64
+release: .FORCE clean build version.go CITATION.cff man website distribute_docs dist/Linux-x86_64 dist/Linux-aarch64 dist/Linux-armv7l dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 libdataset.wasm dist/libdataset
 	@printf "\nReady to run\n\n\t./release.bash\n\n"
 
 status:
