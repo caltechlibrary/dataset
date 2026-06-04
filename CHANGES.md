@@ -1,3 +1,13 @@
+Release 2.5.1
+
+- Split SQLite driver by build target: normal builds (`!wasip1`) use glebarez/go-sqlite
+  (pure-Go, no WASM runtime overhead, eliminates spurious stderr warnings on startup);
+  WASM builds (`wasip1`) continue to use ncruces/go-sqlite3 with the SQLite binary
+  embedded via the `/embed` sub-package
+- Fixed nil pointer dereference in `dsquery` when querying a pairtree collection with
+  `--pt-index`: `ds.SQLStore` was never initialised for pairtree collections, causing a
+  panic at runtime
+
 Release 2.5.0
 
 - Added libdataset WASM module (GOOS=wasip1 GOARCH=wasm) replacing the old cgo-based C shared library

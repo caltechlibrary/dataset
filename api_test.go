@@ -331,21 +331,22 @@ func clientTestObjects(t *testing.T, settings *Settings) {
 					}
 				}
 				// Run test on query support
-				if qStmt, ok := cfg.QueryFn[query]; ok {
-					fmt.Fprintf(os.Stderr, "DEBUG cName: %q DsnURI: %q, qStmt: %s\n", cName, cfg.DsnURI, qStmt)
+				//if qStmt, ok := cfg.QueryFn[query]; ok {
+				if _, ok := cfg.QueryFn[query]; ok {
+					//fmt.Fprintf(os.Stderr, "DEBUG cName: %q DsnURI: %q, qStmt: %s\n", cName, cfg.DsnURI, qStmt)
 					u := fmt.Sprintf("http://%s/api/%s/query/%s", settings.Host, cName, query)
 					res, err := makeRequest(u, http.MethodGet, nil)
 					if err != nil {
 						t.Errorf("http.Get(%q, %q, %+v) error %s", u, contentType, nil, err)
 						t.FailNow()
 					}
-					fmt.Fprintf(os.Stderr, "DEBUG res -> %+v\n", res)
+					//fmt.Fprintf(os.Stderr, "DEBUG res -> %+v\n", res)
 					if err := assertHTTPStatus(http.StatusOK, res.StatusCode); err != nil {
 						t.Error(err)
 						t.FailNow()
 					}
-				} else {
-					fmt.Fprintf(os.Stderr, "DEBUG no query defined for %q -> %+v\n", cName, cfg.QueryFn)
+				//} else {
+					//fmt.Fprintf(os.Stderr, "DEBUG no query defined for %q -> %+v\n", cName, cfg.QueryFn)
 				}
 			}
 		}

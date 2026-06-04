@@ -24,7 +24,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/dataset
-version: 2.5.0
+version: 2.5.1
 license_url: https://caltechlibrary.github.io/dataset/LICENSE
 
 programming_language:
@@ -36,20 +36,16 @@ keywords:
   - data storage
   - JSON
 
-date_released: 2026-05-29
+date_released: 2026-06-03
 ---
 
 About this software
 ===================
 
-## dataset 2.5.0
+## dataset 2.5.1
 
-- Added libdataset WASM module (GOOS=wasip1) replacing the old cgo-based C shared library, with Python (wasmtime-py) and TypeScript/Deno wrappers
-- Named SQL queries pre-configured via settings.yaml-style config; new release artifact dataset-vVERSION-libdataset.zip
-- Switched SQLite driver to ncruces/go-sqlite3 (SQLite 3.53.1, up from 3.41.2), enabling WASM builds while retaining FTS5 and full feature set
-- Fixed datasetd request body size limits not being enforced (http.MaxBytesReader now applied)
-- Fixed datasetd error redirect using HTTP 304 instead of HTTP 303
-- Replaced deprecated io/ioutil throughout
+- Split SQLite driver by build target: normal builds use glebarez/go-sqlite (pure-Go, no WASM runtime overhead, eliminates spurious stderr warnings); WASM/wasip1 builds use ncruces/go-sqlite3 with the SQLite binary embedded
+- Fixed nil pointer dereference in dsquery when querying a pairtree collection with --pt-index
 
 ## Authors
 

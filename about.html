@@ -26,21 +26,14 @@
 </nav>
 <section id="main-content">
 <h1 id="about-this-software">About this software</h1>
-<h2 id="dataset-2.5.0">dataset 2.5.0</h2>
+<h2 id="dataset-2.5.1">dataset 2.5.1</h2>
 <ul>
-<li>Added libdataset WASM module (GOOS=wasip1) replacing the old
-cgo-based C shared library, with Python (wasmtime-py) and
-TypeScript/Deno wrappers</li>
-<li>Named SQL queries pre-configured via settings.yaml-style config; new
-release artifact dataset-vVERSION-libdataset.zip</li>
-<li>Switched SQLite driver to ncruces/go-sqlite3 (SQLite 3.53.1, up from
-3.41.2), enabling WASM builds while retaining FTS5 and full feature
-set</li>
-<li>Fixed datasetd request body size limits not being enforced
-(http.MaxBytesReader now applied)</li>
-<li>Fixed datasetd error redirect using HTTP 304 instead of HTTP
-303</li>
-<li>Replaced deprecated io/ioutil throughout</li>
+<li>Split SQLite driver by build target: normal builds use
+glebarez/go-sqlite (pure-Go, no WASM runtime overhead, eliminates
+spurious stderr warnings); WASM/wasip1 builds use ncruces/go-sqlite3
+with the SQLite binary embedded</li>
+<li>Fixed nil pointer dereference in dsquery when querying a pairtree
+collection with –pt-index</li>
 </ul>
 <h2 id="authors">Authors</h2>
 <ul>

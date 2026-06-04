@@ -28,8 +28,6 @@ import (
 	"unsafe"
 
 	dataset "github.com/caltechlibrary/dataset/v2"
-	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 // pins prevents the GC from collecting buffers we hand to the host.

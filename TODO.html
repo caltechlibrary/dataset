@@ -37,287 +37,25 @@ declined, decided not to implement
 </dd>
 </dl>
 <h2 id="bugs">Bugs</h2>
-<h2 id="next-prep-for-v2.5">Next (prep for v2.5)</h2>
+<h2 id="next-prep-for-v2.6">Next (prep for v2.6)</h2>
 <ul class="task-list">
-<li><label><input type="checkbox" />Update datasetd to allow multipart
-form subission treating file(s) upload as an attachment
-request</label></li>
-<li><label><input type="checkbox" />Rewrite dropped support for
-libdataset</label>
-<ul class="task-list">
-<li><label><input type="checkbox" />Generate WASM module for
-libdataset</label></li>
-<li><label><input type="checkbox" />Create wrapping Python and
-Deno+TypeScript code examples for using WASM version of
-libdataset</label></li>
-</ul></li>
+<li><label><input type="checkbox" checked="" />Review SQLite3 driver:
+replace <code>github.com/ncruces/go-sqlite3</code> (WASM-based, prints
+spurious stderr warning on every invocation) with
+<code>github.com/glebarez/go-sqlite</code> (pure-Go, no embed overhead).
+Changed <code>Sqlite3DriverName</code> from <code>"sqlite3"</code> to
+<code>"sqlite"</code> in <code>sqlstore.go</code>; removed ncruces blank
+imports from <code>sqlstore.go</code> and dropped the sqlite import from
+<code>libdataset/libdataset.go</code> entirely (WASM/libdataset
+deferred).</label></li>
 </ul>
 <h2 id="someday-maybe">Someday, Maybe</h2>
 <ul class="task-list">
-<li><label><input type="checkbox" checked="" />Integrate models package
-into dataset cli and datasetd</label>
-<ul class="task-list">
-<li><label><input type="checkbox" checked="" />Modify Create and Update
-in datasetd to use the models package</label></li>
-<li><label><input type="checkbox" checked="" />Handle generated elements
-on Create and Update</label></li>
-<li><label><input type="checkbox" checked="" />Added schema validation
-with X-Validation-Errors header for API responses</label></li>
-<li><label><input type="checkbox" />For forms submited with URL encoding
-reply I currently reply with JSON to indicate success or failure, should
-return HTML</label>
-<ul>
-<li><label><input type="checkbox" />Success response should provide
-record view of submitted content</label></li>
-<li><label><input type="checkbox" />Failure should redirect back to the
-form that was submitted</label></li>
-<li><label><input type="checkbox" />It’d be nice to style/theme the HTML
-for better integration with website</label></li>
-<li>Is this a configuration chioice (e.g. success, fail pages in model
-attributes?)</li>
-</ul></li>
-</ul></li>
-<li><label><input type="checkbox" />In datasetd the queries object to
-come in two flavors. Query name (key), SQL (value) and a variation of
-Query name (key), QueryObject. The query object has two attributes, sql
-holds the SQL and inputs holds a list of Input objects. Input objects
-correspond to HTML5 input attributes with type required. Type initially
-support should be the official input types of HTML5, plus those
-identifiers types need by Caltech Library projects (example orcid, ror,
-isbn, issn).</label></li>
-<li><label><input type="checkbox" />The Input objects supported in the
-enhance query object could be repurposed to describe the JSON schema
-being stored. The tricky part is lists of things, these need to be
-handled in a way that are easy to describe in YAML, easy to read as YAML
-and easy to implemented a general purpose object verifier
-with</label></li>
-<li><label><input type="checkbox" />Can I can skip the handlebars
-templates and just support HTML?</label>
-<ul>
-<li>Skipping the templates has several advantages
-<ul>
-<li>one less thing to document</li>
-<li>less dependency for datasetd</li>
-</ul></li>
-<li>If I only support HTML generation then I need to include JavaScript
-in the generated code
-<ul>
-<li>If I do the then PUT and DELETE would work</li>
-<li>Downside is it requires JavaScript to update records and submit
-them</li>
-</ul></li>
-</ul></li>
-<li><label><input type="checkbox" />Decide if it is exceptible to render
-HTML with JavaScript to adjust form behavior between create and
-update</label></li>
-<li><label><input type="checkbox" />Common dataset verbs
-(dataset/datasetd)</label>
-<ul class="task-list">
-<li><label><input type="checkbox" checked="" />keys</label>
-<ul>
-<li>list the keys in a collection</li>
-<li>at the package level keys returns a list of keys and an error
-value</li>
-</ul></li>
-<li><label><input type="checkbox" checked="" />has_key</label>
-<ul>
-<li>return “true”(w/OS exit 0 in CLI) if key is in collection, “false”
-otherwise (w/OS exit 1 in CLI)</li>
-</ul></li>
-<li><label><input type="checkbox" />sample</label>
-<ul>
-<li>return a sample of keys from a collection</li>
-<li><label><input type="checkbox" />the newly create collections should
-have versioning disabled by default</label></li>
-</ul></li>
-<li><label><input type="checkbox" />create</label>
-<ul>
-<li>add an new object to the collection if key does not exist, return
-false if object already exists or unable to create the new object</li>
-<li>if versioning is enabled set the semver appropriately</li>
-</ul></li>
-<li><label><input type="checkbox" />read</label>
-<ul>
-<li>return the object with nil error in the collection with the provided
-key, nil object and error value if not found</li>
-<li>read always returns to the “current” object version</li>
-<li><label><input type="checkbox" /><code>read_versions()</code>, list
-the versions available for JSON object</label></li>
-<li><label><input type="checkbox" /><code>read_version()</code> list an
-JSON object for a specific version</label>
-<ul>
-<li>return the object with nil error in the collection with the provided
-key and version, nil object and error value if not found</li>
-</ul></li>
-</ul></li>
-<li><label><input type="checkbox" />update</label>
-<ul>
-<li>replace the object in the collection for given key, return false is
-object does not to replace or replacement fails
-<ul>
-<li>if collection has versioning turned on then version the object</li>
-</ul></li>
-<li><label><input type="checkbox" /><code>update()</code> update the
-current record respecting the version settings for
-collection</label></li>
-<li><label><input type="checkbox" checked="" />delete</label>
-<ul>
-<li>delete the object in the collection for given key, return true if
-deletion was successful, false if the object was not deleted (e.g. key
-not found or the collection is read only)</li>
-<li>if collection has versioning turned on then delete <strong>all
-objects</strong>, if you want to revert you just update the object with
-the revised object values</li>
-<li><label><input type="checkbox" /><code>delete()</code> delete all
-versions of an object</label></li>
-<li>If versioning is enabled the idea of “deleting” an object or
-attachment doesn’t make sense, you only need to support Create, Read,
-Update and List, possibly with the ability to read versions available
-and retrieve the specific version, is this worth implementing in the
-CLI? Or is this just a lib dataset/package “feature”?</li>
-</ul></li>
-<li><label><input type="checkbox" />versioning, versioning is now set
-for the whole collection and effects JSON objects and their attachments
-(you’re versioning both or neither), versioning will auto-increment for
-patch, minir and major semvere values if set</label>
-<ul class="task-list">
-<li><label><input type="checkbox" /><code>set_versioning()</code>, set
-the versioning on a collection, the following strings enable versioning
-“major”, “minor”, “patch”. Any other value disables versioning on the
-collection</label></li>
-<li><label><input type="checkbox" /><code>get_versioning()</code> on a
-colleciton (should return “major”, “minor”, “patch” or ““)</label></li>
-</ul></li>
-<li><label><input type="checkbox" />Attachment support</label>
-<ul class="task-list">
-<li><label><input type="checkbox" /><code>attach()</code> will add a
-basename file to the JSON object record, if versioning is enabled then
-it needs to handle the appropraite versioning setting</label></li>
-<li><label><input type="checkbox" /><code>attachments()</code> lists the
-attachments for a JSON object record</label></li>
-<li><label><input type="checkbox" /><code>attachment_versions()</code>
-list versions of a specific attachment</label></li>
-<li><label><input type="checkbox" /><code>detach()</code> retrieve
-“current” version of attachment</label></li>
-<li><label><input type="checkbox" /><code>detach_version()</code>
-retrieve a specific version of attachment</label></li>
-<li><label><input type="checkbox" /><code>prune()</code> remove all
-versions of attachments</label></li>
-</ul></li>
-<li><label><input type="checkbox" />Data Frame Support</label>
-<ul class="task-list">
-<li><label><input type="checkbox" />frame_names</label>
-<ul>
-<li>list the names of the frames currently defined in the
-collection</li>
-</ul></li>
-<li><label><input type="checkbox" />frame</label>
-<ul>
-<li>define a new frame in the collection, if frame exists replace
-it</li>
-</ul></li>
-<li><label><input type="checkbox" />frame_meta</label>
-<ul>
-<li>return the frame definition and metadata about the frame (e.g. how
-many objects and attributes)</li>
-</ul></li>
-<li><label><input type="checkbox" />frame_objects</label>
-<ul>
-<li>return the frame’s list of objects</li>
-</ul></li>
-<li><label><input type="checkbox" />refresh</label>
-<ul>
-<li>update all the objects in the frame based on current state of the
-collection</li>
-</ul></li>
-<li><label><input type="checkbox" />reframe</label>
-<ul>
-<li>replace the frame definition but using the existing frame’s keys
-refresh the frame with the new object describe</li>
-</ul></li>
-<li><label><input type="checkbox" />delete_frame</label></li>
-<li><label><input type="checkbox" />has_frame</label></li>
-</ul></li>
-</ul></li>
-</ul></li>
-<li><label><input type="checkbox" />Verbs supported by cli only</label>
-<ul class="task-list">
-<li><label><input type="checkbox" />set_versioning (accepts ““,”patch”,
-“minor”, or “major” as values)</label></li>
-<li><label><input type="checkbox" />get_versioning (returns collection’s
-version setting)</label></li>
-<li><label><input type="checkbox" />keys</label></li>
-<li><label><input type="checkbox" />create (if versioning is enable then
-handle versioning)</label></li>
-<li><label><input type="checkbox" />read (if versioning is enabled
-return the current version of an object)</label></li>
-<li><label><input type="checkbox" />update (if versioning is enable then
-handle versioning)</label></li>
-<li><label><input type="checkbox" />delete (if versioning is enable,
-delete all versions of object and attachments)</label></li>
-<li><label><input type="checkbox" />sample</label></li>
-<li><label><input type="checkbox" />clone</label></li>
-<li><label><input type="checkbox" />clone-sample</label></li>
-<li><label><input type="checkbox" />check</label></li>
-<li><label><input type="checkbox" />repair</label></li>
-<li><label><input type="checkbox" />frames (return a list of frames
-defined for collection)</label></li>
-<li><label><input type="checkbox" />frame, define a new frame in a
-collection</label></li>
-<li><label><input type="checkbox" />frame_objects, return the object
-list from a frame</label></li>
-<li><label><input type="checkbox" />refresh, refresh all objects in a
-frame based on the current state of the collection</label></li>
-<li><label><input type="checkbox" />reframe, replace the frame
-definition but using the existing frame’s keys for the object listed in
-frame</label></li>
-<li><label><input type="checkbox" />delete_frame, remove a frame from
-the collection</label></li>
-<li><label><input type="checkbox" />has_frame return true if frame
-exists or false otherwise</label></li>
-<li><label><input type="checkbox" />attachments, list the attachments
-for a JSON object in the collection</label></li>
-<li><label><input type="checkbox" />attach, add an attachment to a JSON
-object in the collection, respect versioning if enabled</label></li>
-<li><label><input type="checkbox" />detach, retrieve an attachment from
-the JSON object in the collection</label></li>
-<li><label><input type="checkbox" />prune, remove attachments (including
-all versions) from an JSON object in the collection</label></li>
-</ul></li>
-<li><label><input type="checkbox" />Add support for segmented key maps
-(to limit memory consumption for very large collections) settings in
-collection.json using keywords of patch, minor, major</label></li>
-<li><label><input type="checkbox" />Auto-version attachments by patch,
-minor or major release per</label></li>
-<li><label><input type="checkbox" />Need to add getting updated Man
-pages using the <code>dataset help ...</code> command</label></li>
-<li><label><input type="checkbox" />Allow a WASM module to be used to
-validate objects in the collection. It needs to me integrate such that
-it “travels” will the dataset collection</label>
-<ul>
-<li>this would let our JSON collections support explicit JSON structures
-as well as ad-hoc JSON objects</li>
-<li>could use the YAML model approach in Newt to define the
-structures</li>
-</ul></li>
-<li><label><input type="checkbox" />Document an example Python 3 http
-client support for web API implementing a drop in replacement for
-py_dataset using the web service or cli</label></li>
-<li><label><input type="checkbox" />Implement a wrapping logger that
-takes a verboseness level for output (e.g. 0 - quiet, 1 progress
-messages, 2 warnings, errors should always show)</label></li>
-<li><label><input type="checkbox" />Add support for https:// based
-datasets (in addition to local disc and s3://)</label></li>
 <li><label><input type="checkbox" />dsbagit would generate a “BagIt” bag
 for preservation of collection objects</label></li>
-<li><label><input type="checkbox" />dsgen would take a model described
-in YAML and generate HTML and browser side ES6 for quick prototyping
-with datasetd</label></li>
 <li><label><input type="checkbox" />OAI-PMH importer to prototype iiif
 service based on Islandora content driven by a dataset
 collection</label></li>
-<li><label><input type="checkbox" />Implement version support in the web
-service</label></li>
 <li><label><input type="checkbox" />Implement an integrated a web UI for
 managing dataset collections and their data structures</label>
 <ul class="task-list">
@@ -332,12 +70,6 @@ development effort</li>
 <li>The same forms could then be used server side for validation based
 on descriptors and JavaScript converted to WASM code</li>
 </ul></li>
-<li><label><input type="checkbox" />A standard JavaScript library could
-be used to knit the forms to the datasetd web service (sort of a
-mini-newt) It would be nice if citesearch was defined by the
-citesearch.yaml file and some markdown documents taking a text oriented
-web approach to embedding forms in Markdown combined with some JS glue
-code to knit the two together</label></li>
 </ul></li>
 </ul>
 </section>

@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2016-09-12",
-  "dateModified": "2026-05-29",
-  "datePublished": "2026-05-29",
+  "dateModified": "2026-06-03",
+  "datePublished": "2026-06-03",
   "description": "The Dataset Project provides tools for working with collections of JSON documents. It uses a simple key and object pair to organize JSON documents into a collection. It supports SQL querying of the objects stored in a collection.\n\nIt was designed for temporary storage of JSON objects in data processing pipelines. It can be used as persistent storage mechanism for collections of JSON objects you wish to distribute when used in conjunction with pairtree or SQLite3 storage.\n\nThe Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science and web base applications.",
   "funder": [
     {
@@ -80,11 +80,11 @@
     "Pandoc >= 3.9",
     "GNU Make >= 3.8"
   ],
-  "version": "2.5.0",
+  "version": "2.5.1",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/dataset/archives/main.zip",
-  "releaseNotes": "- Added libdataset WASM module (GOOS=wasip1) replacing the old cgo-based C shared library, with Python (wasmtime-py) and TypeScript/Deno wrappers\n- Named SQL queries pre-configured via settings.yaml-style config; new release artifact dataset-vVERSION-libdataset.zip\n- Switched SQLite driver to ncruces/go-sqlite3 (SQLite 3.53.1, up from 3.41.2), enabling WASM builds while retaining FTS5 and full feature set\n- Fixed datasetd request body size limits not being enforced (http.MaxBytesReader now applied)\n- Fixed datasetd error redirect using HTTP 304 instead of HTTP 303\n- Replaced deprecated io/ioutil throughout",
+  "releaseNotes": "- Split SQLite driver by build target: normal builds use glebarez/go-sqlite (pure-Go, no WASM runtime overhead, eliminates spurious stderr warnings); WASM/wasip1 builds use ncruces/go-sqlite3 with the SQLite binary embedded\n- Fixed nil pointer dereference in dsquery when querying a pairtree collection with --pt-index",
   "copyrightYear": 2026,
   "copyrightHolder": "California Institute of Technology"
 }

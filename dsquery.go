@@ -198,7 +198,15 @@ func (app *DSQuery) Run(in io.Reader, out io.Writer, eout io.Writer, cName strin
 				return fmt.Errorf("failed to index %q, %s", cName, err)
 			}
 		}
-		ds.SQLStore.db = index
+		// Initialize SQLStore around the index DB so QueryJSON can route correctly.
+		// tableName must match the table created by indexCollection.
+		ds.SQLStore = &SQLStore{
+			WorkPath:   wPath,
+			tableName:  strings.TrimSuffix(ds.Name, ".ds"),
+			driverName: Sqlite3DriverName,
+			db:         index,
+		}
+		ds.StoreType = SQLSTORE
 	}
 	resultsList, err := ds.Query(app.Stmt, debug, nil)
 	if err != nil {

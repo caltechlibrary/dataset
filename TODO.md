@@ -14,6 +14,12 @@ Bugs
 Next (prep for v2.6)
 --------------------
 
+- [X] Review SQLite3 driver: replace `github.com/ncruces/go-sqlite3` (WASM-based,
+      prints spurious stderr warning on every invocation) with `github.com/glebarez/go-sqlite`
+      (pure-Go, no embed overhead). Changed `Sqlite3DriverName` from `"sqlite3"` to `"sqlite"`
+      in `sqlstore.go`; removed ncruces blank imports from `sqlstore.go` and dropped the sqlite
+      import from `libdataset/libdataset.go` entirely (WASM/libdataset deferred).
+
 Someday, Maybe
 --------------
 

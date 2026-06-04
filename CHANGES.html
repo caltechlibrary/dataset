@@ -25,6 +25,18 @@
 </ul>
 </nav>
 <section id="main-content">
+<p>Release 2.5.1</p>
+<ul>
+<li>Split SQLite driver by build target: normal builds
+(<code>!wasip1</code>) use glebarez/go-sqlite (pure-Go, no WASM runtime
+overhead, eliminates spurious stderr warnings on startup); WASM builds
+(<code>wasip1</code>) continue to use ncruces/go-sqlite3 with the SQLite
+binary embedded via the <code>/embed</code> sub-package</li>
+<li>Fixed nil pointer dereference in <code>dsquery</code> when querying
+a pairtree collection with <code>--pt-index</code>:
+<code>ds.SQLStore</code> was never initialised for pairtree collections,
+causing a panic at runtime</li>
+</ul>
 <p>Release 2.5.0</p>
 <ul>
 <li>Added libdataset WASM module (GOOS=wasip1 GOARCH=wasm) replacing the

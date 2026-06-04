@@ -30,16 +30,13 @@ import (
 	// Caltech Library Packages
 	"github.com/caltechlibrary/semver"
 
-	// Database specific drivers
-	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
-
+	// Database specific drivers (see sqlstore_sqlite.go / sqlstore_sqlite_wasm.go)
 	_ "github.com/lib/pq"
 )
 
 const (
 	Sqlite3SchemaName = "sqlite"
-	Sqlite3DriverName = "sqlite3"
+	// Sqlite3DriverName is defined in sqlstore_sqlite.go (!wasip1) or sqlstore_sqlite_wasm.go (wasip1)
 
 	PostgresSchemaName = "postgres"
 	PostgresDriverName = "postgres"
@@ -129,7 +126,7 @@ func ParseDSN(uri string) (string, error) {
 func driverNameFixUp(driverName string) string {
 	switch driverName {
 	case Sqlite3SchemaName:
-		return Sqlite3DriverName  // maps "sqlite" scheme → "sqlite3" driver
+		return Sqlite3DriverName  // maps "sqlite" URL scheme to the build-appropriate driver name ("sqlite" or "sqlite3")
 	case PostgresSchemaName:
 		return PostgresDriverName
 	}
