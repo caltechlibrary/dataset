@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>dataset</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/dataset">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="compatibility-in-v2.5">Compatibility in v2.5</h1>
+<h2 id="v2.5.1-sqlite-driver-split-2026-06-03">v2.5.1 — SQLite driver
+split (2026-06-03)</h2>
+<h3 id="problem">Problem</h3>
+<p>In v2.5.0 <code>ncruces/go-sqlite3</code> was adopted as the sole
+SQLite driver to enable the <code>GOOS=wasip1 GOARCH=wasm</code> build
+of <code>libdataset</code>. The ncruces driver is WASM-based by design:
+even for ordinary Linux/macOS/Windows builds it runs SQLite inside an
+embedded WASM runtime, carrying runtime overhead on every invocation.
+Additionally, when the driver is imported without its companion
+<code>embed</code> sub-package the WASM binary is not bundled and the
+driver prints a spurious warning to stderr on every program startup.</p>
+<h3 id="decision">Decision</h3>
+<p>Split the SQLite driver selection across two build-tagged files so
+each build target gets the best-fit driver:</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col">Build target</th>
+<th scope="col">File</th>
+<th scope="col">Driver</th>
+<th scope="col">Registered name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All non-WASM targets</td>
+<td><code>sqlstore_sqlite.go</code> (<code>!wasip1</code>)</td>
+<td><code>glebarez/go-sqlite</code> (pure-Go via
+<code>modernc.org/sqlite</code>)</td>
+<td><code>"sqlite"</code></td>
+</tr>
+<tr>
+<td><code>GOOS=wasip1 GOARCH=wasm</code></td>
+<td><code>sqlstore_sqlite_wasm.go</code> (<code>wasip1</code>)</td>
+<td><code>ncruces/go-sqlite3/driver</code> + <code>/embed</code></td>
+<td><code>"sqlite3"</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>glebarez/go-sqlite</code> is a thin shim over
+<code>modernc.org/sqlite</code>, which is SQLite compiled to pure Go via
+ccgo. It requires no CGO, no external binary, and no WASM runtime for
+native builds. The <code>ncruces</code> driver with the
+<code>embed</code> sub-package bundles the SQLite WASM binary directly
+into the compiled WASM module, which is required for the Python
+(wasmtime-py) and TypeScript/Deno <code>libdataset</code> wrappers.</p>
+<p><code>modernc.org/libc</code> (pulled in by glebarez) does not
+support <code>GOOS=wasip1</code>, so it cannot be used for WASM builds.
+Keeping ncruces for that target is therefore mandatory for the
+foreseeable future.</p>
+<h3 id="impact-on-callers">Impact on callers</h3>
+<ul>
+<li><strong>DSN URIs</strong> (<code>sqlite://collection.db</code>) are
+unchanged. The <code>"sqlite"</code> scheme in the URI is always mapped
+to whichever registered driver name is in use via
+<code>driverNameFixUp</code>.</li>
+<li><strong>Non-WASM builds</strong>: the internal constant
+<code>Sqlite3DriverName</code> changes from <code>"sqlite3"</code> to
+<code>"sqlite"</code>. This constant is not part of the public API;
+callers that open collections through <code>Init</code> /
+<code>SQLStoreOpen</code> are unaffected.</li>
+<li><strong>WASM builds</strong>: <code>Sqlite3DriverName</code> remains
+<code>"sqlite3"</code> and behaviour is identical to v2.5.0.</li>
+<li>Existing <code>.db</code> files are fully compatible; no migration
+is required.</li>
+</ul>
+<h2
+id="v2.5.0-libdataset-wasm-module-and-ncruces-sqlite-driver-2025-07-xx">v2.5.0
+— libdataset WASM module and ncruces SQLite driver (2025-07-XX)</h2>
+<p>Replaced the cgo-based C shared library with a pure WASM module built
+with <code>GOOS=wasip1 GOARCH=wasm</code>. Switched SQLite driver from
+<code>glebarez/go-sqlite</code> to <code>ncruces/go-sqlite3</code> to
+enable the WASM build. Existing collection files and
+<code>sqlite://...</code> DSN URIs are unchanged.</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>
