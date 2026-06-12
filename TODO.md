@@ -14,6 +14,8 @@ Bugs
 Next (prep for v2.6)
 --------------------
 
+- [ ] Add a YAML attribute for application config. This would allow me to include non-datasetd configuration for use with other middleware.
+
 - [X] Review SQLite3 driver: replace `github.com/ncruces/go-sqlite3` (WASM-based,
       prints spurious stderr warning on every invocation) with `github.com/glebarez/go-sqlite`
       (pure-Go, no embed overhead). Changed `Sqlite3DriverName` from `"sqlite3"` to `"sqlite"`
