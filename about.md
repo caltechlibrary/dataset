@@ -67,7 +67,7 @@ It was designed for temporary storage of JSON objects in data processing pipelin
 
 The Dataset Project provides command line programs and a web service for working with JSON objects as a collection or individual objects. As such it is well suited for data science and web base applications.
 
-- [License](https://caltechlibrary.github.io/dataset/LICENSE)
+- [License](https://software.library.caltech.edu/dataset/LICENSE)
 - [Code Repository](https://github.com/caltechlibrary/dataset)
   - [Issue Tracker](https://github.com/caltechlibrary/dataset/issues)
 
