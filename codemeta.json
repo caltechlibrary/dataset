@@ -67,7 +67,7 @@
     "JSON"
   ],
   "name": "dataset",
-  "license": "https://caltechlibrary.github.io/dataset/LICENSE",
+  "license": "https://software.library.caltech.edu/dataset/LICENSE",
   "programmingLanguage": [
     "Go",
     "SQL"

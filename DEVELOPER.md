@@ -6,7 +6,7 @@ On Unix-like systems (e.g. Darwin, Linux, Windows with the Linux subsystem enabl
 ## Windows 11
 
 - Install Go 1.24.5 via the Windows' installer available from https://golang.org/downloads
-- Install CMTools v0.0.35 or better via the Windows' installer available from https://caltechlibrary.github.io/CMTools/installer.ps1
+- Install CMTools v0.0.35 or better via the Windows' installer available from https://software.library.caltech.edu/CMTools/installer.ps1
 - Install git
 - Run `go get -u github.com\caltechlibrary\dataset`
 - Change into the dataset directory
