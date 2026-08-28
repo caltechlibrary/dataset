@@ -19,7 +19,7 @@
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="INSTALL.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
-    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="about.html">About</a></li> -->
     <!-- <li><a href="search.html">Search</a></li> -->
     <li><a href="https://github.com/caltechlibrary/dataset">Code Repository</a></li>
 </ul>
@@ -39,7 +39,10 @@ declined, decided not to implement
 <h2 id="bugs">Bugs</h2>
 <h2 id="next-prep-for-v2.6">Next (prep for v2.6)</h2>
 <ul class="task-list">
-<li><label><input type="checkbox" checked="" />Review SQLite3 driver:
+<li><p><label><input type="checkbox" />Add a YAML attribute for
+application config. This would allow me to include non-datasetd
+configuration for use with other middleware.</label></p></li>
+<li><p><label><input type="checkbox" checked="" />Review SQLite3 driver:
 replace <code>github.com/ncruces/go-sqlite3</code> (WASM-based, prints
 spurious stderr warning on every invocation) with
 <code>github.com/glebarez/go-sqlite</code> (pure-Go, no embed overhead).
@@ -47,7 +50,7 @@ Changed <code>Sqlite3DriverName</code> from <code>"sqlite3"</code> to
 <code>"sqlite"</code> in <code>sqlstore.go</code>; removed ncruces blank
 imports from <code>sqlstore.go</code> and dropped the sqlite import from
 <code>libdataset/libdataset.go</code> entirely (WASM/libdataset
-deferred).</label></li>
+deferred).</label></p></li>
 </ul>
 <h2 id="someday-maybe">Someday, Maybe</h2>
 <ul class="task-list">
