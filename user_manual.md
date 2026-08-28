@@ -12,7 +12,8 @@
 - Using dataset from other languages
   - [libdataset](libdataset.md)
 - Backwards compatibility
-  - [Compatibility in Dataet v2.3](compatibitilty-in-v2.3.md)
+  - [Compatibility in Dataset v2.5](compatibility-in-v2.5.md)
+  - [Compatibility in Dataset v2.3](compatibility-in-v2.3.md)
     - NOTE: deprecated frames, clone, sample, sync, merge and join. Also removed the dsimporter cli
   - [Compatibility in Dataset v2.2](compatibility-in-v2.2.md)
   - [Compatibility with Dataset v1 in v2.1](compatibility-in-v2.1.md)
