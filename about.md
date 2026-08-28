@@ -25,7 +25,7 @@ maintainer:
 
 repository_code: https://github.com/caltechlibrary/dataset
 version: 2.5.1
-license_url: https://caltechlibrary.github.io/dataset/LICENSE
+license_url: https://software.library.caltech.edu/dataset/LICENSE
 
 programming_language:
   - Go
