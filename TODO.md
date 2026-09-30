@@ -113,6 +113,7 @@ Next (prep for v2.6)
 Someday, Maybe
 --------------
 
+- [ ] Provide a TUI based on experience with clasm, each verb becomes a top level menu item, subsequent args are either sub menus or leaf points for actions. We can use Charm and Huh to implement much of the TUI as we're using in the clasm project.
 - [ ] dsbagit would generate a "BagIt" bag for preservation of collection
       objects
 - [ ] OAI-PMH importer to prototype iiif service based on Islandora
