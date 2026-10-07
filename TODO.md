@@ -110,6 +110,39 @@ Next (prep for v2.6)
       in `sqlstore.go`; removed ncruces blank imports from `sqlstore.go` and dropped the sqlite
       import from `libdataset/libdataset.go` entirely (WASM/libdataset deferred).
 
+- [ ] datasetd's own request log must carry the fields logagent reads
+      (added 2026-10-07 from the logagent work). Today `requestLogger` and
+      `responseLogger` in `api.go` (lines ~91-111) write two separate
+      `log.Printf` lines per request, "Request: ..." and "Response: ...",
+      with method, path, `r.RemoteAddr`, user agent and the whole query map,
+      but no time-to-serve, no response size, no status on the request line,
+      and no way to tell the real client from a proxy. logagent's tiers need,
+      per request on one line: client address (honouring a trusted
+      `X-Forwarded-For` or `CF-Connecting-IP` when datasetd sits behind a
+      proxy, and the peer address as well), time, request line, status, body
+      bytes, user agent and request time. The authoritative list, with each
+      field's purpose, is the field table in the logagent repository,
+      `internal/fields/fields.json`, documented in `logagent-fields(5)`. The
+      upstream response time field does not apply to datasetd. Also decide
+      what to do with the query string: logagent never keeps one (logagent
+      DR-0002), and datasetd currently logs it in full, which can include
+      search terms a reader typed. Needs a design note first (log line shape,
+      whether it is on by default or a `datasetd.yaml` setting, how the
+      trusted-proxy list is configured) and tests before code.
+- [ ] Explore making datasetd's log output compatible with what NginX writes,
+      not only Apache 2 (added 2026-10-07). "Apache compatible" usually means
+      the combined log format; NginX's `combined` is the same shape, but a
+      real NginX deployment (for example CaltechAUTHORS) appends labelled
+      extended fields (`rt=`, `urt=`, `cf_ray=`, `peer=` and so on), so a
+      reader written for one server's format may not read the other's. Settle
+      one of: emit exactly the stock `combined` line; emit `combined` plus the
+      same `label=value` extension logagent generates for nginx
+      (`logagent-fields(5)`, "THE GENERATED FORMAT"); or let `datasetd.yaml`
+      name a format. Check the result against logagent's reader once that
+      exists, and against the existing Apache and NginX documentation in
+      `docs/datasetd.md`, which today says only that datasetd can sit behind
+      either server.
+
 Someday, Maybe
 --------------
 
