@@ -104,6 +104,10 @@ Bugs
 Next (prep for v2.6)
 --------------------
 
+- [ ] Review the HTTP status code returned by datasetd to be more effective, see https://mglaman.dev/blog/status-codes-your-api-getting-wrong for example of the topic
+
+- [ ] Review the exit codes for dataset and datasetd to provide more expressive results
+
 - [ ] Add a YAML attribute for application config. This would allow me to include non-datasetd configuration for use with other middleware.
 
 - [X] Review SQLite3 driver: replace `github.com/ncruces/go-sqlite3` (WASM-based,
