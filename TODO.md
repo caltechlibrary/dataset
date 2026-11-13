@@ -106,6 +106,50 @@ Next (prep for v2.6)
 
 - [ ] Review the HTTP status code returned by datasetd to be more effective, see https://mglaman.dev/blog/status-codes-your-api-getting-wrong for example of the topic
 
+      **Measured 2026-11-13** against datasetd 2.5.1 (scratch SQLite collection, one writable and one
+      read-only configuration) while building TMS, which is written to the right codes and carries a
+      shim for the current behaviour (workspace `tms` DR-0006). What datasetd answers today, and what it
+      should answer:
+
+      | Situation | datasetd 2.5.1 | Should be |
+      |---|---|---|
+      | `GET /object/<missing key>` | `200` with `{}` and no Content-Type | `404` |
+      | `DELETE /object/<missing key>` | `200`, `"action":"delete","status":"OK"` | `404` |
+      | `POST /object/<existing key>` | `200`, `"action":"updated"`; **silently overwrites** | `409 Conflict`, nothing written |
+      | `PUT /object/<missing key>` | `200`, `"action":"updated"`; **creates nothing** | `404` |
+      | `POST` invalid JSON | `406` | `400` |
+      | `POST` empty body | `406` | `400` |
+      | `POST` with `Content-Type: text/plain` | `201`, accepted | `415` (the API docs say JSON is required) |
+      | `POST` body over the 1 MiB limit | `400` | `413` |
+      | query with a missing parameter | `406` | `400` |
+      | query that fails on the user's input (e.g. bad FTS5 syntax) | `406` | `400` (or `422`) |
+      | query name not defined | `400`, opaque body (see the Bugs item above) | `404`, with a reason in the body |
+      | unknown collection, unknown route | `403` | `404` |
+      | method disabled for the collection | `405` | `405`, adding an `Allow` header |
+      | create | `201` | `201` (already right) |
+      | update, delete of an existing key | `200` | `200` or `204` |
+
+      `406 Not Acceptable` is the code for failed content negotiation (`Accept`), not for malformed input;
+      three different failures use it today. The first four rows are the ones that matter most: with them
+      a client cannot tell "done" from "nothing happened", and a repeated create destroys the record that
+      was there.
+
+      **This requires a change in datasetd.** It changes answers existing clients may depend on (`cold`
+      reads `{}` as "no such object"; `ts_dataset` and `content-dashboard` read status codes), so do not
+      just flip it. Suggested: an opt-in setting in the YAML (`strict_status: true`, globally or per
+      collection) that selects the codes above, default off through v2.x so nothing breaks, default on in
+      the next major version; document both in `datasetd_yaml.5.md` and `datasetd_api.5.md` (an empty
+      result set stays `200` with `[]`, as the Bugs item above also asks). TMS needs nothing from it to
+      work: its client speaks in outcomes (created, conflict, not found, invalid, too large) and treats
+      the current behaviour as a removable compatibility layer pinned by contract tests, so the day this
+      lands TMS flips one setting and deletes the shims.
+
+- [ ] A `dataset:` path in the settings that is absolute makes the collection routes work (keys, objects) but every named query answer `400 Bad Request` with "not found" in the log. Found 2026-11-13 building TMS: the same YAML with `dataset: etd.ds` (relative to datasetd's working directory) works. Either resolve the query map by the collection as configured and as routed, or refuse an absolute path at start with a clear message. Pinned by `tms/datasetd_contract_test.ts`.
+
+- [ ] A named query that finds the collection but not the query name, an absolute-path collection, and an unknown collection all look alike to a client (`400`, `400`, `403`): see the status-code item above.
+
+- [ ] `dataset help load` says each JSONL line needs `__key__` and `__object__`, but the installed binary (2.5.1) reads `key` and `object` and rejects the documented names ("missing key or object"). Found 2026-11-13 building the TMS migration, which uses `key`/`object` (as `cold`'s harvest SQL does). Fix the help, or accept both.
+
 - [ ] Review the exit codes for dataset and datasetd to provide more expressive results
 
 - [ ] Add a YAML attribute for application config. This would allow me to include non-datasetd configuration for use with other middleware.
