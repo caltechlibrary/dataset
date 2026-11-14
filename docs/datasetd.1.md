@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.5.1 fed6142
+%datasetd(1) user manual | version 2.5.2 bcf19f5
 % R. S. Doiel
-% 2026-06-03
+% 2026-11-13
 
 # NAME
 
@@ -48,6 +48,12 @@ host
 htdocs
 : (optional) if set static content will be serviced based on this path. This is a
 good place to implement a browser side UI in HTML, CSS and JavaScript.
+
+strict_status
+: (optional, default false) if true the object, query and keys routes answer with the
+precise HTTP status codes (404 for a missing record, 409 for a JSON POST of a key that
+exists, 400, 413, 415 and 422 for bad requests) and a JSON error body. See "datasetd -help api"
+for the table. Left out, the answers are those of datasetd 2.5.1.
 
 collections
 : (required) A list of dataset collections that will be supported with this
@@ -225,5 +231,5 @@ In the shell session where datasetd is running press "ctr-C"
 to terminate the service.
 
 
-datasetd 2.5.1
+datasetd 2.5.2
 

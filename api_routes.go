@@ -55,11 +55,11 @@ func statusIsOK(w http.ResponseWriter, statusCode int, cName string, key string,
 
 // statusOKText returns a text indicating the status of a request
 // is OK.
-func statusIsOKText(w http.ResponseWriter, r *http.Request, statusCode int, cName string, key string, action string, target string, successRedirect string) {
+func statusIsOKText(w http.ResponseWriter, r *http.Request, statusCode int, cName string, key string, action string, target string, successRedirect string, redirectCode int) {
 	log.Printf("Success request URL: %s %q  statusCode: %d, cName: %q, key: %q, action %q, target: %q, successRedirect: %q", r.Method, r.URL, statusCode, cName, key, action, target, successRedirect)
 	if successRedirect != "" {
 		// Redirecting the to the success page, using HTTP status found
-		http.Redirect(w, r, successRedirect, http.StatusFound)
+		http.Redirect(w, r, successRedirect, redirectCode)
 		return
 	}
 	w.Header().Add("Content-Type", "text/html; charset=utf-8")
@@ -91,6 +91,13 @@ func statusIsError(w http.ResponseWriter, r *http.Request, statusText string, st
 }
 
 
+
+// statusIsErrorReason answers an error status with a plain text body that says
+// why, so a client with no access to the server log can tell one failure from
+// another. The status code is the caller's; only the body carries the reason.
+func statusIsErrorReason(w http.ResponseWriter, statusCode int, reason string) {
+	http.Error(w, http.StatusText(statusCode)+": "+reason, statusCode)
+}
 
 // ApiVersion returns the version of the web service running.
 // This will normally be the same version of dataset you installed.
@@ -212,7 +219,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	}
 	if len(options) == 0 {
 		log.Printf("Query, Bad Request %s %q, missing query name", r.Method, r.URL.Path)
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "missing query name", "", true)
 		return
 	}
 	// Get the query name form the list of options.
@@ -221,19 +228,19 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 	cfg, err := api.Settings.GetCfg(cName)
 	if err != nil {
 		log.Printf("Query, Bad Request %s %q %s, not found", r.Method, r.URL.Path, qName)
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusNotFound, fmt.Sprintf("unknown collection %q", cName), "", true)
 		return
 	}
 	// Make sure we have queries defined in the configuration
 	if cfg.QueryFn == nil || len(cfg.QueryFn) == 0 {
 		log.Printf("Query, Bad Request %s %q, undefined query", r.Method, r.URL.Path)
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusNotFound, fmt.Sprintf("no queries defined for collection %q", cName), "", true)
 		return
 	}
 	qStmt, ok := cfg.QueryFn[qName]
 	if !ok {
 		log.Printf("Query, Bad Request %s %q, undefined query %q", r.Method, r.URL.Path, qName)
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusNotFound, fmt.Sprintf("query %q is not defined", qName), "", true)
 		return
 	}
 
@@ -258,12 +265,16 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		//
 		var src []byte
 		if r.Method == http.MethodPost {
-			if contentType == "application/json" {
+postType := contentType
+if api.strict() {
+	postType = mediaType(contentType)
+}
+if postType == "application/json" {
 				r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
 				src, err = io.ReadAll(r.Body)
 				if err != nil {
 					log.Printf("Query, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, fmt.Sprintf("%s", err)) // DEBUG "")
+					apiError(w, r, api, http.StatusBadRequest, bodyReadStatus(err), fmt.Sprintf("could not read the request body, %s", err), "", true)
 					return
 				}
 				defer r.Body.Close()
@@ -271,11 +282,11 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 					err = json.Unmarshal(src, &o)
 					if err != nil {
 						log.Printf("Query, unmarshal error %+v, %s", o, err)
-						statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusBadRequest, "the request body is not valid JSON", "", false)
 						return
 					}
 				}
-			} else if contentType ==  "application/x-www-form-urlencoded" {
+			} else if postType == "application/x-www-form-urlencoded" {
 				// Decode form data
 				err = r.ParseForm()
 				if err == nil {
@@ -289,7 +300,7 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 				}
 			} else {
 				//log.Printf(`Unsupported content type: %q for %q`, contentType, r.URL)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "unsupported content type, " + contentType)
+				apiError(w, r, api, http.StatusBadRequest, http.StatusUnsupportedMediaType, "unsupported content type, "+postType, "", true)
 				return
 			}
 		}
@@ -322,13 +333,13 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 		}
 		if err != nil {
 			log.Printf("Query, failed stmt (debug: %t): %q, %s, params: %+v, error msg: %q", api.Debug, qName, qStmt, qParams, err)
-			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusBadRequest, "the query could not be run with these parameters", "", false)
 			return
 			}
 		src, err := JSONMarshal(data)
 		if err != nil {
 			log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-			statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusInternalServerError, "the result could not be rendered", "", false)
 			return
 		}
 
@@ -338,14 +349,14 @@ func Query(w http.ResponseWriter, r *http.Request, api *API, cName string, verb 
 			src, err = MakeCSV(src, getAttrNames(urlQuery, "csv"))
 			if err != nil {
 				log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusInternalServerError, "the result could not be rendered", "", false)
 				return
 			}
 		case "application/yaml":
 			src, err = MakeCSV(src, getAttrNames(urlQuery, "yaml"))
 			if err != nil {
 				log.Printf("Failed to convert %q to %q, %s", r.URL.Path, contentType, err)
-				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusInternalServerError, "the result could not be rendered", "", false)
 				return
 			}
 		}
@@ -370,13 +381,17 @@ func Keys(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 		keys, err := c.Keys()
 		if err != nil {
 			log.Printf("c.Keys() returned error %s", err)
-			http.NotFound(w, r)
+if api.strict() {
+	apiError(w, r, api, http.StatusNotFound, http.StatusInternalServerError, "the keys could not be listed", "", false)
+	return
+}
+http.NotFound(w, r)
 			return
 		}
 		src, err := JSONMarshalIndent(keys, "", "    ")
 		if err != nil {
 			log.Printf("marshal error %+v, %s", keys, err)
-			statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
+			apiError(w, r, api, http.StatusInternalServerError, http.StatusInternalServerError, "", "", false)
 			return
 		}
 		// Set header to application/json
@@ -428,21 +443,35 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 	o := map[string]interface{}{}
 	if c, ok := api.CMap[cName]; ok {
 		if api.Debug {
-			log.Printf("DEBUG contentType -> %q", contentType)
-		}
-		switch contentType {
+	log.Printf("DEBUG contentType -> %q", contentType)
+}
+isJSON := contentType == "application/json"
+if api.strict() {
+	// Only JSON and form posts are accepted; a JSON client always gets
+	// status codes, never the browser redirect.
+	contentType = mediaType(contentType)
+	isJSON = contentType == mediaJSON
+	if !isJSON && contentType != mediaForm {
+		apiError(w, r, api, http.StatusUnsupportedMediaType, http.StatusUnsupportedMediaType, "unsupported content type, "+contentType, "", false)
+		return
+	}
+	if isJSON {
+		errorRedirect = ""
+	}
+}
+switch contentType {
 		case "application/json":
 			r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
 			src, err := io.ReadAll(r.Body)
 			if err != nil {
 				log.Printf("Create, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+apiError(w, r, api, http.StatusBadRequest, bodyReadStatus(err), "the request body could not be read", errorRedirect, false)
 				return
 			}
 			err = json.Unmarshal(src, &o)
 			if err != nil {
 				log.Printf("Create, json unmarshal error %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, errorRedirect)
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusBadRequest, "the request body is not valid JSON", errorRedirect, false)
 				return
 			}
 		default:
@@ -474,7 +503,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		if key == "" {
 			if idName == "" {
 				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, o)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+				apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", errorRedirect, false)
 				return
 			}
 			if id, ok := o[idName]; ok {
@@ -484,8 +513,14 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				key = id.(string)
 			}
 		}
-		// NOTE: We need to handle case that browsers don't support "PUT" method without JavaScript
-		if c.HasKey(key) {
+		// NOTE: We need to handle case that browsers don't support "PUT" method without JavaScript,
+// so a form post to an existing key is an update. A JSON post to one is a conflict in
+// strict mode: the record that is there is not overwritten.
+if api.strict() && isJSON && c.HasKey(key) {
+	apiError(w, r, api, http.StatusOK, http.StatusConflict, "a record with key "+key+" already exists; use PUT to replace it", "", false)
+	return
+}
+if c.HasKey(key) {
 			if c.Model != nil {
 				// NOTE: Handle generated types on update (e.g. don't overwrite one_time_timestamp or uuid)
 				generatedTypes := c.Model.GetGeneratedTypes()
@@ -494,7 +529,7 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					oldO := map[string]interface{}{}
 					if err := c.Read(key, oldO); err != nil {
 						log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-						statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+						apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", errorRedirect, false)
 						return
 					}
 					for k, genType := range generatedTypes {
@@ -541,14 +576,14 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 						if len(vr.Errors) > 0 {
 							w.Header().Set("X-Validation-Errors", FormatValidationErrors(vr.Errors))
 						}
-						statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+						apiError(w, r, api, http.StatusBadRequest, http.StatusUnprocessableEntity, "the record does not match the schema", errorRedirect, false)
 						return
 					}
 				} else if c.Model != nil {
 					// Fallback to legacy flat validation for backward compatibility
 					if ok := c.Model.ValidateMapInterface(o); !ok {
 						log.Printf("Failed to validate update form (legacy), bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-						statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+						apiError(w, r, api, http.StatusBadRequest, http.StatusUnprocessableEntity, "the record does not match the schema", errorRedirect, false)
 						return
 					}
 				}
@@ -560,16 +595,16 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 			// Now if we have formData populated it needs to get validated after generated types appliced
 			if err := c.Update(key, o); err != nil {
 				log.Printf("Update failed %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+apiError(w, r, api, http.StatusBadRequest, http.StatusInternalServerError, "the record could not be stored", errorRedirect, false)
 				return
 			}
 			//FIXME: If urlencoded data then redirect for the form to some URL. What is the way to indicate this?
 			// Early web stuff used a hidden form field for this, seems really clunky.
-			if contentType == "application/json" || successRedirect == "" {
+			if isJSON || successRedirect == "" {
 				statusIsOK(w, http.StatusOK, cName, key, "updated", "")
 			} else {
 				// NOTE: we build the parameter list if successRedirect is not an empty string.
-				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key))
+				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key), redirectStatus(api))
 			}
 			return
 		} else {
@@ -610,28 +645,28 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 					if len(vr.Errors) > 0 {
 						w.Header().Set("X-Validation-Errors", FormatValidationErrors(vr.Errors))
 					}
-					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+					apiError(w, r, api, http.StatusBadRequest, http.StatusUnprocessableEntity, "the record does not match the schema", errorRedirect, false)
 					return
 				}
 			} else if c.Model != nil {
 				// Fallback to legacy flat validation for backward compatibility
 				if ok := c.Model.ValidateMapInterface(o); !ok {
 					log.Printf("Failed to validate create form (legacy), bad request %s %q -> %+v", r.Method, r.URL.Path, o)
-					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+					apiError(w, r, api, http.StatusBadRequest, http.StatusUnprocessableEntity, "the record does not match the schema", errorRedirect, false)
 					return
 				}
 			}
 			if err := c.Create(key, o); err != nil {
 				log.Printf("Create failed %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, errorRedirect)
+apiError(w, r, api, http.StatusBadRequest, http.StatusInternalServerError, "the record could not be stored", errorRedirect, false)
 				return
 			}
 			//FIXME: If urlencoded data then redirect for the form (is this in the referrer URL?)
-			if contentType == "application/json" || successRedirect == "" {
+			if isJSON || successRedirect == "" {
 				statusIsOK(w, http.StatusCreated, cName, key, "created", "")
 			} else {
 				// NOTE: we build the parameter list if successRedirect is not an empty string.
-				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key))
+				statusIsOKText(w, r, http.StatusOK, cName, key, "updated", "", fmt.Sprintf("%s?key=%s", successRedirect, key), redirectStatus(api))
 			}
 			return
 		}
@@ -655,14 +690,18 @@ func Create(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // ```
 func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", "", false)
 		return
 	}
 	key := options[0]
 
-	if c, ok := api.CMap[cName]; ok {
-		o := map[string]interface{}{}
-		err := c.Read(key, o)
+if c, ok := api.CMap[cName]; ok {
+if api.strict() && !c.HasKey(key) {
+	apiError(w, r, api, http.StatusNotFound, http.StatusNotFound, "no record with key "+key, "", false)
+	return
+}
+o := map[string]interface{}{}
+err := c.Read(key, o)
 		if err != nil {
 			http.NotFound(w, r)
 			return
@@ -678,26 +717,29 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 			src, err = yaml.Marshal(o)
 			if err != nil {
 				log.Printf("Read, yaml marshal error %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
+				apiError(w, r, api, http.StatusInternalServerError, http.StatusInternalServerError, "", "", false)
 				return
 			}
 		case "application/json":
 			src, err = JSONMarshalIndent(o, "", "    ")
 			if err != nil {
 				log.Printf("Read, json marshal error %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
+				apiError(w, r, api, http.StatusInternalServerError, http.StatusInternalServerError, "", "", false)
 				return
 			}
 		default:
 			src, err = JSONMarshalIndent(o, "", "    ")
 			if err != nil {
 				log.Printf("Read, json marshal error %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, "")
+				apiError(w, r, api, http.StatusInternalServerError, http.StatusInternalServerError, "", "", false)
 				return
 			}
 		}
 		// Set header to application/json
-		w.Header().Add("Content-Type", contentType)
+if api.strict() && contentType != "application/yaml" {
+	contentType = "application/json"
+}
+w.Header().Add("Content-Type", contentType)
 		fmt.Fprintf(w, `%s`, src)
 		return
 	}
@@ -722,7 +764,7 @@ func Read(w http.ResponseWriter, r *http.Request, api *API, cName string, verb s
 func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	defer r.Body.Close()
 	if len(options) != 1 {
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", "", false)
 		return
 	}
 	key := options[0]
@@ -734,44 +776,55 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		//FIXME: Are we being sent JSON, YAML or urlencoded data?
 		contentType := r.Header.Get("content-type")
 		if api.Debug {
-			log.Printf("DEBUG contentType: %q", contentType)
-		}
-		switch contentType {
-		case "application/json":
-			r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
-			src, err := io.ReadAll(r.Body)
-			if err != nil {
-				log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
-				return
-			}
-			err = json.Unmarshal(src, &o)
-			if err != nil {
-				log.Printf("Update, json unmarshal error %+v, %s", o, err)
-				statusIsError(w, r, http.StatusText(http.StatusNotAcceptable), http.StatusNotAcceptable, "")
+	log.Printf("DEBUG contentType: %q", contentType)
+}
+if api.strict() {
+	contentType = mediaType(contentType)
+	if contentType != mediaJSON && contentType != mediaForm {
+		apiError(w, r, api, http.StatusUnsupportedMediaType, http.StatusUnsupportedMediaType, "unsupported content type, "+contentType, "", false)
+		return
+	}
+	if !c.HasKey(key) {
+		apiError(w, r, api, http.StatusNotFound, http.StatusNotFound, "no record with key "+key, "", false)
+		return
+	}
+}
+switch contentType {
+case "application/json":
+r.Body = http.MaxBytesReader(w, r.Body, jsonSizeLimit)
+src, err := io.ReadAll(r.Body)
+if err != nil {
+log.Printf("Update, Bad Request %s %q %s", r.Method, r.URL.Path, err)
+apiError(w, r, api, http.StatusBadRequest, bodyReadStatus(err), "the request body could not be read", "", false)
+return
+}
+err = json.Unmarshal(src, &o)
+if err != nil {
+log.Printf("Update, json unmarshal error %+v, %s", o, err)
+apiError(w, r, api, http.StatusNotAcceptable, http.StatusBadRequest, "the request body is not valid JSON", "", false)
 				return
 			}
 		default:
 			//NOTE: Need to know the form field names, this is in .Model
 			r.ParseForm()
-			idName = c.Model.GetPrimaryId()
 			if c.Model == nil {
 				if api.Debug {
 					log.Printf("DEBUG c.Model is nil, accept all fields without validation")
 				}
 				for key, _ := range r.Form {
-					o[key] = r.Form.Get(key)
-				}
-			} else {
-				// NOTE: We only want to grab the fields defined in the model!!
-				if api.Debug {
-					log.Printf("DEBUG c.Model is populated, validating model's fields")
-				}
-				for _, key := range c.Model.GetElementIds() {
-					//FIXME: Need to validate the field value
-					val := r.Form.Get(key)
-					o[key] = val
-					formData[key] = val
+o[key] = r.Form.Get(key)
+}
+} else {
+idName = c.Model.GetPrimaryId()
+// NOTE: We only want to grab the fields defined in the model!!
+if api.Debug {
+log.Printf("DEBUG c.Model is populated, validating model's fields")
+}
+for _, key := range c.Model.GetElementIds() {
+//FIXME: Need to validate the field value
+val := r.Form.Get(key)
+o[key] = val
+formData[key] = val
 				}
 				if api.Debug {
 					txt, _ := json.MarshalIndent(formData, "", "  ")
@@ -786,7 +839,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 		if key == "" {
 			if idName == "" {
 				log.Printf("Missing primary id, bad request %s %q, model %+v, data %+v", r.Method, r.URL.Path, c.Model, formData)
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+				apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", "", false)
 				return
 			}
 			if id, ok := o[idName]; ok {
@@ -804,7 +857,7 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				oldO := map[string]interface{}{}
 				if err := c.Read(key, oldO); err != nil {
 					log.Printf("Failed to retrieve record before update failed %+v, %s", o, err)
-					statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+					apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", "", false)
 					return
 				}
 				for k, genType := range generatedTypes {
@@ -852,12 +905,13 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 				if len(vr.Errors) > 0 {
 					w.Header().Set("X-Validation-Errors", FormatValidationErrors(vr.Errors))
 				}
-				statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+				apiError(w, r, api, http.StatusBadRequest, http.StatusUnprocessableEntity, "the record does not match the schema", "", false)
 				return
 			}
 		}
 		if err := c.Update(key, o); err != nil {
-			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+log.Printf("Update failed %s, %s", key, err)
+apiError(w, r, api, http.StatusBadRequest, http.StatusInternalServerError, "the record could not be stored", "", false)
 			return
 		}
 		statusIsOK(w, http.StatusOK, cName, key, "updated", "")
@@ -880,14 +934,19 @@ func Update(w http.ResponseWriter, r *http.Request, api *API, cName string, verb
 // ```
 func Delete(w http.ResponseWriter, r *http.Request, api *API, cName string, verb string, options []string) {
 	if len(options) != 1 {
-		statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+		apiError(w, r, api, http.StatusBadRequest, http.StatusBadRequest, "", "", false)
 		return
 	}
 	key := options[0]
 
 	if c, ok := api.CMap[cName]; ok {
-		if err := c.Delete(key); err != nil {
-			statusIsError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "")
+if api.strict() && !c.HasKey(key) {
+	apiError(w, r, api, http.StatusNotFound, http.StatusNotFound, "no record with key "+key, "", false)
+	return
+}
+if err := c.Delete(key); err != nil {
+log.Printf("Delete failed %s, %s", key, err)
+apiError(w, r, api, http.StatusBadRequest, http.StatusInternalServerError, "the record could not be deleted", "", false)
 			return
 		}
 		statusIsOK(w, http.StatusOK, cName, key, "delete", "")

@@ -163,7 +163,7 @@ Authors and history
 Releases
 --------
 
-Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64) and Raspberry Pi OS. 
+Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), Windows 11 (x86, aarch64). 64-bit Raspberry Pi OS runs the Linux aarch64 build. 
 
 [github.com/caltechlibrary/dataset/releases](https://github.com/caltechlibrary/dataset/releases)
 

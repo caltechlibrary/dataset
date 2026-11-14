@@ -112,11 +112,13 @@ a record. In this example I assume that "waffles" is a JSON document
 in dataset collection "recipes.ds".
 
 ```shell
-    curl http://localhost:8485/recipies/read/waffles
+    curl http://localhost:8485/api/recipes.ds/object/waffles
 ```
 
-This would return the "waffles" JSON document or a 404 error if the
-document was not found.
+This would return the "waffles" JSON document. If the document is not
+found the answer is `200` with `{}` by default, or `404` when the service
+is run with `strict_status: true` in its YAML settings (see
+[datasetd_api(5)](datasetd_api.5.md), "HTTP status codes").
 
 Listing the keys for "recipes.ds" could be done with this curl command.
 

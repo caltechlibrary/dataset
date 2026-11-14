@@ -24,6 +24,7 @@ import (
 	"os/signal"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"syscall"
 
@@ -166,16 +167,26 @@ func (api *API) Router(w http.ResponseWriter, r *http.Request) {
 		if api.Debug {
 			log.Printf("DEBUG method: %q, prefix: %s, cName %q, verb: %q, options: %+v\n", r.Method, prefix, cName, verb, options)
 		}
+		if api.strict() {
+			// Every answer reflects the state of a collection.
+			w.Header().Set("Cache-Control", "no-store")
+		}
 		if route, ok := api.Routes[prefix]; ok {
 			if fn, ok := route[r.Method]; ok {
 				fn(w, r, api, cName, verb, options)
 				return
 			}
 			code := http.StatusMethodNotAllowed
-			http.Error(w, http.StatusText(code), code)
+			allowed := make([]string, 0, len(route))
+			for method := range route {
+				allowed = append(allowed, method)
+			}
+			sort.Strings(allowed)
+			w.Header().Set("Allow", strings.Join(allowed, ", "))
+			apiError(w, r, api, code, code, "method "+r.Method+" is not allowed here", "", false)
 			return
 		}
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		apiError(w, r, api, http.StatusForbidden, http.StatusNotFound, "no such collection or route", "", false)
 		return
 	}
 	http.NotFound(w, r)
@@ -312,6 +323,17 @@ func (api *API) Init(appName string, settingsFile string) error {
 	err = api.RegisterRoute("codemeta", http.MethodGet, Codemeta)
 	if err != nil {
 		return err
+	}
+
+	// Collections are routed by their base name, so two with the same base
+	// name would silently replace one another in CMap.
+	seenNames := map[string]string{}
+	for _, cfg := range api.Settings.Collections {
+		base := filepath.Base(cfg.CName)
+		if other, dup := seenNames[base]; dup {
+			return fmt.Errorf("collection name %q is used by both %q and %q; collections are routed by their base name, so each must be unique", base, other, cfg.CName)
+		}
+		seenNames[base] = cfg.CName
 	}
 
 	// Get out cName from config

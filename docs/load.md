@@ -2,7 +2,7 @@
 load
 ====
 
-This will read a JSON lines document holding an object made of a "key" attribute and an "object" attribute and populate the collection using those objects. By default objects are not overwritten but there is an option for allowing that.
+This will read a JSON lines document holding an object made of a "key" attribute and an "object" attribute and populate the collection using those objects. This is the form `dataset dump` writes. The attribute names "__key__" and "__object__" are also accepted. By default objects are not overwritten but there is an option for allowing that.
 
 Example
 -------

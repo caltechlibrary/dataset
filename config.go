@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	// Caltech Library packages
@@ -37,6 +38,13 @@ type Settings struct {
 	// Htdocs holds the path to static content that will be
 	// provided by the web service.
 	Htdocs string `json:"htdocs" yaml:"htdocs"`
+
+	// StrictStatus selects the HTTP status codes of workspace DR-0020 for the
+	// object, query and keys routes: 404 for a missing record, 409 for a JSON
+	// POST of an existing key, 400 for a request that cannot be read, 413, 415,
+	// 422, 303 after a form post, and so on, with a JSON error body. It is off
+	// unless set, which keeps the answers of datasetd 2.5.1.
+	StrictStatus bool `json:"strict_status,omitempty" yaml:"strict_status,omitempty"`
 
 	// Schemas holds global schema definitions that can be referenced by collections.
 	// Schemas are defined by name and can be reused across multiple collections.
@@ -316,11 +324,14 @@ func (settings *Settings) WriteFile(name string, perm os.FileMode) error {
 }
 
 
-// GetCfg retrieves a collection configuration from a Settings object using dataset name.
+// GetCfg retrieves a collection configuration from a Settings object using the
+// collection's routed name. A collection is routed by the base name of its
+// configured path (so "dataset: /srv/data/etd.ds" is routed as "etd.ds"), and
+// the lookup compares the same way; the configured string is also accepted.
 func (settings *Settings) GetCfg(cName string) (*Config, error) {
 	if settings.Collections != nil && len(settings.Collections) > 0 {
 		for _, cfg := range settings.Collections {
-			if cfg.CName == cName {
+			if cfg.CName == cName || filepath.Base(cfg.CName) == cName {
 				return cfg, nil
 			}
 		}

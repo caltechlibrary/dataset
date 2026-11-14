@@ -1,6 +1,6 @@
-%datasetd(5) user manual | version 2.5.1 fed6142
+%datasetd(5) user manual | version 2.5.2 bcf19f5
 % R. S. Doiel and Tom Morrell
-% 2026-06-03
+% 2026-11-13
 
 
 # datasetd YAML configuration
@@ -15,6 +15,20 @@ host
 htdocs
 : (optional) if this is a non-empty it will be used as the path to static resouce provided with the web service.
 These are useful for prototyping user interfaces with HTML, CSS and JavaScript interacting the RESTful JSON API.
+
+strict_status
+: (optional, default false) If true the object, query and keys routes answer with the precise HTTP status
+  codes (workspace DR-0020) and a JSON error body, instead of the answers datasetd 2.5.1 gave. For example
+  a missing record is 404 rather than 200 with `{}`, a JSON POST of a key that exists is 409 and writes
+  nothing, malformed input is 400 rather than 406, and an unknown collection is 404 rather than 403.
+  The setting is global, it is not set per collection. Left out or false, every answer is as it was in
+  2.5.1, so turning it on is the only thing that changes any status code. See
+  [datasetd_api](datasetd_api.5.md) for the full table.
+
+  ~~~yaml
+  host: localhost:8485
+  strict_status: true
+  ~~~
 
 schemas
 : (optional) A map of schema names to schema definitions. Schemas are used to validate JSON documents in collections.
@@ -43,7 +57,7 @@ schema_name
 
 validate
 : (optional, default false) If true and schema_name is set, enable schema validation for create and update operations.
-  When validation fails, a 400 Bad Request response is returned with validation errors in the X-Validation-Errors header.
+  When validation fails, a 400 Bad Request response (422 Unprocessable Content when `strict_status` is true) is returned with validation errors in the X-Validation-Errors header.
 
 ## API Permissions
 

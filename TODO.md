@@ -2,7 +2,7 @@
 Action Items
 ============
 
-- [ ] Drop the 32-bit Raspberry Pi build (`Linux-armv7l`, `GOARM=7`) from the Makefile and any release check the next time this module is worked on (workspace DR-0018, proposed 2026-10-26). 64-bit Raspberry Pi OS stays covered by `Linux-aarch64`. Already-published releases are left as they are.
+- [X] Done for v2.5.2. Drop the 32-bit Raspberry Pi build (`Linux-armv7l`, `GOARM=7`) from the Makefile and any release check the next time this module is worked on (workspace DR-0018, proposed 2026-10-26). 64-bit Raspberry Pi OS stays covered by `Linux-aarch64`. Already-published releases are left as they are.
 
 X
 : completed
@@ -14,6 +14,11 @@ Bugs
 ----
 
 - [ ] A failed `query` is indistinguishable from an empty result, end to end.
+      **Server half done in v2.5.2** (reasons in the body, `[]` documented in `datasetd_api.5.md`, and
+      `strict_status`). Note the "fourth argument" below is really `errorRedirect`, the fifth parameter; the
+      fix added `statusIsErrorReason`/`apiError`. **Still open: the client half**, `ts_dataset`'s `Dataset`
+      class, planned for ts_dataset 2.5.2 behind a `strictStatus` option (plan in
+      `agents/projects/dataset/plans/datasetd_http_status_v2_5_2_plan.md`, Phase 4).
       Found 2026-09-18 while building a COLD report against `rdm_requests.ds`.
 
       **Server half.** `api_routes.go` answers four distinct query failures with
@@ -104,7 +109,7 @@ Bugs
 Next (prep for v2.6)
 --------------------
 
-- [ ] Review the HTTP status code returned by datasetd to be more effective, see https://mglaman.dev/blog/status-codes-your-api-getting-wrong for example of the topic
+- [X] Done for v2.5.2 as the opt-in `strict_status` YAML setting; default-on stays for the next major version. Review the HTTP status code returned by datasetd to be more effective, see https://mglaman.dev/blog/status-codes-your-api-getting-wrong for example of the topic
 
       **Measured 2026-11-13** against datasetd 2.5.1 (scratch SQLite collection, one writable and one
       read-only configuration) while building TMS, which is written to the right codes and carries a
@@ -144,13 +149,28 @@ Next (prep for v2.6)
       the current behaviour as a removable compatibility layer pinned by contract tests, so the day this
       lands TMS flips one setting and deletes the shims.
 
-- [ ] A `dataset:` path in the settings that is absolute makes the collection routes work (keys, objects) but every named query answer `400 Bad Request` with "not found" in the log. Found 2026-11-13 building TMS: the same YAML with `dataset: etd.ds` (relative to datasetd's working directory) works. Either resolve the query map by the collection as configured and as routed, or refuse an absolute path at start with a clear message. Pinned by `tms/datasetd_contract_test.ts`.
+- [X] Done for v2.5.2 (`GetCfg` matches the base name; duplicate base names refused). A `dataset:` path in the settings that is absolute makes the collection routes work (keys, objects) but every named query answer `400 Bad Request` with "not found" in the log. Found 2026-11-13 building TMS: the same YAML with `dataset: etd.ds` (relative to datasetd's working directory) works. Either resolve the query map by the collection as configured and as routed, or refuse an absolute path at start with a clear message. Pinned by `tms/datasetd_contract_test.ts`.
 
-- [ ] A named query that finds the collection but not the query name, an absolute-path collection, and an unknown collection all look alike to a client (`400`, `400`, `403`): see the status-code item above.
+- [X] Done for v2.5.2 (the body says which, and `strict_status` gives 404). A named query that finds the collection but not the query name, an absolute-path collection, and an unknown collection all look alike to a client (`400`, `400`, `403`): see the status-code item above.
 
-- [ ] `dataset help load` says each JSONL line needs `__key__` and `__object__`, but the installed binary (2.5.1) reads `key` and `object` and rejects the documented names ("missing key or object"). Found 2026-11-13 building the TMS migration, which uses `key`/`object` (as `cold`'s harvest SQL does). Fix the help, or accept both.
+- [X] Done for v2.5.2 (both spellings accepted, help fixed). `dataset help load` says each JSONL line needs `__key__` and `__object__`, but the installed binary (2.5.1) reads `key` and `object` and rejects the documented names ("missing key or object"). Found 2026-11-13 building the TMS migration, which uses `key`/`object` (as `cold`'s harvest SQL does). Fix the help, or accept both.
 
 - [ ] Review the exit codes for dataset and datasetd to provide more expressive results
+
+- [ ] `dataset` and `datasetd` have no `help topics` listing (`dataset help` with no topic answers "Unable to find
+      help"). The workspace practice (irdmtools' Makefile) writes one manual page per help topic from
+      `NAME -help topics` and `NAME -help TOPIC`; `release-review` also asks for a help index. Add the listing,
+      then the per-topic pages in the Makefile's program rule (see the NOTE there). Raised 2026-11-13 during the
+      v2.5.2 release prep; the author has not yet ruled on releasing without it.
+
+- [ ] 66 generated `.html` files are committed in this repository (the project pages, `docs/` and `how-to/`).
+      CLAUDE.md says not to commit generated content and that websites are built in CI. Untrack them in a commit
+      of their own, and check what the site build needs first. The six manual page `.html` files were removed
+      with the move of their sources to `docs/` in v2.5.2.
+
+- [ ] `codemeta.json` `softwareRequirements` still lists "CMTools >= 0.0.43". `make generate` and `make release`
+      still run `cmt`; drop the entry when codemetatools replaces it (CLAUDE.md: CMTools is no longer a dependency).
+
 
 - [ ] Add a YAML attribute for application config. This would allow me to include non-datasetd configuration for use with other middleware.
 

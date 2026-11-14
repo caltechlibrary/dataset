@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -151,5 +152,33 @@ func TestWriteFile(t *testing.T) {
 	}
 	if cfg.Prune != tcfg.Prune {
 		t.Errorf("expected Prune %t, got %t", cfg.Prune, tcfg.Prune)
+	}
+}
+
+// TestStrictStatusSetting is plan step 2.1: strict_status is a global YAML
+// boolean, false when absent.
+func TestStrictStatusSetting(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		yaml string
+		want bool
+	}{
+		{"absent is false", "host: localhost:8485\n", false},
+		{"false", "host: localhost:8485\nstrict_status: false\n", false},
+		{"true", "host: localhost:8485\nstrict_status: true\n", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fName := filepath.Join(t.TempDir(), "settings.yaml")
+			if err := os.WriteFile(fName, []byte(tc.yaml), 0664); err != nil {
+				t.Fatal(err)
+			}
+			s, err := ConfigOpen(fName)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if s.StrictStatus != tc.want {
+				t.Errorf("StrictStatus: want %t, got %t", tc.want, s.StrictStatus)
+			}
+		})
 	}
 }

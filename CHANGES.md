@@ -1,3 +1,47 @@
+Release 2.5.2
+
+- Added `strict_status` to the datasetd YAML (global, default false). When true the object, query and keys
+  routes answer with the precise HTTP status codes of workspace DR-0020 and a JSON error body, with
+  `Cache-Control: no-store`: 404 for a missing record on GET, DELETE and PUT (instead of 200, and instead of
+  `200 {}` on GET), 409 for a JSON POST of a key that exists (nothing is written; before it silently
+  overwrote), 400 for invalid JSON, an empty body or a bad query parameter (instead of 406), 415 for an
+  unsupported content type, 413 for a body over 1 MiB (instead of 400), 422 for a record that fails schema
+  validation (instead of 400), 404 for an unknown collection or route (instead of 403) and for an undefined
+  query name, 500 for a store that fails, and 303 (instead of 302) after a successful form post. Form posts to
+  an existing key still update it. Left out, every answer is as in 2.5.1. See `datasetd_api.5.md`.
+- datasetd: a query that cannot be routed (missing name, unknown collection, no queries defined, name not
+  defined) still answers 400 but now says which in the body.
+- datasetd: a 405 now carries an `Allow` header.
+- datasetd: a POST to a query with an unsupported content type, or a body that cannot be read, answered
+  `303 See Other` to a `Location` made of the error text. It now answers `400` with the reason. This is the
+  one status code that changes with `strict_status` off; it was a broken redirect.
+- Fixed a `dataset` collection configured with an absolute `dataset:` path: named queries answered `400`
+  and the collection's `create_success` and `create_error` redirects were silently ignored, because the
+  configuration was looked up by the whole path while the collection is routed by its base name. The lookup
+  now matches the base name. A deployment with an absolute path and a `create_success` setting will now
+  redirect, which is what its settings asked for.
+- datasetd now refuses to start when two collections have the same base name (for example `/a/etd.ds` and
+  `/b/etd.ds`); the second used to silently replace the first.
+- `dataset load` accepts both `key`/`object` (what `dump` writes) and `__key__`/`__object__` (what the help
+  said); the help now says both.
+- Fixed `Load` panicking on every call when built with Go 1.27 (`json.NewDecoder(nil)`).
+- Fixed datasetd panicking on a form PUT to a collection with no model (a dropped connection for the client).
+- Dropped the 32-bit Raspberry Pi build (`Linux-armv7l`) from the release. 64-bit Raspberry Pi OS is covered by
+  `Linux-aarch64`. Releases already published are unchanged.
+- Build and release brought to the workspace's current practice (workspace DR-0017, DR-0018): a plain `make`
+  and `make build` no longer run `cmt`; `make generate` regenerates `version.go`, `CITATION.cff` and the
+  installers; `make release` regenerates, tests, builds the six platform zips and the libdataset zip and runs
+  `release-check`, which stops if anything does not carry the version and the commit hash or a zip lacks a
+  program. `release.bash` and `release.ps1` are the shared versions (`--dry-run`, `--yes`, refuses with
+  uncommitted or unpushed work, writes checksums, creates a draft release) and are tested by
+  `release_test.bash` (`make test-release`).
+- The manual page sources (`dataset.1.md`, `datasetd.1.md`, `dsquery.1.md` and the three `datasetd_*.5.md`) moved
+  from the repository root to `docs/`, beside the rest of the documentation site. They are generated from the
+  programs' help text, which is where to edit them.
+- Documentation: the read, create, update and delete end point pages describe the status codes in both modes;
+  `update-endpoint.md` was a copy of the create page and is rewritten for PUT; `load.md` names both spellings;
+  `datasetd.md` no longer shows a made-up URL and a 404 the default mode does not send.
+
 Release 2.5.1
 
 - Split SQLite driver by build target: normal builds (`!wasip1`) use glebarez/go-sqlite

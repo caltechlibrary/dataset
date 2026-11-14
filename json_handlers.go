@@ -193,7 +193,7 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 	buf := make([]byte, bufSize)
 	scanner.Buffer(buf, bufSize)
 
-	dec := json.NewDecoder(nil)
+	var dec *json.Decoder
 	errCnt := 0
 	lineNum := 0
 
@@ -210,8 +210,16 @@ func (c *Collection) Load(in io.Reader, overwrite bool, maxCapacity int) error {
 			continue
 		}
 
+		// NOTE: dump writes "key" and "object"; "__key__" and "__object__"
+		// are the names the help text used to give, so both are accepted.
 		key, keyOk := rec["key"].(string)
+		if !keyOk {
+			key, keyOk = rec["__key__"].(string)
+		}
 		obj, objOk := rec["object"].(map[string]interface{})
+		if !objOk {
+			obj, objOk = rec["__object__"].(map[string]interface{})
+		}
 
 		if !keyOk || !objOk {
 			fmt.Fprintf(os.Stderr, "WARNING (line %d): missing key or object\n", lineNum)

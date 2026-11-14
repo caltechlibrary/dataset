@@ -1,201 +1,226 @@
 #
-# Simple Makefile for conviently testing, building and deploying experiment.
+# Makefile for dataset, a Go package, command line tools and a web service.
+#
+# Everyday targets:   build, test, test-release, install, uninstall, clean
+# Release targets:    generate, release, dist (see "Releasing" below)
+#
+# A plain `make`, `make build`, `make test` and `make install` need only git,
+# make, go and pandoc. `cmt` is run only by `make generate` and by
+# `make release`, never by the everyday targets, so a fresh clone builds with
+# the committed version.go, CITATION.cff and installers.
 #
 PROJECT = dataset
 
 GIT_GROUP = caltechlibrary
 
-RELEASE_DATE=$(shell date +'%Y-%m-%d')
+PROGRAMS = $(shell ls -1 cmd)
 
-RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
+# version.go is left out: it has a rule (cmt, under generate), and listing it
+# here would make every build run cmt through that rule.
+PACKAGE = $(shell ls -1 *.go | grep -v 'version.go')
 
-BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+# The manual pages are the programs' own help output, written into docs/ by
+# the build, which is where the documentation site is built from. Section 1
+# has one page per program; section 5 has the three datasetd pages.
+MAN_PAGES = $(shell ls -1 docs/*.1.md 2>/dev/null | sed -E 's|^docs/||; s/\.1.md/.1/g')
 
-# Getting the current version from codemeta.json varies depending on OS.
-ifeq ($(OS), Windows_NT)
-	VERSION = $(shell grep '"version":' codemeta.json | jq -r .version)
-else
-	VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
-endif
+MAN_PAGES_5 = $(shell ls -1 docs/*.5.md 2>/dev/null | sed -E 's|^docs/||; s/\.5.md/.5/g')
 
+VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
-MAN_PAGES = dataset.1 datasetd.1 dsquery.1
+RELEASE_HASH = $(shell git log --pretty=format:'%h' -n 1)
 
-MAN_PAGES_MISC = datasetd_yaml.5 datasetd_service.5 datasetd_api.5
+BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
-PROGRAMS = dataset datasetd dsquery
+OS = $(shell uname)
 
 PREFIX = $(HOME)
 
 ifneq ($(prefix),)
-        PREFIX = $(prefix)
+	PREFIX = $(prefix)
 endif
 
 EXT =
-ifeq ($(OS), Windows_NT)
+ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
-EXT_WEB = .wasm
+# One entry per release platform: name:GOOS:GOARCH
+PLATFORMS = Linux-x86_64:linux:amd64 Linux-aarch64:linux:arm64 \
+	macOS-x86_64:darwin:amd64 macOS-arm64:darwin:arm64 \
+	Windows-x86_64:windows:amd64 Windows-arm64:windows:arm64
 
-DIST_FOLDERS = bin/* man/*
+build: $(PROGRAMS)
+	@$(MAKE) pages5
+	@$(MAKE) man
 
-build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh installer.ps1
-
-libdataset.wasm: libdataset/libdataset.go libdataset/registry.go
-	@mkdir -p dist
-	GOOS=wasip1 GOARCH=wasm go build -o dist/libdataset.wasm ./libdataset/
-	@echo "Built dist/libdataset.wasm ($$(ls -lh dist/libdataset.wasm | awk '{print $$5}'))"
-
-version.go: .FORCE
-	cmt codemeta.json version.go
-	-git add version.go
-
-
-$(PROGRAMS): cmd/*/*.go $(PACKAGE)
+# Building a program also writes its manual page (the program's own -help
+# output) into docs/. NOTE: unlike irdmtools, no page per help topic is
+# written: dataset has no "-help topics" listing yet (see TODO.md).
+$(PROGRAMS): $(PACKAGE)
 	@mkdir -p bin
-	go build -o bin/$@$(EXT) cmd/$@/$@.go
-	./bin/$@ -help >$@.1.md
+	go build -o "bin/$@$(EXT)" ./cmd/$@
+	@mkdir -p docs
+	@./bin/$@$(EXT) -help >docs/$@.1.md
 
-man: $(MAN_PAGES) $(MAN_PAGES_LIB) $(MAN_PAGES_MISC)
+# pages5 writes the datasetd section 5 pages from its help topics. It needs
+# the programs built, so build runs it as a sub-make once they are.
+pages5: .FORCE
+	@mkdir -p docs
+	@for TOPIC in api service yaml; do ./bin/datasetd$(EXT) --help $$TOPIC >docs/datasetd_$$TOPIC.5.md || exit 1; done
+
+# man renders each docs/NAME.N.md into man/manN/NAME.N. build runs it as a
+# sub-make so that it sees the pages written there: MAN_PAGES is read when the
+# Makefile is read.
+man: $(MAN_PAGES) $(MAN_PAGES_5)
 
 $(MAN_PAGES): .FORCE
-	mkdir -p man/man1
-	pandoc $@.md --from markdown --to man -s >man/man1/$@
+	@mkdir -p man/man1
+	pandoc docs/$@.md --from markdown --to man -s >man/man1/$@
 
-$(MAN_PAGES_MISC): $(PROGRAMS) .FORCE
-	@./bin/datasetd --help api >datasetd_api.5.md
-	@./bin/datasetd --help service >datasetd_service.5.md
-	@./bin/datasetd --help yaml >datasetd_yaml.5.md
-	mkdir -p man/man5
-	pandoc $@.md --from markdown --to man -s >man/man5/$@
+$(MAN_PAGES_5): .FORCE
+	@mkdir -p man/man5
+	pandoc docs/$@.md --from markdown --to man -s >man/man5/$@
 
-
-CITATION.cff: codemeta.json .FORCE
-	cmt codemeta.json CITATION.cff
-
-about.md: codemeta.json .FORCE
-	cmt codemeta.json about.md
-
-installer.sh: .FORCE
-	cmt codemeta.json installer.sh
-	chmod 775 installer.sh
-	git add -f installer.sh
-
-installer.ps1: .FORCE
-	cmt codemeta.json installer.ps1
-	chmod 775 installer.sh
-	git add -f installer.ps1
-
-# NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
-install: build
-	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
-	@echo "Installing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then mv -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
-	@echo ""
-	@echo "Make sure $(PREFIX)/bin is in your PATH"
-	@echo ""
-	@for FNAME in $(MAN_PAGES); do if [ -f "./man/man1/$${FNAME}" ]; then cp -v "./man/man1/$${FNAME}" "$(PREFIX)/man/man1/$${FNAME}"; fi; done
-	@for FNAME in $(MAN_PAGES_LIB); do if [ -f "./man/man3/$${FNAME}" ]; then cp -v "./man/man3/$${FNAME}" "$(PREFIX)/man/man3/$${FNAME}"; fi; done
-	@for FNAME in $(MAN_PAGES_MISC); do if [ -f "./man/man5/$${FNAME}" ]; then cp -v "./man/man5/$${FNAME}" "$(PREFIX)/man/man5/$${FNAME}"; fi; done
-	@echo "Make sure $(PREFIX)/man is in your MANPATH"
-	@echo ""
-
-uninstall: .FORCE
-	@echo "Removing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
-	@echo "Removing manpages in $(PREFIX)/man"
-	@for FNAME in $(MAN_PAGES); do if [ -f "$(PREFIX)/man/man1/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man1/$${FNAME}"; fi; done
-	@for FNAME in $(MAN_PAGES_LIB); do if [ -f "$(PREFIX)/man/man3/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man3/$${FNAME}"; fi; done
-	@for FNAME in $(MAN_PAGES_MISC); do if [ -f "$(PREFIX)/man/man5/$${FNAME}" ]; then rm -v "$(PREFIX)/man/man5/$${FNAME}"; fi; done
-
-
+# website builds the documentation site: the project pages, docs/ and how-to/.
 website: .FORCE
 	make -f website.mak
 	cd docs && make -f website.mak
 	cd how-to && make -f website.mak
 
+# test runs offline: vet, then the Go tests (TestRunAPI starts a datasetd on
+# localhost:8585 and takes several seconds).
+test: .FORCE
+	go vet ./...
+	go test ./...
+
+# test-release runs the tests of release.bash, and of release.ps1 when pwsh is
+# installed. They use throwaway repositories and a stub gh, so nothing reaches
+# GitHub.
+test-release: .FORCE
+	./release_test.bash
+	@if command -v pwsh >/dev/null 2>&1; then RELEASE_IMPL=ps1 ./release_test.bash; else echo "pwsh not found: release.ps1 not tested"; fi
+
+# check vets the code and lists, without changing them, files gofmt would
+# reformat. Existing files are not reformatted as a side effect of other work.
 check: .FORCE
-	go vet *.go
-	cd api && go vet *.go
-	cd cli && go vet *.go
-	cd config && go vet *.go
-	cd cmd/dataset && go vet *.go
-	cd cmd/datasetd && go vet *.go
-	cd dotpath && go vet *.go
-	cd dsv1 && go vet *.go
-	cd dsv1/tbl && go vet *.go
-	cd pairtree && go vet *.go
-	cd ptstore && go vet *.go
-	cd semver && go vet *.go
-	cd sqlstore && go vet *.go
-	cd texts && go vet *.go
+	go vet ./...
+	@UNFORMATTED="$$(gofmt -l . )"; if [ -n "$$UNFORMATTED" ]; then echo "not gofmt-formatted (left as is):"; echo "$$UNFORMATTED"; fi
 
-test: clean
-	go test
+# NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
+install: build .FORCE
+	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
+	@echo "Installing programs in $(PREFIX)/bin"
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME$(EXT) ]; then mv -v ./bin/$$FNAME$(EXT) $(PREFIX)/bin/$$FNAME$(EXT); fi; done
+	@echo ""
+	@echo "Make sure $(PREFIX)/bin is in your PATH"
+	@echo ""
+	@if [ ! -d $(PREFIX)/man/man1 ]; then mkdir -p $(PREFIX)/man/man1; fi
+	@for MAN_PAGE in $(MAN_PAGES); do cp -v man/man1/$$MAN_PAGE $(PREFIX)/man/man1/;done
+	@if [ ! -d $(PREFIX)/man/man5 ]; then mkdir -p $(PREFIX)/man/man5; fi
+	@for MAN_PAGE in $(MAN_PAGES_5); do cp -v man/man5/$$MAN_PAGE $(PREFIX)/man/man5/;done
+	@echo ""
+	@echo "Make sure $(PREFIX)/man is in your MANPATH"
+	@echo ""
 
-cleanweb:
-	@if [ -f index.html ]; then rm *.html; fi
+uninstall: .FORCE
+	@echo "Removing programs in $(PREFIX)/bin"
+	-for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME$(EXT) ]; then rm -v $(PREFIX)/bin/$$FNAME$(EXT); fi; done
+	-for MAN_PAGE in $(MAN_PAGES); do if [ -f "$(PREFIX)/man/man1/$$MAN_PAGE" ]; then rm "$(PREFIX)/man/man1/$$MAN_PAGE"; fi; done
+	-for MAN_PAGE in $(MAN_PAGES_5); do if [ -f "$(PREFIX)/man/man5/$$MAN_PAGE" ]; then rm "$(PREFIX)/man/man5/$$MAN_PAGE"; fi; done
 
-clean:
-	go clean
-	@if [ -d bin ]; then rm -fR bin; fi
-	@if [ -d dist ]; then rm -fR dist; fi
-	@if [ -d testout ]; then rm -fR testout; fi
-	@if [ -d semver/testout ]; then rm -fR semver/testout; fi
-	@if [ -d dotpath/testout ]; then rm -fR dotpath/testout; fi
-	@if [ -d pairtree/testout ]; then rm -fR pairtree/testout; fi
-	@if [ -d ptstore/testout ]; then rm -fR ptstore/testout; fi
-	@if [ -d sqlstore/testout ]; then rm -fR sqlstore/testout; fi
-	@if [ -d texts/testout ]; then rm -fR texts/testout; fi
-	@if [ -d api/testout ]; then rm -fR api/testout; fi
-	@if [ -d cli/testout ]; then rm -fR cli/testout; fi
-	-go clean -r
+hash: .FORCE
+	@git log --pretty=format:'%h' -n 1
 
-dist/Linux-x86_64:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-x86_64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+# clean never removes version.go: it is committed, so that a fresh clone builds.
+clean: .FORCE
+	-if [ -d bin ]; then rm -fR bin; fi
+	-if [ -d dist ]; then rm -fR dist; fi
+	-if [ -d man ]; then rm -fR man; fi
+	-if [ -d testout ]; then rm -fR testout; fi
 
-dist/Linux-aarch64:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-aarch64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+status:
+	git status
 
-dist/macOS-x86_64:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=amd64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macOS-x86_64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+save:
+	@git commit -am "$${msg:-Quick Save}"
+	git push origin $(BRANCH)
 
-dist/macOS-arm64:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=arm64 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macOS-arm64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+refresh:
+	git fetch origin
+	git pull origin $(BRANCH)
 
-dist/Windows-x86_64:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=amd64 go build -o dist/bin/$$FNAME.exe cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Windows-x86_64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+#
+# Releasing
+#
+# 1. Edit codemeta.json by hand: version, dateModified, datePublished,
+#    releaseNotes.
+# 2. make release      regenerates version.go, CITATION.cff and both installers
+#                      from codemeta.json with cmt (the only place cmt runs
+#                      besides an explicit `make generate`), rebuilds the
+#                      programs and their manual pages from that version.go,
+#                      runs the tests, builds one zip per platform and the
+#                      libdataset zip in dist/ and runs release-check, which
+#                      stops here if anything does not carry the version and
+#                      the hash of the commit, or a zip lacks one of the
+#                      programs.
+# 3. ./release.bash    refuses if anything beyond those files is uncommitted,
+#                      asks for confirmation, commits and pushes the regenerated
+#                      files ("prep for vX.Y.Z"), and creates the DRAFT GitHub
+#                      release from dist/*.zip. Publish the draft from the
+#                      repository's releases page (or with gh release edit).
+#
+# Run `make test-release` after changing release.bash, release.ps1 or
+# release_test.bash.
+#
 
-dist/Windows-arm64:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=arm64 go build -o dist/bin/$$FNAME.exe cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Windows-arm64.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+# generate runs cmt over codemeta.json. Run it when the version or the
+# metadata change; a plain `make` leaves the committed copies alone.
+generate: version.go CITATION.cff installer.sh installer.ps1
 
-# Raspberry Pi OS (32 bit), as reported by Raspberry Pi 3B+
-dist/Linux-armv7l:
-	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o dist/bin/$$FNAME cmd/$$FNAME/*.go; done
-	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-armv7l.zip LICENSE codemeta.json CITATION.cff *.md $(DIST_FOLDERS)
-	@rm -fR dist/bin
+version.go: .FORCE
+	cmt codemeta.json version.go
 
-dist/libdataset: dist/libdataset.wasm libdataset.md \
+CITATION.cff: .FORCE
+	cmt codemeta.json CITATION.cff
+
+installer.sh: .FORCE
+	cmt codemeta.json installer.sh
+	chmod 775 installer.sh
+
+installer.ps1: .FORCE
+	cmt codemeta.json installer.ps1
+
+# dist builds one zip per platform in PLATFORMS, starting from an empty dist/.
+# Each zip carries the programs (bin/), the manual pages (man/ and their
+# sources, docs/*.N.md) and the top level documents.
+dist: build .FORCE
+	@rm -fR dist
+	@mkdir -p dist
+	@for ENTRY in $(PLATFORMS); do \
+		NAME=$$(echo $$ENTRY | cut -d: -f1); GOOS=$$(echo $$ENTRY | cut -d: -f2); GOARCH=$$(echo $$ENTRY | cut -d: -f3); \
+		SUFFIX=""; if [ "$$GOOS" = "windows" ]; then SUFFIX=".exe"; fi; \
+		rm -fR dist/stage; mkdir -p dist/stage/bin dist/stage/docs; \
+		for FNAME in $(PROGRAMS); do \
+			env GOOS=$$GOOS GOARCH=$$GOARCH go build -o "dist/stage/bin/$${FNAME}$$SUFFIX" ./cmd/$$FNAME || exit 1; \
+		done; \
+		cp LICENSE codemeta.json CITATION.cff README.md CHANGES.md INSTALL.md INSTALL_NOTES_macOS.md INSTALL_NOTES_Windows.md dist/stage/; \
+		cp docs/*.?.md dist/stage/docs/; \
+		cp -R man dist/stage/; \
+		(cd dist/stage && zip -qr ../$(PROJECT)-v$(VERSION)-$$NAME.zip .) || exit 1; \
+		echo "dist/$(PROJECT)-v$(VERSION)-$$NAME.zip"; \
+	done
+	@rm -fR dist/stage
+
+# libdataset.wasm is the WebAssembly build of the library (GOOS=wasip1).
+libdataset.wasm: libdataset/libdataset.go libdataset/registry.go
+	@mkdir -p dist
+	GOOS=wasip1 GOARCH=wasm go build -o dist/libdataset.wasm ./libdataset/
+	@echo "Built dist/libdataset.wasm ($$(ls -lh dist/libdataset.wasm | awk '{print $$5}'))"
+
+# libdataset-dist adds dist/dataset-vVERSION-libdataset.zip. It runs after dist,
+# which starts from an empty dist/.
+libdataset-dist: libdataset.wasm libdataset.md \
 		wrappers/python/libdataset/__init__.py \
 		wrappers/python/libdataset/libdataset.py \
 		wrappers/python/README.md \
@@ -203,46 +228,61 @@ dist/libdataset: dist/libdataset.wasm libdataset.md \
 		wrappers/typescript/README.md
 	@mkdir -p dist/libdataset-staging/python/libdataset
 	@mkdir -p dist/libdataset-staging/typescript
-	@cp dist/libdataset.wasm           dist/libdataset-staging/
+	@cp dist/libdataset.wasm dist/libdataset-staging/
 	@cp wrappers/python/libdataset/*.py dist/libdataset-staging/python/libdataset/
-	@cp wrappers/python/README.md       dist/libdataset-staging/python/
+	@cp wrappers/python/README.md dist/libdataset-staging/python/
 	@cp wrappers/typescript/libdataset.ts dist/libdataset-staging/typescript/
-	@cp wrappers/typescript/README.md   dist/libdataset-staging/typescript/
-	@cp LICENSE                         dist/libdataset-staging/
-	@cp libdataset.md                   dist/libdataset-staging/
-	@cd dist/libdataset-staging && zip -r ../$(PROJECT)-v$(VERSION)-libdataset.zip .
+	@cp wrappers/typescript/README.md dist/libdataset-staging/typescript/
+	@cp LICENSE dist/libdataset-staging/
+	@cp libdataset.md dist/libdataset-staging/
+	@(cd dist/libdataset-staging && zip -qr ../$(PROJECT)-v$(VERSION)-libdataset.zip .)
 	@rm -rf dist/libdataset-staging
 	@echo "Built dist/$(PROJECT)-v$(VERSION)-libdataset.zip"
 
-	
-distribute_docs:
-	if [ -d dist ]; then rm -fR dist; fi
-	mkdir -p dist
-	cp -v codemeta.json dist/
-	cp -v CITATION.cff dist/
-	cp -v README.md dist/
-	cp -v LICENSE dist/
-	cp -v INSTALL.md dist/
-	cp -v INSTALL_NOTES_*.md dist/
-	cp installer.sh dist/
-	cp installer.ps1 dist/
-	cp -vR man dist/
+release-version: .FORCE
+	@$(MAKE) -B generate
 
-update_version:
-	$(EDITOR) codemeta.json
-	codemeta2cff
+# release-check stops the release unless version.go, the installers,
+# CITATION.cff, the manual pages in docs/ and the zip files all carry the
+# version in codemeta.json and the hash of the commit being released, every
+# platform zip carries every program, and the libdataset zip exists.
+release-check: .FORCE
+	@HASH=$$(git log --pretty=format:%h -n 1); \
+	if ! grep -q 'Version = "$(VERSION)"' version.go; then \
+		echo "error: version.go does not carry version $(VERSION)" >&2; exit 1; fi; \
+	if ! grep -q "ReleaseHash = \"$$HASH\"" version.go; then \
+		echo "error: version.go does not carry hash $$HASH" >&2; exit 1; fi; \
+	if ! grep -q '^version: $(VERSION)' CITATION.cff; then \
+		echo "error: CITATION.cff does not carry version $(VERSION)" >&2; exit 1; fi; \
+	for FNAME in installer.sh installer.ps1; do \
+		if ! grep -q 'VERSION.*"$(VERSION)"' $$FNAME; then \
+			echo "error: $$FNAME does not carry version $(VERSION)" >&2; exit 1; fi; \
+	done; \
+	for FNAME in docs/*.?.md; do \
+		if ! head -4 $$FNAME | grep -q "version $(VERSION) $$HASH"; then \
+			echo "error: $$FNAME does not carry version $(VERSION) $$HASH" >&2; exit 1; fi; \
+	done; \
+	COUNT=0; \
+	for ENTRY in $(PLATFORMS); do \
+		NAME=$$(echo $$ENTRY | cut -d: -f1); GOOS=$$(echo $$ENTRY | cut -d: -f2); ZIP=dist/$(PROJECT)-v$(VERSION)-$$NAME.zip; \
+		SUFFIX=""; if [ "$$GOOS" = "windows" ]; then SUFFIX=".exe"; fi; \
+		if [ ! -f $$ZIP ]; then echo "error: missing $$ZIP" >&2; exit 1; fi; \
+		for FNAME in $(PROGRAMS); do \
+			if ! unzip -Z1 $$ZIP | grep -qx "bin/$$FNAME$$SUFFIX"; then \
+				echo "error: $$ZIP does not carry bin/$$FNAME$$SUFFIX" >&2; exit 1; fi; \
+		done; \
+		for PAGE in $$(unzip -Z1 $$ZIP 'docs/*.?.md'); do \
+			if ! unzip -p $$ZIP $$PAGE | head -4 | grep -q "version $(VERSION) $$HASH"; then \
+				echo "error: $$ZIP $$PAGE does not carry version $(VERSION) $$HASH" >&2; exit 1; fi; \
+		done; \
+		COUNT=$$((COUNT + 1)); \
+	done; \
+	if [ ! -f dist/$(PROJECT)-v$(VERSION)-libdataset.zip ]; then \
+		echo "error: missing dist/$(PROJECT)-v$(VERSION)-libdataset.zip" >&2; exit 1; fi; \
+	echo "release-check: version.go, CITATION.cff, installers, docs/, $$COUNT zip files and the libdataset zip carry $(VERSION) $$HASH"
 
-release: .FORCE clean build version.go CITATION.cff man website distribute_docs dist/Linux-x86_64 dist/Linux-aarch64 dist/Linux-armv7l dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 libdataset.wasm dist/libdataset
-	@printf "\nReady to run\n\n\t./release.bash\n\n"
-
-status:
-	git status
-
-save:
-	if [ "$(msg)" != "" ]; then git commit -am "$(msg)"; else git commit -am "Quick Save"; fi
-	git push origin $(BRANCH)
-
-loghash: .FORCE
-	git log --pretty=format:'%h' -n 1
+# release: see "Releasing" above. It commits nothing; release.bash does that.
+release: clean release-version test dist libdataset-dist release-check
+	@printf "\nrelease-check passed. Now run: ./release.bash   (or ./release.bash --dry-run first)\n\n"
 
 .FORCE:

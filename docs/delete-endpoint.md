@@ -10,7 +10,9 @@ Delete a JSON document in the collection. Requires the document key and collecti
 
 Requires a `DELETE` HTTP method.
 
-Deletes a JSON document for the `<KEY>` in collection `<COLLECTION_ID>`. On success it returns HTTP 200 OK. Otherwise an HTTP error if creation fails.
+Deletes a JSON document for the `<KEY>` in collection `<COLLECTION_ID>`. On success it returns HTTP 200 OK. Otherwise an HTTP error if deletion fails.
+
+If `<KEY>` does not exist the default answer (as in datasetd 2.5.1) is also HTTP 200. When the service is run with `strict_status: true` in its YAML settings it is HTTP 404 with a JSON error object. See [datasetd_api(5)](datasetd_api.5.md), "HTTP status codes".
 
 Example
 -------

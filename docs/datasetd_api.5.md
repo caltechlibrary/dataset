@@ -1,6 +1,6 @@
-%datasetd(1) user manual | version 2.5.1 fed6142
+%datasetd(1) user manual | version 2.5.2 bcf19f5
 % R. S. Doiel
-% 2026-06-03
+% 2026-11-13
 
 
 # datasetd REST API
@@ -35,8 +35,58 @@ The REST API works with JSON data. The service does not support multipart urlenc
 
 When schema validation is enabled for a collection (via the schema_name and validate settings), create and update
 operations will validate the JSON document against the specified schema. If validation fails, the API returns
-a 400 Bad Request status with validation errors in the X-Validation-Errors HTTP header. The header contains
+a 400 Bad Request status (422 when `strict_status` is true) with validation errors in the X-Validation-Errors HTTP header. The header contains
 a JSON array of validation error objects, each with path, message, and type fields.
+
+## HTTP status codes
+
+An answer is the status code, and for an error a body that says why. An empty result set is `200` with `[]`; it is
+never an error. A failed request is never a `2xx`. A request that cannot be read or is not allowed is never a `5xx`.
+
+By default datasetd answers as it did in 2.5.1. Setting `strict_status: true` in the
+[YAML settings](datasetd_yaml.5.md) switches the object, query and keys routes to the precise codes below.
+The setting is global and is read at start. Nothing changes a status unless it is set.
+
+| Situation | default (2.5.1) | `strict_status: true` |
+|---|---|---|
+| GET an object that does not exist | 200 with `{}` | 404 |
+| DELETE an object that does not exist | 200 | 404 |
+| PUT an object that does not exist | 200, nothing created | 404 |
+| POST (JSON) an object that exists | 200, the record is overwritten | 409, nothing is written |
+| POST or PUT invalid JSON, or an empty body | 406 | 400 |
+| POST or PUT with a content type other than JSON or a form | 201 or 200, accepted | 415 |
+| POST or PUT body over 1 MiB | 400 | 413 |
+| record fails schema validation | 400 | 422 |
+| query with a missing parameter | 406 | 400 |
+| query that fails on its parameters | 406 | 400 |
+| query name not defined | 400 | 404 |
+| unknown collection or unknown route | 403 | 404 |
+| method not enabled for the collection | 405 | 405 |
+| a store that fails | 400 | 500 |
+| form post succeeds, `create_success` set | 302 | 303 |
+| create | 201 | 201 |
+| update or delete of an object that exists | 200 | 200 |
+
+In both modes a `405` carries an `Allow` header listing the methods the route accepts, and a query that cannot be
+routed answers `400` or `404` with the reason in the body (a missing query name, an unknown collection, no queries
+defined for the collection, or a query name that is not defined).
+
+A form post (content type `application/x-www-form-urlencoded`) to a key that exists updates the record in both
+modes, because browsers cannot send PUT. Only a JSON POST to a key that exists is a `409` in strict mode. A form
+post that fails and has a `create_error` redirect configured still redirects. A JSON client in strict mode always
+gets status codes, never the redirect.
+
+In strict mode an error body is JSON, and every answer carries `Cache-Control: no-store`.
+
+~~~json
+{"error": {"status": 409, "outcome": "conflict", "message": "a record with key k1 already exists; use PUT to replace it"}}
+~~~
+
+The `outcome` is one of `invalid`, `unauthenticated`, `forbidden`, `not_found`, `conflict`, `too_large`,
+`unavailable` or `internal`. A client should match on the outcome rather than on a bare status number. The
+message never carries a stack trace, a store error or a SQL statement; the detail goes to the server log.
+
+The attachment routes are not changed by `strict_status` and answer as they did in 2.5.1.
 
 ## Examples
 

@@ -974,7 +974,8 @@ cliLoad = `load [OPTION]
 
 This will read a JSONL stream (JSONL, see https://jsonlines.org) 
 and store the objects in a dataset collection. The objects must have
-two attributes, __key__ and __object__.  The key value is used as
+two attributes, key and object (the names __key__ and __object__ are also
+accepted, and dump writes key and object).  The key value is used as
 the key assigned in the collection and object value is the JSON stored.
 Load reads from standard input.
 

@@ -253,6 +253,12 @@ htdocs
 : (optional) if set static content will be serviced based on this path. This is a
 good place to implement a browser side UI in HTML, CSS and JavaScript.
 
+strict_status
+: (optional, default false) if true the object, query and keys routes answer with the
+precise HTTP status codes (404 for a missing record, 409 for a JSON POST of a key that
+exists, 400, 413, 415 and 422 for bad requests) and a JSON error body. See "{app_name} -help api"
+for the table. Left out, the answers are those of {app_name} 2.5.1.
+
 collections
 : (required) A list of dataset collections that will be supported with this
 web service. The dataset collections can be pairtrees or SQL stored. The
@@ -469,8 +475,58 @@ The REST API works with JSON data. The service does not support multipart urlenc
 
 When schema validation is enabled for a collection (via the schema_name and validate settings), create and update
 operations will validate the JSON document against the specified schema. If validation fails, the API returns
-a 400 Bad Request status with validation errors in the X-Validation-Errors HTTP header. The header contains
+a 400 Bad Request status (422 when ` + "`" + `strict_status` + "`" + ` is true) with validation errors in the X-Validation-Errors HTTP header. The header contains
 a JSON array of validation error objects, each with path, message, and type fields.
+
+## HTTP status codes
+
+An answer is the status code, and for an error a body that says why. An empty result set is ` + "`" + `200` + "`" + ` with ` + "`" + `[]` + "`" + `; it is
+never an error. A failed request is never a ` + "`" + `2xx` + "`" + `. A request that cannot be read or is not allowed is never a ` + "`" + `5xx` + "`" + `.
+
+By default {app_name} answers as it did in 2.5.1. Setting ` + "`" + `strict_status: true` + "`" + ` in the
+[YAML settings]({app_name}_yaml.5.md) switches the object, query and keys routes to the precise codes below.
+The setting is global and is read at start. Nothing changes a status unless it is set.
+
+| Situation | default (2.5.1) | ` + "`" + `strict_status: true` + "`" + ` |
+|---|---|---|
+| GET an object that does not exist | 200 with ` + "`" + `{}` + "`" + ` | 404 |
+| DELETE an object that does not exist | 200 | 404 |
+| PUT an object that does not exist | 200, nothing created | 404 |
+| POST (JSON) an object that exists | 200, the record is overwritten | 409, nothing is written |
+| POST or PUT invalid JSON, or an empty body | 406 | 400 |
+| POST or PUT with a content type other than JSON or a form | 201 or 200, accepted | 415 |
+| POST or PUT body over 1 MiB | 400 | 413 |
+| record fails schema validation | 400 | 422 |
+| query with a missing parameter | 406 | 400 |
+| query that fails on its parameters | 406 | 400 |
+| query name not defined | 400 | 404 |
+| unknown collection or unknown route | 403 | 404 |
+| method not enabled for the collection | 405 | 405 |
+| a store that fails | 400 | 500 |
+| form post succeeds, ` + "`" + `create_success` + "`" + ` set | 302 | 303 |
+| create | 201 | 201 |
+| update or delete of an object that exists | 200 | 200 |
+
+In both modes a ` + "`" + `405` + "`" + ` carries an ` + "`" + `Allow` + "`" + ` header listing the methods the route accepts, and a query that cannot be
+routed answers ` + "`" + `400` + "`" + ` or ` + "`" + `404` + "`" + ` with the reason in the body (a missing query name, an unknown collection, no queries
+defined for the collection, or a query name that is not defined).
+
+A form post (content type ` + "`" + `application/x-www-form-urlencoded` + "`" + `) to a key that exists updates the record in both
+modes, because browsers cannot send PUT. Only a JSON POST to a key that exists is a ` + "`" + `409` + "`" + ` in strict mode. A form
+post that fails and has a ` + "`" + `create_error` + "`" + ` redirect configured still redirects. A JSON client in strict mode always
+gets status codes, never the redirect.
+
+In strict mode an error body is JSON, and every answer carries ` + "`" + `Cache-Control: no-store` + "`" + `.
+
+~~~json
+{"error": {"status": 409, "outcome": "conflict", "message": "a record with key k1 already exists; use PUT to replace it"}}
+~~~
+
+The ` + "`" + `outcome` + "`" + ` is one of ` + "`" + `invalid` + "`" + `, ` + "`" + `unauthenticated` + "`" + `, ` + "`" + `forbidden` + "`" + `, ` + "`" + `not_found` + "`" + `, ` + "`" + `conflict` + "`" + `, ` + "`" + `too_large` + "`" + `,
+` + "`" + `unavailable` + "`" + ` or ` + "`" + `internal` + "`" + `. A client should match on the outcome rather than on a bare status number. The
+message never carries a stack trace, a store error or a SQL statement; the detail goes to the server log.
+
+The attachment routes are not changed by ` + "`" + `strict_status` + "`" + ` and answer as they did in 2.5.1.
 
 ## Examples
 
@@ -661,6 +717,20 @@ htdocs
 : (optional) if this is a non-empty it will be used as the path to static resouce provided with the web service.
 These are useful for prototyping user interfaces with HTML, CSS and JavaScript interacting the RESTful JSON API.
 
+strict_status
+: (optional, default false) If true the object, query and keys routes answer with the precise HTTP status
+  codes (workspace DR-0020) and a JSON error body, instead of the answers {app_name} 2.5.1 gave. For example
+  a missing record is 404 rather than 200 with ` + "`" + `{}` + "`" + `, a JSON POST of a key that exists is 409 and writes
+  nothing, malformed input is 400 rather than 406, and an unknown collection is 404 rather than 403.
+  The setting is global, it is not set per collection. Left out or false, every answer is as it was in
+  2.5.1, so turning it on is the only thing that changes any status code. See
+  [{app_name}_api]({app_name}_api.5.md) for the full table.
+
+  ~~~yaml
+  host: localhost:8485
+  strict_status: true
+  ~~~
+
 schemas
 : (optional) A map of schema names to schema definitions. Schemas are used to validate JSON documents in collections.
   Each schema is defined as a model with elements, types, and validation rules. Schemas can be referenced
@@ -688,7 +758,7 @@ schema_name
 
 validate
 : (optional, default false) If true and schema_name is set, enable schema validation for create and update operations.
-  When validation fails, a 400 Bad Request response is returned with validation errors in the X-Validation-Errors header.
+  When validation fails, a 400 Bad Request response (422 Unprocessable Content when ` + "`" + `strict_status` + "`" + ` is true) is returned with validation errors in the X-Validation-Errors header.
 
 ## API Permissions
 

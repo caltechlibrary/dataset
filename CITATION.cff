@@ -30,8 +30,8 @@ contacts:
     email: tmorrell@caltech.edu
 
 repository-code: "https://github.com/caltechlibrary/dataset"
-version: 2.5.1
-date-released: 2026-06-03
+version: 2.5.2
+date-released: 2026-11-13
 
 license-url: "https://software.library.caltech.edu/dataset/LICENSE"
 keywords:

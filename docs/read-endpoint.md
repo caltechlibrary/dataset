@@ -10,7 +10,9 @@ Retrieve a JSON document from a collection.
 
 Requires a "GET" HTTP method.
 
-Returns the JSON document for given `<KEY>` found in `<COLLECTION_ID>` or a HTTP error if not found.
+Returns the JSON document for given `<KEY>` found in `<COLLECTION_ID>`.
+
+If the key does not exist, the default answer (as in datasetd 2.5.1) is HTTP 200 with `{}`. When the service is run with `strict_status: true` in its YAML settings the answer is HTTP 404 with a JSON error object, so a missing document can be told from an empty one. See [datasetd_api(5)](datasetd_api.5.md), "HTTP status codes".
 
 Example
 -------
