@@ -523,7 +523,7 @@ value before creation is assumed to be "0.0.0". If versioning is enabled
 it is automatically applied. 
 
 Directly working with versioned documents or attachments requires writing
-programs and using the Go dataset package or libdataset C-shared library.
+programs and using the Go dataset package.
 
 Examples
 --------

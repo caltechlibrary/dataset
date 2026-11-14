@@ -159,11 +159,12 @@ refresh:
 #                      from codemeta.json with cmt (the only place cmt runs
 #                      besides an explicit `make generate`), rebuilds the
 #                      programs and their manual pages from that version.go,
-#                      runs the tests, builds one zip per platform and the
-#                      libdataset zip in dist/ and runs release-check, which
-#                      stops here if anything does not carry the version and
-#                      the hash of the commit, or a zip lacks one of the
-#                      programs.
+#                      runs the tests, builds one zip per platform in dist/ and
+#                      runs release-check, which stops here if anything does
+#                      not carry the version and the hash of the commit, or a
+#                      zip lacks one of the programs. No libdataset zip is
+#                      built: libdataset is deprecated and not released (dataset
+#                      DR-0004); `make libdataset.wasm` builds it for yourself.
 # 3. ./release.bash    refuses if anything beyond those files is uncommitted,
 #                      asks for confirmation, commits and pushes the regenerated
 #                      files ("prep for vX.Y.Z"), and creates the DRAFT GitHub
@@ -212,14 +213,17 @@ dist: build .FORCE
 	done
 	@rm -fR dist/stage
 
-# libdataset.wasm is the WebAssembly build of the library (GOOS=wasip1).
+# libdataset.wasm is the WebAssembly build of the library (GOOS=wasip1). The
+# library is deprecated and not part of a release; this target is for people who
+# build their own (see libdataset.md).
 libdataset.wasm: libdataset/libdataset.go libdataset/registry.go
 	@mkdir -p dist
 	GOOS=wasip1 GOARCH=wasm go build -o dist/libdataset.wasm ./libdataset/
 	@echo "Built dist/libdataset.wasm ($$(ls -lh dist/libdataset.wasm | awk '{print $$5}'))"
 
-# libdataset-dist adds dist/dataset-vVERSION-libdataset.zip. It runs after dist,
-# which starts from an empty dist/.
+# libdataset-dist lays out dist/dataset-vVERSION-libdataset.zip from your own
+# libdataset.wasm. It is not part of release; if you run it after dist (which
+# starts from an empty dist/) the zip is added beside the platform zips.
 libdataset-dist: libdataset.wasm libdataset.md \
 		wrappers/python/libdataset/__init__.py \
 		wrappers/python/libdataset/libdataset.py \
@@ -245,7 +249,7 @@ release-version: .FORCE
 # release-check stops the release unless version.go, the installers,
 # CITATION.cff, the manual pages in docs/ and the zip files all carry the
 # version in codemeta.json and the hash of the commit being released, every
-# platform zip carries every program, and the libdataset zip exists.
+# platform zip carries every program.
 release-check: .FORCE
 	@HASH=$$(git log --pretty=format:%h -n 1); \
 	if ! grep -q 'Version = "$(VERSION)"' version.go; then \
@@ -277,12 +281,10 @@ release-check: .FORCE
 		done; \
 		COUNT=$$((COUNT + 1)); \
 	done; \
-	if [ ! -f dist/$(PROJECT)-v$(VERSION)-libdataset.zip ]; then \
-		echo "error: missing dist/$(PROJECT)-v$(VERSION)-libdataset.zip" >&2; exit 1; fi; \
-	echo "release-check: version.go, CITATION.cff, installers, docs/, $$COUNT zip files and the libdataset zip carry $(VERSION) $$HASH"
+	echo "release-check: version.go, CITATION.cff, installers, docs/ and $$COUNT zip files carry $(VERSION) $$HASH"
 
 # release: see "Releasing" above. It commits nothing; release.bash does that.
-release: clean release-version test dist libdataset-dist release-check
+release: clean release-version test dist release-check
 	@printf "\nrelease-check passed. Now run: ./release.bash   (or ./release.bash --dry-run first)\n\n"
 
 .FORCE:

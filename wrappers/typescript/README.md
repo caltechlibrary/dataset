@@ -5,11 +5,14 @@ A Deno wrapper around `libdataset.wasm` that provides a TypeScript
 interface to [dataset](https://github.com/caltechlibrary/dataset)
 collections.
 
+> **Deprecated.** libdataset is deprecated; releases after v2.5.2 publish no binaries (use ts_dataset with datasetd for new work). See [libdataset.md](../../libdataset.md) for how to build your own.
+
 Requirements
 ------------
 
 - [Deno](https://deno.land/) 1.40+
-- `libdataset.wasm` from the dataset release
+- `libdataset.wasm`, built from the dataset source, see [libdataset.md](../../libdataset.md)
+  (releases after v2.5.2 do not include it)
 
 Quick start
 -----------

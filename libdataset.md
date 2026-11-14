@@ -1,6 +1,16 @@
 libdataset
 ==========
 
+> **Deprecated.** libdataset is deprecated and gets no new features. Releases
+> after v2.5.2 do not publish libdataset binaries: the `dataset-vVERSION-libdataset.zip`
+> file is no longer attached, and no C shared library has been built since the
+> 2.0.0 series (see [CHANGES.md](CHANGES.md)). If you need `libdataset.wasm`, build it
+> yourself, see "Building libdataset yourself" below. For Deno and TypeScript
+> programs use [ts_dataset](https://github.com/caltechlibrary/ts_dataset) with
+> `datasetd`; the py_dataset repository is archived, and if it is revived it will
+> be a client of `datasetd` in the same way. A different WASM module may replace
+> libdataset in the future.
+
 libdataset is a [WebAssembly](https://webassembly.org/) (WASM) module that
 exposes the full [dataset](README.md) collection API to Python, TypeScript,
 JavaScript, and any other language with a WASI-compatible WASM runtime.
@@ -50,9 +60,10 @@ No additional packages are required; Deno includes native WASI support.
 Installation
 ------------
 
-Download the `dataset-vVERSION-libdataset.zip` file from the
-[releases page](https://github.com/caltechlibrary/dataset/releases) and
-unzip it. The archive contains:
+Releases up to and including v2.5.2 attach a `dataset-vVERSION-libdataset.zip`
+file on the [releases page](https://github.com/caltechlibrary/dataset/releases).
+Later releases do not; build your own as described below. The archive from
+those earlier releases contains:
 
 ```
 libdataset.wasm          the WASM module (platform-independent)
@@ -63,18 +74,34 @@ libdataset.md            this file
 ```
 
 Place `libdataset.wasm` somewhere accessible to your project, then copy
-or install the wrapper that matches your language.
+or install the wrapper that matches your language (they are in `wrappers/`
+in the source tree).
 
-Building from source
---------------------
+Building libdataset yourself
+----------------------------
 
 ```shell
 git clone https://github.com/caltechlibrary/dataset
 cd dataset
-make libdataset.wasm        # builds dist/libdataset.wasm
+make libdataset.wasm        # writes dist/libdataset.wasm
 ```
 
-Requires Go 1.24+ with the standard WASM/WASI toolchain (no extra tools).
+`make` is only a convenience. The same build without it is
+
+```shell
+GOOS=wasip1 GOARCH=wasm go build -o libdataset.wasm ./libdataset/
+```
+
+You need the Go version named in `go.mod` (Go 1.26 or later for v2.5.2). The
+standard Go toolchain includes the WASI target; no C compiler and no other
+tools are needed. The module is about 40 MB. To lay the files out the way the
+old archive did, run `make libdataset-dist` after `make libdataset.wasm`; it
+writes `dist/dataset-vVERSION-libdataset.zip` from your own build.
+
+There is no C shared library in this repository and none is built or tested.
+The Go package `github.com/caltechlibrary/dataset/v2` can be wrapped for C
+callers with cgo and `go build -buildmode=c-shared`, but that wrapper is yours
+to write and support.
 
 WASI filesystem access
 ----------------------

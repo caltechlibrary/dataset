@@ -5,12 +5,15 @@ A [wasmtime-py](https://github.com/bytecodealliance/wasmtime-py) wrapper
 around `libdataset.wasm` that provides a Pythonic interface to
 [dataset](https://github.com/caltechlibrary/dataset) collections.
 
+> **Deprecated.** libdataset is deprecated; releases after v2.5.2 publish no binaries (py_dataset is archived). See [libdataset.md](../../libdataset.md) for how to build your own.
+
 Requirements
 ------------
 
 - Python 3.9+
 - wasmtime-py: `pip install wasmtime`
-- `libdataset.wasm` from the dataset release
+- `libdataset.wasm`, built from the dataset source, see [libdataset.md](../../libdataset.md)
+  (releases after v2.5.2 do not include it)
 
 Installation
 ------------

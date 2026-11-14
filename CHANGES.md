@@ -1,3 +1,15 @@
+Unreleased
+
+- libdataset (the WASM module, `libdataset.wasm`, and its Python and TypeScript wrappers) is deprecated. Releases
+  after v2.5.2 no longer attach `dataset-vVERSION-libdataset.zip`: `make release` does not build it and
+  `release-check` no longer requires it. No C shared library is provided either (it was dropped in the 2.0.0
+  series). `libdataset.md` now says so and explains how to build `libdataset.wasm` yourself
+  (`make libdataset.wasm`, or `GOOS=wasip1 GOARCH=wasm go build ./libdataset/`); `make libdataset-dist` still lays
+  out the old zip from your own build. The py_dataset repository is archived. A different WASM module may replace
+  libdataset in the future (dataset DR-0004).
+- `libdataset.md` said Go 1.24 was needed; it is the version in `go.mod`.
+- The README's link to ts_dataset pointed at `caltechlibraray`; fixed.
+
 Release 2.5.2
 
 - Added `strict_status` to the datasetd YAML (global, default false). When true the object, query and keys

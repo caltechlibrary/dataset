@@ -170,6 +170,8 @@ Compiled versions are provided for Linux (x86, aarch64), Mac OS X (x86 and M1), 
 Related projects
 ----------------
 
-You can use __dataset__ from Python via the [py_dataset](https://github.com/caltechlibrary/py_dataset) package. 
+You can use __dataset__ from Deno+TypeScript by running datasetd and accessing it with [ts_dataset](https://github.com/caltechlibrary/ts_dataset). ts_dataset's major and minor version match dataset's (ts_dataset 2.5.x goes with dataset 2.5.x).
 
-You can use __dataset__ from Deno+TypeScript by running datasetd and access it with [ts_dataset](https://github.com/caltechlibraray/ts_dataset).
+The [py_dataset](https://github.com/caltechlibrary/py_dataset) repository is archived. If it is revived it will be a client of datasetd, like ts_dataset.
+
+[libdataset](libdataset.md), the WebAssembly module and its Python and TypeScript wrappers, is deprecated. Releases after v2.5.2 do not publish libdataset binaries; [libdataset.md](libdataset.md) explains how to build your own.

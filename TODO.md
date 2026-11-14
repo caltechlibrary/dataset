@@ -155,6 +155,11 @@ Next (prep for v2.6)
 
 - [X] Done for v2.5.2 (both spellings accepted, help fixed). `dataset help load` says each JSONL line needs `__key__` and `__object__`, but the installed binary (2.5.1) reads `key` and `object` and rejects the documented names ("missing key or object"). Found 2026-11-13 building the TMS migration, which uses `key`/`object` (as `cold`'s harvest SQL does). Fix the help, or accept both.
 
+- [ ] Decide the future of libdataset. It is deprecated (dataset DR-0004) and no binaries are published after
+      v2.5.2; the source, `libdataset.md` and the wrappers in `wrappers/` are still in the tree. Either remove them
+      in a later release or replace them with a purpose-built WASM module. py_dataset is archived; if it is revived
+      it will be a client of datasetd like ts_dataset, so `wrappers/python` would go.
+
 - [ ] Review the exit codes for dataset and datasetd to provide more expressive results
 
 - [ ] `dataset` and `datasetd` have no `help topics` listing (`dataset help` with no topic answers "Unable to find
